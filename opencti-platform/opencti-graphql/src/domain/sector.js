@@ -4,25 +4,27 @@ import {
   dayFormat,
   escapeString,
   executeWrite,
-  loadEntityById,
   getSingleValueNumber,
   graknNow,
+  loadEntityById,
   monthFormat,
   paginate,
   prepareDate,
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { elPaginate } from '../database/elasticSearch';
-import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { elLoadById, elPaginate } from '../database/elasticSearch';
+import { addCreatedByRef, addMarkingDefs } from './stixEntity';
 import { notify } from '../database/redis';
 
+export const findById = sectorId => {
+  return elLoadById(sectorId);
+};
 export const findAll = args => {
   return elPaginate('stix_domain_entities', assoc('type', 'sector', args));
 };
 
-export const findById = sectorId => loadEntityById(sectorId);
-
+// region grakn fetch
 export const markingDefinitions = (sectorId, args) => {
   return paginate(
     `match $marking isa Marking-Definition; 
@@ -31,7 +33,6 @@ export const markingDefinitions = (sectorId, args) => {
     args
   );
 };
-
 export const subsectors = (sectorId, args) => {
   return paginate(
     `match $subsector isa Sector; 
@@ -40,7 +41,6 @@ export const subsectors = (sectorId, args) => {
     args
   );
 };
-
 export const isSubsector = async (sectorId, args) => {
   const numberOfParents = await getSingleValueNumber(
     `match $parent isa Sector; 
@@ -50,28 +50,22 @@ export const isSubsector = async (sectorId, args) => {
   );
   return numberOfParents > 0;
 };
+// endregion
 
 export const addSector = async (user, sector) => {
-  const sectorId = await executeWrite(async wTx => {
-    const internalId = sector.internal_id_key
-      ? escapeString(sector.internal_id_key)
-      : uuid();
+  const internalId = sector.internal_id_key ? escapeString(sector.internal_id_key) : uuid();
+  await executeWrite(async wTx => {
     const sectorIterator = await wTx.tx.query(`insert $sector isa Sector,
     has internal_id_key "${internalId}",
     has entity_type "sector",
-    has stix_id_key "${
-      sector.stix_id_key
-        ? escapeString(sector.stix_id_key)
-        : `identity--${uuid()}`
-    }",
+    has stix_id_key "${sector.stix_id_key ? escapeString(sector.stix_id_key) : `identity--${uuid()}`}",
     has stix_label "",
     has stix_label "",
     ${
       sector.alias
-        ? `${join(
-            ' ',
-            map(val => `has alias "${escapeString(val)}",`, tail(sector.alias))
-          )} has alias "${escapeString(head(sector.alias))}",`
+        ? `${join(' ', map(val => `has alias "${escapeString(val)}",`, tail(sector.alias)))} has alias "${escapeString(
+            head(sector.alias)
+          )}",`
         : 'has alias "",'
     }
     has name "${escapeString(sector.name)}",
@@ -86,14 +80,10 @@ export const addSector = async (user, sector) => {
     has updated_at ${graknNow()};
   `);
     const createSector = await sectorIterator.next();
-    const createdSectorId = await createSector.map().get('sector').id;
-
-    // Create associated relations
-    await linkCreatedByRef(wTx, createdSectorId, sector.createdByRef);
-    await linkMarkingDef(wTx, createdSectorId, sector.markingDefinitions);
-    return internalId;
+    return createSector.map().get('sector').id;
   });
-  return loadEntityById(sectorId).then(created => {
-    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
-  });
+  const created = await loadEntityById(internalId);
+  await addCreatedByRef(internalId, sector.createdByRef);
+  await addMarkingDefs(internalId, sector.markingDefinitions);
+  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };

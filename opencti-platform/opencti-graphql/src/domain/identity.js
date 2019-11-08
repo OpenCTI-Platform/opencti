@@ -4,17 +4,18 @@ import {
   dayFormat,
   escapeString,
   executeWrite,
-  loadEntityById,
   graknNow,
+  loadEntityById,
   monthFormat,
   prepareDate,
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
-import { elPaginate } from '../database/elasticSearch';
-import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { elLoadById, elPaginate } from '../database/elasticSearch';
+import { addCreatedByRef, addMarkingDefs } from './stixEntity';
 import { notify } from '../database/redis';
 
+export const findById = identityId => elLoadById(identityId);
 export const findAll = args => {
   return elPaginate(
     'stix_domain_entities',
@@ -22,13 +23,9 @@ export const findAll = args => {
   );
 };
 
-export const findById = identityId => loadEntityById(identityId);
-
 export const addIdentity = async (user, identity) => {
-  const identId = await executeWrite(async wTx => {
-    const internalId = identity.internal_id_key
-      ? escapeString(identity.internal_id_key)
-      : uuid();
+  const internalId = identity.internal_id_key ? escapeString(identity.internal_id_key) : uuid();
+  await executeWrite(async wTx => {
     const now = graknNow();
     const query = `insert $identity isa ${identity.type},
     has internal_id_key "${internalId}",
@@ -43,10 +40,7 @@ export const addIdentity = async (user, identity) => {
       identity.alias
         ? `${join(
             ' ',
-            map(
-              val => `has alias "${escapeString(val)}",`,
-              tail(identity.alias)
-            )
+            map(val => `has alias "${escapeString(val)}",`, tail(identity.alias))
           )} has alias "${escapeString(head(identity.alias))}",`
         : 'has alias "",'
     }
@@ -64,14 +58,10 @@ export const addIdentity = async (user, identity) => {
     const identityIterator = await wTx.tx.query(query);
     logger.debug(`[GRAKN - infer: false] addIdentity > ${query}`);
     const createIdentity = await identityIterator.next();
-    const createdIdentityId = await createIdentity.map().get('identity').id;
-
-    // Create associated relations
-    await linkCreatedByRef(wTx, createdIdentityId, identity.createdByRef);
-    await linkMarkingDef(wTx, createdIdentityId, identity.markingDefinitions);
-    return internalId;
+    return createIdentity.map().get('identity').id;
   });
-  return loadEntityById(identId).then(created => {
-    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
-  });
+  const created = await loadEntityById(internalId);
+  await addCreatedByRef(internalId, identity.createdByRef);
+  await addMarkingDefs(internalId, identity.markingDefinitions);
+  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };

@@ -42,6 +42,18 @@ export const rolesMap = {
   drops: {
     dropping: 'from',
     dropped: 'to'
+  },
+  tagged: {
+    so: 'from',
+    tagging: 'to'
+  },
+  created_by_ref: {
+    so: 'from',
+    creator: 'to'
+  },
+  object_marking_refs: {
+    so: 'from',
+    marking: 'to'
   }
 };
 

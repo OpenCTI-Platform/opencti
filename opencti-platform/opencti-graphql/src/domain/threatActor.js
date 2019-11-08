@@ -4,32 +4,29 @@ import {
   dayFormat,
   escapeString,
   executeWrite,
-  loadEntityById,
   graknNow,
+  loadEntityById,
   monthFormat,
   prepareDate,
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { elPaginate } from '../database/elasticSearch';
-import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { elLoadById, elPaginate } from '../database/elasticSearch';
+import { addCreatedByRef, addMarkingDefs } from './stixEntity';
 import { notify } from '../database/redis';
 
-export const findAll = args =>
-  elPaginate('stix_domain_entities', assoc('type', 'threat-actor', args));
-
-export const findById = threatActorId => loadEntityById(threatActorId);
+export const findById = threatActorId => {
+  return elLoadById(threatActorId);
+};
+export const findAll = args => {
+  return elPaginate('stix_domain_entities', assoc('type', 'threat-actor', args));
+};
 
 export const addThreatActor = async (user, threatActor) => {
-  const actorId = await executeWrite(async wTx => {
-    const internalId = threatActor.internal_id_key
-      ? escapeString(threatActor.internal_id_key)
-      : uuid();
-    const stixId = threatActor.stix_id_key
-      ? escapeString(threatActor.stix_id_key)
-      : `threat-actor--${uuid()}`;
-    const threatActorIterator = await wTx.tx
-      .query(`insert $threatActor isa Threat-Actor,
+  const internalId = threatActor.internal_id_key ? escapeString(threatActor.internal_id_key) : uuid();
+  await executeWrite(async wTx => {
+    const stixId = threatActor.stix_id_key ? escapeString(threatActor.stix_id_key) : `threat-actor--${uuid()}`;
+    const threatActorIterator = await wTx.tx.query(`insert $threatActor isa Threat-Actor,
     has internal_id_key "${internalId}",
     has entity_type "threat-actor",
     has stix_id_key "${stixId}",
@@ -38,10 +35,7 @@ export const addThreatActor = async (user, threatActor) => {
       threatActor.alias
         ? `${join(
             ' ',
-            map(
-              val => `has alias "${escapeString(val)}",`,
-              tail(threatActor.alias)
-            )
+            map(val => `has alias "${escapeString(val)}",`, tail(threatActor.alias))
           )} has alias "${escapeString(head(threatActor.alias))}",`
         : 'has alias "",'
     }
@@ -51,16 +45,10 @@ export const addThreatActor = async (user, threatActor) => {
     has sophistication "${escapeString(threatActor.sophistication)}",
     has resource_level "${escapeString(threatActor.resource_level)}",
     has primary_motivation "${escapeString(threatActor.primary_motivation)}",
-    has secondary_motivation "${escapeString(
-      threatActor.secondary_motivation
-    )}",
+    has secondary_motivation "${escapeString(threatActor.secondary_motivation)}",
     has personal_motivation "${escapeString(threatActor.personal_motivation)}",
-    has created ${
-      threatActor.created ? prepareDate(threatActor.created) : graknNow()
-    },
-    has modified ${
-      threatActor.modified ? prepareDate(threatActor.modified) : graknNow()
-    },
+    has created ${threatActor.created ? prepareDate(threatActor.created) : graknNow()},
+    has modified ${threatActor.modified ? prepareDate(threatActor.modified) : graknNow()},
     has revoked false,
     has created_at ${graknNow()},
     has created_at_day "${dayFormat(graknNow())}",
@@ -69,14 +57,14 @@ export const addThreatActor = async (user, threatActor) => {
     has updated_at ${graknNow()};
   `);
     const txThreatActor = await threatActorIterator.next();
-    const createId = await txThreatActor.map().get('threatActor').id;
-
+    return txThreatActor.map().get('threatActor').id;
     // Create associated relations
-    await linkCreatedByRef(wTx, createId, threatActor.createdByRef);
-    await linkMarkingDef(wTx, createId, threatActor.markingDefinitions);
-    return internalId;
+    // await linkCreatedByRef(wTx, createId, threatActor.createdByRef);
+    // await linkMarkingDef(wTx, createId, threatActor.markingDefinitions);
+    // return createId;
   });
-  return loadEntityById(actorId).then(created => {
-    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
-  });
+  const created = await loadEntityById(internalId);
+  await addCreatedByRef(internalId, threatActor.createdByRef);
+  await addMarkingDefs(internalId, threatActor.markingDefinitions);
+  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };

@@ -4,41 +4,35 @@ import {
   dayFormat,
   escapeString,
   executeWrite,
-  loadEntityById,
   graknNow,
+  loadEntityById,
   monthFormat,
   prepareDate,
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { elPaginate } from '../database/elasticSearch';
-import { linkCreatedByRef, linkKillChains, linkMarkingDef } from './stixEntity';
+import { elLoadById, elPaginate } from '../database/elasticSearch';
+import { addCreatedByRef, addKillChains, addMarkingDefs } from './stixEntity';
 import { notify } from '../database/redis';
 
+export const findById = toolId => elLoadById(toolId);
 export const findAll = args => {
   return elPaginate('stix_domain_entities', assoc('type', 'tool', args));
 };
 
-export const findById = toolId => loadEntityById(toolId);
-
 export const addTool = async (user, tool) => {
-  const toolId = await executeWrite(async wTx => {
-    const internalId = tool.internal_id_key
-      ? escapeString(tool.internal_id_key)
-      : uuid();
+  const internalId = tool.internal_id_key ? escapeString(tool.internal_id_key) : uuid();
+  await executeWrite(async wTx => {
     const toolIterator = await wTx.tx.query(`insert $tool isa Tool,
     has internal_id_key "${internalId}",
     has entity_type "tool",
-    has stix_id_key "${
-      tool.stix_id_key ? escapeString(tool.stix_id_key) : `tool--${uuid()}`
-    }",
+    has stix_id_key "${tool.stix_id_key ? escapeString(tool.stix_id_key) : `tool--${uuid()}`}",
     has stix_label "",
     ${
       tool.alias
-        ? `${join(
-            ' ',
-            map(val => `has alias "${escapeString(val)}",`, tail(tool.alias))
-          )} has alias "${escapeString(head(tool.alias))}",`
+        ? `${join(' ', map(val => `has alias "${escapeString(val)}",`, tail(tool.alias)))} has alias "${escapeString(
+            head(tool.alias)
+          )}",`
         : 'has alias "",'
     }
     has name "${escapeString(tool.name)}",
@@ -53,15 +47,11 @@ export const addTool = async (user, tool) => {
     has updated_at ${graknNow()};
   `);
     const createTool = await toolIterator.next();
-    const createdToolId = await createTool.map().get('tool').id;
-
-    // Create associated relations
-    await linkCreatedByRef(wTx, createdToolId, tool.createdByRef);
-    await linkMarkingDef(wTx, createdToolId, tool.markingDefinitions);
-    await linkKillChains(wTx, createdToolId, tool.killChainPhases);
-    return internalId;
+    return createTool.map().get('tool').id;
   });
-  return loadEntityById(toolId).then(created => {
-    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
-  });
+  const created = await loadEntityById(internalId);
+  await addCreatedByRef(internalId, tool.createdByRef);
+  await addMarkingDefs(internalId, tool.markingDefinitions);
+  await addKillChains(internalId, tool.killChainPhases);
+  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };

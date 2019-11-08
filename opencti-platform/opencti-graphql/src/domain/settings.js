@@ -11,11 +11,7 @@ import {
   updateAttribute
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import {
-  delEditContext,
-  getRedisVersion, notify,
-  setEditContext
-} from '../database/redis';
+import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 
 import { elVersion, elLoadById } from '../database/elasticSearch';
 
@@ -45,9 +41,7 @@ export const getSettings = () => {
 
 export const addSettings = async (user, settings) => {
   const settingId = await executeWrite(async wTx => {
-    const internalId = settings.internal_id_key
-      ? escapeString(settings.internal_id_key)
-      : uuid();
+    const internalId = settings.internal_id_key ? escapeString(settings.internal_id_key) : uuid();
     await wTx.tx.query(`insert $settings isa Settings,
     has internal_id_key "${internalId}",
     has entity_type "settings",
@@ -62,25 +56,21 @@ export const addSettings = async (user, settings) => {
   `);
     return internalId;
   });
-  return loadEntityById(settingId).then(created =>
-    notify(BUS_TOPICS.Settings.ADDED_TOPIC, created, user)
-  );
+  return loadEntityById(settingId).then(created => notify(BUS_TOPICS.Settings.ADDED_TOPIC, created, user));
 };
 
-export const settingsDelete = settingsId => deleteEntityById(settingsId);
+export const settingsDelete = settingsId => {
+  return deleteEntityById(settingsId);
+};
 
 export const settingsCleanContext = (user, settingsId) => {
   delEditContext(user, settingsId);
-  return loadEntityById(settingsId).then(settings =>
-    notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
-  );
+  return loadEntityById(settingsId).then(settings => notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user));
 };
 
 export const settingsEditContext = (user, settingsId, input) => {
   setEditContext(user, settingsId, input);
-  return loadEntityById(settingsId).then(settings =>
-    notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
-  );
+  return loadEntityById(settingsId).then(settings => notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user));
 };
 
 export const settingsEditField = (user, settingsId, input) => {

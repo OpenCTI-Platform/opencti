@@ -4,40 +4,37 @@ import {
   dayFormat,
   escapeString,
   executeWrite,
-  loadEntityById,
   graknNow,
+  loadEntityById,
   monthFormat,
   prepareDate,
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { elPaginate } from '../database/elasticSearch';
-import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { elLoadById, elPaginate } from '../database/elasticSearch';
+import { addCreatedByRef, addMarkingDefs } from './stixEntity';
 import { notify } from '../database/redis';
 
-export const findAll = args =>
-  elPaginate('stix_domain_entities', assoc('type', 'city', args));
-
-export const findById = cityId => loadEntityById(cityId);
+export const findById = cityId => {
+  return elLoadById(cityId);
+};
+export const findAll = args => {
+  return elPaginate('stix_domain_entities', assoc('type', 'city', args));
+};
 
 export const addCity = async (user, city) => {
-  const cityId = await executeWrite(async wTx => {
-    const internalId = city.internal_id_key
-      ? escapeString(city.internal_id_key)
-      : uuid();
+  const internalId = city.internal_id_key ? escapeString(city.internal_id_key) : uuid();
+  await executeWrite(async wTx => {
     const cityIterator = await wTx.tx.query(`insert $city isa City,
     has internal_id_key "${internalId}",
     has entity_type "city",
-    has stix_id_key "${
-      city.stix_id_key ? escapeString(city.stix_id_key) : `identity--${uuid()}`
-    }",
+    has stix_id_key "${city.stix_id_key ? escapeString(city.stix_id_key) : `identity--${uuid()}`}",
     has stix_label "",
     ${
       city.alias
-        ? `${join(
-            ' ',
-            map(val => `has alias "${escapeString(val)}",`, tail(city.alias))
-          )} has alias "${escapeString(head(city.alias))}",`
+        ? `${join(' ', map(val => `has alias "${escapeString(val)}",`, tail(city.alias)))} has alias "${escapeString(
+            head(city.alias)
+          )}",`
         : 'has alias "",'
     }
     has name "${escapeString(city.name)}",
@@ -52,13 +49,10 @@ export const addCity = async (user, city) => {
     has updated_at ${graknNow()};
   `);
     const createCity = await cityIterator.next();
-    const createdCityId = await createCity.map().get('city').id;
-    // Create associated relations
-    await linkCreatedByRef(wTx, createdCityId, city.createdByRef);
-    await linkMarkingDef(wTx, createdCityId, city.markingDefinitions);
-    return internalId;
+    return createCity.map().get('city').id;
   });
-  return loadEntityById(cityId).then(created => {
-    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
-  });
+  const createdCity = await loadEntityById(internalId);
+  await addCreatedByRef(internalId, city.createdByRef);
+  await addMarkingDefs(internalId, city.markingDefinitions);
+  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, createdCity, user);
 };

@@ -4,42 +4,37 @@ import {
   dayFormat,
   escapeString,
   executeWrite,
-  loadEntityById,
   graknNow,
+  loadEntityById,
   monthFormat,
   prepareDate,
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { elPaginate } from '../database/elasticSearch';
-import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { elLoadById, elPaginate } from '../database/elasticSearch';
+import { addCreatedByRef, addMarkingDefs } from './stixEntity';
 import { notify } from '../database/redis';
 
-export const findAll = args =>
-  elPaginate('stix_domain_entities', assoc('type', 'region', args));
-
-export const findById = regionId => loadEntityById(regionId);
+export const findById = regionId => {
+  return elLoadById(regionId);
+};
+export const findAll = args => {
+  return elPaginate('stix_domain_entities', assoc('type', 'region', args));
+};
 
 export const addRegion = async (user, region) => {
-  const regionId = await executeWrite(async wTx => {
-    const internalId = region.internal_id_key
-      ? escapeString(region.internal_id_key)
-      : uuid();
+  const internalId = region.internal_id_key ? escapeString(region.internal_id_key) : uuid();
+  await executeWrite(async wTx => {
     const regionIterator = await wTx.tx.query(`insert $region isa Region,
     has internal_id_key "${internalId}",
     has entity_type "region",
-    has stix_id_key "${
-      region.stix_id_key
-        ? escapeString(region.stix_id_key)
-        : `identity--${uuid()}`
-    }",
+    has stix_id_key "${region.stix_id_key ? escapeString(region.stix_id_key) : `identity--${uuid()}`}",
     has stix_label "",
     ${
       region.alias
-        ? `${join(
-            ' ',
-            map(val => `has alias "${escapeString(val)}",`, tail(region.alias))
-          )} has alias "${escapeString(head(region.alias))}",`
+        ? `${join(' ', map(val => `has alias "${escapeString(val)}",`, tail(region.alias)))} has alias "${escapeString(
+            head(region.alias)
+          )}",`
         : 'has alias "",'
     }
     has name "${escapeString(region.name)}",
@@ -54,14 +49,10 @@ export const addRegion = async (user, region) => {
     has updated_at ${graknNow()};
   `);
     const createRegion = await regionIterator.next();
-    const createdRegionId = await createRegion.map().get('region').id;
-
-    // Create associated relations
-    await linkCreatedByRef(wTx, createdRegionId, region.createdByRef);
-    await linkMarkingDef(wTx, createdRegionId, region.markingDefinitions);
-    return internalId;
+    return createRegion.map().get('region').id;
   });
-  return loadEntityById(regionId).then(created => {
-    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
-  });
+  const created = await loadEntityById(internalId);
+  await addCreatedByRef(internalId, region.createdByRef);
+  await addMarkingDefs(internalId, region.markingDefinitions);
+  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };

@@ -1,5 +1,5 @@
 import uuid from 'uuid/v4';
-import {delEditContext, notify, setEditContext} from '../database/redis';
+import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createRelation,
   dayFormat,
@@ -17,8 +17,11 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { elLoadById } from '../database/elasticSearch';
 
-export const findAll = args =>
-  paginate(
+export const findById = tagId => elLoadById(tagId);
+
+// region grakn fetch
+export const findAll = args => {
+  return paginate(
     `match $t isa Tag ${
       args.search
         ? `; $t has tag_type $type;
@@ -29,9 +32,9 @@ export const findAll = args =>
     }`,
     args
   );
-
-export const findByEntity = args =>
-  paginate(
+};
+export const findByEntity = args => {
+  return paginate(
     `match $t isa Tag; 
     $rel(tagging:$t, so:$so) isa tagged; 
     $so has internal_id_key "${escapeString(args.objectId)}"`,
@@ -41,70 +44,50 @@ export const findByEntity = args =>
     false,
     false
   );
-
-export const findByValue = args =>
-  paginate(
+};
+export const findByValue = args => {
+  return paginate(
     `match $t isa Tag; 
     $t has tag_type "${escapeString(args.tag_type)}"; 
     $t has value "${escapeString(args.value)}"`,
     args,
     false
   );
-
-export const findById = tagId => loadEntityById(tagId);
+};
+// endregion
 
 export const addTag = async (user, tag) => {
-  const tagId = await executeWrite(async wTx => {
-    const internalId = tag.internal_id_key
-      ? escapeString(tag.internal_id_key)
-      : uuid();
+  const internalId = tag.internal_id_key ? escapeString(tag.internal_id_key) : uuid();
+  await executeWrite(async wTx => {
     const now = graknNow();
     await wTx.tx.query(`insert $tag isa Tag,
-    has internal_id_key "${internalId}",
-    has tag_type "${escapeString(tag.tag_type)}",
-    has value "${escapeString(tag.value)}",
-    has color "${escapeString(tag.color)}",
-    has created_at ${now},
-    has created_at_day "${dayFormat(now)}",
-    has created_at_month "${monthFormat(now)}",
-    has created_at_year "${yearFormat(now)}",       
-    has updated_at ${now};
-  `);
-    return internalId;
+      has internal_id_key "${internalId}",
+      has tag_type "${escapeString(tag.tag_type)}",
+      has value "${escapeString(tag.value)}",
+      has color "${escapeString(tag.color)}",
+      has created_at ${now},
+      has created_at_day "${dayFormat(now)}",
+      has created_at_month "${monthFormat(now)}",
+      has created_at_year "${yearFormat(now)}",       
+      has updated_at ${now};`);
   });
-  return loadEntityById(tagId).then(created =>
-    notify(BUS_TOPICS.Tag.ADDED_TOPIC, created, user)
-  );
+  const created = await loadEntityById(internalId);
+  return notify(BUS_TOPICS.Tag.ADDED_TOPIC, created, user);
 };
 
 export const tagDelete = tagId => deleteEntityById(tagId);
-
-export const tagAddRelation = (user, tagId, input) =>
-  createRelation(tagId, input).then(relationData => {
+export const tagAddRelation = (user, tagId, input) => {
+  return createRelation(tagId, input).then(relationData => {
     notify(BUS_TOPICS.Tag.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
-
-export const tagDeleteRelation = (user, tagId, relationId) =>
-  deleteRelationById(tagId, relationId).then(relationData => {
+};
+export const tagDeleteRelation = (user, tagId, relationId) => {
+  return deleteRelationById(tagId, relationId).then(relationData => {
     notify(BUS_TOPICS.Tag.EDIT_TOPIC, relationData.node, user);
     return relationData;
   });
-
-export const tagCleanContext = (user, tagId) => {
-  delEditContext(user, tagId);
-  return loadEntityById(tagId).then(tag =>
-    notify(BUS_TOPICS.Tag.EDIT_TOPIC, tag, user)
-  );
 };
-
-export const tagEditContext = (user, tagId, input) => {
-  setEditContext(user, tagId, input);
-  return loadEntityById(tagId).then(tag =>
-    notify(BUS_TOPICS.Tag.EDIT_TOPIC, tag, user)
-  );
-};
-
 export const tagEditField = (user, tagId, input) => {
   return executeWrite(wTx => {
     return updateAttribute(tagId, input, wTx);
@@ -112,4 +95,13 @@ export const tagEditField = (user, tagId, input) => {
     const tag = await elLoadById(tagId);
     return notify(BUS_TOPICS.Tag.EDIT_TOPIC, tag, user);
   });
+};
+
+export const tagCleanContext = (user, tagId) => {
+  delEditContext(user, tagId);
+  return loadEntityById(tagId).then(tag => notify(BUS_TOPICS.Tag.EDIT_TOPIC, tag, user));
+};
+export const tagEditContext = (user, tagId, input) => {
+  setEditContext(user, tagId, input);
+  return loadEntityById(tagId).then(tag => notify(BUS_TOPICS.Tag.EDIT_TOPIC, tag, user));
 };

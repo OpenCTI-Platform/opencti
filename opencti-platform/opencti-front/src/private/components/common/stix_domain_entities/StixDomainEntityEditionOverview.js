@@ -203,11 +203,11 @@ class StixDomainEntityEditionContainer extends Component {
       commitMutation({
         mutation: stixDomainEntityMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: stixDomainEntity.id,
           input: {
-            fromRole: 'marking',
-            toId: stixDomainEntity.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toRole: 'marking',
+            toId: head(added).value,
             through: 'object_marking_refs',
           },
         },

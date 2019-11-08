@@ -20,12 +20,7 @@ const tagResolvers = {
   Query: {
     tag: (_, { id }) => findById(id),
     tags: (_, args) => {
-      if (
-        args.tag_type &&
-        args.tag_type.length > 0 &&
-        args.value &&
-        args.value.length > 0
-      ) {
+      if (args.tag_type && args.tag_type.length > 0 && args.value && args.value.length > 0) {
         return findByValue(args);
       }
       if (args.objectId && args.objectId.length > 0) {
@@ -43,8 +38,7 @@ const tagResolvers = {
       fieldPatch: ({ input }) => tagEditField(user, id, input),
       contextPatch: ({ input }) => tagEditContext(user, id, input),
       relationAdd: ({ input }) => tagAddRelation(user, id, input),
-      relationDelete: ({ relationId }) =>
-        tagDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => tagDeleteRelation(user, id, relationId)
     }),
     tagAdd: (_, { input }, { user }) => addTag(user, input)
   },

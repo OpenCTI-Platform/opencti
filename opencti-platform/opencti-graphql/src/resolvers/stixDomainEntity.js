@@ -23,12 +23,7 @@ import {
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
 import { filesListing } from '../database/minio';
-import {
-  createdByRef,
-  markingDefinitions,
-  reports,
-  tags
-} from '../domain/stixEntity';
+import { createdByRef, markingDefinitions, reports, tags } from '../domain/stixEntity';
 
 const stixDomainEntityResolvers = {
   Query: {
@@ -45,17 +40,14 @@ const stixDomainEntityResolvers = {
       }
       return findAll(args);
     },
-    stixDomainEntitiesTimeSeries: (_, args) =>
-      stixDomainEntitiesTimeSeries(args),
+    stixDomainEntitiesTimeSeries: (_, args) => stixDomainEntitiesTimeSeries(args),
     stixDomainEntitiesNumber: (_, args) => stixDomainEntitiesNumber(args)
   },
   StixDomainEntity: {
     // eslint-disable-next-line no-underscore-dangle
     __resolveType(obj) {
       if (obj.entity_type) {
-        return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) =>
-          letter.toUpperCase()
-        );
+        return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) => letter.toUpperCase());
       }
       return 'Unknown';
     },
@@ -74,17 +66,13 @@ const stixDomainEntityResolvers = {
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationsAdd: ({ input }) =>
-        stixDomainEntityAddRelations(user, id, input),
-      relationDelete: ({ relationId }) =>
-        stixDomainEntityDeleteRelation(user, id, relationId),
+      relationsAdd: ({ input }) => stixDomainEntityAddRelations(user, id, input),
+      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId),
       importPush: ({ file }) => stixDomainEntityImportPush(user, id, file),
-      exportAsk: ({ format, exportType }) =>
-        stixDomainEntityExportAsk(id, format, exportType),
+      exportAsk: ({ format, exportType }) => stixDomainEntityExportAsk(id, format, exportType),
       exportPush: ({ file }) => stixDomainEntityExportPush(user, id, file)
     }),
-    stixDomainEntityAdd: (_, { input }, { user }) =>
-      addStixDomainEntity(user, input)
+    stixDomainEntityAdd: (_, { input }, { user }) => addStixDomainEntity(user, input)
   },
   Subscription: {
     stixDomainEntity: {

@@ -15,6 +15,7 @@ export const CONNECTOR_INTERNAL_IMPORT_FILE = 'INTERNAL_IMPORT_FILE'; // Files m
 export const CONNECTOR_INTERNAL_ENRICHMENT = 'INTERNAL_ENRICHMENT'; // Entity types to support (Report, Hash, ...) -> enrich-
 export const CONNECTOR_INTERNAL_EXPORT_FILE = 'INTERNAL_EXPORT_FILE'; // Files mime types to generate (application/pdf, ...) -> export-
 
+// region utils
 const completeConnector = connector => {
   return pipe(
     assoc('connector_scope', connector.connector_scope.split(',')),
@@ -22,14 +23,13 @@ const completeConnector = connector => {
     assoc('active', sinceNowInMinutes(connector.updated_at) < 2)
   )(connector);
 };
+// endregion
 
+// region grakn fetch
 export const connectors = () => {
   const query = `match $c isa Connector; get;`;
-  return find(query, ['c']).then(elements =>
-    map(conn => completeConnector(conn.c), elements)
-  );
+  return find(query, ['c']).then(elements => map(conn => completeConnector(conn.c), elements));
 };
-
 export const connectorsFor = async (type, scope, onlyAlive = false) => {
   const connects = await connectors();
   return pipe(
@@ -46,16 +46,15 @@ export const connectorsFor = async (type, scope, onlyAlive = false) => {
     )
   )(connects);
 };
-
 export const connectorsForEnrichment = async (scope, onlyAlive = false) =>
   connectorsFor(CONNECTOR_INTERNAL_ENRICHMENT, scope, onlyAlive);
-
 export const connectorsForExport = async (scope, onlyAlive = false) =>
   connectorsFor(CONNECTOR_INTERNAL_EXPORT_FILE, scope, onlyAlive);
-
 export const connectorsForImport = async (scope, onlyAlive = false) =>
   connectorsFor(CONNECTOR_INTERNAL_IMPORT_FILE, scope, onlyAlive);
+// endregion
 
+// region mutations
 export const pingConnector = async (id, state) => {
   const creation = now();
   await executeWrite(async wTx => {
@@ -98,3 +97,5 @@ export const registerConnector = async ({ id, name, type, scope }) => {
   // Return the connector
   return loadEntityById(id).then(data => completeConnector(data));
 };
+// endregion
+

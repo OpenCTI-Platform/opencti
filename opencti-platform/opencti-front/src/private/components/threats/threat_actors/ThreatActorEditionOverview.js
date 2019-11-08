@@ -211,11 +211,11 @@ class ThreatActorEditionOverviewComponent extends Component {
       commitMutation({
         mutation: threatActorMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.threatActor.id,
           input: {
-            fromRole: 'creator',
-            toId: this.props.threatActor.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toRole: 'creator',
+            toId: value.value,
             through: 'created_by_ref',
           },
         },
@@ -231,11 +231,11 @@ class ThreatActorEditionOverviewComponent extends Component {
       commitMutation({
         mutation: threatActorMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.threatActor.id,
           input: {
-            fromRole: 'creator',
-            toId: this.props.threatActor.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toRole: 'creator',
+            toId: value.value,
             through: 'created_by_ref',
           },
         },
@@ -261,11 +261,11 @@ class ThreatActorEditionOverviewComponent extends Component {
       commitMutation({
         mutation: threatActorMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: this.props.threatActor.id,
           input: {
-            fromRole: 'marking',
-            toId: this.props.threatActor.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toRole: 'marking',
+            toId: head(added).value,
             through: 'object_marking_refs',
           },
         },

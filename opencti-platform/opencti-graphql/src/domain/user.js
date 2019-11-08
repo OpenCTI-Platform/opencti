@@ -2,11 +2,7 @@ import { assoc, head, isNil, join, map, pathOr, tail } from 'ramda';
 import uuid from 'uuid/v4';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
-import {
-  delUserContext,
-  getAccessCache, notify,
-  storeAccessCache
-} from '../database/redis';
+import { delUserContext, getAccessCache, notify, storeAccessCache } from '../database/redis';
 import { AuthenticationFailure, ForbiddenAccess } from '../config/errors';
 import conf, {
   BUS_TOPICS,
@@ -21,21 +17,21 @@ import {
   deleteEntityById,
   escapeString,
   executeWrite,
-  loadEntityById,
-  loadWithConnectedRelations,
   graknNow,
   load,
+  loadEntityById,
+  loadWithConnectedRelations,
   monthFormat,
   paginate,
   prepareDate,
   updateAttribute,
   yearFormat
 } from '../database/grakn';
-import { elPaginate } from '../database/elasticSearch';
+import { elLoadById, elPaginate } from '../database/elasticSearch';
 import { stixDomainEntityDelete } from './stixDomainEntity';
-import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { addCreatedByRef, addMarkingDefs } from './stixEntity';
 
-// Security related
+// region utils
 export const generateOpenCTIWebToken = (tokenValue = uuid()) => ({
   uuid: tokenValue,
   name: OPENCTI_WEB_TOKEN,
@@ -44,7 +40,6 @@ export const generateOpenCTIWebToken = (tokenValue = uuid()) => ({
   revoked: false,
   duration: OPENCTI_DEFAULT_DURATION // 99 years per default
 });
-
 export const setAuthenticationCookie = (token, res) => {
   const creation = moment(token.created);
   const maxDuration = moment.duration(token.duration);
@@ -57,29 +52,29 @@ export const setAuthenticationCookie = (token, res) => {
     });
   }
 };
+// endregion
 
-export const findAll = args =>
-  elPaginate('stix_domain_entities', assoc('type', 'user', args));
+export const findById = userId => {
+  return elLoadById(userId);
+};
+export const findAll = args => {
+  return elPaginate('stix_domain_entities', assoc('type', 'user', args));
+};
 
-export const findById = userId => loadEntityById(userId);
-
+// region grakn fetch
 export const findByEmail = async userEmail => {
-  const result = await load(
-    `match $user isa User, has email "${escapeString(userEmail)}"; get;`,
-    ['user']
-  );
+  const result = await load(`match $user isa User, has email "${escapeString(userEmail)}"; get;`, ['user']);
   if (result) return result.user;
   return null;
 };
-
-export const groups = (userId, args) =>
-  paginate(
+export const groups = (userId, args) => {
+  return paginate(
     `match $group isa Group; 
     $rel(grouping:$group, member:$user) isa membership; 
     $user has internal_id_key "${escapeString(userId)}"`,
     args
   );
-
+};
 export const token = (userId, args, context) => {
   if (userId !== context.user.id) {
     throw new ForbiddenAccess();
@@ -87,54 +82,41 @@ export const token = (userId, args, context) => {
   return loadWithConnectedRelations(
     `match $x isa Token;
     $rel(authorization:$x, client:$client) isa authorize;
-    $client has internal_id_key "${escapeString(
-      userId
-    )}"; get; offset 0; limit 1;`,
+    $client has internal_id_key "${escapeString(userId)}"; get; offset 0; limit 1;`,
     'x',
     'rel'
   ).then(result => result.node.uuid);
 };
-
 export const getTokenId = userId => {
   return loadWithConnectedRelations(
     `match $x isa Token;
     $rel(authorization:$x, client:$client) isa authorize;
-    $client has internal_id_key "${escapeString(
-      userId
-    )}"; get; offset 0; limit 1;`,
+    $client has internal_id_key "${escapeString(userId)}"; get; offset 0; limit 1;`,
     'x',
     'rel'
   ).then(result => pathOr(null, ['node', 'id'], result));
 };
+// endregion
 
 export const addPerson = async (user, newUser) => {
-  const personId = await executeWrite(async wTx => {
-    const internalId = newUser.internal_id_key
-      ? escapeString(newUser.internal_id_key)
-      : uuid();
+  const internalId = newUser.internal_id_key ? escapeString(newUser.internal_id_key) : uuid();
+  await executeWrite(async wTx => {
     const query = `insert $user isa User,
     has internal_id_key "${internalId}",
     has entity_type "user",
-    has stix_id_key "${
-      newUser.stix_id_key
-        ? escapeString(newUser.stix_id_key)
-        : `identity--${uuid()}`
-    }",
+    has stix_id_key "${newUser.stix_id_key ? escapeString(newUser.stix_id_key) : `identity--${uuid()}`}",
     has stix_label "",
     ${
       newUser.alias
-        ? `${join(
-            ' ',
-            map(val => `has alias "${escapeString(val)}",`, tail(newUser.alias))
-          )} has alias "${escapeString(head(newUser.alias))}",`
+        ? `${join(' ', map(val => `has alias "${escapeString(val)}",`, tail(newUser.alias)))} has alias "${escapeString(
+            head(newUser.alias)
+          )}",`
         : 'has alias "",'
     }
     has name "${escapeString(newUser.name)}",
     has description "${escapeString(newUser.description)}",
     has created ${newUser.created ? prepareDate(newUser.created) : graknNow()},
-    has modified ${
-      newUser.modified ? prepareDate(newUser.modified) : graknNow()
-    },
+    has modified ${newUser.modified ? prepareDate(newUser.modified) : graknNow()},
     has revoked false,
     has created_at ${graknNow()},
     has created_at_day "${dayFormat(graknNow())}",
@@ -145,64 +127,32 @@ export const addPerson = async (user, newUser) => {
     logger.debug(`[GRAKN - infer: false] addPerson > ${query}`);
     const userIterator = await wTx.tx.query(query);
     const createUser = await userIterator.next();
-    const createdUserId = await createUser.map().get('user').id;
-
-    // Create associated relations
-    await linkCreatedByRef(wTx, createdUserId, newUser.createdByRef);
-    await linkMarkingDef(wTx, createdUserId, newUser.markingDefinitions);
-    return internalId;
+    return createUser.map().get('user').id;
   });
-  return loadEntityById(personId).then(created => {
-    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
-  });
+  const created = await loadEntityById(internalId);
+  await addCreatedByRef(internalId, newUser.createdByRef);
+  await addMarkingDefs(internalId, newUser.markingDefinitions);
+  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
-
-export const addUser = async (
-  user,
-  newUser,
-  newToken = generateOpenCTIWebToken()
-) => {
+export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken()) => {
+  const internalId = newUser.internal_id_key ? escapeString(newUser.internal_id_key) : uuid();
   const userId = await executeWrite(async wTx => {
-    const internalId = newUser.internal_id_key
-      ? escapeString(newUser.internal_id_key)
-      : uuid();
     const query = `insert $user isa User,
     has internal_id_key "${internalId}",
     has entity_type "user",
-    has stix_id_key "${
-      newUser.stix_id_key
-        ? escapeString(newUser.stix_id_key)
-        : `identity--${uuid()}`
-    }",
+    has stix_id_key "${newUser.stix_id_key ? escapeString(newUser.stix_id_key) : `identity--${uuid()}`}",
     has stix_label "",
     has alias "",
     has name "${escapeString(newUser.name)}",
     has description "${escapeString(newUser.description)}",
     has email "${escapeString(newUser.email)}",
-    ${
-      newUser.password
-        ? `has password "${bcrypt.hashSync(newUser.password.toString())}",`
-        : ''
-    }
+    ${newUser.password ? `has password "${bcrypt.hashSync(newUser.password.toString())}",` : ''}
     has firstname "${escapeString(newUser.firstname)}",
     has lastname "${escapeString(newUser.lastname)}",
-    ${
-      newUser.language
-        ? `has language "${escapeString(newUser.language)}",`
-        : 'has language "auto",'
-    }
+    ${newUser.language ? `has language "${escapeString(newUser.language)}",` : 'has language "auto",'}
     has created ${newUser.created ? prepareDate(newUser.created) : graknNow()},
-    has modified ${
-      newUser.modified ? prepareDate(newUser.modified) : graknNow()
-    },
-    ${
-      newUser.grant
-        ? join(
-            ' ',
-            map(role => `has grant "${escapeString(role)}",`, newUser.grant)
-          )
-        : ''
-    }
+    has modified ${newUser.modified ? prepareDate(newUser.modified) : graknNow()},
+    ${newUser.grant ? join(' ', map(role => `has grant "${escapeString(role)}",`, newUser.grant)) : ''}
     has revoked false,
     has created_at ${graknNow()},
     has created_at_day "${dayFormat(graknNow())}",
@@ -211,11 +161,6 @@ export const addUser = async (
     has updated_at ${graknNow()};
   `;
     logger.debug(`[GRAKN - infer: false] addUser > ${query}`);
-    const userIterator = await wTx.tx.query(query);
-
-    const createUser = await userIterator.next();
-    const createdUserId = await createUser.map().get('user').id;
-    await linkCreatedByRef(wTx, createdUserId, user.createdByRef);
 
     const tokenIterator = await wTx.tx.query(`insert $token isa Token,
     has internal_id_key "${uuid()}",
@@ -235,20 +180,16 @@ export const addUser = async (
     await wTx.tx.query(`match $user isa User, has email "${newUser.email}"; 
                    $token isa Token, has uuid "${newToken.uuid}"; 
                    insert (client: $user, authorization: $token) isa authorize, has internal_id_key "${uuid()}";`);
-
-    return internalId;
   });
-  return loadEntityById(userId).then(created => {
-    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
-  });
+  const created = await loadEntityById(userId);
+  await addCreatedByRef(internalId, user.createdByRef);
+  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 
 // User related
 export const loginFromProvider = async (email, name) => {
   const result = await load(
-    `match $client isa User, has email "${escapeString(
-      email
-    )}"; (authorization:$token, client:$client); get;`,
+    `match $client isa User, has email "${escapeString(email)}"; (authorization:$token, client:$client); get;`,
     ['client', 'token']
   );
   if (isNil(result)) {
@@ -263,12 +204,9 @@ export const loginFromProvider = async (email, name) => {
   }
   return Promise.resolve(result.token);
 };
-
 export const login = async (email, password) => {
   const result = await load(
-    `match $client isa User, has email "${escapeString(
-      email
-    )}"; (authorization:$token, client:$client); get;`,
+    `match $client isa User, has email "${escapeString(email)}"; (authorization:$token, client:$client); get;`,
     ['client', 'token']
   );
   if (isNil(result)) {
@@ -281,17 +219,40 @@ export const login = async (email, password) => {
   }
   return Promise.resolve(result.token);
 };
-
 export const logout = async (user, res) => {
   res.clearCookie(OPENCTI_TOKEN);
   await delUserContext(user);
   return user.id;
 };
 
-export const userRenewToken = async (
-  userId,
-  newToken = generateOpenCTIWebToken()
-) => {
+export const userEditField = (user, userId, input) => {
+  const { key } = input;
+  const value = key === 'password' ? [bcrypt.hashSync(head(input.value).toString(), 10)] : input.value;
+  const finalInput = { key, value };
+  return executeWrite(wTx => {
+    return updateAttribute(userId, finalInput, wTx);
+  }).then(async () => {
+    const userToEdit = await loadEntityById(userId);
+    return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
+  });
+};
+export const meEditField = (user, userId, input) => {
+  const { key } = input;
+  if (key === 'grant') {
+    throw new ForbiddenAccess();
+  }
+  return userEditField(user, userId, input);
+};
+export const userDelete = async userId => {
+  const tokenId = await getTokenId(userId);
+  if (tokenId) {
+    await deleteEntityById(tokenId);
+  }
+  return stixDomainEntityDelete(userId);
+};
+
+// Token related
+export const userRenewToken = async (userId, newToken = generateOpenCTIWebToken()) => {
   await executeWrite(async wTx => {
     await wTx.tx.query(
       `match $user has internal_id_key "${escapeString(userId)}";
@@ -321,39 +282,6 @@ export const userRenewToken = async (
   });
   return loadEntityById(userId);
 };
-
-export const userEditField = (user, userId, input) => {
-  const { key } = input;
-  const value =
-    key === 'password'
-      ? [bcrypt.hashSync(head(input.value).toString(), 10)]
-      : input.value;
-  const finalInput = { key, value };
-  return executeWrite(wTx => {
-    return updateAttribute(userId, finalInput, wTx);
-  }).then(async () => {
-    const userToEdit = await loadEntityById(userId);
-    return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
-  });
-};
-
-export const meEditField = (user, userId, input) => {
-  const { key } = input;
-  if (key === 'grant') {
-    throw new ForbiddenAccess();
-  }
-  return userEditField(user, userId, input);
-};
-
-export const userDelete = async userId => {
-  const tokenId = await getTokenId(userId);
-  if (tokenId) {
-    await deleteEntityById(tokenId);
-  }
-  return stixDomainEntityDelete(userId);
-};
-
-// Token related
 export const findByTokenUUID = async tokenValue => {
   let result = await getAccessCache(tokenValue);
   if (!result) {

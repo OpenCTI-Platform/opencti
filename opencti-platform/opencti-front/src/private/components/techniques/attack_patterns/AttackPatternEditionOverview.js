@@ -35,7 +35,7 @@ import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -116,7 +116,7 @@ const attackPatternMutationRelationDelete = graphql`
   }
 `;
 
-const attackPatternValidation = t => Yup.object().shape({
+const attackPatternValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string()
     .min(3, t('The value is too short'))
@@ -142,7 +142,7 @@ class AttackPatternEditionOverviewComponent extends Component {
     }).then((data) => {
       const identities = pipe(
         pathOr([], ['identities', 'edges']),
-        map(n => ({ label: n.node.name, value: n.node.id })),
+        map((n) => ({ label: n.node.name, value: n.node.id })),
       )(data);
       this.setState({ identities: union(this.state.identities, identities) });
     });
@@ -163,7 +163,7 @@ class AttackPatternEditionOverviewComponent extends Component {
       const killChainPhases = pipe(
         pathOr([], ['killChainPhases', 'edges']),
         sortWith([ascend(path(['node', 'phase_order']))]),
-        map(n => ({
+        map((n) => ({
           label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
           value: n.node.id,
         })),
@@ -180,7 +180,7 @@ class AttackPatternEditionOverviewComponent extends Component {
     }).then((data) => {
       const markingDefinitions = pipe(
         pathOr([], ['markingDefinitions', 'edges']),
-        map(n => ({ label: n.node.definition, value: n.node.id })),
+        map((n) => ({ label: n.node.definition, value: n.node.id })),
       )(data);
       this.setState({
         markingDefinitions: union(
@@ -268,7 +268,7 @@ class AttackPatternEditionOverviewComponent extends Component {
     const { attackPattern } = this.props;
     const currentKillChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
-      map(n => ({
+      map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
         relationId: n.relation.id,
@@ -308,7 +308,7 @@ class AttackPatternEditionOverviewComponent extends Component {
     const { attackPattern } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
-      map(n => ({
+      map((n) => ({
         label: n.node.definition,
         value: n.node.id,
         relationId: n.relation.id,
@@ -322,11 +322,11 @@ class AttackPatternEditionOverviewComponent extends Component {
       commitMutation({
         mutation: attackPatternMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: this.props.attackPattern.id,
           input: {
-            fromRole: 'marking',
-            toId: this.props.attackPattern.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toRole: 'marking',
+            toId: head(added).value,
             through: 'object_marking_refs',
           },
         },
@@ -365,7 +365,7 @@ class AttackPatternEditionOverviewComponent extends Component {
       };
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
-      map(n => ({
+      map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
         relationId: n.relation.id,
@@ -373,7 +373,7 @@ class AttackPatternEditionOverviewComponent extends Component {
     )(attackPattern);
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
-      map(n => ({
+      map((n) => ({
         label: n.node.definition,
         value: n.node.id,
         relationId: n.relation.id,

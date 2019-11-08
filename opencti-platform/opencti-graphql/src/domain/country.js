@@ -4,43 +4,38 @@ import {
   dayFormat,
   escapeString,
   executeWrite,
-  loadEntityById,
   graknNow,
+  loadEntityById,
   monthFormat,
   prepareDate,
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { elPaginate } from '../database/elasticSearch';
-import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { elLoadById, elPaginate } from '../database/elasticSearch';
+import { addCreatedByRef, addMarkingDefs } from './stixEntity';
 import { notify } from '../database/redis';
 
-export const findAll = args =>
-  elPaginate('stix_domain_entities', assoc('type', 'country', args));
-
-export const findById = countryId => loadEntityById(countryId);
+export const findById = countryId => {
+  return elLoadById(countryId);
+};
+export const findAll = args => {
+  return elPaginate('stix_domain_entities', assoc('type', 'country', args));
+};
 
 export const addCountry = async (user, country) => {
-  const countryId = await executeWrite(async wTx => {
-    const internalId = country.internal_id_key
-      ? escapeString(country.internal_id_key)
-      : uuid();
+  const internalId = country.internal_id_key ? escapeString(country.internal_id_key) : uuid();
+  await executeWrite(async wTx => {
     const now = graknNow();
     const countryIterator = await wTx.tx.query(`insert $country isa Country,
     has internal_id_key "${internalId}",
     has entity_type "country",
-    has stix_id_key "${
-      country.stix_id_key
-        ? escapeString(country.stix_id_key)
-        : `identity--${uuid()}`
-    }",
+    has stix_id_key "${country.stix_id_key ? escapeString(country.stix_id_key) : `identity--${uuid()}`}",
     has stix_label "",
     ${
       country.alias
-        ? `${join(
-            ' ',
-            map(val => `has alias "${escapeString(val)}",`, tail(country.alias))
-          )} has alias "${escapeString(head(country.alias))}",`
+        ? `${join(' ', map(val => `has alias "${escapeString(val)}",`, tail(country.alias)))} has alias "${escapeString(
+            head(country.alias)
+          )}",`
         : 'has alias "",'
     }
     has name "${escapeString(country.name)}",
@@ -55,14 +50,10 @@ export const addCountry = async (user, country) => {
     has updated_at ${now};
   `);
     const createCountry = await countryIterator.next();
-    const createdCountryId = await createCountry.map().get('country').id;
-
-    // Create associated relations
-    await linkCreatedByRef(wTx, createdCountryId, country.createdByRef);
-    await linkMarkingDef(wTx, createdCountryId, country.markingDefinitions);
-    return internalId;
+    return createCountry.map().get('country').id;
   });
-  return loadEntityById(countryId).then(created => {
-    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
-  });
+  const created = await loadEntityById(internalId);
+  await addCreatedByRef(internalId, country.createdByRef);
+  await addMarkingDefs(internalId, country.markingDefinitions);
+  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };

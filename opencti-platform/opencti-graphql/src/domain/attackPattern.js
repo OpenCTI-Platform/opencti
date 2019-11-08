@@ -4,16 +4,16 @@ import {
   dayFormat,
   escapeString,
   executeWrite,
-  loadEntityById,
   graknNow,
+  loadEntityById,
   monthFormat,
   paginate,
   prepareDate,
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
-import { elPaginate } from '../database/elasticSearch';
-import { linkCreatedByRef, linkKillChains, linkMarkingDef } from './stixEntity';
+import { elLoadById, elPaginate } from '../database/elasticSearch';
+import { addCreatedByRef, addKillChains, addMarkingDefs } from './stixEntity';
 import { notify } from '../database/redis';
 
 export const findAll = args => {
@@ -27,10 +27,7 @@ export const findAll = args => {
       'x'
     );
   }
-  return elPaginate(
-    'stix_domain_entities',
-    assoc('type', 'attack-pattern', args)
-  );
+  return elPaginate('stix_domain_entities', assoc('type', 'attack-pattern', args));
 };
 
 export const findByCourseOfAction = args => {
@@ -42,30 +39,24 @@ export const findByCourseOfAction = args => {
   );
 };
 
-export const findById = attackPatternId => loadEntityById(attackPatternId);
+export const findById = attackPatternId => {
+  return elLoadById(attackPatternId);
+};
 
 export const addAttackPattern = async (user, attackPattern) => {
-  const patternId = await executeWrite(async wTx => {
-    const internalId = attackPattern.internal_id_key
-      ? escapeString(attackPattern.internal_id_key)
-      : uuid();
+  const internalId = attackPattern.internal_id_key ? escapeString(attackPattern.internal_id_key) : uuid();
+  await executeWrite(async wTx => {
+    const stixId = attackPattern.stix_id_key ? escapeString(attackPattern.stix_id_key) : `attack-pattern--${uuid()}`;
     const query = `insert $attackPattern isa Attack-Pattern,
     has internal_id_key "${internalId}",
     has entity_type "attack-pattern",
-    has stix_id_key "${
-      attackPattern.stix_id_key
-        ? escapeString(attackPattern.stix_id_key)
-        : `attack-pattern--${uuid()}`
-    }",
+    has stix_id_key "${stixId}",
     has stix_label "",
     ${
       attackPattern.alias
         ? `${join(
             ' ',
-            map(
-              val => `has alias "${escapeString(val)}",`,
-              tail(attackPattern.alias)
-            )
+            map(val => `has alias "${escapeString(val)}",`, tail(attackPattern.alias))
           )} has alias "${escapeString(head(attackPattern.alias))}",`
         : 'has alias "",'
     }
@@ -73,13 +64,7 @@ export const addAttackPattern = async (user, attackPattern) => {
     has description "${escapeString(attackPattern.description)}",
     ${
       attackPattern.platform
-        ? join(
-            ' ',
-            map(
-              platform => `has platform "${escapeString(platform)}",`,
-              attackPattern.platform
-            )
-          )
+        ? join(' ', map(platform => `has platform "${escapeString(platform)}",`, attackPattern.platform))
         : ''
     }
     ${
@@ -87,21 +72,14 @@ export const addAttackPattern = async (user, attackPattern) => {
         ? join(
             ' ',
             map(
-              requiredPermission =>
-                `has required_permission "${escapeString(
-                  requiredPermission
-                )}",`,
+              requiredPermission => `has required_permission "${escapeString(requiredPermission)}",`,
               attackPattern.required_permission
             )
           )
         : ''
     }
-    has created ${
-      attackPattern.created ? prepareDate(attackPattern.created) : graknNow()
-    },
-    has modified ${
-      attackPattern.modified ? prepareDate(attackPattern.modified) : graknNow()
-    },
+    has created ${attackPattern.created ? prepareDate(attackPattern.created) : graknNow()},
+    has modified ${attackPattern.modified ? prepareDate(attackPattern.modified) : graknNow()},
     has revoked false,
     has created_at ${graknNow()},
     has created_at_day "${dayFormat(graknNow())}",
@@ -112,19 +90,15 @@ export const addAttackPattern = async (user, attackPattern) => {
     logger.debug(`[GRAKN - infer: false] addAttackPattern > ${query}`);
     const attackPatternIterator = await wTx.tx.query(query);
     const createAttack = await attackPatternIterator.next();
-    const attackPatternId = await createAttack.map().get('attackPattern').id;
-
-    // Create associated relations
-    await linkCreatedByRef(wTx, attackPatternId, attackPattern.createdByRef);
-    await linkMarkingDef(
-      wTx,
-      attackPatternId,
-      attackPattern.markingDefinitions
-    );
-    await linkKillChains(wTx, attackPatternId, attackPattern.killChainPhases);
-    return internalId;
+    return createAttack.map().get('attackPattern').id;
+    // await linkCreatedByRef(wTx, attackPatternId, attackPattern.createdByRef);
+    // await linkMarkingDef(wTx, attackPatternId, attackPattern.markingDefinitions);
+    // await linkKillChains(wTx, attackPatternId, attackPattern.killChainPhases);
+    // return internalId;
   });
-  return loadEntityById(patternId).then(created => {
-    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
-  });
+  const attack = await loadEntityById(internalId);
+  await addCreatedByRef(internalId, attackPattern.createdByRef);
+  await addMarkingDefs(internalId, attackPattern.markingDefinitions);
+  await addKillChains(internalId, attackPattern.killChainPhases);
+  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, attack, user);
 };

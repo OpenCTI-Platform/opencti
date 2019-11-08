@@ -4,16 +4,18 @@ import {
   deleteEntityById,
   escapeString,
   executeWrite,
-  loadEntityById,
   graknNow,
+  loadEntityById,
   monthFormat,
   paginate,
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { addCreatedByRef, addMarkingDefs } from './stixEntity';
 import { notify } from '../database/redis';
 
+// region grakn fetch
+export const findById = groupId => loadEntityById(groupId);
 export const findAll = args => {
   return paginate(
     `match $g isa Group ${
@@ -27,9 +29,6 @@ export const findAll = args => {
     args
   );
 };
-
-export const findById = groupId => loadEntityById(groupId);
-
 export const members = (groupId, args) => {
   return paginate(
     `match $user isa User; 
@@ -38,7 +37,6 @@ export const members = (groupId, args) => {
     args
   );
 };
-
 export const permissions = (groupId, args) => {
   return paginate(
     `match $marking isa Marking-Definition; 
@@ -47,12 +45,11 @@ export const permissions = (groupId, args) => {
     args
   );
 };
+// endregion
 
 export const addGroup = async (user, group) => {
-  const groupId = await executeWrite(async wTx => {
-    const internalId = group.internal_id_key
-      ? escapeString(group.internal_id_key)
-      : uuid();
+  const internalId = group.internal_id_key ? escapeString(group.internal_id_key) : uuid();
+  await executeWrite(async wTx => {
     const groupIterator = await wTx.tx.query(`insert $group isa Group,
     has internal_id_key "${internalId}",
     has entity_type "group",
@@ -65,16 +62,12 @@ export const addGroup = async (user, group) => {
     has updated_at ${graknNow()};
   `);
     const createGroup = await groupIterator.next();
-    const createdGroupId = await createGroup.map().get('group').id;
-
-    // Create associated relations
-    await linkCreatedByRef(wTx, createdGroupId, group.createdByRef);
-    await linkMarkingDef(wTx, createdGroupId, group.markingDefinitions);
-    return internalId;
+    return createGroup.map().get('group').id;
   });
-  return loadEntityById(groupId).then(created =>
-    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
-  );
+  const created = await loadEntityById(internalId);
+  await addCreatedByRef(internalId, group.createdByRef);
+  await addMarkingDefs(internalId, group.markingDefinitions);
+  notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 
 export const groupDelete = groupId => deleteEntityById(groupId);

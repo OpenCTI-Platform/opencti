@@ -2,14 +2,9 @@ import uuid from 'uuid/v4';
 import { assoc, filter, map, pipe } from 'ramda';
 import moment from 'moment';
 import { now, loadEntityById, sinceNowInMinutes } from '../database/grakn';
-import {
-  elDeleteByField,
-  elIndex,
-  INDEX_WORK_JOBS,
-  elLoadById,
-  elPaginate
-} from '../database/elasticSearch';
+import { elDeleteByField, elIndex, INDEX_WORK_JOBS, elLoadById, elPaginate } from '../database/elasticSearch';
 
+// region utils
 export const workToExportFile = work => {
   return {
     id: work.internal_id_key,
@@ -23,6 +18,7 @@ export const workToExportFile = work => {
     }
   };
 };
+// endregion
 
 export const connectorForWork = async id => {
   const work = await elLoadById(id, INDEX_WORK_JOBS);
@@ -45,8 +41,7 @@ export const jobsForWork = async id => {
 export const computeWorkStatus = async id => {
   const jobs = await jobsForWork(id);
   // Status can be progress / partial / complete
-  const isProgress = job =>
-    job.job_status === 'wait' || job.job_status === 'progress';
+  const isProgress = job => job.job_status === 'wait' || job.job_status === 'progress';
   const nbProgress = filter(job => isProgress(job), jobs).length;
   if (nbProgress > 0) return 'progress';
   const nbErrors = filter(l => l.job_status === 'error', jobs).length;
@@ -82,15 +77,10 @@ export const loadExportWorksAsProgressFiles = async entityId => {
   // Filter if all jobs completed
   const worksWithStatus = await Promise.all(
     map(w => {
-      return computeWorkStatus(w.work_id).then(status =>
-        assoc('status', status, w)
-      );
+      return computeWorkStatus(w.work_id).then(status => assoc('status', status, w));
     }, works)
   );
-  const onlyProgressWorks = filter(
-    w => w.status === 'progress',
-    worksWithStatus
-  );
+  const onlyProgressWorks = filter(w => w.status === 'progress', worksWithStatus);
   return map(item => workToExportFile(item), onlyProgressWorks);
 };
 

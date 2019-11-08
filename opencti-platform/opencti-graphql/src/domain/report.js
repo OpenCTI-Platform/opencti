@@ -6,9 +6,9 @@ import {
   escape,
   escapeString,
   executeWrite,
-  loadEntityById,
   getSingleValueNumber,
   graknNow,
+  loadEntityById,
   monthFormat,
   paginate,
   paginateRelationships,
@@ -17,20 +17,21 @@ import {
   yearFormat
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { elPaginate } from '../database/elasticSearch';
-import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { elLoadById, elPaginate } from '../database/elasticSearch';
+import { addCreatedByRef, addMarkingDefs } from './stixEntity';
 import { notify } from '../database/redis';
 
+export const findById = reportId => {
+  return elLoadById(reportId);
+};
+
+// region grakn fetch
 export const findAll = args => {
   if (args.orderBy === 'createdByRef') {
     const finalArgs = assoc('orderBy', 'name', args);
     return paginate(
       `match $r isa Report; 
-      ${
-        args.reportClass
-          ? `$r has report_class "${escapeString(args.reportClass)}";`
-          : ''
-      } 
+      ${args.reportClass ? `$r has report_class "${escapeString(args.reportClass)}";` : ''} 
       $rel(creator:$x, so:$r) isa created_by_ref`,
       finalArgs,
       true,
@@ -39,17 +40,14 @@ export const findAll = args => {
   }
   if (args.name && args.published) {
     return paginate(
-      `match $r isa Report, has name "${escapeString(
-        args.name
-      )}", has published ${prepareDate(args.published)}`,
+      `match $r isa Report, has name "${escapeString(args.name)}", has published ${prepareDate(args.published)}`,
       args
     );
   }
   return elPaginate('stix_domain_entities', assoc('type', 'report', args));
 };
-
-export const reportsTimeSeries = args =>
-  timeSeries(
+export const reportsTimeSeries = args => {
+  return timeSeries(
     `match $x isa Report${
       args.reportClass
         ? `; 
@@ -58,7 +56,7 @@ export const reportsTimeSeries = args =>
     }`,
     args
   );
-
+};
 export const reportsNumber = args => ({
   count: getSingleValueNumber(
     `match $x isa Report;
@@ -88,17 +86,12 @@ export const reportsNumber = args => ({
     count;`
   )
 });
-
 export const findByEntity = args => {
   if (args.orderBy === 'createdByRef') {
     const finalArgs = assoc('orderBy', 'name', args);
     return paginate(
       `match $r isa Report; 
-      ${
-        args.reportClass
-          ? `$r has report_class "${escapeString(args.reportClass)};"`
-          : ''
-      }
+      ${args.reportClass ? `$r has report_class "${escapeString(args.reportClass)};"` : ''}
       ${
         args.search
           ? `$r has name $name; $r has description $desc; { $name contains "${escapeString(
@@ -117,11 +110,7 @@ export const findByEntity = args => {
   }
   return paginate(
     `match $r isa Report; 
-    ${
-      args.reportClass
-        ? `$r has report_class "${escapeString(args.reportClass)}";`
-        : ''
-    }
+    ${args.reportClass ? `$r has report_class "${escapeString(args.reportClass)}";` : ''}
     ${
       args.search
         ? `$r has name $name; $r has description $desc; { $name contains "${escapeString(
@@ -137,7 +126,6 @@ export const findByEntity = args => {
     true
   );
 };
-
 export const findByAuthor = args => {
   return paginate(
     `match $r isa Report; 
@@ -154,9 +142,8 @@ export const findByAuthor = args => {
     true
   );
 };
-
-export const reportsTimeSeriesByEntity = args =>
-  timeSeries(
+export const reportsTimeSeriesByEntity = args => {
+  return timeSeries(
     `match $x isa Report;
     $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
     $so has internal_id_key "${escapeString(args.objectId)}" ${
@@ -167,9 +154,9 @@ export const reportsTimeSeriesByEntity = args =>
     }`,
     args
   );
-
-export const reportsTimeSeriesByAuthor = args =>
-  timeSeries(
+};
+export const reportsTimeSeriesByAuthor = args => {
+  return timeSeries(
     `match $x isa Report;
     $rel(so:$x, creator:$so) isa created_by_ref; 
     $so has internal_id_key "${escapeString(args.authorId)}" ${
@@ -180,7 +167,7 @@ export const reportsTimeSeriesByAuthor = args =>
     }`,
     args
   );
-
+};
 export const reportsNumberByEntity = args => ({
   count: getSingleValueNumber(
     `match $x isa Report;
@@ -213,7 +200,6 @@ export const reportsNumberByEntity = args => ({
     count;`
   )
 });
-
 export const reportsDistributionByEntity = args => {
   const { limit = 10 } = args;
   return distribution(
@@ -228,49 +214,40 @@ export const reportsDistributionByEntity = args => {
     return take(limit, sortWith([descend(prop('value'))])(result));
   });
 };
-
-export const findById = reportId => loadEntityById(reportId);
-
-export const objectRefs = (reportId, args) =>
-  paginate(
+export const objectRefs = (reportId, args) => {
+  return paginate(
     `match $so isa Stix-Domain-Entity;
     $rel(so:$so, knowledge_aggregation:$r) isa object_refs;
     $r has internal_id_key "${escapeString(reportId)}"`,
     args
   );
-
-export const observableRefs = (reportId, args) =>
-  paginate(
+};
+export const observableRefs = (reportId, args) => {
+  return paginate(
     `match $so isa Stix-Observable; 
     $rel(so:$so, knowledge_aggregation:$r) isa object_refs; 
     $r has internal_id_key "${escapeString(reportId)}"`,
     args
   );
-
-export const relationRefs = (reportId, args) =>
-  paginateRelationships(
-    `match $rel($from, $to) isa ${
-      args.relationType ? args.relationType : 'stix_relation'
-    }; 
+};
+export const relationRefs = (reportId, args) => {
+  return paginateRelationships(
+    `match $rel($from, $to) isa ${args.relationType ? args.relationType : 'stix_relation'}; 
     $extraRel(so:$rel, knowledge_aggregation:$r) isa object_refs; 
     $r has internal_id_key "${escapeString(reportId)}"`,
     args,
     'extraRel'
   );
+};
+// endregion
 
 export const addReport = async (user, report) => {
-  const reportId = await executeWrite(async wTx => {
-    const internalId = report.internal_id_key
-      ? escapeString(report.internal_id_key)
-      : uuid();
+  const internalId = report.internal_id_key ? escapeString(report.internal_id_key) : uuid();
+  await executeWrite(async wTx => {
     const reportIterator = await wTx.tx.query(`insert $report isa Report,
     has internal_id_key "${internalId}",
     has entity_type "report",
-    has stix_id_key "${
-      report.stix_id_key
-        ? escapeString(report.stix_id_key)
-        : `report--${uuid()}`
-    }",
+    has stix_id_key "${report.stix_id_key ? escapeString(report.stix_id_key) : `report--${uuid()}`}",
     has stix_label "",
     has alias "",
     has name "${escapeString(report.name)}",
@@ -281,11 +258,7 @@ export const addReport = async (user, report) => {
     has published_year "${yearFormat(report.published)}",
     has report_class "${escapeString(report.report_class)}",
     has object_status ${report.object_status ? report.object_status : 0},
-    has source_confidence_level ${
-      report.source_confidence_level
-        ? escape(report.source_confidence_level)
-        : 3
-    },
+    has source_confidence_level ${report.source_confidence_level ? escape(report.source_confidence_level) : 3},
     has graph_data "${escapeString(report.graph_data)}",
     has created ${report.created ? prepareDate(report.created) : graknNow()},
     has modified ${report.modified ? prepareDate(report.modified) : graknNow()},
@@ -297,14 +270,10 @@ export const addReport = async (user, report) => {
     has updated_at ${graknNow()};
   `);
     const createdReport = await reportIterator.next();
-    const createdReportId = await createdReport.map().get('report').id;
-
-    // Create associated relations
-    await linkCreatedByRef(wTx, createdReportId, report.createdByRef);
-    await linkMarkingDef(wTx, createdReportId, report.markingDefinitions);
-    return internalId;
+    return createdReport.map().get('report').id;
   });
-  return loadEntityById(reportId).then(created => {
-    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
-  });
+  const created = await loadEntityById(internalId);
+  await addCreatedByRef(internalId, report.createdByRef);
+  await addMarkingDefs(internalId, report.markingDefinitions);
+  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
