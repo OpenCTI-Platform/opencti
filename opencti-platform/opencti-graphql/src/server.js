@@ -10,7 +10,7 @@ import { formatError as apolloFormatError } from 'apollo-errors';
 import { GraphQLError } from 'graphql';
 import compression from 'compression';
 import helmet from 'helmet';
-import { dissocPath, filter, isEmpty, map, not, pipe } from 'ramda';
+import { dissocPath, filter, isEmpty, map, not, pipe, pathOr } from 'ramda';
 import path from 'path';
 import nconf from 'nconf';
 import conf, {
@@ -22,7 +22,13 @@ import conf, {
 import passport, { ACCESS_PROVIDERS } from './config/security';
 import { authentication, setAuthenticationCookie } from './domain/user';
 import schema from './schema/schema';
-import { buildValidationError, TYPE_AUTH, Unknown } from './config/errors';
+import {
+  buildValidationError,
+  TYPE_AUTH,
+  LEVEL_ERROR,
+  LEVEL_WARNING,
+  Unknown
+} from './config/errors';
 import init from './initialization';
 import { downloadFile, loadFile } from './database/minio';
 
@@ -115,7 +121,6 @@ const server = new ApolloServer({
   },
   tracing: DEV_MODE,
   formatError: error => {
-    logger.error('[OPENCTI] Technical error > ', error); // Log the complete error.
     let e = apolloFormatError(error);
     if (e instanceof GraphQLError) {
       const errorCode = e.extensions.exception.code;
@@ -126,6 +131,12 @@ const server = new ApolloServer({
       } else {
         e = apolloFormatError(new Unknown());
       }
+    }
+    const errorLevel = pathOr(LEVEL_ERROR, ['data', 'level'], e);
+    if (errorLevel === LEVEL_WARNING) {
+      logger.warn('[OPENCTI] Technical error > ', error); // Log the complete error.
+    } else {
+      logger.error('[OPENCTI] Technical error > ', error); // Log the complete error.
     }
     // Remove the exception stack in production.
     return DEV_MODE ? e : dissocPath(['extensions', 'exception'], e);
