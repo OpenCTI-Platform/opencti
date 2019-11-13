@@ -5,6 +5,7 @@ import io
 from typing import List
 
 import requests
+import urllib3
 import datetime
 import dateutil.parser
 import json
@@ -13,8 +14,10 @@ import logging
 
 from pycti.api.opencti_api_connector import OpenCTIApiConnector
 from pycti.api.opencti_api_job import OpenCTIApiJob
-from pycti.utils.constants import ObservableTypes
+from pycti.utils.constants import ObservableTypes, IdentityTypes
 from pycti.utils.opencti_stix2 import OpenCTIStix2
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class File:
@@ -30,7 +33,7 @@ class OpenCTIApiClient:
         :param token: The API key
     """
 
-    def __init__(self, url, token, log_level='info', ssl_verify=True):
+    def __init__(self, url, token, log_level='info', ssl_verify=False):
         # Check configuration
         self.ssl_verify = ssl_verify
         if url is None or len(token) == 0:
@@ -138,6 +141,8 @@ class OpenCTIApiClient:
             data['createdByRef'] = data['createdByRef']['node']
         if 'markingDefinitions' in data:
             data['markingDefinitions'] = self.parse_multiple(data['markingDefinitions'])
+        if 'tags' in data:
+            data['tags'] = self.parse_multiple(data['tags'])
         if 'killChainPhases' in data:
             data['killChainPhases'] = self.parse_multiple(data['killChainPhases'])
         if 'externalReferences' in data:
@@ -509,7 +514,8 @@ class OpenCTIApiClient:
 
     def get_stix_relations(self, from_id=None, to_id=None, type='stix_relation', first_seen=None, last_seen=None,
                            inferred=False):
-        logging.info('Getting relations, from: ' + from_id + ', to: ' + to_id + '...')
+        logging.info(
+            'Getting relations, from: ' + from_id if from_id else 'None' + ', to: ' + to_id if to_id else 'None' + '...')
         if type == 'revoked-by':
             return []
 
@@ -547,10 +553,12 @@ class OpenCTIApiClient:
                             from {
                                 id
                                 stix_id_key
+                                entity_type
                             }
                             to {
                                 id
                                 stix_id_key
+                                entity_type
                             }
                             createdByRef {
                                 node {
@@ -774,6 +782,19 @@ class OpenCTIApiClient:
         """
         result = self.query(query, {'id': id})
         return result['data']['stixObservable']
+
+    def get_marking_definition_by_id(self, id):
+        query = """
+             query MarkingDefinition($id: String!) {
+                 markingDefinition(id: $id) {
+                     id
+                     definition_type
+                     level
+                 }
+             }
+         """
+        result = self.query(query, {'id': id})
+        return result['data']['markingDefinition']
 
     def get_marking_definition_by_stix_id_key(self, stix_id_key):
         query = """
@@ -1072,6 +1093,16 @@ class OpenCTIApiClient:
                             }
                         }
                     }
+                    tags {
+                        edges {
+                            node {
+                                id
+                                tag_type
+                                value
+                                color
+                            }
+                        }
+                    }
                 }
             }
         """
@@ -1119,6 +1150,16 @@ class OpenCTIApiClient:
                                         color
                                         created
                                         modified
+                                    }
+                                }
+                            }
+                            tags {
+                                edges {
+                                    node {
+                                        id
+                                        tag_type
+                                        value
+                                        color
                                     }
                                 }
                             }
@@ -1242,6 +1283,16 @@ class OpenCTIApiClient:
                             }
                         }
                     }
+                    tags {
+                        edges {
+                            node {
+                                id
+                                tag_type
+                                value
+                                color
+                            }
+                        }
+                    }
                 }
             }
         """
@@ -1295,6 +1346,16 @@ class OpenCTIApiClient:
                                         color
                                         created
                                         modified
+                                    }
+                                }
+                            }
+                            tags {
+                                edges {
+                                    node {
+                                        id
+                                        tag_type
+                                        value
+                                        color
                                     }
                                 }
                             }
@@ -1449,6 +1510,16 @@ class OpenCTIApiClient:
                             }
                         }
                     }
+                    tags {
+                        edges {
+                            node {
+                                id
+                                tag_type
+                                value
+                                color
+                            }
+                        }
+                    }
                 }
             }
         """
@@ -1502,6 +1573,16 @@ class OpenCTIApiClient:
                                         color
                                         created
                                         modified
+                                    }
+                                }
+                            }
+                            tags {
+                                edges {
+                                    node {
+                                        id
+                                        tag_type
+                                        value
+                                        color
                                     }
                                 }
                             }
@@ -1662,6 +1743,16 @@ class OpenCTIApiClient:
                             }
                         }
                     }
+                    tags {
+                        edges {
+                            node {
+                                id
+                                tag_type
+                                value
+                                color
+                            }
+                        }
+                    }
                 }
             }
         """
@@ -1711,6 +1802,16 @@ class OpenCTIApiClient:
                                         color
                                         created
                                         modified
+                                    }
+                                }
+                            }
+                            tags {
+                                edges {
+                                    node {
+                                        id
+                                        tag_type
+                                        value
+                                        color
                                     }
                                 }
                             }
@@ -1855,6 +1956,16 @@ class OpenCTIApiClient:
                             }
                         }
                     }
+                    tags {
+                        edges {
+                            node {
+                                id
+                                tag_type
+                                value
+                                color
+                            }
+                        }
+                    }
                 }
             }
         """
@@ -1904,6 +2015,16 @@ class OpenCTIApiClient:
                                         color
                                         created
                                         modified
+                                    }
+                                }
+                            }
+                            tags {
+                                edges {
+                                    node {
+                                        id
+                                        tag_type
+                                        value
+                                        color
                                     }
                                 }
                             }
@@ -2045,6 +2166,16 @@ class OpenCTIApiClient:
                             }
                         }
                     }
+                    tags {
+                        edges {
+                            node {
+                                id
+                                tag_type
+                                value
+                                color
+                            }
+                        }
+                    }
                     killChainPhases {
                         edges {
                             node {
@@ -2105,6 +2236,16 @@ class OpenCTIApiClient:
                                         color
                                         created
                                         modified
+                                    }
+                                }
+                            }
+                            tags {
+                                edges {
+                                    node {
+                                        id
+                                        tag_type
+                                        value
+                                        color
                                     }
                                 }
                             }
@@ -2225,6 +2366,16 @@ class OpenCTIApiClient:
                             }
                         }
                     }
+                    tags {
+                        edges {
+                            node {
+                                id
+                                tag_type
+                                value
+                                color
+                            }
+                        }
+                    }
                 }
             }
         """
@@ -2272,6 +2423,16 @@ class OpenCTIApiClient:
                                         color
                                         created
                                         modified
+                                    }
+                                }
+                            }
+                            tags {
+                                edges {
+                                    node {
+                                        id
+                                        tag_type
+                                        value
+                                        color
                                     }
                                 }
                             }
@@ -2377,6 +2538,16 @@ class OpenCTIApiClient:
                             }
                         }
                     }
+                    tags {
+                        edges {
+                            node {
+                                id
+                                tag_type
+                                value
+                                color
+                            }
+                        }
+                    }
                 }
             }
         """
@@ -2423,6 +2594,16 @@ class OpenCTIApiClient:
                                         color
                                         created
                                         modified
+                                    }
+                                }
+                            }
+                            tags {
+                                edges {
+                                    node {
+                                        id
+                                        tag_type
+                                        value
+                                        color
                                     }
                                 }
                             }
@@ -2530,6 +2711,16 @@ class OpenCTIApiClient:
                             }
                         }
                     }
+                    tags {
+                        edges {
+                            node {
+                                id
+                                tag_type
+                                value
+                                color
+                            }
+                        }
+                    }
                     killChainPhases {
                         edges {
                             node {
@@ -2608,6 +2799,16 @@ class OpenCTIApiClient:
                                         color
                                         created
                                         modified
+                                    }
+                                }
+                            }
+                            tags {
+                                edges {
+                                    node {
+                                        id
+                                        tag_type
+                                        value
+                                        color
                                     }
                                 }
                             }
@@ -2752,6 +2953,16 @@ class OpenCTIApiClient:
                             modified
                         }
                     }
+                    tags {
+                        edges {
+                            node {
+                                id
+                                tag_type
+                                value
+                                color
+                            }
+                        }
+                    }
                     markingDefinitions {
                         edges {
                             node {
@@ -2813,6 +3024,16 @@ class OpenCTIApiClient:
                                         color
                                         created
                                         modified
+                                    }
+                                }
+                            }
+                            tags {
+                                edges {
+                                    node {
+                                        id
+                                        tag_type
+                                        value
+                                        color
                                     }
                                 }
                             }
@@ -3058,6 +3279,94 @@ class OpenCTIApiClient:
             }
         """
         result = self.query(query, {'first': limit})
+        return self.parse_multiple(result['data']['reports'])
+
+    def get_reports_by_stix_entity_stix_id(self, stix_entity_stix_id, limit=10000):
+        logging.info('Getting reports of the entity ' + stix_entity_stix_id + '...')
+        query = """
+            query Reports($objectStixId: String, $first: Int) {
+                reports(objectStixId: $objectStixId, first: $first) {
+                    edges {
+                        node {
+                            id
+                            stix_id_key
+                            stix_label
+                            name
+                            alias
+                            description
+                            report_class
+                            published
+                            object_status
+                            source_confidence_level
+                            graph_data
+                            created
+                            modified
+                            createdByRef {
+                                node {
+                                    id
+                                    entity_type
+                                    stix_id_key
+                                    stix_label
+                                    name
+                                    alias
+                                    description
+                                    created
+                                    modified
+                                }
+                            }
+                            markingDefinitions {
+                                edges {
+                                    node {
+                                        id
+                                        entity_type
+                                        stix_id_key
+                                        definition_type
+                                        definition
+                                        level
+                                        color
+                                        created
+                                        modified
+                                    }
+                                }
+                            }
+                            externalReferences {
+                                edges {
+                                    node {
+                                        id
+                                        entity_type
+                                        stix_id_key
+                                        source_name
+                                        description
+                                        url
+                                        hash
+                                        external_id
+                                        created
+                                        modified
+                                    }
+                                }
+                            }
+                            objectRefs {
+                                edges {
+                                    node {
+                                        id
+                                        stix_id_key
+                                    }
+                                }
+                            }
+                            relationRefs {
+                                edges {
+                                    node {
+                                        id
+                                        stix_id_key
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        """
+        result = self.query(query, {'objectStixId': stix_entity_stix_id, 'first': limit})
         return self.parse_multiple(result['data']['reports'])
 
     def create_report(self,
@@ -3971,7 +4280,9 @@ class OpenCTIApiClient:
         stix2 = OpenCTIStix2(self, self.log_level)
         return stix2.import_bundle(data, update, types)
 
-    def stix2_export_entity(self, entity_type, entity_id, mode='simple'):
+    def stix2_export_entity(self, entity_type, entity_id, mode='simple', max_marking_definition=None):
+        max_marking_definition_entity = self.get_marking_definition_by_id(
+            max_marking_definition) if max_marking_definition is not None else None
         stix2 = OpenCTIStix2(self, self.log_level)
         bundle = {
             'type': 'bundle',
@@ -3980,12 +4291,60 @@ class OpenCTIApiClient:
             'objects': []
         }
         if entity_type == 'report':
-            bundle['objects'] = stix2.export_report(self.parse_stix(self.get_report(entity_id)), mode)
+            bundle['objects'] = stix2.export_report(
+                self.parse_stix(self.get_report(entity_id)),
+                mode,
+                max_marking_definition_entity
+            )
         elif entity_type == 'threat-actor':
-            bundle['objects'] = stix2.export_threat_actor(self.parse_stix(self.get_threat_actor(entity_id)))
+            bundle['objects'] = stix2.export_threat_actor(
+                self.parse_stix(self.get_threat_actor(entity_id)),
+                mode,
+                max_marking_definition_entity
+            )
+        elif entity_type == 'intrusion-set':
+            bundle['objects'] = stix2.export_intrusion_set(
+                self.parse_stix(self.get_intrusion_set(entity_id)),
+                mode,
+                max_marking_definition_entity
+            )
+        elif entity_type == 'campaign':
+            bundle['objects'] = stix2.export_campaign(
+                self.parse_stix(self.get_campaign(entity_id)),
+                mode,
+                max_marking_definition_entity
+            )
+        elif entity_type == 'malware':
+            bundle['objects'] = stix2.export_malware(
+                self.parse_stix(self.get_malware(entity_id)),
+                mode,
+                max_marking_definition_entity
+            )
+        elif entity_type == 'tool':
+            bundle['objects'] = stix2.export_tool(
+                self.parse_stix(self.get_tool(entity_id)),
+                mode,
+                max_marking_definition_entity
+            )
+        elif entity_type == 'attack-pattern':
+            bundle['objects'] = stix2.export_attack_pattern(
+                self.parse_stix(self.get_attack_pattern(entity_id)),
+                mode,
+                max_marking_definition_entity
+            )
+        elif entity_type == 'course-of-action':
+            bundle['objects'] = stix2.export_course_of_action(
+                self.parse_stix(self.get_course_of_action(entity_id)),
+                mode,
+                max_marking_definition_entity
+            )
+        elif entity_type == 'identity' or IdentityTypes.has_value(entity_type):
+            bundle['objects'] = stix2.export_identity(
+                self.parse_stix(self.get_identity(entity_id)),
+                mode,
+                max_marking_definition_entity)
         else:
             raise Exception("Unsupported export type " + entity_type)
-        # TODO ADD MORE EXPORT TYPES
         return bundle
 
     def stix2_export_bundle(self, types=[]):

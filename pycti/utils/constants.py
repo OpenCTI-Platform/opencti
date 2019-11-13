@@ -40,6 +40,17 @@ class ObservableTypes(Enum):
         lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
         return value in lower_attr
 
+class IdentityTypes(Enum):
+    SECTOR = "Sector"
+    REGION = "Region"
+    COUNTRY = "Country"
+    CITY = "City"
+    ORGANIZATION = "Organization"
+
+    @classmethod
+    def has_value(cls, value):
+        lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
+        return value in lower_attr
 
 class CustomProperties:
     """These are the custom properies used by OpenCTI.
@@ -89,6 +100,7 @@ class CustomProperties:
     # applies to STIX Identity
     ORG_CLASS = 'x_opencti_organization_class'
     IDENTITY_TYPE = 'x_opencti_identity_type'  # this overrides the stix 'identity_class' property!
+    TAG_TYPE = 'x_opencti_tags'
 
     # applies to STIX report
     OBJECT_STATUS = 'x_opencti_object_status'
