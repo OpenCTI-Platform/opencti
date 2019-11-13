@@ -138,7 +138,10 @@ class OpenCTIConnectorHelper:
         self.connector_state = json.dumps(state)
 
     def get_state(self):
-        return None if self.connector_state is None else json.loads(self.connector_state)
+        try:
+            return None if self.connector_state is None else json.loads(self.connector_state)
+        except:
+            return None
 
     def listen(self, message_callback: Callable[[Dict], List[str]]) -> None:
         listen_queue = ListenQueue(self, self.config, message_callback)
