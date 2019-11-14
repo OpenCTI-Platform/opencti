@@ -42,18 +42,24 @@ class EntityCoursesOfAction extends Component {
   render() {
     const { t, classes, entityId } = this.props;
     const paginationOptions = {
-      objectId: entityId,
       orderBy: 'created_at',
       orderMode: 'desc',
+      filters: [{
+        key: 'attackPattern',
+        values: [entityId],
+      }],
     };
     return (
       <QueryRenderer
         query={entityCoursesOfActionLinesQuery}
         variables={{
-          objectId: entityId,
           count: 200,
           orderBy: 'created_at',
           orderMode: 'desc',
+          filters: [{
+            key: 'attackPattern',
+            values: [entityId],
+          }],
         }}
         render={({ props }) => {
           if (props) {

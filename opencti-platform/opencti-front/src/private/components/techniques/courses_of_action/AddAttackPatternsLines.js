@@ -34,15 +34,13 @@ const attackPatternsLinesMutationRelationAdd = graphql`
   ) {
     courseOfActionEdit(id: $id) {
       relationAdd(input: $input) {
-        node {
+        id
+        to {
           ... on CourseOfAction {
             id
             name
             description
           }
-        }
-        relation {
-          id
         }
       }
     }
@@ -56,11 +54,7 @@ export const attackPatternsLinesMutationRelationDelete = graphql`
   ) {
     courseOfActionEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        node {
-          ... on CourseOfAction {
-            id
-          }
-        }
+        id
       }
     }
   }
@@ -119,6 +113,7 @@ class AddAttackPatternsLinesContainer extends Component {
         toId: attackPattern.id,
         toRole: 'problem',
         through: 'mitigates',
+        stix_id_key: 'create',
       };
       commitMutation({
         mutation: attackPatternsLinesMutationRelationAdd,
@@ -129,13 +124,15 @@ class AddAttackPatternsLinesContainer extends Component {
         updater: (store) => {
           const payload = store
             .getRootField('courseOfActionEdit')
-            .getLinkedRecord('relationAdd', { input });
+            .getLinkedRecord('relationAdd', { input })
+            .getLinkedRecord('to');
+          const newEdge = payload.setLinkedRecord(payload, 'node');
           const container = store.getRoot();
           sharedUpdater(
             store,
             container.getDataID(),
             courseOfActionPaginationOptions,
-            payload,
+            newEdge,
           );
         },
       });

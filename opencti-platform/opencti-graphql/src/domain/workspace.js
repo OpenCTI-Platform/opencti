@@ -1,26 +1,22 @@
-import uuid from 'uuid/v4';
-import { map } from 'ramda';
+import { assoc, map } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
+  createEntity,
   createRelation,
-  dayFormat,
+  createRelations,
   deleteEntityById,
   deleteRelationById,
   escapeString,
   executeWrite,
   getSingleValueNumber,
-  graknNow,
   loadEntityById,
   loadWithConnectedRelations,
-  monthFormat,
   paginate,
   prepareDate,
-  updateAttribute,
-  yearFormat
+  TYPE_OPENCTI_INTERNAL,
+  updateAttribute
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { elLoadById } from '../database/elasticSearch';
-import { addMarkingDefs, addOwner } from './stixEntity';
 
 // region grakn fetch
 export const findById = workspaceId => {
@@ -75,31 +71,8 @@ export const objectRefs = (workspaceId, args) => {
 // endregion
 
 export const addWorkspace = async (user, workspace) => {
-  const internalId = workspace.internal_id_key ? escapeString(workspace.internal_id_key) : uuid();
-  await executeWrite(async wTx => {
-    const workspaceIterator = await wTx.tx.query(`insert $workspace isa Workspace,
-      has internal_id_key "${internalId}",
-      has entity_type "workspace",
-      has workspace_type "${escapeString(workspace.workspace_type)}",
-      has name "${escapeString(workspace.name)}",
-      has description "${escapeString(workspace.description)}",
-      has created_at ${graknNow()},
-      has created_at_day "${dayFormat(graknNow())}",
-      has created_at_month "${monthFormat(graknNow())}",
-      has created_at_year "${yearFormat(graknNow())}",          
-      has updated_at ${graknNow()};
-    `);
-    const createdWorkspace = await workspaceIterator.next();
-    return createdWorkspace.map().get('workspace').id;
-    // await wTx.tx.query(`match $from id ${createdWorkspaceId};
-    //      $to has internal_id_key "${user.id}";
-    //      insert (to: $from, owner: $to)
-    //      isa owned_by, has internal_id_key "${uuid()}";`);
-    // return internalId;
-  });
-  const created = await loadEntityById(internalId);
-  await addOwner(internalId, user.id);
-  await addMarkingDefs(internalId, workspace.markingDefinitions);
+  const workspaceToCreate = assoc('createdByOwner', user.id, workspace);
+  const created = await createEntity(workspaceToCreate, 'Workspace', TYPE_OPENCTI_INTERNAL);
   return notify(BUS_TOPICS.Workspace.ADDED_TOPIC, created, user);
 };
 
@@ -107,12 +80,12 @@ export const addWorkspace = async (user, workspace) => {
 export const workspaceDelete = workspaceId => deleteEntityById(workspaceId);
 export const workspaceAddRelation = (user, workspaceId, input) => {
   return createRelation(workspaceId, input).then(relationData => {
-    notify(BUS_TOPICS.Workspace.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.Workspace.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
 export const workspaceAddRelations = async (user, workspaceId, input) => {
-  const finalInput = map(
+  const finalInputs = map(
     n => ({
       toId: n,
       fromRole: input.fromRole,
@@ -121,30 +94,20 @@ export const workspaceAddRelations = async (user, workspaceId, input) => {
     }),
     input.toIds
   );
-
-  await executeWrite(async wTx => {
-    const createRelationPromise = relationInput =>
-      wTx.tx.query(`match $from has internal_id_key ${workspaceId}; 
-         $to has internal_id_key ${relationInput.toId}; 
-         insert $rel(${relationInput.fromRole}: $from, ${relationInput.toRole}: $to) 
-         isa ${relationInput.through}, has internal_id_key "${uuid()}";`);
-    const relationsPromises = map(createRelationPromise, finalInput);
-    await Promise.all(relationsPromises);
-  });
-
+  await createRelations(workspaceId, finalInputs);
   return loadEntityById(workspaceId).then(workspace => notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user));
 };
 export const workspaceEditField = (user, workspaceId, input) => {
   return executeWrite(wTx => {
     return updateAttribute(workspaceId, input, wTx);
   }).then(async () => {
-    const workspace = await elLoadById(workspaceId);
+    const workspace = await loadEntityById(workspaceId);
     return notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user);
   });
 };
 export const workspaceDeleteRelation = (user, workspaceId, relationId) => {
   return deleteRelationById(workspaceId, relationId).then(relationData => {
-    notify(BUS_TOPICS.Workspace.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.Workspace.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };

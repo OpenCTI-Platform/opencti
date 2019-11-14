@@ -32,15 +32,12 @@ const externalReferenceResolvers = {
     externalReferenceEdit: (_, { id }, { user }) => ({
       delete: () => externalReferenceDelete(id),
       fieldPatch: ({ input }) => externalReferenceEditField(user, id, input),
-      contextPatch: ({ input }) =>
-        externalReferenceEditContext(user, id, input),
+      contextPatch: ({ input }) => externalReferenceEditContext(user, id, input),
       contextClean: () => externalReferenceCleanContext(user, id),
       relationAdd: ({ input }) => externalReferenceAddRelation(user, id, input),
-      relationDelete: ({ relationId }) =>
-        externalReferenceDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => externalReferenceDeleteRelation(user, id, relationId)
     }),
-    externalReferenceAdd: (_, { input }, { user }) =>
-      addExternalReference(user, input)
+    externalReferenceAdd: (_, { input }, { user }) => addExternalReference(user, input)
   },
   Subscription: {
     externalReference: {

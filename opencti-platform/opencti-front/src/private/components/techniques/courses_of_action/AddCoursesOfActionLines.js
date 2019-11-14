@@ -34,15 +34,13 @@ const courseOfActionLinesMutationRelationAdd = graphql`
   ) {
     courseOfActionEdit(id: $id) {
       relationAdd(input: $input) {
-        node {
+        id
+        to {
           ... on CourseOfAction {
             id
             name
             description
           }
-        }
-        relation {
-          id
         }
       }
     }
@@ -56,11 +54,7 @@ export const courseOfActionMutationRelationDelete = graphql`
   ) {
     courseOfActionEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        node {
-          ... on CourseOfAction {
-            id
-          }
-        }
+        id
       }
     }
   }
@@ -123,13 +117,15 @@ class AddCoursesOfActionLinesContainer extends Component {
         updater: (store) => {
           const payload = store
             .getRootField('courseOfActionEdit')
-            .getLinkedRecord('relationAdd', { input });
+            .getLinkedRecord('relationAdd', { input })
+            .getLinkedRecord('to');
+          const newEdge = payload.setLinkedRecord(payload, 'node');
           const container = store.getRoot();
           sharedUpdater(
             store,
             container.getDataID(),
             entityPaginationOptions,
-            payload,
+            newEdge,
           );
         },
       });

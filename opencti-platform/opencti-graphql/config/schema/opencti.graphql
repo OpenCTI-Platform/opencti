@@ -35,10 +35,10 @@ enum Status {
 type RelationEmbedded {
   id: ID!
   entity_type: String!
-}
-type RelationData {
-  node: GlobalObject
-  relation: RelationEmbedded
+  from: GlobalObject
+  fromRole: String
+  to: GlobalObject
+  toRole: String
 }
 type createdByRef {
   node: Identity
@@ -389,7 +389,7 @@ enum StixDomainEntitiesOrdering {
   markingDefinitions
 }
 input StixDomainEntitiesFiltering {
-  tags: [String]
+  tagged: [String]
 }
 type StixDomainEntityConnection {
   pageInfo: PageInfo!
@@ -444,7 +444,7 @@ enum StixObservablesOrdering {
   markingDefinitions
 }
 input StixObservablesFiltering {
-  tags: [String]
+  tagged: [String]
 }
 type StixObservableConnection {
   pageInfo: PageInfo!
@@ -741,7 +741,7 @@ enum UsersOrdering {
   markingDefinitions
 }
 input UsersFiltering {
-  tags: [String]
+  tagged: [String]
 }
 enum UserRole {
   ROLE_ROOT
@@ -857,7 +857,7 @@ enum OrganizationsOrdering {
   markingDefinitions
 }
 input OrganizationsFiltering {
-  tags: [String]
+  tagged: [String]
 }
 type OrganizationConnection {
   pageInfo: PageInfo!
@@ -945,7 +945,7 @@ enum SectorsOrdering {
   markingDefinitions
 }
 input SectorsFiltering {
-  tags: [String]
+  tagged: [String]
 }
 type SectorConnection {
   pageInfo: PageInfo!
@@ -1034,7 +1034,7 @@ enum CitiesOrdering {
   markingDefinitions
 }
 input CitiesFiltering {
-  tags: [String]
+  tagged: [String]
 }
 type CityConnection {
   pageInfo: PageInfo!
@@ -1120,7 +1120,7 @@ enum CountriesOrdering {
   markingDefinitions
 }
 input CountriesFiltering {
-  tags: [String]
+  tagged: [String]
 }
 type CountryConnection {
   pageInfo: PageInfo!
@@ -1206,7 +1206,7 @@ enum RegionsOrdering {
   markingDefinitions
 }
 input RegionsFiltering {
-  tags: [String]
+  tagged: [String]
 }
 type RegionConnection {
   pageInfo: PageInfo!
@@ -1465,16 +1465,21 @@ input KillChainPhaseAddInput {
 enum AttackPatternsOrdering {
   stix_id_key
   name
-  killChainPhases
   created
   modified
   created_at
   updated_at
   tags
+  killChainPhases
   markingDefinitions
 }
+enum AttackPatternsFilter {
+  tags
+  courseOfAction
+}
 input AttackPatternsFiltering {
-  tags: [String]
+  key: AttackPatternsFilter!
+  values: [String]
 }
 type AttackPatternConnection {
   pageInfo: PageInfo!
@@ -1566,8 +1571,13 @@ enum CoursesOfActionOrdering {
   tags
   markingDefinitions
 }
+enum CoursesOfActionFilter {
+  tags
+  attackPattern
+}
 input CoursesOfActionFiltering {
-  tags: [String]
+  key: CoursesOfActionFilter!
+  values: [String]
 }
 type CourseOfActionConnection {
   pageInfo: PageInfo!
@@ -1652,7 +1662,7 @@ enum ThreatActorsOrdering {
   markingDefinitions
 }
 input ThreatActorsFiltering {
-  tags: [String]
+  tagged: [String]
 }
 type ThreatActorConnection {
   pageInfo: PageInfo!
@@ -1750,7 +1760,7 @@ enum IntrusionSetsOrdering {
   markingDefinitions
 }
 input IntrusionSetsFiltering {
-  tags: [String]
+  tagged: [String]
 }
 type IntrusionSetConnection {
   pageInfo: PageInfo!
@@ -1852,7 +1862,7 @@ enum CampaignsOrdering {
   markingDefinitions
 }
 input CampaignsFiltering {
-  tags: [String]
+  tagged: [String]
 }
 type CampaignConnection {
   pageInfo: PageInfo!
@@ -1945,7 +1955,7 @@ enum IncidentsOrdering {
   markingDefinitions
 }
 input IncidentsFiltering {
-  tags: [String]
+  tagged: [String]
 }
 type IncidentConnection {
   pageInfo: PageInfo!
@@ -2036,7 +2046,7 @@ enum MalwaresOrdering {
   markingDefinitions
 }
 input MalwaresFiltering {
-  tags: [String]
+  tagged: [String]
 }
 type MalwareConnection {
   pageInfo: PageInfo!
@@ -2123,7 +2133,7 @@ enum ToolsOrdering {
   markingDefinitions
 }
 input ToolsFiltering {
-  tags: [String]
+  tagged: [String]
 }
 type ToolConnection {
   pageInfo: PageInfo!
@@ -2212,7 +2222,7 @@ enum VulnerabilitiesOrdering {
   markingDefinitions
 }
 input VulnerabilitiesFiltering {
-  tags: [String]
+  tagged: [String]
 }
 type VulnerabilityConnection {
   pageInfo: PageInfo!
@@ -2300,7 +2310,7 @@ enum ReportsOrdering {
   markingDefinitions
 }
 input ReportsFiltering {
-  tags: [String]
+  tagged: [String]
 }
 type ReportConnection {
   pageInfo: PageInfo!
@@ -2696,10 +2706,8 @@ type Query {
     after: ID
     orderBy: AttackPatternsOrdering
     orderMode: OrderingMode
-    filters: AttackPatternsFiltering
+    filters: [AttackPatternsFiltering]
     filterMode: FilterMode
-    objectId: String
-    courseOfActionId: String
     search: String
   ): AttackPatternConnection @auth
   # CoursesOfAction
@@ -2709,9 +2717,8 @@ type Query {
     after: ID
     orderBy: CoursesOfActionOrdering
     orderMode: OrderingMode
-    filters: CoursesOfActionFiltering
+    filters: [CoursesOfActionFiltering]
     filterMode: FilterMode
-    objectId: String
     search: String
   ): CourseOfActionConnection @auth
   # ThreatActors
@@ -2879,8 +2886,8 @@ type TagEditMutations {
   fieldPatch(input: EditInput): Tag
   contextPatch(input: EditContext): Tag
   contextClean: Tag
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Tag
 }
 
 # StixDomain
@@ -2889,9 +2896,9 @@ type StixDomainEntityEditMutations {
   fieldPatch(input: EditInput): StixDomainEntity
   contextPatch(input: EditContext): StixDomainEntity
   contextClean: StixDomainEntity
-  relationAdd(input: RelationAddInput): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
   relationsAdd(input: RelationsAddInput): StixEntity
-  relationDelete(relationId: ID!): RelationData
+  relationDelete(relationId: ID!): StixEntity
   importPush(file: Upload!): File @auth
   exportAsk(format: String!, exportType: String!): [File]
   exportPush(file: Upload!): Boolean @auth(for: ROLE_ADMIN)
@@ -2903,8 +2910,8 @@ type StixObservableEditMutations {
   fieldPatch(input: EditInput): StixObservable
   contextPatch(input: EditContext): StixObservable
   contextClean: StixObservable
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): StixObservable
   askEnrichment(connectorId: ID!): Work
 }
 
@@ -2914,8 +2921,8 @@ type StixRelationEditMutations {
   fieldPatch(input: EditInput): StixRelation
   contextPatch(input: EditContext): StixRelation
   contextClean: StixRelation
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): StixRelation
 }
 
 # Workspace
@@ -2924,9 +2931,9 @@ type WorkspaceEditMutations {
   fieldPatch(input: EditInput): Workspace
   contextPatch(input: EditContext): Workspace
   contextClean: Workspace
-  relationAdd(input: RelationAddInput): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
   relationsAdd(input: RelationsAddInput): Workspace
-  relationDelete(relationId: ID!): RelationData
+  relationDelete(relationId: ID!): Workspace
 }
 
 # Identity
@@ -2935,8 +2942,8 @@ type IdentityEditMutations {
   fieldPatch(input: EditInput): Identity
   contextPatch(input: EditContext): Identity
   contextClean: Identity
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Identity
 }
 
 # User
@@ -2946,8 +2953,8 @@ type UserEditMutations {
   contextPatch(input: EditContext): User
   contextClean: User
   tokenRenew: User
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): User
 }
 
 # Organization
@@ -2956,8 +2963,8 @@ type OrganizationEditMutations {
   fieldPatch(input: EditInput): Organization
   contextPatch(input: EditContext): Organization
   contextClean: Organization
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Organization
 }
 
 # Sector
@@ -2966,8 +2973,8 @@ type SectorEditMutations {
   fieldPatch(input: EditInput): Sector
   contextPatch(input: EditContext): Sector
   contextClean: Sector
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Sector
 }
 
 # City
@@ -2976,8 +2983,8 @@ type CityEditMutations {
   fieldPatch(input: EditInput): City
   contextPatch(input: EditContext): City
   contextClean: City
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): City
 }
 
 # Country
@@ -2986,8 +2993,8 @@ type CountryEditMutations {
   fieldPatch(input: EditInput): Country
   contextPatch(input: EditContext): Country
   contextClean: Country
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Country
 }
 
 # Region
@@ -2996,8 +3003,8 @@ type RegionEditMutations {
   fieldPatch(input: EditInput): Region
   contextPatch(input: EditContext): Region
   contextClean: Region
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Region
 }
 
 # Group
@@ -3006,8 +3013,8 @@ type GroupEditMutations {
   fieldPatch(input: EditInput): Group
   contextPatch(input: EditContext): Group
   contextClean: Group
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Group
 }
 
 # MarkingDefinition
@@ -3016,8 +3023,8 @@ type MarkingDefinitionEditMutations {
   fieldPatch(input: EditInput): MarkingDefinition
   contextPatch(input: EditContext): MarkingDefinition
   contextClean: MarkingDefinition
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): MarkingDefinition
 }
 
 # ExternalReference
@@ -3026,8 +3033,8 @@ type ExternalReferenceEditMutations {
   fieldPatch(input: EditInput): ExternalReference
   contextPatch(input: EditContext): ExternalReference
   contextClean: ExternalReference
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): ExternalReference
 }
 
 # KillChainPhase
@@ -3036,8 +3043,8 @@ type KillChainPhaseEditMutations {
   fieldPatch(input: EditInput): KillChainPhase
   contextPatch(input: EditContext): KillChainPhase
   contextClean: KillChainPhase
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): KillChainPhase
 }
 
 # AttackPattern
@@ -3046,8 +3053,8 @@ type AttackPatternEditMutations {
   fieldPatch(input: EditInput): AttackPattern
   contextPatch(input: EditContext): AttackPattern
   contextClean: AttackPattern
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): AttackPattern
 }
 
 # CourseOfAction
@@ -3056,8 +3063,8 @@ type CourseOfActionEditMutations {
   fieldPatch(input: EditInput): CourseOfAction
   contextPatch(input: EditContext): CourseOfAction
   contextClean: CourseOfAction
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): CourseOfAction
 }
 
 # ThreatActor
@@ -3066,8 +3073,8 @@ type ThreatActorEditMutations {
   fieldPatch(input: EditInput): ThreatActor
   contextPatch(input: EditContext): ThreatActor
   contextClean: ThreatActor
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): ThreatActor
 }
 
 # IntrusionSet
@@ -3076,8 +3083,8 @@ type IntrusionSetEditMutations {
   fieldPatch(input: EditInput): IntrusionSet
   contextPatch(input: EditContext): IntrusionSet
   contextClean: IntrusionSet
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): IntrusionSet
 }
 
 # Campaign
@@ -3086,8 +3093,8 @@ type CampaignEditMutations {
   fieldPatch(input: EditInput): Campaign
   contextPatch(input: EditContext): Campaign
   contextClean: Campaign
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Campaign
 }
 
 # Incident
@@ -3096,8 +3103,8 @@ type IncidentEditMutations {
   fieldPatch(input: EditInput): Incident
   contextPatch(input: EditContext): Incident
   contextClean: Incident
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Incident
 }
 
 # Malware
@@ -3106,8 +3113,8 @@ type MalwareEditMutations {
   fieldPatch(input: EditInput): Malware
   contextPatch(input: EditContext): Malware
   contextClean: Malware
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Malware
 }
 
 # Tool
@@ -3116,8 +3123,8 @@ type ToolEditMutations {
   fieldPatch(input: EditInput): Tool
   contextPatch(input: EditContext): Tool
   contextClean: Tool
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Tool
 }
 
 # Vulnerability
@@ -3126,8 +3133,8 @@ type VulnerabilityEditMutations {
   fieldPatch(input: EditInput): Vulnerability
   contextPatch(input: EditContext): Vulnerability
   contextClean: Vulnerability
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Vulnerability
 }
 
 # Report
@@ -3136,8 +3143,8 @@ type ReportEditMutations {
   fieldPatch(input: EditInput): Report
   contextPatch(input: EditContext): Report
   contextClean: Report
-  relationAdd(input: RelationAddInput): RelationData
-  relationDelete(relationId: ID!): RelationData
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Report
 }
 
 # Mutations

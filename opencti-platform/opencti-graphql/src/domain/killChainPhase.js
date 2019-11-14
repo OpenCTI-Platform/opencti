@@ -1,27 +1,20 @@
-import uuid from 'uuid/v4';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
+  createEntity,
   createRelation,
-  dayFormat,
   deleteEntityById,
   deleteRelationById,
-  escape,
   escapeString,
   executeWrite,
-  graknNow,
   loadEntityById,
-  monthFormat,
   paginate,
-  prepareDate,
-  updateAttribute,
-  yearFormat
+  TYPE_STIX_DOMAIN,
+  updateAttribute
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { addCreatedByRef, addMarkingDefs } from './stixEntity';
-import { elLoadById } from '../database/elasticSearch';
 
 export const findById = killChainPhaseId => {
-  return elLoadById(killChainPhaseId);
+  return loadEntityById(killChainPhaseId);
 };
 
 // region grakn fetch
@@ -57,33 +50,7 @@ export const findByPhaseName = args => {
 // endregion
 
 export const addKillChainPhase = async (user, killChainPhase) => {
-  const internalId = killChainPhase.internal_id_key ? escapeString(killChainPhase.internal_id_key) : uuid();
-  await executeWrite(async wTx => {
-    const now = graknNow();
-    const killChainPhaseIterator = await wTx.tx.query(`insert $killChainPhase isa Kill-Chain-Phase,
-    has internal_id_key "${internalId}",
-    has entity_type "kill-chain-phase",
-    has stix_id_key "${
-      killChainPhase.stix_id_key ? escapeString(killChainPhase.stix_id_key) : `kill-chain-phase--${uuid()}`
-    }",
-    has kill_chain_name "${escapeString(killChainPhase.kill_chain_name)}",
-    has phase_name "${escapeString(killChainPhase.phase_name)}",
-    has phase_order ${escape(killChainPhase.phase_order)},
-    has created ${killChainPhase.created ? prepareDate(killChainPhase.created) : now},
-    has modified ${killChainPhase.modified ? prepareDate(killChainPhase.modified) : now},
-    has revoked false,
-    has created_at ${now},
-    has created_at_day "${dayFormat(now)}",
-    has created_at_month "${monthFormat(now)}",
-    has created_at_year "${yearFormat(now)}",       
-    has updated_at ${now};
-  `);
-    const createKillChainPhase = await killChainPhaseIterator.next();
-    return createKillChainPhase.map().get('killChainPhase').id;
-  });
-  const created = await loadEntityById(internalId);
-  await addCreatedByRef(internalId, killChainPhase.createdByRef);
-  await addMarkingDefs(internalId, killChainPhase.markingDefinitions);
+  const created = await createEntity(killChainPhase, 'Kill-Chain-Phase', TYPE_STIX_DOMAIN);
   return notify(BUS_TOPICS.KillChainPhase.ADDED_TOPIC, created, user);
 };
 
@@ -92,13 +59,13 @@ export const killChainPhaseDelete = killChainPhaseId => {
 };
 export const killChainPhaseAddRelation = (user, killChainPhaseId, input) => {
   return createRelation(killChainPhaseId, input).then(relationData => {
-    notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
 export const killChainPhaseDeleteRelation = (user, killChainPhaseId, relationId) => {
   return deleteRelationById(killChainPhaseId, relationId).then(relationData => {
-    notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
@@ -106,7 +73,7 @@ export const killChainPhaseEditField = (user, killChainPhaseId, input) => {
   return executeWrite(wTx => {
     return updateAttribute(killChainPhaseId, input, wTx);
   }).then(async () => {
-    const killChainPhase = await elLoadById(killChainPhaseId);
+    const killChainPhase = await loadEntityById(killChainPhaseId);
     return notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase, user);
   });
 };

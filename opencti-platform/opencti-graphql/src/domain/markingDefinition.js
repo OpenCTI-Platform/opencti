@@ -1,41 +1,28 @@
-import uuid from 'uuid/v4';
+import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
+  createEntity,
   createRelation,
-  dayFormat,
   deleteEntityById,
   deleteRelationById,
   escapeString,
   executeWrite,
-  graknNow,
+  listEntities,
   loadEntityById,
-  monthFormat,
   paginate,
-  prepareDate,
-  updateAttribute,
-  yearFormat
+  TYPE_STIX_DOMAIN,
+  updateAttribute
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { addCreatedByRef } from './stixEntity';
-import { elLoadById } from '../database/elasticSearch';
 
 export const findById = markingDefinitionId => {
-  return elLoadById(markingDefinitionId);
+  return loadEntityById(markingDefinitionId);
 };
 
 // region grakn fetch
 export const findAll = args => {
-  return paginate(
-    `match $m isa Marking-Definition ${
-      args.search
-        ? `; $m has definition_type $type;
-   $m has definition $definition;
-   { $type contains "${escapeString(args.search)}"; } or
-   { $definition contains "${escapeString(args.search)}"; }`
-        : ''
-    }`,
-    args
-  );
+  const typedArgs = assoc('types', ['Marking-Definition'], args);
+  return listEntities(['definition_type', 'definition'], typedArgs);
 };
 export const findByEntity = args => {
   return paginate(
@@ -69,46 +56,20 @@ export const findByStixId = args => {
 // endregion
 
 export const addMarkingDefinition = async (user, markingDefinition) => {
-  const internalId = markingDefinition.internal_id_key ? escapeString(markingDefinition.internal_id_key) : uuid();
-  await executeWrite(async wTx => {
-    const now = graknNow();
-    const markingDefinitionIterator = await wTx.tx.query(`insert $markingDefinition isa Marking-Definition,
-    has internal_id_key "${internalId}",
-    has entity_type "marking-definition",
-    has stix_id_key "${
-      markingDefinition.stix_id_key ? escapeString(markingDefinition.stix_id_key) : `marking-definition--${uuid()}`
-    }",
-    has definition_type "${escapeString(markingDefinition.definition_type)}",
-    has definition "${escapeString(markingDefinition.definition)}",
-    has color "${escapeString(markingDefinition.color)}",
-    has level ${markingDefinition.level},
-    has created ${markingDefinition.created ? prepareDate(markingDefinition.created) : now},
-    has modified ${markingDefinition.modified ? prepareDate(markingDefinition.modified) : now},
-    has revoked false,
-    has created_at ${now},
-    has created_at_day "${dayFormat(now)}",
-    has created_at_month "${monthFormat(now)}",
-    has created_at_year "${yearFormat(now)}",       
-    has updated_at ${now};
-  `);
-    const createMarkingDef = await markingDefinitionIterator.next();
-    return createMarkingDef.map().get('markingDefinition').id;
-  });
-  const created = await loadEntityById(internalId);
-  await addCreatedByRef(internalId, markingDefinition.createdByRef);
+  const created = await createEntity(markingDefinition, 'Marking-Definition', TYPE_STIX_DOMAIN);
   return notify(BUS_TOPICS.MarkingDefinition.ADDED_TOPIC, created, user);
 };
 
 export const markingDefinitionDelete = markingDefinitionId => deleteEntityById(markingDefinitionId);
 export const markingDefinitionAddRelation = (user, markingDefinitionId, input) => {
   return createRelation(markingDefinitionId, input).then(relationData => {
-    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
 export const markingDefinitionDeleteRelation = (user, markingDefinitionId, relationId) => {
   return deleteRelationById(markingDefinitionId, relationId).then(relationData => {
-    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
@@ -116,7 +77,7 @@ export const markingDefinitionEditField = (user, markingDefinitionId, input) => 
   return executeWrite(wTx => {
     return updateAttribute(markingDefinitionId, input, wTx);
   }).then(async () => {
-    const markingDefinition = await elLoadById(markingDefinitionId);
+    const markingDefinition = await loadEntityById(markingDefinitionId);
     return notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user);
   });
 };

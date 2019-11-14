@@ -1,25 +1,17 @@
+import { addCampaign, campaignsTimeSeries, campaignsTimeSeriesByEntity, findAll, findById } from '../domain/campaign';
 import {
-  addCampaign,
-  findAll,
-  findById,
-  campaignsTimeSeries,
-  campaignsTimeSeriesByEntity
-} from '../domain/campaign';
-import {
-  stixDomainEntityEditContext,
-  stixDomainEntityCleanContext,
-  stixDomainEntityEditField,
   stixDomainEntityAddRelation,
+  stixDomainEntityCleanContext,
+  stixDomainEntityDelete,
   stixDomainEntityDeleteRelation,
-  stixDomainEntityDelete
+  stixDomainEntityEditContext,
+  stixDomainEntityEditField
 } from '../domain/stixDomainEntity';
 
 const campaignResolvers = {
   Query: {
     campaign: (_, { id }) => findById(id),
-    campaigns: (_, args) => {
-      return findAll(args);
-    },
+    campaigns: (_, args) => findAll(args),
     campaignsTimeSeries: (_, args) => {
       if (args.objectId && args.objectId.length > 0) {
         return campaignsTimeSeriesByEntity(args);
@@ -34,8 +26,7 @@ const campaignResolvers = {
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) =>
-        stixDomainEntityDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
     }),
     campaignAdd: (_, { input }, { user }) => addCampaign(user, input)
   }

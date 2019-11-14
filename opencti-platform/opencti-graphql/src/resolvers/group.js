@@ -1,11 +1,4 @@
-import {
-  addGroup,
-  groupDelete,
-  findAll,
-  findById,
-  members,
-  permissions
-} from '../domain/group';
+import { addGroup, groupDelete, findAll, findById, members, permissions } from '../domain/group';
 import {
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
@@ -32,8 +25,7 @@ const groupResolvers = {
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) =>
-        stixDomainEntityDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
     }),
     groupAdd: (_, { input }, { user }) => addGroup(user, input)
   }

@@ -49,7 +49,7 @@ class DatePickerField extends Component {
             typeof onSubmit === 'function'
             && this.currentDate !== event.target.value
           ) {
-            onSubmit(field.name, dateFormat(event.target.value));
+            onSubmit(field.name, event.target.value.toISOString());
             this.currentDate = event.target.value;
           }
         }}
@@ -60,7 +60,7 @@ class DatePickerField extends Component {
             && event.key === 'Enter'
             && this.currentDate !== event.target.value
           ) {
-            onSubmit(field.name, dateFormat(event.target.value));
+            onSubmit(field.name, event.target.value.toISOString());
             this.currentDate = event.target.value;
           }
         }}
@@ -71,7 +71,7 @@ class DatePickerField extends Component {
             && typeof onSubmit === 'function'
             && this.currentDate !== date
           ) {
-            onSubmit(field.name, dateFormat(date));
+            onSubmit(field.name, date.toISOString());
             this.currentDate = date;
           }
         }}

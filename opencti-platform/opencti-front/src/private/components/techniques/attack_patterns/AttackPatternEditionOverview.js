@@ -93,7 +93,7 @@ const attackPatternMutationRelationAdd = graphql`
   ) {
     attackPatternEdit(id: $id) {
       relationAdd(input: $input) {
-        node {
+        from {
           ...AttackPatternEditionOverview_attackPattern
         }
       }
@@ -108,9 +108,7 @@ const attackPatternMutationRelationDelete = graphql`
   ) {
     attackPatternEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        node {
           ...AttackPatternEditionOverview_attackPattern
-        }
       }
     }
   }
@@ -322,11 +320,11 @@ class AttackPatternEditionOverviewComponent extends Component {
       commitMutation({
         mutation: attackPatternMutationRelationAdd,
         variables: {
-          id: this.props.attackPattern.id,
+          id: head(added).value,
           input: {
-            fromRole: 'so',
-            toRole: 'marking',
-            toId: head(added).value,
+            fromRole: 'marking',
+            toId: this.props.attackPattern.id,
+            toRole: 'so',
             through: 'object_marking_refs',
           },
         },

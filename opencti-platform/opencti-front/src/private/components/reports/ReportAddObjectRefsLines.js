@@ -57,11 +57,9 @@ export const reportMutationRelationAdd = graphql`
   ) {
     reportEdit(id: $id) {
       relationAdd(input: $input) {
-        node {
+        id
+        from {
           ...ReportKnowledgeGraph_report
-        }
-        relation {
-          id
         }
       }
     }
@@ -75,9 +73,7 @@ export const reportMutationRelationDelete = graphql`
   ) {
     reportEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        node {
           ...ReportKnowledgeGraph_report
-        }
       }
     }
   }

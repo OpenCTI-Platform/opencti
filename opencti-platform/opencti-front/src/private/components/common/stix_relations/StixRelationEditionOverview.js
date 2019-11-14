@@ -133,7 +133,7 @@ const stixRelationMutationRelationAdd = graphql`
   ) {
     stixRelationEdit(id: $id) {
       relationAdd(input: $input) {
-        node {
+        from {
           ...StixRelationEditionOverview_stixRelation
         }
       }
@@ -148,9 +148,7 @@ const stixRelationMutationRelationDelete = graphql`
   ) {
     stixRelationEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        node {
           ...StixRelationEditionOverview_stixRelation
-        }
       }
     }
   }

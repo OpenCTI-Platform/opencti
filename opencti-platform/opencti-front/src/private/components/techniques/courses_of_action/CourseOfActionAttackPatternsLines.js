@@ -52,7 +52,7 @@ class CourseOfActionAttackPatternsLinesContainer extends Component {
     commitMutation({
       mutation: attackPatternsLinesMutationRelationDelete,
       variables: {
-        id: attackPatternEdge.node.id,
+        id: this.props.courseOfActionId,
         relationId: attackPatternEdge.relation.id,
       },
       updater: (store) => {
@@ -145,6 +145,7 @@ export const courseOfActionAttackPatternsLinesQuery = graphql`
     $cursor: ID
     $orderBy: AttackPatternsOrdering
     $orderMode: OrderingMode
+    $filters: [AttackPatternsFiltering]
   ) {
     ...CourseOfActionAttackPatternsLines_data
       @arguments(
@@ -153,6 +154,7 @@ export const courseOfActionAttackPatternsLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -168,13 +170,14 @@ const CourseOfActionAttackPatternsLines = createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "AttackPatternsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          filters: { type: "[AttackPatternsFiltering]" }
         ) {
         attackPatterns(
-          courseOfActionId: $courseOfActionId
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_attackPatterns") {
           edges {
             node {
@@ -208,11 +211,11 @@ const CourseOfActionAttackPatternsLines = createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
-        courseOfActionId: fragmentVariables.courseOfActionId,
         count,
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: courseOfActionAttackPatternsLinesQuery,

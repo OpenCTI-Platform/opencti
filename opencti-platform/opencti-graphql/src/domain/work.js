@@ -1,8 +1,9 @@
 import uuid from 'uuid/v4';
 import { assoc, filter, map, pipe } from 'ramda';
 import moment from 'moment';
-import { now, loadEntityById, sinceNowInMinutes } from '../database/grakn';
-import { elDeleteByField, elIndex, INDEX_WORK_JOBS, elLoadById, elPaginate } from '../database/elasticSearch';
+import { now, sinceNowInMinutes } from '../database/grakn';
+import { elDeleteByField, elIndex, elLoadById, elPaginate, INDEX_WORK_JOBS } from '../database/elasticSearch';
+import { loadConnectorById } from './connector';
 
 // region utils
 export const workToExportFile = work => {
@@ -22,7 +23,7 @@ export const workToExportFile = work => {
 
 export const connectorForWork = async id => {
   const work = await elLoadById(id, INDEX_WORK_JOBS);
-  if (work) return loadEntityById(work.connector_id);
+  if (work) return loadConnectorById(work.connector_id);
   return null;
 };
 

@@ -61,6 +61,7 @@ class ThreatActors extends Component {
   handleAddFilter(key, id, value, event) {
     event.stopPropagation();
     event.preventDefault();
+    console.log(key, id, value);
     this.setState({
       filters: assoc(key, [{ id, value }], this.state.filters),
     });

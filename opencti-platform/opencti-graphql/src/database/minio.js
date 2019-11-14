@@ -1,12 +1,11 @@
 import * as Minio from 'minio';
-import { assoc, isEmpty, concat, map, isNil, sort } from 'ramda';
+import { assoc, concat, isEmpty, isNil, map, sort } from 'ramda';
 import querystring from 'querystring';
 import mime from 'mime-types';
 import conf, { logger } from '../config/conf';
 import { loadEntityById, now, sinceNowInMinutes } from './grakn';
 import { buildPagination } from './utils';
 import { deleteWorkForFile, loadExportWorksAsProgressFiles } from '../domain/work';
-import { elLoadById } from './elasticSearch';
 
 const bucketName = conf.get('minio:bucket_name') || 'opencti-bucket';
 const bucketRegion = conf.get('minio:bucket_region') || 'us-east-1';
@@ -111,7 +110,7 @@ export const upload = async (user, category, file, entityId = null) => {
   };
   let entityType = null;
   if (entityId) {
-    const entity = await elLoadById(entityId);
+    const entity = await loadEntityById(entityId);
     entityType = entity.entity_type;
   }
   // eslint-disable-next-line prettier/prettier

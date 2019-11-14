@@ -1,31 +1,22 @@
 import { ascend, assoc, descend, prop, sortWith, take } from 'ramda';
-import uuid from 'uuid/v4';
 import {
-  dayFormat,
+  createEntity,
   distribution,
-  escape,
   escapeString,
-  executeWrite,
   getSingleValueNumber,
-  graknNow,
   loadEntityById,
-  monthFormat,
   paginate,
   paginateRelationships,
   prepareDate,
-  timeSeries,
-  yearFormat
+  timeSeries
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { elLoadById, elPaginate } from '../database/elasticSearch';
-import { addCreatedByRef, addMarkingDefs } from './stixEntity';
+import { elPaginate } from '../database/elasticSearch';
 import { notify } from '../database/redis';
 
 export const findById = reportId => {
-  return elLoadById(reportId);
+  return loadEntityById(reportId);
 };
-
-// region grakn fetch
 export const findAll = args => {
   if (args.orderBy === 'createdByRef') {
     const finalArgs = assoc('orderBy', 'name', args);
@@ -239,41 +230,8 @@ export const relationRefs = (reportId, args) => {
     'extraRel'
   );
 };
-// endregion
 
 export const addReport = async (user, report) => {
-  const internalId = report.internal_id_key ? escapeString(report.internal_id_key) : uuid();
-  await executeWrite(async wTx => {
-    const reportIterator = await wTx.tx.query(`insert $report isa Report,
-    has internal_id_key "${internalId}",
-    has entity_type "report",
-    has stix_id_key "${report.stix_id_key ? escapeString(report.stix_id_key) : `report--${uuid()}`}",
-    has stix_label "",
-    has alias "",
-    has name "${escapeString(report.name)}",
-    has description "${escapeString(report.description)}",
-    has published ${prepareDate(report.published)},
-    has published_day "${dayFormat(report.published)}",
-    has published_month "${monthFormat(report.published)}",
-    has published_year "${yearFormat(report.published)}",
-    has report_class "${escapeString(report.report_class)}",
-    has object_status ${report.object_status ? report.object_status : 0},
-    has source_confidence_level ${report.source_confidence_level ? escape(report.source_confidence_level) : 3},
-    has graph_data "${escapeString(report.graph_data)}",
-    has created ${report.created ? prepareDate(report.created) : graknNow()},
-    has modified ${report.modified ? prepareDate(report.modified) : graknNow()},
-    has revoked false,
-    has created_at ${graknNow()},
-    has created_at_day "${dayFormat(graknNow())}",
-    has created_at_month "${monthFormat(graknNow())}",
-    has created_at_year "${yearFormat(graknNow())}",        
-    has updated_at ${graknNow()};
-  `);
-    const createdReport = await reportIterator.next();
-    return createdReport.map().get('report').id;
-  });
-  const created = await loadEntityById(internalId);
-  await addCreatedByRef(internalId, report.createdByRef);
-  await addMarkingDefs(internalId, report.markingDefinitions);
+  const created = await createEntity(report, 'Report');
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };

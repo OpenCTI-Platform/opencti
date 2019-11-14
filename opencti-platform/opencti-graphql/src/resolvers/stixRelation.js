@@ -23,7 +23,7 @@ import {
 import { pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
 import { killChainPhases } from '../domain/stixDomainEntity';
-import { elLoadByGraknId } from '../database/elasticSearch';
+import { loadEntityByGraknId } from '../database/grakn';
 
 const stixRelationResolvers = {
   Query: {
@@ -40,31 +40,19 @@ const stixRelationResolvers = {
       if (args.stix_id_key && args.stix_id_key.length > 0) {
         return findByStixId(args);
       }
-      if (
-        args.resolveInferences &&
-        args.resolveRelationRole &&
-        args.resolveRelationType
-      ) {
+      if (args.resolveInferences && args.resolveRelationRole && args.resolveRelationType) {
         return findAllWithInferences(args);
       }
       return findAll(args);
     },
     stixRelationsTimeSeries: (_, args) => {
-      if (
-        args.resolveInferences &&
-        args.resolveRelationRole &&
-        args.resolveRelationType
-      ) {
+      if (args.resolveInferences && args.resolveRelationRole && args.resolveRelationType) {
         return stixRelationsTimeSeriesWithInferences(args);
       }
       return stixRelationsTimeSeries(args);
     },
     stixRelationsDistribution: (_, args) => {
-      if (
-        args.resolveInferences &&
-        args.resolveRelationRole &&
-        args.resolveRelationType
-      ) {
+      if (args.resolveInferences && args.resolveRelationRole && args.resolveRelationType) {
         return stixRelationsDistributionWithInferences(args);
       }
       return stixRelationsDistribution(args);
@@ -73,8 +61,12 @@ const stixRelationResolvers = {
   },
   StixRelation: {
     killChainPhases: (rel, args) => killChainPhases(rel.id, args),
-    from: rel => rel.from || elLoadByGraknId(rel.fromId),
-    to: rel => rel.to || elLoadByGraknId(rel.toId)
+    from: rel => loadEntityByGraknId(rel.fromId),
+    to: rel => loadEntityByGraknId(rel.toId)
+  },
+  RelationEmbedded: {
+    from: rel => loadEntityByGraknId(rel.fromId),
+    to: rel => loadEntityByGraknId(rel.toId)
   },
   Mutation: {
     stixRelationEdit: (_, { id }, { user }) => ({
@@ -83,8 +75,7 @@ const stixRelationResolvers = {
       contextPatch: ({ input }) => stixRelationEditContext(user, id, input),
       contextClean: () => stixRelationCleanContext(user, id),
       relationAdd: ({ input }) => stixRelationAddRelation(user, id, input),
-      relationDelete: ({ relationId }) =>
-        stixRelationDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => stixRelationDeleteRelation(user, id, relationId)
     }),
     stixRelationAdd: (_, { input }, { user }) => addStixRelation(user, input)
   },

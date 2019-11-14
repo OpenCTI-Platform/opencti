@@ -31,7 +31,7 @@ import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -86,7 +86,7 @@ const regionMutationRelationAdd = graphql`
   ) {
     regionEdit(id: $id) {
       relationAdd(input: $input) {
-        node {
+        from {
           ...RegionEditionOverview_region
         }
       }
@@ -101,15 +101,13 @@ const regionMutationRelationDelete = graphql`
   ) {
     regionEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        node {
-          ...RegionEditionOverview_region
-        }
+        ...RegionEditionOverview_region
       }
     }
   }
 `;
 
-const regionValidation = t => Yup.object().shape({
+const regionValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string()
     .min(3, t('The value is too short'))
@@ -135,7 +133,7 @@ class RegionEditionOverviewComponent extends Component {
     }).then((data) => {
       const identities = pipe(
         pathOr([], ['identities', 'edges']),
-        map(n => ({ label: n.node.name, value: n.node.id })),
+        map((n) => ({ label: n.node.name, value: n.node.id })),
       )(data);
       this.setState({ identities: union(this.state.identities, identities) });
     });
@@ -155,7 +153,7 @@ class RegionEditionOverviewComponent extends Component {
     }).then((data) => {
       const markingDefinitions = pipe(
         pathOr([], ['markingDefinitions', 'edges']),
-        map(n => ({ label: n.node.definition, value: n.node.id })),
+        map((n) => ({ label: n.node.definition, value: n.node.id })),
       )(data);
       this.setState({
         markingDefinitions: union(
@@ -240,7 +238,7 @@ class RegionEditionOverviewComponent extends Component {
     const { region } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
-      map(n => ({
+      map((n) => ({
         label: n.node.definition,
         value: n.node.id,
         relationId: n.relation.id,
@@ -289,7 +287,7 @@ class RegionEditionOverviewComponent extends Component {
       };
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
-      map(n => ({
+      map((n) => ({
         label: n.node.definition,
         value: n.node.id,
         relationId: n.relation.id,

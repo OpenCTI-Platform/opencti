@@ -92,7 +92,7 @@ const reportMutationRelationAdd = graphql`
   ) {
     reportEdit(id: $id) {
       relationAdd(input: $input) {
-        node {
+        from {
           ...ReportEditionOverview_report
         }
       }
@@ -107,9 +107,7 @@ const reportMutationRelationDelete = graphql`
   ) {
     reportEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        node {
-          ...ReportEditionOverview_report
-        }
+        ...ReportEditionOverview_report
       }
     }
   }

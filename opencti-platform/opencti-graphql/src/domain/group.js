@@ -1,73 +1,33 @@
-import uuid from 'uuid/v4';
-import {
-  dayFormat,
-  deleteEntityById,
-  escapeString,
-  executeWrite,
-  graknNow,
-  loadEntityById,
-  monthFormat,
-  paginate,
-  yearFormat
-} from '../database/grakn';
+import { assoc, concat } from 'ramda';
+import { createEntity, deleteEntityById, listEntities, loadEntityById, TYPE_OPENCTI_INTERNAL } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { addCreatedByRef, addMarkingDefs } from './stixEntity';
 import { notify } from '../database/redis';
+import { findAll as findAllUsers } from './user';
+import { findAll as findAllMarkings } from './markingDefinition';
 
 // region grakn fetch
-export const findById = groupId => loadEntityById(groupId);
+export const findById = groupId => {
+  return loadEntityById(groupId);
+};
 export const findAll = args => {
-  return paginate(
-    `match $g isa Group ${
-      args.search
-        ? `; $g has name $name;
-   $g has description $description;
-   { $name contains "${escapeString(args.search)}"; } or
-   { $description contains "${escapeString(args.search)}"; }`
-        : ''
-    }`,
-    args
-  );
+  const typedArgs = assoc('types', ['Group'], args);
+  return listEntities(['name'], typedArgs);
 };
-export const members = (groupId, args) => {
-  return paginate(
-    `match $user isa User; 
-    $rel((member:$user, grouping:$g) isa membership; 
-    $g has internal_id_key "${escapeString(groupId)}"`,
-    args
-  );
+export const members = async (groupId, args) => {
+  const filters = concat([{ key: 'membership.internal_id_key', values: [groupId] }], args.filters || []);
+  const filterArgs = assoc('filters', filters, args);
+  return findAllUsers(filterArgs);
 };
-export const permissions = (groupId, args) => {
-  return paginate(
-    `match $marking isa Marking-Definition; 
-    $rel(allow:$marking, allowed:$g) isa permission; 
-    $g has internal_id_key "${escapeString(groupId)}"`,
-    args
-  );
+export const permissions = async (groupId, args) => {
+  const filters = concat([{ key: 'permission.internal_id_key', values: [groupId] }], args.filters || []);
+  const filterArgs = assoc('filters', filters, args);
+  return findAllMarkings(filterArgs);
 };
 // endregion
 
 export const addGroup = async (user, group) => {
-  const internalId = group.internal_id_key ? escapeString(group.internal_id_key) : uuid();
-  await executeWrite(async wTx => {
-    const groupIterator = await wTx.tx.query(`insert $group isa Group,
-    has internal_id_key "${internalId}",
-    has entity_type "group",
-    has name "${escapeString(group.name)}",
-    has description "${escapeString(group.description)}",
-    has created_at ${graknNow()},
-    has created_at_day "${dayFormat(graknNow())}",
-    has created_at_month "${monthFormat(graknNow())}",
-    has created_at_year "${yearFormat(graknNow())}",  
-    has updated_at ${graknNow()};
-  `);
-    const createGroup = await groupIterator.next();
-    return createGroup.map().get('group').id;
-  });
-  const created = await loadEntityById(internalId);
-  await addCreatedByRef(internalId, group.createdByRef);
-  await addMarkingDefs(internalId, group.markingDefinitions);
-  notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  const created = await createEntity(group, 'Group', TYPE_OPENCTI_INTERNAL);
+  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 
 export const groupDelete = groupId => deleteEntityById(groupId);

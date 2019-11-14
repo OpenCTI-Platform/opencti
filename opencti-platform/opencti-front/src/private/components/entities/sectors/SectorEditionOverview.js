@@ -89,7 +89,7 @@ const sectorMutationRelationAdd = graphql`
   ) {
     sectorEdit(id: $id) {
       relationAdd(input: $input) {
-        node {
+        from {
           ...SectorEditionOverview_sector
         }
       }
@@ -104,9 +104,7 @@ const sectorMutationRelationDelete = graphql`
   ) {
     sectorEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        node {
-          ...SectorEditionOverview_sector
-        }
+        ...SectorEditionOverview_sector
       }
     }
   }

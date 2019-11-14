@@ -37,18 +37,14 @@ module.exports.up = async next => {
     'Stix-Observable-Data'
   ];
 
-  logger.info(
-    `[MIGRATION] internal_id_to_keys > Migrating all attributes internal_id to internal_id_key...`
-  );
+  logger.info(`[MIGRATION] internal_id_to_keys > Migrating all attributes internal_id to internal_id_key...`);
 
   const isExisting = await attributeExists('internal_id');
   if (isExisting) {
     await Promise.all(
       entities.map(async entity => {
         if (entity !== null) {
-          logger.info(
-            `[MIGRATION] internal_id_to_keys > Processing ${entity}...`
-          );
+          logger.info(`[MIGRATION] internal_id_to_keys > Processing ${entity}...`);
           await executeWrite(async wTx => {
             const q = `match $x isa ${entity}, has internal_id $s; not { $x has internal_id_key $sn; }; get;`;
             logger.info(`[MIGRATION] internal_id_to_keys > ${q}`);
@@ -87,29 +83,21 @@ module.exports.up = async next => {
               })
             );
             const actionsBatches = splitEvery(100, actionsToDo);
+            // eslint-disable-next-line no-restricted-syntax
             for (const actionsBatch of actionsBatches) {
+              // eslint-disable-next-line no-await-in-loop
               await Promise.all(
                 actionsBatch.map(async action => {
-                  logger.info(
-                    `[MIGRATION] internal_id_to_keys > ${action.graknQuery}`
-                  );
+                  logger.info(`[MIGRATION] internal_id_to_keys > ${action.graknQuery}`);
                   if (action.elasticQuery !== null) {
-                    logger.info(
-                      `[MIGRATION] internal_id_to_keys > Reindex ${action.id}`
-                    );
-                    await elIndex(
-                      action.elasticQuery.index,
-                      action.elasticQuery.data,
-                      true
-                    );
+                    logger.info(`[MIGRATION] internal_id_to_keys > Reindex ${action.id}`);
+                    await elIndex(action.elasticQuery.index, action.elasticQuery.data, true);
                   }
                   return wTx.tx.query(action.graknQuery);
                 })
               );
             }
-            logger.info(
-              `[MIGRATION] internal_id_to_keys > Writing ${entity} new key attributes...`
-            );
+            logger.info(`[MIGRATION] internal_id_to_keys > Writing ${entity} new key attributes...`);
           });
         }
         return false;

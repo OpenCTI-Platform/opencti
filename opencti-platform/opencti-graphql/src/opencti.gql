@@ -505,6 +505,9 @@ define
     has connector_scope,
     has connector_state,
     has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
     has updated_at;
 
   Group sub entity,

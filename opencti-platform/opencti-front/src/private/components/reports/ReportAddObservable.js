@@ -31,7 +31,7 @@ import DatePickerField from '../../../components/DatePickerField';
 import Select from '../../../components/Select';
 import { markingDefinitionsSearchQuery } from '../settings/MarkingDefinitions';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -196,12 +196,7 @@ const reportMutationRelationAddSimple = graphql`
   ) {
     reportEdit(id: $id) {
       relationAdd(input: $input) {
-        node {
-          id
-        }
-        relation {
-          id
-        }
+        id
       }
     }
   }
@@ -215,18 +210,16 @@ const reportMutationRelationAdd = graphql`
   ) {
     reportEdit(id: $id) {
       relationAdd(input: $input) {
-        node {
+        id
+        from {
           ...ReportObservablesLines_report @arguments(relationType: $relationType)
-        }
-        relation {
-          id
         }
       }
     }
   }
 `;
 
-const reportValidation = t => Yup.object().shape({
+const reportValidation = (t) => Yup.object().shape({
   type: Yup.string().required(t('This field is required')),
   role_played: Yup.string().required(t('This field is required')),
   observable_value: Yup.string().required(t('This field is required')),
@@ -262,7 +255,7 @@ class ReportAddObservable extends Component {
         .concat(pathOr([], ['incidents', 'edges'], data))
         .concat(pathOr([], ['malwares', 'edges'], data));
       const threats = map(
-        n => ({
+        (n) => ({
           label: n.node.name,
           value: n.node.id,
           type: n.node.entity_type,
@@ -279,7 +272,7 @@ class ReportAddObservable extends Component {
     }).then((data) => {
       const markingDefinitions = pipe(
         pathOr([], ['markingDefinitions', 'edges']),
-        map(n => ({ label: n.node.definition, value: n.node.id })),
+        map((n) => ({ label: n.node.definition, value: n.node.id })),
       )(data);
       this.setState({
         markingDefinitions: union(

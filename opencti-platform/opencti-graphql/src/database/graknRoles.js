@@ -54,6 +54,14 @@ export const rolesMap = {
   object_marking_refs: {
     so: 'from',
     marking: 'to'
+  },
+  kill_chain_phases: {
+    phase_belonging: 'from',
+    kill_chain_phase: 'to'
+  },
+  permission: {
+    allowed: 'from',
+    allow: 'to'
   }
 };
 

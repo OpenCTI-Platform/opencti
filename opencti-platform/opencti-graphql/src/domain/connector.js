@@ -1,15 +1,15 @@
 import { assoc, filter, includes, map, pipe } from 'ramda';
 import {
+  createEntity,
   executeWrite,
   find,
   loadEntityById,
-  graknNow,
   now,
   sinceNowInMinutes,
+  TYPE_OPENCTI_INTERNAL,
   updateAttribute
 } from '../database/grakn';
 import { connectorConfig, registerConnectorQueues } from '../database/rabbitmq';
-import { elLoadById } from '../database/elasticSearch';
 
 export const CONNECTOR_INTERNAL_IMPORT_FILE = 'INTERNAL_IMPORT_FILE'; // Files mime types to support (application/json, ...) -> import-
 export const CONNECTOR_INTERNAL_ENRICHMENT = 'INTERNAL_ENRICHMENT'; // Entity types to support (Report, Hash, ...) -> enrich-
@@ -26,6 +26,7 @@ const completeConnector = connector => {
 // endregion
 
 // region grakn fetch
+export const loadConnectorById = id => loadEntityById(id);
 export const connectors = () => {
   const query = `match $c isa Connector; get;`;
   return find(query, ['c']).then(elements => map(conn => completeConnector(conn.c), elements));
@@ -63,9 +64,8 @@ export const pingConnector = async (id, state) => {
     const stateInput = { key: 'connector_state', value: [state] };
     await updateAttribute(id, stateInput, wTx);
   });
-  return elLoadById(id).then(data => completeConnector(data));
+  return loadEntityById(id).then(data => completeConnector(data));
 };
-
 export const registerConnector = async ({ id, name, type, scope }) => {
   const connector = await loadEntityById(id);
   // Register queues
@@ -80,22 +80,12 @@ export const registerConnector = async ({ id, name, type, scope }) => {
       const scopeInput = { key: 'connector_scope', value: [scope.join(',')] };
       await updateAttribute(id, scopeInput, wTx);
     });
-    return elLoadById(id).then(data => completeConnector(data));
+    return loadEntityById(id).then(data => completeConnector(data));
   }
   // Need to create the connector
-  const creation = graknNow();
-  await executeWrite(async wTx => {
-    const query = `insert $connector isa Connector, 
-          has internal_id_key "${id}",
-          has name "${name}",
-          has connector_type "${type}",
-          has connector_scope "${scope.join(',')}",
-          has created_at ${creation},
-          has updated_at ${creation};`;
-    await wTx.tx.query(query);
-  });
+  const connectorToCreate = { internal_id_key: id, name, connector_type: type, connector_scope: scope.join(',') };
+  const createdConnector = await createEntity(connectorToCreate, 'Connector', TYPE_OPENCTI_INTERNAL);
   // Return the connector
-  return loadEntityById(id).then(data => completeConnector(data));
+  return completeConnector(createdConnector);
 };
 // endregion
-

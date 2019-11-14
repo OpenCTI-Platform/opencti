@@ -1,27 +1,25 @@
+import { addCourseOfAction, findAll, findById } from '../domain/courseOfAction';
 import {
-  addCourseOfAction,
-  findAll,
-  findByEntity,
-  findById
-} from '../domain/courseOfAction';
-import {
-  stixDomainEntityEditContext,
-  stixDomainEntityCleanContext,
-  stixDomainEntityEditField,
   stixDomainEntityAddRelation,
+  stixDomainEntityCleanContext,
+  stixDomainEntityDelete,
   stixDomainEntityDeleteRelation,
-  stixDomainEntityDelete
+  stixDomainEntityEditContext,
+  stixDomainEntityEditField
 } from '../domain/stixDomainEntity';
 
 const courseOfActionResolvers = {
   Query: {
     courseOfAction: (_, { id }) => findById(id),
-    coursesOfAction: (_, args) => {
-      if (args.objectId && args.objectId.length > 0) {
-        return findByEntity(args);
-      }
-      return findAll(args);
-    }
+    coursesOfAction: (_, args) => findAll(args)
+  },
+  CoursesOfActionOrdering: {
+    tags: 'tagged.value',
+    markingDefinitions: 'object_marking_refs.definition'
+  },
+  CoursesOfActionFilter: {
+    tags: 'tagged.internal_id_key',
+    attackPattern: 'mitigates.internal_id_key'
   },
   Mutation: {
     courseOfActionEdit: (_, { id }, { user }) => ({
@@ -30,11 +28,9 @@ const courseOfActionResolvers = {
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) =>
-        stixDomainEntityDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
     }),
-    courseOfActionAdd: (_, { input }, { user }) =>
-      addCourseOfAction(user, input)
+    courseOfActionAdd: (_, { input }, { user }) => addCourseOfAction(user, input)
   }
 };
 

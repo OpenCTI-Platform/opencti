@@ -22,7 +22,7 @@ import { commitMutation } from '../../../../relay/environment';
 import AddCoursesOfAction from './AddCoursesOfAction';
 import { courseOfActionMutationRelationDelete } from './AddCoursesOfActionLines';
 
-const styles = theme => ({
+const styles = (theme) => ({
   paper: {
     minHeight: '100%',
     margin: '-4px 0 0 0',
@@ -139,19 +139,19 @@ EntityCoursesOfActionLinesContainer.propTypes = {
 
 export const entityCoursesOfActionLinesQuery = graphql`
   query EntityCoursesOfActionLinesQuery(
-    $objectId: String!
     $count: Int!
     $cursor: ID
     $orderBy: CoursesOfActionOrdering
     $orderMode: OrderingMode
+    $filters: [CoursesOfActionFiltering]
   ) {
     ...EntityCoursesOfActionLines_data
       @arguments(
-        objectId: $objectId
         count: $count
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -162,18 +162,18 @@ const EntityCoursesOfActionLines = createPaginationContainer(
     data: graphql`
       fragment EntityCoursesOfActionLines_data on Query
         @argumentDefinitions(
-          objectId: { type: "String!" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
           orderBy: { type: "CoursesOfActionOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          filters: { type: "[CoursesOfActionFiltering]" }
         ) {
         coursesOfAction(
-          objectId: $objectId
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_coursesOfAction") {
           edges {
             node {
@@ -207,11 +207,11 @@ const EntityCoursesOfActionLines = createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
-        objectId: fragmentVariables.objectId,
         count,
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: entityCoursesOfActionLinesQuery,

@@ -17,7 +17,7 @@ import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 
-const styles = theme => ({
+const styles = (theme) => ({
   avatar: {
     width: 24,
     height: 24,
@@ -34,18 +34,16 @@ const externalReferenceLinesMutationRelationAdd = graphql`
   ) {
     externalReferenceEdit(id: $id) {
       relationAdd(input: $input) {
-        node {
+        id
+        to {
           ... on ExternalReference {
-            id
-            source_name
-            description
-            url
-            hash
-            external_id
+              id
+              source_name
+              description
+              url
+              hash
+              external_id
           }
-        }
-        relation {
-          id
         }
       }
     }
@@ -59,11 +57,7 @@ export const externalReferenceMutationRelationDelete = graphql`
   ) {
     externalReferenceEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        node {
-          ... on ExternalReference {
-            id
-          }
-        }
+        id
       }
     }
   }
@@ -87,7 +81,7 @@ class AddExternalReferencesLinesContainer extends Component {
       entityPaginationOptions,
     } = this.props;
     const entityExternalReferencesIds = map(
-      n => n.node.id,
+      (n) => n.node.id,
       entityExternalReferences,
     );
     const alreadyAdded = entityExternalReferencesIds.includes(
@@ -97,7 +91,7 @@ class AddExternalReferencesLinesContainer extends Component {
     if (alreadyAdded) {
       const existingExternalReference = head(
         filter(
-          n => n.node.id === externalReference.id,
+          (n) => n.node.id === externalReference.id,
           entityExternalReferences,
         ),
       );
@@ -134,13 +128,15 @@ class AddExternalReferencesLinesContainer extends Component {
         updater: (store) => {
           const payload = store
             .getRootField('externalReferenceEdit')
-            .getLinkedRecord('relationAdd', { input });
+            .getLinkedRecord('relationAdd', { input })
+            .getLinkedRecord('to');
+          const newEdge = payload.setLinkedRecord(payload, 'node');
           const container = store.getRoot();
           sharedUpdater(
             store,
             container.getDataID(),
             entityPaginationOptions,
-            payload,
+            newEdge,
           );
         },
       });
@@ -150,7 +146,7 @@ class AddExternalReferencesLinesContainer extends Component {
   render() {
     const { classes, data, entityExternalReferences } = this.props;
     const entityExternalReferencesIds = map(
-      n => n.node.id,
+      (n) => n.node.id,
       entityExternalReferences,
     );
     return (

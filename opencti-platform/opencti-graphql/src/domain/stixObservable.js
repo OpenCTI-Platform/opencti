@@ -1,35 +1,26 @@
 import { assoc, assocPath, dissoc, map, pipe } from 'ramda';
-import uuid from 'uuid/v4';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
+  createEntity,
   createRelation,
-  dayFormat,
   deleteEntityById,
   deleteRelationById,
   escape,
   escapeString,
   executeWrite,
-  graknNow,
-  monthFormat,
   loadEntityById,
+  loadObservableById,
+  loadObservableByStixId,
   timeSeries,
-  updateAttribute,
-  yearFormat
+  TYPE_STIX_OBSERVABLE,
+  updateAttribute
 } from '../database/grakn';
-import { BUS_TOPICS, logger } from '../config/conf';
+import { BUS_TOPICS } from '../config/conf';
 import { findAll as relationFindAll } from './stixRelation';
-import {
-  elCount,
-  INDEX_STIX_OBSERVABLE,
-  elLoadById,
-  elLoadByStixId,
-  elLoadByTerms,
-  elPaginate
-} from '../database/elasticSearch';
+import { elCount, elLoadByTerms, elPaginate, INDEX_STIX_OBSERVABLE } from '../database/elasticSearch';
 import { connectorsForEnrichment } from './connector';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
-import { addCreatedByRef, addMarkingDefs, linkCreatedByRef, linkMarkingDef } from './stixEntity';
 
 export const findAll = args => {
   if (!args.firstSeenStart && !args.firstSeenStop && !args.lastSeenStart && !args.lastSeenStop) {
@@ -58,7 +49,7 @@ export const stixObservablesNumber = args => ({
   total: elCount('stix_observables', dissoc('endDate', args))
 });
 export const findById = stixObservableId => {
-  return elLoadById(stixObservableId, [INDEX_STIX_OBSERVABLE]);
+  return loadObservableById(stixObservableId);
 };
 export const findByStixId = args => {
   // return paginate(
@@ -67,7 +58,7 @@ export const findByStixId = args => {
   //   args,
   //   false
   // );
-  return elLoadByStixId(args.stix_id, [INDEX_STIX_OBSERVABLE]);
+  return loadObservableByStixId(args.stix_id);
 };
 export const findByValue = args => {
   // return paginate(
@@ -136,32 +127,10 @@ export const stixObservableAskEnrichment = async (id, connectorId) => {
   return work;
 };
 export const addStixObservable = async (user, stixObservable) => {
-  const internalId = stixObservable.internal_id_key ? escapeString(stixObservable.internal_id_key) : uuid();
-  await executeWrite(async wTx => {
-    const stixId = stixObservable.stix_id_key;
-    const observableValue = stixObservable.observable_value;
-    const query = `insert $stixObservable isa ${escape(stixObservable.type)},
-    has internal_id_key "${internalId}",
-    has stix_id_key "${stixId ? escapeString(stixId) : `indicator--${uuid()}`}",
-    has entity_type "${escapeString(stixObservable.type.toLowerCase())}",
-    has name "",
-    has description "${escapeString(stixObservable.description)}",
-    has observable_value "${escapeString(observableValue)}",
-    has created_at ${graknNow()},
-    has created_at_day "${dayFormat(graknNow())}",
-    has created_at_month "${monthFormat(graknNow())}",
-    has created_at_year "${yearFormat(graknNow())}",      
-    has updated_at ${graknNow()};
-  `;
-    logger.debug(`[GRAKN - infer: false] addStixObservable > ${query}`);
-    const stixObservableIterator = await wTx.tx.query(query);
-    const createStixObservable = await stixObservableIterator.next();
-    return createStixObservable.map().get('stixObservable').id;
-  });
-  const created = await loadEntityById(internalId);
-  await addCreatedByRef(internalId, stixObservable.createdByRef);
-  await addMarkingDefs(internalId, stixObservable.markingDefinitions);
-  await askEnrich(internalId, stixObservable.type);
+  const innerType = stixObservable.type;
+  const observableToCreate = dissoc('type', stixObservable);
+  const created = await createEntity(observableToCreate, innerType, TYPE_STIX_OBSERVABLE, 'indicator');
+  await askEnrich(created.id, innerType);
   return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user);
 };
 export const stixObservableDelete = async stixObservableId => {
@@ -169,7 +138,7 @@ export const stixObservableDelete = async stixObservableId => {
 };
 export const stixObservableAddRelation = (user, stixObservableId, input) => {
   return createRelation(stixObservableId, input).then(relationData => {
-    notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
@@ -179,13 +148,13 @@ export const stixObservableEditField = (user, stixObservableId, input) => {
   return executeWrite(wTx => {
     return updateAttribute(stixObservableId, input, wTx);
   }).then(async () => {
-    const stixObservable = await elLoadById(stixObservableId);
+    const stixObservable = await loadObservableById(stixObservableId);
     return notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, stixObservable, user);
   });
 };
 export const stixObservableDeleteRelation = (user, stixObservableId, relationId) => {
   return deleteRelationById(stixObservableId, relationId).then(relationData => {
-    notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };

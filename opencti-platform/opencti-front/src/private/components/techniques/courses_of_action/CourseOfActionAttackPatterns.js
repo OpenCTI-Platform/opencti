@@ -41,18 +41,24 @@ class CoursesOfActionAttackPatterns extends Component {
   render() {
     const { t, classes, courseOfActionId } = this.props;
     const paginationOptions = {
-      courseOfActionId,
       orderBy: 'created_at',
       orderMode: 'desc',
+      filters: [{
+        key: 'courseOfAction',
+        values: [courseOfActionId],
+      }],
     };
     return (
       <QueryRenderer
         query={courseOfActionAttackPatternsLinesQuery}
         variables={{
-          courseOfActionId,
           count: 200,
           orderBy: 'created_at',
           orderMode: 'desc',
+          filters: [{
+            key: 'courseOfAction',
+            values: [courseOfActionId],
+          }],
         }}
         render={({ props }) => {
           if (props) {

@@ -1,61 +1,48 @@
 /* eslint-disable no-underscore-dangle */
 import { Client } from '@elastic/elasticsearch';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
-import {
-  map,
-  concat,
-  dissoc,
-  append,
-  assoc,
-  mapObjIndexed,
-  pipe,
-  split,
-  join,
-  head
-} from 'ramda';
+import { append, assoc, concat, dissoc, head, includes, join, map, pipe, split } from 'ramda';
 import { buildPagination } from './utils';
 import conf, { logger } from '../config/conf';
 
-const dateFields = [
-  'created',
-  'modified',
-  'created_at',
-  'updated_at',
-  'first_seen',
-  'last_seen',
-  'published'
-];
-
+const dateFields = ['created', 'modified', 'created_at', 'updated_at', 'first_seen', 'last_seen', 'published'];
 const numberFields = ['object_status'];
 
 export const INDEX_STIX_OBSERVABLE = 'stix_observables';
 export const INDEX_STIX_ENTITIES = 'stix_domain_entities';
 export const INDEX_STIX_RELATIONS = 'stix_relations';
-export const INDEX_EXT_REFERENCES = 'external_references';
 export const INDEX_WORK_JOBS = 'work_jobs_index';
-export const INDEX_CONNECTORS = 'opencti_connector';
-export const PLATFORM_INDICES = [
-  INDEX_STIX_ENTITIES,
-  INDEX_STIX_RELATIONS,
-  INDEX_STIX_OBSERVABLE,
-  INDEX_EXT_REFERENCES,
-  INDEX_WORK_JOBS,
-  INDEX_CONNECTORS
-];
-export const INDICES_TO_CREATE = [
-  INDEX_STIX_ENTITIES,
-  INDEX_STIX_RELATIONS,
-  INDEX_STIX_OBSERVABLE,
-  INDEX_EXT_REFERENCES
-];
-export const FIELD_INDEX_SUFFIX = '_indexed';
+export const PLATFORM_INDICES = [INDEX_STIX_ENTITIES, INDEX_STIX_RELATIONS, INDEX_STIX_OBSERVABLE, INDEX_WORK_JOBS];
 
-const SUPPORTED_FILTERS = ['tags', 'createdByRef', 'markingDefinitions'];
-const INDEX_FIELD_PER_FILTER = {
-  tags: 'tagged',
-  createdByRef: 'created_by_ref',
-  markingDefinitions: 'object_marking_refs'
+/*
+export const relationsToIndex = {
+  'Stix-Domain': [
+    {
+      type: 'tagged',
+      key: 'tags_indexed',
+      query: 'match $t isa Tag, has internal_id_key $value; (so: $x, tagging: $t) isa tagged;'
+    },
+    {
+      type: 'created_by_ref',
+      key: 'createdByRef_indexed',
+      query: 'match $i isa Identity, has internal_id_key $value; (so: $x, creator: $i) isa created_by_ref;'
+    },
+    {
+      type: 'object_marking_refs',
+      key: 'markingDefinitions_indexed',
+      query:
+        'match $m isa Marking-Definition, has internal_id_key $value; (so: $x, marking: $m) isa object_marking_refs;'
+    }
+  ],
+  'Stix-Observable': [
+    {
+      type: 'tagged',
+      key: 'tags_indexed',
+      query: 'match $t isa Tag, has value $value; (so: $x, tagging: $t) isa tagged;'
+    }
+  ]
 };
+*/
 
 export const el = new Client({ node: conf.get('elasticsearch:url') });
 
@@ -81,7 +68,7 @@ export const elVersion = () => {
 };
 export const elCreateIndexes = async () => {
   return Promise.all(
-    INDICES_TO_CREATE.map(index => {
+    PLATFORM_INDICES.map(index => {
       return el.indices.exists({ index }).then(result => {
         if (result.body === false) {
           return el.indices.create({
@@ -162,8 +149,7 @@ export const elCreateIndexes = async () => {
     })
   );
 };
-
-export const elDeleteIndexes = async (indexesToDelete = INDICES_TO_CREATE) => {
+export const elDeleteIndexes = async (indexesToDelete = PLATFORM_INDICES) => {
   return Promise.all(
     indexesToDelete.map(index => {
       return el.indices.delete({ index }).catch(() => {
@@ -171,57 +157,6 @@ export const elDeleteIndexes = async (indexesToDelete = INDICES_TO_CREATE) => {
       });
     })
   );
-};
-export const elReindex = async indexMaps => {
-  return Promise.all(
-    indexMaps.map(indexMap => {
-      return el
-        .reindex({
-          timeout: '60m',
-          body: {
-            source: {
-              index: indexMap.source
-            },
-            dest: {
-              index: indexMap.dest
-            }
-          }
-        })
-        .catch(() => {
-          return false;
-        });
-    })
-  );
-};
-export const elIndex = async (indexName, documentBody, refresh = true) => {
-  const internalId = documentBody.internal_id_key;
-  const entityType = documentBody.entity_type ? documentBody.entity_type : '';
-  logger.debug(
-    `[ELASTICSEARCH] index > ${entityType} ${internalId} in ${indexName}`
-  );
-  await el
-    .index({
-      index: indexName,
-      id: documentBody.grakn_id,
-      refresh,
-      body: dissoc('_index', documentBody)
-    })
-    .catch(err => {
-      logger.error(
-        `[ELASTICSEARCH] index > ${entityType} ${internalId} in ${indexName}, ${err}`
-      );
-    });
-  return documentBody;
-};
-export const elUpdate = (indexName, documentId, documentBody) => {
-  return el.update({
-    id: documentId,
-    index: indexName,
-    refresh: true,
-    body: {
-      doc: documentBody
-    }
-  });
 };
 
 export const elDeleteByField = async (indexName, fieldName, value) => {
@@ -321,10 +256,9 @@ export const elPaginate = async (indexName, options) => {
   const {
     first = 200,
     after,
-    type = null,
     types = null,
     reportClass = null,
-    filters = null,
+    filters = [],
     isUser = null,
     search = null,
     orderBy = null,
@@ -369,18 +303,6 @@ export const elPaginate = async (indexName, options) => {
       must
     );
   }
-  if (type !== null && type.length > 0) {
-    must = append(
-      {
-        match_phrase: {
-          entity_type: {
-            query: type
-          }
-        }
-      },
-      must
-    );
-  }
   if (types !== null && types.length > 0) {
     const should = types.map(typeValue => {
       return {
@@ -411,60 +333,6 @@ export const elPaginate = async (indexName, options) => {
       must
     );
   }
-  if (filters !== null) {
-    await mapObjIndexed((value, key) => {
-      let finalKey = key;
-      if (SUPPORTED_FILTERS.includes(key)) {
-        finalKey = `${INDEX_FIELD_PER_FILTER[key]}${FIELD_INDEX_SUFFIX}`;
-      }
-      if (Array.isArray(value)) {
-        for (let i = 0; i < value.length; i += 1) {
-          if (value[i] === null) {
-            mustnot = append(
-              {
-                exists: {
-                  field: finalKey
-                }
-              },
-              mustnot
-            );
-            break;
-          } else {
-            must = append(
-              {
-                match_phrase: {
-                  [finalKey]: {
-                    query: value[i]
-                  }
-                }
-              },
-              must
-            );
-          }
-        }
-      } else if (value === null) {
-        mustnot = append(
-          {
-            exists: {
-              field: finalKey
-            }
-          },
-          mustnot
-        );
-      } else {
-        must = append(
-          {
-            match_phrase: {
-              [finalKey]: {
-                query: value
-              }
-            }
-          },
-          must
-        );
-      }
-    }, filters);
-  }
   if (isUser !== null && isUser === true) {
     must = append(
       {
@@ -475,17 +343,48 @@ export const elPaginate = async (indexName, options) => {
       must
     );
   }
-  if (orderBy !== null && orderBy.length > 0) {
-    let finalOrderBy = orderBy;
-    if (SUPPORTED_FILTERS.includes(orderBy)) {
-      finalOrderBy = `${INDEX_FIELD_PER_FILTER[orderBy]}${FIELD_INDEX_SUFFIX}`;
+  if (filters && filters.length > 0) {
+    for (let index = 0; index < filters.length; index += 1) {
+      const { key, values } = filters[index];
+      for (let i = 0; i < values.length; i += 1) {
+        if (values[i] === null) {
+          mustnot = append(
+            {
+              exists: {
+                field: key
+              }
+            },
+            mustnot
+          );
+          break;
+        } else if (includes('.', key)) {
+          must = append(
+            {
+              exists: {
+                field: `${key}.${values[i]}`
+              }
+            },
+            must
+          );
+          break;
+        } else {
+          must = append(
+            {
+              match_phrase: {
+                [key]: {
+                  query: values[i]
+                }
+              }
+            },
+            must
+          );
+        }
+      }
     }
+  }
+  if (orderBy !== null && orderBy.length > 0) {
     const order = {};
-    order[
-      dateFields.includes(finalOrderBy) || numberFields.includes(finalOrderBy)
-        ? finalOrderBy
-        : `${finalOrderBy}.keyword`
-    ] = orderMode;
+    order[dateFields.includes(orderBy) || numberFields.includes(orderBy) ? orderBy : `${orderBy}.keyword`] = orderMode;
     ordering = append(order, ordering);
   }
 
@@ -517,12 +416,7 @@ export const elPaginate = async (indexName, options) => {
       );
       if (connectionFormat) {
         const nodeHits = map(n => ({ node: n }), dataWithIds);
-        return buildPagination(
-          first,
-          offset,
-          nodeHits,
-          data.body.hits.total.value
-        );
+        return buildPagination(first, offset, nodeHits, data.body.hits.total.value);
       }
       return dataWithIds;
     })
@@ -542,7 +436,9 @@ export const elLoadByTerms = async (terms, indices = PLATFORM_INDICES) => {
       }
     }
   };
-  const data = await el.search(query);
+  const data = await el.search(query).catch(err => {
+    console.log(err);
+  });
   const total = data.body.hits.total.value;
   const response = total > 0 ? head(data.body.hits.hits) : undefined;
   if (!response) return response;
@@ -593,28 +489,26 @@ const elFindTerms = ({ terms, ranges }, type = 'should', indices) => {
       }
     }
   };
-  return el.search(query).then(data => {
-    const nodeHits = map(
-      x => ({ node: assoc('_index', x._index, x._source) }),
-      data.body.hits.hits
-    );
-    return buildPagination(0, 0, nodeHits, data.body.hits.total.value);
-  });
+  return el
+    .search(query)
+    .then(data => {
+      const nodeHits = map(x => ({ node: assoc('_index', x._index, x._source) }), data.body.hits.hits);
+      return buildPagination(0, 0, nodeHits, data.body.hits.total.value);
+    })
+    .catch(err => {
+      console.log(err);
+    });
 };
 export const elFindTermsOr = async (terms, indices = PLATFORM_INDICES) => {
   return elFindTerms({ terms }, 'should', indices);
 };
-// eslint-disable-next-line prettier/prettier
 export const elFindTermsAnd = async ({ terms, ranges }, indices = PLATFORM_INDICES) => {
   return elFindTerms({ terms, ranges }, 'must', indices);
 };
 export const elFindRelationAndTarget = async (fromStixId, relationType) => {
   const fromEntity = await elLoadById(fromStixId);
   const data = await elFindTermsAnd({
-    terms: [
-      { 'fromId.keyword': fromEntity.grakn_id },
-      { 'relationship_type.keyword': relationType }
-    ]
+    terms: [{ 'fromId.keyword': fromEntity.grakn_id }, { 'relationship_type.keyword': relationType }]
   });
   const transform = await Promise.all(
     map(t => {
@@ -629,4 +523,61 @@ export const elFindRelationAndTarget = async (fromStixId, relationType) => {
 export const elLoadRelationAndTarget = async (fromStixId, relationType) => {
   const data = await elFindRelationAndTarget(fromStixId, relationType);
   return head(data.edges);
+};
+
+export const elReindex = async indexMaps => {
+  return Promise.all(
+    indexMaps.map(indexMap => {
+      return el
+        .reindex({
+          timeout: '60m',
+          body: {
+            source: {
+              index: indexMap.source
+            },
+            dest: {
+              index: indexMap.dest
+            }
+          }
+        })
+        .catch(() => {
+          return false;
+        });
+    })
+  );
+};
+export const elIndex = async (indexName, documentBody, refresh = true) => {
+  const internalId = documentBody.internal_id_key;
+  const entityType = documentBody.entity_type ? documentBody.entity_type : '';
+  logger.debug(`[ELASTICSEARCH] index > ${entityType} ${internalId} in ${indexName}`);
+  await el
+    .index({
+      index: indexName,
+      id: documentBody.grakn_id,
+      refresh,
+      body: dissoc('_index', documentBody)
+    })
+    .catch(err => {
+      logger.error(`[ELASTICSEARCH] index > ${entityType} ${internalId} in ${indexName}, ${err}`);
+    });
+  return documentBody;
+};
+export const elUpdate = (indexName, documentId, documentBody) => {
+  return el.update({
+    id: documentId,
+    index: indexName,
+    refresh: true,
+    body: documentBody
+  });
+};
+export const elUpdateAddInnerRelation = async (internalId, relationType, targetId, relationId) => {
+  const previousEntity = await elLoadById(internalId);
+  const indexKey = `${relationType}.internal_id_key.${targetId}`;
+  const doc = { [indexKey]: relationId };
+  await elUpdate(previousEntity._index, previousEntity.grakn_id, { doc });
+};
+export const elUpdateRemoveInnerRelation = async (internalId, relationType, targetId) => {
+  const previousEntity = await elLoadById(internalId);
+  const scriptToExecute = `ctx._source.remove('${relationType}.internal_id_key.${targetId}')`;
+  await elUpdate(previousEntity._index, previousEntity.grakn_id, { script: scriptToExecute });
 };

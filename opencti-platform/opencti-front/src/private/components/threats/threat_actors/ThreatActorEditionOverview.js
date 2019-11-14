@@ -89,7 +89,7 @@ const threatActorMutationRelationAdd = graphql`
   ) {
     threatActorEdit(id: $id) {
       relationAdd(input: $input) {
-        node {
+        from {
           ...ThreatActorEditionOverview_threatActor
         }
       }
@@ -104,9 +104,7 @@ const threatActorMutationRelationDelete = graphql`
   ) {
     threatActorEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        node {
-          ...ThreatActorEditionOverview_threatActor
-        }
+        ...ThreatActorEditionOverview_threatActor
       }
     }
   }

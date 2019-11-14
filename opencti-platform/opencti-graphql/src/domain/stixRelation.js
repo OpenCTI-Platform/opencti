@@ -24,33 +24,28 @@ import {
   values
 } from 'ramda';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
-import uuid from 'uuid/v4';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createRelation,
-  dayFormat,
-  deleteById,
   deleteRelationById,
   distribution,
   escape,
   escapeString,
   executeWrite,
+  findWithConnectedRelations,
   getRelationInferredById,
   getSingleValueNumber,
-  graknNow,
-  monthFormat,
-  paginateRelationships,
-  prepareDate,
   loadEntityById,
   loadRelationById,
+  loadRelationByStixId,
+  paginateRelationships,
+  prepareDate,
   timeSeries,
-  updateAttribute,
-  yearFormat,
-  findWithConnectedRelations
+  updateAttribute
 } from '../database/grakn';
 import { buildPagination } from '../database/utils';
-import { BUS_TOPICS, logger } from '../config/conf';
-import { elFindTermsAnd, elFindTermsOr, elLoadById } from '../database/elasticSearch';
+import { BUS_TOPICS } from '../config/conf';
+import { elFindTermsAnd, elFindTermsOr } from '../database/elasticSearch';
 
 // region utils
 const sumBy = attribute => vals => {
@@ -66,11 +61,11 @@ export const findAll = async args => {
     const terms = [];
     const ranges = [];
     if (fromId) {
-      const from = await elLoadById(fromId).then(d => d.grakn_id);
+      const from = await loadEntityById(fromId).then(d => d.grakn_id);
       terms.push({ 'fromId.keyword': from });
     }
     if (toId) {
-      const to = await elLoadById(toId).then(d => d.grakn_id);
+      const to = await loadEntityById(toId).then(d => d.grakn_id);
       terms.push({ 'toId.keyword': to });
     }
     if (relationType) {
@@ -98,9 +93,11 @@ export const findAll = async args => {
 };
 
 // region elastic fetch
-export const findById = stixRelationId => elLoadById(stixRelationId);
+export const findById = stixRelationId => {
+  return loadRelationById(stixRelationId);
+};
 export const findByStixId = args => {
-  return elFindTermsOr([{ 'stix_id_key.keyword': args.stix_id_key }]);
+  return loadRelationByStixId(args.stix_id_key);
 };
 export const search = args => {
   return elFindTermsOr([
@@ -422,96 +419,29 @@ export const stixRelationsNumber = args => ({
 
 // region mutations
 export const addStixRelation = async (user, stixRelation) => {
-  const stixRelationId = await executeWrite(async wTx => {
-    const internalId = stixRelation.internal_id_key ? escapeString(stixRelation.internal_id_key) : uuid();
-    const query = `match $from has internal_id_key "${escapeString(stixRelation.fromId)}"; 
-    $to has internal_id_key "${escapeString(stixRelation.toId)}"; 
-    insert $stixRelation(${escape(stixRelation.fromRole)}: $from, ${escape(stixRelation.toRole)}: $to) 
-    isa ${escape(stixRelation.relationship_type)}, 
-    has internal_id_key "${internalId}",
-    has relationship_type "${escapeString(stixRelation.relationship_type.toLowerCase())}",
-    has entity_type "stix-relation",
-    has stix_id_key "${stixRelation.stix_id_key ? escapeString(stixRelation.stix_id_key) : `relationship--${uuid()}`}",
-    has name "",
-    has description "${escapeString(stixRelation.description)}",
-    has role_played "${stixRelation.role_played ? escapeString(stixRelation.role_played) : 'Unknown'}",
-    has weight ${stixRelation.weight ? escape(stixRelation.weight) : 0},
-    has score ${stixRelation.score ? escape(stixRelation.score) : 50},
-    ${
-      stixRelation.expiration
-        ? `has expiration ${prepareDate(stixRelation.expiration)},
-          has expiration_day "${dayFormat(stixRelation.expiration)}",
-          has expiration_month "${monthFormat(stixRelation.expiration)}",
-          has expiration_year "${yearFormat(stixRelation.expiration)}",`
-        : ''
-    }
-    has first_seen ${prepareDate(stixRelation.first_seen)},
-    has first_seen_day "${dayFormat(stixRelation.first_seen)}",
-    has first_seen_month "${monthFormat(stixRelation.first_seen)}",
-    has first_seen_year "${yearFormat(stixRelation.first_seen)}",
-    has last_seen ${prepareDate(stixRelation.last_seen)},
-    has last_seen_day "${dayFormat(stixRelation.last_seen)}",
-    has last_seen_month "${monthFormat(stixRelation.last_seen)}",
-    has last_seen_year "${yearFormat(stixRelation.last_seen)}",
-    has created ${stixRelation.created ? prepareDate(stixRelation.created) : graknNow()},
-    has modified ${stixRelation.modified ? prepareDate(stixRelation.modified) : graknNow()},
-    has revoked false,
-    has created_at ${graknNow()},
-    has created_at_day "${dayFormat(graknNow())}",
-    has created_at_month "${monthFormat(graknNow())}",
-    has created_at_year "${yearFormat(graknNow())}",        
-    has updated_at ${graknNow()};
-  `;
-    logger.debug(`[GRAKN - infer: false] addStixRelation > ${query}`);
-    const stixRelationIterator = await wTx.tx.query(query);
-    const createStixRelation = await stixRelationIterator.next();
-    const createdId = await createStixRelation.map().get('stixRelation').id;
-    if (stixRelation.markingDefinitions) {
-      const createMarkingDefinition = markingDefinition =>
-        wTx.tx.query(
-          `match $from id ${createdId};
-        $to has internal_id_key "${escapeString(markingDefinition)}";
-        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
-        );
-      const markingDefinitionsPromises = map(createMarkingDefinition, stixRelation.markingDefinitions);
-      await Promise.all(markingDefinitionsPromises);
-    }
-    if (stixRelation.killChainPhases) {
-      const createKillChainPhase = killChainPhase =>
-        wTx.tx.query(
-          `match $from id ${createdId};
-        $to has internal_id_key "${escapeString(killChainPhase)}";
-        insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases, has internal_id_key "${uuid()}";`
-        );
-      const killChainPhasesPromises = map(createKillChainPhase, stixRelation.killChainPhases);
-      await Promise.all(killChainPhasesPromises);
-    }
-    return internalId;
-  });
-  return loadRelationById(stixRelationId, stixRelation.fromId).then(created => {
-    return notify(BUS_TOPICS.StixRelation.ADDED_TOPIC, created, user);
-  });
+  const created = await createRelation(stixRelation.fromId, stixRelation);
+  return notify(BUS_TOPICS.StixRelation.ADDED_TOPIC, created, user);
 };
 export const stixRelationDelete = async stixRelationId => {
-  return deleteById(stixRelationId);
+  return deleteRelationById(stixRelationId);
 };
 export const stixRelationEditField = (user, stixRelationId, input) => {
   return executeWrite(wTx => {
     return updateAttribute(stixRelationId, input, wTx);
   }).then(async () => {
-    const stixRelation = await elLoadById(stixRelationId);
+    const stixRelation = await loadEntityById(stixRelationId);
     return notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, stixRelation, user);
   });
 };
 export const stixRelationAddRelation = (user, stixRelationId, input) => {
   return createRelation(stixRelationId, input).then(relationData => {
-    notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
 export const stixRelationDeleteRelation = (user, stixRelationId, relationId) => {
   return deleteRelationById(stixRelationId, relationId).then(relationData => {
-    notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, relationData.node, user);
+    notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
