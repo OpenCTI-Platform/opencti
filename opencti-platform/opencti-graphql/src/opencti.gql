@@ -389,6 +389,7 @@ define
     has created_at_year,
     has updated_at,
     plays phase_belonging,
+    plays characterize,
     plays so;
 
   # targets
