@@ -251,7 +251,6 @@ export const elCount = (indexName, options) => {
     return data.body.count;
   });
 };
-
 export const elPaginate = async (indexName, options) => {
   const {
     first = 200,

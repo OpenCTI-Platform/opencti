@@ -1,27 +1,25 @@
 import {
   addReport,
   findAll,
-  findByEntity,
-  findByAuthor,
-  reportsTimeSeries,
-  reportsTimeSeriesByEntity,
-  reportsTimeSeriesByAuthor,
-  reportsNumber,
-  reportsNumberByEntity,
-  reportsDistributionByEntity,
   findById,
   objectRefs,
   observableRefs,
-  relationRefs
+  relationRefs,
+  reportsDistributionByEntity,
+  reportsNumber,
+  reportsNumberByEntity,
+  reportsTimeSeries,
+  reportsTimeSeriesByAuthor,
+  reportsTimeSeriesByEntity
 } from '../domain/report';
 import {
   externalReferences,
-  stixDomainEntityEditContext,
-  stixDomainEntityCleanContext,
-  stixDomainEntityEditField,
   stixDomainEntityAddRelation,
+  stixDomainEntityCleanContext,
+  stixDomainEntityDelete,
   stixDomainEntityDeleteRelation,
-  stixDomainEntityDelete
+  stixDomainEntityEditContext,
+  stixDomainEntityEditField
 } from '../domain/stixDomainEntity';
 
 const reportResolvers = {

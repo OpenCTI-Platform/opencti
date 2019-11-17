@@ -1,4 +1,4 @@
-import { assoc, assocPath, dissoc, map, pipe } from 'ramda';
+import { assoc, dissoc, map } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
@@ -9,7 +9,6 @@ import {
   escapeString,
   executeWrite,
   listEntities,
-  loadEntityByGraknId,
   loadEntityById,
   loadObservableById,
   timeSeries,
@@ -17,7 +16,6 @@ import {
   updateAttribute
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { findAll as relationFindAll } from './stixRelation';
 import { elCount } from '../database/elasticSearch';
 import { connectorsForEnrichment } from './connector';
 import { createWork } from './work';
@@ -29,44 +27,11 @@ export const findById = stixObservableId => {
 export const findAll = async args => {
   const noTypes = !args.types || args.types.length === 0;
   const finalArgs = assoc('types', noTypes ? ['Stix-Observable'] : args.types, args);
-  const test = await listEntities(['name', 'description', 'observable_value'], finalArgs);
-  // if (!args.firstSeenStart && !args.firstSeenStop && !args.lastSeenStart && !args.lastSeenStop) {
-  //
-  // }
-  const compare = await relationFindAll({
-    relationType: 'indicates',
-    fromTypes: args.types ? args.types : ['Stix-Observable'],
-    firstSeenStart: args.firstSeenStart,
-    firstSeenStop: args.firstSeenStop,
-    lastSeenStart: args.lastSeenStart,
-    lastSeenStop: args.lastSeenStop
-  }).then(async relations => {
-    const observablesEdges = await Promise.all(
-      map(
-        n =>
-          loadEntityByGraknId(n.node.toId).then(node => ({
-            node: pipe(
-              assoc('first_seen', n.node.first_seen),
-              assoc('last_seen', n.node.last_seen)
-            )(node),
-            relation: n.relation,
-            cursor: n.cursor
-          })),
-        relations.edges
-      )
-    );
-    // const observablesEdges = pipe(
-    //   map(n => assocPath(['node', 'from', 'first_seen'], n.node.first_seen, n)),
-    //   map(n => assocPath(['node', 'from', 'last_seen'], n.node.last_seen, n)),
-    //   map(n => ({ node: n.node.from, cursor: n.cursor }))
-    // )(relations.edges);
-    return assoc('edges', observablesEdges, relations);
-  });
-  return test;
+  return listEntities(['name', 'description', 'observable_value'], finalArgs);
 };
 
 // region by elastic
-// TODO ONLY ES?
+// TODO JRI ONLY ES?
 export const stixObservablesNumber = args => ({
   count: elCount('stix_observables', args),
   total: elCount('stix_observables', dissoc('endDate', args))

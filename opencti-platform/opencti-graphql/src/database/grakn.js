@@ -958,6 +958,7 @@ export const listEntities = async (searchFields, args) => {
     }
     return paginateResult;
   }
+  // TODO JRI Remove this
   console.log('[GRAKN] FETCH listEntities FROM GRAKN');
   // noinspection ES6MissingAwait
   const countPromise = getSingleValueNumber(countQuery);
@@ -1153,12 +1154,13 @@ export const paginateRelationships = (query, options, key = 'rel', extraRel = nu
       orderBy,
       orderMode = 'asc'
     } = options;
+    // TODO JRI Remove this
     console.log('[GRAKN] FETCH paginateRelationships FROM GRAKN');
     const offset = after ? cursorToOffset(after) : 0;
     const finalQuery = `
-  ${query};
-  ${fromId ? `$from has internal_id_key "${escapeString(fromId)}";` : ''}
-  ${toId ? `$to has internal_id_key "${escapeString(toId)}";` : ''} ${
+      ${query};
+      ${fromId ? `$from has internal_id_key "${escapeString(fromId)}";` : ''}
+      ${toId ? `$to has internal_id_key "${escapeString(toId)}";` : ''} ${
       fromTypes && fromTypes.length > 0
         ? `${join(' ', map(fromType => `{ $from isa ${fromType}; } or`, tail(fromTypes)))} { $from isa ${head(
             fromTypes
