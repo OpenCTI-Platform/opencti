@@ -89,6 +89,7 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'file-sha1':
     case 'file-sha256':
       return <HexagonOutline style={style} fontSize={fontSize} />;
+    case 'stix-relation':
     case 'targets':
     case 'uses':
     case 'related-to':

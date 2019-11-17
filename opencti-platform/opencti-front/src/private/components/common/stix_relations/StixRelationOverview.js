@@ -30,6 +30,7 @@ import GlobalPortFactory from '../../../../components/graph_node/GlobalPortFacto
 import { stixRelationEditionFocus } from './StixRelationEditionOverview';
 import ItemMarking from '../../../../components/ItemMarking';
 import StixRelationInferences from './StixRelationInferences';
+import StixRelationStixRelations from './StixRelationStixRelations';
 
 const styles = () => ({
   container: {
@@ -299,7 +300,7 @@ class StixRelationContainer extends Component {
         </Link>
         <div className="clearfix" style={{ height: 20 }} />
         <Grid container={true} spacing={2}>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={4}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Information')}
             </Typography>
@@ -338,7 +339,7 @@ class StixRelationContainer extends Component {
               {stixRelation.inferred ? '-' : fld(stixRelation.updated_at)}
             </Paper>
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={4}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Details')}
             </Typography>
@@ -377,6 +378,9 @@ class StixRelationContainer extends Component {
                 source={stixRelation.description}
               />
             </Paper>
+          </Grid>
+          <Grid item={true} xs={4}>
+            <StixRelationStixRelations entityId={stixRelation.id} />
           </Grid>
         </Grid>
         <div style={{ margin: '50px 0 60px 0' }}>

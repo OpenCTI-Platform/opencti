@@ -376,8 +376,8 @@ interface StixEntity {
     search: String
     infrastructure: Boolean
   ): StixRelationConnection
-  created_at: DateTime
-  updated_at: DateTime
+  created_at: DateTime!
+  updated_at: DateTime!
 }
 
 enum StixDomainEntitiesOrdering {
@@ -590,8 +590,8 @@ type StixRelation implements GlobalObject & StixEntity {
     search: String
     infrastructure: Boolean
   ): StixRelationConnection
-  created_at: DateTime
-  updated_at: DateTime
+  created_at: DateTime!
+  updated_at: DateTime!
 }
 input StixRelationAddInput {
   internal_id_key: String

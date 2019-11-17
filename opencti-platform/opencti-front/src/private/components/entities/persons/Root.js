@@ -72,14 +72,14 @@ class RootPerson extends Component {
                   <Route
                     exact
                     path="/dashboard/entities/persons/:personId"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <Person {...routeProps} person={props.user} />
                     )}
                   />
                   <Route
                     exact
                     path="/dashboard/entities/persons/:personId/reports"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <PersonReports {...routeProps} person={props.user} />
                     )}
                   />
@@ -94,7 +94,7 @@ class RootPerson extends Component {
                   />
                   <Route
                     path="/dashboard/entities/persons/:personId/knowledge"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <PersonKnowledge {...routeProps} person={props.user} />
                     )}
                   />

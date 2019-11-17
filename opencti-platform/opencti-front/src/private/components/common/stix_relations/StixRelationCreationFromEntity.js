@@ -47,9 +47,12 @@ import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
 import Select from '../../../../components/Select';
 import DatePickerField from '../../../../components/DatePickerField';
-import StixRelationCreationFromEntityLines, {
-  stixRelationCreationFromEntityLinesQuery,
-} from './StixRelationCreationFromEntityLines';
+import StixRelationCreationFromEntityStixDomainEntitiesLines, {
+  stixRelationCreationFromEntityStixDomainEntitiesLinesQuery,
+} from './StixRelationCreationFromEntityStixDomainEntitiesLines';
+import StixRelationCreationFromEntityStixObservablesLines, {
+  stixRelationCreationFromEntityStixObservablesLinesQuery,
+} from './StixRelationCreationFromEntityStixObservablesLines';
 import StixDomainEntityCreation from '../stix_domain_entities/StixDomainEntityCreation';
 import SearchInput from '../../../../components/SearchInput';
 import Autocomplete from '../../../../components/Autocomplete';
@@ -57,6 +60,7 @@ import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions
 import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
 import { truncate } from '../../../../utils/String';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
+import StixObservableCreation from '../../stix_observables/StixObservableCreation';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -291,14 +295,28 @@ class StixRelationCreationFromEntity extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
+    const { isFrom, isFromRelation } = this.props;
+    const { targetEntity } = this.state;
     const roles = resolveRoles(values.relationship_type);
     const fromEntityId = this.props.entityId;
     const toEntityId = this.state.targetEntity.id;
     const finalValues = pipe(
       assoc('fromId', fromEntityId),
-      assoc('fromRole', this.props.isFrom ? roles.fromRole : roles.toRole),
+      assoc(
+        'fromRole',
+        isFrom
+          && !(isFromRelation && targetEntity.parent_type === 'Stix-Observable')
+          ? roles.fromRole
+          : roles.toRole,
+      ),
       assoc('toId', toEntityId),
-      assoc('toRole', this.props.isFrom ? roles.toRole : roles.fromRole),
+      assoc(
+        'toRole',
+        isFrom
+          && !(isFromRelation && targetEntity.parent_type === 'Stix-Observable')
+          ? roles.toRole
+          : roles.fromRole,
+      ),
       assoc('first_seen', parse(values.first_seen).format()),
       assoc('last_seen', parse(values.last_seen).format()),
       assoc('killChainPhases', pluck('value', values.killChainPhases)),
@@ -373,18 +391,18 @@ class StixRelationCreationFromEntity extends Component {
         </div>
         <div className={classes.containerList}>
           <QueryRenderer
-            query={stixRelationCreationFromEntityLinesQuery}
+            query={stixRelationCreationFromEntityStixDomainEntitiesLinesQuery}
             variables={{
               search: this.state.search,
               types: targetEntityTypes,
-              count: 200,
+              count: 50,
               orderBy: 'created_at',
               orderMode: 'desc',
             }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixRelationCreationFromEntityLines
+                  <StixRelationCreationFromEntityStixDomainEntitiesLines
                     handleSelect={this.handleSelectEntity.bind(this)}
                     data={props}
                   />
@@ -411,6 +429,27 @@ class StixRelationCreationFromEntity extends Component {
               );
             }}
           />
+          <QueryRenderer
+            query={stixRelationCreationFromEntityStixObservablesLinesQuery}
+            variables={{
+              search: this.state.search,
+              types: targetEntityTypes,
+              count: 50,
+              orderBy: 'created_at',
+              orderMode: 'desc',
+            }}
+            render={({ props }) => {
+              if (props) {
+                return (
+                  <StixRelationCreationFromEntityStixObservablesLines
+                    handleSelect={this.handleSelectEntity.bind(this)}
+                    data={props}
+                  />
+                );
+              }
+              return <div> &nbsp; </div>;
+            }}
+          />
           <StixDomainEntityCreation
             display={this.state.open}
             contextual={true}
@@ -424,11 +463,16 @@ class StixRelationCreationFromEntity extends Component {
   }
 
   renderForm(sourceEntity) {
-    const { t, classes, isFrom } = this.props;
+    const {
+      t, classes, isFrom, isFromRelation,
+    } = this.props;
     const { targetEntity } = this.state;
     let fromEntity = sourceEntity;
     let toEntity = targetEntity;
-    if (!isFrom) {
+    if (
+      !isFrom
+      || (isFromRelation && targetEntity.parent_type === 'Stix-Observable')
+    ) {
       fromEntity = targetEntity;
       toEntity = sourceEntity;
     }
@@ -518,7 +562,7 @@ class StixRelationCreationFromEntity extends Component {
                                 fromEntity.parent_type === 'Stix-Observable'
                                   ? fromEntity.observable_value
                                   : fromEntity.name,
-                                120,
+                                20,
                               )}
                             </span>
                           </div>
@@ -566,7 +610,7 @@ class StixRelationCreationFromEntity extends Component {
                                 toEntity.parent_type === 'Stix-Observable'
                                   ? toEntity.observable_value
                                   : toEntity.name,
-                                120,
+                                20,
                               )}
                             </span>
                           </div>
@@ -788,6 +832,7 @@ class StixRelationCreationFromEntity extends Component {
 StixRelationCreationFromEntity.propTypes = {
   entityId: PropTypes.string,
   isFrom: PropTypes.bool,
+  isFromRelation: PropTypes.bool,
   targetEntityTypes: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,

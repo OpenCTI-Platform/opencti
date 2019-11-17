@@ -6,6 +6,7 @@ import { QueryRenderer, requestSubscription } from '../../../relay/environment';
 import TopBar from '../nav/TopBar';
 import StixObservable from './StixObservable';
 import StixObservableEnrichment from './StixObservableEnrichment';
+import StixRelation from '../common/stix_relations/StixRelation';
 
 const subscription = graphql`
   subscription RootStixObservableSubscription($id: ID!) {
@@ -54,6 +55,7 @@ class RootStixObservable extends Component {
         params: { observableId },
       },
     } = this.props;
+    const inversedRoles = ['location'];
     return (
       <div>
         <TopBar me={me || null} />
@@ -64,20 +66,37 @@ class RootStixObservable extends Component {
             if (props && props.stixObservable) {
               return (
                 <div>
-                  <Route exact path="/dashboard/observables/all/:observableId"
-                    render={routeProps => (
+                  <Route
+                    exact
+                    path="/dashboard/observables/all/:observableId"
+                    render={(routeProps) => (
                       <StixObservable
                         {...routeProps}
                         stixObservable={props.stixObservable}
                       />
-                    )}/>
-                  <Route exact path="/dashboard/observables/all/:observableId/enrichment"
-                    render={routeProps => (
-                        <StixObservableEnrichment
-                            {...routeProps}
-                            stixObservable={props.stixObservable}
-                        />
-                    )}/>
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/observables/all/:observableId/enrichment"
+                    render={(routeProps) => (
+                      <StixObservableEnrichment
+                        {...routeProps}
+                        stixObservable={props.stixObservable}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/observables/all/:observableId/relations/:relationId"
+                    render={(routeProps) => (
+                      <StixRelation
+                        entityId={observableId}
+                        inversedRoles={inversedRoles}
+                        {...routeProps}
+                      />
+                    )}
+                  />
                 </div>
               );
             }
