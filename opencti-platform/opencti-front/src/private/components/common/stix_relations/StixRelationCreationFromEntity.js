@@ -60,7 +60,6 @@ import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions
 import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
 import { truncate } from '../../../../utils/String';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
-import StixObservableCreation from '../../stix_observables/StixObservableCreation';
 
 const styles = (theme) => ({
   drawerPaper: {
