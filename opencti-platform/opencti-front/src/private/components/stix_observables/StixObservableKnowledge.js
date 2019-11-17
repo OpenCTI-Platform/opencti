@@ -27,26 +27,26 @@ import { FIVE_SECONDS } from '../../../utils/Time';
 import { commitMutation } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import StixObservableHeader from './StixObservableHeader';
-import StixObservableEnrichmentEntities from './StixObservableEnrichmentEntities';
+import StixObservableKnowledgeEntities from './StixObservableKnowledgeEntities';
 
 const interval$ = interval(FIVE_SECONDS);
 
-const StixObservableEnrichmentQuery = graphql`
-  query StixObservableEnrichmentQuery($id: String!) {
+const StixObservableKnowledgeQuery = graphql`
+  query StixObservableKnowledgeQuery($id: String!) {
     stixObservable(id: $id) {
-      ...StixObservableEnrichment_stixObservable
+      ...StixObservableKnowledge_stixObservable
     }
   }
 `;
 
-const StixObservableEnrichmentDeleteMutation = graphql`
-  mutation StixObservableEnrichmentDeleteMutation($workId: ID!) {
+const StixObservableKnowledgeDeleteMutation = graphql`
+  mutation StixObservableKnowledgeDeleteMutation($workId: ID!) {
     deleteWork(id: $workId)
   }
 `;
 
-const StixObservableEnrichmentAskEnrich = graphql`
-  mutation StixObservableEnrichmentMutation($id: ID!, $connectorId: ID!) {
+const StixObservableKnowledgeAskEnrich = graphql`
+  mutation StixObservableKnowledgeMutation($id: ID!, $connectorId: ID!) {
     stixObservableEdit(id: $id) {
       askEnrichment(connectorId: $connectorId) {
         id
@@ -73,21 +73,21 @@ const styles = (theme) => ({
   },
 });
 
-const StixObservableEnrichment = (props) => {
+const StixObservableKnowledge = (props) => {
   const {
     stixObservable, relay, classes, t, nsdt,
   } = props;
   const { id } = stixObservable;
   const askEnrich = (connectorId) => {
     commitMutation({
-      mutation: StixObservableEnrichmentAskEnrich,
+      mutation: StixObservableKnowledgeAskEnrich,
       variables: { id, connectorId },
       onCompleted: () => relay.refetch({ id, entityType: stixObservable.entity_type }),
     });
   };
   const deleteWork = (workId) => {
     commitMutation({
-      mutation: StixObservableEnrichmentDeleteMutation,
+      mutation: StixObservableKnowledgeDeleteMutation,
       variables: { workId },
       onCompleted: () => relay.refetch({ id, entityType: stixObservable.entity_type }),
     });
@@ -99,7 +99,7 @@ const StixObservableEnrichment = (props) => {
         entityType: stixObservable.entity_type,
       });
     });
-    return function cleanup() {
+    return () => {
       subscription.unsubscribe();
     };
   });
@@ -112,7 +112,7 @@ const StixObservableEnrichment = (props) => {
         classes={{ container: classes.gridContainer }}
       >
         <Grid item={true} xs={9}>
-          <StixObservableEnrichmentEntities entityId={stixObservable.id} />
+          <StixObservableKnowledgeEntities entityId={stixObservable.id} />
         </Grid>
         <Grid item={true} xs={3}>
           <Typography variant="h4" gutterBottom={true}>
@@ -152,7 +152,7 @@ const StixObservableEnrichment = (props) => {
                         <ListItemSecondaryAction style={{ right: 0 }}>
                           <Tooltip
                             title={t(
-                              'Refresh the enrichment using this connector',
+                              'Refresh the knowledge using this connector',
                             )}
                           >
                             <IconButton
@@ -223,11 +223,11 @@ const StixObservableEnrichment = (props) => {
   );
 };
 
-const StixObservableEnrichmentFragment = createRefetchContainer(
-  StixObservableEnrichment,
+const StixObservableKnowledgeFragment = createRefetchContainer(
+  StixObservableKnowledge,
   {
     stixObservable: graphql`
-      fragment StixObservableEnrichment_stixObservable on StixObservable {
+      fragment StixObservableKnowledge_stixObservable on StixObservable {
         id
         entity_type
         jobs(first: 100) {
@@ -248,10 +248,10 @@ const StixObservableEnrichmentFragment = createRefetchContainer(
       }
     `,
   },
-  StixObservableEnrichmentQuery,
+  StixObservableKnowledgeQuery,
 );
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixObservableEnrichmentFragment);
+)(StixObservableKnowledgeFragment);

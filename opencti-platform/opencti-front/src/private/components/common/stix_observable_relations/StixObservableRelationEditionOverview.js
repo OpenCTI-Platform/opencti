@@ -17,9 +17,6 @@ import {
   difference,
   head,
   union,
-  sortWith,
-  ascend,
-  path,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -47,7 +44,6 @@ import Autocomplete from '../../../../components/Autocomplete';
 import DatePickerField from '../../../../components/DatePickerField';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
 import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
-import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
 
 const styles = (theme) => ({
   header: {
@@ -93,32 +89,32 @@ const styles = (theme) => ({
 });
 
 const subscription = graphql`
-  subscription StixRelationEditionOverviewSubscription($id: ID!) {
-    stixRelation(id: $id) {
-      ...StixRelationEditionOverview_stixRelation
+  subscription StixObservableRelationEditionOverviewSubscription($id: ID!) {
+    stixObservableRelation(id: $id) {
+      ...StixObservableRelationEditionOverview_stixObservableRelation
     }
   }
 `;
 
-const stixRelationMutationFieldPatch = graphql`
-  mutation StixRelationEditionOverviewFieldPatchMutation(
+const stixObservableRelationMutationFieldPatch = graphql`
+  mutation StixObservableRelationEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: EditInput!
   ) {
-    stixRelationEdit(id: $id) {
+    stixObservableRelationEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...StixRelationEditionOverview_stixRelation
+        ...StixObservableRelationEditionOverview_stixObservableRelation
       }
     }
   }
 `;
 
-export const stixRelationEditionFocus = graphql`
-  mutation StixRelationEditionOverviewFocusMutation(
+export const stixObservableRelationEditionFocus = graphql`
+  mutation StixObservableRelationEditionOverviewFocusMutation(
     $id: ID!
     $input: EditContext!
   ) {
-    stixRelationEdit(id: $id) {
+    stixObservableRelationEdit(id: $id) {
       contextPatch(input: $input) {
         id
       }
@@ -126,52 +122,47 @@ export const stixRelationEditionFocus = graphql`
   }
 `;
 
-const stixRelationMutationRelationAdd = graphql`
-  mutation StixRelationEditionOverviewRelationAddMutation(
+const stixObservableRelationMutationRelationAdd = graphql`
+  mutation StixObservableRelationEditionOverviewRelationAddMutation(
     $id: ID!
     $input: RelationAddInput!
   ) {
-    stixRelationEdit(id: $id) {
+    stixObservableRelationEdit(id: $id) {
       relationAdd(input: $input) {
         node {
-          ...StixRelationEditionOverview_stixRelation
+          ...StixObservableRelationEditionOverview_stixObservableRelation
         }
       }
     }
   }
 `;
 
-const stixRelationMutationRelationDelete = graphql`
-  mutation StixRelationEditionOverviewRelationDeleteMutation(
+const stixObservableRelationMutationRelationDelete = graphql`
+  mutation StixObservableRelationEditionOverviewRelationDeleteMutation(
     $id: ID!
     $relationId: ID!
   ) {
-    stixRelationEdit(id: $id) {
+    stixObservableRelationEdit(id: $id) {
       relationDelete(relationId: $relationId) {
         node {
-          ...StixRelationEditionOverview_stixRelation
+          ...StixObservableRelationEditionOverview_stixObservableRelation
         }
       }
     }
   }
 `;
 
-const stixRelationValidation = (t) => Yup.object().shape({
-  weight: Yup.number()
-    .typeError(t('The value must be a number'))
-    .integer(t('The value must be a number'))
-    .required(t('This field is required')),
+const stixObservableRelationValidation = (t) => Yup.object().shape({
   first_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
   last_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  description: Yup.string(),
   role_played: Yup.string(),
 });
 
-class StixRelationEditionContainer extends Component {
+class StixObservableRelationEditionContainer extends Component {
   constructor(props) {
     super(props);
     this.state = { killChainPhases: [], markingDefinitions: [] };
@@ -182,7 +173,7 @@ class StixRelationEditionContainer extends Component {
       subscription,
       variables: {
         // eslint-disable-next-line
-        id: this.props.stixRelation.id
+        id: this.props.stixObservableRelation.id
       },
     });
     this.setState({ sub });
@@ -190,24 +181,6 @@ class StixRelationEditionContainer extends Component {
 
   componentWillUnmount() {
     this.state.sub.dispose();
-  }
-
-  searchKillChainPhases(event) {
-    fetchQuery(killChainPhasesSearchQuery, {
-      search: event.target.value,
-    }).then((data) => {
-      const killChainPhases = pipe(
-        pathOr([], ['killChainPhases', 'edges']),
-        sortWith([ascend(path(['node', 'phase_order']))]),
-        map((n) => ({
-          label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-          value: n.node.id,
-        })),
-      )(data);
-      this.setState({
-        killChainPhases: union(this.state.killChainPhases, killChainPhases),
-      });
-    });
   }
 
   searchMarkingDefinitions(event) {
@@ -227,48 +200,8 @@ class StixRelationEditionContainer extends Component {
     });
   }
 
-  handleChangeKillChainPhases(name, values) {
-    const { stixRelation } = this.props;
-    const currentKillChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map((n) => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-        relationId: n.relation.id,
-      })),
-    )(stixRelation);
-
-    const added = difference(values, currentKillChainPhases);
-    const removed = difference(currentKillChainPhases, values);
-
-    if (added.length > 0) {
-      commitMutation({
-        mutation: stixRelationMutationRelationAdd,
-        variables: {
-          id: head(added).value,
-          input: {
-            fromRole: 'kill_chain_phase',
-            toId: stixRelation.id,
-            toRole: 'phase_belonging',
-            through: 'kill_chain_phases',
-          },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: stixRelationMutationRelationDelete,
-        variables: {
-          id: stixRelation.id,
-          relationId: head(removed).relationId,
-        },
-      });
-    }
-  }
-
   handleChangeMarkingDefinition(name, values) {
-    const { stixRelation } = this.props;
+    const { stixObservableRelation } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
       map((n) => ({
@@ -276,19 +209,19 @@ class StixRelationEditionContainer extends Component {
         value: n.node.id,
         relationId: n.relation.id,
       })),
-    )(stixRelation);
+    )(stixObservableRelation);
 
     const added = difference(values, currentMarkingDefinitions);
     const removed = difference(currentMarkingDefinitions, values);
 
     if (added.length > 0) {
       commitMutation({
-        mutation: stixRelationMutationRelationAdd,
+        mutation: stixObservableRelationMutationRelationAdd,
         variables: {
           id: head(added).value,
           input: {
             fromRole: 'marking',
-            toId: stixRelation.id,
+            toId: stixObservableRelation.id,
             toRole: 'so',
             through: 'object_marking_refs',
           },
@@ -298,9 +231,9 @@ class StixRelationEditionContainer extends Component {
 
     if (removed.length > 0) {
       commitMutation({
-        mutation: stixRelationMutationRelationDelete,
+        mutation: stixObservableRelationMutationRelationDelete,
         variables: {
-          id: stixRelation.id,
+          id: stixObservableRelation.id,
           relationId: head(removed).relationId,
         },
       });
@@ -309,9 +242,9 @@ class StixRelationEditionContainer extends Component {
 
   handleChangeFocus(name) {
     commitMutation({
-      mutation: stixRelationEditionFocus,
+      mutation: stixObservableRelationEditionFocus,
       variables: {
-        id: this.props.stixRelation.id,
+        id: this.props.stixObservableRelation.id,
         input: {
           focusOn: name,
         },
@@ -320,13 +253,13 @@ class StixRelationEditionContainer extends Component {
   }
 
   handleSubmitField(name, value) {
-    stixRelationValidation(this.props.t)
+    stixObservableRelationValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
-          mutation: stixRelationMutationFieldPatch,
+          mutation: stixObservableRelationMutationFieldPatch,
           variables: {
-            id: this.props.stixRelation.id,
+            id: this.props.stixObservableRelation.id,
             input: { key: name, value },
           },
         });
@@ -340,11 +273,11 @@ class StixRelationEditionContainer extends Component {
       classes,
       handleClose,
       handleDelete,
-      stixRelation,
+      stixObservableRelation,
       me,
       stixDomainEntity,
     } = this.props;
-    const { editContext } = stixRelation;
+    const { editContext } = stixObservableRelation;
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
     const editUsers = missingMe
       ? insert(0, { name: me.email }, editContext)
@@ -356,7 +289,7 @@ class StixRelationEditionContainer extends Component {
         value: n.node.id,
         relationId: n.relation.id,
       })),
-    )(stixRelation);
+    )(stixObservableRelation);
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
       map((n) => ({
@@ -364,10 +297,10 @@ class StixRelationEditionContainer extends Component {
         value: n.node.id,
         relationId: n.relation.id,
       })),
-    )(stixRelation);
+    )(stixObservableRelation);
     const initialValues = pipe(
-      assoc('first_seen', dateFormat(stixRelation.first_seen)),
-      assoc('last_seen', dateFormat(stixRelation.last_seen)),
+      assoc('first_seen', dateFormat(stixObservableRelation.first_seen)),
+      assoc('last_seen', dateFormat(stixObservableRelation.last_seen)),
       assoc('killChainPhases', killChainPhases),
       assoc('markingDefinitions', markingDefinitions),
       pick([
@@ -379,7 +312,7 @@ class StixRelationEditionContainer extends Component {
         'killChainPhases',
         'markingDefinitions',
       ]),
-    )(stixRelation);
+    )(stixObservableRelation);
     const link = stixDomainEntity
       ? resolveLink(stixDomainEntity.entity_type)
       : '';
@@ -410,67 +343,38 @@ class StixRelationEditionContainer extends Component {
                   <Formik
                     enableReinitialize={true}
                     initialValues={initialValues}
-                    validationSchema={stixRelationValidation(t)}
+                    validationSchema={stixObservableRelationValidation(t)}
                     render={() => (
                       <Form style={{ margin: '20px 0 20px 0' }}>
                         <Field
-                          name="weight"
+                          name="role_played"
                           component={Select}
                           onFocus={this.handleChangeFocus.bind(this)}
                           onChange={this.handleSubmitField.bind(this)}
-                          label={t('Confidence level')}
+                          label={t('Played role')}
                           fullWidth={true}
                           inputProps={{
-                            name: 'weight',
-                            id: 'weight',
+                            name: 'role_played',
+                            id: 'role_played',
                           }}
-                          containerstyle={{ width: '100%' }}
+                          containerstyle={{ marginTop: 10, width: '100%' }}
                           helpertext={
                             <SubscriptionFocus
                               me={me}
                               users={editUsers}
-                              fieldName="weight"
+                              fieldName="role_played"
                             />
                           }
                         >
-                          <MenuItem value="1">{t('Low')}</MenuItem>
-                          <MenuItem value="2">{t('Moderate')}</MenuItem>
-                          <MenuItem value="3">{t('Good')}</MenuItem>
-                          <MenuItem value="4">{t('Strong')}</MenuItem>
+                          {rolesPlayedEdges.map((rolePlayedEdge) => (
+                            <MenuItem
+                              key={rolePlayedEdge.node.value}
+                              value={rolePlayedEdge.node.value}
+                            >
+                              {rolePlayedEdge.node.value}
+                            </MenuItem>
+                          ))}
                         </Field>
-                        {stixRelation.relationship_type === 'indicates' ? (
-                          <Field
-                            name="role_played"
-                            component={Select}
-                            onFocus={this.handleChangeFocus.bind(this)}
-                            onChange={this.handleSubmitField.bind(this)}
-                            label={t('Played role')}
-                            fullWidth={true}
-                            inputProps={{
-                              name: 'role_played',
-                              id: 'role_played',
-                            }}
-                            containerstyle={{ marginTop: 10, width: '100%' }}
-                            helpertext={
-                              <SubscriptionFocus
-                                me={me}
-                                users={editUsers}
-                                fieldName="role_played"
-                              />
-                            }
-                          >
-                            {rolesPlayedEdges.map((rolePlayedEdge) => (
-                              <MenuItem
-                                key={rolePlayedEdge.node.value}
-                                value={rolePlayedEdge.node.value}
-                              >
-                                {t(rolePlayedEdge.node.value)}
-                              </MenuItem>
-                            ))}
-                          </Field>
-                        ) : (
-                          ''
-                        )}
                         <Field
                           name="first_seen"
                           component={DatePickerField}
@@ -522,23 +426,6 @@ class StixRelationEditionContainer extends Component {
                           }
                         />
                         <Field
-                          name="killChainPhases"
-                          component={Autocomplete}
-                          multiple={true}
-                          label={t('Kill chain phases')}
-                          options={this.state.killChainPhases}
-                          onInputChange={this.searchKillChainPhases.bind(this)}
-                          onChange={this.handleChangeKillChainPhases.bind(this)}
-                          onFocus={this.handleChangeFocus.bind(this)}
-                          helperText={
-                            <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
-                              fieldName="killChainPhases"
-                            />
-                          }
-                        />
-                        <Field
                           name="markingDefinitions"
                           component={Autocomplete}
                           multiple={true}
@@ -572,7 +459,7 @@ class StixRelationEditionContainer extends Component {
               variant="contained"
               color="primary"
               component={Link}
-              to={`${link}/${stixDomainEntity.id}/knowledge/relations/${stixRelation.id}`}
+              to={`${link}/${stixDomainEntity.id}/knowledge/relations/${stixObservableRelation.id}`}
               classes={{ root: classes.buttonLeft }}
             >
               {t('Details')}
@@ -597,22 +484,22 @@ class StixRelationEditionContainer extends Component {
   }
 }
 
-StixRelationEditionContainer.propTypes = {
+StixObservableRelationEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   handleDelete: PropTypes.func,
   classes: PropTypes.object,
   stixDomainEntity: PropTypes.object,
-  stixRelation: PropTypes.object,
+  stixObservableRelation: PropTypes.object,
   me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
 
-const StixRelationEditionFragment = createFragmentContainer(
-  StixRelationEditionContainer,
+const StixObservableRelationEditionFragment = createFragmentContainer(
+  StixObservableRelationEditionContainer,
   {
-    stixRelation: graphql`
-      fragment StixRelationEditionOverview_stixRelation on StixRelation {
+    stixObservableRelation: graphql`
+      fragment StixObservableRelationEditionOverview_stixObservableRelation on StixObservableRelation {
         id
         weight
         first_seen
@@ -620,19 +507,6 @@ const StixRelationEditionFragment = createFragmentContainer(
         description
         relationship_type
         role_played
-        killChainPhases {
-          edges {
-            node {
-              id
-              kill_chain_name
-              phase_name
-              phase_order
-            }
-            relation {
-              id
-            }
-          }
-        }
         markingDefinitions {
           edges {
             node {
@@ -652,7 +526,7 @@ const StixRelationEditionFragment = createFragmentContainer(
       }
     `,
     me: graphql`
-      fragment StixRelationEditionOverview_me on User {
+      fragment StixObservableRelationEditionOverview_me on User {
         email
       }
     `,
@@ -662,4 +536,4 @@ const StixRelationEditionFragment = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(StixRelationEditionFragment);
+)(StixObservableRelationEditionFragment);

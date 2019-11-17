@@ -545,11 +545,9 @@ type StixRelation implements GlobalObject & StixEntity {
   relationship_type: String
   inferred: Boolean
   weight: Int
-  score: Int
   description: String
   first_seen: DateTime
   last_seen: DateTime
-  expiration: DateTime
   created: DateTime!
   modified: DateTime!
   graph_data: String
@@ -603,8 +601,102 @@ input StixRelationAddInput {
   relationship_type: String!
   role_played: String
   weight: Int
-  score: Int
-  expiration: DateTime
+  description: String
+  first_seen: DateTime
+  last_seen: DateTime
+  createdByRef: String
+  markingDefinitions: [String]
+  killChainPhases: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### STIX relations
+enum StixObservableRelationsOrdering {
+  relationship_type
+  weight
+  first_seen
+  last_seen
+  created
+  modified
+  created_at
+  updated_at
+}
+type StixObservableRelationConnection {
+  pageInfo: PageInfo!
+  edges: [StixObservableRelationEdge]
+}
+type StixObservableRelationEdge {
+  cursor: String!
+  node: StixObservableRelation!
+  relation: RelationEmbedded
+}
+type StixObservableRelation implements GlobalObject & StixEntity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_type: String!
+  name: String!
+  relationship_type: String
+  inferred: Boolean
+  weight: Int
+  description: String
+  first_seen: DateTime
+  last_seen: DateTime
+  created: DateTime!
+  modified: DateTime!
+  graph_data: String
+  role_played: String
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  tags: TagConnection
+  reports: ReportConnection
+  from: StixObservable
+  fromRole: String
+  to: StixObservable
+  toRole: String
+  inferences: StixObservableRelationConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    resolveInferences: Boolean
+    resolveRelationType: String
+    resolveRelationRole: String
+    resolveRelationToTypes: [String]
+    resolveViaTypes: [EntityRelation]
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+    infrastructure: Boolean
+  ): StixRelationConnection
+  created_at: DateTime
+  updated_at: DateTime
+}
+input StixObservableRelationAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  fromId: String!
+  fromRole: String!
+  toId: String!
+  toRole: String!
+  relationship_type: String!
+  role_played: String
+  weight: Int
   description: String
   first_seen: DateTime
   last_seen: DateTime
@@ -2557,6 +2649,33 @@ type Query {
     endDate: DateTime
     inferred: Boolean
   ): Number @auth
+  # StixObservableRelations
+  stixObservableRelation(id: String!): StixObservableRelation @auth
+  stixObservableRelations(
+    first: Int
+    after: ID
+    orderBy: StixObservableRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    resolveInferences: Boolean
+    resolveRelationType: String
+    resolveRelationRole: String
+    resolveRelationToTypes: [String]
+    resolveViaTypes: [EntityRelation]
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+    infrastructure: Boolean
+  ): StixObservableRelationConnection @auth
   # Workspaces
   workspace(id: String!): Workspace @auth
   workspaces(
@@ -2856,6 +2975,7 @@ type Subscription {
   stixDomainEntity(id: ID!): StixDomainEntity @auth
   stixObservable(id: ID!): StixObservable @auth
   stixRelation(id: ID!): StixRelation @auth
+  stixObservableRelation(id: ID!): StixObservableRelation @auth
   workspace(id: ID!): Workspace @auth
   externalReference(id: ID!): ExternalReference @auth
 }
@@ -2914,6 +3034,16 @@ type StixRelationEditMutations {
   fieldPatch(input: EditInput): StixRelation
   contextPatch(input: EditContext): StixRelation
   contextClean: StixRelation
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
+}
+
+# StixObservableRelation
+type StixObservableRelationEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): StixObservableRelation
+  contextPatch(input: EditContext): StixObservableRelation
+  contextClean: StixObservableRelation
   relationAdd(input: RelationAddInput): RelationData
   relationDelete(relationId: ID!): RelationData
 }
@@ -3172,6 +3302,9 @@ type Mutation {
   # StixRelation
   stixRelationAdd(input: StixRelationAddInput): StixRelation @auth
   stixRelationEdit(id: ID!): StixRelationEditMutations @auth
+  # StixRelation
+  stixObservableRelationAdd(input: StixObservableRelationAddInput): StixObservableRelation @auth
+  stixObservableRelationEdit(id: ID!): StixObservableRelationEditMutations @auth
   # Workspace
   workspaceAdd(input: WorkspaceAddInput): Workspace @auth
   workspaceEdit(id: ID!): WorkspaceEditMutations @auth

@@ -129,6 +129,7 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
   node: graphql`
     fragment EntityStixRelationLine_node on StixRelation {
       id
+      relationship_type
       weight
       first_seen
       last_seen

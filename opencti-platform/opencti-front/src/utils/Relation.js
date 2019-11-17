@@ -79,6 +79,31 @@ const relationsTypesMapping = {
   observable_city: ['localization'],
   observable_country: ['localization'],
   observable_region: ['localization'],
+  'ipv4-addr_domain': ['resolves'],
+  'ipv6-addr_domain': ['resolves'],
+  'ipv4-addr_autonomous-system': ['belongs'],
+  'ipv6-addr_autonomous-system': ['belongs'],
+  domain_domain: ['resolves'],
+  'file-name_file-path': ['corresponds'],
+  'file-name_file-md5': ['corresponds'],
+  'file-name_file-sha1': ['corresponds'],
+  'file-name_file-sha256': ['corresponds'],
+  'file-path_file-name': ['corresponds'],
+  'file-path_file-md5': ['corresponds'],
+  'file-path_file-sha1': ['corresponds'],
+  'file-path_file-sha256': ['corresponds'],
+  'file-md5_file-name': ['corresponds'],
+  'file-md5_file-path': ['corresponds'],
+  'file-md5_file-sha1': ['corresponds'],
+  'file-md5_file-sha256': ['corresponds'],
+  'file-sha1_file-name': ['corresponds'],
+  'file-sha1_file-path': ['corresponds'],
+  'file-sha1_file-md5': ['corresponds'],
+  'file-sha1_file-sha256': ['corresponds'],
+  'file-sha256_file-name': ['corresponds'],
+  'file-sha256_file-path': ['corresponds'],
+  'file-sha256_file-md5': ['corresponds'],
+  'file-sha256_file-sha1': ['corresponds'],
 };
 
 export const resolveRelationsTypes = (fromType, toType) => (relationsTypesMapping[`${fromType}_${toType}`]
@@ -107,6 +132,14 @@ export const resolveRoles = (type) => {
       return { fromRole: 'dropping', toRole: 'dropped' };
     case 'indicates':
       return { fromRole: 'indicator', toRole: 'characterize' };
+    case 'linked':
+      return { fromRole: 'link_from', toRole: 'link_to' };
+    case 'resolves':
+      return { fromRole: 'resolving', toRole: 'resolved' };
+    case 'belongs':
+      return { fromRole: 'belonging_to', toRole: 'belonged_to' };
+    case 'corresponds':
+      return { fromRole: 'correspond_from', toRole: 'correspond_to' };
     default:
       return { fromRole: '', toRole: '' };
   }

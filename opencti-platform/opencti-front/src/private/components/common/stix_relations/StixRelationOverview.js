@@ -217,7 +217,7 @@ class StixRelationContainer extends Component {
                   from.parent_type === 'Stix-Observable'
                     ? from.observable_value
                     : from.name,
-                  120,
+                  50,
                 )}
               </span>
             </div>
@@ -291,7 +291,7 @@ class StixRelationContainer extends Component {
                   to.parent_type === 'Stix-Observable'
                     ? to.observable_value
                     : to.name,
-                  120,
+                  50,
                 )}
               </span>
             </div>

@@ -7,13 +7,12 @@ import Button from '@material-ui/core/Button';
 import { Google, FacebookBox, GithubCircle } from 'mdi-material-ui';
 import { ACCESS_PROVIDERS, QueryRenderer } from '../../relay/environment';
 import { ConnectedIntlProvider } from '../../components/AppIntlProvider';
-import { ConnectedDocumentTitle } from '../../components/AppDocumentTitle';
 import logo from '../../resources/images/logo_opencti.png';
 import LoginForm from './LoginForm';
 
 const loginHeight = 400;
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
     textAlign: 'center',
     margin: '0 auto',
@@ -60,7 +59,6 @@ const LoginQuery = graphql`
       platform_external_auth
       platform_demo
       ...AppIntlProvider_settings
-      ...AppDocumentTitle_settings
     }
   }
 `;
@@ -140,28 +138,28 @@ class Login extends Component {
             return (
               <ConnectedIntlProvider
                 me={props.me ? props.me : null}
-                settings={props.settings}>
-                <ConnectedDocumentTitle settings={props.settings}>
-                  <div
-                    className={this.props.classes.container}
-                    style={{ marginTop }}>
-                    <img
-                      src={logo}
-                      alt="logo"
-                      className={this.props.classes.logo}
-                    />
-                    <LoginForm
-                      demo={pathOr(false, ['settings', 'platform_demo'], props)}
-                    />
-                    {pathOr(
-                      false,
-                      ['settings', 'platform_external_auth'],
-                      props,
-                    ) === true
-                      ? this.renderExternalAuth()
-                      : ''}
-                  </div>
-                </ConnectedDocumentTitle>
+                settings={props.settings}
+              >
+                <div
+                  className={this.props.classes.container}
+                  style={{ marginTop }}
+                >
+                  <img
+                    src={logo}
+                    alt="logo"
+                    className={this.props.classes.logo}
+                  />
+                  <LoginForm
+                    demo={pathOr(false, ['settings', 'platform_demo'], props)}
+                  />
+                  {pathOr(
+                    false,
+                    ['settings', 'platform_external_auth'],
+                    props,
+                  ) === true
+                    ? this.renderExternalAuth()
+                    : ''}
+                </div>
               </ConnectedIntlProvider>
             );
           }

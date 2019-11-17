@@ -21,10 +21,6 @@ const styles = () => ({
     padding: '15px',
     borderRadius: 6,
   },
-  item: {
-    paddingLeft: 10,
-    height: 50,
-  },
 });
 
 class AttackPatternDetailsComponent extends Component {
@@ -54,11 +50,9 @@ class AttackPatternDetailsComponent extends Component {
                 <ListItem
                   key={killChainPhase.phase_name}
                   dense={true}
-                  button={true}
                   divider={true}
-                  classes={{ root: classes.item }}
                 >
-                  <ListItemIcon classes={{ root: classes.itemIcon }}>
+                  <ListItemIcon>
                     <Launch />
                   </ListItemIcon>
                   <ListItemText primary={killChainPhase.phase_name} />
@@ -79,9 +73,8 @@ class AttackPatternDetailsComponent extends Component {
                 key={platform}
                 dense={true}
                 divider={true}
-                classes={{ root: classes.item }}
               >
-                <ListItemIcon classes={{ root: classes.itemIcon }}>
+                <ListItemIcon>
                   <SettingsApplications />
                 </ListItemIcon>
                 <ListItemText primary={platform} />
@@ -102,9 +95,8 @@ class AttackPatternDetailsComponent extends Component {
                   key={permission}
                   dense={true}
                   divider={true}
-                  classes={{ root: classes.item }}
                 >
-                  <ListItemIcon classes={{ root: classes.itemIcon }}>
+                  <ListItemIcon>
                     <PermIdentity />
                   </ListItemIcon>
                   <ListItemText primary={permission} />

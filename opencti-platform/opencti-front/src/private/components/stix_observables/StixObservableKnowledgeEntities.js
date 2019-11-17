@@ -21,7 +21,7 @@ const styles = () => ({
   },
 });
 
-class StixObservableEnrichmentEntities extends Component {
+class StixObservableKnowledgeEntities extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -143,7 +143,7 @@ class StixObservableEnrichmentEntities extends Component {
   }
 }
 
-StixObservableEnrichmentEntities.propTypes = {
+StixObservableKnowledgeEntities.propTypes = {
   entityId: PropTypes.string,
   relationType: PropTypes.string,
   classes: PropTypes.object,
@@ -154,4 +154,4 @@ StixObservableEnrichmentEntities.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixObservableEnrichmentEntities);
+)(StixObservableKnowledgeEntities);

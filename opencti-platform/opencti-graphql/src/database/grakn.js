@@ -20,13 +20,15 @@ import {
   tail,
   toPairs,
   uniq,
-  uniqWith
+  uniqWith,
+  split
 } from 'ramda';
 import moment from 'moment';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import Grakn from 'grakn-client';
 import conf, { logger } from '../config/conf';
 import { pubsub } from './redis';
+import { DatabaseError } from '../config/errors';
 import { buildPagination, fillTimeSeries, randomKey } from './utils';
 import { isInversed } from './graknRoles';
 import { getAttributes as elGetAttributes, index } from './elasticSearch';
@@ -189,6 +191,12 @@ const commitWriteTx = async wTx => {
     await wTx.tx.commit();
   } catch (err) {
     logger.error('[GRAKN] CommitWriteTx error > ', err);
+    if (err.code === 3) {
+      throw new DatabaseError({
+        data: { details: split('\n', err.details)[1] }
+      });
+    }
+    throw new DatabaseError({ data: { details: err.details } });
   }
 };
 export const executeWrite = async executeFunction => {
@@ -556,9 +564,10 @@ export const find = async (
       const { concept } = item.data;
       return new Promise(resolve => {
         const conceptType = concept.baseType;
-        const attributesPromise = getAttributes(concept, forceReindex).then(
-          data => assoc('concept_type', conceptType, data)
-        );
+        const attributesPromise = getAttributes(
+          concept,
+          forceReindex
+        ).then(data => assoc('concept_type', conceptType, data));
         // If concept is a relation, complete with roles
         if (conceptType === 'RELATION') {
           const isInferredPromise = withInference
@@ -971,14 +980,14 @@ export const getRelationInferredById = async id => {
     const roles = rolePlayersMap.keys();
     const fromRole = roles.next().value;
     // eslint-disable-next-line prettier/prettier
-  const fromObject = rolePlayersMap
+    const fromObject = rolePlayersMap
       .get(fromRole)
       .values()
       .next().value;
     const fromRoleLabel = await fromRole.label();
     const toRole = roles.next().value;
     // eslint-disable-next-line prettier/prettier
-  const toObject = rolePlayersMap
+    const toObject = rolePlayersMap
       .get(toRole)
       .values()
       .next().value;
@@ -1164,9 +1173,9 @@ export const getObjects = async (
               inferred: true
             };
           } else {
-            relation = await getAttributes(answer.map().get(relationKey)).then(
-              data => assoc('inferred', false, data)
-            );
+            relation = await getAttributes(
+              answer.map().get(relationKey)
+            ).then(data => assoc('inferred', false, data));
           }
         }
         return { node, relation };
