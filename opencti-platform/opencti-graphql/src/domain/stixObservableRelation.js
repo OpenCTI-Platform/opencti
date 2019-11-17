@@ -1,4 +1,4 @@
-import { assoc, map } from 'ramda';
+import { assoc} from 'ramda';
 import uuid from 'uuid/v4';
 import {
   findAll as stixRelationFindAll,

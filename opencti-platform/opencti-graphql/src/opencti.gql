@@ -128,7 +128,6 @@ define
 
   # STIX common roles
   so sub role;
-  soo sub role;
   kill_chain_phase sub role;
 
   # STIX embeded roles
@@ -765,7 +764,6 @@ define
     has created_at_year,
     has updated_at,
     plays so,
-    plays soo,
     plays indicator,
     plays part_of,
     plays link_from,
