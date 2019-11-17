@@ -58,7 +58,7 @@ export const organizationsLinesQuery = graphql`
     $cursor: ID
     $orderBy: OrganizationsOrdering
     $orderMode: OrderingMode
-    $filters: OrganizationsFiltering
+    $filters: [OrganizationsFiltering]
   ) {
     ...OrganizationsLines_data
       @arguments(
