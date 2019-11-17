@@ -2,20 +2,17 @@ import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixObservable,
-  stixObservableDelete,
   findAll,
   findById,
-  findByValue,
-  stixObservablesNumber,
-  search,
-  stixObservablesTimeSeries,
-  stixObservableEditContext,
-  stixObservableCleanContext,
-  stixObservableEditField,
   stixObservableAddRelation,
-  stixObservableDeleteRelation,
   stixObservableAskEnrichment,
-  findByStixId
+  stixObservableCleanContext,
+  stixObservableDelete,
+  stixObservableDeleteRelation,
+  stixObservableEditContext,
+  stixObservableEditField,
+  stixObservablesNumber,
+  stixObservablesTimeSeries
 } from '../domain/stixObservable';
 import { pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
@@ -25,18 +22,7 @@ import { connectorsForEnrichment } from '../domain/connector';
 const stixObservableResolvers = {
   Query: {
     stixObservable: (_, { id }) => findById(id),
-    stixObservables: (_, args) => {
-      if (args.stix_id_key && args.stix_id_key.length > 0) {
-        return findByStixId(args);
-      }
-      if (args.search && args.search.length > 0) {
-        return search(args);
-      }
-      if (args.observableValue && args.observableValue.length > 0) {
-        return findByValue(args);
-      }
-      return findAll(args);
-    },
+    stixObservables: (_, args) => findAll(args),
     stixObservablesTimeSeries: (_, args) => stixObservablesTimeSeries(args),
     stixObservablesNumber: (_, args) => stixObservablesNumber(args)
   },
@@ -52,13 +38,10 @@ const stixObservableResolvers = {
       contextPatch: ({ input }) => stixObservableEditContext(user, id, input),
       contextClean: () => stixObservableCleanContext(user, id),
       relationAdd: ({ input }) => stixObservableAddRelation(user, id, input),
-      relationDelete: ({ relationId }) =>
-        stixObservableDeleteRelation(user, id, relationId),
-      askEnrichment: ({ connectorId }) =>
-        stixObservableAskEnrichment(id, connectorId)
+      relationDelete: ({ relationId }) => stixObservableDeleteRelation(user, id, relationId),
+      askEnrichment: ({ connectorId }) => stixObservableAskEnrichment(id, connectorId)
     }),
-    stixObservableAdd: (_, { input }, { user }) =>
-      addStixObservable(user, input)
+    stixObservableAdd: (_, { input }, { user }) => addStixObservable(user, input)
   },
   Subscription: {
     stixObservable: {

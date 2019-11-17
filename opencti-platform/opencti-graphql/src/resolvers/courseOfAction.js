@@ -19,7 +19,7 @@ const courseOfActionResolvers = {
   },
   CoursesOfActionFilter: {
     tags: 'tagged.internal_id_key',
-    attackPattern: 'mitigates.internal_id_key'
+    mitigateBy: 'mitigates.internal_id_key'
   },
   Mutation: {
     courseOfActionEdit: (_, { id }, { user }) => ({

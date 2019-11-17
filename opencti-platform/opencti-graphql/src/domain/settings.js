@@ -1,18 +1,18 @@
+import { assoc, head } from 'ramda';
 import {
   createEntity,
   deleteEntityById,
   executeWrite,
   getGraknVersion,
+  listEntities,
   loadEntityById,
-  loadWithConnectedRelations,
+  reindexEntityType,
   TYPE_OPENCTI_INTERNAL,
   updateAttribute
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
-
 import { elVersion } from '../database/elasticSearch';
-
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { version } from '../../package.json';
 
@@ -27,14 +27,12 @@ export const getApplicationInfo = () => ({
   ]
 });
 
-export const getSettings = () => {
-  return loadWithConnectedRelations(
-    `match $x isa Settings; 
-    get; 
-    offset 0; 
-    limit 1;`,
-    'x'
-  ).then(result => result.node);
+export const getSettings = async () => {
+  // TODO JRI Remove this
+  await reindexEntityType('Settings');
+  // Keep the rest.
+  const typedArgs = assoc('types', ['Settings'], {});
+  return listEntities(['platform_title'], typedArgs).then(data => head(data.edges).node);
 };
 
 export const addSettings = async (user, settings) => {

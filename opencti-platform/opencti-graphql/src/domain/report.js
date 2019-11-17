@@ -1,138 +1,75 @@
-import { ascend, assoc, descend, prop, sortWith, take } from 'ramda';
+import { ascend, assoc, concat, descend, pipe, prop, sortWith, take } from 'ramda';
 import {
   createEntity,
   distribution,
   escapeString,
   getSingleValueNumber,
+  listEntities,
   loadEntityById,
-  paginate,
   paginateRelationships,
   prepareDate,
   timeSeries
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { elPaginate } from '../database/elasticSearch';
 import { notify } from '../database/redis';
+import { findAll as findAllStixDomains } from './stixDomainEntity';
+import { findAll as findAllObservables } from './stixObservable';
 
 export const findById = reportId => {
   return loadEntityById(reportId);
 };
 export const findAll = args => {
-  if (args.orderBy === 'createdByRef') {
-    const finalArgs = assoc('orderBy', 'name', args);
-    return paginate(
-      `match $r isa Report; 
-      ${args.reportClass ? `$r has report_class "${escapeString(args.reportClass)}";` : ''} 
-      $rel(creator:$x, so:$r) isa created_by_ref`,
-      finalArgs,
-      true,
-      'x'
-    );
-  }
-  if (args.name && args.published) {
-    return paginate(
-      `match $r isa Report, has name "${escapeString(args.name)}", has published ${prepareDate(args.published)}`,
-      args
-    );
-  }
-  return elPaginate('stix_domain_entities', assoc('type', 'report', args));
+  const typedArgs = assoc('types', ['Report'], args);
+  return listEntities(['name', 'description'], typedArgs);
 };
+
+// Entities tab
+export const objectRefs = async (reportId, args) => {
+  const filter = { key: 'object_refs.internal_id_key', values: [reportId] };
+  const filters = concat([filter], args.filters || []);
+  const finalArgs = pipe(
+    assoc('filters', filters),
+    assoc('types', ['Stix-Domain-Entity'])
+  )(args);
+  return findAllStixDomains(finalArgs);
+};
+
+export const observableRefs = (reportId, args) => {
+  const filter = { key: 'object_refs.internal_id_key', values: [reportId] };
+  const filters = concat([filter], args.filters || []);
+  const filterArgs = assoc('filters', filters, args);
+  return findAllObservables(filterArgs);
+};
+
+// Observables, relations type indicates.
+export const relationRefs = async (reportId, args) => {
+  const compare = await paginateRelationships(
+    `match $rel($from, $to) isa ${args.relationType ? args.relationType : 'stix_relation'};
+    $extraRel(so:$rel, knowledge_aggregation:$r) isa object_refs;
+    $r has internal_id_key "${escapeString(reportId)}"`,
+    args,
+    'rel',
+    'extraRel'
+  );
+  return compare;
+};
+
+// region series
 export const reportsTimeSeries = args => {
   return timeSeries(
-    `match $x isa Report${
-      args.reportClass
-        ? `; 
-    $x has report_class "${escapeString(args.reportClass)}"`
-        : ''
-    }`,
+    `match $x isa Report${args.reportClass ? `; $x has report_class "${escapeString(args.reportClass)}"` : ''}`,
     args
   );
 };
 export const reportsNumber = args => ({
-  count: getSingleValueNumber(
-    `match $x isa Report;
-   ${
-     args.reportClass
-       ? `; 
-    $x has report_class "${escapeString(args.reportClass)}"`
-       : ''
-   } ${
-      args.endDate
-        ? `$x has created_at $date;
-    $date < ${prepareDate(args.endDate)};`
-        : ''
-    }
-    get;
-    count;`
-  ),
-  total: getSingleValueNumber(
-    `match $x isa Report;
-    ${
-      args.reportClass
-        ? `; 
-    $x has report_class "${escapeString(args.reportClass)}"`
-        : ''
-    }
-    get;
-    count;`
-  )
+  count: getSingleValueNumber(`match $x isa Report;
+   ${args.reportClass ? `; $x has report_class "${escapeString(args.reportClass)}"` : ''} 
+   ${args.endDate ? `$x has created_at $date; $date < ${prepareDate(args.endDate)};` : ''}
+   get; count;`),
+  total: getSingleValueNumber(`match $x isa Report;
+    ${args.reportClass ? `; $x has report_class "${escapeString(args.reportClass)}"` : ''}
+    get; count;`)
 });
-export const findByEntity = args => {
-  if (args.orderBy === 'createdByRef') {
-    const finalArgs = assoc('orderBy', 'name', args);
-    return paginate(
-      `match $r isa Report; 
-      ${args.reportClass ? `$r has report_class "${escapeString(args.reportClass)};"` : ''}
-      ${
-        args.search
-          ? `$r has name $name; $r has description $desc; { $name contains "${escapeString(
-              args.search
-            )}"; } or { $desc contains "${escapeString(args.search)}"; };`
-          : ''
-      }
-      $rel(knowledge_aggregation:$r, so:$so) isa object_refs; 
-      $so has internal_id_key "${escapeString(args.objectId)}";
-      $relCreatedByRef(creator:$x, so:$r) isa created_by_ref`,
-      finalArgs,
-      true,
-      'x',
-      true
-    );
-  }
-  return paginate(
-    `match $r isa Report; 
-    ${args.reportClass ? `$r has report_class "${escapeString(args.reportClass)}";` : ''}
-    ${
-      args.search
-        ? `$r has name $name; $r has description $desc; { $name contains "${escapeString(
-            args.search
-          )}"; } or { $desc contains "${escapeString(args.search)}"; };`
-        : ''
-    }
-    $rel(knowledge_aggregation:$r, so:$so) isa object_refs; 
-    $so has internal_id_key "${escapeString(args.objectId)}"`,
-    args,
-    true,
-    null,
-    true
-  );
-};
-export const findByAuthor = args => {
-  return paginate(
-    `match $r isa Report; 
-    $rel(so:$r, creator:$so) isa created_by_ref; 
-    $so has internal_id_key "${escapeString(args.authorId)}" ${
-      args.reportClass
-        ? `; 
-    $r has report_class "${escapeString(args.reportClass)}"`
-        : ''
-    }`,
-    args,
-    true,
-    null,
-    true
-  );
-};
 export const reportsTimeSeriesByEntity = args => {
   return timeSeries(
     `match $x isa Report;
@@ -205,33 +142,11 @@ export const reportsDistributionByEntity = args => {
     return take(limit, sortWith([descend(prop('value'))])(result));
   });
 };
-export const objectRefs = (reportId, args) => {
-  return paginate(
-    `match $so isa Stix-Domain-Entity;
-    $rel(so:$so, knowledge_aggregation:$r) isa object_refs;
-    $r has internal_id_key "${escapeString(reportId)}"`,
-    args
-  );
-};
-export const observableRefs = (reportId, args) => {
-  return paginate(
-    `match $so isa Stix-Observable; 
-    $rel(so:$so, knowledge_aggregation:$r) isa object_refs; 
-    $r has internal_id_key "${escapeString(reportId)}"`,
-    args
-  );
-};
-export const relationRefs = (reportId, args) => {
-  return paginateRelationships(
-    `match $rel($from, $to) isa ${args.relationType ? args.relationType : 'stix_relation'}; 
-    $extraRel(so:$rel, knowledge_aggregation:$r) isa object_refs; 
-    $r has internal_id_key "${escapeString(reportId)}"`,
-    args,
-    'extraRel'
-  );
-};
+// endregion
 
+// region mutations
 export const addReport = async (user, report) => {
   const created = await createEntity(report, 'Report');
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
+// endregion

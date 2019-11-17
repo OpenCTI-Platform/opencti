@@ -1,10 +1,4 @@
-import {
-  addSector,
-  findAll,
-  findById,
-  subsectors,
-  isSubsector
-} from '../domain/sector';
+import { addSector, findAll, findById, subsectors, isSubsector } from '../domain/sector';
 import {
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
@@ -23,6 +17,9 @@ const sectorResolvers = {
     subsectors: (sector, args) => subsectors(sector.id, args),
     isSubsector: (sector, args) => isSubsector(sector.id, args)
   },
+  SectorsFilter: {
+    gatheredBy: 'gathering.internal_id_key'
+  },
   Mutation: {
     sectorEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainEntityDelete(id),
@@ -30,8 +27,7 @@ const sectorResolvers = {
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) =>
-        stixDomainEntityDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
     }),
     sectorAdd: (_, { input }, { user }) => addSector(user, input)
   }

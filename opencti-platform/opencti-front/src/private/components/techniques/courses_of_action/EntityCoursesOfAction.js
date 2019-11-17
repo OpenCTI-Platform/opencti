@@ -45,7 +45,7 @@ class EntityCoursesOfAction extends Component {
       orderBy: 'created_at',
       orderMode: 'desc',
       filters: [{
-        key: 'attackPattern',
+        key: 'mitigateBy',
         values: [entityId],
       }],
     };
@@ -57,7 +57,7 @@ class EntityCoursesOfAction extends Component {
           orderBy: 'created_at',
           orderMode: 'desc',
           filters: [{
-            key: 'attackPattern',
+            key: 'mitigateBy',
             values: [entityId],
           }],
         }}

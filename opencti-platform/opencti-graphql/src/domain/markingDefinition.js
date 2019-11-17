@@ -5,11 +5,9 @@ import {
   createRelation,
   deleteEntityById,
   deleteRelationById,
-  escapeString,
   executeWrite,
   listEntities,
   loadEntityById,
-  paginate,
   TYPE_STIX_DOMAIN,
   updateAttribute
 } from '../database/grakn';
@@ -19,41 +17,10 @@ export const findById = markingDefinitionId => {
   return loadEntityById(markingDefinitionId);
 };
 
-// region grakn fetch
 export const findAll = args => {
   const typedArgs = assoc('types', ['Marking-Definition'], args);
   return listEntities(['definition_type', 'definition'], typedArgs);
 };
-export const findByEntity = args => {
-  return paginate(
-    `match $m isa Marking-Definition; 
-    $rel(marking:$m, so:$so) isa object_marking_refs; 
-    $so has internal_id_key "${escapeString(args.objectId)}"`,
-    args,
-    false,
-    null,
-    false,
-    false
-  );
-};
-export const findByDefinition = args => {
-  return paginate(
-    `match $m isa Marking-Definition; 
-    $m has definition_type "${escapeString(args.definition_type)}"; 
-    $m has definition "${escapeString(args.definition)}"`,
-    args,
-    false
-  );
-};
-export const findByStixId = args => {
-  return paginate(
-    `match $m isa Marking-Definition; 
-    $m has stix_id_key "${escapeString(args.stix_id_key)}"`,
-    args,
-    false
-  );
-};
-// endregion
 
 export const addMarkingDefinition = async (user, markingDefinition) => {
   const created = await createEntity(markingDefinition, 'Marking-Definition', TYPE_STIX_DOMAIN);

@@ -112,15 +112,17 @@ class Reports extends Component {
     const {
       view, sortBy, orderAsc, searchTerm,
     } = this.state;
+    const reportFilterClass = reportClass !== 'all' && reportClass !== undefined
+      ? reportClass.replace(/_/g, ' ') : '';
     const paginationOptions = {
-      objectId,
-      authorId,
-      reportClass:
-        reportClass !== 'all' && reportClass !== undefined
-          ? reportClass.replace(/_/g, ' ') : '',
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
+      filters: [
+        { key: 'report_class', values: [reportFilterClass] },
+        { key: 'createdBy', values: [authorId] },
+        { key: 'knowledgeContains', values: [objectId] },
+      ],
     };
     return (
       <div>

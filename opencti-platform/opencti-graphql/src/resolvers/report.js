@@ -27,15 +27,7 @@ import {
 const reportResolvers = {
   Query: {
     report: (_, { id }) => findById(id),
-    reports: (_, args) => {
-      if (args.objectId && args.objectId.length > 0) {
-        return findByEntity(args);
-      }
-      if (args.authorId && args.authorId.length > 0) {
-        return findByAuthor(args);
-      }
-      return findAll(args);
-    },
+    reports: (_, args) => findAll(args),
     reportsTimeSeries: (_, args) => {
       if (args.objectId && args.objectId.length > 0) {
         return reportsTimeSeriesByEntity(args);
@@ -58,6 +50,10 @@ const reportResolvers = {
       return [];
     }
   },
+  ReportsFilter: {
+    createdBy: 'created_by_ref.internal_id_key',
+    knowledgeContains: 'object_refs.internal_id_key'
+  },
   Report: {
     externalReferences: (report, args) => externalReferences(report.id, args),
     objectRefs: (report, args) => objectRefs(report.id, args),
@@ -71,8 +67,7 @@ const reportResolvers = {
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) =>
-        stixDomainEntityDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
     }),
     reportAdd: (_, { input }, { user }) => addReport(user, input)
   }

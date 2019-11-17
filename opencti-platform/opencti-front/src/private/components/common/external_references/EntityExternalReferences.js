@@ -42,18 +42,24 @@ class EntityExternalReferences extends Component {
   render() {
     const { t, classes, entityId } = this.props;
     const paginationOptions = {
-      objectId: entityId,
       orderBy: 'created_at',
       orderMode: 'desc',
+      filters: [{
+        key: 'usedBy',
+        values: [entityId],
+      }],
     };
     return (
       <QueryRenderer
         query={entityExternalReferencesLinesQuery}
         variables={{
-          objectId: entityId,
           count: 200,
           orderBy: 'created_at',
           orderMode: 'desc',
+          filters: [{
+            key: 'usedBy',
+            values: [entityId],
+          }],
         }}
         render={({ props }) => {
           if (props) {

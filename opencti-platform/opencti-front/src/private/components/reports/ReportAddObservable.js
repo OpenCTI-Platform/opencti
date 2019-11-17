@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Field, Form } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -9,22 +9,12 @@ import IconButton from '@material-ui/core/IconButton';
 import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import {
-  compose,
-  pathOr,
-  map,
-  union,
-  pipe,
-  pluck,
-  head,
-  forEach,
-  assoc,
-} from 'ramda';
+import { assoc, compose, forEach, head, map, pathOr, pipe, pluck, union } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
-import { dateMonthsAgo, dateMonthsAfter, parse } from '../../../utils/Time';
+import { dateMonthsAfter, dateMonthsAgo, parse } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
-import { fetchQuery, commitMutation } from '../../../relay/environment';
+import { commitMutation, fetchQuery } from '../../../relay/environment';
 import Autocomplete from '../../../components/Autocomplete';
 import TextField from '../../../components/TextField';
 import DatePickerField from '../../../components/DatePickerField';
@@ -125,8 +115,8 @@ const reportAddObservableThreatsSearchQuery = graphql`
 `;
 
 const reportAddObservableObservableSearchQuery = graphql`
-  query ReportAddObservableObservableSearchQuery($observableValue: String) {
-    stixObservables(observableValue: $observableValue) {
+  query ReportAddObservableObservableSearchQuery($filters: [StixObservablesFiltering]) {
+    stixObservables(filters: $filters) {
       edges {
         node {
           id
@@ -299,9 +289,10 @@ class ReportAddObservable extends Component {
       assoc('threats', pluck('value', values.threats)),
     )(values);
     setSubmitting(true);
-    fetchQuery(reportAddObservableObservableSearchQuery, {
-      observableValue: finalValues.observable_value,
-    }).then((data) => {
+    const filters = [
+      { key: 'observable_value', values: [finalValues.observable_value] },
+    ];
+    fetchQuery(reportAddObservableObservableSearchQuery, { filters }).then((data) => {
       if (data.stixObservables.edges.length === 0) {
         commitMutation({
           mutation: stixObservableMutation,

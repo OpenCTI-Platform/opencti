@@ -1,24 +1,24 @@
 import {
-  addUser,
   addPerson,
+  addUser,
   findAll,
   findById,
-  groups,
-  token,
   login,
   logout,
-  userEditField,
   meEditField,
-  userRenewToken,
   setAuthenticationCookie,
-  userDelete
+  token,
+  userDelete,
+  userEditField,
+  userRenewToken
 } from '../domain/user';
 import {
-  stixDomainEntityEditContext,
-  stixDomainEntityCleanContext,
   stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation
+  stixDomainEntityCleanContext,
+  stixDomainEntityDeleteRelation,
+  stixDomainEntityEditContext
 } from '../domain/stixDomainEntity';
+import { groups } from '../domain/group';
 
 const userResolvers = {
   Query: {
@@ -44,8 +44,7 @@ const userResolvers = {
       contextClean: () => stixDomainEntityCleanContext(user, id),
       tokenRenew: () => userRenewToken(id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) =>
-        stixDomainEntityDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
     }),
     meEdit: (_, { input }, { user }) => meEditField(user, user.id, input),
     personAdd: (_, { input }, { user }) => addPerson(user, input),

@@ -24,7 +24,6 @@ import {
   loadEntityById,
   loadWithConnectedRelations,
   now,
-  paginate,
   TYPE_OPENCTI_INTERNAL,
   TYPE_STIX_DOMAIN_ENTITY,
   updateAttribute
@@ -67,14 +66,6 @@ export const findByEmail = async userEmail => {
   const result = await load(`match $user isa User, has email "${escapeString(userEmail)}"; get;`, ['user']);
   if (result) return result.user;
   return null;
-};
-export const groups = (userId, args) => {
-  return paginate(
-    `match $group isa Group; 
-    $rel(grouping:$group, member:$user) isa membership; 
-    $user has internal_id_key "${escapeString(userId)}"`,
-    args
-  );
 };
 export const token = (userId, args, context) => {
   if (userId !== context.user.id) {

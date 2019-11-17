@@ -1,19 +1,14 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose, propOr, assoc, dissoc, mapObjIndexed, map, pipe, toPairs, last, head
+  assoc, compose, dissoc, head, last, map, pipe, propOr, toPairs,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../utils/ListParameters';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
-import CoursesOfActionLines, {
-  coursesOfActionLinesQuery,
-} from './courses_of_action/CoursesOfActionLines';
+import CoursesOfActionLines, { coursesOfActionLinesQuery } from './courses_of_action/CoursesOfActionLines';
 import CourseOfActionCreation from './courses_of_action/CourseOfActionCreation';
 
 class CoursesOfAction extends Component {

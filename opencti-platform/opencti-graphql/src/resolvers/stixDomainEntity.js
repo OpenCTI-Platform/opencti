@@ -3,22 +3,19 @@ import { BUS_TOPICS } from '../config/conf';
 import {
   addStixDomainEntity,
   findAll,
-  findByExternalReference,
   findById,
-  findByName,
-  findByStixId,
   stixDomainEntitiesNumber,
   stixDomainEntitiesTimeSeries,
   stixDomainEntityAddRelation,
-  stixDomainEntityExportAsk,
+  stixDomainEntityAddRelations,
   stixDomainEntityCleanContext,
   stixDomainEntityDelete,
   stixDomainEntityDeleteRelation,
   stixDomainEntityEditContext,
   stixDomainEntityEditField,
+  stixDomainEntityExportAsk,
   stixDomainEntityExportPush,
-  stixDomainEntityImportPush,
-  stixDomainEntityAddRelations
+  stixDomainEntityImportPush
 } from '../domain/stixDomainEntity';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
@@ -28,20 +25,12 @@ import { createdByRef, markingDefinitions, reports, tags } from '../domain/stixE
 const stixDomainEntityResolvers = {
   Query: {
     stixDomainEntity: (_, { id }) => findById(id),
-    stixDomainEntities: (_, args) => {
-      if (args.stix_id_key && args.stix_id_key.length > 0) {
-        return findByStixId(args);
-      }
-      if (args.name && args.name.length > 0) {
-        return findByName(args);
-      }
-      if (args.externalReferenceId && args.externalReferenceId.length > 0) {
-        return findByExternalReference(args);
-      }
-      return findAll(args);
-    },
+    stixDomainEntities: (_, args) => findAll(args),
     stixDomainEntitiesTimeSeries: (_, args) => stixDomainEntitiesTimeSeries(args),
     stixDomainEntitiesNumber: (_, args) => stixDomainEntitiesNumber(args)
+  },
+  StixDomainEntitiesFilter: {
+    hasExternalReference: 'external_references.internal_id_key'
   },
   StixDomainEntity: {
     // eslint-disable-next-line no-underscore-dangle

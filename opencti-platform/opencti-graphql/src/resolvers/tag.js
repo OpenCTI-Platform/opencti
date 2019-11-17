@@ -2,16 +2,14 @@ import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addTag,
-  tagDelete,
   findAll,
-  findByValue,
   findById,
-  findByEntity,
-  tagEditContext,
-  tagEditField,
   tagAddRelation,
+  tagCleanContext,
+  tagDelete,
   tagDeleteRelation,
-  tagCleanContext
+  tagEditContext,
+  tagEditField
 } from '../domain/tag';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
@@ -19,15 +17,10 @@ import withCancel from '../schema/subscriptionWrapper';
 const tagResolvers = {
   Query: {
     tag: (_, { id }) => findById(id),
-    tags: (_, args) => {
-      if (args.tag_type && args.tag_type.length > 0 && args.value && args.value.length > 0) {
-        return findByValue(args);
-      }
-      if (args.objectId && args.objectId.length > 0) {
-        return findByEntity(args);
-      }
-      return findAll(args);
-    }
+    tags: (_, args) => findAll(args)
+  },
+  TagsFilter: {
+    tagsFor: 'tagged.internal_id_key'
   },
   Tag: {
     editContext: tag => fetchEditContext(tag.id)

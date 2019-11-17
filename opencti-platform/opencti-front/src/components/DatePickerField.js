@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { KeyboardDatePicker } from '@material-ui/pickers';
-import { dateFormat } from '../utils/Time';
 import inject18n from './i18n';
 
 class DatePickerField extends Component {

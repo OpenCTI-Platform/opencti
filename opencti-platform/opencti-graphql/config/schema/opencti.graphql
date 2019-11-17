@@ -209,17 +209,25 @@ input AttributeEditInput {
 
 ### Tags
 enum TagsOrdering {
-  tag_type
   value
+  tag_type
   color
   created_at
   updated_at
+}
+enum TagsFilter {
+  value
+  tag_type
+  tagsFor
 }
 type TagConnection {
   pageInfo: PageInfo!
   edges: [TagEdge]
 }
-
+input TagsFiltering {
+  key: TagsFilter!
+  values: [String]
+}
 type TagEdge {
   cursor: String!
   node: Tag!
@@ -388,8 +396,14 @@ enum StixDomainEntitiesOrdering {
   tags
   markingDefinitions
 }
+enum StixDomainEntitiesFilter {
+  name
+  stix_id_key
+  hasExternalReference
+}
 input StixDomainEntitiesFiltering {
-  tagged: [String]
+  key: StixDomainEntitiesFilter!
+  values: [String]
 }
 type StixDomainEntityConnection {
   pageInfo: PageInfo!
@@ -443,8 +457,13 @@ enum StixObservablesOrdering {
   tags
   markingDefinitions
 }
+enum StixObservablesFilter {
+  stix_id_key
+  observable_value
+}
 input StixObservablesFiltering {
-  tagged: [String]
+  key: StixObservablesFilter!
+  values: [String]
 }
 type StixObservableConnection {
   pageInfo: PageInfo!
@@ -622,6 +641,13 @@ enum WorkspacesOrdering {
   created_at
   updated_at
 }
+enum WorkspaceFilter {
+  workspace_type
+}
+input WorkspaceFiltering {
+  key: WorkspaceFilter!
+  values: [String]
+}
 type WorkspaceConnection {
   pageInfo: PageInfo!
   edges: [WorkspaceEdge]
@@ -741,7 +767,8 @@ enum UsersOrdering {
   markingDefinitions
 }
 input UsersFiltering {
-  tagged: [String]
+  key: String!
+  values: [String]
 }
 enum UserRole {
   ROLE_ROOT
@@ -857,7 +884,8 @@ enum OrganizationsOrdering {
   markingDefinitions
 }
 input OrganizationsFiltering {
-  tagged: [String]
+  key: String!
+  values: [String]
 }
 type OrganizationConnection {
   pageInfo: PageInfo!
@@ -944,8 +972,12 @@ enum SectorsOrdering {
   tags
   markingDefinitions
 }
+enum SectorsFilter {
+  gatheredBy
+}
 input SectorsFiltering {
-  tagged: [String]
+  key: SectorsFilter!
+  values: [String]
 }
 type SectorConnection {
   pageInfo: PageInfo!
@@ -1034,7 +1066,8 @@ enum CitiesOrdering {
   markingDefinitions
 }
 input CitiesFiltering {
-  tagged: [String]
+  key: String!
+  values: [String]
 }
 type CityConnection {
   pageInfo: PageInfo!
@@ -1120,7 +1153,8 @@ enum CountriesOrdering {
   markingDefinitions
 }
 input CountriesFiltering {
-  tagged: [String]
+  key: String!
+  values: [String]
 }
 type CountryConnection {
   pageInfo: PageInfo!
@@ -1206,7 +1240,8 @@ enum RegionsOrdering {
   markingDefinitions
 }
 input RegionsFiltering {
-  tagged: [String]
+  key: String!
+  values: [String]
 }
 type RegionConnection {
   pageInfo: PageInfo!
@@ -1327,6 +1362,16 @@ enum MarkingDefinitionsOrdering {
   created_at
   updated_at
 }
+enum MarkingDefinitionsFilter {
+  definition
+  definition_type
+  stix_id_key
+  markedBy
+}
+input MarkingDefinitionsFiltering {
+  key: MarkingDefinitionsFilter!
+  values: [String]
+}
 type MarkingDefinitionConnection {
   pageInfo: PageInfo!
   edges: [MarkingDefinitionEdge]
@@ -1375,6 +1420,13 @@ enum ExternalReferencesOrdering {
   modified
   created_at
   updated_at
+}
+enum ExternalReferencesFilter {
+  usedBy
+}
+input ExternalReferencesFiltering {
+  key: ExternalReferencesFilter!
+  values: [String]
 }
 type ExternalReferenceConnection {
   pageInfo: PageInfo!
@@ -1475,7 +1527,7 @@ enum AttackPatternsOrdering {
 }
 enum AttackPatternsFilter {
   tags
-  courseOfAction
+  mitigateBy
 }
 input AttackPatternsFiltering {
   key: AttackPatternsFilter!
@@ -1573,7 +1625,7 @@ enum CoursesOfActionOrdering {
 }
 enum CoursesOfActionFilter {
   tags
-  attackPattern
+  mitigateBy
 }
 input CoursesOfActionFiltering {
   key: CoursesOfActionFilter!
@@ -1662,7 +1714,8 @@ enum ThreatActorsOrdering {
   markingDefinitions
 }
 input ThreatActorsFiltering {
-  tagged: [String]
+  key: String!
+  values: [String]
 }
 type ThreatActorConnection {
   pageInfo: PageInfo!
@@ -1760,7 +1813,8 @@ enum IntrusionSetsOrdering {
   markingDefinitions
 }
 input IntrusionSetsFiltering {
-  tagged: [String]
+  key: String!
+  values: [String]
 }
 type IntrusionSetConnection {
   pageInfo: PageInfo!
@@ -1862,7 +1916,8 @@ enum CampaignsOrdering {
   markingDefinitions
 }
 input CampaignsFiltering {
-  tagged: [String]
+  key: String!
+  values: [String]
 }
 type CampaignConnection {
   pageInfo: PageInfo!
@@ -1955,7 +2010,8 @@ enum IncidentsOrdering {
   markingDefinitions
 }
 input IncidentsFiltering {
-  tagged: [String]
+  key: String!
+  values: [String]
 }
 type IncidentConnection {
   pageInfo: PageInfo!
@@ -2046,7 +2102,8 @@ enum MalwaresOrdering {
   markingDefinitions
 }
 input MalwaresFiltering {
-  tagged: [String]
+  key: String!
+  values: [String]
 }
 type MalwareConnection {
   pageInfo: PageInfo!
@@ -2133,7 +2190,8 @@ enum ToolsOrdering {
   markingDefinitions
 }
 input ToolsFiltering {
-  tagged: [String]
+  key: String!
+  values: [String]
 }
 type ToolConnection {
   pageInfo: PageInfo!
@@ -2222,7 +2280,8 @@ enum VulnerabilitiesOrdering {
   markingDefinitions
 }
 input VulnerabilitiesFiltering {
-  tagged: [String]
+  key: String!
+  values: [String]
 }
 type VulnerabilityConnection {
   pageInfo: PageInfo!
@@ -2309,8 +2368,16 @@ enum ReportsOrdering {
   tags
   markingDefinitions
 }
+enum ReportsFilter {
+  name
+  published
+  report_class
+  createdBy
+  knowledgeContains
+}
 input ReportsFiltering {
-  tagged: [String]
+  key: ReportsFilter!
+  values: [String]!
 }
 type ReportConnection {
   pageInfo: PageInfo!
@@ -2440,10 +2507,13 @@ type Query {
     after: ID
     orderBy: TagsOrdering
     orderMode: OrderingMode
+    filters: [TagsFiltering]
+    filterMode: FilterMode
+    search: String
+
     tag_type: String
     value: String
     objectId: String
-    search: String
   ): TagConnection @auth
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: ROLE_ADMIN)
   connectors: [Connector] @auth
@@ -2457,17 +2527,12 @@ type Query {
   stixDomainEntities(
     first: Int
     after: ID
+    types: [String]
     orderBy: StixDomainEntitiesOrdering
     orderMode: OrderingMode
-    filters: StixDomainEntitiesFiltering
+    filters: [StixDomainEntitiesFiltering]
     filterMode: FilterMode
-    name: String
-    names: [String]
-    stix_id_key: String
     search: String
-    externalReferenceId: String
-    type: String
-    types: [String]
   ): StixDomainEntityConnection @auth
   stixDomainEntitiesTimeSeries(
     type: String
@@ -2483,14 +2548,14 @@ type Query {
   stixObservables(
     first: Int
     after: ID
-    stix_id: String
     orderBy: StixObservablesOrdering
     orderMode: OrderingMode
-    filters: StixObservablesFiltering
+    filters: [StixObservablesFiltering]
     filterMode: FilterMode
-    types: [String]
-    observableValue: String
     search: String
+    types: [String]
+
+
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -2575,7 +2640,8 @@ type Query {
     orderBy: WorkspacesOrdering
     orderMode: OrderingMode
     search: String
-    workspaceType: String
+    filters: [WorkspaceFiltering]
+    filterMode: FilterMode
   ): WorkspaceConnection @auth
   workspacesNumber(endDate: DateTime): Number @auth
   # Identities
@@ -2595,7 +2661,7 @@ type Query {
     after: ID
     orderBy: UsersOrdering
     orderMode: OrderingMode
-    filters: UsersFiltering
+    filters: [UsersFiltering]
     filterMode: FilterMode
     search: String
     isUser: Boolean
@@ -2608,7 +2674,7 @@ type Query {
     after: ID
     orderBy: OrganizationsOrdering
     orderMode: OrderingMode
-    filters: OrganizationsFiltering
+    filters: [OrganizationsFiltering]
     filterMode: FilterMode
     search: String
   ): OrganizationConnection @auth
@@ -2619,7 +2685,7 @@ type Query {
     after: ID
     orderBy: SectorsOrdering
     orderMode: OrderingMode
-    filters: SectorsFiltering
+    filters: [SectorsFiltering]
     filterMode: FilterMode
     search: String
   ): SectorConnection @auth
@@ -2630,7 +2696,7 @@ type Query {
     after: ID
     orderBy: CitiesOrdering
     orderMode: OrderingMode
-    filters: CitiesFiltering
+    filters: [CitiesFiltering]
     filterMode: FilterMode
     search: String
   ): CityConnection @auth
@@ -2641,7 +2707,7 @@ type Query {
     after: ID
     orderBy: CountriesOrdering
     orderMode: OrderingMode
-    filters: CountriesFiltering
+    filters: [CountriesFiltering]
     filterMode: FilterMode
     search: String
   ): CountryConnection @auth
@@ -2652,7 +2718,7 @@ type Query {
     after: ID
     orderBy: RegionsOrdering
     orderMode: OrderingMode
-    filters: RegionsFiltering
+    filters: [RegionsFiltering]
     filterMode: FilterMode
     search: String
   ): RegionConnection @auth
@@ -2672,10 +2738,7 @@ type Query {
     after: ID
     orderBy: MarkingDefinitionsOrdering
     orderMode: OrderingMode
-    definition_type: String
-    definition: String
-    stix_id_key: String
-    objectId: String
+    filters: [MarkingDefinitionsFiltering]
     search: String
   ): MarkingDefinitionConnection @auth
   # ExternalReferences
@@ -2685,7 +2748,7 @@ type Query {
     after: ID
     orderBy: ExternalReferencesOrdering
     orderMode: OrderingMode
-    objectId: String
+    filters: [ExternalReferencesFiltering]
     search: String
   ): ExternalReferenceConnection @auth
   # KillChainPhases
@@ -2728,7 +2791,7 @@ type Query {
     after: ID
     orderBy: ThreatActorsOrdering
     orderMode: OrderingMode
-    filters: ThreatActorsFiltering
+    filters: [ThreatActorsFiltering]
     filterMode: FilterMode
     search: String
   ): ThreatActorConnection @auth
@@ -2739,7 +2802,7 @@ type Query {
     after: ID
     orderBy: IntrusionSetsOrdering
     orderMode: OrderingMode
-    filters: IntrusionSetsFiltering
+    filters: [IntrusionSetsFiltering]
     filterMode: FilterMode
     search: String
   ): IntrusionSetConnection @auth
@@ -2750,7 +2813,7 @@ type Query {
     after: ID
     orderBy: CampaignsOrdering
     orderMode: OrderingMode
-    filters: CampaignsFiltering
+    filters: [CampaignsFiltering]
     filterMode: FilterMode
     search: String
   ): CampaignConnection @auth
@@ -2769,7 +2832,7 @@ type Query {
     after: ID
     orderBy: IncidentsOrdering
     orderMode: OrderingMode
-    filters: IncidentsFiltering
+    filters: [IncidentsFiltering]
     filterMode: FilterMode
     search: String
   ): IncidentConnection @auth
@@ -2788,7 +2851,7 @@ type Query {
     after: ID
     orderBy: MalwaresOrdering
     orderMode: OrderingMode
-    filters: MalwaresFiltering
+    filters: [MalwaresFiltering]
     filterMode: FilterMode
     search: String
   ): MalwareConnection @auth
@@ -2799,7 +2862,7 @@ type Query {
     after: ID
     orderBy: ToolsOrdering
     orderMode: OrderingMode
-    filters: ToolsFiltering
+    filters: [ToolsFiltering]
     filterMode: FilterMode
     search: String
   ): ToolConnection @auth
@@ -2810,7 +2873,7 @@ type Query {
     after: ID
     orderBy: VulnerabilitiesOrdering
     orderMode: OrderingMode
-    filters: VulnerabilitiesFiltering
+    filters: [VulnerabilitiesFiltering]
     filterMode: FilterMode
     search: String
   ): VulnerabilityConnection @auth
@@ -2821,14 +2884,9 @@ type Query {
     after: ID
     orderBy: ReportsOrdering
     orderMode: OrderingMode
-    filters: ReportsFiltering
+    filters: [ReportsFiltering]
     filterMode: FilterMode
-    objectId: String
-    authorId: String
-    reportClass: String
     search: String
-    name: String
-    published: DateTime
   ): ReportConnection @auth
   reportsTimeSeries(
     objectId: String
@@ -3152,7 +3210,6 @@ type Mutation {
   # Login
   token(input: UserLoginInput): String
   # Settings
-  settingsAdd(input: SettingsAddInput): Settings @auth(for: ROLE_ADMIN)
   settingsEdit(id: ID!): SettingsEditMutations @auth(for: ROLE_ADMIN)
   # Attribute
   attributeAdd(input: AttributeAddInput): Attribute @auth(for: ROLE_ADMIN)

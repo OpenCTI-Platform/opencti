@@ -33,9 +33,7 @@ export const jobsForWork = async id => {
     connectionFormat: false,
     orderBy: 'created_at',
     orderMode: 'asc',
-    filters: {
-      work_id: id
-    }
+    filters: [{ key: 'work_id', values: [id] }]
   });
 };
 
@@ -57,9 +55,7 @@ export const workForEntity = async (entityId, args) => {
     type: 'Work',
     connectionFormat: false,
     first: args.first,
-    filters: {
-      work_entity: entityId
-    }
+    filters: [{ key: 'work_entity', values: [entityId] }]
   });
 };
 
@@ -67,9 +63,7 @@ export const loadFileWorks = async fileId => {
   return elPaginate(INDEX_WORK_JOBS, {
     type: 'Work',
     connectionFormat: false,
-    filters: {
-      work_file: fileId
-    }
+    filters: [{ key: 'work_file', values: [fileId] }]
   });
 };
 

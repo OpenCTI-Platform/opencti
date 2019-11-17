@@ -8,71 +8,72 @@ import {
   escape,
   escapeString,
   executeWrite,
+  listEntities,
+  loadEntityByGraknId,
   loadEntityById,
   loadObservableById,
-  loadObservableByStixId,
   timeSeries,
   TYPE_STIX_OBSERVABLE,
   updateAttribute
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { findAll as relationFindAll } from './stixRelation';
-import { elCount, elLoadByTerms, elPaginate, INDEX_STIX_OBSERVABLE } from '../database/elasticSearch';
+import { elCount } from '../database/elasticSearch';
 import { connectorsForEnrichment } from './connector';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 
-export const findAll = args => {
-  if (!args.firstSeenStart && !args.firstSeenStop && !args.lastSeenStart && !args.lastSeenStop) {
-    return elPaginate('stix_observables', args);
-  }
-  return relationFindAll({
+export const findById = stixObservableId => {
+  return loadObservableById(stixObservableId);
+};
+export const findAll = async args => {
+  const noTypes = !args.types || args.types.length === 0;
+  const finalArgs = assoc('types', noTypes ? ['Stix-Observable'] : args.types, args);
+  const test = await listEntities(['name', 'description', 'observable_value'], finalArgs);
+  // if (!args.firstSeenStart && !args.firstSeenStop && !args.lastSeenStart && !args.lastSeenStop) {
+  //
+  // }
+  const compare = await relationFindAll({
     relationType: 'indicates',
     fromTypes: args.types ? args.types : ['Stix-Observable'],
     firstSeenStart: args.firstSeenStart,
     firstSeenStop: args.firstSeenStop,
     lastSeenStart: args.lastSeenStart,
     lastSeenStop: args.lastSeenStop
-  }).then(relations => {
-    const observablesEdges = pipe(
-      map(n => assocPath(['node', 'from', 'first_seen'], n.node.first_seen, n)),
-      map(n => assocPath(['node', 'from', 'last_seen'], n.node.last_seen, n)),
-      map(n => ({ node: n.node.from, cursor: n.cursor }))
-    )(relations.edges);
+  }).then(async relations => {
+    const observablesEdges = await Promise.all(
+      map(
+        n =>
+          loadEntityByGraknId(n.node.toId).then(node => ({
+            node: pipe(
+              assoc('first_seen', n.node.first_seen),
+              assoc('last_seen', n.node.last_seen)
+            )(node),
+            relation: n.relation,
+            cursor: n.cursor
+          })),
+        relations.edges
+      )
+    );
+    // const observablesEdges = pipe(
+    //   map(n => assocPath(['node', 'from', 'first_seen'], n.node.first_seen, n)),
+    //   map(n => assocPath(['node', 'from', 'last_seen'], n.node.last_seen, n)),
+    //   map(n => ({ node: n.node.from, cursor: n.cursor }))
+    // )(relations.edges);
     return assoc('edges', observablesEdges, relations);
   });
+  return test;
 };
 
 // region by elastic
+// TODO ONLY ES?
 export const stixObservablesNumber = args => ({
   count: elCount('stix_observables', args),
   total: elCount('stix_observables', dissoc('endDate', args))
 });
-export const findById = stixObservableId => {
-  return loadObservableById(stixObservableId);
-};
-export const findByStixId = args => {
-  // return paginate(
-  //   `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'};
-  //   $x has stix_id_key "${escapeString(args.stix_id)}"`,
-  //   args,
-  //   false
-  // );
-  return loadObservableByStixId(args.stix_id);
-};
-export const findByValue = args => {
-  // return paginate(
-  //   `match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'};
-  //   $x has observable_value "${escapeString(args.observableValue)}"`,
-  //   args,
-  //   false
-  // );
-  return elLoadByTerms([{ 'observable_value.keyword': args.observableValue }], [INDEX_STIX_OBSERVABLE]);
-};
-export const search = args => elPaginate('stix_observables', args);
 // endregion
 
-// region grakn fetch based
+// region time series
 export const reportsTimeSeries = (stixObservableId, args) => {
   return timeSeries(
     `match $x isa Report; 
@@ -142,8 +143,6 @@ export const stixObservableAddRelation = (user, stixObservableId, input) => {
     return relationData;
   });
 };
-// endregion
-
 export const stixObservableEditField = (user, stixObservableId, input) => {
   return executeWrite(wTx => {
     return updateAttribute(stixObservableId, input, wTx);
@@ -158,6 +157,7 @@ export const stixObservableDeleteRelation = (user, stixObservableId, relationId)
     return relationData;
   });
 };
+// endregion
 
 // region context
 export const stixObservableCleanContext = (user, stixObservableId) => {

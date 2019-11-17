@@ -1,13 +1,13 @@
+import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
   createRelation,
   deleteEntityById,
   deleteRelationById,
-  escapeString,
   executeWrite,
+  listEntities,
   loadEntityById,
-  paginate,
   TYPE_STIX_DOMAIN,
   updateAttribute
 } from '../database/grakn';
@@ -17,37 +17,10 @@ export const findById = killChainPhaseId => {
   return loadEntityById(killChainPhaseId);
 };
 
-// region grakn fetch
 export const findAll = args => {
-  return paginate(
-    `match $k isa Kill-Chain-Phase ${
-      args.search
-        ? `; $k has kill_chain_name $name;
-   $k has phase_name $phase;
-   { $name contains "${escapeString(args.search)}"; } or
-   { $phase contains "${escapeString(args.search)}"; }`
-        : ''
-    }`,
-    args
-  );
+  const typedArgs = assoc('types', ['Kill-Chain-Phase'], args);
+  return listEntities(['kill_chain_name', 'phase_name'], typedArgs);
 };
-export const findByEntity = args => {
-  return paginate(
-    `match $k isa Kill-Chain-Phase; 
-    $rel(kill_chain_phase:$k, phase_belonging:$so) isa kill_chain_phases; 
-    $so has internal_id_key "${escapeString(args.objectId)}"`,
-    args
-  );
-};
-export const findByPhaseName = args => {
-  return paginate(
-    `match $k isa Kill-Chain-Phase; 
-    $k has phase_name "${escapeString(args.phaseName)}"`,
-    args,
-    false
-  );
-};
-// endregion
 
 export const addKillChainPhase = async (user, killChainPhase) => {
   const created = await createEntity(killChainPhase, 'Kill-Chain-Phase', TYPE_STIX_DOMAIN);

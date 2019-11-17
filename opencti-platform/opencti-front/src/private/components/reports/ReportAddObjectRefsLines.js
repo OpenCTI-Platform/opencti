@@ -103,15 +103,15 @@ class ReportAddObjectRefsLinesContainer extends Component {
       });
     } else {
       const input = {
-        fromRole: 'so',
-        toId: reportId,
-        toRole: 'knowledge_aggregation',
+        fromRole: 'knowledge_aggregation',
+        toId: stixDomain.id,
+        toRole: 'so',
         through: 'object_refs',
       };
       commitMutation({
         mutation: reportMutationRelationAdd,
         variables: {
-          id: stixDomain.id,
+          id: reportId,
           input,
         },
       });

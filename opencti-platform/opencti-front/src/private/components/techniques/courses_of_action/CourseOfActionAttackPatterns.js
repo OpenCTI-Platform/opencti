@@ -44,7 +44,7 @@ class CoursesOfActionAttackPatterns extends Component {
       orderBy: 'created_at',
       orderMode: 'desc',
       filters: [{
-        key: 'courseOfAction',
+        key: 'mitigateBy',
         values: [courseOfActionId],
       }],
     };
@@ -56,7 +56,7 @@ class CoursesOfActionAttackPatterns extends Component {
           orderBy: 'created_at',
           orderMode: 'desc',
           filters: [{
-            key: 'courseOfAction',
+            key: 'mitigateBy',
             values: [courseOfActionId],
           }],
         }}

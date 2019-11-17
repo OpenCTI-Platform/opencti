@@ -26,7 +26,7 @@ const attackPatternResolvers = {
   },
   AttackPatternsFilter: {
     tags: 'tagged.internal_id_key',
-    courseOfAction: 'mitigates.internal_id_key'
+    mitigateBy: 'mitigates.internal_id_key'
   },
   Mutation: {
     attackPatternEdit: (_, { id }, { user }) => ({

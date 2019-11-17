@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { Client } from '@elastic/elasticsearch';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
-import { append, assoc, concat, dissoc, head, includes, join, map, pipe, split } from 'ramda';
+import { append, assoc, concat, dissoc, filter, flatten, head, includes, join, map, pipe, split } from 'ramda';
 import { buildPagination } from './utils';
 import conf, { logger } from '../config/conf';
 
@@ -304,22 +304,12 @@ export const elPaginate = async (indexName, options) => {
     );
   }
   if (types !== null && types.length > 0) {
-    const should = types.map(typeValue => {
-      return {
-        match_phrase: {
-          entity_type: typeValue
-        }
-      };
-    });
-    must = append(
-      {
-        bool: {
-          should,
-          minimum_should_match: 1
-        }
-      },
-      must
+    const should = flatten(
+      types.map(typeValue => {
+        return [{ match_phrase: { entity_type: typeValue } }, { match_phrase: { parent_type: typeValue } }];
+      })
     );
+    must = append({ bool: { should, minimum_should_match: 1 } }, must);
   }
   if (reportClass !== null && reportClass.length > 0) {
     must = append(
@@ -343,9 +333,10 @@ export const elPaginate = async (indexName, options) => {
       must
     );
   }
-  if (filters && filters.length > 0) {
-    for (let index = 0; index < filters.length; index += 1) {
-      const { key, values } = filters[index];
+  const validFilters = filter(f => f && f.values.filter(n => n).length > 0, filters || []);
+  if (validFilters.length > 0) {
+    for (let index = 0; index < validFilters.length; index += 1) {
+      const { key, values } = validFilters[index];
       for (let i = 0; i < values.length; i += 1) {
         if (values[i] === null) {
           mustnot = append(

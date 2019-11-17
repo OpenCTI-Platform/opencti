@@ -5,11 +5,9 @@ import {
   createRelation,
   deleteEntityById,
   deleteRelationById,
-  escapeString,
   executeWrite,
   listEntities,
   loadEntityById,
-  paginate,
   TYPE_STIX_DOMAIN,
   updateAttribute
 } from '../database/grakn';
@@ -21,16 +19,6 @@ export const findById = externalReferenceId => {
 export const findAll = args => {
   const typedArgs = assoc('types', ['External-Reference'], args);
   return listEntities(['source_name', 'description'], typedArgs);
-};
-
-export const findByEntity = async args => {
-  const test = await paginate(
-    `match $e isa External-Reference; 
-    $rel(external_reference:$e, so:$so) isa external_references;
-    $so has internal_id_key "${escapeString(args.objectId)}"`,
-    args
-  );
-  return test;
 };
 
 export const addExternalReference = async (user, externalReference) => {

@@ -2,17 +2,14 @@ import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addMarkingDefinition,
-  markingDefinitionDelete,
   findAll,
-  findByStixId,
-  findByDefinition,
   findById,
-  findByEntity,
-  markingDefinitionEditContext,
-  markingDefinitionEditField,
   markingDefinitionAddRelation,
+  markingDefinitionCleanContext,
+  markingDefinitionDelete,
   markingDefinitionDeleteRelation,
-  markingDefinitionCleanContext
+  markingDefinitionEditContext,
+  markingDefinitionEditField
 } from '../domain/markingDefinition';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
@@ -20,23 +17,10 @@ import withCancel from '../schema/subscriptionWrapper';
 const markingDefinitionResolvers = {
   Query: {
     markingDefinition: (_, { id }) => findById(id),
-    markingDefinitions: (_, args) => {
-      if (args.stix_id_key && args.stix_id_key.length > 0) {
-        return findByStixId(args);
-      }
-      if (
-        args.definition_type &&
-        args.definition_type.length > 0 &&
-        args.definition &&
-        args.definition.length > 0
-      ) {
-        return findByDefinition(args);
-      }
-      if (args.objectId && args.objectId.length > 0) {
-        return findByEntity(args);
-      }
-      return findAll(args);
-    }
+    markingDefinitions: (_, args) => findAll(args)
+  },
+  MarkingDefinitionsFilter: {
+    markedBy: 'object_marking_refs.internal_id_key'
   },
   MarkingDefinition: {
     editContext: markingDefinition => fetchEditContext(markingDefinition.id)
@@ -45,14 +29,11 @@ const markingDefinitionResolvers = {
     markingDefinitionEdit: (_, { id }, { user }) => ({
       delete: () => markingDefinitionDelete(id),
       fieldPatch: ({ input }) => markingDefinitionEditField(user, id, input),
-      contextPatch: ({ input }) =>
-        markingDefinitionEditContext(user, id, input),
+      contextPatch: ({ input }) => markingDefinitionEditContext(user, id, input),
       relationAdd: ({ input }) => markingDefinitionAddRelation(user, id, input),
-      relationDelete: ({ relationId }) =>
-        markingDefinitionDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => markingDefinitionDeleteRelation(user, id, relationId)
     }),
-    markingDefinitionAdd: (_, { input }, { user }) =>
-      addMarkingDefinition(user, input)
+    markingDefinitionAdd: (_, { input }, { user }) => addMarkingDefinition(user, input)
   },
   Subscription: {
     markingDefinition: {

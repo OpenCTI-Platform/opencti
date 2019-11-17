@@ -54,18 +54,16 @@ const inlineStyles = {
 
 const entityLastReportsQuery = graphql`
   query EntityLastReportsQuery(
-    $objectId: String
-    $authorId: String
     $first: Int
     $orderBy: ReportsOrdering
     $orderMode: OrderingMode
+    $filters: [ReportsFiltering]
   ) {
     reports(
-      objectId: $objectId
-      authorId: $authorId
       first: $first
       orderBy: $orderBy
       orderMode: $orderMode
+      filters: $filters  
     ) {
       edges {
         node {
@@ -102,11 +100,13 @@ class EntityLastReports extends Component {
           <QueryRenderer
             query={entityLastReportsQuery}
             variables={{
-              objectId: authorId ? null : entityId,
-              authorId: authorId || null,
               first: 8,
               orderBy: 'published',
               orderMode: 'desc',
+              filters: [
+                { key: 'createdBy', values: [authorId] },
+                { key: 'knowledgeContains', values: [entityId] },
+              ],
             }}
             render={({ props }) => {
               if (props && props.reports) {
@@ -125,8 +125,7 @@ class EntityLastReports extends Component {
                           classes={{ root: classes.item }}
                           divider={true}
                           component={Link}
-                          to={`/dashboard/reports/all/${report.id}`}
-                        >
+                          to={`/dashboard/reports/all/${report.id}`}>
                           <ListItemIcon classes={{ root: classes.itemIcon }}>
                             <Description />
                           </ListItemIcon>

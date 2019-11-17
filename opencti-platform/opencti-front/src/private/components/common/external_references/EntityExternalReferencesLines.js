@@ -27,7 +27,7 @@ import { commitMutation } from '../../../../relay/environment';
 import AddExternalReferences from './AddExternalReferences';
 import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
 
-const styles = theme => ({
+const styles = (theme) => ({
   paper: {
     minHeight: '100%',
     margin: '-4px 0 0 0',
@@ -54,7 +54,6 @@ const styles = theme => ({
 });
 
 class EntityExternalReferencesLinesContainer extends Component {
-
   constructor(props) {
     super(props);
     this.state = {
@@ -68,7 +67,7 @@ class EntityExternalReferencesLinesContainer extends Component {
     const openedState = {
       displayDialog: true,
       removeExternalReference: externalReferenceEdge,
-    }
+    };
     this.setState(openedState);
   }
 
@@ -76,7 +75,7 @@ class EntityExternalReferencesLinesContainer extends Component {
     const closedState = {
       displayDialog: false,
       removeExternalReference: null,
-    }
+    };
     this.setState(closedState);
   }
 
@@ -205,12 +204,11 @@ class EntityExternalReferencesLinesContainer extends Component {
         <Dialog
           open={this.state.displayDialog}
           keepMounted={true}
-          onClose={this.handleCloseDialog.bind(this)}
-        >
+          onClose={this.handleCloseDialog.bind(this)}>
           <DialogTitle>{t('Confirmation required')}</DialogTitle>
           <DialogContent>
-            { this.state.removeExternalReference != null &&
-              <DialogContentText>
+            { this.state.removeExternalReference != null
+              && <DialogContentText>
                 {t('Removing')} '{truncate(this.state.removeExternalReference.node.source_name, 30)}'.
               </DialogContentText>
             }
@@ -252,19 +250,19 @@ EntityExternalReferencesLinesContainer.propTypes = {
 
 export const entityExternalReferencesLinesQuery = graphql`
   query EntityExternalReferencesLinesQuery(
-    $objectId: String!
     $count: Int!
     $cursor: ID
     $orderBy: ExternalReferencesOrdering
     $orderMode: OrderingMode
+    $filters: [ExternalReferencesFiltering]
   ) {
     ...EntityExternalReferencesLines_data
       @arguments(
-        objectId: $objectId
         count: $count
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -275,7 +273,6 @@ const EntityExternalReferencesLines = createPaginationContainer(
     data: graphql`
       fragment EntityExternalReferencesLines_data on Query
         @argumentDefinitions(
-          objectId: { type: "String!" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
           orderBy: {
@@ -283,13 +280,14 @@ const EntityExternalReferencesLines = createPaginationContainer(
             defaultValue: "source_name"
           }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          filters: { type: "[ExternalReferencesFiltering]" }
         ) {
         externalReferences(
-          objectId: $objectId
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters  
         ) @connection(key: "Pagination_externalReferences") {
           edges {
             node {
@@ -325,6 +323,7 @@ const EntityExternalReferencesLines = createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: entityExternalReferencesLinesQuery,

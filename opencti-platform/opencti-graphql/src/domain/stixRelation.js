@@ -45,7 +45,7 @@ import {
 } from '../database/grakn';
 import { buildPagination } from '../database/utils';
 import { BUS_TOPICS } from '../config/conf';
-import { elFindTermsAnd, elFindTermsOr } from '../database/elasticSearch';
+import { elFindTermsOr } from '../database/elasticSearch';
 
 // region utils
 const sumBy = attribute => vals => {
@@ -55,36 +55,6 @@ const groupSumBy = curry((groupOn, sumOn, vals) => values(map(sumBy(sumOn))(grou
 // endregion
 
 export const findAll = async args => {
-  const { inferred } = args;
-  if (!inferred) {
-    const { fromId, toId, relationType, firstSeenStart, firstSeenStop, lastSeenStart, lastSeenStop } = args;
-    const terms = [];
-    const ranges = [];
-    if (fromId) {
-      const from = await loadEntityById(fromId).then(d => d.grakn_id);
-      terms.push({ 'fromId.keyword': from });
-    }
-    if (toId) {
-      const to = await loadEntityById(toId).then(d => d.grakn_id);
-      terms.push({ 'toId.keyword': to });
-    }
-    if (relationType) {
-      terms.push({ 'relationship_type.keyword': relationType });
-    }
-    if (firstSeenStart) {
-      ranges.push({ first_seen: { gt: args.firstSeenStart.toISOString() } });
-    }
-    if (firstSeenStop) {
-      ranges.push({ first_seen: { lt: args.firstSeenStop.toISOString() } });
-    }
-    if (lastSeenStart) {
-      ranges.push({ last_seen: { gt: args.lastSeenStart.toISOString() } });
-    }
-    if (lastSeenStop) {
-      ranges.push({ last_seen: { lt: args.lastSeenStop.toISOString() } });
-    }
-    return elFindTermsAnd({ terms, ranges });
-  }
   // If inferred option, ask grakn
   return paginateRelationships(
     `match $rel($from, $to) isa ${args.relationType ? escape(args.relationType) : 'stix_relation'}`,
@@ -136,6 +106,7 @@ export const findAllWithInferences = async args => {
   const resultPromise = await paginateRelationships(
     query,
     assoc('inferred', false, omit(['fromId'], args)),
+    'rel',
     null,
     !args.resolveViaTypes
   );
@@ -150,7 +121,7 @@ export const findAllWithInferences = async args => {
         )} { $from has internal_id_key "${escapeString(head(fromIds))}"; }; $entity isa ${escape(
           resolveViaType.entityType
         )}; $link(${escape(resolveViaType.relationRole)}: $entity, $to) isa ${escape(resolveViaType.relationType)}`;
-        return paginateRelationships(viaQuery, omit(['fromId'], args), null, false);
+        return paginateRelationships(viaQuery, omit(['fromId'], args), 'rel', null, false);
       })(args.resolveViaTypes)
     );
     const viaRelationQueries = map(
@@ -165,9 +136,9 @@ export const findAllWithInferences = async args => {
         )}: $rel, $to) isa ${escape(resolveViaType.relationType)}`
     )(args.resolveViaTypes);
     const viaOfRelationPromise = Promise.all(
-      map(async viaRelationQuery => paginateRelationships(viaRelationQuery, omit(['fromId'], args), null, false))(
-        dropRepeats(viaRelationQueries)
-      )
+      map(async viaRelationQuery =>
+        paginateRelationships(viaRelationQuery, omit(['fromId'], args), 'rel', null, false)
+      )(dropRepeats(viaRelationQueries))
     );
     return Promise.all([resultPromise, viaPromise, viaOfRelationPromise]).then(([result, via, viaRelation]) => {
       const { first = 200, after } = args;

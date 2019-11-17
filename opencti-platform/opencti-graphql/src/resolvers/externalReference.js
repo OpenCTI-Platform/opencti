@@ -2,15 +2,14 @@ import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addExternalReference,
+  externalReferenceAddRelation,
+  externalReferenceCleanContext,
   externalReferenceDelete,
-  findAll,
-  findByEntity,
-  findById,
+  externalReferenceDeleteRelation,
   externalReferenceEditContext,
   externalReferenceEditField,
-  externalReferenceAddRelation,
-  externalReferenceDeleteRelation,
-  externalReferenceCleanContext
+  findAll,
+  findById
 } from '../domain/externalReference';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
@@ -18,12 +17,10 @@ import withCancel from '../schema/subscriptionWrapper';
 const externalReferenceResolvers = {
   Query: {
     externalReference: (_, { id }) => findById(id),
-    externalReferences: (_, args) => {
-      if (args.objectId && args.objectId.length > 0) {
-        return findByEntity(args);
-      }
-      return findAll(args);
-    }
+    externalReferences: (_, args) => findAll(args)
+  },
+  ExternalReferencesFilter: {
+    usedBy: 'external_references.internal_id_key'
   },
   ExternalReference: {
     editContext: externalReference => fetchEditContext(externalReference.id)

@@ -1,6 +1,5 @@
 import { assoc, pipe } from 'ramda';
-import { createEntity, loadEntityById, now } from '../database/grakn';
-import { elPaginate } from '../database/elasticSearch';
+import { createEntity, listEntities, loadEntityById, now } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 
@@ -8,7 +7,8 @@ export const findById = intrusionSetId => {
   return loadEntityById(intrusionSetId);
 };
 export const findAll = args => {
-  return elPaginate('stix_domain_entities', assoc('type', 'intrusion-set', args));
+  const typedArgs = assoc('types', ['Intrusion-Set'], args);
+  return listEntities(['name', 'alias'], typedArgs);
 };
 
 export const addIntrusionSet = async (user, intrusionSet) => {

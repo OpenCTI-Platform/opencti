@@ -83,7 +83,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "OrganizationsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "OrganizationsFiltering" }
+          filters: { type: "[OrganizationsFiltering]" }
         ) {
         organizations(
           search: $search
