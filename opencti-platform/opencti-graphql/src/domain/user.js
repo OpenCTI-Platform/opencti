@@ -60,13 +60,6 @@ export const findAll = args => {
   const typedArgs = assoc('types', ['User'], args);
   return listEntities(['email', 'firstname', 'lastname'], typedArgs);
 };
-
-// region grakn fetch
-export const findByEmail = async userEmail => {
-  const result = await load(`match $user isa User, has email "${escapeString(userEmail)}"; get;`, ['user']);
-  if (result) return result.user;
-  return null;
-};
 export const token = (userId, args, context) => {
   if (userId !== context.user.id) {
     throw new ForbiddenAccess();
@@ -88,10 +81,9 @@ export const getTokenId = async userId => {
     'rel'
   ).then(result => pathOr(null, ['node', 'id'], result));
 };
-// endregion
 
 export const addPerson = async (user, newUser) => {
-  const created = await createEntity(newUser, 'User', TYPE_STIX_DOMAIN_ENTITY, 'identity');
+  const created = await createEntity(newUser, 'User', { modelType: TYPE_STIX_DOMAIN_ENTITY, stixIdType: 'identity' });
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken()) => {
@@ -99,10 +91,13 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
     assoc('password', bcrypt.hashSync(newUser.password.toString())),
     assoc('language', newUser.language ? newUser.language : 'auto')
   )(newUser);
-  const userCreated = await createEntity(userToCreate, 'User', TYPE_STIX_DOMAIN_ENTITY, 'identity');
-  const defaultToken = await createEntity(newToken, 'Token', TYPE_OPENCTI_INTERNAL);
+  const userCreated = await createEntity(userToCreate, 'User', {
+    modelType: TYPE_STIX_DOMAIN_ENTITY,
+    stixIdType: 'identity'
+  });
+  const defaultToken = await createEntity(newToken, 'Token', { modelType: TYPE_OPENCTI_INTERNAL, indexable: false });
   const input = { fromRole: 'client', toId: defaultToken.id, toRole: 'authorization', through: 'authorize' };
-  await createRelation(userCreated.id, input);
+  await createRelation(userCreated.id, input, { indexable: false });
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, userCreated, user);
 };
 
@@ -180,10 +175,10 @@ export const userRenewToken = async (userId, newToken = generateOpenCTIWebToken(
     await deleteEntityById(currentToken);
   }
   // 03. Create a new one
-  const defaultToken = await createEntity(newToken, 'Token', TYPE_OPENCTI_INTERNAL);
+  const defaultToken = await createEntity(newToken, 'Token', { modelType: TYPE_OPENCTI_INTERNAL, indexable: false });
   // 04. Associate new token to user.
   const input = { fromRole: 'client', toId: defaultToken.id, toRole: 'authorization', through: 'authorize' };
-  await createRelation(userId, input);
+  await createRelation(userId, input, { indexable: false });
   return loadEntityById(userId);
 };
 export const findByTokenUUID = async tokenValue => {
@@ -196,7 +191,7 @@ export const findByTokenUUID = async tokenValue => {
     (authorization:$token, client:$client); get;`,
       ['client', 'token']
     );
-    console.log(`Setting cache access for ${tokenValue}`);
+    logger.debug(`Setting cache access for ${tokenValue}`);
     await storeAccessCache(tokenValue, result);
   }
   if (isNil(result)) return undefined;
@@ -228,12 +223,9 @@ const OPENCTI_ADMIN_DNS = '88ec0c6a-13ce-5e39-b486-354fe4a7084f';
  * @returns {*}
  */
 export const initAdmin = async (email, password, tokenValue) => {
-  let admin = await findByEmail(email);
-  if (admin === null) {
-    admin = await findById(OPENCTI_ADMIN_DNS);
-  }
-  const user = { name: 'system' };
+  const admin = await findById(OPENCTI_ADMIN_DNS);
   const tokenAdmin = generateOpenCTIWebToken(tokenValue);
+  const user = { name: 'system' };
   if (admin) {
     // Update email and password
     await userEditField(user, admin.id, {
@@ -247,20 +239,17 @@ export const initAdmin = async (email, password, tokenValue) => {
     // Renew the token
     await userRenewToken(admin.id, tokenAdmin);
   } else {
-    await addUser(
-      user,
-      {
-        internal_id_key: OPENCTI_ADMIN_DNS,
-        stix_id_key: `identity--${OPENCTI_ADMIN_DNS}`,
-        name: 'admin',
-        firstname: 'Admin',
-        lastname: 'OpenCTI',
-        description: 'Principal admin account',
-        email,
-        password,
-        grant: ['ROLE_ROOT', 'ROLE_ADMIN']
-      },
-      tokenAdmin
-    );
+    const userToCreate = {
+      internal_id_key: OPENCTI_ADMIN_DNS,
+      stix_id_key: `identity--${OPENCTI_ADMIN_DNS}`,
+      name: 'admin',
+      firstname: 'Admin',
+      lastname: 'OpenCTI',
+      description: 'Principal admin account',
+      email,
+      password,
+      grant: ['ROLE_ROOT', 'ROLE_ADMIN']
+    };
+    await addUser(user, userToCreate, tokenAdmin);
   }
 };

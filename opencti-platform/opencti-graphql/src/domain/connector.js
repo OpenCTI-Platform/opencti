@@ -84,7 +84,7 @@ export const registerConnector = async ({ id, name, type, scope }) => {
   }
   // Need to create the connector
   const connectorToCreate = { internal_id_key: id, name, connector_type: type, connector_scope: scope.join(',') };
-  const createdConnector = await createEntity(connectorToCreate, 'Connector', TYPE_OPENCTI_INTERNAL);
+  const createdConnector = await createEntity(connectorToCreate, 'Connector', { modelType: TYPE_OPENCTI_INTERNAL });
   // Return the connector
   return completeConnector(createdConnector);
 };

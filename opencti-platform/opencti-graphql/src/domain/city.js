@@ -12,6 +12,6 @@ export const findAll = args => {
 };
 
 export const addCity = async (user, city) => {
-  const created = await createEntity(city, 'City', TYPE_STIX_DOMAIN_ENTITY, 'identity');
+  const created = await createEntity(city, 'City', { modelType: TYPE_STIX_DOMAIN_ENTITY, stixIdType: 'identity' });
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };

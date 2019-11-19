@@ -12,6 +12,9 @@ export const findAll = args => {
 };
 
 export const addOrganization = async (user, organization) => {
-  const created = await createEntity(organization, 'Organization', TYPE_STIX_DOMAIN_ENTITY, 'identity');
+  const created = await createEntity(organization, 'Organization', {
+    modelType: TYPE_STIX_DOMAIN_ENTITY,
+    stixIdType: 'identity'
+  });
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };

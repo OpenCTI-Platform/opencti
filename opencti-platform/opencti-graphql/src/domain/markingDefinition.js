@@ -23,7 +23,7 @@ export const findAll = args => {
 };
 
 export const addMarkingDefinition = async (user, markingDefinition) => {
-  const created = await createEntity(markingDefinition, 'Marking-Definition', TYPE_STIX_DOMAIN);
+  const created = await createEntity(markingDefinition, 'Marking-Definition', { modelType: TYPE_STIX_DOMAIN });
   return notify(BUS_TOPICS.MarkingDefinition.ADDED_TOPIC, created, user);
 };
 

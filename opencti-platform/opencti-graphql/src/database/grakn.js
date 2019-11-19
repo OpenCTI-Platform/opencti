@@ -1230,7 +1230,9 @@ const flatAttributesForObject = data => {
     filter(f => f.value !== undefined)
   )(elements);
 };
-const createRelationRaw = async (fromInternalId, input) => {
+
+const createRelationRaw = async (fromInternalId, input, opts) => {
+  const { indexable = true } = opts;
   const relationId = uuid();
   // 01. First fix the direction of the relation
   const isStixRelation = includes('stix_id_key', Object.keys(input)) || input.relationship_type;
@@ -1304,45 +1306,47 @@ const createRelationRaw = async (fromInternalId, input) => {
     assoc('relationship_type', relationshipType),
     assoc('parents_type', graknRelation.types)
   )(relationAttributes);
-  // 04. Index the relation and the modification in the base entity
-  const index = inferIndexFromConceptTypes([entityType]);
-  await elIndex(index, createdRel).then(() => {
-    const innerFrom = elUpdateAddInnerRelation(createdRel.fromId, relationshipType, data.toId, relationId);
-    const innerTo = elUpdateAddInnerRelation(createdRel.toId, relationshipType, data.fromId, relationId);
-    return Promise.all([innerFrom, innerTo]);
-  });
+  if (indexable) {
+    // 04. Index the relation and the modification in the base entity
+    const index = inferIndexFromConceptTypes([entityType]);
+    await elIndex(index, createdRel).then(() => {
+      const innerFrom = elUpdateAddInnerRelation(createdRel.fromId, relationshipType, data.toId, relationId);
+      const innerTo = elUpdateAddInnerRelation(createdRel.toId, relationshipType, data.fromId, relationId);
+      return Promise.all([innerFrom, innerTo]);
+    });
+  }
   // 06. Return result
   return createdRel;
 };
 
 // region business relations
-const addOwner = async (fromInternalId, createdByOwnerId) => {
+const addOwner = async (fromInternalId, createdByOwnerId, opts) => {
   if (!createdByOwnerId) return undefined;
   const input = { fromRole: 'to', toId: createdByOwnerId, toRole: 'owner', through: 'owned_by' };
-  return createRelationRaw(fromInternalId, input);
+  return createRelationRaw(fromInternalId, input, opts);
 };
-const addCreatedByRef = async (fromInternalId, createdByRefId) => {
+const addCreatedByRef = async (fromInternalId, createdByRefId, opts) => {
   if (!createdByRefId) return undefined;
   const input = { fromRole: 'so', toId: createdByRefId, toRole: 'creator', through: 'created_by_ref' };
-  return createRelationRaw(fromInternalId, input);
+  return createRelationRaw(fromInternalId, input, opts);
 };
-const addMarkingDef = async (fromInternalId, markingDefId) => {
+const addMarkingDef = async (fromInternalId, markingDefId, opts) => {
   if (!markingDefId) return undefined;
   const input = { fromRole: 'so', toId: markingDefId, toRole: 'marking', through: 'object_marking_refs' };
-  return createRelationRaw(fromInternalId, input);
+  return createRelationRaw(fromInternalId, input, opts);
 };
-const addMarkingDefs = async (internalId, markingDefIds) => {
+const addMarkingDefs = async (internalId, markingDefIds, opts) => {
   if (!markingDefIds || isEmpty(markingDefIds)) return undefined;
   const markings = [];
   // Relations cannot be created in parallel.
   for (let i = 0; i < markingDefIds.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
-    const marking = await addMarkingDef(internalId, markingDefIds[i]);
+    const marking = await addMarkingDef(internalId, markingDefIds[i], opts);
     markings.push(marking);
   }
   return markings;
 };
-const addKillChain = async (fromInternalId, killChainId) => {
+const addKillChain = async (fromInternalId, killChainId, opts) => {
   if (!killChainId) return undefined;
   const input = {
     fromRole: 'phase_belonging',
@@ -1350,42 +1354,44 @@ const addKillChain = async (fromInternalId, killChainId) => {
     toRole: 'kill_chain_phase',
     through: 'kill_chain_phases'
   };
-  return createRelationRaw(fromInternalId, input);
+  return createRelationRaw(fromInternalId, input, opts);
 };
-const addKillChains = async (internalId, killChainIds) => {
+const addKillChains = async (internalId, killChainIds, opts) => {
   if (!killChainIds || isEmpty(killChainIds)) return undefined;
   const killChains = [];
   // Relations cannot be created in parallel.
   for (let i = 0; i < killChainIds.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
-    const killChain = await addKillChain(internalId, killChainIds[i]);
+    const killChain = await addKillChain(internalId, killChainIds[i], opts);
     killChains.push(killChain);
   }
   return killChains;
 };
 // endregion
 
-export const createRelation = async (fromInternalId, input) => {
-  const created = await createRelationRaw(fromInternalId, input);
+export const createRelation = async (fromInternalId, input, opts) => {
+  const created = await createRelationRaw(fromInternalId, input, opts);
   // 05. Complete with eventual relations (will eventually update the index)
-  await addOwner(created.id, input.createdByOwner);
-  await addCreatedByRef(created.id, input.createdByRef);
-  await addMarkingDefs(created.id, input.markingDefinitions);
-  await addKillChains(created.id, input.killChainPhases);
+  await addOwner(created.id, input.createdByOwner, opts);
+  await addCreatedByRef(created.id, input.createdByRef, opts);
+  await addMarkingDefs(created.id, input.markingDefinitions, opts);
+  await addKillChains(created.id, input.killChainPhases, opts);
   return created;
 };
-export const createRelations = async (fromInternalId, inputs, stixRelation = false) => {
+export const createRelations = async (fromInternalId, inputs, opts) => {
   const createdRelations = [];
   // Relations cannot be created in parallel. (Concurrent indexing on same key)
   // Could be improve by grouping and indexing in one shot.
   for (let i = 0; i < inputs.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
-    const relation = await createRelation(fromInternalId, inputs[i], stixRelation);
+    const relation = await createRelation(fromInternalId, inputs[i], opts);
     createdRelations.push(relation);
   }
   return createdRelations;
 };
-export const createEntity = async (entity, innerType, modelType = TYPE_STIX_DOMAIN_ENTITY, stixIdType = undefined) => {
+
+export const createEntity = async (entity, innerType, opts) => {
+  const { modelType, stixIdType = TYPE_STIX_DOMAIN_ENTITY, indexable = true } = opts;
   const internalId = entity.internal_id_key ? entity.internal_id_key : uuid();
   const stixType = stixIdType || innerType.toLowerCase();
   const stixId = entity.stix_id_key ? entity.stix_id_key : `${stixType}--${uuid()}`;
@@ -1399,7 +1405,8 @@ export const createEntity = async (entity, innerType, modelType = TYPE_STIX_DOMA
     dissoc('createdByOwner'),
     dissoc('createdByRef'),
     dissoc('markingDefinitions'),
-    dissoc('killChainPhases')
+    dissoc('killChainPhases'),
+    dissoc('password')
   )(entity);
   // For stix domain entity, force the initialization of the alias list.
   if (modelType === TYPE_STIX_DOMAIN_ENTITY) {
@@ -1445,12 +1452,14 @@ export const createEntity = async (entity, innerType, modelType = TYPE_STIX_DOMA
     assoc('parents_type', entityCreated.types)
   )(data);
   // Transaction succeed, index the result
-  await elIndex(inferIndexFromConceptTypes([modelType]), completedData);
+  if (indexable) {
+    await elIndex(inferIndexFromConceptTypes([modelType]), completedData);
+  }
   // Complete with eventual relations (will eventually update the index)
-  await addOwner(internalId.id, entity.createdByOwner);
-  await addCreatedByRef(internalId, entity.createdByRef);
-  await addMarkingDefs(internalId, entity.markingDefinitions);
-  await addKillChains(internalId, entity.killChainPhases);
+  await addOwner(internalId.id, entity.createdByOwner, { indexable });
+  await addCreatedByRef(internalId, entity.createdByRef, { indexable });
+  await addMarkingDefs(internalId, entity.markingDefinitions, { indexable });
+  await addKillChains(internalId, entity.killChainPhases, { indexable });
   // Else simply return the data
   return completedData;
 };

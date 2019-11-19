@@ -65,6 +65,7 @@ app.use('/storage/view/:file(*)', async (req, res) => {
   const stream = await downloadFile(file);
   stream.pipe(res);
 });
+
 // region Login
 const urlencodedParser = bodyParser.urlencoded({ extended: true });
 app.get('/auth/:provider', (req, res, next) => {

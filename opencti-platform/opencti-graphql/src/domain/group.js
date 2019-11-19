@@ -29,7 +29,7 @@ export const permissions = async (groupId, args) => {
 };
 
 export const addGroup = async (user, group) => {
-  const created = await createEntity(group, 'Group', TYPE_OPENCTI_INTERNAL);
+  const created = await createEntity(group, 'Group', { modelType: TYPE_OPENCTI_INTERNAL });
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 export const groupDelete = groupId => deleteEntityById(groupId);
