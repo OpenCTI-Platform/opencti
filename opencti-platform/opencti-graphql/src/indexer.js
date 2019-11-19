@@ -1,4 +1,4 @@
-import { flatten, map, pipe, sort, uniqBy } from 'ramda';
+import { flatten, map, pipe, uniqBy } from 'ramda';
 import moment from 'moment';
 import { find, getSingleValueNumber, reindexElements } from './database/grakn';
 import { elCreateIndexes, elDeleteIndexes } from './database/elasticSearch';

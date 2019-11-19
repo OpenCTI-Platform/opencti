@@ -23,12 +23,10 @@ import {
   mergeRight,
   pipe,
   pluck,
-  sort,
   tail,
   toPairs,
   uniq,
-  uniqBy,
-  uniqWith
+  uniqBy
 } from 'ramda';
 import moment from 'moment';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
@@ -235,8 +233,7 @@ export const conceptTypes = async (concept, currentType = null, acc = []) => {
  * @param query
  */
 const extractQueryVars = query => {
-  const q = head(query.split('isa'));
-  return uniq(map(m => m.replace('$', ''), q.match(/\$[a-z_]+/gi)));
+  return uniq(map(m => m.replace('$', ''), query.match(/\$[a-z_]+/gi)));
 };
 // endregion
 
@@ -319,47 +316,6 @@ export const deleteAttributeById = async id => {
   });
 };
 
-/**
- * Get relations to index
- * @param type
- * @param id
- * @returns {Promise<{}>}
- */
-// const getRelationsValuesToIndex = async (type, id) => {
-//   return executeRead(async rTx => {
-//     let result = {};
-//     if (relationsToIndex[type]) {
-//       result = await Promise.all(
-//         relationsToIndex[type].map(async relationToIndex => {
-//           const query = `${
-//             relationToIndex.query
-//           } $x has internal_id_key "${escapeString(id)}"; get $value;`;
-//           logger.debug(
-//             `[GRAKN - infer: false] getRelationsValuesToIndex > ${query}`
-//           );
-//           const iterator = await rTx.tx.query(query);
-//           const answers = await iterator.collect();
-//           const test = await Promise.all(
-//             answers.map(async answer => {
-//               const attribute = answer.map().get('value');
-//               return attribute.value();
-//             })
-//           ).then(data => {
-//             return { [relationToIndex.key]: data };
-//           });
-//           const comp = await elFindRelationAndTarget(id, relationToIndex.type);
-//           const test2 = {
-//             [relationToIndex.key]: map(c => c.node.internal_id_key, comp.edges)
-//           };
-//           return test;
-//         })
-//       ).then(data => {
-//         return mergeAll(data);
-//       });
-//     }
-//     return result;
-//   });
-// };
 export const TYPE_OPENCTI_INTERNAL = 'Internal';
 export const TYPE_STIX_DOMAIN = 'Stix-Domain';
 export const TYPE_STIX_DOMAIN_ENTITY = 'Stix-Domain-Entity';
@@ -510,8 +466,9 @@ const findOpts = { infer: false, noCache: false };
  * Query and get entities or relations
  * @param query
  * @param entities
- * @param infer
- * @param noCache
+ * @param infer if the query add inferences
+ * @param noCache force to not use elastic
+ * @param uniqueKey the result element to test for unicity (grakn_id)
  * @returns {Promise}
  */
 export const find = async (query, entities, { uniqueKey, infer, noCache } = findOpts) => {
@@ -527,23 +484,33 @@ export const find = async (query, entities, { uniqueKey, infer, noCache } = find
     // 02. Query concepts and rebind the data
     const queryConcepts = map(answer => {
       // Create a map useful for relation roles binding
-      const conceptsIndex = conceptQueryVars.map(entity => {
-        const concept = answer.map().get(entity);
-        if (!concept) return null; // If specific attributes are used for filtering, ordering, ...
-        return { id: concept.id, data: { concept, entity } };
-      });
+      const conceptsIndex = filter(
+        e => e,
+        conceptQueryVars.map(entity => {
+          const concept = answer.map().get(entity);
+          if (concept.baseType === 'ATTRIBUTE') return undefined; // If specific attributes are used for filtering, ordering, ...
+          return { id: concept.id, data: { concept, entity } };
+        })
+      );
       const fetchingConceptsPairs = map(x => [x.id, x.data], conceptsIndex);
       const relationsMap = new Map(fetchingConceptsPairs);
       // Fetch every concepts of the answer
+      const requestedConcepts = filter(r => includes(r.data.entity, entities), conceptsIndex);
       return map(t => {
         const { concept } = t.data;
-        return loadConcept(concept, { relationsMap, noCache });
-      }, conceptsIndex);
+        return { id: concept.id, concept, relationsMap };
+      }, requestedConcepts);
     }, answers);
-    const resolvedConcepts = await Promise.all(flatten(queryConcepts));
-    // 03. Create map from concepts
+    // 03. Fetch every unique concepts
+    const uniqConceptsLoading = pipe(
+      flatten,
+      uniqBy(e => e.id),
+      map(l => loadConcept(l.concept, { relationsMap: l.relationsMap, noCache }))
+    )(queryConcepts);
+    const resolvedConcepts = await Promise.all(uniqConceptsLoading);
+    // 04. Create map from concepts
     const conceptCache = new Map(map(c => [c.grakn_id, c], resolvedConcepts));
-    // 04. Bind all row to data entities
+    // 05. Bind all row to data entities
     const result = answers.map(answer => {
       const dataPerEntities = plainEntities.map(entity => {
         const concept = answer.map().get(entity);
@@ -552,7 +519,7 @@ export const find = async (query, entities, { uniqueKey, infer, noCache } = find
       });
       return fromPairs(dataPerEntities);
     });
-    // 05. Filter every relation in double
+    // 06. Filter every relation in double
     // Grakn can respond with twice the relations (browse in 2 directions)
     const uniqFilter = uniqueKey || head(entities);
     return uniqBy(u => u[uniqFilter].grakn_id, result);
