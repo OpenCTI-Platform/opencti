@@ -13,6 +13,9 @@ const threatActorResolvers = {
     threatActor: (_, { id }) => findById(id),
     threatActors: (_, args) => findAll(args)
   },
+  ThreatActorsFilter: {
+    tags: 'tagged.internal_id_key'
+  },
   Mutation: {
     threatActorEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainEntityDelete(id),

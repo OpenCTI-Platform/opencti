@@ -19,6 +19,9 @@ const campaignResolvers = {
       return campaignsTimeSeries(args);
     }
   },
+  CampaignsFilter: {
+    tags: 'tagged.internal_id_key'
+  },
   Mutation: {
     campaignEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainEntityDelete(id),

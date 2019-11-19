@@ -18,7 +18,6 @@ import withCancel from '../schema/subscriptionWrapper';
 const killChainPhaseResolvers = {
   Query: {
     killChainPhase: (_, { id }) => findById(id),
-    // TODO JRI: Change python API to use filters instead of objectId and phaseName
     killChainPhases: (_, args) => findAll(args)
   },
   KillChainPhase: {

@@ -883,8 +883,11 @@ enum OrganizationsOrdering {
   tags
   markingDefinitions
 }
+enum OrganizationsFilter {
+  tags
+}
 input OrganizationsFiltering {
-  key: String!
+  key: OrganizationsFilter!
   values: [String]
 }
 type OrganizationConnection {
@@ -1713,8 +1716,11 @@ enum ThreatActorsOrdering {
   tags
   markingDefinitions
 }
+enum ThreatActorsFilter {
+  tags
+}
 input ThreatActorsFiltering {
-  key: String!
+  key: ThreatActorsFilter!
   values: [String]
 }
 type ThreatActorConnection {
@@ -1812,8 +1818,11 @@ enum IntrusionSetsOrdering {
   tags
   markingDefinitions
 }
+enum IntrusionSetsFilter {
+  tags
+}
 input IntrusionSetsFiltering {
-  key: String!
+  key: IntrusionSetsFilter!
   values: [String]
 }
 type IntrusionSetConnection {
@@ -1915,8 +1924,11 @@ enum CampaignsOrdering {
   tags
   markingDefinitions
 }
+enum CampaignsFilter {
+  tags
+}
 input CampaignsFiltering {
-  key: String!
+  key: CampaignsFilter!
   values: [String]
 }
 type CampaignConnection {
@@ -2009,8 +2021,11 @@ enum IncidentsOrdering {
   tags
   markingDefinitions
 }
+enum IncidentsFilter {
+  tags
+}
 input IncidentsFiltering {
-  key: String!
+  key: IncidentsFilter!
   values: [String]
 }
 type IncidentConnection {
@@ -2101,8 +2116,11 @@ enum MalwaresOrdering {
   tags
   markingDefinitions
 }
+enum MalwaresFilter {
+  tags
+}
 input MalwaresFiltering {
-  key: String!
+  key: MalwaresFilter!
   values: [String]
 }
 type MalwareConnection {

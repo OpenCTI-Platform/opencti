@@ -46,6 +46,7 @@ import {
   elUpdate,
   elUpdateAddInnerRelation,
   elUpdateRemoveInnerRelation,
+  forceNoCache,
   INDEX_STIX_ENTITIES,
   INDEX_STIX_OBSERVABLE,
   INDEX_STIX_RELATIONS
@@ -234,7 +235,8 @@ export const conceptTypes = async (concept, currentType = null, acc = []) => {
  * @param query
  */
 const extractQueryVars = query => {
-  return uniq(map(m => m.replace('$', ''), query.match(/\$[a-z_]+/gi)));
+  const q = head(query.split('isa'));
+  return uniq(map(m => m.replace('$', ''), q.match(/\$[a-z_]+/gi)));
 };
 // endregion
 
@@ -392,7 +394,7 @@ const loadConcept = async (concept, { relationsMap, noCache = false } = conceptO
   const types = await conceptTypes(concept);
   // 01. Return the data in elastic if not explicitly asked in grakn
   // Very useful for getting every entities through relation query.
-  if (noCache === false) {
+  if (forceNoCache() && noCache === false) {
     const index = inferIndexFromConceptTypes(types);
     const conceptFromCache = await elLoadByGraknId(id, [index]);
     if (!conceptFromCache) {
@@ -402,7 +404,6 @@ const loadConcept = async (concept, { relationsMap, noCache = false } = conceptO
     }
   }
   // 02. If not found continue the process.
-  const parentType = last(types);
   logger.debug(`[GRAKN - infer: false] getAttributes > ${head(types)} ${id}`);
   const attributesIterator = await concept.attributes();
   const attributes = await attributesIterator.collect();
@@ -445,7 +446,7 @@ const loadConcept = async (concept, { relationsMap, noCache = false } = conceptO
       return pipe(
         assoc('id', transform.internal_id_key),
         assoc('grakn_id', concept.id),
-        assoc('parent_type', parentType),
+        assoc('parents_type', types),
         assoc('index_version', '1.0')
       )(transform);
     })
@@ -513,7 +514,7 @@ const findOpts = { infer: false, noCache: false };
  * @param noCache
  * @returns {Promise}
  */
-export const find = async (query, entities, { infer, noCache } = findOpts) => {
+export const find = async (query, entities, { uniqueKey, infer, noCache } = findOpts) => {
   // Remove empty values from entities
   const plainEntities = filter(e => !isEmpty(e) && !isNil(e), entities);
   return executeRead(async rTx => {
@@ -523,31 +524,26 @@ export const find = async (query, entities, { infer, noCache } = findOpts) => {
     // 01. Get every concepts to fetch (unique)
     const answers = await iterator.collect();
     if (answers.length === 0) return [];
-    const uniqConcepts = pipe(
-      map(answer => {
-        return conceptQueryVars.map(entity => {
-          const concept = answer.map().get(entity);
-          if (!concept) return undefined; // If specific attributes are used for filtering, ordering, ...
-          return { id: concept.id, data: { concept, entity } };
-        });
-      }),
-      flatten,
-      filter(e => e !== undefined),
-      uniqWith((x, y) => x.id === y.id)
-    )(answers);
-    const fetchingConceptsPairs = map(x => [x.id, x.data], uniqConcepts);
-    const relationsMap = new Map(fetchingConceptsPairs);
-    // 02. Filter concepts to create a unique list
-    const fetchingConcepts = filter(u => includes(u.data.entity, plainEntities), uniqConcepts);
-    // 03. Query concepts and rebind the data
-    const queryConcepts = map(item => {
-      const { concept } = item.data;
-      return loadConcept(concept, { relationsMap, noCache });
-    }, fetchingConcepts);
-    const resolvedConcepts = await Promise.all(queryConcepts);
-    // 04. Create map from concepts
+    // 02. Query concepts and rebind the data
+    const queryConcepts = map(answer => {
+      // Create a map useful for relation roles binding
+      const conceptsIndex = conceptQueryVars.map(entity => {
+        const concept = answer.map().get(entity);
+        if (!concept) return null; // If specific attributes are used for filtering, ordering, ...
+        return { id: concept.id, data: { concept, entity } };
+      });
+      const fetchingConceptsPairs = map(x => [x.id, x.data], conceptsIndex);
+      const relationsMap = new Map(fetchingConceptsPairs);
+      // Fetch every concepts of the answer
+      return map(t => {
+        const { concept } = t.data;
+        return loadConcept(concept, { relationsMap, noCache });
+      }, conceptsIndex);
+    }, answers);
+    const resolvedConcepts = await Promise.all(flatten(queryConcepts));
+    // 03. Create map from concepts
     const conceptCache = new Map(map(c => [c.grakn_id, c], resolvedConcepts));
-    // 05. Bind all row to data entities
+    // 04. Bind all row to data entities
     const result = answers.map(answer => {
       const dataPerEntities = plainEntities.map(entity => {
         const concept = answer.map().get(entity);
@@ -556,16 +552,10 @@ export const find = async (query, entities, { infer, noCache } = findOpts) => {
       });
       return fromPairs(dataPerEntities);
     });
-    // 06. Filter every relation not in "openCTI path"
+    // 05. Filter every relation in double
     // Grakn can respond with twice the relations (browse in 2 directions)
-    return uniqBy(u => {
-      return pipe(
-        map(i => i.grakn_id),
-        sort((a, b) => a.localeCompare(b))
-      )(Object.values(u));
-    }, result);
-    // It's a special tricks for from/to relations
-    // return fixReverseConceptRelations(uniqResult);
+    const uniqFilter = uniqueKey || head(entities);
+    return uniqBy(u => u[uniqFilter].grakn_id, result);
   });
 };
 /**
@@ -582,18 +572,59 @@ export const load = async (query, entities, { infer, noCache } = findOpts) => {
 };
 
 // Reindex functions
+export const reindexElements = async elements => {
+  const indexPromises = map(e => {
+    const index = inferIndexFromConceptTypes(e.parents_type);
+    return elIndex(index, e).then(async () => {
+      if (!e.relationship_type) return [];
+      // If element is a relation
+      const relationId = e.id;
+      const relationshipType = e.relationship_type;
+      if (e.fromId && e.toId) {
+        return [
+          { from: e.fromId, relationshipType, to: e.toId, relationId },
+          { from: e.toId, relationshipType, to: e.fromId, relationId }
+        ];
+      }
+      console.log(`[REINDEX] Missing warning > Relation ${e.grakn_id} (from: ${e.fromId} - to: ${e.toId})`);
+      // await executeWrite(async wTx => {
+      //   const query = `match $x has internal_id_key "${e.grakn_id}"; delete $x;`;
+      //   console.log(`[REINDEX - Missing warning > deleting relation ${e.grakn_id}`);
+      //   await wTx.tx.query(query, { infer: false });
+      //   return true;
+      // });
+      return [];
+    });
+  }, elements);
+  const impactedRelationEntities = await Promise.all(indexPromises);
+  const impacts = flatten(impactedRelationEntities);
+  if (impacts.length > 0) {
+    const impactsByEntity = groupBy(i => i.from, impacts);
+    map(async impactEntityId => {
+      const impactsPerEntity = impactsByEntity[impactEntityId];
+      const docs = await Promise.all(
+        map(async e => {
+          const to = await elLoadByGraknId(e.to);
+          return { [`${e.relationshipType}.internal_id_key.${to.internal_id_key}`]: e.relationId };
+        }, impactsPerEntity)
+      );
+      const doc = mergeAll(docs);
+      const from = await elLoadByGraknId(impactEntityId);
+      // eslint-disable-next-line no-underscore-dangle
+      return elUpdate(from._index, impactEntityId, { doc });
+    }, Object.keys(impactsByEntity));
+  }
+  // Check and adapt entities if needed
+  return elements.length;
+};
 export const reindexByQuery = async (query, entities) => {
-  const elements = await find(query, entities, { noCache: true });
+  const elements = await find(query, entities, { infer: false, noCache: true });
   // Get all inner elements
   const innerElements = pipe(
     map(entity => elements.map(e => e[entity])),
     flatten
   )(entities);
-  const indexPromises = map(e => {
-    const index = inferIndexFromConceptTypes(e.parent_type);
-    return elIndex(index, e);
-  }, innerElements);
-  return Promise.all(indexPromises);
+  return reindexElements(innerElements);
 };
 export const reindexEntityType = async entityType => {
   const readQuery = `match $x isa ${entityType}; get;`;
@@ -750,7 +781,7 @@ export const updateAttribute = async (id, input, wTx) => {
     await updateAttribute(id, yearInput, wTx);
   }
   // Update elasticsearch
-  const currentIndex = inferIndexFromConceptTypes(currentInstanceData.parent_type);
+  const currentIndex = inferIndexFromConceptTypes(currentInstanceData.parents_type);
   const updateValueField = { [key]: val };
   await elUpdate(currentIndex, currentInstanceData.grakn_id, { doc: updateValueField });
   return id;
@@ -776,10 +807,9 @@ export const deleteRelationById = async (entityId, relationId) => {
     const query = `match $x has internal_id_key "${eid}"; delete $x;`;
     logger.debug(`[GRAKN - infer: false] deleteRelationById > ${query}`);
     await wTx.tx.query(query, { infer: false });
-    // Delete the inner indexed relations in entities
+    // [ELASTIC] Update - Delete the inner indexed relations in entities
     const previousRelation = await loadEntityById(eid);
     const targetEntity = await loadEntityByGraknId(previousRelation.toId);
-    // [ELASTIC] Update
     await elUpdateRemoveInnerRelation(entityId, previousRelation.relationship_type, targetEntity.id);
     await elUpdateRemoveInnerRelation(targetEntity.id, previousRelation.relationship_type, entityId);
     await elDeleteInstanceIds([eid]);
@@ -882,7 +912,6 @@ export const listEntities = async (searchFields, args) => {
       const filterKey = validFilters[index].key;
       const filterValues = validFilters[index].values;
       const isRelationFilter = includes('.', filterKey);
-      // TODO Support more than only String filters
       if (isRelationFilter) {
         const [relation, field] = filterKey.split('.');
         const sourceRole = validFilters[index].sourceRole ? `${validFilters[index].sourceRole}:` : '';
@@ -892,6 +921,7 @@ export const listEntities = async (searchFields, args) => {
         for (let valueIndex = 0; valueIndex < filterValues.length; valueIndex += 1) {
           const val = filterValues[valueIndex];
           // Apply filter on target.
+          // TODO Support more than only String filters
           attributesFields.push(`$${targetRef} has ${field} "${val}";`);
           relationFiltersIds.push({ id: relId, key: `${filterKey}.${val}` });
         }
@@ -939,7 +969,8 @@ export const listEntities = async (searchFields, args) => {
   }
   const relationToGet = head(relationFiltersIds);
   // [ELASTIC] From cache
-  if (supportedByCache) {
+  const getInGrakn = forceNoCache();
+  if (supportedByCache && !getInGrakn) {
     const index = inferIndexFromConceptTypes(args.types);
     const paginateResult = await elPaginate(index, args);
     if (relationToGet) {
@@ -959,7 +990,7 @@ export const listEntities = async (searchFields, args) => {
     return paginateResult;
   }
   // TODO JRI Remove this
-  console.log('[GRAKN] FETCH listEntities FROM GRAKN');
+  console.log(`[GRAKN] ListEntities on Grakn, supportedByCache: ${supportedByCache}/forceNoCache: ${getInGrakn}`);
   // noinspection ES6MissingAwait
   const countPromise = getSingleValueNumber(countQuery);
   const extraRelation = relationToGet ? relationToGet.id : undefined;
@@ -1295,13 +1326,15 @@ const createRelationRaw = async (fromInternalId, input) => {
     logger.debug(`[GRAKN - infer: false] createRelation > ${query}`);
     const iterator = await wTx.tx.query(query);
     const txRelation = await iterator.next();
-    const graknRelationId = txRelation.map().get('rel').id;
+    const concept = txRelation.map().get('rel');
+    const types = await conceptTypes(concept);
+    const graknRelationId = concept.id;
     const graknFromId = txRelation.map().get('from').id;
     const graknToId = txRelation.map().get('to').id;
-    return { graknRelationId, graknFromId, graknToId };
+    return { graknRelationId, graknFromId, graknToId, types };
   });
   // 03. Prepare the final data with grakn IDS
-  const createdRelation = pipe(
+  const createdRel = pipe(
     assoc('id', relationId),
     // Grakn identifiers
     assoc('grakn_id', graknRelation.graknRelationId),
@@ -1312,14 +1345,17 @@ const createRelationRaw = async (fromInternalId, input) => {
     // Types
     assoc('entity_type', entityType),
     assoc('relationship_type', relationshipType),
-    assoc('parent_type', relationshipType)
+    assoc('parents_type', graknRelation.types)
   )(relationAttributes);
   // 04. Index the relation and the modification in the base entity
-  await elIndex(inferIndexFromConceptTypes([entityType]), createdRelation);
-  await elUpdateAddInnerRelation(data.fromId, relationshipType, data.toId, relationId);
-  await elUpdateAddInnerRelation(data.toId, relationshipType, data.fromId, relationId);
+  const index = inferIndexFromConceptTypes([entityType]);
+  await elIndex(index, createdRel).then(() => {
+    const innerFrom = elUpdateAddInnerRelation(createdRel.fromId, relationshipType, data.toId, relationId);
+    const innerTo = elUpdateAddInnerRelation(createdRel.toId, relationshipType, data.fromId, relationId);
+    return Promise.all([innerFrom, innerTo]);
+  });
   // 06. Return result
-  return createdRelation;
+  return createdRel;
 };
 
 // region business relations
@@ -1436,18 +1472,20 @@ export const createEntity = async (entity, innerType, modelType = TYPE_STIX_DOMA
     const separator = index + 1 === nbElements ? ';' : ',';
     query += `has ${key} ${insert}${separator} `;
   }
-  const entityCreatedId = await executeWrite(async wTx => {
+  const entityCreated = await executeWrite(async wTx => {
     const iterator = await wTx.tx.query(query);
     const txEntity = await iterator.next();
-    return txEntity.map().get('entity').id;
+    const concept = txEntity.map().get('entity');
+    const types = await conceptTypes(concept);
+    return { id: concept.id, types };
   });
   // Transaction succeed, complete the result to send it back
   const completedData = pipe(
     assoc('id', internalId),
     // Grakn identifiers
-    assoc('grakn_id', entityCreatedId),
+    assoc('grakn_id', entityCreated.id),
     // Types (entity type directly saved)
-    assoc('parent_type', modelType)
+    assoc('parents_type', entityCreated.types)
   )(data);
   // Transaction succeed, index the result
   await elIndex(inferIndexFromConceptTypes([modelType]), completedData);

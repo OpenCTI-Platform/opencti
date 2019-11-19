@@ -13,6 +13,9 @@ const organizationResolvers = {
     organization: (_, { id }) => findById(id),
     organizations: (_, args) => findAll(args)
   },
+  OrganizationsFilter: {
+    tags: 'tagged.internal_id_key'
+  },
   Mutation: {
     organizationEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainEntityDelete(id),

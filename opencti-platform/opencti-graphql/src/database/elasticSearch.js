@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { Client } from '@elastic/elasticsearch';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
-import { append, assoc, concat, dissoc, filter, flatten, head, includes, join, map, pipe, split } from 'ramda';
+import { append, assoc, dissoc, filter, flatten, head, includes, join, map, pipe, split } from 'ramda';
 import { buildPagination } from './utils';
 import conf, { logger } from '../config/conf';
 
@@ -14,36 +14,7 @@ export const INDEX_STIX_RELATIONS = 'stix_relations';
 export const INDEX_WORK_JOBS = 'work_jobs_index';
 export const PLATFORM_INDICES = [INDEX_STIX_ENTITIES, INDEX_STIX_RELATIONS, INDEX_STIX_OBSERVABLE, INDEX_WORK_JOBS];
 
-/*
-export const relationsToIndex = {
-  'Stix-Domain': [
-    {
-      type: 'tagged',
-      key: 'tags_indexed',
-      query: 'match $t isa Tag, has internal_id_key $value; (so: $x, tagging: $t) isa tagged;'
-    },
-    {
-      type: 'created_by_ref',
-      key: 'createdByRef_indexed',
-      query: 'match $i isa Identity, has internal_id_key $value; (so: $x, creator: $i) isa created_by_ref;'
-    },
-    {
-      type: 'object_marking_refs',
-      key: 'markingDefinitions_indexed',
-      query:
-        'match $m isa Marking-Definition, has internal_id_key $value; (so: $x, marking: $m) isa object_marking_refs;'
-    }
-  ],
-  'Stix-Observable': [
-    {
-      type: 'tagged',
-      key: 'tags_indexed',
-      query: 'match $t isa Tag, has value $value; (so: $x, tagging: $t) isa tagged;'
-    }
-  ]
-};
-*/
-
+export const forceNoCache = () => conf.get('elasticsearch:noQueryCache') || false;
 export const el = new Client({ node: conf.get('elasticsearch:url') });
 
 export const elIsAlive = async () => {
@@ -256,13 +227,12 @@ export const elPaginate = async (indexName, options) => {
     first = 200,
     after,
     types = null,
-    reportClass = null,
     filters = [],
-    isUser = null,
+    isUser = null, // TODO JRI DELETE
     search = null,
     orderBy = null,
     orderMode = 'asc',
-    connectionFormat = true
+    connectionFormat = true // TODO JRI REFACTOR
   } = options;
   const offset = after ? cursorToOffset(after) : 0;
   let must = [];
@@ -305,22 +275,10 @@ export const elPaginate = async (indexName, options) => {
   if (types !== null && types.length > 0) {
     const should = flatten(
       types.map(typeValue => {
-        return [{ match_phrase: { entity_type: typeValue } }, { match_phrase: { parent_type: typeValue } }];
+        return [{ match_phrase: { entity_type: typeValue } }, { match_phrase: { parents_type: typeValue } }];
       })
     );
     must = append({ bool: { should, minimum_should_match: 1 } }, must);
-  }
-  if (reportClass !== null && reportClass.length > 0) {
-    must = append(
-      {
-        match_phrase: {
-          report_class: {
-            query: reportClass
-          }
-        }
-      },
-      must
-    );
   }
   if (isUser !== null && isUser === true) {
     must = append(
@@ -393,26 +351,21 @@ export const elPaginate = async (indexName, options) => {
     }
   };
   logger.debug(`[ELASTICSEARCH] paginate > ${JSON.stringify(query)}`);
-  return el
-    .search(query)
-    .then(data => {
-      const dataWithIds = map(
-        n =>
-          pipe(
-            assoc('id', n._source.internal_id_key),
-            assoc('_index', n._index)
-          )(n._source),
-        data.body.hits.hits
-      );
-      if (connectionFormat) {
-        const nodeHits = map(n => ({ node: n }), dataWithIds);
-        return buildPagination(first, offset, nodeHits, data.body.hits.total.value);
-      }
-      return dataWithIds;
-    })
-    .catch(() => {
-      return connectionFormat ? buildPagination(first, offset, [], 0) : [];
-    });
+  return el.search(query).then(data => {
+    const dataWithIds = map(
+      n =>
+        pipe(
+          assoc('id', n._source.internal_id_key),
+          assoc('_index', n._index)
+        )(n._source),
+      data.body.hits.hits
+    );
+    if (connectionFormat) {
+      const nodeHits = map(n => ({ node: n }), dataWithIds);
+      return buildPagination(first, offset, nodeHits, data.body.hits.total.value);
+    }
+    return dataWithIds;
+  });
 };
 
 export const elLoadByTerms = async (terms, indices = PLATFORM_INDICES) => {
@@ -434,28 +387,6 @@ export const elLoadByTerms = async (terms, indices = PLATFORM_INDICES) => {
   if (!response) return response;
   return assoc('_index', response._index, response._source);
 };
-/**
- *   // 01. If data need to be requested from the elIndex cache system
- if (getIndex) {
-    try {
-      // eslint-disable-next-line prettier/prettier
-      logger.debug(`[ELASTICSEARCH] refetchByConcept get > ${head(types)} ${id} on ${getIndex}`);
-      const fromCache = await elLoadByGraknId(id, getIndex);
-      return pipe(
-        mapObjIndexed((value, key) =>
-          Array.isArray(value) && !includes(key, multipleAttributes)
-            ? head(value)
-            : value
-        ),
-        assoc('id', elAttributes.internal_id_key),
-        assoc('parent_type', parentTypeLabel)
-      )(elAttributes);
-    } catch (e) {
-      // eslint-disable-next-line prettier/prettier
-      logger.debug(`[ELASTICSEARCH] refetchByConcept missing > ${head(types)} ${id} on ${getIndex}`);
-    }
-  }
- */
 export const elLoadById = (id, indices = PLATFORM_INDICES) => {
   return elLoadByTerms([{ 'internal_id_key.keyword': id }], indices);
 };
@@ -464,55 +395,6 @@ export const elLoadByStixId = (id, indices = PLATFORM_INDICES) => {
 };
 export const elLoadByGraknId = (id, indices = PLATFORM_INDICES) => {
   return elLoadByTerms([{ 'grakn_id.keyword': id }], indices);
-};
-
-const elFindTerms = ({ terms, ranges }, type = 'should', indices) => {
-  const mappedTerms = terms ? map(x => ({ term: x }), terms) : [];
-  const mappedRanges = ranges ? map(x => ({ range: x }), ranges) : [];
-  const query = {
-    index: indices,
-    body: {
-      query: {
-        bool: {
-          [type]: concat(mappedTerms, mappedRanges)
-        }
-      }
-    }
-  };
-  return el
-    .search(query)
-    .then(data => {
-      const nodeHits = map(x => ({ node: assoc('_index', x._index, x._source) }), data.body.hits.hits);
-      return buildPagination(0, 0, nodeHits, data.body.hits.total.value);
-    })
-    .catch(err => {
-      console.log(err);
-    });
-};
-export const elFindTermsOr = async (terms, indices = PLATFORM_INDICES) => {
-  return elFindTerms({ terms }, 'should', indices);
-};
-export const elFindTermsAnd = async ({ terms, ranges }, indices = PLATFORM_INDICES) => {
-  return elFindTerms({ terms, ranges }, 'must', indices);
-};
-export const elFindRelationAndTarget = async (fromStixId, relationType) => {
-  const fromEntity = await elLoadById(fromStixId);
-  const data = await elFindTermsAnd({
-    terms: [{ 'fromId.keyword': fromEntity.grakn_id }, { 'relationship_type.keyword': relationType }]
-  });
-  const transform = await Promise.all(
-    map(t => {
-      return elLoadByGraknId(t.node.toId).then(node => ({
-        node,
-        relation: t.node
-      }));
-    }, data.edges)
-  );
-  return buildPagination(0, 0, transform, transform.length);
-};
-export const elLoadRelationAndTarget = async (fromStixId, relationType) => {
-  const data = await elFindRelationAndTarget(fromStixId, relationType);
-  return head(data.edges);
 };
 
 export const elReindex = async indexMaps => {
@@ -560,11 +442,12 @@ export const elUpdate = (indexName, documentId, documentBody) => {
     body: documentBody
   });
 };
-export const elUpdateAddInnerRelation = async (internalId, relationType, targetId, relationId) => {
-  const previousEntity = await elLoadById(internalId);
-  const indexKey = `${relationType}.internal_id_key.${targetId}`;
+
+export const elUpdateAddInnerRelation = async (fromGraknId, relationType, targetInternalId, relationId) => {
+  const fromEntity = await elLoadByGraknId(fromGraknId);
+  const indexKey = `${relationType}.internal_id_key.${targetInternalId}`;
   const doc = { [indexKey]: relationId };
-  await elUpdate(previousEntity._index, previousEntity.grakn_id, { doc });
+  await elUpdate(fromEntity._index, fromGraknId, { doc });
 };
 export const elUpdateRemoveInnerRelation = async (internalId, relationType, targetId) => {
   const previousEntity = await elLoadById(internalId);

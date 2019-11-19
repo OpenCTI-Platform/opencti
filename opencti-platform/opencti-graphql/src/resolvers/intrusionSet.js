@@ -13,6 +13,9 @@ const intrusionSetResolvers = {
     intrusionSet: (_, { id }) => findById(id),
     intrusionSets: (_, args) => findAll(args)
   },
+  IntrusionSetsFilter: {
+    tags: 'tagged.internal_id_key'
+  },
   Mutation: {
     intrusionSetEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainEntityDelete(id),

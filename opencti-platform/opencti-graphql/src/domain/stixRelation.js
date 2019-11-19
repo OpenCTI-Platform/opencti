@@ -45,7 +45,6 @@ import {
 } from '../database/grakn';
 import { buildPagination } from '../database/utils';
 import { BUS_TOPICS } from '../config/conf';
-import { elFindTermsOr } from '../database/elasticSearch';
 
 // region utils
 const sumBy = attribute => vals => {
@@ -70,11 +69,14 @@ export const findByStixId = args => {
   return loadRelationByStixId(args.stix_id_key);
 };
 export const search = args => {
-  return elFindTermsOr([
-    // Find in name or description
-    { 'name.keyword': escapeString(args.search) },
-    { 'desc.keyword': escapeString(args.search) }
-  ]);
+  return paginateRelationships(
+    `match $rel($from, $to) isa relation;
+   $to has name $name;
+   $to has description $desc;
+   { $name contains "${escapeString(args.search)}"; } or
+   { $desc contains "${escapeString(args.search)}"; }`,
+    args
+  );
 };
 // endregion
 

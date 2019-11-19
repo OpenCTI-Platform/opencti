@@ -1,10 +1,4 @@
-import {
-  addIncident,
-  findAll,
-  findById,
-  incidentsTimeSeriesByEntity,
-  incidentsTimeSeries
-} from '../domain/incident';
+import { addIncident, findAll, findById, incidentsTimeSeriesByEntity, incidentsTimeSeries } from '../domain/incident';
 import {
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
@@ -25,6 +19,9 @@ const incidentResolvers = {
       return incidentsTimeSeries(args);
     }
   },
+  IncidentsFilter: {
+    tags: 'tagged.internal_id_key'
+  },
   Mutation: {
     incidentEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainEntityDelete(id),
@@ -32,8 +29,7 @@ const incidentResolvers = {
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) =>
-        stixDomainEntityDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
     }),
     incidentAdd: (_, { input }, { user }) => addIncident(user, input)
   }

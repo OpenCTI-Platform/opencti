@@ -6,7 +6,6 @@ import {
   getGraknVersion,
   listEntities,
   loadEntityById,
-  reindexEntityType,
   TYPE_OPENCTI_INTERNAL,
   updateAttribute
 } from '../database/grakn';
@@ -28,9 +27,6 @@ export const getApplicationInfo = () => ({
 });
 
 export const getSettings = async () => {
-  // TODO JRI Remove this
-  await reindexEntityType('Settings');
-  // Keep the rest.
   const typedArgs = assoc('types', ['Settings'], {});
   return listEntities(['platform_title'], typedArgs).then(data => head(data.edges).node);
 };
