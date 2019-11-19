@@ -16,7 +16,7 @@ const indexElement = async (type, isRelation = false) => {
   for (let index = 0; index < nbGroup; index += 1) {
     const offset = index * GROUP_NUMBER;
     // `match ${matchingQuery} isa ${type}, has internal_id_key $key; get; sort $key asc; offset ${offset}; limit ${GROUP_NUMBER};`;
-    const query = `match ${matchingQuery} isa ${type}, has internal_id_key $key; get; sort $key asc; offset ${offset}; limit ${GROUP_NUMBER};`;
+    const query = `match ${matchingQuery} isa ${type}; get; offset ${offset}; limit ${GROUP_NUMBER};`;
     const batch = find(query, [isRelation ? 'rel' : 'elem']);
     fetchedPromises.push(batch);
   }
@@ -38,11 +38,9 @@ const indexer = async () => {
   // 01. Delete current indexes
   await elDeleteIndexes();
   console.log(`Indexing > Old indices deleted`);
-
   // 02. Create new ones
   await elCreateIndexes();
   console.log(`Indexing > New indices created`);
-
   // 03. Handle every entity subbing entity
   // MigrationsStatus
   // MigrationReference
@@ -59,18 +57,18 @@ const indexer = async () => {
   // 04. Handle every entity subbing relation
   // authorize
   // migrate
-  // membership
+  await indexElement('membership', true);
   // permission
   // user_permission
   await indexElement('stix_relation', true);
   await indexElement('relation_embedded', true);
   await indexElement('stix_relation_embedded', true);
-  // authored_by
-  // owned_by
+  await indexElement('authored_by', true);
+  await indexElement('owned_by', true);
   await indexElement('tagged', true);
-  // stix_relation_observable_embedded
-  // stix_relation_observable_grouping
-  // stix_sighting
+  await indexElement('stix_relation_observable_embedded', true);
+  await indexElement('stix_relation_observable_grouping', true);
+  await indexElement('stix_sighting', true);
 };
 const start = moment();
 console.log(`> ---------------------------------------------------------------------`);

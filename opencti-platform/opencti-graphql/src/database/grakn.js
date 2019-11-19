@@ -55,48 +55,62 @@ const dateFormat = 'YYYY-MM-DDTHH:mm:ss';
 const GraknString = 'String';
 const GraknDate = 'Date';
 
-// region deprecated
-export const now = () =>
-  moment()
-    .utc()
-    .toISOString();
-export const graknNow = () =>
-  moment()
-    .utc()
-    .format(dateFormat); // Format that accept grakn
-export const prepareDate = date =>
-  moment(date)
-    .utc()
-    .format(dateFormat);
-// endregion
+export const TYPE_OPENCTI_INTERNAL = 'Internal';
+export const TYPE_STIX_DOMAIN = 'Stix-Domain';
+export const TYPE_STIX_DOMAIN_ENTITY = 'Stix-Domain-Entity';
+export const TYPE_STIX_OBSERVABLE = 'Stix-Observable';
+export const TYPE_STIX_OBSERVABLE_DATA = 'Stix-Observable-Data';
+export const TYPE_STIX_RELATION = 'stix_relation';
+export const TYPE_RELATION_EMBEDDED = 'relation_embedded';
+export const TYPE_STIX_RELATION_EMBEDDED = 'stix_relation_embedded';
+export const inferIndexFromConceptTypes = types => {
+  // Observable index
+  if (includes(TYPE_STIX_OBSERVABLE, types)) return INDEX_STIX_OBSERVABLE;
+  if (includes(TYPE_STIX_OBSERVABLE_DATA, types)) return INDEX_STIX_OBSERVABLE;
+  // Relation index
+  if (includes(TYPE_STIX_RELATION, types)) return INDEX_STIX_RELATIONS;
+  if (includes(TYPE_STIX_RELATION_EMBEDDED, types)) return INDEX_STIX_RELATIONS;
+  if (includes(TYPE_RELATION_EMBEDDED, types)) return INDEX_STIX_RELATIONS;
+  // Everything else in entities index
+  return INDEX_STIX_ENTITIES;
+};
 
+export const now = () => {
+  // eslint-disable-next-line prettier/prettier
+  return moment().utc().toISOString();
+};
+export const graknNow = () => {
+  // eslint-disable-next-line prettier/prettier
+  return moment().utc().format(dateFormat); // Format that accept grakn
+};
+export const prepareDate = date => {
+  // eslint-disable-next-line prettier/prettier
+  return moment(date).utc().format(dateFormat);
+};
 export const sinceNowInMinutes = lastModified => {
   const utc = moment().utc();
   const diff = utc.diff(moment(lastModified));
   const duration = moment.duration(diff);
   return Math.floor(duration.asMinutes());
 };
-
 export const yearFormat = date => moment(date).format('YYYY');
 export const monthFormat = date => moment(date).format('YYYY-MM');
 export const dayFormat = date => moment(date).format('YYYY-MM-DD');
-export const escape = s =>
-  s && typeof s === 'string'
-    ? s
-        .replace(/\\/g, '\\\\')
-        .replace(/;/g, '\\;')
-        .replace(/,/g, '\\,')
-    : s;
+export const escape = chars => {
+  const toEscape = chars && typeof chars === 'string';
+  if (toEscape) {
+    return chars
+      .replace(/\\/g, '\\\\')
+      .replace(/;/g, '\\;')
+      .replace(/,/g, '\\,');
+  }
+  return chars;
+};
 export const escapeString = s => (s ? s.replace(/\\/g, '\\\\').replace(/"/g, '\\"') : '');
 
 // Attributes key that can contains multiple values.
 export const multipleAttributes = ['stix_label', 'alias', 'grant', 'platform', 'required_permission'];
-export const statsDateAttributes = [
-  'first_seen', // Standard
-  'last_seen', // Standard
-  'published', // Standard
-  'expiration' // Standard
-];
+export const statsDateAttributes = ['first_seen', 'last_seen', 'published', 'expiration'];
 // endregion
 
 // region client
@@ -314,26 +328,6 @@ export const deleteAttributeById = async id => {
     await wTx.tx.query(query, { infer: false });
     return id;
   });
-};
-
-export const TYPE_OPENCTI_INTERNAL = 'Internal';
-export const TYPE_STIX_DOMAIN = 'Stix-Domain';
-export const TYPE_STIX_DOMAIN_ENTITY = 'Stix-Domain-Entity';
-export const TYPE_STIX_OBSERVABLE = 'Stix-Observable';
-export const TYPE_STIX_OBSERVABLE_DATA = 'Stix-Observable-Data';
-export const TYPE_STIX_RELATION = 'stix_relation';
-export const TYPE_RELATION_EMBEDDED = 'relation_embedded';
-export const TYPE_STIX_RELATION_EMBEDDED = 'stix_relation_embedded';
-export const inferIndexFromConceptTypes = types => {
-  // Observable index
-  if (includes(TYPE_STIX_OBSERVABLE, types)) return INDEX_STIX_OBSERVABLE;
-  if (includes(TYPE_STIX_OBSERVABLE_DATA, types)) return INDEX_STIX_OBSERVABLE;
-  // Relation index
-  if (includes(TYPE_STIX_RELATION, types)) return INDEX_STIX_RELATIONS;
-  if (includes(TYPE_STIX_RELATION_EMBEDDED, types)) return INDEX_STIX_RELATIONS;
-  if (includes(TYPE_RELATION_EMBEDDED, types)) return INDEX_STIX_RELATIONS;
-  // Everything else in entities index
-  return INDEX_STIX_ENTITIES;
 };
 
 const conceptOpts = { relationsMap: new Map() };
@@ -592,10 +586,6 @@ export const reindexByQuery = async (query, entities) => {
     flatten
   )(entities);
   return reindexElements(innerElements);
-};
-export const reindexEntityType = async entityType => {
-  const readQuery = `match $x isa ${entityType}; get;`;
-  return reindexByQuery(readQuery, ['x']);
 };
 export const reindexByAttribute = (type, value) => {
   const eType = escape(type);
