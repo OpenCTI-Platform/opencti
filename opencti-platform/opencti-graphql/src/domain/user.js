@@ -228,16 +228,15 @@ export const initAdmin = async (email, password, tokenValue) => {
   const user = { name: 'system' };
   if (admin) {
     // Update email and password
-    await userEditField(user, admin.id, {
-      key: 'email',
-      value: [email]
-    });
-    await userEditField(user, admin.id, {
-      key: 'password',
-      value: [password]
-    });
+    const inputEmail = { key: 'email', value: [email] };
+    await userEditField(user, admin.id, inputEmail);
+    logger.info(`[ADMIN_SETUP] admin email updated`);
+    const inputPassword = { key: 'password', value: [password] };
+    await userEditField(user, admin.id, inputPassword);
+    logger.info(`[ADMIN_SETUP] admin password updated`);
     // Renew the token
     await userRenewToken(admin.id, tokenAdmin);
+    logger.info(`[ADMIN_SETUP] admin token updated`);
   } else {
     const userToCreate = {
       internal_id_key: OPENCTI_ADMIN_DNS,

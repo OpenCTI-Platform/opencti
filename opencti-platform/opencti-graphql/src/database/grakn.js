@@ -413,10 +413,11 @@ const loadConcept = async (concept, { relationsMap, noCache = false } = conceptO
           return conceptFromMap
             ? head(roleItem)
                 .label()
-                .then(roleLabel => {
+                .then(async roleLabel => {
                   return {
                     [`${conceptFromMap.entity}Id`]: roleId,
                     [`${conceptFromMap.entity}Role`]: roleLabel,
+                    [`${conceptFromMap.entity}Types`]: conceptFromMap.types,
                     [conceptFromMap.entity]: null // With be use lazily
                   };
                 })
@@ -476,25 +477,28 @@ export const find = async (query, entities, { uniqueKey, infer, noCache } = find
     const answers = await iterator.collect();
     if (answers.length === 0) return [];
     // 02. Query concepts and rebind the data
-    const queryConcepts = map(answer => {
-      // Create a map useful for relation roles binding
-      const conceptsIndex = filter(
-        e => e,
-        conceptQueryVars.map(entity => {
-          const concept = answer.map().get(entity);
-          if (concept.baseType === 'ATTRIBUTE') return undefined; // If specific attributes are used for filtering, ordering, ...
-          return { id: concept.id, data: { concept, entity } };
-        })
-      );
-      const fetchingConceptsPairs = map(x => [x.id, x.data], conceptsIndex);
-      const relationsMap = new Map(fetchingConceptsPairs);
-      // Fetch every concepts of the answer
-      const requestedConcepts = filter(r => includes(r.data.entity, entities), conceptsIndex);
-      return map(t => {
-        const { concept } = t.data;
-        return { id: concept.id, concept, relationsMap };
-      }, requestedConcepts);
-    }, answers);
+    const queryConcepts = await Promise.all(
+      map(async answer => {
+        // Create a map useful for relation roles binding
+        const queryVarsToConcepts = await Promise.all(
+          conceptQueryVars.map(async entity => {
+            const concept = answer.map().get(entity);
+            if (concept.baseType === 'ATTRIBUTE') return undefined; // If specific attributes are used for filtering, ordering, ...
+            const types = await conceptTypes(concept);
+            return { id: concept.id, data: { concept, entity, types } };
+          })
+        );
+        const conceptsIndex = filter(e => e, queryVarsToConcepts);
+        const fetchingConceptsPairs = map(x => [x.id, x.data], conceptsIndex);
+        const relationsMap = new Map(fetchingConceptsPairs);
+        // Fetch every concepts of the answer
+        const requestedConcepts = filter(r => includes(r.data.entity, entities), conceptsIndex);
+        return map(t => {
+          const { concept } = t.data;
+          return { id: concept.id, concept, relationsMap };
+        }, requestedConcepts);
+      }, answers)
+    );
     // 03. Fetch every unique concepts
     const uniqConceptsLoading = pipe(
       flatten,
@@ -602,58 +606,64 @@ export const reindexByAttribute = (type, value) => {
  */
 // ENTITIES
 export const loadEntityById = async id => {
-  // [ELASTIC] From cache
-  const fromCache = await elLoadById(id);
-  if (fromCache) return fromCache;
-  // Standard Grakn
+  if (!forceNoCache()) {
+    // [ELASTIC] From cache
+    const fromCache = await elLoadById(id);
+    if (fromCache) return fromCache;
+  }
   const query = `match $x has internal_id_key "${escapeString(id)}"; get;`;
   const element = await load(query, ['x']);
   return element ? element.x : null;
 };
 export const loadEntityByStixId = async id => {
-  // [ELASTIC] From cache
-  const fromCache = await elLoadByStixId(id);
-  if (fromCache) return fromCache;
-  // Standard Grakn
+  if (!forceNoCache()) {
+    // [ELASTIC] From cache
+    const fromCache = await elLoadByStixId(id);
+    if (fromCache) return fromCache;
+  }
   const query = `match $x has stix_id_key "${escapeString(id)}"; get;`;
   const element = await load(query, ['x']);
   return element ? element.x : null;
 };
 export const loadEntityByGraknId = async graknId => {
-  // [ELASTIC] From cache
-  const fromCache = await elLoadByGraknId(graknId);
-  if (fromCache) return fromCache;
-  // Standard Grakn
+  if (!forceNoCache()) {
+    // [ELASTIC] From cache
+    const fromCache = await elLoadByGraknId(graknId);
+    if (fromCache) return fromCache;
+  }
   const query = `match $x id ${escapeString(graknId)}; get;`;
   const element = await load(query, ['x']);
   return element.x;
 };
 // OBSERVABLES
 export const loadObservableById = async id => {
-  // [ELASTIC] From cache
-  const fromCache = await elLoadById(id, [INDEX_STIX_OBSERVABLE]);
-  if (fromCache) return fromCache;
-  // Standard Grakn
+  if (!forceNoCache()) {
+    // [ELASTIC] From cache
+    const fromCache = await elLoadById(id, [INDEX_STIX_OBSERVABLE]);
+    if (fromCache) return fromCache;
+  }
   const query = `match $x has internal_id_key "${escapeString(id)}"; get;`;
   const element = await load(query, ['x']);
   return element ? element.x : null;
 };
 // RELATIONS
 export const loadRelationById = async id => {
-  // [ELASTIC] From cache
-  const fromCache = await elLoadById(id);
-  if (fromCache) return fromCache;
-  // Standard Grakn
+  if (!forceNoCache()) {
+    // [ELASTIC] From cache
+    const fromCache = await elLoadById(id);
+    if (fromCache) return fromCache;
+  }
   const eid = escapeString(id);
   const query = `match $rel($from, $to) isa relation; $rel has internal_id_key "${eid}"; get;`;
   const element = await load(query, ['rel']);
   return element ? element.rel : null;
 };
 export const loadRelationByStixId = async id => {
-  // [ELASTIC] From cache
-  const fromCache = await elLoadByStixId(id);
-  if (fromCache) return fromCache;
-  // Standard Grakn
+  if (!forceNoCache()) {
+    // [ELASTIC] From cache
+    const fromCache = await elLoadByStixId(id);
+    if (fromCache) return fromCache;
+  }
   const eid = escapeString(id);
   const query = `match $rel($from, $to) isa relation; $rel has stix_id_key "${eid}"; get;`;
   const element = await load(query, ['rel']);
@@ -826,8 +836,6 @@ export const listEntities = async (searchFields, args) => {
   // filters contains potential relations like, mitigates, tagged ...
   const { first = 200, after, types, search, filters, orderBy, orderMode = 'asc' } = args;
   const validFilters = filter(f => f && f.values.filter(n => n).length > 0, filters || []);
-  // const listWithPagination = 'first' in args;
-  // const first = listWithPagination ? args.first || 200 : undefined;
   const offset = after ? cursorToOffset(after) : 0;
   const queryOrderBy = orderBy || 'internal_id_key';
   const isRelationOrderBy = includes('.', queryOrderBy);
@@ -956,6 +964,35 @@ export const listEntities = async (searchFields, args) => {
     return buildPagination(first, offset, instances, globalCount);
   });
 };
+
+/*
+export const listRelations = async args => {
+  const { first = 200, after, filters, orderBy, orderMode = 'asc' } = args;
+  const { types, fromRole, fromId, toRole, toId, fromTypes, toTypes } = args;
+  // const { firstSeenStart, firstSeenStop, lastSeenStart, lastSeenStop, weights } = args;
+  const offset = after ? cursorToOffset(after) : 0;
+  // Handle relation type(s)
+  const relationType = types.length === 1 ? head(types) : 'stix_relation';
+  const queryTypes =
+    types.length > 1
+      ? pipe(
+          map(e => `{ $elem isa ${e}; }`),
+          join(' or '),
+          concat(__, ';')
+        )(types)
+      : '';
+  // eslint-disable-next-line prettier/prettier
+  const queryFromTypes = pipe(map(e => `{ $from isa ${e}; }`), join(' or '), concat(__, ';'))(fromTypes);
+  // eslint-disable-next-line prettier/prettier
+  const queryToTypes = pipe(map(e => `{ $to isa ${e}; }`), join(' or '), concat(__, ';'))(fromTypes);
+  // Build the query
+  const relFrom = fromRole ? `${fromRole}:` : '';
+  const relTo = toRole ? `${toRole}:` : '';
+  const baseQuery = `match $rel(${relFrom}$from, ${relTo}$to) isa ${relationType};
+                      ${queryTypes} ${queryFromTypes} ${queryToTypes}
+                      ${queryAttributesFields} ${queryAttributesFilters} get;`;
+};
+*/
 // endregion
 
 // region please refactor to use stable commands
@@ -1115,6 +1152,7 @@ export const getRelationInferredById = async id => {
   });
 };
 
+// TODO JRI REFACTOR paginateRelationships
 /**
  * Grakn generic pagination query
  * @param query
@@ -1124,55 +1162,93 @@ export const getRelationInferredById = async id => {
  * @param pagination
  * @returns Promise
  */
-export const paginateRelationships = (query, options, key = 'rel', extraRel = null, pagination = true) => {
+export const paginateRelationships = async (query, options, key = 'rel', extraRel = null, pagination = true) => {
   try {
     const {
+      first = 200,
+      after,
+      types = ['stix_relation'],
+      inferred,
       fromId,
+      fromTypes = [],
       toId,
-      fromTypes,
-      toTypes,
+      toTypes = [],
+      orderBy,
+      orderMode = 'asc',
       firstSeenStart,
       firstSeenStop,
       lastSeenStart,
       lastSeenStop,
       weights,
-      inferred,
-      first = 200,
-      after,
-      orderBy,
-      orderMode = 'asc'
+      canUseCache = false
     } = options;
-    // TODO JRI Remove this
-    console.log('[GRAKN] FETCH paginateRelationships FROM GRAKN');
+    // Only use Elastic if no extra relation needed and inferred of course.
+    if (
+      canUseCache && // Explicitly express that can use the cache
+      (inferred === undefined || inferred === false) && // Only for real relations
+      extraRel === null && // No support of relation to relation
+      fromTypes.length <= 1 && // Can only force one type with current elPaginate
+      toTypes.length <= 1 // Can only force one type with current elPaginate
+    ) {
+      const filters = [];
+      if (fromTypes.length > 0) filters.push({ key: 'fromTypes', values: fromTypes });
+      if (toTypes.length > 0) filters.push({ key: 'toTypes', values: toTypes });
+      if (fromId) {
+        const from = await loadEntityById(fromId);
+        filters.push({ key: 'fromId', values: [from.grakn_id] });
+      }
+      if (toId) {
+        const to = await loadEntityById(toId);
+        filters.push({ key: 'toId', values: [to.grakn_id] });
+      }
+      if (firstSeenStart) filters.push({ key: 'first_seen', operator: 'gt', values: [firstSeenStart] });
+      if (firstSeenStop) filters.push({ key: 'first_seen', operator: 'lt', values: [firstSeenStop] });
+      if (lastSeenStart) filters.push({ key: 'last_seen', operator: 'gt', values: [lastSeenStart] });
+      if (lastSeenStop) filters.push({ key: 'last_seen', operator: 'lt', values: [lastSeenStop] });
+      if (weights) filters.push({ key: 'weight', values: weights });
+      return elPaginate(INDEX_STIX_RELATIONS, {
+        first,
+        after,
+        types,
+        orderBy,
+        orderMode,
+        filters
+      });
+    }
+    console.log(
+      `[GRAKN] FETCH grakn relations (inferred: ${inferred} / extraRel: ${extraRel} / fromTypes: ${fromTypes.length} / toTypes: ${toTypes.length})`
+    );
     const offset = after ? cursorToOffset(after) : 0;
     const finalQuery = `
       ${query};
       ${fromId ? `$from has internal_id_key "${escapeString(fromId)}";` : ''}
-      ${toId ? `$to has internal_id_key "${escapeString(toId)}";` : ''} ${
-      fromTypes && fromTypes.length > 0
-        ? `${join(' ', map(fromType => `{ $from isa ${fromType}; } or`, tail(fromTypes)))} { $from isa ${head(
-            fromTypes
-          )}; };`
-        : ''
-    } ${
-      toTypes && toTypes.length > 0
+      ${toId ? `$to has internal_id_key "${escapeString(toId)}";` : ''} 
+      ${
+        fromTypes.length > 0
+          ? `${join(' ', map(fromType => `{ $from isa ${fromType}; } or`, tail(fromTypes)))} { $from isa ${head(
+              fromTypes
+            )}; };`
+          : ''
+      } 
+    ${
+      toTypes.length > 0
         ? `${join(' ', map(toType => `{ $to isa ${toType}; } or`, tail(toTypes)))} { $to isa ${head(toTypes)}; };`
         : ''
     } 
-    ${firstSeenStart || firstSeenStop ? `$rel has first_seen $fs; ` : ''} 
-    ${firstSeenStart ? `$fs > ${prepareDate(firstSeenStart)}; ` : ''} 
-    ${firstSeenStop ? `$fs < ${prepareDate(firstSeenStop)}; ` : ''} 
-    ${lastSeenStart || lastSeenStop ? `$rel has last_seen $ls; ` : ''} 
-    ${lastSeenStart ? `$ls > ${prepareDate(lastSeenStart)}; ` : ''} 
-    ${lastSeenStop ? `$ls < ${prepareDate(lastSeenStop)}; ` : ''} 
-    ${
-      weights
-        ? `$rel has weight $weight; ${join(
-            ' ',
-            map(weight => `{ $weight == ${weight}; } or`, tail(weights))
-          )} { $weight == ${head(weights)}; };`
-        : ''
-    }`;
+      ${firstSeenStart || firstSeenStop ? `$rel has first_seen $fs; ` : ''} 
+      ${firstSeenStart ? `$fs > ${prepareDate(firstSeenStart)}; ` : ''} 
+      ${firstSeenStop ? `$fs < ${prepareDate(firstSeenStop)}; ` : ''} 
+      ${lastSeenStart || lastSeenStop ? `$rel has last_seen $ls; ` : ''} 
+      ${lastSeenStart ? `$ls > ${prepareDate(lastSeenStart)}; ` : ''} 
+      ${lastSeenStop ? `$ls < ${prepareDate(lastSeenStop)}; ` : ''} 
+      ${
+        weights
+          ? `$rel has weight $weight; ${join(
+              ' ',
+              map(weight => `{ $weight == ${weight}; } or`, tail(weights))
+            )} { $weight == ${head(weights)}; };`
+          : ''
+      }`;
     const orderingKey = orderBy ? `$rel has ${orderBy} $o;` : '';
     const count = getSingleValueNumber(`${finalQuery} ${orderingKey} get; count;`, inferred);
     const elements = findWithConnectedRelations(
@@ -1230,7 +1306,6 @@ const flatAttributesForObject = data => {
     filter(f => f.value !== undefined)
   )(elements);
 };
-
 const createRelationRaw = async (fromInternalId, input, opts) => {
   const { indexable = true } = opts;
   const relationId = uuid();
@@ -1285,12 +1360,16 @@ const createRelationRaw = async (fromInternalId, input, opts) => {
     logger.debug(`[GRAKN - infer: false] createRelation > ${query}`);
     const iterator = await wTx.tx.query(query);
     const txRelation = await iterator.next();
-    const concept = txRelation.map().get('rel');
-    const types = await conceptTypes(concept);
-    const graknRelationId = concept.id;
-    const graknFromId = txRelation.map().get('from').id;
-    const graknToId = txRelation.map().get('to').id;
-    return { graknRelationId, graknFromId, graknToId, types };
+    const conceptRelation = txRelation.map().get('rel');
+    const relationTypes = await conceptTypes(conceptRelation);
+    const graknRelationId = conceptRelation.id;
+    const conceptFrom = txRelation.map().get('from');
+    const graknFromId = conceptFrom.id;
+    const fromTypes = await conceptTypes(conceptFrom);
+    const conceptTo = txRelation.map().get('to');
+    const graknToId = conceptTo.id;
+    const toTypes = await conceptTypes(conceptTo);
+    return { graknRelationId, graknFromId, graknToId, relationTypes, fromTypes, toTypes };
   });
   // 03. Prepare the final data with grakn IDS
   const createdRel = pipe(
@@ -1298,13 +1377,15 @@ const createRelationRaw = async (fromInternalId, input, opts) => {
     // Grakn identifiers
     assoc('grakn_id', graknRelation.graknRelationId),
     assoc('fromId', graknRelation.graknFromId),
+    assoc('fromTypes', graknRelation.fromTypes),
     assoc('toId', graknRelation.graknToId),
+    assoc('toTypes', graknRelation.toTypes),
     // Relation specific
     assoc('inferred', false),
     // Types
     assoc('entity_type', entityType),
     assoc('relationship_type', relationshipType),
-    assoc('parents_type', graknRelation.types)
+    assoc('parents_type', graknRelation.relationTypes)
   )(relationAttributes);
   if (indexable) {
     // 04. Index the relation and the modification in the base entity
@@ -1390,16 +1471,16 @@ export const createRelations = async (fromInternalId, inputs, opts) => {
   return createdRelations;
 };
 
-export const createEntity = async (entity, innerType, opts) => {
+export const createEntity = async (entity, type, opts) => {
   const { modelType, stixIdType = TYPE_STIX_DOMAIN_ENTITY, indexable = true } = opts;
   const internalId = entity.internal_id_key ? entity.internal_id_key : uuid();
-  const stixType = stixIdType || innerType.toLowerCase();
+  const stixType = stixIdType || type.toLowerCase();
   const stixId = entity.stix_id_key ? entity.stix_id_key : `${stixType}--${uuid()}`;
   // Complete with identifiers
   const today = now();
   let data = pipe(
     assoc('internal_id_key', internalId),
-    assoc('entity_type', innerType.toLowerCase()),
+    assoc('entity_type', type.toLowerCase()),
     assoc('created_at', today),
     assoc('updated_at', today),
     dissoc('createdByOwner'),
@@ -1429,7 +1510,7 @@ export const createEntity = async (entity, innerType, opts) => {
   // Generate fields for query and build the query
   const queryElements = flatAttributesForObject(data);
   const nbElements = queryElements.length;
-  let query = `insert $entity isa ${innerType}, `;
+  let query = `insert $entity isa ${type}, `;
   for (let index = 0; index < nbElements; index += 1) {
     const { key, value } = queryElements[index];
     const insert = prepareAttribute(value);
@@ -1456,10 +1537,10 @@ export const createEntity = async (entity, innerType, opts) => {
     await elIndex(inferIndexFromConceptTypes([modelType]), completedData);
   }
   // Complete with eventual relations (will eventually update the index)
-  await addOwner(internalId.id, entity.createdByOwner, { indexable });
-  await addCreatedByRef(internalId, entity.createdByRef, { indexable });
-  await addMarkingDefs(internalId, entity.markingDefinitions, { indexable });
-  await addKillChains(internalId, entity.killChainPhases, { indexable });
+  await addOwner(internalId.id, entity.createdByOwner, opts);
+  await addCreatedByRef(internalId, entity.createdByRef, opts);
+  await addMarkingDefs(internalId, entity.markingDefinitions, opts);
+  await addKillChains(internalId, entity.killChainPhases, opts);
   // Else simply return the data
   return completedData;
 };

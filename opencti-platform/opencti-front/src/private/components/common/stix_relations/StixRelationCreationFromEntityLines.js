@@ -188,7 +188,7 @@ const StixRelationCreationFromEntityLines = createPaginationContainer(
             node {
               id
               entity_type
-              parent_type
+              parent_types
               name
               description
             }

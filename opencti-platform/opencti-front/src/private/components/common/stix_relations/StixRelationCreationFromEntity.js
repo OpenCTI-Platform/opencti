@@ -1,19 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Field, Form } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  compose,
-  map,
-  pipe,
-  head,
-  assoc,
-  pathOr,
-  pluck,
-  sortWith,
-  ascend,
-  path,
-  union,
+  ascend, assoc, compose, head, includes, map, path, pathOr, pipe, pluck, sortWith, union,
 } from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
@@ -22,7 +12,7 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import MenuItem from '@material-ui/core/MenuItem';
-import { Close, ArrowRightAlt, Add } from '@material-ui/icons';
+import { Add, ArrowRightAlt, Close } from '@material-ui/icons';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -31,25 +21,16 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Fab from '@material-ui/core/Fab';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { ConnectionHandler } from 'relay-runtime';
-import {
-  commitMutation,
-  fetchQuery,
-  QueryRenderer,
-} from '../../../../relay/environment';
+import { commitMutation, fetchQuery, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { parse } from '../../../../utils/Time';
-import {
-  resolveRoles,
-  resolveRelationsTypes,
-} from '../../../../utils/Relation';
+import { resolveRelationsTypes, resolveRoles } from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
 import Select from '../../../../components/Select';
 import DatePickerField from '../../../../components/DatePickerField';
-import StixRelationCreationFromEntityLines, {
-  stixRelationCreationFromEntityLinesQuery,
-} from './StixRelationCreationFromEntityLines';
+import StixRelationCreationFromEntityLines, { stixRelationCreationFromEntityLinesQuery } from './StixRelationCreationFromEntityLines';
 import StixDomainEntityCreation from '../stix_domain_entities/StixDomainEntityCreation';
 import SearchInput from '../../../../components/SearchInput';
 import Autocomplete from '../../../../components/Autocomplete';
@@ -195,7 +176,7 @@ const stixRelationCreationFromEntityQuery = graphql`
       entity_type
       name
       description
-      parent_type
+      parent_types
       ... on StixObservable {
         observable_value
       }
@@ -433,7 +414,7 @@ class StixRelationCreationFromEntity extends Component {
       toEntity = sourceEntity;
     }
     const relationshipTypes = resolveRelationsTypes(
-      fromEntity.parent_type === 'Stix-Observable'
+      includes('Stix-Observable', fromEntity.parent_types)
         ? 'observable'
         : fromEntity.entity_type,
       toEntity.entity_type,
@@ -507,7 +488,7 @@ class StixRelationCreationFromEntity extends Component {
                               />
                             </div>
                             <div className={classes.type}>
-                              {fromEntity.parent_type === 'Stix-Observable'
+                              {includes('Stix-Observable', fromEntity.parent_types)
                                 ? t(`observable_${fromEntity.entity_type}`)
                                 : t(`entity_${fromEntity.entity_type}`)}
                             </div>
@@ -515,7 +496,7 @@ class StixRelationCreationFromEntity extends Component {
                           <div className={classes.content}>
                             <span className={classes.name}>
                               {truncate(
-                                fromEntity.parent_type === 'Stix-Observable'
+                                includes('Stix-Observable', fromEntity.parent_types)
                                   ? fromEntity.observable_value
                                   : fromEntity.name,
                                 120,
@@ -555,7 +536,7 @@ class StixRelationCreationFromEntity extends Component {
                               />
                             </div>
                             <div className={classes.type}>
-                              {toEntity.parent_type === 'Stix-Observable'
+                              {includes('Stix-Observable', toEntity.parent_types)
                                 ? t(`observable_${toEntity.entity_type}`)
                                 : t(`entity_${toEntity.entity_type}`)}
                             </div>
@@ -563,7 +544,7 @@ class StixRelationCreationFromEntity extends Component {
                           <div className={classes.content}>
                             <span className={classes.name}>
                               {truncate(
-                                toEntity.parent_type === 'Stix-Observable'
+                                includes('Stix-Observable', toEntity.parent_types)
                                   ? toEntity.observable_value
                                   : toEntity.name,
                                 120,
