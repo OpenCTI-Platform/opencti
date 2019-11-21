@@ -54,19 +54,11 @@ const groupSumBy = curry((groupOn, sumOn, vals) => values(map(sumBy(sumOn))(grou
 // endregion
 
 export const findAll = async args => {
-  // If inferred option, ask grakn
+  const cacheArgs = assoc('canUseCache', true, args);
   return paginateRelationships(
     `match $rel($from, $to) isa ${args.relationType ? escape(args.relationType) : 'stix_relation'}`,
-    args
+    cacheArgs
   );
-};
-
-// region elastic fetch
-export const findById = stixRelationId => {
-  return loadRelationById(stixRelationId);
-};
-export const findByStixId = args => {
-  return loadRelationByStixId(args.stix_id_key);
 };
 export const search = args => {
   return paginateRelationships(
@@ -78,12 +70,16 @@ export const search = args => {
     args
   );
 };
-// endregion
-
-// region grakn fetch
+export const findById = stixRelationId => {
+  return loadRelationById(stixRelationId);
+};
+export const findByStixId = args => {
+  return loadRelationByStixId(args.stix_id_key);
+};
 export const findByIdInferred = stixRelationId => {
   return getRelationInferredById(stixRelationId);
 };
+// TODO JRI REFACTOR THIS
 export const findAllWithInferences = async args => {
   const entities = await findWithConnectedRelations(
     `match $x isa entity; (${args.resolveRelationRole}: $from, $x) isa ${escape(args.resolveRelationType)};
@@ -161,6 +157,8 @@ export const findAllWithInferences = async args => {
   }
   return resultPromise;
 };
+
+// region time series
 export const stixRelationsTimeSeries = args => {
   return timeSeries(
     `match $x($from, $to) isa ${args.relationType ? escape(args.relationType) : 'stix_relation'}; ${

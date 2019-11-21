@@ -293,7 +293,7 @@ export const elPaginate = async (indexName, options) => {
   const validFilters = filter(f => f && f.values.filter(n => n).length > 0, filters || []);
   if (validFilters.length > 0) {
     for (let index = 0; index < validFilters.length; index += 1) {
-      const { key, values } = validFilters[index];
+      const { key, values, operator = 'eq' } = validFilters[index];
       for (let i = 0; i < values.length; i += 1) {
         if (values[i] === null) {
           mustnot = append(
@@ -315,12 +315,23 @@ export const elPaginate = async (indexName, options) => {
             must
           );
           break;
-        } else {
+        } else if (operator === 'eq') {
           must = append(
             {
               match_phrase: {
                 [key]: {
                   query: values[i]
+                }
+              }
+            },
+            must
+          );
+        } else {
+          must = append(
+            {
+              range: {
+                [key]: {
+                  [operator]: values[i]
                 }
               }
             },
@@ -434,10 +445,11 @@ export const elIndex = async (indexName, documentBody, refresh = true) => {
     });
   return documentBody;
 };
-export const elUpdate = (indexName, documentId, documentBody) => {
+export const elUpdate = (indexName, documentId, documentBody, retry = 0) => {
   return el.update({
     id: documentId,
     index: indexName,
+    retry_on_conflict: retry,
     refresh: true,
     body: documentBody
   });
