@@ -445,10 +445,11 @@ export const elIndex = async (indexName, documentBody, refresh = true) => {
     });
   return documentBody;
 };
-export const elUpdate = (indexName, documentId, documentBody) => {
+export const elUpdate = (indexName, documentId, documentBody, retry = 0) => {
   return el.update({
     id: documentId,
     index: indexName,
+    retry_on_conflict: retry,
     refresh: true,
     body: documentBody
   });

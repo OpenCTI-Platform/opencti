@@ -1,9 +1,12 @@
 import { flatten, map, pipe, uniqBy } from 'ramda';
+import { Promise } from 'bluebird';
 import moment from 'moment';
 import { find, getSingleValueNumber, reindexElements } from './database/grakn';
 import { elCreateIndexes, elDeleteIndexes } from './database/elasticSearch';
 
-const GROUP_NUMBER = 200;
+const GROUP_NUMBER = 200; // Pagination size for query
+const GROUP_CONCURRENCY = 10; // Number of query in //
+const GROUP_INDEX_MAX_RETRY = 5; // Number of index update retry (Useful for relations impacts update)
 
 // eslint-disable-next-line no-extend-native
 const pad = (val, size) => {
@@ -21,31 +24,36 @@ const indexElement = async (type, isRelation = false) => {
   const nbOfEntities = await getSingleValueNumber(`match ${matchingQuery} isa ${type}; get; count;`);
   if (nbOfEntities === 0) return;
   // Compute the number of groups to create
+  let counter = 0;
   const nbGroup = Math.ceil(nbOfEntities / GROUP_NUMBER);
   const count = isRelation ? nbOfEntities / 2 : nbOfEntities;
-  let counter = 0;
-  process.stdout.write(`Fetching ${count} ${type} in 000/${pad(nbGroup, 3)} batchs\r`);
-  const fetchedPromises = [];
+  process.stdout.write(`Indexing ${count} ${type} in 000/${pad(nbGroup, 3)} batchs\r`);
+  // Build queries to execute
+  const queries = [];
   for (let index = 0; index < nbGroup; index += 1) {
     const offset = index * GROUP_NUMBER;
-    // `match ${matchingQuery} isa ${type}, has internal_id_key $key; get; sort $key asc; offset ${offset}; limit ${GROUP_NUMBER};`;
     const query = `match ${matchingQuery} isa ${type}; get; offset ${offset}; limit ${GROUP_NUMBER};`;
-    // eslint-disable-next-line no-loop-func
-    const batch = find(query, [isRelation ? 'rel' : 'elem']).then(data => {
-      counter += 1;
-      process.stdout.write(`Fetching ${count} ${type} in ${pad(counter, 3)}/${pad(nbGroup, 3)} batchs\r`);
-      return data;
-    });
-    fetchedPromises.push(batch);
+    queries.push(query);
   }
-  const fetchedGroupElements = await Promise.all(fetchedPromises);
-  const fetchedElements = pipe(
-    flatten,
-    map(e => e[isRelation ? 'rel' : 'elem']),
-    uniqBy(u => u.grakn_id)
-  )(fetchedGroupElements);
-  console.log(`\nReindexing ${type} ... ${fetchedElements.length}`);
-  await reindexElements(fetchedElements);
+  await Promise.map(
+    queries,
+    query => {
+      return find(query, [isRelation ? 'rel' : 'elem'])
+        .then(fetchedGroupElements => {
+          const fetchedElements = pipe(
+            flatten,
+            map(e => e[isRelation ? 'rel' : 'elem']),
+            uniqBy(u => u.grakn_id)
+          )(fetchedGroupElements);
+          return reindexElements(fetchedElements, GROUP_INDEX_MAX_RETRY);
+        })
+        .then(() => {
+          counter += 1;
+          process.stdout.write(`Indexing ${count} ${type} in ${pad(counter, 3)}/${pad(nbGroup, 3)} batchs\r`);
+        });
+    },
+    { concurrency: GROUP_CONCURRENCY }
+  );
   const execDuration = moment.duration(moment().diff(start));
   const avg = (execDuration.asSeconds() / count).toFixed(2);
   console.log(

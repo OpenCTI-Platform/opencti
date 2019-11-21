@@ -537,7 +537,7 @@ export const load = async (query, entities, { infer, noCache } = findOpts) => {
 };
 
 // Reindex functions
-export const reindexElements = async elements => {
+export const reindexElements = async (elements, retry = 0) => {
   const indexPromises = map(e => {
     const index = inferIndexFromConceptTypes(e.parents_type);
     return elIndex(index, e).then(async () => {
@@ -576,7 +576,7 @@ export const reindexElements = async elements => {
       const doc = mergeAll(docs);
       const from = await elLoadByGraknId(impactEntityId);
       // eslint-disable-next-line no-underscore-dangle
-      return elUpdate(from._index, impactEntityId, { doc });
+      return elUpdate(from._index, impactEntityId, { doc }, retry);
     }, Object.keys(impactsByEntity));
   }
   // Check and adapt entities if needed
