@@ -309,9 +309,7 @@ export const elPaginate = async (indexName, options) => {
           must = append(
             {
               match_phrase: {
-                [key]: {
-                  query: values[i]
-                }
+                [key]: values[i]
               }
             },
             must
