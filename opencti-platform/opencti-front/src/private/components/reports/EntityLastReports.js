@@ -89,6 +89,9 @@ class EntityLastReports extends Component {
     const {
       t, nsd, classes, entityId, authorId,
     } = this.props;
+    const filters = [];
+    if (authorId) filters.push({ key: 'createdBy', values: [authorId] });
+    if (entityId) filters.push({ key: 'knowledgeContains', values: [entityId] });
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -103,10 +106,7 @@ class EntityLastReports extends Component {
               first: 8,
               orderBy: 'published',
               orderMode: 'desc',
-              filters: [
-                { key: 'createdBy', values: [authorId] },
-                { key: 'knowledgeContains', values: [entityId] },
-              ],
+              filters,
             }}
             render={({ props }) => {
               if (props && props.reports) {

@@ -275,7 +275,7 @@ export const elPaginate = async (indexName, options) => {
   if (types !== null && types.length > 0) {
     const should = flatten(
       types.map(typeValue => {
-        return [{ match_phrase: { entity_type: typeValue } }, { match_phrase: { parents_type: typeValue } }];
+        return [{ match_phrase: { entity_type: typeValue } }, { match_phrase: { parent_types: typeValue } }];
       })
     );
     must = append({ bool: { should, minimum_should_match: 1 } }, must);
@@ -309,9 +309,7 @@ export const elPaginate = async (indexName, options) => {
           must = append(
             {
               match_phrase: {
-                [key]: {
-                  query: values[i]
-                }
+                [key]: values[i]
               }
             },
             must

@@ -88,7 +88,7 @@ class EntityExternalReferencesLinesContainer extends Component {
     commitMutation({
       mutation: externalReferenceMutationRelationDelete,
       variables: {
-        id: externalReferenceEdge.node.id,
+        id: this.props.entityId,
         relationId: externalReferenceEdge.relation.id,
       },
       updater: (store) => {

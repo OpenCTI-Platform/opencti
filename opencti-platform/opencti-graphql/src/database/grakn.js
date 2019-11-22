@@ -396,7 +396,7 @@ const loadConcept = async (concept, { relationsMap, noCache = false } = conceptO
       return pipe(
         assoc('id', transform.internal_id_key),
         assoc('grakn_id', concept.id),
-        assoc('parents_type', types),
+        assoc('parent_types', types),
         assoc('index_version', '1.0')
       )(transform);
     })
@@ -540,7 +540,7 @@ export const load = async (query, entities, { infer, noCache } = findOpts) => {
 export const indexElements = async (elements, retry = 0) => {
   // 01. Bulk the indexing of row elements
   const body = elements.flatMap(doc => [
-    { index: { _index: inferIndexFromConceptTypes(doc.parents_type), _id: doc.grakn_id } },
+    { index: { _index: inferIndexFromConceptTypes(doc.parent_types), _id: doc.grakn_id } },
     doc
   ]);
   await elBulk({ refresh: true, body });
@@ -760,7 +760,7 @@ export const updateAttribute = async (id, input, wTx) => {
     await updateAttribute(id, yearInput, wTx);
   }
   // Update elasticsearch
-  const currentIndex = inferIndexFromConceptTypes(currentInstanceData.parents_type);
+  const currentIndex = inferIndexFromConceptTypes(currentInstanceData.parent_types);
   const updateValueField = { [key]: val };
   await elUpdate(currentIndex, currentInstanceData.grakn_id, { doc: updateValueField });
   return id;
@@ -1398,7 +1398,7 @@ const createRelationRaw = async (fromInternalId, input, opts = {}) => {
     // Types
     assoc('entity_type', entityType),
     assoc('relationship_type', relationshipType),
-    assoc('parents_type', graknRelation.relationTypes)
+    assoc('parent_types', graknRelation.relationTypes)
   )(relationAttributes);
   if (indexable) {
     // 04. Index the relation and the modification in the base entity
@@ -1537,7 +1537,7 @@ export const createEntity = async (entity, type, opts = {}) => {
     // Grakn identifiers
     assoc('grakn_id', entityCreated.id),
     // Types (entity type directly saved)
-    assoc('parents_type', entityCreated.types)
+    assoc('parent_types', entityCreated.types)
   )(data);
   // Transaction succeed, index the result
   if (indexable) {
