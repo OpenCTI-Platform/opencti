@@ -30,8 +30,8 @@ if (IN_DEV_MODE) installRelayDevTools();
 const MESSENGER$ = new Subject().pipe(debounce(() => timer(500)));
 export const MESSAGING$ = {
   messages: MESSENGER$,
-  notifyError: text => MESSENGER$.next([{ type: 'error', text }]),
-  notifySuccess: text => MESSENGER$.next([{ type: 'message', text }]),
+  notifyError: (text) => MESSENGER$.next([{ type: 'error', text }]),
+  notifySuccess: (text) => MESSENGER$.next([{ type: 'message', text }]),
   redirect: new Subject(),
 };
 
@@ -108,7 +108,7 @@ export class QueryRenderer extends Component {
         fetchPolicy='store-and-network'
         render={(data) => {
           const { error } = data;
-          const types = error ? map(e => e.name, error) : [];
+          const types = error ? map((e) => e.name, error) : [];
           const unmanagedErrors = difference(types, managedErrorTypes || []);
           if (!isEmpty(unmanagedErrors)) throw new ApplicationError(error);
           return render(data);
@@ -144,13 +144,13 @@ export const commitMutation = ({
   onError: (errors) => {
     if (setSubmitting) setSubmitting(false);
     const authRequired = filter(
-      e => e.data.type === 'authentication',
+      (e) => e.data.type === 'authentication',
       errors,
     );
     if (!isEmpty(authRequired)) {
       MESSAGING$.redirect.next('/login');
     } else {
-      const messages = map(e => ({ type: 'error', text: e.message }), errors);
+      const messages = map((e) => ({ type: 'error', text: e.message }), errors);
       MESSAGING$.messages.next(messages);
       if (onError) onError(errors);
     }
@@ -159,6 +159,6 @@ export const commitMutation = ({
 
 const deactivateSubscription = { dispose: () => undefined };
 // eslint-disable-next-line max-len
-export const requestSubscription = args => (WS_ACTIVATED ? RS(environment, args) : deactivateSubscription);
+export const requestSubscription = (args) => (WS_ACTIVATED ? RS(environment, args) : deactivateSubscription);
 
 export const fetchQuery = (query, args) => FQ(environment, query, args);

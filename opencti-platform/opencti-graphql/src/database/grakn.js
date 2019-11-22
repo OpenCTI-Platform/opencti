@@ -429,7 +429,7 @@ const loadConcept = async (concept, { relationsMap, noCache = false } = conceptO
         return pipe(
           assoc('id', isInferred ? uuid() : entityData.id),
           assoc('inferred', isInferred),
-          assoc('entity_type', entityData.entity_type || 'relation-embedded'),
+          assoc('entity_type', entityData.entity_type || TYPE_RELATION_EMBEDDED),
           assoc('relationship_type', head(types)),
           mergeRight(mergeAll(roles))
         )(entityData);
@@ -1479,7 +1479,7 @@ export const createRelations = async (fromInternalId, inputs, opts = {}) => {
   return createdRelations;
 };
 export const createEntity = async (entity, type, opts = {}) => {
-  const { modelType, stixIdType = TYPE_STIX_DOMAIN_ENTITY, indexable = true } = opts;
+  const { modelType = TYPE_STIX_DOMAIN_ENTITY, stixIdType, indexable = true } = opts;
   const internalId = entity.internal_id_key ? entity.internal_id_key : uuid();
   const stixType = stixIdType || type.toLowerCase();
   const stixId = entity.stix_id_key ? entity.stix_id_key : `${stixType}--${uuid()}`;

@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { Client } from '@elastic/elasticsearch';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
-import { append, assoc, dissoc, filter, flatten, head, includes, join, map, pipe, split } from 'ramda';
+import { append, assoc, dissoc, filter, flatten, head, join, map, pipe, split } from 'ramda';
 import { buildPagination } from './utils';
 import conf, { logger } from '../config/conf';
 
@@ -290,7 +290,7 @@ export const elPaginate = async (indexName, options) => {
       must
     );
   }
-  const validFilters = filter(f => f && f.values.filter(n => n).length > 0, filters || []);
+  const validFilters = filter(f => f && f.values.length > 0, filters || []);
   if (validFilters.length > 0) {
     for (let index = 0; index < validFilters.length; index += 1) {
       const { key, values, operator = 'eq' } = validFilters[index];
@@ -398,7 +398,14 @@ export const elLoadByGraknId = (id, indices = PLATFORM_INDICES) => {
   return elLoadByTerms([{ 'grakn_id.keyword': id }], indices);
 };
 
-export const elBulk = args => el.bulk(args);
+export const elBulk = async args => {
+  const result = await el.bulk(args);
+  if (result.body.errors) {
+    const test = result.body.items;
+    console.log(test);
+  }
+  return result;
+};
 export const elReindex = async indexMaps => {
   return Promise.all(
     indexMaps.map(indexMap => {
