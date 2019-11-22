@@ -87,7 +87,7 @@ const network = new RelayNetworkLayer(
 
 const store = new Store(new RecordSource());
 // Activate the read from store then network
-store.holdGC();
+// store.holdGC();
 export const environment = new Environment({
   network,
   store,
