@@ -1,7 +1,7 @@
 import { flatten, map, pipe, uniqBy } from 'ramda';
 import { Promise } from 'bluebird';
 import moment from 'moment';
-import { find, getSingleValueNumber, reindexElements } from './database/grakn';
+import { find, getSingleValueNumber, indexElements } from './database/grakn';
 import { elCreateIndexes, elDeleteIndexes } from './database/elasticSearch';
 
 const GROUP_NUMBER = 200; // Pagination size for query
@@ -35,6 +35,7 @@ const indexElement = async (type, isRelation = false) => {
     const query = `match ${matchingQuery} isa ${type}; get; offset ${offset}; limit ${GROUP_NUMBER};`;
     queries.push(query);
   }
+  // Fetch grakn with concurrency limit.
   await Promise.map(
     queries,
     query => {
@@ -45,7 +46,7 @@ const indexElement = async (type, isRelation = false) => {
             map(e => e[isRelation ? 'rel' : 'elem']),
             uniqBy(u => u.grakn_id)
           )(fetchedGroupElements);
-          return reindexElements(fetchedElements, GROUP_INDEX_MAX_RETRY);
+          return indexElements(fetchedElements, GROUP_INDEX_MAX_RETRY);
         })
         .then(() => {
           counter += 1;
@@ -90,9 +91,6 @@ const indexer = async () => {
   await indexElement('stix_relation', true);
   await indexElement('relation_embedded', true);
   await indexElement('stix_relation_embedded', true);
-  await indexElement('authored_by', true);
-  await indexElement('owned_by', true);
-  await indexElement('tagged', true);
   await indexElement('stix_relation_observable_embedded', true);
   await indexElement('stix_relation_observable_grouping', true);
   await indexElement('stix_sighting', true);

@@ -12,6 +12,7 @@ import {
   fromPairs,
   groupBy,
   head,
+  find as RamdaFind,
   includes,
   isEmpty,
   isNil,
@@ -35,15 +36,14 @@ import conf, { logger } from '../config/conf';
 import { buildPagination, fillTimeSeries, randomKey } from './utils';
 import { isInversed } from './graknRoles';
 import {
+  elBulk,
   elDeleteInstanceIds,
-  elIndex,
   elLoadByGraknId,
   elLoadById,
   elLoadByStixId,
   elPaginate,
+  elRemoveRelation,
   elUpdate,
-  elUpdateAddInnerRelation,
-  elUpdateRemoveInnerRelation,
   forceNoCache,
   INDEX_STIX_ENTITIES,
   INDEX_STIX_OBSERVABLE,
@@ -537,49 +537,61 @@ export const load = async (query, entities, { infer, noCache } = findOpts) => {
 };
 
 // Reindex functions
-export const reindexElements = async (elements, retry = 0) => {
-  const indexPromises = map(e => {
-    const index = inferIndexFromConceptTypes(e.parents_type);
-    return elIndex(index, e).then(async () => {
-      if (!e.relationship_type) return [];
-      // If element is a relation
+export const indexElements = async (elements, retry = 0) => {
+  // 01. Bulk the indexing of row elements
+  const body = elements.flatMap(doc => [
+    { index: { _index: inferIndexFromConceptTypes(doc.parents_type), _id: doc.grakn_id } },
+    doc
+  ]);
+  await elBulk({ refresh: true, body });
+  // 02. If relation, generate impacts for from and to sides
+  const impactedEntities = pipe(
+    filter(e => e.relationship_type !== undefined),
+    map(e => {
       const relationId = e.id;
       const relationshipType = e.relationship_type;
-      if (e.fromId && e.toId) {
-        return [
-          { from: e.fromId, relationshipType, to: e.toId, relationId },
-          { from: e.toId, relationshipType, to: e.fromId, relationId }
-        ];
-      }
-      console.log(`[REINDEX] Missing warning > Relation ${e.grakn_id} (from: ${e.fromId} - to: ${e.toId})`);
-      // await executeWrite(async wTx => {
-      //   const query = `match $x has internal_id_key "${e.grakn_id}"; delete $x;`;
-      //   console.log(`[REINDEX - Missing warning > deleting relation ${e.grakn_id}`);
-      //   await wTx.tx.query(query, { infer: false });
-      //   return true;
-      // });
-      return [];
-    });
-  }, elements);
-  const impactedRelationEntities = await Promise.all(indexPromises);
-  const impacts = flatten(impactedRelationEntities);
-  if (impacts.length > 0) {
-    const impactsByEntity = groupBy(i => i.from, impacts);
-    map(async impactEntityId => {
-      const impactsPerEntity = impactsByEntity[impactEntityId];
-      const docs = await Promise.all(
-        map(async e => {
-          const to = await elLoadByGraknId(e.to);
-          return { [`${e.relationshipType}.internal_id_key.${to.internal_id_key}`]: e.relationId };
-        }, impactsPerEntity)
+      return [
+        { from: e.fromId, relationshipType, to: e.toId, relationId },
+        { from: e.toId, relationshipType, to: e.fromId, relationId }
+      ];
+    }),
+    flatten,
+    groupBy(i => i.from)
+  )(elements);
+  const elementsToUpdate = await Promise.all(
+    // For each from, generate the
+    map(async entityGraknId => {
+      const entity = await elLoadByGraknId(entityGraknId);
+      const targets = impactedEntities[entityGraknId];
+      // Build document fields to update ( per relation type )
+      // membership: [{internal_id_key: xxxx, relation_id_key: xxxx}]
+      const targetsByRelation = groupBy(i => i.relationshipType, targets);
+      const fieldPairs = await Promise.all(
+        map(async relType => {
+          const data = targetsByRelation[relType];
+          const previous = entity[relType] || [];
+          const newData = await Promise.all(
+            map(async d => {
+              const resolvedTarget = await elLoadByGraknId(d.to);
+              return { internal_id_key: resolvedTarget.internal_id_key, relation_id_key: d.relationId };
+            }, data)
+          );
+          return [relType, concat(previous, newData)];
+        }, Object.keys(targetsByRelation))
       );
-      const doc = mergeAll(docs);
-      const from = await elLoadByGraknId(impactEntityId);
+      const doc = fromPairs(fieldPairs);
       // eslint-disable-next-line no-underscore-dangle
-      return elUpdate(from._index, impactEntityId, { doc }, retry);
-    }, Object.keys(impactsByEntity));
+      return { _index: entity._index, id: entityGraknId, data: { doc } };
+    }, Object.keys(impactedEntities))
+  );
+  const bodyUpdate = elementsToUpdate.flatMap(doc => [
+    // eslint-disable-next-line no-underscore-dangle
+    { update: { _index: doc._index, _id: doc.id, retry_on_conflict: retry } },
+    doc.data
+  ]);
+  if (bodyUpdate.length > 0) {
+    await elBulk({ refresh: true, body: bodyUpdate });
   }
-  // Check and adapt entities if needed
   return elements.length;
 };
 export const reindexByQuery = async (query, entities) => {
@@ -589,7 +601,7 @@ export const reindexByQuery = async (query, entities) => {
     map(entity => elements.map(e => e[entity])),
     flatten
   )(entities);
-  return reindexElements(innerElements);
+  return indexElements(innerElements);
 };
 export const reindexByAttribute = (type, value) => {
   const eType = escape(type);
@@ -777,8 +789,8 @@ export const deleteRelationById = async (entityId, relationId) => {
     // [ELASTIC] Update - Delete the inner indexed relations in entities
     const previousRelation = await loadEntityById(eid);
     const targetEntity = await loadEntityByGraknId(previousRelation.toId);
-    await elUpdateRemoveInnerRelation(entityId, previousRelation.relationship_type, targetEntity.id);
-    await elUpdateRemoveInnerRelation(targetEntity.id, previousRelation.relationship_type, entityId);
+    await elRemoveRelation(entityId, previousRelation.relationship_type, targetEntity.id);
+    await elRemoveRelation(targetEntity.id, previousRelation.relationship_type, entityId);
     await elDeleteInstanceIds([eid]);
   });
   // Return the updated source
@@ -888,7 +900,7 @@ export const listEntities = async (searchFields, args) => {
           // Apply filter on target.
           // TODO Support more than only String filters
           attributesFields.push(`$${targetRef} has ${field} "${val}";`);
-          relationFiltersIds.push({ id: relId, key: `${filterKey}.${val}` });
+          relationFiltersIds.push({ relation, field, val });
         }
       } else {
         for (let valueIndex = 0; valueIndex < filterValues.length; valueIndex += 1) {
@@ -942,20 +954,20 @@ export const listEntities = async (searchFields, args) => {
       // A relation is require, reconstruct the result with it.
       return {
         pageInfo: paginateResult.pageInfo,
-        edges: map(
-          e => ({
+        edges: map(e => {
+          const rel = RamdaFind(i => i.internal_id_key === relationToGet.val, e.node[relationToGet.relation]);
+          return {
             node: e.node,
-            relation: { id: e.node[relationToGet.key] },
+            relation: { id: rel.relation_id_key },
             cursor: e.cursor
-          }),
-          paginateResult.edges
-        )
+          };
+        }, paginateResult.edges)
       };
     }
     return paginateResult;
   }
   // TODO JRI Remove this
-  console.log(`[GRAKN] ListEntities on Grakn, supportedByCache: ${supportedByCache}/forceNoCache: ${getInGrakn}`);
+  logger.debug(`[GRAKN] ListEntities on Grakn, supportedByCache: ${supportedByCache}/forceNoCache: ${getInGrakn}`);
   // noinspection ES6MissingAwait
   const countPromise = getSingleValueNumber(countQuery);
   const extraRelation = relationToGet ? relationToGet.id : undefined;
@@ -965,6 +977,7 @@ export const listEntities = async (searchFields, args) => {
   });
 };
 
+// TODO JRI Finish this
 /*
 export const listRelations = async args => {
   const { first = 200, after, filters, orderBy, orderMode = 'asc' } = args;
@@ -1306,7 +1319,7 @@ const flatAttributesForObject = data => {
     filter(f => f.value !== undefined)
   )(elements);
 };
-const createRelationRaw = async (fromInternalId, input, opts) => {
+const createRelationRaw = async (fromInternalId, input, opts = {}) => {
   const { indexable = true } = opts;
   const relationId = uuid();
   // 01. First fix the direction of the relation
@@ -1389,34 +1402,29 @@ const createRelationRaw = async (fromInternalId, input, opts) => {
   )(relationAttributes);
   if (indexable) {
     // 04. Index the relation and the modification in the base entity
-    const index = inferIndexFromConceptTypes([entityType]);
-    await elIndex(index, createdRel).then(() => {
-      const innerFrom = elUpdateAddInnerRelation(createdRel.fromId, relationshipType, data.toId, relationId);
-      const innerTo = elUpdateAddInnerRelation(createdRel.toId, relationshipType, data.fromId, relationId);
-      return Promise.all([innerFrom, innerTo]);
-    });
+    await indexElements([createdRel]);
   }
   // 06. Return result
   return createdRel;
 };
 
 // region business relations
-const addOwner = async (fromInternalId, createdByOwnerId, opts) => {
+const addOwner = async (fromInternalId, createdByOwnerId, opts = {}) => {
   if (!createdByOwnerId) return undefined;
   const input = { fromRole: 'to', toId: createdByOwnerId, toRole: 'owner', through: 'owned_by' };
   return createRelationRaw(fromInternalId, input, opts);
 };
-const addCreatedByRef = async (fromInternalId, createdByRefId, opts) => {
+const addCreatedByRef = async (fromInternalId, createdByRefId, opts = {}) => {
   if (!createdByRefId) return undefined;
   const input = { fromRole: 'so', toId: createdByRefId, toRole: 'creator', through: 'created_by_ref' };
   return createRelationRaw(fromInternalId, input, opts);
 };
-const addMarkingDef = async (fromInternalId, markingDefId, opts) => {
+const addMarkingDef = async (fromInternalId, markingDefId, opts = {}) => {
   if (!markingDefId) return undefined;
   const input = { fromRole: 'so', toId: markingDefId, toRole: 'marking', through: 'object_marking_refs' };
   return createRelationRaw(fromInternalId, input, opts);
 };
-const addMarkingDefs = async (internalId, markingDefIds, opts) => {
+const addMarkingDefs = async (internalId, markingDefIds, opts = {}) => {
   if (!markingDefIds || isEmpty(markingDefIds)) return undefined;
   const markings = [];
   // Relations cannot be created in parallel.
@@ -1427,7 +1435,7 @@ const addMarkingDefs = async (internalId, markingDefIds, opts) => {
   }
   return markings;
 };
-const addKillChain = async (fromInternalId, killChainId, opts) => {
+const addKillChain = async (fromInternalId, killChainId, opts = {}) => {
   if (!killChainId) return undefined;
   const input = {
     fromRole: 'phase_belonging',
@@ -1437,7 +1445,7 @@ const addKillChain = async (fromInternalId, killChainId, opts) => {
   };
   return createRelationRaw(fromInternalId, input, opts);
 };
-const addKillChains = async (internalId, killChainIds, opts) => {
+const addKillChains = async (internalId, killChainIds, opts = {}) => {
   if (!killChainIds || isEmpty(killChainIds)) return undefined;
   const killChains = [];
   // Relations cannot be created in parallel.
@@ -1450,7 +1458,7 @@ const addKillChains = async (internalId, killChainIds, opts) => {
 };
 // endregion
 
-export const createRelation = async (fromInternalId, input, opts) => {
+export const createRelation = async (fromInternalId, input, opts = {}) => {
   const created = await createRelationRaw(fromInternalId, input, opts);
   // 05. Complete with eventual relations (will eventually update the index)
   await addOwner(created.id, input.createdByOwner, opts);
@@ -1459,7 +1467,7 @@ export const createRelation = async (fromInternalId, input, opts) => {
   await addKillChains(created.id, input.killChainPhases, opts);
   return created;
 };
-export const createRelations = async (fromInternalId, inputs, opts) => {
+export const createRelations = async (fromInternalId, inputs, opts = {}) => {
   const createdRelations = [];
   // Relations cannot be created in parallel. (Concurrent indexing on same key)
   // Could be improve by grouping and indexing in one shot.
@@ -1470,8 +1478,7 @@ export const createRelations = async (fromInternalId, inputs, opts) => {
   }
   return createdRelations;
 };
-
-export const createEntity = async (entity, type, opts) => {
+export const createEntity = async (entity, type, opts = {}) => {
   const { modelType, stixIdType = TYPE_STIX_DOMAIN_ENTITY, indexable = true } = opts;
   const internalId = entity.internal_id_key ? entity.internal_id_key : uuid();
   const stixType = stixIdType || type.toLowerCase();
@@ -1534,7 +1541,7 @@ export const createEntity = async (entity, type, opts) => {
   )(data);
   // Transaction succeed, index the result
   if (indexable) {
-    await elIndex(inferIndexFromConceptTypes([modelType]), completedData);
+    await indexElements([completedData]);
   }
   // Complete with eventual relations (will eventually update the index)
   await addOwner(internalId.id, entity.createdByOwner, opts);

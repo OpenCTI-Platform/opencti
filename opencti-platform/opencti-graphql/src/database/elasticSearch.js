@@ -305,16 +305,6 @@ export const elPaginate = async (indexName, options) => {
             mustnot
           );
           break;
-        } else if (includes('.', key)) {
-          must = append(
-            {
-              exists: {
-                field: `${key}.${values[i]}`
-              }
-            },
-            must
-          );
-          break;
         } else if (operator === 'eq') {
           must = append(
             {
@@ -408,6 +398,7 @@ export const elLoadByGraknId = (id, indices = PLATFORM_INDICES) => {
   return elLoadByTerms([{ 'grakn_id.keyword': id }], indices);
 };
 
+export const elBulk = args => el.bulk(args);
 export const elReindex = async indexMaps => {
   return Promise.all(
     indexMaps.map(indexMap => {
@@ -455,14 +446,11 @@ export const elUpdate = (indexName, documentId, documentBody, retry = 0) => {
   });
 };
 
-export const elUpdateAddInnerRelation = async (fromGraknId, relationType, targetInternalId, relationId) => {
-  const fromEntity = await elLoadByGraknId(fromGraknId);
-  const indexKey = `${relationType}.internal_id_key.${targetInternalId}`;
-  const doc = { [indexKey]: relationId };
-  await elUpdate(fromEntity._index, fromGraknId, { doc });
-};
-export const elUpdateRemoveInnerRelation = async (internalId, relationType, targetId) => {
+export const elRemoveRelation = async (internalId, relationType, targetId) => {
+  // Remove the target from the list
   const previousEntity = await elLoadById(internalId);
-  const scriptToExecute = `ctx._source.remove('${relationType}.internal_id_key.${targetId}')`;
-  await elUpdate(previousEntity._index, previousEntity.grakn_id, { script: scriptToExecute });
+  const previousValues = previousEntity[relationType];
+  const filteredValues = filter(p => p.internal_id_key !== targetId, previousValues);
+  const updatedField = { [relationType]: filteredValues };
+  await elUpdate(previousEntity._index, previousEntity.grakn_id, { doc: updatedField });
 };
