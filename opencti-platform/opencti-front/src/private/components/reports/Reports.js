@@ -114,15 +114,15 @@ class Reports extends Component {
     } = this.state;
     const reportFilterClass = reportClass !== 'all' && reportClass !== undefined
       ? reportClass.replace(/_/g, ' ') : '';
+    const filters = [];
+    if (reportFilterClass) filters.push({ key: 'report_class', values: [reportFilterClass] });
+    if (authorId) filters.push({ key: 'createdBy', values: [authorId] });
+    if (objectId) filters.push({ key: 'knowledgeContains', values: [objectId] });
     const paginationOptions = {
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
-      filters: [
-        { key: 'report_class', values: [reportFilterClass] },
-        { key: 'createdBy', values: [authorId] },
-        { key: 'knowledgeContains', values: [objectId] },
-      ],
+      filters,
     };
     return (
       <div>
