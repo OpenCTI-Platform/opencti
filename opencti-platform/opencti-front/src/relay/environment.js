@@ -1,6 +1,4 @@
-import {
-  Environment, RecordSource, Store,
-} from 'relay-runtime';
+import { Environment, RecordSource, Store } from 'relay-runtime';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { installRelayDevTools } from 'relay-devtools';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
@@ -51,7 +49,8 @@ export const ACCESS_PROVIDERS = split(
 
 // Network
 const envBasePath = isEmpty(window.BASE_PATH) || window.BASE_PATH.startsWith('/')
-  ? window.BASE_PATH : `/${window.BASE_PATH}`;
+  ? window.BASE_PATH
+  : `/${window.BASE_PATH}`;
 export const APP_BASE_PATH = IN_DEV_MODE ? '' : envBasePath;
 
 // Subscription
@@ -105,7 +104,7 @@ export class QueryRenderer extends Component {
         environment={environment}
         query={query}
         variables={variables}
-        fetchPolicy='store-and-network'
+        fetchPolicy="store-and-network"
         render={(data) => {
           const { error } = data;
           const types = error ? map((e) => e.name, error) : [];
@@ -141,18 +140,18 @@ export const commitMutation = ({
   optimisticUpdater,
   optimisticResponse,
   onCompleted,
-  onError: (errors) => {
+  onError: (error) => {
     if (setSubmitting) setSubmitting(false);
     const authRequired = filter(
       (e) => e.data.type === 'authentication',
-      errors,
+      error.res.errors,
     );
     if (!isEmpty(authRequired)) {
       MESSAGING$.redirect.next('/login');
     } else {
-      const messages = map((e) => ({ type: 'error', text: e.message }), errors);
+      const messages = map((e) => ({ type: 'error', text: e.message }), error.res.errors);
       MESSAGING$.messages.next(messages);
-      if (onError) onError(errors);
+      if (onError) onError(error);
     }
   },
 });

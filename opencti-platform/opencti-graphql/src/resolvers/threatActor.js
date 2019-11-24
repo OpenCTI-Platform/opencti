@@ -13,6 +13,10 @@ const threatActorResolvers = {
     threatActor: (_, { id }) => findById(id),
     threatActors: (_, args) => findAll(args)
   },
+  ThreatActorsOrdering: {
+    markingDefinitions: 'object_marking_refs.definition',
+    tags: 'tagged.value'
+  },
   ThreatActorsFilter: {
     tags: 'tagged.internal_id_key'
   },

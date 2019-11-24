@@ -48,6 +48,11 @@ const reportResolvers = {
       return [];
     }
   },
+  ReportsOrdering: {
+    createdByRef: 'created_by_ref.name',
+    markingDefinitions: 'object_marking_refs.definition',
+    tags: 'tagged.value'
+  },
   ReportsFilter: {
     createdBy: 'created_by_ref.internal_id_key',
     knowledgeContains: 'object_refs.internal_id_key'

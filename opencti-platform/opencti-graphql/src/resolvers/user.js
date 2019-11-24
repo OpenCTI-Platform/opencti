@@ -26,6 +26,10 @@ const userResolvers = {
     users: (_, args) => findAll(args),
     me: (_, args, { user }) => findById(user.id)
   },
+  UsersOrdering: {
+    markingDefinitions: 'object_marking_refs.definition',
+    tags: 'tagged.value'
+  },
   User: {
     groups: (user, args) => groups(user.id, args),
     token: (user, args, context) => token(user.id, args, context)

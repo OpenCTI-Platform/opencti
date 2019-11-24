@@ -576,7 +576,7 @@ class ReportKnowledgeGraphComponent extends Component {
       onCompleted: (data) => {
         const newNode = new RelationNodeModel({
           id: result.id,
-          relationId: data.reportEdit.relationAdd.relation.id,
+          relationId: data.reportEdit.relationAdd.id,
           type: result.relationship_type,
           first_seen: result.first_seen,
           last_seen: result.last_seen,

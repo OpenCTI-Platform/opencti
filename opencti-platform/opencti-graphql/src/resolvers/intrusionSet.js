@@ -13,6 +13,10 @@ const intrusionSetResolvers = {
     intrusionSet: (_, { id }) => findById(id),
     intrusionSets: (_, args) => findAll(args)
   },
+  IntrusionSetsOrdering: {
+    markingDefinitions: 'object_marking_refs.definition',
+    tags: 'tagged.value'
+  },
   IntrusionSetsFilter: {
     tags: 'tagged.internal_id_key'
   },

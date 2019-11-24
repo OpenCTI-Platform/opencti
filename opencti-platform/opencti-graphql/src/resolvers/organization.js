@@ -13,6 +13,10 @@ const organizationResolvers = {
     organization: (_, { id }) => findById(id),
     organizations: (_, args) => findAll(args)
   },
+  OrganizationsOrdering: {
+    markingDefinitions: 'object_marking_refs.definition',
+    tags: 'tagged.value'
+  },
   OrganizationsFilter: {
     tags: 'tagged.internal_id_key'
   },

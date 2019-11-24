@@ -19,6 +19,10 @@ const incidentResolvers = {
       return incidentsTimeSeries(args);
     }
   },
+  IncidentsOrdering: {
+    markingDefinitions: 'object_marking_refs.definition',
+    tags: 'tagged.value'
+  },
   IncidentsFilter: {
     tags: 'tagged.internal_id_key'
   },
