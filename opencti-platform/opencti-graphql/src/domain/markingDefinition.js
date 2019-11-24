@@ -34,11 +34,10 @@ export const markingDefinitionAddRelation = (user, markingDefinitionId, input) =
     return relationData;
   });
 };
-export const markingDefinitionDeleteRelation = (user, markingDefinitionId, relationId) => {
-  return deleteRelationById(markingDefinitionId, relationId).then(relationData => {
-    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, relationData, user);
-    return relationData;
-  });
+export const markingDefinitionDeleteRelation = async (user, markingDefinitionId, relationId) => {
+  await deleteRelationById(relationId);
+  const data = await loadEntityById(markingDefinitionId);
+  return notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, data, user);
 };
 export const markingDefinitionEditField = (user, markingDefinitionId, input) => {
   return executeWrite(wTx => {

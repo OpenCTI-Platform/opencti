@@ -94,11 +94,10 @@ export const workspaceEditField = (user, workspaceId, input) => {
     return notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user);
   });
 };
-export const workspaceDeleteRelation = (user, workspaceId, relationId) => {
-  return deleteRelationById(workspaceId, relationId).then(relationData => {
-    notify(BUS_TOPICS.Workspace.EDIT_TOPIC, relationData, user);
-    return relationData;
-  });
+export const workspaceDeleteRelation = async (user, workspaceId, relationId) => {
+  await deleteRelationById(relationId);
+  const data = await loadEntityById(workspaceId);
+  return notify(BUS_TOPICS.Workspace.EDIT_TOPIC, data, user);
 };
 // endregion
 

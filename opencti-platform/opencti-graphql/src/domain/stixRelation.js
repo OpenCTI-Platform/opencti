@@ -410,11 +410,10 @@ export const stixRelationAddRelation = (user, stixRelationId, input) => {
     return relationData;
   });
 };
-export const stixRelationDeleteRelation = (user, stixRelationId, relationId) => {
-  return deleteRelationById(stixRelationId, relationId).then(relationData => {
-    notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, relationData, user);
-    return relationData;
-  });
+export const stixRelationDeleteRelation = async (user, stixRelationId, relationId) => {
+  await deleteRelationById(relationId);
+  const data = await loadRelationById(stixRelationId);
+  return notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, data, user);
 };
 // endregion
 

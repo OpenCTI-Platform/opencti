@@ -32,11 +32,10 @@ export const tagAddRelation = (user, tagId, input) => {
     return relationData;
   });
 };
-export const tagDeleteRelation = (user, tagId, relationId) => {
-  return deleteRelationById(tagId, relationId).then(relationData => {
-    notify(BUS_TOPICS.Tag.EDIT_TOPIC, relationData, user);
-    return relationData;
-  });
+export const tagDeleteRelation = async (user, tagId, relationId) => {
+  await deleteRelationById(relationId);
+  const data = await loadEntityById(tagId);
+  return notify(BUS_TOPICS.Tag.EDIT_TOPIC, data, user);
 };
 export const tagEditField = (user, tagId, input) => {
   return executeWrite(wTx => {

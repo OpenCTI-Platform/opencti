@@ -140,11 +140,10 @@ export const stixDomainEntityAddRelations = async (user, stixDomainEntityId, inp
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, stixDomainEntity, user)
   );
 };
-export const stixDomainEntityDeleteRelation = (user, stixDomainEntityId, relationId) => {
-  return deleteRelationById(stixDomainEntityId, relationId).then(relationData => {
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData, user);
-    return relationData;
-  });
+export const stixDomainEntityDeleteRelation = async (user, stixDomainEntityId, relationId) => {
+  await deleteRelationById(relationId);
+  const data = await loadEntityById(stixDomainEntityId);
+  return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
 };
 export const stixDomainEntityEditField = async (user, stixDomainEntityId, input) => {
   return executeWrite(wTx => {

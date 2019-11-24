@@ -119,11 +119,10 @@ export const stixObservableEditField = (user, stixObservableId, input) => {
     return notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, stixObservable, user);
   });
 };
-export const stixObservableDeleteRelation = (user, stixObservableId, relationId) => {
-  return deleteRelationById(stixObservableId, relationId).then(relationData => {
-    notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, relationData, user);
-    return relationData;
-  });
+export const stixObservableDeleteRelation = async (user, stixObservableId, relationId) => {
+  await deleteRelationById(relationId);
+  const data = await loadObservableById(stixObservableId);
+  return notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, data, user);
 };
 // endregion
 
