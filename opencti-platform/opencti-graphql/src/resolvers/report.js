@@ -52,6 +52,10 @@ const reportResolvers = {
     createdBy: 'created_by_ref.internal_id_key',
     knowledgeContains: 'object_refs.internal_id_key'
   },
+  ReportsOrdering: {
+    createdByRef: 'created_by_ref.name',
+    tags: 'tagged.value'
+  },
   Report: {
     externalReferences: (report, args) => externalReferences(report.id, args),
     objectRefs: (report, args) => objectRefs(report.id, args),

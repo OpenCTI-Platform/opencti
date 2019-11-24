@@ -55,6 +55,10 @@ export const rolesMap = {
     so: 'from',
     marking: 'to'
   },
+  object_refs: {
+    knowledge_aggregation: 'from',
+    so: 'to'
+  },
   kill_chain_phases: {
     phase_belonging: 'from',
     kill_chain_phase: 'to'
