@@ -14,6 +14,10 @@ const toolResolvers = {
     tool: (_, { id }) => findById(id),
     tools: (_, args) => findAll(args)
   },
+  ToolsOrdering: {
+    markingDefinitions: 'object_marking_refs.definition',
+    tags: 'tagged.value'
+  },
   Tool: {
     killChainPhases: (tool, args) => killChainPhases(tool.id, args)
   },

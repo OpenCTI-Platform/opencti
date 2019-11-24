@@ -26,6 +26,10 @@ const stixObservableResolvers = {
     stixObservablesTimeSeries: (_, args) => stixObservablesTimeSeries(args),
     stixObservablesNumber: (_, args) => stixObservablesNumber(args)
   },
+  StixObservablesOrdering: {
+    markingDefinitions: 'object_marking_refs.definition',
+    tags: 'tagged.value'
+  },
   StixObservable: {
     jobs: (stixObservable, args) => workForEntity(stixObservable.id, args),
     connectors: (stixObservable, { onlyAlive = false }) =>

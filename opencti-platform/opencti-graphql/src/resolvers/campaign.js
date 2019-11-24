@@ -19,6 +19,10 @@ const campaignResolvers = {
       return campaignsTimeSeries(args);
     }
   },
+  CampaignsOrdering: {
+    markingDefinitions: 'object_marking_refs.definition',
+    tags: 'tagged.value'
+  },
   CampaignsFilter: {
     tags: 'tagged.internal_id_key'
   },

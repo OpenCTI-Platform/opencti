@@ -6,7 +6,7 @@ import { buildPagination } from './utils';
 import conf, { logger } from '../config/conf';
 
 const dateFields = ['created', 'modified', 'created_at', 'updated_at', 'first_seen', 'last_seen', 'published'];
-const numberFields = ['object_status'];
+const numberFields = ['object_status', 'phase_order'];
 
 export const INDEX_STIX_OBSERVABLE = 'stix_observables';
 export const INDEX_STIX_ENTITIES = 'stix_domain_entities';

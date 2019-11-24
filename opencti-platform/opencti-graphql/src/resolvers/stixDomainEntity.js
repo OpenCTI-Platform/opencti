@@ -29,6 +29,10 @@ const stixDomainEntityResolvers = {
     stixDomainEntitiesTimeSeries: (_, args) => stixDomainEntitiesTimeSeries(args),
     stixDomainEntitiesNumber: (_, args) => stixDomainEntitiesNumber(args)
   },
+  StixDomainEntitiesOrdering: {
+    markingDefinitions: 'object_marking_refs.definition',
+    tags: 'tagged.value'
+  },
   StixDomainEntitiesFilter: {
     hasExternalReference: 'external_references.internal_id_key'
   },

@@ -20,9 +20,9 @@ const attackPatternResolvers = {
     killChainPhases: (attPatt, args) => killChainPhases(attPatt.id, args)
   },
   AttackPatternsOrdering: {
+    markingDefinitions: 'object_marking_refs.definition',
     tags: 'tagged.value',
-    killChainPhases: 'kill_chain_phases.phase_name',
-    markingDefinitions: 'object_marking_refs.definition'
+    killChainPhases: 'kill_chain_phases.phase_name'
   },
   AttackPatternsFilter: {
     tags: 'tagged.internal_id_key',
