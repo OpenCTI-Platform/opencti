@@ -1,4 +1,4 @@
-import { assoc, concat, head } from 'ramda';
+import { assoc, concat, head, pipe } from 'ramda';
 import { loadEntityById, loadEntityByStixId } from '../database/grakn';
 import { findAll as relationFindAll, search as relationSearch } from './stixRelation';
 import { findAll as findAllMarkings } from './markingDefinition';
@@ -15,23 +15,31 @@ export const reports = (stixEntityId, args) => {
   const filterArgs = assoc('filters', filters, args);
   return findAllReports(filterArgs);
 };
+
 export const tags = async (stixEntityId, args) => {
   const filter = { key: 'tagged.internal_id_key', values: [stixEntityId] };
   const filters = concat([filter], args.filters || []);
-  const filterArgs = assoc('filters', filters, args);
+  const filterArgs = pipe(
+    assoc('filters', filters),
+    assoc('withCache', false)
+  )(args);
   return findAllTags(filterArgs);
 };
 export const createdByRef = async stixEntityId => {
   const filter = { key: 'created_by_ref.internal_id_key', values: [stixEntityId] };
-  const filterArgs = assoc('filters', [filter], []);
-  return findAllIdentity(filterArgs).then(data => head(data.edges));
+  const args = { filters: [filter], withCache: false };
+  return findAllIdentity(args).then(data => head(data.edges));
 };
 export const markingDefinitions = async (stixEntityId, args) => {
   const filter = { key: 'object_marking_refs.internal_id_key', values: [stixEntityId] };
   const filters = concat([filter], args.filters || []);
-  const filterArgs = assoc('filters', filters, args);
+  const filterArgs = pipe(
+    assoc('filters', filters),
+    assoc('withCache', false)
+  )(args);
   return findAllMarkings(filterArgs);
 };
+
 export const stixRelations = (stixEntityId, args) => {
   const finalArgs = assoc('fromId', stixEntityId, args);
   if (finalArgs.search && finalArgs.search.length > 0) {
