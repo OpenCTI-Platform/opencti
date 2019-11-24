@@ -9,7 +9,9 @@ import IconButton from '@material-ui/core/IconButton';
 import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { assoc, compose, forEach, head, map, pathOr, pipe, pluck, union } from 'ramda';
+import {
+  assoc, compose, forEach, head, map, pathOr, pipe, pluck, union,
+} from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { dateMonthsAfter, dateMonthsAgo, parse } from '../../../utils/Time';
@@ -352,6 +354,7 @@ class ReportAddObservable extends Component {
               },
             },
             onCompleted: (data) => {
+              // Create all relations from report to from,to and relation
               const relationId = data.stixRelationAdd.id;
               const inputRelation = {
                 fromRole: 'so',

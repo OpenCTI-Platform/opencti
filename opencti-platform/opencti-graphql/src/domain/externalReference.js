@@ -35,11 +35,10 @@ export const externalReferenceAddRelation = (user, externalReferenceId, input) =
     return relationData;
   });
 };
-export const externalReferenceDeleteRelation = (user, externalReferenceId, relationId) => {
-  deleteRelationById(externalReferenceId, relationId).then(relationData => {
-    notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, relationData, user);
-    return relationData;
-  });
+export const externalReferenceDeleteRelation = async (user, externalReferenceId, relationId) => {
+  await deleteRelationById(relationId);
+  const data = await loadEntityById(externalReferenceId);
+  return notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, data, user);
 };
 export const externalReferenceEditField = (user, externalReferenceId, input) => {
   return executeWrite(wTx => {

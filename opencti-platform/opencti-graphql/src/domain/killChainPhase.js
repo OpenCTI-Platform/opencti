@@ -36,11 +36,10 @@ export const killChainPhaseAddRelation = (user, killChainPhaseId, input) => {
     return relationData;
   });
 };
-export const killChainPhaseDeleteRelation = (user, killChainPhaseId, relationId) => {
-  return deleteRelationById(killChainPhaseId, relationId).then(relationData => {
-    notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, relationData, user);
-    return relationData;
-  });
+export const killChainPhaseDeleteRelation = async (user, killChainPhaseId, relationId) => {
+  await deleteRelationById(relationId);
+  const data = await loadEntityById(killChainPhaseId);
+  return notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, data, user);
 };
 export const killChainPhaseEditField = (user, killChainPhaseId, input) => {
   return executeWrite(wTx => {

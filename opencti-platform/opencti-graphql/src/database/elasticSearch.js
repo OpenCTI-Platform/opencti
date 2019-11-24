@@ -397,12 +397,7 @@ export const elLoadByGraknId = (id, indices = PLATFORM_INDICES) => {
 };
 
 export const elBulk = async args => {
-  const result = await el.bulk(args);
-  if (result.body.errors) {
-    const test = result.body.items;
-    console.log(test);
-  }
-  return result;
+  return el.bulk(args);
 };
 export const elReindex = async indexMaps => {
   return Promise.all(
@@ -451,11 +446,33 @@ export const elUpdate = (indexName, documentId, documentBody, retry = 0) => {
   });
 };
 
-export const elRemoveRelation = async (internalId, relationType, targetId) => {
+export const elRemoveRelationConnection = async relationId => {
   // Remove the target from the list
-  const previousEntity = await elLoadById(internalId);
-  const previousValues = previousEntity[relationType];
-  const filteredValues = filter(p => p.internal_id_key !== targetId, previousValues);
-  const updatedField = { [relationType]: filteredValues };
-  await elUpdate(previousEntity._index, previousEntity.grakn_id, { doc: updatedField });
+  // const previousEntity = await elLoadById(internalId);
+  // const previousValues = previousEntity[relationType];
+  // const filteredValues = filter(p => p.internal_id_key !== targetId, previousValues);
+  // const updatedField = { [relationType]: filteredValues };
+  // await elUpdate(previousEntity._index, previousEntity.grakn_id, { doc: updatedField });
+  const relation = await elLoadById(relationId);
+  const from = await elLoadByGraknId(relation.fromId);
+  const to = await elLoadByGraknId(relation.toId);
+  const type = relation.relationship_type;
+  // Update the from entity
+  await elUpdate(from._index, from.grakn_id, {
+    script: {
+      source: `ctx._source.${type}.removeIf(rel -> rel.internal_id_key == params.key)`,
+      params: {
+        key: to.internal_id_key
+      }
+    }
+  });
+  // Update to to entity
+  await elUpdate(to._index, to.grakn_id, {
+    script: {
+      source: `ctx._source.${type}.removeIf(rel -> rel.internal_id_key == params.key)`,
+      params: {
+        key: from.internal_id_key
+      }
+    }
+  });
 };

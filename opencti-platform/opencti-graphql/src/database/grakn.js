@@ -8,11 +8,11 @@ import {
   dissoc,
   equals,
   filter,
+  find as RamdaFind,
   flatten,
   fromPairs,
   groupBy,
   head,
-  find as RamdaFind,
   includes,
   isEmpty,
   isNil,
@@ -42,7 +42,7 @@ import {
   elLoadById,
   elLoadByStixId,
   elPaginate,
-  elRemoveRelation,
+  elRemoveRelationConnection,
   elUpdate,
   forceNoCache,
   INDEX_STIX_ENTITIES,
@@ -342,10 +342,10 @@ const loadConcept = async (concept, { relationsMap, noCache = false } = conceptO
   const { id } = concept;
   const conceptType = concept.baseType;
   const types = await conceptTypes(concept);
+  const index = inferIndexFromConceptTypes(types);
   // 01. Return the data in elastic if not explicitly asked in grakn
   // Very useful for getting every entities through relation query.
   if (forceNoCache() && noCache === false) {
-    const index = inferIndexFromConceptTypes(types);
     const conceptFromCache = await elLoadByGraknId(id, [index]);
     if (!conceptFromCache) {
       logger.warn(`[GRAKN] Cache warning: ${id} should be available in cache`);
@@ -566,22 +566,32 @@ export const indexElements = async (elements, retry = 0) => {
       // Build document fields to update ( per relation type )
       // membership: [{internal_id_key: xxxx, relation_id_key: xxxx}]
       const targetsByRelation = groupBy(i => i.relationshipType, targets);
-      const fieldPairs = await Promise.all(
+      const targetsElements = await Promise.all(
         map(async relType => {
           const data = targetsByRelation[relType];
-          const previous = entity[relType] || [];
-          const newData = await Promise.all(
+          const resolvedData = await Promise.all(
             map(async d => {
               const resolvedTarget = await elLoadByGraknId(d.to);
               return { internal_id_key: resolvedTarget.internal_id_key, relation_id_key: d.relationId };
             }, data)
           );
-          return [relType, concat(previous, newData)];
+          return { relation: relType, elements: resolvedData };
         }, Object.keys(targetsByRelation))
       );
-      const doc = fromPairs(fieldPairs);
+      // Create params and scripted update
+      const params = {};
+      const sources = map(t => {
+        const createIfNotExist = `if (ctx._source['${t.relation}'] == null) ctx._source['${t.relation}'] = [];`;
+        const addAllElements = `ctx._source['${t.relation}'].addAll(params['${t.relation}'])`;
+        return `${createIfNotExist} ${addAllElements}`;
+      }, targetsElements);
+      const source = sources.length > 1 ? join(';', sources) : `${head(sources)};`;
+      for (let index = 0; index < targetsElements.length; index += 1) {
+        const targetElement = targetsElements[index];
+        params[targetElement.relation] = targetElement.elements;
+      }
       // eslint-disable-next-line no-underscore-dangle
-      return { _index: entity._index, id: entityGraknId, data: { doc } };
+      return { _index: entity._index, id: entityGraknId, data: { script: { source, params } } };
     }, Object.keys(impactedEntities))
   );
   const bodyUpdate = elementsToUpdate.flatMap(doc => [
@@ -780,21 +790,17 @@ export const deleteEntityById = async id => {
     return id;
   });
 };
-export const deleteRelationById = async (entityId, relationId) => {
+export const deleteRelationById = async relationId => {
   const eid = escapeString(relationId);
   await executeWrite(async wTx => {
     const query = `match $x has internal_id_key "${eid}"; delete $x;`;
     logger.debug(`[GRAKN - infer: false] deleteRelationById > ${query}`);
     await wTx.tx.query(query, { infer: false });
     // [ELASTIC] Update - Delete the inner indexed relations in entities
-    const previousRelation = await loadEntityById(eid);
-    const targetEntity = await loadEntityByGraknId(previousRelation.toId);
-    await elRemoveRelation(entityId, previousRelation.relationship_type, targetEntity.id);
-    await elRemoveRelation(targetEntity.id, previousRelation.relationship_type, entityId);
+    await elRemoveRelationConnection(eid);
     await elDeleteInstanceIds([eid]);
   });
-  // Return the updated source
-  return loadEntityById(entityId);
+  return eid;
 };
 
 export const timeSeries = async (query, options) => {
