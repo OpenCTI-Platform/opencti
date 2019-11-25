@@ -8,7 +8,6 @@ import {
   dissoc,
   equals,
   filter,
-  find as RamdaFind,
   flatten,
   fromPairs,
   groupBy,
@@ -47,7 +46,8 @@ import {
   forceNoCache,
   INDEX_STIX_ENTITIES,
   INDEX_STIX_OBSERVABLE,
-  INDEX_STIX_RELATIONS
+  INDEX_STIX_RELATIONS,
+  REL_INDEX_PREFIX
 } from './elasticSearch';
 
 // region global variables
@@ -345,10 +345,10 @@ const loadConcept = async (concept, { relationsMap, noCache = false } = conceptO
   const index = inferIndexFromConceptTypes(types);
   // 01. Return the data in elastic if not explicitly asked in grakn
   // Very useful for getting every entities through relation query.
-  if (forceNoCache() && noCache === false) {
+  if (!forceNoCache() && noCache === false) {
     const conceptFromCache = await elLoadByGraknId(id, [index]);
     if (!conceptFromCache) {
-      logger.warn(`[GRAKN] Cache warning: ${id} should be available in cache`);
+      logger.debug(`[GRAKN] Cache warning: ${id} should be available in cache`);
     } else {
       return conceptFromCache;
     }
@@ -548,12 +548,8 @@ export const indexElements = async (elements, retry = 0) => {
   const impactedEntities = pipe(
     filter(e => e.relationship_type !== undefined),
     map(e => {
-      const relationId = e.id;
       const relationshipType = e.relationship_type;
-      return [
-        { from: e.fromId, relationshipType, to: e.toId, relationId },
-        { from: e.toId, relationshipType, to: e.fromId, relationId }
-      ];
+      return [{ from: e.fromId, relationshipType, to: e.toId }, { from: e.toId, relationshipType, to: e.fromId }];
     }),
     flatten,
     groupBy(i => i.from)
@@ -572,7 +568,7 @@ export const indexElements = async (elements, retry = 0) => {
           const resolvedData = await Promise.all(
             map(async d => {
               const resolvedTarget = await elLoadByGraknId(d.to);
-              return { internal_id_key: resolvedTarget.internal_id_key, relation_id_key: d.relationId };
+              return resolvedTarget.internal_id_key;
             }, data)
           );
           return { relation: relType, elements: resolvedData };
@@ -581,14 +577,15 @@ export const indexElements = async (elements, retry = 0) => {
       // Create params and scripted update
       const params = {};
       const sources = map(t => {
-        const createIfNotExist = `if (ctx._source['${t.relation}'] == null) ctx._source['${t.relation}'] = [];`;
-        const addAllElements = `ctx._source['${t.relation}'].addAll(params['${t.relation}'])`;
+        const field = `${REL_INDEX_PREFIX + t.relation}.internal_id_key`;
+        const createIfNotExist = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
+        const addAllElements = `ctx._source['${field}'].addAll(params['${field}'])`;
         return `${createIfNotExist} ${addAllElements}`;
       }, targetsElements);
       const source = sources.length > 1 ? join(';', sources) : `${head(sources)};`;
       for (let index = 0; index < targetsElements.length; index += 1) {
         const targetElement = targetsElements[index];
-        params[targetElement.relation] = targetElement.elements;
+        params[`${REL_INDEX_PREFIX + targetElement.relation}.internal_id_key`] = targetElement.elements;
       }
       // eslint-disable-next-line no-underscore-dangle
       return { _index: entity._index, id: entityGraknId, data: { script: { source, params } } };
@@ -855,22 +852,30 @@ export const listEntities = async (searchFields, args) => {
   const { first = 200, after, withCache = true, types, search, filters, orderBy, orderMode = 'asc' } = args;
   const validFilters = filter(f => f && f.values.filter(n => n).length > 0, filters || []);
   const offset = after ? cursorToOffset(after) : 0;
-  const isRelationOrderBy = orderBy && includes('.', orderBy);
-  // 01. Define if Elastic can support this query.
-  let supportedByCache = true;
+  const isRelationOrderBy = orderBy !== undefined && includes('.', orderBy);
+  // Define if Elastic can support this query.
   // 01-2 Check the filters
-  const relationFilters = filter(k => {
-    // If the relation must be forced in a specific direction, ES cant support it.
-    if (k.entityRole) return false;
-    const isRelationFilter = includes('.', k.key);
-    if (isRelationFilter) {
-      // ES only support internal_id reference
-      const [, field] = k.key.split('.');
-      if (field !== 'internal_id_key') return false;
-    }
-    return isRelationFilter;
-  }, validFilters);
-  supportedByCache = supportedByCache && relationFilters.length === 0;
+  const unSupportedRelations =
+    filter(k => {
+      // If the relation must be forced in a specific direction, ES cant support it.
+      if (k.fromRole || k.toRole) return true;
+      const isRelationFilter = includes('.', k.key);
+      if (isRelationFilter) {
+        // ES only support internal_id reference
+        const [, field] = k.key.split('.');
+        if (field !== 'internal_id_key') return true;
+      }
+      return false;
+    }, validFilters).length > 0;
+  // 01-3 Check the ordering
+  const unsupportedOrdering = isRelationOrderBy && last(orderBy.split('.')) !== 'internal_id_key';
+  const supportedByCache = !unsupportedOrdering && !unSupportedRelations && !forceNoCache();
+  if (supportedByCache && withCache) {
+    const index = inferIndexFromConceptTypes(args.types);
+    return elPaginate(index, args);
+  }
+  // TODO JRI Remove this
+  logger.debug(`[GRAKN] ListEntities on Grakn, supportedByCache: ${supportedByCache} / withCache: ${withCache}`);
   // 02. If not go with standard Grakn
   const relationsFields = [];
   const attributesFields = [];
@@ -878,13 +883,11 @@ export const listEntities = async (searchFields, args) => {
   // Handle order by field
   if (isRelationOrderBy) {
     const [relation, field] = orderBy.split('.');
-    if (field !== 'internal_id_key') supportedByCache = false;
     relationsFields.push(`($elem, $${relation}) isa ${relation}; $${relation} has ${field} $order;`);
   } else if (orderBy) {
     attributesFields.push(`$elem has ${orderBy} $order;`);
   }
   // Handle filters
-  const relationFiltersIds = [];
   if (validFilters && validFilters.length > 0) {
     for (let index = 0; index < validFilters.length; index += 1) {
       const filterKey = validFilters[index].key;
@@ -892,16 +895,16 @@ export const listEntities = async (searchFields, args) => {
       const isRelationFilter = includes('.', filterKey);
       if (isRelationFilter) {
         const [relation, field] = filterKey.split('.');
-        const sourceRole = validFilters[index].sourceRole ? `${validFilters[index].sourceRole}:` : '';
+        const sourceRole = validFilters[index].fromRole ? `${validFilters[index].fromRole}:` : '';
+        const toRole = validFilters[index].toRole ? `${validFilters[index].toRole}:` : '';
         const targetRef = relation;
         const relId = `rel_${relation}`;
-        relationsFields.push(`$${relId} (${sourceRole}$elem, $${targetRef}) isa ${relation};`);
+        relationsFields.push(`$${relId} (${sourceRole}$elem, ${toRole}$${targetRef}) isa ${relation};`);
         for (let valueIndex = 0; valueIndex < filterValues.length; valueIndex += 1) {
           const val = filterValues[valueIndex];
           // Apply filter on target.
           // TODO Support more than only String filters
           attributesFields.push(`$${targetRef} has ${field} "${val}";`);
-          relationFiltersIds.push({ relation, field, val });
         }
       } else {
         for (let valueIndex = 0; valueIndex < filterValues.length; valueIndex += 1) {
@@ -942,40 +945,8 @@ export const listEntities = async (searchFields, args) => {
   const paginateQuery = `offset ${offset}; limit ${first};`;
   const orderQuery = orderBy ? `sort $order ${orderMode};` : '';
   const query = `${baseQuery} ${orderQuery} ${paginateQuery}`;
-  // In case of only one relation filters, we can specify the relation extra key
-  if (relationFiltersIds.length > 1) {
-    logger.warn('[GRAKN] List entities through multiple relations, selecting first one...');
-  }
-  const relationToGet = head(relationFiltersIds);
-  // [ELASTIC] From cache
-  const getInGrakn = forceNoCache();
-  if (supportedByCache && withCache && !getInGrakn) {
-    const index = inferIndexFromConceptTypes(args.types);
-    const paginateResult = await elPaginate(index, args);
-    if (relationToGet) {
-      // A relation is require, reconstruct the result with it.
-      return {
-        pageInfo: paginateResult.pageInfo,
-        edges: map(e => {
-          const rel = RamdaFind(i => i.internal_id_key === relationToGet.val, e.node[relationToGet.relation]);
-          return {
-            node: e.node,
-            relation: { id: rel.relation_id_key },
-            cursor: e.cursor
-          };
-        }, paginateResult.edges)
-      };
-    }
-    return paginateResult;
-  }
-  // TODO JRI Remove this
-  logger.debug(`[GRAKN] ListEntities on Grakn, supportedByCache: ${supportedByCache} 
-    / withCache: ${withCache} 
-    / forceNoCache: ${getInGrakn}`);
-  // noinspection ES6MissingAwait
   const countPromise = getSingleValueNumber(countQuery);
-  const extraRelation = relationToGet ? relationToGet.id : undefined;
-  const instancesPromise = await findWithConnectedRelations(query, 'elem', extraRelation);
+  const instancesPromise = await findWithConnectedRelations(query, 'elem');
   return Promise.all([instancesPromise, countPromise]).then(([instances, globalCount]) => {
     return buildPagination(first, offset, instances, globalCount);
   });

@@ -13,6 +13,7 @@ import {
 } from '../domain/markingDefinition';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const markingDefinitionResolvers = {
   Query: {
@@ -20,7 +21,7 @@ const markingDefinitionResolvers = {
     markingDefinitions: (_, args) => findAll(args)
   },
   MarkingDefinitionsFilter: {
-    markedBy: 'object_marking_refs.internal_id_key'
+    markedBy: `${REL_INDEX_PREFIX}object_marking_refs.internal_id_key`
   },
   MarkingDefinition: {
     editContext: markingDefinition => fetchEditContext(markingDefinition.id)

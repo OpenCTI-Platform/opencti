@@ -92,13 +92,8 @@ class EntityExternalReferencesLinesContainer extends Component {
         relationId: externalReferenceEdge.relation.id,
       },
       updater: (store) => {
-        const container = store.getRoot();
-        const userProxy = store.get(container.getDataID());
-        const conn = ConnectionHandler.getConnection(
-          userProxy,
-          'Pagination_externalReferences',
-          this.props.paginationOptions,
-        );
+        const entity = store.get(this.props.entityId);
+        const conn = ConnectionHandler.getConnection(entity, 'Pagination_externalReferences');
         ConnectionHandler.deleteNode(conn, externalReferenceEdge.node.id);
       },
       onCompleted: () => {
@@ -110,7 +105,7 @@ class EntityExternalReferencesLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, entityId, data, paginationOptions,
+      t, classes, entityId, data,
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
@@ -119,13 +114,12 @@ class EntityExternalReferencesLinesContainer extends Component {
         </Typography>
         <AddExternalReferences
           entityId={entityId}
-          entityExternalReferences={data.externalReferences.edges}
-          entityPaginationOptions={paginationOptions}
+          entityExternalReferences={data.stixEntity.externalReferences.edges}
         />
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <List classes={{ root: classes.list }}>
-            {data.externalReferences.edges.map((externalReferenceEdge) => {
+            {data.stixEntity.externalReferences.edges.map((externalReferenceEdge) => {
               const externalReference = externalReferenceEdge.node;
               const externalReferenceId = externalReference.external_id
                 ? `(${externalReference.external_id})`
@@ -240,7 +234,6 @@ class EntityExternalReferencesLinesContainer extends Component {
 
 EntityExternalReferencesLinesContainer.propTypes = {
   entityId: PropTypes.string,
-  paginationOptions: PropTypes.object,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
@@ -249,21 +242,9 @@ EntityExternalReferencesLinesContainer.propTypes = {
 };
 
 export const entityExternalReferencesLinesQuery = graphql`
-  query EntityExternalReferencesLinesQuery(
-    $count: Int!
-    $cursor: ID
-    $orderBy: ExternalReferencesOrdering
-    $orderMode: OrderingMode
-    $filters: [ExternalReferencesFiltering]
-  ) {
+  query EntityExternalReferencesLinesQuery($count: Int!, $entityId: String) {
     ...EntityExternalReferencesLines_data
-      @arguments(
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
+      @arguments(count: $count, entityId: $entityId)
   }
 `;
 
@@ -272,36 +253,24 @@ const EntityExternalReferencesLines = createPaginationContainer(
   {
     data: graphql`
       fragment EntityExternalReferencesLines_data on Query
-        @argumentDefinitions(
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: {
-            type: "ExternalReferencesOrdering"
-            defaultValue: "source_name"
-          }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[ExternalReferencesFiltering]" }
-        ) {
-        externalReferences(
-          first: $count
-          after: $cursor
-          orderBy: $orderBy
-          orderMode: $orderMode
-          filters: $filters  
-        ) @connection(key: "Pagination_externalReferences") {
-          edges {
-            node {
-              id
-              source_name
-              description
-              url
-              hash
-              external_id
+        @argumentDefinitions(count: { type: "Int", defaultValue: 25 }, entityId: { type: "String" }) {
+        stixEntity(id: $entityId) {
+            id
+            externalReferences(first: $count) @connection(key: "Pagination_externalReferences") {
+                edges {
+                    node {
+                        id
+                        source_name
+                        description
+                        url
+                        hash
+                        external_id
+                    }
+                    relation {
+                        id
+                    }
+                }
             }
-            relation {
-              id
-            }
-          }
         }
       }
     `,
@@ -309,7 +278,7 @@ const EntityExternalReferencesLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.externalReferences;
+      return props.data && props.data.stixEntity.externalReferences;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -317,13 +286,10 @@ const EntityExternalReferencesLines = createPaginationContainer(
         count: totalCount,
       };
     },
-    getVariables(props, { count, cursor }, fragmentVariables) {
+    getVariables(props, { count }, fragmentVariables) {
       return {
         count,
-        cursor,
-        orderBy: fragmentVariables.orderBy,
-        orderMode: fragmentVariables.orderMode,
-        filters: fragmentVariables.filters,
+        entityId: fragmentVariables.entityId,
       };
     },
     query: entityExternalReferencesLinesQuery,

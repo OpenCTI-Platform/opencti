@@ -9,6 +9,7 @@ import {
   stixDomainEntityEditContext,
   stixDomainEntityEditField
 } from '../domain/stixDomainEntity';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const attackPatternResolvers = {
   Query: {
@@ -20,13 +21,13 @@ const attackPatternResolvers = {
     killChainPhases: (attPatt, args) => killChainPhases(attPatt.id, args)
   },
   AttackPatternsOrdering: {
-    markingDefinitions: 'object_marking_refs.definition',
-    tags: 'tagged.value',
-    killChainPhases: 'kill_chain_phases.phase_name'
+    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
+    tags: `${REL_INDEX_PREFIX}tagged.value`,
+    killChainPhases: `${REL_INDEX_PREFIX}kill_chain_phases.phase_name`
   },
   AttackPatternsFilter: {
-    tags: 'tagged.internal_id_key',
-    mitigateBy: 'mitigates.internal_id_key'
+    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
+    mitigateBy: `${REL_INDEX_PREFIX}mitigates.internal_id_key`
   },
   Mutation: {
     attackPatternEdit: (_, { id }, { user }) => ({

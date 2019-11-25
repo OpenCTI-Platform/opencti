@@ -1,12 +1,13 @@
-import { addIncident, findAll, findById, incidentsTimeSeriesByEntity, incidentsTimeSeries } from '../domain/incident';
+import { addIncident, findAll, findById, incidentsTimeSeries, incidentsTimeSeriesByEntity } from '../domain/incident';
 import {
-  stixDomainEntityEditContext,
-  stixDomainEntityCleanContext,
-  stixDomainEntityEditField,
   stixDomainEntityAddRelation,
+  stixDomainEntityCleanContext,
+  stixDomainEntityDelete,
   stixDomainEntityDeleteRelation,
-  stixDomainEntityDelete
+  stixDomainEntityEditContext,
+  stixDomainEntityEditField
 } from '../domain/stixDomainEntity';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const incidentResolvers = {
   Query: {
@@ -20,11 +21,11 @@ const incidentResolvers = {
     }
   },
   IncidentsOrdering: {
-    markingDefinitions: 'object_marking_refs.definition',
-    tags: 'tagged.value'
+    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
+    tags: `${REL_INDEX_PREFIX}tagged.value`
   },
   IncidentsFilter: {
-    tags: 'tagged.internal_id_key'
+    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`
   },
   Mutation: {
     incidentEdit: (_, { id }, { user }) => ({

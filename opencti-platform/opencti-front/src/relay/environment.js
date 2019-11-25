@@ -22,6 +22,7 @@ import uploadMiddleware from './uploadMiddleware';
 
 // Dev tools
 export const IN_DEV_MODE = process.env.NODE_ENV === 'development';
+console.log('IN_DEV_MODE', IN_DEV_MODE)
 if (IN_DEV_MODE) installRelayDevTools();
 
 // Service bus
@@ -141,9 +142,10 @@ export const commitMutation = ({
   optimisticResponse,
   onCompleted,
   onError: (error) => {
+    console.log(error);
     if (setSubmitting) setSubmitting(false);
     const authRequired = filter(
-      (e) => e.data.type === 'authentication',
+      (e) => e.data && e.data.type === 'authentication',
       error.res.errors,
     );
     if (!isEmpty(authRequired)) {

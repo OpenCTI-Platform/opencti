@@ -18,6 +18,7 @@ import { pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
 import { workForEntity } from '../domain/work';
 import { connectorsForEnrichment } from '../domain/connector';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const stixObservableResolvers = {
   Query: {
@@ -27,8 +28,8 @@ const stixObservableResolvers = {
     stixObservablesNumber: (_, args) => stixObservablesNumber(args)
   },
   StixObservablesOrdering: {
-    markingDefinitions: 'object_marking_refs.definition',
-    tags: 'tagged.value'
+    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
+    tags: `${REL_INDEX_PREFIX}tagged.value`
   },
   StixObservable: {
     jobs: (stixObservable, args) => workForEntity(stixObservable.id, args),

@@ -13,6 +13,7 @@ import {
 } from '../domain/tag';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const tagResolvers = {
   Query: {
@@ -20,7 +21,7 @@ const tagResolvers = {
     tags: (_, args) => findAll(args)
   },
   TagsFilter: {
-    tagsFor: 'tagged.internal_id_key'
+    tagsFor: `${REL_INDEX_PREFIX}tagged.internal_id_key`
   },
   Tag: {
     editContext: tag => fetchEditContext(tag.id)

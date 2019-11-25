@@ -7,6 +7,7 @@ import {
   stixDomainEntityEditContext,
   stixDomainEntityEditField
 } from '../domain/stixDomainEntity';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const courseOfActionResolvers = {
   Query: {
@@ -14,12 +15,12 @@ const courseOfActionResolvers = {
     coursesOfAction: (_, args) => findAll(args)
   },
   CoursesOfActionOrdering: {
-    tags: 'tagged.value',
-    markingDefinitions: 'object_marking_refs.definition'
+    tags: `${REL_INDEX_PREFIX}tagged.value`,
+    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`
   },
   CoursesOfActionFilter: {
-    tags: 'tagged.internal_id_key',
-    mitigateBy: 'mitigates.internal_id_key'
+    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
+    mitigateBy: `${REL_INDEX_PREFIX}mitigates.internal_id_key`
   },
   Mutation: {
     courseOfActionEdit: (_, { id }, { user }) => ({

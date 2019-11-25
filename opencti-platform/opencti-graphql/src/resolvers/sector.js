@@ -1,12 +1,13 @@
-import { addSector, findAll, findById, subsectors, isSubsector } from '../domain/sector';
+import { addSector, findAll, findById, isSubsector, subsectors } from '../domain/sector';
 import {
-  stixDomainEntityEditContext,
-  stixDomainEntityCleanContext,
-  stixDomainEntityEditField,
   stixDomainEntityAddRelation,
+  stixDomainEntityCleanContext,
+  stixDomainEntityDelete,
   stixDomainEntityDeleteRelation,
-  stixDomainEntityDelete
+  stixDomainEntityEditContext,
+  stixDomainEntityEditField
 } from '../domain/stixDomainEntity';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const sectorResolvers = {
   Query: {
@@ -18,7 +19,7 @@ const sectorResolvers = {
     isSubsector: (sector, args) => isSubsector(sector.id, args)
   },
   SectorsFilter: {
-    gatheredBy: 'gathering.internal_id_key'
+    gatheredBy: `${REL_INDEX_PREFIX}gathering.internal_id_key`
   },
   Mutation: {
     sectorEdit: (_, { id }, { user }) => ({

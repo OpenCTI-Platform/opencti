@@ -1,43 +1,51 @@
-import { assoc, concat, head, pipe } from 'ramda';
-import { loadEntityById, loadEntityByStixId } from '../database/grakn';
+import { assoc } from 'ramda';
+import {
+  escapeString,
+  findWithConnectedRelations,
+  loadEntityById,
+  loadEntityByStixId,
+  loadWithConnectedRelations
+} from '../database/grakn';
 import { findAll as relationFindAll, search as relationSearch } from './stixRelation';
-import { findAll as findAllMarkings } from './markingDefinition';
-import { findAll as findAllTags } from './tag';
-import { findAll as findAllReports } from './report';
-import { findAll as findAllIdentity } from './identity';
+import { buildPagination } from '../database/utils';
 
 export const findById = (id, isStixId) => {
   return isStixId ? loadEntityByStixId(id) : loadEntityById(id);
 };
-export const reports = (stixEntityId, args) => {
-  const filter = { key: 'object_refs.internal_id_key', values: [stixEntityId] };
-  const filters = concat([filter], args.filters || []);
-  const filterArgs = assoc('filters', filters, args);
-  return findAllReports(filterArgs);
-};
 
-export const tags = async (stixEntityId, args) => {
-  const filter = { key: 'tagged.internal_id_key', values: [stixEntityId] };
-  const filters = concat([filter], args.filters || []);
-  const filterArgs = pipe(
-    assoc('filters', filters),
-    assoc('withCache', false)
-  )(args);
-  return findAllTags(filterArgs);
-};
 export const createdByRef = async stixEntityId => {
-  const filter = { key: 'created_by_ref.internal_id_key', values: [stixEntityId] };
-  const args = { filters: [filter], withCache: false };
-  return findAllIdentity(args).then(data => head(data.edges));
+  return loadWithConnectedRelations(
+    `match $to isa Identity; $rel(creator:$to, so:$from) isa created_by_ref;
+   $from has internal_id_key "${escapeString(stixEntityId)}"; get; offset 0; limit 1;`,
+    'to',
+    'rel'
+  );
 };
-export const markingDefinitions = async (stixEntityId, args) => {
-  const filter = { key: 'object_marking_refs.internal_id_key', values: [stixEntityId] };
-  const filters = concat([filter], args.filters || []);
-  const filterArgs = pipe(
-    assoc('filters', filters),
-    assoc('withCache', false)
-  )(args);
-  return findAllMarkings(filterArgs);
+export const reports = stixEntityId => {
+  return findWithConnectedRelations(
+    `match $to isa Report; $rel(knowledge_aggregation:$to, so:$from) isa object_refs;
+   $from has internal_id_key "${escapeString(stixEntityId)}";
+   get;`,
+    'to',
+    'rel'
+  ).then(data => buildPagination(0, 0, data, data.length));
+};
+export const tags = async stixEntityId => {
+  return findWithConnectedRelations(
+    `match $to isa Tag; $rel(tagging:$to, so:$from) isa tagged;
+   $from has internal_id_key "${escapeString(stixEntityId)}";
+   get;`,
+    'to',
+    'rel'
+  ).then(data => buildPagination(0, 0, data, data.length));
+};
+export const markingDefinitions = async stixEntityId => {
+  return findWithConnectedRelations(
+    `match $to isa Marking-Definition; $rel(marking:$to, so:$from) isa object_marking_refs;
+   $from has internal_id_key "${escapeString(stixEntityId)}"; get;`,
+    'to',
+    'rel'
+  ).then(data => buildPagination(0, 0, data, data.length));
 };
 
 export const stixRelations = (stixEntityId, args) => {

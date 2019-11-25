@@ -1,8 +1,10 @@
-import { ascend, assoc, concat, descend, pipe, prop, sortWith, take } from 'ramda';
+import { ascend, assoc, descend, prop, sortWith, take } from 'ramda';
 import {
   createEntity,
   distribution,
+  escape,
   escapeString,
+  findWithConnectedRelations,
   getSingleValueNumber,
   listEntities,
   loadEntityById,
@@ -12,38 +14,40 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { findAll as findAllStixDomains } from './stixDomainEntity';
-import { findAll as findAllObservables } from './stixObservable';
+import { buildPagination } from '../database/utils';
 
 export const findById = reportId => {
   return loadEntityById(reportId);
 };
-export const findAll = args => {
+export const findAll = async args => {
   const typedArgs = assoc('types', ['Report'], args);
   return listEntities(['name', 'description'], typedArgs);
 };
 
 // Entities tab
-export const objectRefs = async (reportId, args) => {
-  const filter = { key: 'object_refs.internal_id_key', values: [reportId] };
-  const filters = concat([filter], args.filters || []);
-  const finalArgs = pipe(
-    assoc('filters', filters),
-    assoc('types', ['Stix-Domain-Entity'])
-  )(args);
-  return findAllStixDomains(finalArgs);
+export const objectRefs = (reportId, args) => {
+  return findWithConnectedRelations(
+    `match $from isa Report; $rel(knowledge_aggregation:$from, so:$to) isa object_refs;
+    $to isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
+    $from has internal_id_key "${escapeString(reportId)}"; get;`,
+    'to',
+    'rel'
+  ).then(data => buildPagination(0, 0, data, data.length));
 };
 
-export const observableRefs = (reportId, args) => {
-  const filter = { key: 'object_refs.internal_id_key', values: [reportId] };
-  const filters = concat([filter], args.filters || []);
-  const filterArgs = assoc('filters', filters, args);
-  return findAllObservables(filterArgs);
+export const observableRefs = reportId => {
+  return findWithConnectedRelations(
+    `match $from isa Report; $rel(knowledge_aggregation:$from, so:$to) isa object_refs;
+    $to isa Stix-Observable;
+    $from has internal_id_key "${escapeString(reportId)}"; get;`,
+    'to',
+    'rel'
+  ).then(data => buildPagination(0, 0, data, data.length));
 };
 
 // Observables, relations type indicates.
 export const relationRefs = async (reportId, args) => {
-  const compare = await paginateRelationships(
+  return paginateRelationships(
     `match $rel($from, $to) isa ${args.relationType ? args.relationType : 'stix_relation'};
     $extraRel(so:$rel, knowledge_aggregation:$r) isa object_refs;
     $r has internal_id_key "${escapeString(reportId)}"`,
@@ -51,7 +55,6 @@ export const relationRefs = async (reportId, args) => {
     'rel',
     'extraRel'
   );
-  return compare;
 };
 
 // region series

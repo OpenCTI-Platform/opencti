@@ -21,6 +21,7 @@ import {
   stixDomainEntityEditContext,
   stixDomainEntityEditField
 } from '../domain/stixDomainEntity';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const reportResolvers = {
   Query: {
@@ -49,13 +50,13 @@ const reportResolvers = {
     }
   },
   ReportsOrdering: {
-    createdByRef: 'created_by_ref.name',
-    markingDefinitions: 'object_marking_refs.definition',
-    tags: 'tagged.value'
+    createdByRef: `${REL_INDEX_PREFIX}created_by_ref.name`,
+    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
+    tags: `${REL_INDEX_PREFIX}tagged.value`
   },
   ReportsFilter: {
-    createdBy: 'created_by_ref.internal_id_key',
-    knowledgeContains: 'object_refs.internal_id_key'
+    createdBy: `${REL_INDEX_PREFIX}created_by_ref.internal_id_key`,
+    knowledgeContains: `${REL_INDEX_PREFIX}object_refs.internal_id_key`
   },
   Report: {
     externalReferences: (report, args) => externalReferences(report.id, args),

@@ -1,4 +1,4 @@
-import { assoc, concat, dissoc, map } from 'ramda';
+import { assoc, dissoc, map } from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
@@ -10,6 +10,7 @@ import {
   escape,
   escapeString,
   executeWrite,
+  findWithConnectedRelations,
   listEntities,
   loadEntityById,
   timeSeries,
@@ -20,9 +21,8 @@ import { elCount } from '../database/elasticSearch';
 import { generateFileExportName, upload } from '../database/minio';
 import { connectorsForExport } from './connector';
 import { createWork, workToExportFile } from './work';
-import { findAll as findAllKillChainPhases } from './killChainPhase';
-import { findAll as findAllExternalReference } from './externalReference';
 import { pushToConnector } from '../database/rabbitmq';
+import { buildPagination } from '../database/utils';
 
 export const findAll = args => {
   const noTypes = !args.types || args.types.length === 0;
@@ -32,17 +32,23 @@ export const findAll = args => {
 export const findById = stixDomainEntityId => {
   return loadEntityById(stixDomainEntityId);
 };
-export const killChainPhases = async (stixDomainEntityId, args) => {
-  const filter = { key: 'kill_chain_phases.internal_id_key', values: [stixDomainEntityId] };
-  const filters = concat([filter], args.filters || []);
-  const filterArgs = assoc('filters', filters, args);
-  return findAllKillChainPhases(filterArgs);
+
+export const killChainPhases = async stixDomainEntityId => {
+  return findWithConnectedRelations(
+    `match $to isa Kill-Chain-Phase; $rel(kill_chain_phase:$to, phase_belonging:$from) isa kill_chain_phases;
+    $from has internal_id_key "${escapeString(stixDomainEntityId)}"; get;`,
+    'to',
+    'rel'
+  ).then(data => ({ edges: data }));
 };
 export const externalReferences = async (stixDomainEntityId, args) => {
-  const filter = { key: 'external_references.internal_id_key', values: [stixDomainEntityId] };
-  const filters = concat([filter], args.filters || []);
-  const filterArgs = assoc('filters', filters, args);
-  return findAllExternalReference(filterArgs);
+  return findWithConnectedRelations(
+    `match $to isa External-Reference; $rel(external_reference:$to, so:$from) isa external_references;
+    $from isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
+    $from has internal_id_key "${escapeString(stixDomainEntityId)}"; get;`,
+    'to',
+    'rel'
+  ).then(data => buildPagination(0, 0, data, data.length));
 };
 
 // region time series

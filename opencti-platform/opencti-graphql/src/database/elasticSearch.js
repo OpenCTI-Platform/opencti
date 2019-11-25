@@ -8,6 +8,7 @@ import conf, { logger } from '../config/conf';
 const dateFields = ['created', 'modified', 'created_at', 'updated_at', 'first_seen', 'last_seen', 'published'];
 const numberFields = ['object_status', 'phase_order'];
 
+export const REL_INDEX_PREFIX = 'rel_';
 export const INDEX_STIX_OBSERVABLE = 'stix_observables';
 export const INDEX_STIX_ENTITIES = 'stix_domain_entities';
 export const INDEX_STIX_RELATIONS = 'stix_relations';
@@ -265,12 +266,7 @@ export const elPaginate = async (indexName, options) => {
       must
     );
   } else {
-    must = append(
-      {
-        match_all: {}
-      },
-      must
-    );
+    must = append({ match_all: {} }, must);
   }
   if (types !== null && types.length > 0) {
     const should = flatten(
@@ -281,14 +277,7 @@ export const elPaginate = async (indexName, options) => {
     must = append({ bool: { should, minimum_should_match: 1 } }, must);
   }
   if (isUser !== null && isUser === true) {
-    must = append(
-      {
-        exists: {
-          field: 'email'
-        }
-      },
-      must
-    );
+    must = append({ exists: { field: 'email' } }, must);
   }
   const validFilters = filter(f => f && f.values.length > 0, filters || []);
   if (validFilters.length > 0) {
@@ -296,35 +285,11 @@ export const elPaginate = async (indexName, options) => {
       const { key, values, operator = 'eq' } = validFilters[index];
       for (let i = 0; i < values.length; i += 1) {
         if (values[i] === null) {
-          mustnot = append(
-            {
-              exists: {
-                field: key
-              }
-            },
-            mustnot
-          );
-          break;
+          mustnot = append({ exists: { field: key } }, mustnot);
         } else if (operator === 'eq') {
-          must = append(
-            {
-              match_phrase: {
-                [key]: values[i]
-              }
-            },
-            must
-          );
+          must = append({ match_phrase: { [key]: values[i] } }, must);
         } else {
-          must = append(
-            {
-              range: {
-                [key]: {
-                  [operator]: values[i]
-                }
-              }
-            },
-            must
-          );
+          must = append({ range: { [key]: { [operator]: values[i] } } }, must);
         }
       }
     }
@@ -337,6 +302,7 @@ export const elPaginate = async (indexName, options) => {
 
   const query = {
     index: indexName,
+    _source_excludes: `${REL_INDEX_PREFIX}*`,
     body: {
       from: offset,
       size: first,
@@ -370,6 +336,7 @@ export const elPaginate = async (indexName, options) => {
 export const elLoadByTerms = async (terms, indices = PLATFORM_INDICES) => {
   const query = {
     index: indices,
+    _source_excludes: `${REL_INDEX_PREFIX}*`,
     body: {
       query: {
         bool: {
@@ -378,9 +345,7 @@ export const elLoadByTerms = async (terms, indices = PLATFORM_INDICES) => {
       }
     }
   };
-  const data = await el.search(query).catch(err => {
-    console.log(err);
-  });
+  const data = await el.search(query);
   const total = data.body.hits.total.value;
   const response = total > 0 ? head(data.body.hits.hits) : undefined;
   if (!response) return response;
@@ -447,20 +412,14 @@ export const elUpdate = (indexName, documentId, documentBody, retry = 0) => {
 };
 
 export const elRemoveRelationConnection = async relationId => {
-  // Remove the target from the list
-  // const previousEntity = await elLoadById(internalId);
-  // const previousValues = previousEntity[relationType];
-  // const filteredValues = filter(p => p.internal_id_key !== targetId, previousValues);
-  // const updatedField = { [relationType]: filteredValues };
-  // await elUpdate(previousEntity._index, previousEntity.grakn_id, { doc: updatedField });
   const relation = await elLoadById(relationId);
   const from = await elLoadByGraknId(relation.fromId);
   const to = await elLoadByGraknId(relation.toId);
-  const type = relation.relationship_type;
+  const type = `${REL_INDEX_PREFIX + relation.relationship_type}.internal_id_key`;
   // Update the from entity
   await elUpdate(from._index, from.grakn_id, {
     script: {
-      source: `ctx._source.${type}.removeIf(rel -> rel.internal_id_key == params.key)`,
+      source: `ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
       params: {
         key: to.internal_id_key
       }
@@ -469,7 +428,7 @@ export const elRemoveRelationConnection = async relationId => {
   // Update to to entity
   await elUpdate(to._index, to.grakn_id, {
     script: {
-      source: `ctx._source.${type}.removeIf(rel -> rel.internal_id_key == params.key)`,
+      source: `ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
       params: {
         key: from.internal_id_key
       }

@@ -7,6 +7,7 @@ import {
   stixDomainEntityEditContext,
   stixDomainEntityEditField
 } from '../domain/stixDomainEntity';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const campaignResolvers = {
   Query: {
@@ -20,11 +21,11 @@ const campaignResolvers = {
     }
   },
   CampaignsOrdering: {
-    markingDefinitions: 'object_marking_refs.definition',
-    tags: 'tagged.value'
+    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
+    tags: `${REL_INDEX_PREFIX}tagged.value`
   },
   CampaignsFilter: {
-    tags: 'tagged.internal_id_key'
+    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`
   },
   Mutation: {
     campaignEdit: (_, { id }, { user }) => ({

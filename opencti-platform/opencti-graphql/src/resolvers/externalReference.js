@@ -13,6 +13,7 @@ import {
 } from '../domain/externalReference';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const externalReferenceResolvers = {
   Query: {
@@ -20,7 +21,7 @@ const externalReferenceResolvers = {
     externalReferences: (_, args) => findAll(args)
   },
   ExternalReferencesFilter: {
-    usedBy: 'external_references.internal_id_key'
+    usedBy: `${REL_INDEX_PREFIX}external_references.internal_id_key`
   },
   ExternalReference: {
     editContext: externalReference => fetchEditContext(externalReference.id)

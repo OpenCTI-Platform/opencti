@@ -1,9 +1,16 @@
-import { assoc, concat } from 'ramda';
-import { createEntity, deleteEntityById, listEntities, loadEntityById, TYPE_OPENCTI_INTERNAL } from '../database/grakn';
+import { assoc } from 'ramda';
+import {
+  createEntity,
+  deleteEntityById,
+  escapeString,
+  findWithConnectedRelations,
+  listEntities,
+  loadEntityById,
+  TYPE_OPENCTI_INTERNAL
+} from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { findAll as findAllUsers } from './user';
-import { findAll as findAllMarkings } from './markingDefinition';
+import { buildPagination } from '../database/utils';
 
 export const findById = groupId => {
   return loadEntityById(groupId);
@@ -12,20 +19,33 @@ export const findAll = args => {
   const typedArgs = assoc('types', ['Group'], args);
   return listEntities(['name'], typedArgs);
 };
-export const members = async (groupId, args) => {
-  const filters = concat([{ key: 'membership.internal_id_key', values: [groupId] }], args.filters || []);
-  const filterArgs = assoc('filters', filters, args);
-  return findAllUsers(filterArgs);
+
+export const members = async groupId => {
+  return findWithConnectedRelations(
+    `match $to isa User; $rel(member:$to, grouping:$from) isa membership;
+   $from has internal_id_key "${escapeString(groupId)}";
+   get;`,
+    'to',
+    'rel'
+  ).then(data => buildPagination(0, 0, data, data.length));
 };
-export const groups = (userId, args) => {
-  const filters = concat([{ key: 'membership.internal_id_key', values: [userId] }], args.filters || []);
-  const filterArgs = assoc('filters', filters, args);
-  return findAll(filterArgs);
+export const groups = userId => {
+  return findWithConnectedRelations(
+    `match $from isa User; $rel(member:$from, grouping:$to) isa membership;
+   $from has internal_id_key "${escapeString(userId)}";
+   get;`,
+    'to',
+    'rel'
+  ).then(data => buildPagination(0, 0, data, data.length));
 };
-export const permissions = async (groupId, args) => {
-  const filters = concat([{ key: 'permission.internal_id_key', values: [groupId] }], args.filters || []);
-  const filterArgs = assoc('filters', filters, args);
-  return findAllMarkings(filterArgs);
+export const permissions = async groupId => {
+  return findWithConnectedRelations(
+    `match $to isa Marking-Definition; $rel(allow:$to, allowed:$from) isa permission;
+   $from has internal_id_key "${escapeString(groupId)}";
+   get;`,
+    'to',
+    'rel'
+  ).then(data => buildPagination(0, 0, data, data.length));
 };
 
 export const addGroup = async (user, group) => {

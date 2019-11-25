@@ -19,6 +19,7 @@ import {
   stixDomainEntityEditContext
 } from '../domain/stixDomainEntity';
 import { groups } from '../domain/group';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const userResolvers = {
   Query: {
@@ -27,8 +28,8 @@ const userResolvers = {
     me: (_, args, { user }) => findById(user.id)
   },
   UsersOrdering: {
-    markingDefinitions: 'object_marking_refs.definition',
-    tags: 'tagged.value'
+    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
+    tags: `${REL_INDEX_PREFIX}tagged.value`
   },
   User: {
     groups: (user, args) => groups(user.id, args),

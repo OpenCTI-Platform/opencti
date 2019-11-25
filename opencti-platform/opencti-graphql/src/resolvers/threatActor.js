@@ -1,12 +1,13 @@
 import { addThreatActor, findAll, findById } from '../domain/threatActor';
 import {
-  stixDomainEntityEditContext,
-  stixDomainEntityCleanContext,
-  stixDomainEntityEditField,
   stixDomainEntityAddRelation,
+  stixDomainEntityCleanContext,
+  stixDomainEntityDelete,
   stixDomainEntityDeleteRelation,
-  stixDomainEntityDelete
+  stixDomainEntityEditContext,
+  stixDomainEntityEditField
 } from '../domain/stixDomainEntity';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const threatActorResolvers = {
   Query: {
@@ -14,11 +15,11 @@ const threatActorResolvers = {
     threatActors: (_, args) => findAll(args)
   },
   ThreatActorsOrdering: {
-    markingDefinitions: 'object_marking_refs.definition',
-    tags: 'tagged.value'
+    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
+    tags: `${REL_INDEX_PREFIX}tagged.value`
   },
   ThreatActorsFilter: {
-    tags: 'tagged.internal_id_key'
+    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`
   },
   Mutation: {
     threatActorEdit: (_, { id }, { user }) => ({

@@ -17,10 +17,10 @@ import {
   stixDomainEntityExportPush,
   stixDomainEntityImportPush
 } from '../domain/stixDomainEntity';
-import { fetchEditContext, pubsub } from '../database/redis';
+import { pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
 import { filesListing } from '../database/minio';
-import { createdByRef, markingDefinitions, reports, tags } from '../domain/stixEntity';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const stixDomainEntityResolvers = {
   Query: {
@@ -30,11 +30,11 @@ const stixDomainEntityResolvers = {
     stixDomainEntitiesNumber: (_, args) => stixDomainEntitiesNumber(args)
   },
   StixDomainEntitiesOrdering: {
-    markingDefinitions: 'object_marking_refs.definition',
-    tags: 'tagged.value'
+    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
+    tags: `${REL_INDEX_PREFIX}tagged.value`
   },
   StixDomainEntitiesFilter: {
-    hasExternalReference: 'external_references.internal_id_key'
+    hasExternalReference: `${REL_INDEX_PREFIX}external_references.internal_id_key`
   },
   StixDomainEntity: {
     // eslint-disable-next-line no-underscore-dangle
@@ -45,12 +45,7 @@ const stixDomainEntityResolvers = {
       return 'Unknown';
     },
     importFiles: (entity, { first }) => filesListing(first, 'import', entity),
-    exportFiles: (entity, { first }) => filesListing(first, 'export', entity),
-    createdByRef: entity => createdByRef(entity.id),
-    editContext: entity => fetchEditContext(entity.id),
-    tags: (entity, args) => tags(entity.id, args),
-    reports: (entity, args) => reports(entity.id, args),
-    markingDefinitions: (entity, args) => markingDefinitions(entity.id, args)
+    exportFiles: (entity, { first }) => filesListing(first, 'export', entity)
   },
   Mutation: {
     stixDomainEntityEdit: (_, { id }, { user }) => ({

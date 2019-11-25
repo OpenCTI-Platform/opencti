@@ -1,7 +1,8 @@
-import { assoc, concat } from 'ramda';
+import { assoc } from 'ramda';
 import {
   createEntity,
   escapeString,
+  findWithConnectedRelations,
   getSingleValueNumber,
   listEntities,
   loadEntityById,
@@ -9,7 +10,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { findAll as findAllMarkingDef } from './markingDefinition';
+import { buildPagination } from '../database/utils';
 
 export const findById = sectorId => {
   return loadEntityById(sectorId);
@@ -18,17 +19,13 @@ export const findAll = args => {
   const typedArgs = assoc('types', ['Sector'], args);
   return listEntities(['name', 'alias'], typedArgs);
 };
-
-export const markingDefinitions = (sectorId, args) => {
-  const filters = concat([{ key: 'object_marking_refs.internal_id_key', values: [sectorId] }], args.filters || []);
-  const filterArgs = assoc('filters', filters, args);
-  return findAllMarkingDef(filterArgs);
-};
-export const subsectors = (sectorId, args) => {
-  const subFilter = { key: 'gathering.internal_id_key', values: [sectorId], sourceRole: 'part_of' };
-  const filters = concat([subFilter], args.filters || []);
-  const filterArgs = assoc('filters', filters, args);
-  return findAll(filterArgs);
+export const subsectors = sectorId => {
+  return findWithConnectedRelations(
+    `match $to isa Sector; $rel(gather:$from, part_of:$to) isa gathering;
+     $from has internal_id_key "${escapeString(sectorId)}"; get;`,
+    'to',
+    'rel'
+  ).then(data => buildPagination(0, 0, data, data.length));
 };
 
 export const addSector = async (user, sector) => {

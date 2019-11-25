@@ -1,12 +1,13 @@
 import { addOrganization, findAll, findById } from '../domain/organization';
 import {
-  stixDomainEntityEditContext,
-  stixDomainEntityCleanContext,
-  stixDomainEntityEditField,
   stixDomainEntityAddRelation,
+  stixDomainEntityCleanContext,
+  stixDomainEntityDelete,
   stixDomainEntityDeleteRelation,
-  stixDomainEntityDelete
+  stixDomainEntityEditContext,
+  stixDomainEntityEditField
 } from '../domain/stixDomainEntity';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const organizationResolvers = {
   Query: {
@@ -14,11 +15,11 @@ const organizationResolvers = {
     organizations: (_, args) => findAll(args)
   },
   OrganizationsOrdering: {
-    markingDefinitions: 'object_marking_refs.definition',
-    tags: 'tagged.value'
+    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
+    tags: `${REL_INDEX_PREFIX}tagged.value`
   },
   OrganizationsFilter: {
-    tags: 'tagged.internal_id_key'
+    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`
   },
   Mutation: {
     organizationEdit: (_, { id }, { user }) => ({
