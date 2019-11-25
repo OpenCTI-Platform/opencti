@@ -1,6 +1,5 @@
-import { executeWrite, updateAttribute } from '../database/grakn';
+import { executeWrite } from '../database/grakn';
 import { index } from '../database/indexing';
-import { findAll as findAllKillChainPhases } from '../domain/killChainPhase';
 import { logger } from '../config/conf';
 
 module.exports.up = async next => {
@@ -8,14 +7,7 @@ module.exports.up = async next => {
   await executeWrite(wTx => {
     wTx.tx.query(query);
   });
-  // await index();
-  const killChainPhases = await findAllKillChainPhases();
-  await Promise.all(
-    killChainPhases.edges.map(killChainPhaseEdge => {
-      const killChainPhase = killChainPhaseEdge.node;
-      return updateAttribute(killChainPhase.id, { key: 'phase_order', value: [0] });
-    })
-  );
+  await index();
   logger.info(`[MIGRATION] reindex > Migration complete`);
   next();
 };
