@@ -7,7 +7,7 @@ export const findById = identityId => {
   return loadEntityById(identityId);
 };
 export const findAll = args => {
-  const typedArgs = assoc('types', ['User', 'Organization', 'Region', 'Country', 'City'], args);
+  const typedArgs = assoc('types', ['Identity'], args);
   return listEntities(['name', 'alias'], typedArgs);
 };
 

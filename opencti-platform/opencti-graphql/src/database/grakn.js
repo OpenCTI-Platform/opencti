@@ -852,18 +852,12 @@ export const loadWithConnectedRelations = (query, key, relationKey = null, infer
 // If first specified in args, the result will be paginated
 export const listEntities = async (searchFields, args) => {
   // filters contains potential relations like, mitigates, tagged ...
-  const { first = 200, after, types, search, filters, orderBy, orderMode = 'asc' } = args;
+  const { first = 200, after, withCache = true, types, search, filters, orderBy, orderMode = 'asc' } = args;
   const validFilters = filter(f => f && f.values.filter(n => n).length > 0, filters || []);
   const offset = after ? cursorToOffset(after) : 0;
-  const queryOrderBy = orderBy || 'internal_id_key';
-  const isRelationOrderBy = includes('.', queryOrderBy);
+  const isRelationOrderBy = orderBy && includes('.', orderBy);
   // 01. Define if Elastic can support this query.
   let supportedByCache = true;
-  // 01-1 Check the ordering
-  if (isRelationOrderBy) {
-    const [, field] = queryOrderBy.split('.');
-    if (field !== 'internal_id_key') supportedByCache = false;
-  }
   // 01-2 Check the filters
   const relationFilters = filter(k => {
     // If the relation must be forced in a specific direction, ES cant support it.
@@ -871,7 +865,7 @@ export const listEntities = async (searchFields, args) => {
     const isRelationFilter = includes('.', k.key);
     if (isRelationFilter) {
       // ES only support internal_id reference
-      const [, field] = queryOrderBy.split('.');
+      const [, field] = k.key.split('.');
       if (field !== 'internal_id_key') return false;
     }
     return isRelationFilter;
@@ -883,10 +877,11 @@ export const listEntities = async (searchFields, args) => {
   const attributesFilters = [];
   // Handle order by field
   if (isRelationOrderBy) {
-    const [relation, field] = queryOrderBy.split('.');
+    const [relation, field] = orderBy.split('.');
+    if (field !== 'internal_id_key') supportedByCache = false;
     relationsFields.push(`($elem, $${relation}) isa ${relation}; $${relation} has ${field} $order;`);
-  } else {
-    attributesFields.push(`$elem has ${queryOrderBy} $order;`);
+  } else if (orderBy) {
+    attributesFields.push(`$elem has ${orderBy} $order;`);
   }
   // Handle filters
   const relationFiltersIds = [];
@@ -945,7 +940,8 @@ export const listEntities = async (searchFields, args) => {
                       ${queryAttributesFields} ${queryAttributesFilters} get;`;
   const countQuery = `${baseQuery} count;`;
   const paginateQuery = `offset ${offset}; limit ${first};`;
-  const query = `${baseQuery} sort $order ${orderMode}; ${paginateQuery}`;
+  const orderQuery = orderBy ? `sort $order ${orderMode};` : '';
+  const query = `${baseQuery} ${orderQuery} ${paginateQuery}`;
   // In case of only one relation filters, we can specify the relation extra key
   if (relationFiltersIds.length > 1) {
     logger.warn('[GRAKN] List entities through multiple relations, selecting first one...');
@@ -953,7 +949,7 @@ export const listEntities = async (searchFields, args) => {
   const relationToGet = head(relationFiltersIds);
   // [ELASTIC] From cache
   const getInGrakn = forceNoCache();
-  if (supportedByCache && !getInGrakn) {
+  if (supportedByCache && withCache && !getInGrakn) {
     const index = inferIndexFromConceptTypes(args.types);
     const paginateResult = await elPaginate(index, args);
     if (relationToGet) {
@@ -973,7 +969,9 @@ export const listEntities = async (searchFields, args) => {
     return paginateResult;
   }
   // TODO JRI Remove this
-  logger.debug(`[GRAKN] ListEntities on Grakn, supportedByCache: ${supportedByCache}/forceNoCache: ${getInGrakn}`);
+  logger.debug(`[GRAKN] ListEntities on Grakn, supportedByCache: ${supportedByCache} 
+    / withCache: ${withCache} 
+    / forceNoCache: ${getInGrakn}`);
   // noinspection ES6MissingAwait
   const countPromise = getSingleValueNumber(countQuery);
   const extraRelation = relationToGet ? relationToGet.id : undefined;
