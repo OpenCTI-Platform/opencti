@@ -1439,6 +1439,8 @@ enum ExternalReferencesOrdering {
   updated_at
 }
 enum ExternalReferencesFilter {
+  stix_id_key
+  url
   usedBy
 }
 input ExternalReferencesFiltering {
@@ -1492,6 +1494,15 @@ enum KillChainPhasesOrdering {
   phase_name
   created_at
   updated_at
+}
+enum KillChainPhasesFilter {
+  stix_id_key
+  kill_chain_name
+  phase_name
+}
+input KillChainPhasesFiltering {
+  key: ExternalReferencesFilter!
+  values: [String]
 }
 type KillChainPhaseConnection {
   pageInfo: PageInfo!
@@ -2550,7 +2561,6 @@ type Query {
     filters: [TagsFiltering]
     filterMode: FilterMode
     search: String
-
     tag_type: String
     value: String
     objectId: String
@@ -2773,6 +2783,7 @@ type Query {
     orderBy: MarkingDefinitionsOrdering
     orderMode: OrderingMode
     filters: [MarkingDefinitionsFiltering]
+    filterMode: FilterMode
     search: String
   ): MarkingDefinitionConnection @auth
   # ExternalReferences
@@ -2783,6 +2794,7 @@ type Query {
     orderBy: ExternalReferencesOrdering
     orderMode: OrderingMode
     filters: [ExternalReferencesFiltering]
+    filterMode: FilterMode
     search: String
   ): ExternalReferenceConnection @auth
   # KillChainPhases
@@ -2792,9 +2804,9 @@ type Query {
     after: ID
     orderBy: KillChainPhasesOrdering
     orderMode: OrderingMode
-    objectId: String
+    filters: [KillChainPhasesFiltering]
+    filterMode: FilterMode
     search: String
-    phaseName: String
   ): KillChainPhaseConnection @auth
   # AttackPatterns
   attackPattern(id: String!): AttackPattern @auth
