@@ -1534,7 +1534,7 @@ export const createEntity = async (entity, type, opts = {}) => {
     await indexElements([completedData]);
   }
   // Complete with eventual relations (will eventually update the index)
-  await addOwner(internalId.id, entity.createdByOwner, opts);
+  await addOwner(internalId, entity.createdByOwner, opts);
   await addCreatedByRef(internalId, entity.createdByRef, opts);
   await addMarkingDefs(internalId, entity.markingDefinitions, opts);
   await addKillChains(internalId, entity.killChainPhases, opts);
