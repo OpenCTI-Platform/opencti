@@ -63,7 +63,7 @@ export const reportsTimeSeries = (stixDomainEntityId, args) => {
 export const stixDomainEntitiesTimeSeries = args => {
   return timeSeries(`match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'}`, args);
 };
-// TODO JRI REPLACE BY GRAKN FUNCTIONS
+
 export const stixDomainEntitiesNumber = args => ({
   count: elCount('stix_domain_entities', args),
   total: elCount('stix_domain_entities', dissoc('endDate', args))

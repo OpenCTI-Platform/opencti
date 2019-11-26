@@ -837,7 +837,6 @@ export const distribution = async (query, options) => {
   });
 };
 
-// TODO JRI. to refactor. Change the UI.
 export const findWithConnectedRelations = async (query, key, extraRelKey = null, infer = false) => {
   const dataFind = await find(query, [key, extraRelKey], { infer });
   return map(t => ({ node: t[key], relation: t[extraRelKey] }), dataFind);
@@ -874,8 +873,7 @@ export const listEntities = async (searchFields, args) => {
     const index = inferIndexFromConceptTypes(args.types);
     return elPaginate(index, args);
   }
-  // TODO JRI Remove this
-  logger.debug(`[GRAKN] ListEntities on Grakn, supportedByCache: ${supportedByCache} / withCache: ${withCache}`);
+  logger.debug(`[GRAKN] ListEntities on Grakn, supportedByCache: ${supportedByCache} - withCache: ${withCache}`);
   // 02. If not go with standard Grakn
   const relationsFields = [];
   const attributesFields = [];
@@ -903,7 +901,7 @@ export const listEntities = async (searchFields, args) => {
         for (let valueIndex = 0; valueIndex < filterValues.length; valueIndex += 1) {
           const val = filterValues[valueIndex];
           // Apply filter on target.
-          // TODO Support more than only String filters
+          // TODO @Julien Support more than only string filters
           attributesFields.push(`$${targetRef} has ${field} "${val}";`);
         }
       } else {
@@ -952,7 +950,7 @@ export const listEntities = async (searchFields, args) => {
   });
 };
 
-// TODO JRI Finish this
+// TODO @Julien Create API around relations supported by elastic
 /*
 export const listRelations = async args => {
   const { first = 200, after, filters, orderBy, orderMode = 'asc' } = args;
@@ -1140,7 +1138,6 @@ export const getRelationInferredById = async id => {
   });
 };
 
-// TODO JRI REFACTOR paginateRelationships
 /**
  * Grakn generic pagination query
  * @param query
@@ -1468,8 +1465,7 @@ export const createEntity = async (entity, type, opts = {}) => {
     dissoc('createdByOwner'),
     dissoc('createdByRef'),
     dissoc('markingDefinitions'),
-    dissoc('killChainPhases'),
-    dissoc('password')
+    dissoc('killChainPhases')
   )(entity);
   // For stix domain entity, force the initialization of the alias list.
   if (modelType === TYPE_STIX_DOMAIN_ENTITY) {

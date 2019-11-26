@@ -79,7 +79,6 @@ export const findByStixId = args => {
 export const findByIdInferred = stixRelationId => {
   return getRelationInferredById(stixRelationId);
 };
-// TODO JRI REFACTOR THIS
 export const findAllWithInferences = async args => {
   const entities = await findWithConnectedRelations(
     `match $x isa entity; (${args.resolveRelationRole}: $from, $x) isa ${escape(args.resolveRelationType)};

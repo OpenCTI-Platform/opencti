@@ -229,11 +229,11 @@ export const elPaginate = async (indexName, options) => {
     after,
     types = null,
     filters = [],
-    isUser = null, // TODO JRI DELETE
+    isUser = null, // TODO @Sam refactor this to use filter
     search = null,
     orderBy = null,
     orderMode = 'asc',
-    connectionFormat = true // TODO JRI REFACTOR
+    connectionFormat = true // TODO @Julien Refactor that
   } = options;
   const offset = after ? cursorToOffset(after) : 0;
   let must = [];

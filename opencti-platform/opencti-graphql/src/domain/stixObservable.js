@@ -31,7 +31,6 @@ export const findAll = async args => {
 };
 
 // region by elastic
-// TODO JRI REPLACE BY GRAKN FUNCTIONS
 export const stixObservablesNumber = args => ({
   count: elCount('stix_observables', args),
   total: elCount('stix_observables', dissoc('endDate', args))

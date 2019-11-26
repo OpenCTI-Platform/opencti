@@ -145,7 +145,7 @@ server.applyMiddleware({
   app,
   onHealthCheck: () =>
     new Promise(resolve => {
-      // TODO @JRI Implements a real health function
+      // TODO @Julien Implements a real health function
       // Check grakn and ES connection?
       resolve();
     })
