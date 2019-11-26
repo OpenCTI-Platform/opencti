@@ -22,7 +22,7 @@ import {
 } from '../domain/stixRelation';
 import { pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
-import { killChainPhases } from '../domain/stixDomainEntity';
+import { killChainPhases } from '../domain/stixEntity';
 import { loadEntityByGraknId } from '../database/grakn';
 
 const stixRelationResolvers = {

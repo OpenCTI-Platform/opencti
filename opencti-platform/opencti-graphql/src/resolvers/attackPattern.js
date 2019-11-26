@@ -1,7 +1,5 @@
 import { addAttackPattern, findAll, findById } from '../domain/attackPattern';
 import {
-  externalReferences,
-  killChainPhases,
   stixDomainEntityAddRelation,
   stixDomainEntityCleanContext,
   stixDomainEntityDelete,
@@ -9,6 +7,7 @@ import {
   stixDomainEntityEditContext,
   stixDomainEntityEditField
 } from '../domain/stixDomainEntity';
+import { killChainPhases } from '../domain/stixEntity';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const attackPatternResolvers = {
@@ -17,7 +16,6 @@ const attackPatternResolvers = {
     attackPatterns: (_, args) => findAll(args)
   },
   AttackPattern: {
-    externalReferences: (attPatt, args) => externalReferences(attPatt.id, args),
     killChainPhases: (attPatt, args) => killChainPhases(attPatt.id, args)
   },
   AttackPatternsOrdering: {

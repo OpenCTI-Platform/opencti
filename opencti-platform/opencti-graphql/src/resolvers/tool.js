@@ -1,6 +1,5 @@
 import { addTool, findAll, findById } from '../domain/tool';
 import {
-  killChainPhases,
   stixDomainEntityAddRelation,
   stixDomainEntityCleanContext,
   stixDomainEntityDelete,
@@ -8,6 +7,7 @@ import {
   stixDomainEntityEditContext,
   stixDomainEntityEditField
 } from '../domain/stixDomainEntity';
+import { killChainPhases } from '../domain/stixEntity';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const toolResolvers = {

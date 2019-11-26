@@ -77,15 +77,21 @@ export const inferIndexFromConceptTypes = types => {
 
 export const now = () => {
   // eslint-disable-next-line prettier/prettier
-  return moment().utc().toISOString();
+  return moment()
+    .utc()
+    .toISOString();
 };
 export const graknNow = () => {
   // eslint-disable-next-line prettier/prettier
-  return moment().utc().format(dateFormat); // Format that accept grakn
+  return moment()
+    .utc()
+    .format(dateFormat); // Format that accept grakn
 };
 export const prepareDate = date => {
   // eslint-disable-next-line prettier/prettier
-  return moment(date).utc().format(dateFormat);
+  return moment(date)
+    .utc()
+    .format(dateFormat);
 };
 export const sinceNowInMinutes = lastModified => {
   const utc = moment().utc();
@@ -408,7 +414,9 @@ const loadConcept = async (concept, { relationsMap, noCache = false } = conceptO
       const rolesPromises = Promise.all(
         map(async roleItem => {
           // eslint-disable-next-line prettier/prettier
-          const roleId = last(roleItem).values().next().value.id;
+          const roleId = last(roleItem)
+            .values()
+            .next().value.id;
           const conceptFromMap = relationsMap.get(roleId);
           return conceptFromMap
             ? head(roleItem)
@@ -442,17 +450,19 @@ const loadConcept = async (concept, { relationsMap, noCache = false } = conceptO
       const fixedRel = pipe(
         assoc('fromId', isInv ? globalObject.toId : globalObject.fromId),
         assoc('fromRole', isInv ? globalObject.toRole : globalObject.fromRole),
+        assoc('fromTypes', isInv ? globalObject.toTypes : globalObject.fromTypes),
         assoc('toId', isInv ? globalObject.fromId : globalObject.toId),
-        assoc('toRole', isInv ? globalObject.fromRole : globalObject.toRole)
+        assoc('toRole', isInv ? globalObject.fromRole : globalObject.toRole),
+        assoc('toTypes', isInv ? globalObject.fromTypes : globalObject.toTypes)
       )(globalObject);
       // 02. Then change the id if relation is inferred
-      if (globalObject.inferred) {
+      if (fixedRel.inferred) {
         const { fromId, fromRole, toId, toRole } = fixedRel;
-        const type = globalObject.relationship_type;
+        const type = fixedRel.relationship_type;
         const pattern = `{ $rel(${fromRole}: $from, ${toRole}: $to) isa ${type}; $from id ${fromId}; $to id ${toId}; };`;
-        return assoc('id', Buffer.from(pattern).toString('base64'), globalObject);
+        return assoc('id', Buffer.from(pattern).toString('base64'), fixedRel);
       }
-      return globalObject;
+      return fixedRel;
     });
 };
 
@@ -728,7 +738,10 @@ export const updateAttribute = async (id, input, wTx) => {
   const labelIterator = await wTx.tx.query(labelTypeQuery);
   const labelAnswer = await labelIterator.next();
   // eslint-disable-next-line prettier/prettier
-  const attrType = await labelAnswer.map().get('x').dataType();
+  const attrType = await labelAnswer
+    .map()
+    .get('x')
+    .dataType();
   const typedValues = map(v => {
     if (attrType === GraknString) return `"${escapeString(v)}"`;
     if (attrType === GraknDate) return prepareDate(v);
@@ -1004,11 +1017,17 @@ export const getRelationInferredById = async id => {
     const roles = rolePlayersMap.keys();
     const fromRole = roles.next().value;
     // eslint-disable-next-line prettier/prettier
-    const fromObject = rolePlayersMap.get(fromRole).values().next().value;
+    const fromObject = rolePlayersMap
+      .get(fromRole)
+      .values()
+      .next().value;
     const fromRoleLabel = await fromRole.label();
     const toRole = roles.next().value;
     // eslint-disable-next-line prettier/prettier
-    const toObject = rolePlayersMap.get(toRole).values().next().value;
+    const toObject = rolePlayersMap
+      .get(toRole)
+      .values()
+      .next().value;
     const toRoleLabel = await toRole.label();
     const relation = {
       id,
@@ -1016,8 +1035,8 @@ export const getRelationInferredById = async id => {
       relationship_type: relationTypeValue,
       inferred: true
     };
-    const fromPromise = loadConcept(fromObject);
-    const toPromise = loadConcept(toObject);
+    // const fromPromise = loadConcept(fromObject);
+    // const toPromise = loadConcept(toObject);
     const explanation = answer.explanation();
     const explanationAnswers = explanation.answers();
     const inferences = explanationAnswers.map(explanationAnswer => {
@@ -1102,39 +1121,37 @@ export const getRelationInferredById = async id => {
           const inferenceAttributes = await loadConcept(inferencesAnswer.map().get(inference.relationKey));
           inferenceId = inferenceAttributes.internal_id_key;
         }
-        const fromAttributes = await loadConcept(inferenceFrom);
-        const toAttributes = await loadConcept(inferenceTo);
+        // const fromAttributes = await loadConcept(inferenceFrom);
+        // const toAttributes = await loadConcept(inferenceTo);
         return {
           node: {
             id: inferenceId,
             inferred,
             relationship_type: inference.relationType,
-            from: fromAttributes,
-            to: toAttributes
+            fromId: inferenceFrom.id,
+            toId: inferenceTo.id
           }
         };
       })
     );
-    return Promise.all([fromPromise, toPromise, inferencesPromises]).then(
-      ([fromResult, toResult, relationInferences]) => {
-        if (isInversed(relation.relationship_type, fromRoleLabel)) {
-          return pipe(
-            assoc('from', toResult),
-            assoc('fromRole', toRoleLabel),
-            assoc('to', fromResult),
-            assoc('toRole', fromRoleLabel),
-            assoc('inferences', { edges: relationInferences })
-          )(relation);
-        }
+    return Promise.resolve(inferencesPromises).then(relationInferences => {
+      if (isInversed(relation.relationship_type, fromRoleLabel)) {
         return pipe(
-          assoc('from', fromResult),
-          assoc('fromRole', fromRoleLabel),
-          assoc('to', toResult),
-          assoc('toRole', toRoleLabel),
+          assoc('fromId', toObject.id),
+          assoc('fromRole', toRoleLabel),
+          assoc('toId', fromObject.id),
+          assoc('toRole', fromRoleLabel),
           assoc('inferences', { edges: relationInferences })
         )(relation);
       }
-    );
+      return pipe(
+        assoc('fromId', fromObject),
+        assoc('fromRole', fromRoleLabel),
+        assoc('toId', toObject),
+        assoc('toRole', toRoleLabel),
+        assoc('inferences', { edges: relationInferences })
+      )(relation);
+    });
   });
 };
 
@@ -1201,7 +1218,9 @@ export const paginateRelationships = async (query, options, key = 'rel', extraRe
       });
     }
     console.log(
-      `[GRAKN] FETCH grakn relations (inferred: ${inferred} / extraRel: ${extraRel} / fromTypes: ${fromTypes.length} / toTypes: ${toTypes.length})`
+      `[GRAKN] FETCH grakn relations (inferred: ${inferred} / extraRel: ${extraRel} / fromTypes: ${
+        fromTypes ? fromTypes.length : 0
+      } / toTypes: ${toTypes ? toTypes.length : 0})`
     );
     const offset = after ? cursorToOffset(after) : 0;
     const finalQuery = `
@@ -1209,14 +1228,14 @@ export const paginateRelationships = async (query, options, key = 'rel', extraRe
       ${fromId ? `$from has internal_id_key "${escapeString(fromId)}";` : ''}
       ${toId ? `$to has internal_id_key "${escapeString(toId)}";` : ''} 
       ${
-        fromTypes.length > 0
+        fromTypes && fromTypes.length > 0
           ? `${join(' ', map(fromType => `{ $from isa ${fromType}; } or`, tail(fromTypes)))} { $from isa ${head(
               fromTypes
             )}; };`
           : ''
       } 
     ${
-      toTypes.length > 0
+      toTypes && toTypes.length > 0
         ? `${join(' ', map(toType => `{ $to isa ${toType}; } or`, tail(toTypes)))} { $to isa ${head(toTypes)}; };`
         : ''
     } 
@@ -1227,7 +1246,7 @@ export const paginateRelationships = async (query, options, key = 'rel', extraRe
       ${lastSeenStart ? `$ls > ${prepareDate(lastSeenStart)}; ` : ''} 
       ${lastSeenStop ? `$ls < ${prepareDate(lastSeenStop)}; ` : ''} 
       ${
-        weights
+        weights && weights.length > 0
           ? `$rel has weight $weight; ${join(
               ' ',
               map(weight => `{ $weight == ${weight}; } or`, tail(weights))

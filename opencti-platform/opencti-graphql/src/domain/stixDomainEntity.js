@@ -10,7 +10,6 @@ import {
   escape,
   escapeString,
   executeWrite,
-  findWithConnectedRelations,
   listEntities,
   loadEntityById,
   timeSeries,
@@ -22,7 +21,6 @@ import { generateFileExportName, upload } from '../database/minio';
 import { connectorsForExport } from './connector';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
-import { buildPagination } from '../database/utils';
 
 export const findAll = args => {
   const noTypes = !args.types || args.types.length === 0;
@@ -31,24 +29,6 @@ export const findAll = args => {
 };
 export const findById = stixDomainEntityId => {
   return loadEntityById(stixDomainEntityId);
-};
-
-export const killChainPhases = async stixDomainEntityId => {
-  return findWithConnectedRelations(
-    `match $to isa Kill-Chain-Phase; $rel(kill_chain_phase:$to, phase_belonging:$from) isa kill_chain_phases;
-    $from has internal_id_key "${escapeString(stixDomainEntityId)}"; get;`,
-    'to',
-    'rel'
-  ).then(data => ({ edges: data }));
-};
-export const externalReferences = async (stixDomainEntityId, args) => {
-  return findWithConnectedRelations(
-    `match $to isa External-Reference; $rel(external_reference:$to, so:$from) isa external_references;
-    $from isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
-    $from has internal_id_key "${escapeString(stixDomainEntityId)}"; get;`,
-    'to',
-    'rel'
-  ).then(data => buildPagination(0, 0, data, data.length));
 };
 
 // region time series

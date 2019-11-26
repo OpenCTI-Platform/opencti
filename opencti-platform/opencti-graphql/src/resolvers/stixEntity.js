@@ -1,6 +1,13 @@
-import { createdByRef, findById, markingDefinitions, reports, stixRelations, tags } from '../domain/stixEntity';
+import {
+  createdByRef,
+  findById,
+  markingDefinitions,
+  reports,
+  stixRelations,
+  tags,
+  externalReferences
+} from '../domain/stixEntity';
 import { fetchEditContext } from '../database/redis';
-import { externalReferences } from '../domain/stixDomainEntity';
 
 const stixEntityResolvers = {
   Query: {

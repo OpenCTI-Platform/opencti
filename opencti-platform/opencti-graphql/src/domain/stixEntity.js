@@ -47,7 +47,22 @@ export const markingDefinitions = async stixEntityId => {
     'rel'
   ).then(data => buildPagination(0, 0, data, data.length));
 };
-
+export const killChainPhases = async stixDomainEntityId => {
+  return findWithConnectedRelations(
+    `match $to isa Kill-Chain-Phase; $rel(kill_chain_phase:$to, phase_belonging:$from) isa kill_chain_phases;
+    $from has internal_id_key "${escapeString(stixDomainEntityId)}"; get;`,
+    'to',
+    'rel'
+  ).then(data => ({ edges: data }));
+};
+export const externalReferences = async stixDomainEntityId => {
+  return findWithConnectedRelations(
+    `match $to isa External-Reference; $rel(external_reference:$to, so:$from) isa external_references;
+    $from has internal_id_key "${escapeString(stixDomainEntityId)}"; get;`,
+    'to',
+    'rel'
+  ).then(data => buildPagination(0, 0, data, data.length));
+};
 export const stixRelations = (stixEntityId, args) => {
   const finalArgs = assoc('fromId', stixEntityId, args);
   if (finalArgs.search && finalArgs.search.length > 0) {

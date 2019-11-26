@@ -1501,7 +1501,7 @@ enum KillChainPhasesFilter {
   phase_name
 }
 input KillChainPhasesFiltering {
-  key: ExternalReferencesFilter!
+  key: KillChainPhasesFilter!
   values: [String]
 }
 type KillChainPhaseConnection {
@@ -1743,6 +1743,8 @@ enum ThreatActorsOrdering {
   markingDefinitions
 }
 enum ThreatActorsFilter {
+  name
+  alias
   tags
 }
 input ThreatActorsFiltering {
@@ -1846,6 +1848,8 @@ enum IntrusionSetsOrdering {
   markingDefinitions
 }
 enum IntrusionSetsFilter {
+  name
+  alias
   tags
 }
 input IntrusionSetsFiltering {
@@ -1953,6 +1957,8 @@ enum CampaignsOrdering {
   markingDefinitions
 }
 enum CampaignsFilter {
+  name
+  alias
   tags
 }
 input CampaignsFiltering {
@@ -2051,6 +2057,8 @@ enum IncidentsOrdering {
   markingDefinitions
 }
 enum IncidentsFilter {
+  name
+  alias
   tags
 }
 input IncidentsFiltering {
@@ -2147,6 +2155,8 @@ enum MalwaresOrdering {
   markingDefinitions
 }
 enum MalwaresFilter {
+  name
+  alias
   tags
 }
 input MalwaresFiltering {
@@ -2238,8 +2248,13 @@ enum ToolsOrdering {
   tags
   markingDefinitions
 }
+enum ToolsFilter {
+  name
+  alias
+  tags
+}
 input ToolsFiltering {
-  key: String!
+  key: ToolsFilter!
   values: [String]
 }
 type ToolConnection {
@@ -2329,8 +2344,13 @@ enum VulnerabilitiesOrdering {
   tags
   markingDefinitions
 }
+enum VulnerabilitiesFilter {
+  name
+  alias
+  tags
+}
 input VulnerabilitiesFiltering {
-  key: String!
+  key: VulnerabilitiesFilter!
   values: [String]
 }
 type VulnerabilityConnection {

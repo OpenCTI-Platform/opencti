@@ -13,7 +13,6 @@ import {
   reportsTimeSeriesByEntity
 } from '../domain/report';
 import {
-  externalReferences,
   stixDomainEntityAddRelation,
   stixDomainEntityCleanContext,
   stixDomainEntityDelete,
@@ -59,7 +58,6 @@ const reportResolvers = {
     knowledgeContains: `${REL_INDEX_PREFIX}object_refs.internal_id_key`
   },
   Report: {
-    externalReferences: (report, args) => externalReferences(report.id, args),
     objectRefs: (report, args) => objectRefs(report.id, args),
     observableRefs: (report, args) => observableRefs(report.id, args),
     relationRefs: (report, args) => relationRefs(report.id, args)
