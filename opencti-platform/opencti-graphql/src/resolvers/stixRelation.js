@@ -23,7 +23,7 @@ import {
 import { pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
 import { killChainPhases } from '../domain/stixEntity';
-import { loadEntityByGraknId } from '../database/grakn';
+import { loadByGraknId } from '../database/grakn';
 
 const stixRelationResolvers = {
   Query: {
@@ -61,12 +61,12 @@ const stixRelationResolvers = {
   },
   StixRelation: {
     killChainPhases: (rel, args) => killChainPhases(rel.id, args),
-    from: rel => loadEntityByGraknId(rel.fromId),
-    to: rel => loadEntityByGraknId(rel.toId)
+    from: rel => loadByGraknId(rel.fromId),
+    to: rel => loadByGraknId(rel.toId)
   },
   RelationEmbedded: {
-    from: rel => loadEntityByGraknId(rel.fromId),
-    to: rel => loadEntityByGraknId(rel.toId)
+    from: rel => loadByGraknId(rel.fromId),
+    to: rel => loadByGraknId(rel.toId)
   },
   Mutation: {
     stixRelationEdit: (_, { id }, { user }) => ({

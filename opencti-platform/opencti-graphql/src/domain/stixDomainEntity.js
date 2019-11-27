@@ -106,11 +106,9 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
 export const stixDomainEntityDelete = async stixDomainEntityId => {
   return deleteEntityById(stixDomainEntityId);
 };
-export const stixDomainEntityAddRelation = (user, stixDomainEntityId, input) => {
-  return createRelation(stixDomainEntityId, input).then(relationData => {
-    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, relationData, user);
-    return relationData;
-  });
+export const stixDomainEntityAddRelation = async (user, stixDomainEntityId, input) => {
+  const data = await createRelation(stixDomainEntityId, input);
+  return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
 };
 export const stixDomainEntityAddRelations = async (user, stixDomainEntityId, input) => {
   const finalInput = map(

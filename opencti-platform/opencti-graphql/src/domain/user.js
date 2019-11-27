@@ -53,8 +53,8 @@ export const setAuthenticationCookie = (token, res) => {
 };
 // endregion
 
-export const findById = userId => {
-  return loadEntityById(userId);
+export const findById = (userId, args) => {
+  return loadEntityById(userId, args);
 };
 export const findAll = args => {
   const typedArgs = assoc('types', ['User'], args);
@@ -121,7 +121,9 @@ export const loginFromProvider = async (email, name) => {
 };
 export const login = async (email, password) => {
   const result = await load(
-    `match $client isa User, has email "${escapeString(email)}"; (authorization:$token, client:$client); get;`,
+    `match $client isa User, has email "${escapeString(
+      email
+    )}"; (authorization:$token, client:$client) isa authorize; get;`,
     ['client', 'token']
   );
   if (isNil(result)) {
@@ -188,7 +190,7 @@ export const findByTokenUUID = async tokenValue => {
       `match $token isa Token,
     has uuid "${escapeString(tokenValue)}",
     has revoked false;
-    (authorization:$token, client:$client); get;`,
+    (authorization:$token, client:$client) isa authorize; get;`,
       ['client', 'token']
     );
     logger.debug(`Setting cache access for ${tokenValue}`);
@@ -223,7 +225,7 @@ const OPENCTI_ADMIN_DNS = '88ec0c6a-13ce-5e39-b486-354fe4a7084f';
  * @returns {*}
  */
 export const initAdmin = async (email, password, tokenValue) => {
-  const admin = await findById(OPENCTI_ADMIN_DNS);
+  const admin = await findById(OPENCTI_ADMIN_DNS, { noCache: true });
   const tokenAdmin = generateOpenCTIWebToken(tokenValue);
   const user = { name: 'system' };
   if (admin) {
