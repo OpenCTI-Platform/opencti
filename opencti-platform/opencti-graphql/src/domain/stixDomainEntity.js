@@ -12,6 +12,7 @@ import {
   executeWrite,
   listEntities,
   loadEntityById,
+  loadEntityByStixId,
   timeSeries,
   updateAttribute
 } from '../database/grakn';
@@ -27,8 +28,8 @@ export const findAll = args => {
   const finalArgs = assoc('types', noTypes ? ['Stix-Domain-Entity'] : args.types, args);
   return listEntities(['name', 'alias'], finalArgs);
 };
-export const findById = stixDomainEntityId => {
-  return loadEntityById(stixDomainEntityId);
+export const findById = (id, isStixId) => {
+  return isStixId ? loadEntityByStixId(id) : loadEntityById(id);
 };
 
 // region time series

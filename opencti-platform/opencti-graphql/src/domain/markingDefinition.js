@@ -8,13 +8,14 @@ import {
   executeWrite,
   listEntities,
   loadEntityById,
+  loadEntityByStixId,
   TYPE_STIX_DOMAIN,
   updateAttribute
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findById = markingDefinitionId => {
-  return loadEntityById(markingDefinitionId);
+export const findById = (id, isStixId) => {
+  return isStixId ? loadEntityByStixId(id) : loadEntityById(id);
 };
 
 export const findAll = args => {

@@ -2593,7 +2593,7 @@ type Query {
   # StixEntities
   stixEntity(id: String, isStixId: Boolean): StixEntity @auth
   # StixDomainEntities
-  stixDomainEntity(id: String): StixDomainEntity @auth
+  stixDomainEntity(id: String, isStixId: Boolean): StixDomainEntity @auth
   stixDomainEntities(
     first: Int
     after: ID
@@ -2796,7 +2796,7 @@ type Query {
     search: String
   ): GroupConnection @auth
   # MarkingDefinitions
-  markingDefinition(id: String!): MarkingDefinition @auth
+  markingDefinition(id: String!, isStixId: Boolean): MarkingDefinition @auth
   markingDefinitions(
     first: Int
     after: ID

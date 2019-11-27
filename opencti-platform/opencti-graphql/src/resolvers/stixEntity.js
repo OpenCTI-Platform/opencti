@@ -24,11 +24,11 @@ const stixEntityResolvers = {
       }
       return 'Unknown';
     },
-    createdByRef: entity => createdByRef(entity.id),
-    editContext: entity => fetchEditContext(entity.id),
-    externalReferences: attPatt => externalReferences(attPatt.id),
-    tags: entity => tags(entity.id),
-    reports: entity => reports(entity.id),
+    createdByRef: stixEntity => createdByRef(stixEntity.id),
+    editContext: stixEntity => fetchEditContext(stixEntity.id),
+    externalReferences: stixEntity => externalReferences(stixEntity.id),
+    tags: stixEntity => tags(stixEntity.id),
+    reports: stixEntity => reports(stixEntity.id),
     markingDefinitions: stixEntity => markingDefinitions(stixEntity.id),
     stixRelations: (stixEntity, args) => stixRelations(stixEntity.id, args)
   }

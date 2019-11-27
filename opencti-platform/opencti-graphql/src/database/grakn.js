@@ -959,7 +959,7 @@ export const listEntities = async (searchFields, args) => {
   const { first = 200, after, withCache = true, types, search, filters, orderBy, orderMode = 'asc' } = args;
   const validFilters = filter(f => f && f.values.filter(n => n).length > 0, filters || []);
   const offset = after ? cursorToOffset(after) : 0;
-  const isRelationOrderBy = orderBy !== undefined && includes('.', orderBy);
+  const isRelationOrderBy = orderBy !== undefined && orderBy !== null && includes('.', orderBy);
   // Define if Elastic can support this query.
   // 01-2 Check the filters
   const unSupportedRelations =
@@ -1284,12 +1284,14 @@ export const paginateRelationships = async (query, options, key = 'rel', extraRe
       canUseCache && // Explicitly express that can use the cache
       (inferred === undefined || inferred === false) && // Only for real relations
       extraRel === null && // No support of relation to relation
+      fromTypes &&
       fromTypes.length <= 1 && // Can only force one type with current elPaginate
+      toTypes &&
       toTypes.length <= 1 // Can only force one type with current elPaginate
     ) {
       const filters = [];
-      if (fromTypes.length > 0) filters.push({ key: 'fromTypes', values: fromTypes });
-      if (toTypes.length > 0) filters.push({ key: 'toTypes', values: toTypes });
+      if (fromTypes && fromTypes.length > 0) filters.push({ key: 'fromTypes', values: fromTypes });
+      if (toTypes && toTypes.length > 0) filters.push({ key: 'toTypes', values: toTypes });
       if (fromId) {
         const from = await loadEntityById(fromId);
         filters.push({ key: 'fromId', values: [from.grakn_id] });
@@ -1628,7 +1630,7 @@ export const createEntity = async (entity, type, opts = {}) => {
     await indexElements([completedData]);
   }
   // Complete with eventual relations (will eventually update the index)
-  await addOwner(internalId.id, entity.createdByOwner, opts);
+  await addOwner(internalId, entity.createdByOwner, opts);
   await addCreatedByRef(internalId, entity.createdByRef, opts);
   await addMarkingDefs(internalId, entity.markingDefinitions, opts);
   await addKillChains(internalId, entity.killChainPhases, opts);
