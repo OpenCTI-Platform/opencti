@@ -1,5 +1,6 @@
 import {
   createdByRef,
+  findAll,
   findById,
   markingDefinitions,
   reports,
@@ -11,7 +12,8 @@ import { fetchEditContext } from '../database/redis';
 
 const stixEntityResolvers = {
   Query: {
-    stixEntity: (_, { id, isStixId }) => findById(id, isStixId)
+    stixEntity: (_, { id, isStixId }) => findById(id, isStixId),
+    stixEntities: (_, args) => findAll(args)
   },
   StixEntity: {
     // eslint-disable-next-line

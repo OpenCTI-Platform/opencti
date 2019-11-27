@@ -348,6 +348,33 @@ interface GlobalObject {
 }
 
 ### STIX objects
+enum StixEntitiesOrdering {
+  name
+  entity_type
+  created_at
+  updated_at
+  tags
+  markingDefinitions
+}
+enum StixEntitiesFilter {
+  name
+  entity_type
+  stix_id_key
+  hasExternalReference
+}
+input StixEntitiesFiltering {
+  key: StixEntitiesFilter!
+  values: [String]
+}
+type StixEntityConnection {
+  pageInfo: PageInfo!
+  edges: [StixEntityEdge]
+}
+type StixEntityEdge {
+  cursor: String!
+  node: StixEntity!
+  relation: RelationEmbedded!
+}
 interface StixEntity {
   id: ID!
   internal_id_key: String!
@@ -2592,6 +2619,16 @@ type Query {
   importFiles(first: Int): FileConnection @auth
   # StixEntities
   stixEntity(id: String, isStixId: Boolean): StixEntity @auth
+  stixEntities(
+    first: Int
+    after: ID
+    types: [String]
+    orderBy: StixEntitiesOrdering
+    orderMode: OrderingMode
+    filters: [StixEntitiesFiltering]
+    filterMode: FilterMode
+    search: String
+  ): StixEntityConnection @auth
   # StixDomainEntities
   stixDomainEntity(id: String): StixDomainEntity @auth
   stixDomainEntities(

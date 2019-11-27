@@ -1189,12 +1189,14 @@ export const paginateRelationships = async (query, options, key = 'rel', extraRe
       canUseCache && // Explicitly express that can use the cache
       (inferred === undefined || inferred === false) && // Only for real relations
       extraRel === null && // No support of relation to relation
+      fromTypes &&
       fromTypes.length <= 1 && // Can only force one type with current elPaginate
+      toTypes &&
       toTypes.length <= 1 // Can only force one type with current elPaginate
     ) {
       const filters = [];
-      if (fromTypes.length > 0) filters.push({ key: 'fromTypes', values: fromTypes });
-      if (toTypes.length > 0) filters.push({ key: 'toTypes', values: toTypes });
+      if (fromTypes && fromTypes.length > 0) filters.push({ key: 'fromTypes', values: fromTypes });
+      if (toTypes && toTypes.length > 0) filters.push({ key: 'toTypes', values: toTypes });
       if (fromId) {
         const from = await loadEntityById(fromId);
         filters.push({ key: 'fromId', values: [from.grakn_id] });
