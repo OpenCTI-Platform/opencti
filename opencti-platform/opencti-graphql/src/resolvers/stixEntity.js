@@ -1,6 +1,5 @@
 import {
   createdByRef,
-  findAll,
   findById,
   markingDefinitions,
   reports,
@@ -12,8 +11,7 @@ import { fetchEditContext } from '../database/redis';
 
 const stixEntityResolvers = {
   Query: {
-    stixEntity: (_, { id, isStixId }) => findById(id, isStixId),
-    stixEntities: (_, args) => findAll(args)
+    stixEntity: (_, { id, isStixId }) => findById(id, isStixId)
   },
   StixEntity: {
     // eslint-disable-next-line
@@ -26,11 +24,11 @@ const stixEntityResolvers = {
       }
       return 'Unknown';
     },
-    createdByRef: entity => createdByRef(entity.id),
-    editContext: entity => fetchEditContext(entity.id),
-    externalReferences: attPatt => externalReferences(attPatt.id),
-    tags: entity => tags(entity.id),
-    reports: entity => reports(entity.id),
+    createdByRef: stixEntity => createdByRef(stixEntity.id),
+    editContext: stixEntity => fetchEditContext(stixEntity.id),
+    externalReferences: stixEntity => externalReferences(stixEntity.id),
+    tags: stixEntity => tags(stixEntity.id),
+    reports: stixEntity => reports(stixEntity.id),
     markingDefinitions: stixEntity => markingDefinitions(stixEntity.id),
     stixRelations: (stixEntity, args) => stixRelations(stixEntity.id, args)
   }

@@ -24,7 +24,7 @@ import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const stixDomainEntityResolvers = {
   Query: {
-    stixDomainEntity: (_, { id }) => findById(id),
+    stixDomainEntity: (_, { id, isStixId }) => findById(id, isStixId),
     stixDomainEntities: (_, args) => findAll(args),
     stixDomainEntitiesTimeSeries: (_, args) => stixDomainEntitiesTimeSeries(args),
     stixDomainEntitiesNumber: (_, args) => stixDomainEntitiesNumber(args)

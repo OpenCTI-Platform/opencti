@@ -864,7 +864,7 @@ export const listEntities = async (searchFields, args) => {
   const { first = 200, after, withCache = true, types, search, filters, orderBy, orderMode = 'asc' } = args;
   const validFilters = filter(f => f && f.values.filter(n => n).length > 0, filters || []);
   const offset = after ? cursorToOffset(after) : 0;
-  const isRelationOrderBy = orderBy !== undefined && includes('.', orderBy);
+  const isRelationOrderBy = orderBy !== undefined && orderBy !== null && includes('.', orderBy);
   // Define if Elastic can support this query.
   // 01-2 Check the filters
   const unSupportedRelations =

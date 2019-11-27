@@ -17,7 +17,7 @@ import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const markingDefinitionResolvers = {
   Query: {
-    markingDefinition: (_, { id }) => findById(id),
+    markingDefinition: (_, { id, isStixId }) => findById(id, isStixId),
     markingDefinitions: (_, args) => findAll(args)
   },
   MarkingDefinitionsFilter: {

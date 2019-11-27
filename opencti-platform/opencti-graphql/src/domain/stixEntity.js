@@ -2,7 +2,6 @@ import { assoc } from 'ramda';
 import {
   escapeString,
   findWithConnectedRelations,
-  listEntities,
   loadEntityById,
   loadEntityByStixId,
   loadWithConnectedRelations
@@ -10,11 +9,6 @@ import {
 import { findAll as relationFindAll, search as relationSearch } from './stixRelation';
 import { buildPagination } from '../database/utils';
 
-export const findAll = args => {
-  const noTypes = !args.types || args.types.length === 0;
-  const finalArgs = assoc('types', noTypes ? ['Stix-Domain'] : args.types, args);
-  return listEntities(['name', 'alias'], finalArgs);
-};
 export const findById = (id, isStixId) => {
   return isStixId ? loadEntityByStixId(id) : loadEntityById(id);
 };
