@@ -1514,7 +1514,9 @@ export const createEntity = async (entity, type, opts = {}) => {
     const { key, value } = queryElements[index];
     const insert = prepareAttribute(value);
     const separator = index + 1 === nbElements ? ';' : ',';
-    query += `has ${key} ${insert}${separator} `;
+    if (insert !== null && insert !== undefined && insert.length !== 0) {
+      query += `has ${key} ${insert}${separator} `;
+    }
   }
   const entityCreated = await executeWrite(async wTx => {
     const iterator = await wTx.tx.query(query);
