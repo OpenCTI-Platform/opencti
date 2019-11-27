@@ -1,9 +1,24 @@
 /* eslint-disable no-underscore-dangle */
 import { Client } from '@elastic/elasticsearch';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
-import { append, assoc, dissoc, filter, flatten, head, join, map, pipe, split } from 'ramda';
+import {
+  append,
+  assoc,
+  dissoc,
+  filter,
+  find as Rfind,
+  flatten,
+  head,
+  invertObj,
+  join,
+  map,
+  mergeAll,
+  pipe,
+  split
+} from 'ramda';
 import { buildPagination } from './utils';
 import conf, { logger } from '../config/conf';
+import { rolesMap } from './graknRoles';
 
 const dateFields = ['created', 'modified', 'created_at', 'updated_at', 'first_seen', 'last_seen', 'published'];
 const numberFields = ['object_status', 'phase_order'];
@@ -223,6 +238,35 @@ export const elCount = (indexName, options) => {
     return data.body.count;
   });
 };
+
+// region elastic common loader.
+const elReconstructRelation = (concept, relationsMap = null) => {
+  const naturalDirections = rolesMap[concept.relationship_type];
+  if (naturalDirections === undefined) {
+    throw new Error('test');
+  }
+  const bindingByAlias = invertObj(naturalDirections);
+  // Need to rebuild the from and the to.
+  const { connections } = concept;
+  const relationValues = relationsMap ? Array.from(relationsMap.values()) : undefined;
+  // Looking for a from
+  const roleFromMap = relationValues ? Rfind(v => v.alias === 'from', relationValues).role : undefined;
+  const fromRole = roleFromMap || bindingByAlias.from;
+  const fromConnection = Rfind(connection => connection.role === fromRole, connections);
+  if (fromConnection === undefined || fromRole === undefined) {
+    throw new Error(`[ELASTIC] Something went wrong reconstructing the relation ${concept.id} (from)`);
+  }
+  const from = { from: null, fromId: fromConnection.id, fromRole, fromTypes: fromConnection.types };
+  // Looking for a to
+  const roleToMap = relationValues ? Rfind(v => v.alias === 'to', relationValues).role : undefined;
+  const toRole = roleToMap || bindingByAlias.to;
+  const toConnection = Rfind(connection => connection.role === toRole, connections);
+  if (toConnection === undefined || toRole === undefined) {
+    throw new Error(`[ELASTIC] Something went wrong reconstructing the relation ${concept.id} (to)`);
+  }
+  const to = { to: null, toId: toConnection.id, toRole, fromTypes: toConnection.types };
+  return mergeAll([concept, from, to]);
+};
 export const elPaginate = async (indexName, options) => {
   const {
     first = 200,
@@ -233,6 +277,7 @@ export const elPaginate = async (indexName, options) => {
     search = null,
     orderBy = null,
     orderMode = 'asc',
+    relationsMap = null,
     connectionFormat = true // TODO @Julien Refactor that
   } = options;
   const offset = after ? cursorToOffset(after) : 0;
@@ -317,14 +362,16 @@ export const elPaginate = async (indexName, options) => {
   };
   logger.debug(`[ELASTICSEARCH] paginate > ${JSON.stringify(query)}`);
   return el.search(query).then(data => {
-    const dataWithIds = map(
-      n =>
-        pipe(
-          assoc('id', n._source.internal_id_key),
-          assoc('_index', n._index)
-        )(n._source),
-      data.body.hits.hits
-    );
+    const dataWithIds = map(n => {
+      const loadedElement = pipe(
+        assoc('id', n._source.internal_id_key),
+        assoc('_index', n._index)
+      )(n._source);
+      if (loadedElement.relationship_type) {
+        return elReconstructRelation(loadedElement, relationsMap);
+      }
+      return loadedElement;
+    }, data.body.hits.hits);
     if (connectionFormat) {
       const nodeHits = map(n => ({ node: n }), dataWithIds);
       return buildPagination(first, offset, nodeHits, data.body.hits.total.value);
@@ -332,8 +379,7 @@ export const elPaginate = async (indexName, options) => {
     return dataWithIds;
   });
 };
-
-export const elLoadByTerms = async (terms, indices = PLATFORM_INDICES) => {
+export const elLoadByTerms = async (terms, relationsMap, indices = PLATFORM_INDICES) => {
   const query = {
     index: indices,
     _source_excludes: `${REL_INDEX_PREFIX}*`,
@@ -347,18 +393,27 @@ export const elLoadByTerms = async (terms, indices = PLATFORM_INDICES) => {
   };
   const data = await el.search(query);
   const total = data.body.hits.total.value;
-  const response = total > 0 ? head(data.body.hits.hits) : undefined;
+  if (total > 1) {
+    throw new Error(`[ELASTIC] Expect only one response expected for ${terms}`);
+  }
+  const response = total === 1 ? head(data.body.hits.hits) : undefined;
   if (!response) return response;
-  return assoc('_index', response._index, response._source);
+  const loadedElement = assoc('_index', response._index, response._source);
+  if (loadedElement.relationship_type) {
+    return elReconstructRelation(loadedElement, relationsMap);
+  }
+  return loadedElement;
 };
-export const elLoadById = (id, indices = PLATFORM_INDICES) => {
-  return elLoadByTerms([{ 'internal_id_key.keyword': id }], indices);
+// endregion
+
+export const elLoadById = (id, relationsMap, indices = PLATFORM_INDICES) => {
+  return elLoadByTerms([{ 'internal_id_key.keyword': id }], relationsMap, indices);
 };
-export const elLoadByStixId = (id, indices = PLATFORM_INDICES) => {
-  return elLoadByTerms([{ 'stix_id_key.keyword': id }], indices);
+export const elLoadByStixId = (id, relationsMap, indices = PLATFORM_INDICES) => {
+  return elLoadByTerms([{ 'stix_id_key.keyword': id }], relationsMap, indices);
 };
-export const elLoadByGraknId = (id, indices = PLATFORM_INDICES) => {
-  return elLoadByTerms([{ 'grakn_id.keyword': id }], indices);
+export const elLoadByGraknId = (id, relationsMap, indices = PLATFORM_INDICES) => {
+  return elLoadByTerms([{ 'grakn_id.keyword': id }], relationsMap, indices);
 };
 
 export const elBulk = async args => {

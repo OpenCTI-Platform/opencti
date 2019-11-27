@@ -10,7 +10,7 @@ const graknStateStorage = {
   async load(fn) {
     // Get current status of migrations in Grakn
     const result = await find(
-      `match $from isa MigrationStatus; $rel(status:$from, state:$to); get;`,
+      `match $from isa MigrationStatus; $rel(status:$from, state:$to) isa migrate; get;`,
       ['rel', 'from', 'to'],
       { noCache: true }
     );

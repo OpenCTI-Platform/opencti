@@ -53,7 +53,7 @@ export const killChainPhases = async stixDomainEntityId => {
     $from has internal_id_key "${escapeString(stixDomainEntityId)}"; get;`,
     'to',
     'rel'
-  ).then(data => ({ edges: data }));
+  ).then(data => buildPagination(0, 0, data, data.length));
 };
 export const externalReferences = async stixDomainEntityId => {
   return findWithConnectedRelations(
@@ -63,6 +63,7 @@ export const externalReferences = async stixDomainEntityId => {
     'rel'
   ).then(data => buildPagination(0, 0, data, data.length));
 };
+
 export const stixRelations = (stixEntityId, args) => {
   const finalArgs = assoc('fromId', stixEntityId, args);
   if (finalArgs.search && finalArgs.search.length > 0) {

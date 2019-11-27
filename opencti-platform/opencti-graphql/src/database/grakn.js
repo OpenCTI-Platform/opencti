@@ -8,11 +8,13 @@ import {
   dissoc,
   equals,
   filter,
+  find as Rfind,
   flatten,
   fromPairs,
   groupBy,
   head,
   includes,
+  invertObj,
   isEmpty,
   isNil,
   join,
@@ -33,7 +35,7 @@ import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import Grakn from 'grakn-client';
 import conf, { logger } from '../config/conf';
 import { buildPagination, fillTimeSeries, randomKey } from './utils';
-import { isInversed } from './graknRoles';
+import { isInversed, rolesMap } from './graknRoles';
 import {
   elBulk,
   elDeleteInstanceIds,
@@ -247,13 +249,62 @@ export const conceptTypes = async (concept, currentType = null, acc = []) => {
   acc.push(conceptLabel);
   return conceptTypes(concept, parentType, acc);
 };
-
+const extractRelationAlias = (alias, role, relationType) => {
+  const variables = [];
+  if (alias !== 'from' && alias !== 'to') {
+    throw new Error('[GRAKN] Query cant have relation alias without roles (except for from/to)');
+  }
+  const resolveRightAlias = alias === 'from' ? 'to' : 'from';
+  const resolvedRelation = rolesMap[relationType];
+  if (resolvedRelation === undefined) {
+    throw new Error(`[GRAKN] Relation binding missing and rolesMap: ${relationType}`);
+  }
+  const bindingByAlias = invertObj(resolvedRelation);
+  const resolveRightRole = bindingByAlias[resolveRightAlias];
+  if (resolveRightRole === undefined) {
+    throw new Error(`[GRAKN] Role resolution error for alias: ${resolveRightAlias} - relation: ${relationType}`);
+  }
+  // Control the role specified in the query.
+  const resolveLeftRole = bindingByAlias[alias];
+  if (role !== resolveLeftRole) {
+    throw new Error(`[GRAKN] Incorrect role specified for alias: ${alias} - role: ${role} - relation: ${relationType}`);
+  }
+  variables.push({ role: resolveRightRole, alias: resolveRightAlias });
+  variables.push({ role, alias });
+  return variables;
+};
 /**
  * Extract all vars from a grakn query
  * @param query
  */
-const extractQueryVars = query => {
-  return uniq(map(m => m.replace('$', ''), query.match(/\$[a-z_]+/gi)));
+export const extractQueryVars = query => {
+  const vars = uniq(map(m => ({ alias: m.replace('$', '') }), query.match(/\$[a-z_]+/gi)));
+  const relationsVars = Array.from(query.matchAll(/\(([a-z_\s:$]+),([a-z_\s:$]+)\)[\s]*isa[\s]*([a-z_]+)/g));
+  const roles = flatten(
+    map(r => {
+      const [, left, right, relationType] = r;
+      const [leftRole, leftAlias] = includes(':', left) ? left.trim().split(':') : [null, left];
+      const [rightRole, rightAlias] = includes(':', right) ? right.trim().split(':') : [null, right];
+      const lAlias = leftAlias.trim().replace('$', '');
+      const rAlias = rightAlias.trim().replace('$', '');
+      // Roles must be fully specified or not specified.
+      // Need to complete the leftRole
+      if (leftRole === null && rightRole !== null) {
+        return extractRelationAlias(rAlias, rightRole, relationType);
+      }
+      if (leftRole !== null && rightRole === null) {
+        return extractRelationAlias(lAlias, leftRole, relationType);
+      }
+      return [
+        { role: rightRole ? rightRole.trim() : undefined, alias: rAlias },
+        { role: leftRole ? leftRole.trim() : undefined, alias: lAlias }
+      ];
+    }, relationsVars)
+  );
+  return map(v => {
+    const associatedRole = Rfind(r => r.alias === v.alias, roles);
+    return assoc('role', associatedRole ? associatedRole.role : undefined, v);
+  }, vars);
 };
 // endregion
 
@@ -339,12 +390,13 @@ export const deleteAttributeById = async id => {
 const conceptOpts = { relationsMap: new Map() };
 /**
  * Load any grakn instance with internal grakn ID.
+ * @param query initial query
  * @param concept the concept to get attributes from
  * @param relationsMap
  * @param noCache
  * @returns {Promise}
  */
-const loadConcept = async (concept, { relationsMap, noCache = false } = conceptOpts) => {
+const loadConcept = async (query, concept, { relationsMap, noCache = false } = conceptOpts) => {
   const { id } = concept;
   const conceptType = concept.baseType;
   const types = await conceptTypes(concept);
@@ -352,7 +404,7 @@ const loadConcept = async (concept, { relationsMap, noCache = false } = conceptO
   // 01. Return the data in elastic if not explicitly asked in grakn
   // Very useful for getting every entities through relation query.
   if (!forceNoCache() && noCache === false) {
-    const conceptFromCache = await elLoadByGraknId(id, [index]);
+    const conceptFromCache = await elLoadByGraknId(id, relationsMap, [index]);
     if (!conceptFromCache) {
       logger.debug(`[GRAKN] Cache warning: ${id} should be available in cache`);
     } else {
@@ -403,33 +455,44 @@ const loadConcept = async (concept, { relationsMap, noCache = false } = conceptO
         assoc('id', transform.internal_id_key),
         assoc('grakn_id', concept.id),
         assoc('parent_types', types),
+        assoc('base_type', conceptType.toLowerCase()),
         assoc('index_version', '1.0')
       )(transform);
     })
     .then(async entityData => {
-      if (conceptType !== 'RELATION') return entityData;
+      if (entityData.base_type !== 'relation') return entityData;
       const isInferredPromise = concept.isInferred();
       const rolePlayers = await concept.rolePlayersMap();
-      const roleEntries = Array.from(rolePlayers.entries()); // Array.from(rolePlayers.entries()).flat();
+      const roleEntries = Array.from(rolePlayers.entries());
       const rolesPromises = Promise.all(
         map(async roleItem => {
           // eslint-disable-next-line prettier/prettier
-          const roleId = last(roleItem)
-            .values()
-            .next().value.id;
+          const roleId = last(roleItem).values().next().value.id;
           const conceptFromMap = relationsMap.get(roleId);
-          return conceptFromMap
-            ? head(roleItem)
-                .label()
-                .then(async roleLabel => {
-                  return {
-                    [`${conceptFromMap.entity}Id`]: roleId,
-                    [`${conceptFromMap.entity}Role`]: roleLabel,
-                    [`${conceptFromMap.entity}Types`]: conceptFromMap.types,
-                    [conceptFromMap.entity]: null // With be use lazily
-                  };
-                })
-            : {};
+          if (conceptFromMap) {
+            const { alias, role } = conceptFromMap;
+            // eslint-disable-next-line prettier/prettier
+            return head(roleItem).label().then(async roleLabel => {
+                // Alias when role are not specified need to be force the opencti natural direction.
+                let useAlias = alias;
+                // If role specified in the query, just use the alias to bind the data.
+                // If not, retrieve the alias (from or to) inside the roles map.
+                if (role === undefined) {
+                  const directedRole = rolesMap[head(types)];
+                  if (directedRole === undefined) {
+                    throw new Error(`Undefined directed roles for ${head(types)}, query: ${query}`);
+                  }
+                  useAlias = directedRole[roleLabel];
+                }
+                return {
+                  [useAlias]: null, // With be use lazily
+                  [`${useAlias}Id`]: roleId,
+                  [`${useAlias}Role`]: roleLabel,
+                  [`${useAlias}Types`]: conceptFromMap.types
+                };
+              });
+          }
+          return {};
         }, roleEntries)
       );
       // Wait for all promises before building the result
@@ -443,26 +506,15 @@ const loadConcept = async (concept, { relationsMap, noCache = false } = conceptO
         )(entityData);
       });
     })
-    .then(globalObject => {
-      // 01. First fix the direction of the relation
-      // When fetching the info, we cant know the source access
-      const isInv = isInversed(globalObject.relationship_type, globalObject.fromRole);
-      const fixedRel = pipe(
-        assoc('fromId', isInv ? globalObject.toId : globalObject.fromId),
-        assoc('fromRole', isInv ? globalObject.toRole : globalObject.fromRole),
-        assoc('fromTypes', isInv ? globalObject.toTypes : globalObject.fromTypes),
-        assoc('toId', isInv ? globalObject.fromId : globalObject.toId),
-        assoc('toRole', isInv ? globalObject.fromRole : globalObject.toRole),
-        assoc('toTypes', isInv ? globalObject.fromTypes : globalObject.toTypes)
-      )(globalObject);
-      // 02. Then change the id if relation is inferred
-      if (fixedRel.inferred) {
-        const { fromId, fromRole, toId, toRole } = fixedRel;
-        const type = fixedRel.relationship_type;
+    .then(relationData => {
+      // Then change the id if relation is inferred
+      if (relationData.inferred) {
+        const { fromId, fromRole, toId, toRole } = relationData;
+        const type = relationData.relationship_type;
         const pattern = `{ $rel(${fromRole}: $from, ${toRole}: $to) isa ${type}; $from id ${fromId}; $to id ${toId}; };`;
-        return assoc('id', Buffer.from(pattern).toString('base64'), fixedRel);
+        return assoc('id', Buffer.from(pattern).toString('base64'), relationData);
       }
-      return fixedRel;
+      return relationData;
     });
 };
 
@@ -491,18 +543,18 @@ export const find = async (query, entities, { uniqueKey, infer, noCache } = find
       map(async answer => {
         // Create a map useful for relation roles binding
         const queryVarsToConcepts = await Promise.all(
-          conceptQueryVars.map(async entity => {
-            const concept = answer.map().get(entity);
+          conceptQueryVars.map(async ({ alias, role }) => {
+            const concept = answer.map().get(alias);
             if (concept.baseType === 'ATTRIBUTE') return undefined; // If specific attributes are used for filtering, ordering, ...
             const types = await conceptTypes(concept);
-            return { id: concept.id, data: { concept, entity, types } };
+            return { id: concept.id, data: { concept, alias, role, types } };
           })
         );
         const conceptsIndex = filter(e => e, queryVarsToConcepts);
         const fetchingConceptsPairs = map(x => [x.id, x.data], conceptsIndex);
         const relationsMap = new Map(fetchingConceptsPairs);
         // Fetch every concepts of the answer
-        const requestedConcepts = filter(r => includes(r.data.entity, entities), conceptsIndex);
+        const requestedConcepts = filter(r => includes(r.data.alias, entities), conceptsIndex);
         return map(t => {
           const { concept } = t.data;
           return { id: concept.id, concept, relationsMap };
@@ -513,7 +565,7 @@ export const find = async (query, entities, { uniqueKey, infer, noCache } = find
     const uniqConceptsLoading = pipe(
       flatten,
       uniqBy(e => e.id),
-      map(l => loadConcept(l.concept, { relationsMap: l.relationsMap, noCache }))
+      map(l => loadConcept(query, l.concept, { relationsMap: l.relationsMap, noCache }))
     )(queryConcepts);
     const resolvedConcepts = await Promise.all(uniqConceptsLoading);
     // 04. Create map from concepts
@@ -548,8 +600,31 @@ export const load = async (query, entities, { infer, noCache } = findOpts) => {
 
 // Reindex functions
 export const indexElements = async (elements, retry = 0) => {
+  // 00. Relations must be transformed before indexing.
+  const transformedElements = map(i => {
+    if (i.relationship_type) {
+      const connections = [];
+      if (i.fromRole === undefined || i.toRole === undefined) {
+        throw new Error('[ELASTIC] Cant index relation connections without from or to');
+      }
+      connections.push({ id: i.fromId, types: i.fromTypes, role: i.fromRole });
+      connections.push({ id: i.toId, types: i.toTypes, role: i.toRole });
+      return pipe(
+        assoc('connections', connections),
+        dissoc('from'),
+        dissoc('fromId'),
+        dissoc('fromTypes'),
+        dissoc('fromRole'),
+        dissoc('to'),
+        dissoc('toId'),
+        dissoc('toTypes'),
+        dissoc('toRole')
+      )(i);
+    }
+    return i;
+  }, elements);
   // 01. Bulk the indexing of row elements
-  const body = elements.flatMap(doc => [
+  const body = transformedElements.flatMap(doc => [
     { index: { _index: inferIndexFromConceptTypes(doc.parent_types), _id: doc.grakn_id } },
     doc
   ]);
@@ -609,7 +684,7 @@ export const indexElements = async (elements, retry = 0) => {
   if (bodyUpdate.length > 0) {
     await elBulk({ refresh: true, body: bodyUpdate });
   }
-  return elements.length;
+  return transformedElements.length;
 };
 export const reindexByQuery = async (query, entities) => {
   const elements = await find(query, entities, { infer: false, noCache: true });
@@ -631,17 +706,19 @@ export const reindexByAttribute = (type, value) => {
 /**
  * Load any grakn instance with OpenCTI internal ID.
  * @param id element id to get
+ * @param args
  * @returns {Promise}
  */
 // ENTITIES
-export const loadEntityById = async id => {
-  if (!forceNoCache()) {
+export const loadEntityById = async (id, args = {}) => {
+  const { noCache = false } = args;
+  if (!noCache && !forceNoCache()) {
     // [ELASTIC] From cache
     const fromCache = await elLoadById(id);
     if (fromCache) return fromCache;
   }
-  const query = `match $x has internal_id_key "${escapeString(id)}"; get;`;
-  const element = await load(query, ['x']);
+  const query = `match $x isa entity; $x has internal_id_key "${escapeString(id)}"; get;`;
+  const element = await load(query, ['x'], { noCache });
   return element ? element.x : null;
 };
 export const loadEntityByStixId = async id => {
@@ -650,34 +727,25 @@ export const loadEntityByStixId = async id => {
     const fromCache = await elLoadByStixId(id);
     if (fromCache) return fromCache;
   }
-  const query = `match $x has stix_id_key "${escapeString(id)}"; get;`;
+  const query = `match $x isa entity; $x has stix_id_key "${escapeString(id)}"; get;`;
   const element = await load(query, ['x']);
   return element ? element.x : null;
 };
-export const loadEntityByGraknId = async graknId => {
-  if (!forceNoCache()) {
+export const loadEntityByGraknId = async (graknId, args = {}) => {
+  const { noCache = false } = args;
+  if (!noCache && !forceNoCache()) {
     // [ELASTIC] From cache
     const fromCache = await elLoadByGraknId(graknId);
     if (fromCache) return fromCache;
   }
-  const query = `match $x id ${escapeString(graknId)}; get;`;
+  const query = `match $x isa entity; $x id ${escapeString(graknId)}; get;`;
   const element = await load(query, ['x']);
   return element.x;
 };
-// OBSERVABLES
-export const loadObservableById = async id => {
-  if (!forceNoCache()) {
-    // [ELASTIC] From cache
-    const fromCache = await elLoadById(id, [INDEX_STIX_OBSERVABLE]);
-    if (fromCache) return fromCache;
-  }
-  const query = `match $x has internal_id_key "${escapeString(id)}"; get;`;
-  const element = await load(query, ['x']);
-  return element ? element.x : null;
-};
 // RELATIONS
-export const loadRelationById = async id => {
-  if (!forceNoCache()) {
+export const loadRelationById = async (id, args = {}) => {
+  const { noCache = false } = args;
+  if (!noCache && !forceNoCache()) {
     // [ELASTIC] From cache
     const fromCache = await elLoadById(id);
     if (fromCache) return fromCache;
@@ -697,6 +765,33 @@ export const loadRelationByStixId = async id => {
   const query = `match $rel($from, $to) isa relation; $rel has stix_id_key "${eid}"; get;`;
   const element = await load(query, ['rel']);
   return element ? element.rel : null;
+};
+export const loadRelationByGraknId = async (graknId, args = {}) => {
+  const { noCache = false } = args;
+  if (!noCache && !forceNoCache()) {
+    // [ELASTIC] From cache
+    const fromCache = await elLoadByGraknId(graknId);
+    if (fromCache) return fromCache;
+  }
+  const eid = escapeString(graknId);
+  const query = `match $rel($from, $to) isa relation; $rel id ${eid}; get;`;
+  const element = await load(query, ['rel']);
+  return element ? element.rel : null;
+};
+// GENERIC
+export const loadByGraknId = async (graknId, args = {}) => {
+  // Could be entity or relation.
+  const { noCache = false } = args;
+  if (!noCache && !forceNoCache()) {
+    // [ELASTIC] From cache - Already support the diff between entity and relation.
+    const fromCache = await elLoadByGraknId(graknId);
+    if (fromCache) return fromCache;
+  }
+  const entity = await loadEntityByGraknId(graknId, { noCache: true });
+  if (entity.base_type === 'relation') {
+    return loadRelationByGraknId(graknId, { noCache: true });
+  }
+  return entity;
 };
 
 /**
@@ -789,7 +884,7 @@ export const updateAttribute = async (id, input, wTx) => {
 export const deleteEntityById = async id => {
   // 00. Load everything we need to remove in elastic
   const eid = escapeString(id);
-  const read = `match $x has internal_id_key "${eid}"; $y isa entity; $rel($x, $y); get;`;
+  const read = `match $from has internal_id_key "${eid}"; { $to isa entity; } or { $to isa relation; }; $rel($from, $to) isa relation; get;`;
   const relationsToDeIndex = await find(read, ['rel']);
   const relationsIds = map(r => r.rel.id, relationsToDeIndex);
   return executeWrite(async wTx => {
@@ -1118,7 +1213,7 @@ export const getRelationInferredById = async id => {
           const finalInferenceQuery = extractedInferenceQuery.replace(regexFromType, '').replace(regexToType, '');
           inferenceId = Buffer.from(finalInferenceQuery).toString('base64');
         } else {
-          const inferenceAttributes = await loadConcept(inferencesAnswer.map().get(inference.relationKey));
+          const inferenceAttributes = await loadConcept(query, inferencesAnswer.map().get(inference.relationKey));
           inferenceId = inferenceAttributes.internal_id_key;
         }
         // const fromAttributes = await loadConcept(inferenceFrom);
@@ -1318,26 +1413,23 @@ const createRelationRaw = async (fromInternalId, input, opts = {}) => {
   const relationshipType = input.relationship_type || input.through;
   const entityType = isStixRelation ? TYPE_STIX_RELATION : TYPE_RELATION_EMBEDDED;
   const isInv = isInversed(relationshipType, input.fromRole);
-  if (isInv) logger.warn('[GRAKN] You try to create a relation in incorrect order, reversing...', input);
-  const data = pipe(
-    assoc('fromId', isInv ? input.toId : fromInternalId),
-    assoc('fromRole', isInv ? input.toRole : input.fromRole),
-    assoc('toId', isInv ? fromInternalId : input.toId),
-    assoc('toRole', isInv ? input.fromRole : input.toRole)
-  )(input);
+  if (isInv) {
+    const message = `{ from '${input.fromRole}' to '${input.toRole}' through ${relationshipType} }`;
+    throw new Error(`[GRAKN] You cant create a relation in incorrect order ${message}`);
+  }
   // 02. Prepare the data to create or index
   const relationAttributes = { internal_id_key: relationId };
   if (isStixRelation) {
     const currentDate = now();
-    const toCreate = data.stix_id_key === undefined || data.stix_id_key === 'create';
-    relationAttributes.stix_id_key = toCreate ? `relationship--${uuid()}` : data.stix_id_key;
+    const toCreate = input.stix_id_key === undefined || input.stix_id_key === 'create';
+    relationAttributes.stix_id_key = toCreate ? `relationship--${uuid()}` : input.stix_id_key;
     relationAttributes.revoked = false;
-    relationAttributes.name = data.name ? data.name : ''; // Force name of the relation
-    relationAttributes.description = data.description;
-    relationAttributes.role_played = data.role_played ? data.role_played : 'Unknown';
-    relationAttributes.score = data.score ? data.score : 50;
-    relationAttributes.weight = data.weight;
-    relationAttributes.expiration = data.expiration;
+    relationAttributes.name = input.name ? input.name : ''; // Force name of the relation
+    relationAttributes.description = input.description;
+    relationAttributes.role_played = input.role_played ? input.role_played : 'Unknown';
+    relationAttributes.score = input.score ? input.score : 50;
+    relationAttributes.weight = input.weight;
+    relationAttributes.expiration = input.expiration;
     relationAttributes.entity_type = entityType;
     relationAttributes.relationship_type = relationshipType;
     relationAttributes.updated_at = currentDate;
@@ -1350,9 +1442,9 @@ const createRelationRaw = async (fromInternalId, input, opts = {}) => {
   }
   // 02. Create the relation
   const graknRelation = await executeWrite(async wTx => {
-    let query = `match $from has internal_id_key "${data.fromId}";
-      $to has internal_id_key "${data.toId}";
-      insert $rel(${data.fromRole}: $from, ${data.toRole}: $to) isa ${relationshipType},`;
+    let query = `match $from has internal_id_key "${fromInternalId}";
+      $to has internal_id_key "${input.toId}";
+      insert $rel(${input.fromRole}: $from, ${input.toRole}: $to) isa ${relationshipType},`;
     const queryElements = flatAttributesForObject(relationAttributes);
     const nbElements = queryElements.length;
     for (let index = 0; index < nbElements; index += 1) {
@@ -1381,8 +1473,10 @@ const createRelationRaw = async (fromInternalId, input, opts = {}) => {
     // Grakn identifiers
     assoc('grakn_id', graknRelation.graknRelationId),
     assoc('fromId', graknRelation.graknFromId),
+    assoc('fromRole', input.fromRole),
     assoc('fromTypes', graknRelation.fromTypes),
     assoc('toId', graknRelation.graknToId),
+    assoc('toRole', input.toRole),
     assoc('toTypes', graknRelation.toTypes),
     // Relation specific
     assoc('inferred', false),

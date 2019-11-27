@@ -10,7 +10,6 @@ import {
   executeWrite,
   listEntities,
   loadEntityById,
-  loadObservableById,
   timeSeries,
   TYPE_STIX_OBSERVABLE,
   updateAttribute
@@ -22,7 +21,7 @@ import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 
 export const findById = stixObservableId => {
-  return loadObservableById(stixObservableId);
+  return loadEntityById(stixObservableId);
 };
 export const findAll = async args => {
   const noTypes = !args.types || args.types.length === 0;
@@ -114,13 +113,13 @@ export const stixObservableEditField = (user, stixObservableId, input) => {
   return executeWrite(wTx => {
     return updateAttribute(stixObservableId, input, wTx);
   }).then(async () => {
-    const stixObservable = await loadObservableById(stixObservableId);
+    const stixObservable = await loadEntityById(stixObservableId);
     return notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, stixObservable, user);
   });
 };
 export const stixObservableDeleteRelation = async (user, stixObservableId, relationId) => {
   await deleteRelationById(relationId);
-  const data = await loadObservableById(stixObservableId);
+  const data = await loadEntityById(stixObservableId);
   return notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, data, user);
 };
 // endregion

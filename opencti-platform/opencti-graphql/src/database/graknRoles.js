@@ -66,6 +66,18 @@ export const rolesMap = {
   permission: {
     allowed: 'from',
     allow: 'to'
+  },
+  gathering: {
+    gather: 'from',
+    part_of: 'to'
+  },
+  external_references: {
+    so: 'from',
+    external_reference: 'to'
+  },
+  authorize: {
+    client: 'from',
+    authorization: 'to'
   }
 };
 
