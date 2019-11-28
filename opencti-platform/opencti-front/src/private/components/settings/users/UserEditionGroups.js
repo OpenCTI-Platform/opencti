@@ -47,7 +47,7 @@ const userMutationRelationDelete = graphql`
   mutation UserEditionGroupsRelationDeleteMutation($id: ID!, $relationId: ID!) {
     userEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-          ...UserEditionGroups_user
+        ...UserEditionGroups_user
       }
     }
   }
@@ -59,11 +59,11 @@ class UserEditionGroupsComponent extends Component {
       commitMutation({
         mutation: userMutationRelationAdd,
         variables: {
-          id: groupId,
+          id: this.props.user.id,
           input: {
-            fromRole: 'grouping',
-            toId: this.props.user.id,
-            toRole: 'member',
+            fromRole: 'member',
+            toId: groupId,
+            toRole: 'grouping',
             through: 'membership',
           },
         },

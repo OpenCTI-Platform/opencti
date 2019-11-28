@@ -62,11 +62,11 @@ class GroupEditionPermissionsComponent extends Component {
       commitMutation({
         mutation: groupMutationRelationAdd,
         variables: {
-          id: markingDefinitionId,
+          id: this.props.group.id,
           input: {
-            fromRole: 'allow',
-            toId: this.props.group.id,
-            toRole: 'allowed',
+            fromRole: 'allowed',
+            toId: markingDefinitionId,
+            toRole: 'allow',
             through: 'permission',
           },
         },

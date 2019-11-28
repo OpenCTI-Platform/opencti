@@ -501,6 +501,7 @@ define
 
   Connector sub entity,
     key internal_id_key,
+    has entity_type,
     has name,
     has connector_type,
     has connector_scope,

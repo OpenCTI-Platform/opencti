@@ -275,19 +275,19 @@ const elReconstructRelation = (concept, relationsMap = null) => {
   const queryFrom = Rfind(v => v.alias === 'from', relationValues);
   const queryTo = Rfind(v => v.alias === 'to', relationValues);
   // If map contains a key filtering
-  if (queryFrom.internalIdKey) {
+  if (queryFrom && queryFrom.internalIdKey) {
     fromConnection = Rfind(connection => connection.internal_id_key === queryFrom.internalIdKey, connections);
     toConnection = Rfind(connection => connection.internal_id_key !== queryFrom.internalIdKey, connections);
     return elMergeRelation(concept, fromConnection, toConnection);
   }
-  if (queryTo.internalIdKey) {
+  if (queryTo && queryTo.internalIdKey) {
     toConnection = Rfind(connection => connection.internal_id_key === queryTo.internalIdKey, connections);
     fromConnection = Rfind(connection => connection.internal_id_key !== queryTo.internalIdKey, connections);
     return elMergeRelation(concept, fromConnection, toConnection);
   }
   // If map contains a role filtering.
   // Only need to check on one side, the 2 roles are provisioned in this case.
-  if (queryFrom.role) {
+  if (queryFrom && queryFrom.role) {
     fromConnection = Rfind(connection => connection.role === queryFrom.role, connections);
     toConnection = Rfind(connection => connection.role === queryTo.role, connections);
     return elMergeRelation(concept, fromConnection, toConnection);
