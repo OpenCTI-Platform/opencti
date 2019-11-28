@@ -1,4 +1,4 @@
-import { addAttackPattern, findAll, findById } from '../domain/attackPattern';
+import { addAttackPattern, findAll, findById, coursesOfAction } from '../domain/attackPattern';
 import {
   stixDomainEntityAddRelation,
   stixDomainEntityCleanContext,
@@ -8,6 +8,7 @@ import {
   stixDomainEntityEditField
 } from '../domain/stixDomainEntity';
 import { killChainPhases } from '../domain/stixEntity';
+
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const attackPatternResolvers = {
@@ -16,7 +17,8 @@ const attackPatternResolvers = {
     attackPatterns: (_, args) => findAll(args)
   },
   AttackPattern: {
-    killChainPhases: (attPatt, args) => killChainPhases(attPatt.id, args)
+    killChainPhases: (attPatt, args) => killChainPhases(attPatt.id, args),
+    coursesOfAction: (attPatt, args) => coursesOfAction(attPatt.id, args)
   },
   AttackPatternsOrdering: {
     markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,

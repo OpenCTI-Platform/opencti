@@ -12,7 +12,6 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Avatar from '@material-ui/core/Avatar';
 import { CheckCircle } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
-import { ConnectionHandler } from 'relay-runtime';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -32,15 +31,11 @@ const courseOfActionLinesMutationRelationAdd = graphql`
     $id: ID!
     $input: RelationAddInput!
   ) {
-    courseOfActionEdit(id: $id) {
+    attackPatternEdit(id: $id) {
       relationAdd(input: $input) {
         id
         to {
-          ... on CourseOfAction {
-            id
-            name
-            description
-          }
+          ...AttackPatternCoursesOfAction_attackPattern
         }
       }
     }
@@ -52,94 +47,68 @@ export const courseOfActionMutationRelationDelete = graphql`
     $id: ID!
     $relationId: ID!
   ) {
-    courseOfActionEdit(id: $id) {
+    attackPatternEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        id
+        ...AttackPatternCoursesOfAction_attackPattern
       }
     }
   }
 `;
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_coursesOfAction',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
 class AddCoursesOfActionLinesContainer extends Component {
   toggleCourseOfAction(courseOfAction) {
-    const {
-      entityId,
-      entityCoursesOfAction,
-      entityPaginationOptions,
-    } = this.props;
-    const entityCoursesOfActionIds = map((n) => n.node.id, entityCoursesOfAction);
-    const alreadyAdded = entityCoursesOfActionIds.includes(courseOfAction.id);
+    const { attackPatternId, attackPatternCoursesOfAction } = this.props;
+    const attackPatternCoursesOfActionIds = map(
+      (n) => n.node.id,
+      attackPatternCoursesOfAction,
+    );
+    const alreadyAdded = attackPatternCoursesOfActionIds.includes(
+      courseOfAction.id,
+    );
 
     if (alreadyAdded) {
       const existingCourseOfAction = head(
-        filter((n) => n.node.id === courseOfAction.id, entityCoursesOfAction),
+        filter(
+          (n) => n.node.id === courseOfAction.id,
+          attackPatternCoursesOfAction,
+        ),
       );
       commitMutation({
         mutation: courseOfActionMutationRelationDelete,
         variables: {
-          id: courseOfAction.id,
+          id: attackPatternId,
           relationId: existingCourseOfAction.relation.id,
-        },
-        updater: (store) => {
-          const container = store.getRoot();
-          const userProxy = store.get(container.getDataID());
-          const conn = ConnectionHandler.getConnection(
-            userProxy,
-            'Pagination_coursesOfAction',
-            entityPaginationOptions,
-          );
-          ConnectionHandler.deleteNode(conn, courseOfAction.id);
         },
       });
     } else {
       const input = {
-        fromRole: 'problem',
-        toId: courseOfAction.id,
-        toRole: 'mitigation',
+        fromRole: 'mitigation',
+        toId: attackPatternId,
+        toRole: 'problem',
         through: 'mitigates',
+        stix_id_key: 'create',
       };
       commitMutation({
         mutation: courseOfActionLinesMutationRelationAdd,
         variables: {
-          id: entityId,
+          id: courseOfAction.id,
           input,
-        },
-        updater: (store) => {
-          const payload = store
-            .getRootField('courseOfActionEdit')
-            .getLinkedRecord('relationAdd', { input })
-            .getLinkedRecord('to');
-          const newEdge = payload.setLinkedRecord(payload, 'node');
-          const container = store.getRoot();
-          sharedUpdater(
-            store,
-            container.getDataID(),
-            entityPaginationOptions,
-            newEdge,
-          );
         },
       });
     }
   }
 
   render() {
-    const { classes, data, entityCoursesOfAction } = this.props;
-    const entityCoursesOfActionIds = map((n) => n.node.id, entityCoursesOfAction);
+    const { classes, data, attackPatternCoursesOfAction } = this.props;
+    const attackPatternCoursesOfActionIds = map(
+      (n) => n.node.id,
+      attackPatternCoursesOfAction,
+    );
     return (
       <List>
         {data.coursesOfAction.edges.map((courseOfActionNode) => {
           const courseOfAction = courseOfActionNode.node;
-          const alreadyAdded = entityCoursesOfActionIds.includes(
+          const alreadyAdded = attackPatternCoursesOfActionIds.includes(
             courseOfAction.id,
           );
           return (
@@ -172,9 +141,8 @@ class AddCoursesOfActionLinesContainer extends Component {
 }
 
 AddCoursesOfActionLinesContainer.propTypes = {
-  entityId: PropTypes.string,
-  entityCoursesOfAction: PropTypes.array,
-  entityPaginationOptions: PropTypes.object,
+  attackPatternId: PropTypes.string,
+  attackPatternCoursesOfAction: PropTypes.array,
   data: PropTypes.object,
   classes: PropTypes.object,
 };

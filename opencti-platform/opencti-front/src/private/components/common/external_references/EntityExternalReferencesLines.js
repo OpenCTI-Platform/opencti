@@ -34,9 +34,6 @@ const styles = (theme) => ({
     padding: 0,
     borderRadius: 6,
   },
-  list: {
-    padding: 0,
-  },
   avatar: {
     width: 24,
     height: 24,
@@ -93,7 +90,10 @@ class EntityExternalReferencesLinesContainer extends Component {
       },
       updater: (store) => {
         const entity = store.get(this.props.entityId);
-        const conn = ConnectionHandler.getConnection(entity, 'Pagination_externalReferences');
+        const conn = ConnectionHandler.getConnection(
+          entity,
+          'Pagination_externalReferences',
+        );
         ConnectionHandler.deleteNode(conn, externalReferenceEdge.node.id);
       },
       onCompleted: () => {
@@ -118,21 +118,58 @@ class EntityExternalReferencesLinesContainer extends Component {
         />
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <List classes={{ root: classes.list }}>
-            {data.stixEntity.externalReferences.edges.map((externalReferenceEdge) => {
-              const externalReference = externalReferenceEdge.node;
-              const externalReferenceId = externalReference.external_id
-                ? `(${externalReference.external_id})`
-                : '';
-              if (externalReference.url) {
+          <List>
+            {data.stixEntity.externalReferences.edges.map(
+              (externalReferenceEdge) => {
+                const externalReference = externalReferenceEdge.node;
+                const externalReferenceId = externalReference.external_id
+                  ? `(${externalReference.external_id})`
+                  : '';
+                if (externalReference.url) {
+                  return (
+                    <ListItem
+                      key={externalReference.id}
+                      dense={true}
+                      divider={true}
+                      button={true}
+                      component="a"
+                      href={externalReference.url}
+                    >
+                      <ListItemIcon>
+                        <Avatar classes={{ root: classes.avatar }}>
+                          {externalReference.source_name.substring(0, 1)}
+                        </Avatar>
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={`${externalReference.source_name} ${externalReferenceId}`}
+                        secondary={truncate(
+                          externalReference.description !== null
+                            && externalReference.description.length > 0
+                            ? externalReference.description
+                            : externalReference.url,
+                          120,
+                        )}
+                      />
+                      <ListItemSecondaryAction>
+                        <IconButton
+                          aria-label="Remove"
+                          onClick={this.handleOpenDialog.bind(
+                            this,
+                            externalReferenceEdge,
+                          )}
+                        >
+                          <LinkOff />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  );
+                }
                 return (
                   <ListItem
                     key={externalReference.id}
                     dense={true}
                     divider={true}
-                    button={true}
-                    component="a"
-                    href={externalReference.url}
+                    button={false}
                   >
                     <ListItemIcon>
                       <Avatar classes={{ root: classes.avatar }}>
@@ -141,13 +178,7 @@ class EntityExternalReferencesLinesContainer extends Component {
                     </ListItemIcon>
                     <ListItemText
                       primary={`${externalReference.source_name} ${externalReferenceId}`}
-                      secondary={truncate(
-                        externalReference.description !== null
-                          && externalReference.description.length > 0
-                          ? externalReference.description
-                          : externalReference.url,
-                        120,
-                      )}
+                      secondary={truncate(externalReference.description, 120)}
                     />
                     <ListItemSecondaryAction>
                       <IconButton
@@ -162,50 +193,27 @@ class EntityExternalReferencesLinesContainer extends Component {
                     </ListItemSecondaryAction>
                   </ListItem>
                 );
-              }
-              return (
-                <ListItem
-                  key={externalReference.id}
-                  dense={true}
-                  divider={true}
-                  button={false}
-                >
-                  <ListItemIcon>
-                    <Avatar classes={{ root: classes.avatar }}>
-                      {externalReference.source_name.substring(0, 1)}
-                    </Avatar>
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={`${externalReference.source_name} ${externalReferenceId}`}
-                    secondary={truncate(externalReference.description, 120)}
-                  />
-                  <ListItemSecondaryAction>
-                    <IconButton
-                      aria-label="Remove"
-                      onClick={this.handleOpenDialog.bind(
-                        this,
-                        externalReferenceEdge,
-                      )}
-                    >
-                      <LinkOff />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
-              );
-            })}
+              },
+            )}
           </List>
         </Paper>
         <Dialog
           open={this.state.displayDialog}
           keepMounted={true}
-          onClose={this.handleCloseDialog.bind(this)}>
+          onClose={this.handleCloseDialog.bind(this)}
+        >
           <DialogTitle>{t('Confirmation required')}</DialogTitle>
           <DialogContent>
-            { this.state.removeExternalReference != null
-              && <DialogContentText>
-                {t('Removing')} '{truncate(this.state.removeExternalReference.node.source_name, 30)}'.
+            {this.state.removeExternalReference != null && (
+              <DialogContentText>
+                {t('Removing')} '
+                {truncate(
+                  this.state.removeExternalReference.node.source_name,
+                  30,
+                )}
+                '.
               </DialogContentText>
-            }
+            )}
             <DialogContentText>
               {t('Do you want to remove this external reference?')}
             </DialogContentText>
@@ -253,24 +261,28 @@ const EntityExternalReferencesLines = createPaginationContainer(
   {
     data: graphql`
       fragment EntityExternalReferencesLines_data on Query
-        @argumentDefinitions(count: { type: "Int", defaultValue: 25 }, entityId: { type: "String" }) {
+        @argumentDefinitions(
+          count: { type: "Int", defaultValue: 25 }
+          entityId: { type: "String" }
+        ) {
         stixEntity(id: $entityId) {
-            id
-            externalReferences(first: $count) @connection(key: "Pagination_externalReferences") {
-                edges {
-                    node {
-                        id
-                        source_name
-                        description
-                        url
-                        hash
-                        external_id
-                    }
-                    relation {
-                        id
-                    }
-                }
+          id
+          externalReferences(first: $count)
+            @connection(key: "Pagination_externalReferences") {
+            edges {
+              node {
+                id
+                source_name
+                description
+                url
+                hash
+                external_id
+              }
+              relation {
+                id
+              }
             }
+          }
         }
       }
     `,

@@ -1594,6 +1594,7 @@ type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
   tags: TagConnection
   killChainPhases: KillChainPhaseConnection
   reports: ReportConnection
+  coursesOfAction: CourseOfActionConnection
   stixRelations(
     first: Int
     after: ID
@@ -1690,6 +1691,7 @@ type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
   exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  attackPatterns: AttackPatternConnection
   stixRelations(
     first: Int
     after: ID

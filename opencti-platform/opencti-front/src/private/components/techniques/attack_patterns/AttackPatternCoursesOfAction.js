@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { createPaginationContainer } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
-import graphql from 'babel-plugin-relay/macro';
+import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -10,17 +8,18 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import Avatar from '@material-ui/core/Avatar';
+import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
-import Avatar from '@material-ui/core/Avatar';
 import { LinkOff } from '@material-ui/icons';
-import { compose } from 'ramda';
-import { Link } from 'react-router-dom';
-import inject18n from '../../../../components/i18n';
+import { createFragmentContainer } from 'react-relay';
+import graphql from 'babel-plugin-relay/macro';
 import { truncate } from '../../../../utils/String';
-import { commitMutation } from '../../../../relay/environment';
 import AddCoursesOfAction from './AddCoursesOfAction';
 import { courseOfActionMutationRelationDelete } from './AddCoursesOfActionLines';
+import { commitMutation } from '../../../../relay/environment';
+import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
   paper: {
@@ -28,9 +27,6 @@ const styles = (theme) => ({
     margin: '-4px 0 0 0',
     padding: 0,
     borderRadius: 6,
-  },
-  list: {
-    padding: 0,
   },
   avatar: {
     width: 24,
@@ -48,45 +44,32 @@ const styles = (theme) => ({
   },
 });
 
-class EntityCoursesOfActionLinesContainer extends Component {
+class AttackPatternCoursesOfActionComponent extends Component {
   removeCourseOfAction(courseOfActionEdge) {
     commitMutation({
       mutation: courseOfActionMutationRelationDelete,
       variables: {
-        id: courseOfActionEdge.node.id,
+        id: this.props.attackPattern.id,
         relationId: courseOfActionEdge.relation.id,
-      },
-      updater: (store) => {
-        const container = store.getRoot();
-        const userProxy = store.get(container.getDataID());
-        const conn = ConnectionHandler.getConnection(
-          userProxy,
-          'Pagination_coursesOfAction',
-          this.props.paginationOptions,
-        );
-        ConnectionHandler.deleteNode(conn, courseOfActionEdge.node.id);
       },
     });
   }
 
   render() {
-    const {
-      t, classes, entityId, data, paginationOptions,
-    } = this.props;
+    const { t, classes, attackPattern } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Courses of action')}
         </Typography>
         <AddCoursesOfAction
-          entityId={entityId}
-          entityCoursesOfAction={data.coursesOfAction.edges}
-          entityPaginationOptions={paginationOptions}
+          attackPatternId={attackPattern.id}
+          attackPatternCoursesOfAction={attackPattern.coursesOfAction.edges}
         />
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <List classes={{ root: classes.list }}>
-            {data.coursesOfAction.edges.map((courseOfActionEdge) => {
+          <List>
+            {attackPattern.coursesOfAction.edges.map((courseOfActionEdge) => {
               const courseOfAction = courseOfActionEdge.node;
               return (
                 <ListItem
@@ -127,54 +110,20 @@ class EntityCoursesOfActionLinesContainer extends Component {
   }
 }
 
-EntityCoursesOfActionLinesContainer.propTypes = {
-  entityId: PropTypes.string,
-  paginationOptions: PropTypes.object,
-  data: PropTypes.object,
-  limit: PropTypes.number,
+AttackPatternCoursesOfActionComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
+  attackPattern: PropTypes.object,
 };
 
-export const entityCoursesOfActionLinesQuery = graphql`
-  query EntityCoursesOfActionLinesQuery(
-    $count: Int!
-    $cursor: ID
-    $orderBy: CoursesOfActionOrdering
-    $orderMode: OrderingMode
-    $filters: [CoursesOfActionFiltering]
-  ) {
-    ...EntityCoursesOfActionLines_data
-      @arguments(
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
-  }
-`;
-
-const EntityCoursesOfActionLines = createPaginationContainer(
-  EntityCoursesOfActionLinesContainer,
+const AttackPatternCoursesOfAction = createFragmentContainer(
+  AttackPatternCoursesOfActionComponent,
   {
-    data: graphql`
-      fragment EntityCoursesOfActionLines_data on Query
-        @argumentDefinitions(
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "CoursesOfActionOrdering", defaultValue: "name" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[CoursesOfActionFiltering]" }
-        ) {
-        coursesOfAction(
-          first: $count
-          after: $cursor
-          orderBy: $orderBy
-          orderMode: $orderMode
-          filters: $filters
-        ) @connection(key: "Pagination_coursesOfAction") {
+    attackPattern: graphql`
+      fragment AttackPatternCoursesOfAction_attackPattern on AttackPattern {
+        id
+        coursesOfAction {
           edges {
             node {
               id
@@ -185,40 +134,13 @@ const EntityCoursesOfActionLines = createPaginationContainer(
               id
             }
           }
-          pageInfo {
-            endCursor
-            hasNextPage
-            globalCount
-          }
         }
       }
     `,
-  },
-  {
-    direction: 'forward',
-    getConnectionFromProps(props) {
-      return props.data && props.data.coursesOfAction;
-    },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      };
-    },
-    getVariables(props, { count, cursor }, fragmentVariables) {
-      return {
-        count,
-        cursor,
-        orderBy: fragmentVariables.orderBy,
-        orderMode: fragmentVariables.orderMode,
-        filters: fragmentVariables.filters,
-      };
-    },
-    query: entityCoursesOfActionLinesQuery,
   },
 );
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(EntityCoursesOfActionLines);
+)(AttackPatternCoursesOfAction);
