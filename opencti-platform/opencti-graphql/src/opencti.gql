@@ -489,6 +489,7 @@ define
   Tag sub entity,
     key internal_id_key,
     has tag_type,
+    has entity_type,
     key value,
     has color,
     has created_at,
