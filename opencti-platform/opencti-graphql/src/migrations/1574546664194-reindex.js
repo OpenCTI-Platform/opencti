@@ -7,7 +7,7 @@ module.exports.up = async next => {
   await executeWrite(wTx => {
     wTx.tx.query(query);
   });
-  const query2 = `match $r isa relation; not {$r ($x, $y) isa relation;}; get;`;
+  const query2 = `match $r isa owned_by; delete;`;
   await executeWrite(wTx => {
     wTx.tx.query(query2);
   });

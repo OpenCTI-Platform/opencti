@@ -208,11 +208,11 @@ class IntrusionSetEditionOverviewComponent extends Component {
       commitMutation({
         mutation: intrusionSetMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.intrusionSet.id,
           input: {
-            fromRole: 'creator',
-            toId: this.props.intrusionSet.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: value.value,
+            toRole: 'creator',
             through: 'created_by_ref',
           },
         },

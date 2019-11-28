@@ -207,9 +207,9 @@ class CampaignEditionOverviewComponent extends Component {
         variables: {
           id: value.value,
           input: {
-            fromRole: 'creator',
+            fromRole: 'so',
             toId: this.props.campaign.id,
-            toRole: 'so',
+            toRole: 'creator',
             through: 'created_by_ref',
           },
         },
@@ -225,11 +225,11 @@ class CampaignEditionOverviewComponent extends Component {
       commitMutation({
         mutation: campaignMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.campaign.id,
           input: {
-            fromRole: 'creator',
-            toId: this.props.campaign.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: value.value,
+            toRole: 'creator',
             through: 'created_by_ref',
           },
         },
@@ -255,11 +255,11 @@ class CampaignEditionOverviewComponent extends Component {
       commitMutation({
         mutation: campaignMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: this.props.campaign.id,
           input: {
-            fromRole: 'marking',
-            toId: this.props.campaign.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: head(added).value,
+            toRole: 'marking',
             through: 'object_marking_refs',
           },
         },

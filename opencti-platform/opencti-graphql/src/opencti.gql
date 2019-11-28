@@ -536,7 +536,6 @@ define
     has created_at_month,
     has created_at_year,
     has updated_at,
-    plays to,
     plays so,
     plays knowledge_aggregation;
 

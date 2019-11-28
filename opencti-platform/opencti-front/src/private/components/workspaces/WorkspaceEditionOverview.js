@@ -185,9 +185,9 @@ class WorkspaceEditionOverviewComponent extends Component {
         variables: {
           id: head(added).value,
           input: {
-            fromRole: 'marking',
+            fromRole: 'so',
             toId: this.props.workspace.id,
-            toRole: 'so',
+            toRole: 'marking',
             through: 'object_marking_refs',
           },
         },

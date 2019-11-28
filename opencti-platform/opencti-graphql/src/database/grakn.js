@@ -1459,7 +1459,7 @@ const createRelationRaw = async (fromInternalId, input, opts = {}) => {
 // region business relations
 const addOwner = async (fromInternalId, createdByOwnerId, opts = {}) => {
   if (!createdByOwnerId) return undefined;
-  const input = { fromRole: 'to', toId: createdByOwnerId, toRole: 'owner', through: 'owned_by' };
+  const input = { fromRole: 'so', toId: createdByOwnerId, toRole: 'owner', through: 'owned_by' };
   return createRelationRaw(fromInternalId, input, opts);
 };
 const addCreatedByRef = async (fromInternalId, createdByRefId, opts = {}) => {

@@ -223,9 +223,9 @@ class ToolEditionOverviewComponent extends Component {
         variables: {
           id: value.value,
           input: {
-            fromRole: 'creator',
+            fromRole: 'so',
             toId: this.props.tool.id,
-            toRole: 'so',
+            toRole: 'creator',
             through: 'created_by_ref',
           },
         },
@@ -243,9 +243,9 @@ class ToolEditionOverviewComponent extends Component {
         variables: {
           id: value.value,
           input: {
-            fromRole: 'creator',
+            fromRole: 'so',
             toId: this.props.tool.id,
-            toRole: 'so',
+            toRole: 'creator',
             through: 'created_by_ref',
           },
         },
@@ -313,9 +313,9 @@ class ToolEditionOverviewComponent extends Component {
         variables: {
           id: head(added).value,
           input: {
-            fromRole: 'marking',
+            fromRole: 'so',
             toId: this.props.tool.id,
-            toRole: 'so',
+            toRole: 'marking',
             through: 'object_marking_refs',
           },
         },
