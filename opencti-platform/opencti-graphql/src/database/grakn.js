@@ -409,23 +409,22 @@ export const deleteAttributeById = async id => {
   });
 };
 
-const conceptOpts = { relationsMap: new Map() };
 /**
  * Load any grakn instance with internal grakn ID.
  * @param query initial query
  * @param concept the concept to get attributes from
- * @param relationsMap
- * @param noCache
+ * @param args
  * @returns {Promise}
  */
-const loadConcept = async (query, concept, { relationsMap, noCache = false } = conceptOpts) => {
+const loadConcept = async (query, concept, args = {}) => {
   const { id } = concept;
+  const { relationsMap = new Map(), noCache = false, infer = false } = args;
   const conceptType = concept.baseType;
   const types = await conceptTypes(concept);
   const index = inferIndexFromConceptTypes(types);
   // 01. Return the data in elastic if not explicitly asked in grakn
   // Very useful for getting every entities through relation query.
-  if (!forceNoCache() && noCache === false) {
+  if (infer === false && noCache === false && !forceNoCache()) {
     const conceptFromCache = await elLoadByGraknId(id, relationsMap, [index]);
     if (!conceptFromCache) {
       logger.debug(`[GRAKN] Cache warning: ${id} should be available in cache`);
@@ -591,7 +590,7 @@ export const find = async (query, entities, { uniqueKey, infer, noCache } = find
     const uniqConceptsLoading = pipe(
       flatten,
       uniqBy(e => e.id),
-      map(l => loadConcept(query, l.concept, { relationsMap: l.relationsMap, noCache }))
+      map(l => loadConcept(query, l.concept, { relationsMap: l.relationsMap, noCache, infer }))
     )(queryConcepts);
     const resolvedConcepts = await Promise.all(uniqConceptsLoading);
     // 04. Create map from concepts
