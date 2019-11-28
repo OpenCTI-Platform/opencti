@@ -483,6 +483,9 @@ const loadConcept = async (query, concept, { relationsMap, noCache = false } = c
                     throw new Error(`Undefined directed roles for ${head(types)}, query: ${query}`);
                   }
                   useAlias = directedRole[roleLabel];
+                  if (useAlias === undefined) {
+                    throw new Error(`Cannot find directed role for ${roleLabel} in ${head(types)}, query: ${query}`);
+                  }
                 }
                 return {
                   [useAlias]: null, // With be use lazily
@@ -606,7 +609,7 @@ export const indexElements = async (elements, retry = 0) => {
       const connections = [];
       if (i.fromRole === undefined || i.toRole === undefined) {
         throw new Error(
-          `[ELASTIC] Cant index relation ${i.id} connections without from (${i.fromId}) or to (${i.toId})`
+          `[ELASTIC] Cant index relation ${i.grakn_id} connections without from (${i.fromId}) or to (${i.toId})`
         );
       }
       connections.push({ id: i.fromId, types: i.fromTypes, role: i.fromRole });
