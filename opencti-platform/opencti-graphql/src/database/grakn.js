@@ -605,7 +605,9 @@ export const indexElements = async (elements, retry = 0) => {
     if (i.relationship_type) {
       const connections = [];
       if (i.fromRole === undefined || i.toRole === undefined) {
-        throw new Error('[ELASTIC] Cant index relation connections without from or to');
+        throw new Error(
+          `[ELASTIC] Cant index relation ${i.id} connections without from (${i.fromId}) or to (${i.toId})`
+        );
       }
       connections.push({ id: i.fromId, types: i.fromTypes, role: i.fromRole });
       connections.push({ id: i.toId, types: i.toTypes, role: i.toRole });
