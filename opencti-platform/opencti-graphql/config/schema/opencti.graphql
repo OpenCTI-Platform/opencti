@@ -401,7 +401,6 @@ enum StixDomainEntitiesOrdering {
 }
 enum StixDomainEntitiesFilter {
   name
-  entity_type
   stix_id_key
   hasExternalReference
 }

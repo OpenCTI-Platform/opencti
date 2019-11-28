@@ -585,6 +585,7 @@ export const find = async (query, entities, { uniqueKey, infer, noCache } = find
     return uniqBy(u => u[uniqFilter].grakn_id, result);
   });
 };
+
 /**
  * Query and get entities of the first row
  * @param query

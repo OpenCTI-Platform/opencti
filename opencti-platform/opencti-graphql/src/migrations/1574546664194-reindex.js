@@ -7,6 +7,10 @@ module.exports.up = async next => {
   await executeWrite(wTx => {
     wTx.tx.query(query);
   });
+  const query2 = `match $r isa relation; not {$r ($x, $y) isa relation;}; get;`;
+  await executeWrite(wTx => {
+    wTx.tx.query(query2);
+  });
   await index();
   logger.info(`[MIGRATION] reindex > Migration complete`);
   next();

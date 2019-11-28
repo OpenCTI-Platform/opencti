@@ -201,8 +201,8 @@ define
   # Login relationship
   authorize sub relation,
     key internal_id_key,
-    relates authorization,
-    relates client;
+    relates client,
+    relates authorization;
 
   # Migration relationships
   migrate sub relation,
@@ -213,21 +213,21 @@ define
   # Group membership relationships
   membership sub relation,
     key internal_id_key,
-    relates grouping,
-    relates member;
+    relates member,
+    relates grouping;
 
   # Access relationships
   permission sub relation,
     key internal_id_key,
     has grant,
-    relates allow,
-    relates allowed;
+    relates allowed,
+    relates allow;
 
   user_permission sub relation,
     key internal_id_key,
     has grant,
-    relates allow,
-    relates allowed;
+    relates allowed,
+    relates allow;
 
   # OpenCTI embeded relationships
   relation_embedded sub relation,
@@ -235,16 +235,16 @@ define
     key internal_id_key;
 
   authored_by sub relation_embedded,
-    relates author,
-    relates so;
+    relates so,
+    relates author;
 
   owned_by sub relation_embedded,
-    relates owner,
-    relates to;
+    relates so,
+    relates owner;
 
   tagged sub relation_embedded,
-    relates tagging,
-    relates so;
+    relates so,
+    relates tagging;
 
   # STIX embeded relationships
   stix_relation_embedded sub relation,
@@ -252,24 +252,24 @@ define
     key internal_id_key;
 
   created_by_ref sub stix_relation_embedded,
-    relates creator,
-    relates so;
+    relates so,
+    relates creator;
 
   object_marking_refs sub stix_relation_embedded,
-    relates marking,
+    relates so,
+    relates marking;
+
+  object_refs sub stix_relation_embedded,
+    relates knowledge_aggregation,
     relates so;
 
   external_references sub stix_relation_embedded,
-    relates external_reference,
-    relates so;
+    relates so,
+    relates external_reference;
 
   kill_chain_phases sub stix_relation_embedded,
     relates phase_belonging,
     relates kill_chain_phase;
-
-  object_refs sub stix_relation_embedded,
-    relates so,
-    relates knowledge_aggregation;
 
   # STIX SOO embeded relationships
    stix_relation_observable_embedded sub relation,
@@ -399,8 +399,8 @@ define
 
   # uses
   uses sub stix_relation,
-    relates usage,
-    relates user;
+    relates user,
+    relates usage;
 
   # related-to
   related-to sub stix_relation,
@@ -409,18 +409,18 @@ define
 
   # mitigates
   mitigates sub stix_relation,
-    relates problem,
-    relates mitigation;
+    relates mitigation,
+    relates problem;
 
   # impersonates
   impersonates sub stix_relation,
-    relates genuine,
-    relates dummy;
+    relates dummy,
+    relates genuine;
 
   # indicates
   indicates sub stix_relation,
-    relates characterize,
-    relates indicator;
+    relates indicator,
+    relates characterize;
 
   # comes-after
   comes-after sub stix_relation,
@@ -433,18 +433,18 @@ define
 
   # attributed-to
   attributed-to sub parentship,
-    relates origin,
-    relates attribution;
+    relates attribution,
+    relates origin;
 
   # variant-of
   variant-of sub parentship,
-    relates original,
-    relates variation;
+    relates variation,
+    relates original;
 
   # localization
   localization sub parentship,
-    relates location,
-    relates localized;
+    relates localized,
+    relates location;
 
   # belonging
   gathering sub parentship,
