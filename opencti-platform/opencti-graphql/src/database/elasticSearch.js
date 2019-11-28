@@ -275,14 +275,14 @@ const elReconstructRelation = (concept, relationsMap = null) => {
   const queryFrom = Rfind(v => v.alias === 'from', relationValues);
   const queryTo = Rfind(v => v.alias === 'to', relationValues);
   // If map contains a key filtering
-  if (queryFrom.internal_id_key) {
-    fromConnection = Rfind(connection => connection.internal_id_key === queryFrom.internal_id_key, connections);
-    toConnection = Rfind(connection => connection.internal_id_key !== queryFrom.internal_id_key, connections);
+  if (queryFrom.internalIdKey) {
+    fromConnection = Rfind(connection => connection.internal_id_key === queryFrom.internalIdKey, connections);
+    toConnection = Rfind(connection => connection.internal_id_key !== queryFrom.internalIdKey, connections);
     return elMergeRelation(concept, fromConnection, toConnection);
   }
-  if (queryTo.internal_id_key) {
-    toConnection = Rfind(connection => connection.internal_id_key !== queryTo.internal_id_key, connections);
-    fromConnection = Rfind(connection => connection.internal_id_key === queryTo.internal_id_key, connections);
+  if (queryTo.internalIdKey) {
+    toConnection = Rfind(connection => connection.internal_id_key !== queryTo.internalIdKey, connections);
+    fromConnection = Rfind(connection => connection.internal_id_key === queryTo.internalIdKey, connections);
     return elMergeRelation(concept, fromConnection, toConnection);
   }
   // If map contains a role filtering.
