@@ -239,31 +239,67 @@ export const elCount = (indexName, options) => {
   });
 };
 
-// region elastic common loader.
+// region relation reconstruction
+// relationsMap = [V1324] = { alias, internal_id_key, role }
+const elBuildRelation = (type, connection) => {
+  return {
+    [type]: null,
+    [`${type}Id`]: connection.grakn_id,
+    [`${type}Role`]: connection.role,
+    [`${type}Types`]: connection.types
+  };
+};
+const elMergeRelation = (concept, fromConnection, toConnection) => {
+  if (!fromConnection || !toConnection) {
+    throw new Error(`[ELASTIC] Something fail in reconstruction of the relation ${concept.grakn_id}`);
+  }
+  const from = elBuildRelation('from', fromConnection);
+  const to = elBuildRelation('to', toConnection);
+  return mergeAll([concept, from, to]);
+};
 const elReconstructRelation = (concept, relationsMap = null) => {
   const naturalDirections = rolesMap[concept.relationship_type];
   const bindingByAlias = invertObj(naturalDirections);
-  // Need to rebuild the from and the to.
   const { connections } = concept;
-  const relationValues = relationsMap ? Array.from(relationsMap.values()) : undefined;
-  // Looking for a from
-  const roleFromMap = relationValues ? Rfind(v => v.alias === 'from', relationValues).role : undefined;
-  const fromRole = roleFromMap || bindingByAlias.from;
-  const fromConnection = Rfind(connection => connection.role === fromRole, connections);
-  if (fromConnection === undefined || fromRole === undefined) {
-    throw new Error(`[ELASTIC] Something went wrong reconstructing the relation ${concept.id} (from)`);
+  // Need to rebuild the from and the to.
+  let toConnection;
+  let fromConnection;
+  if (relationsMap === null) {
+    // We dont know anything, force from and to from roles map
+    fromConnection = Rfind(connection => connection.role === bindingByAlias.from, connections);
+    toConnection = Rfind(connection => connection.role === bindingByAlias.to, connections);
+    return elMergeRelation(concept, fromConnection, toConnection);
   }
-  const from = { from: null, fromId: fromConnection.id, fromRole, fromTypes: fromConnection.types };
-  // Looking for a to
-  const roleToMap = relationValues ? Rfind(v => v.alias === 'to', relationValues).role : undefined;
-  const toRole = roleToMap || bindingByAlias.to;
-  const toConnection = Rfind(connection => connection.role === toRole, connections);
-  if (toConnection === undefined || toRole === undefined) {
-    throw new Error(`[ELASTIC] Something went wrong reconstructing the relation ${concept.id} (to)`);
+  // If map is specified, decide the resolution.
+  const relationValues = Array.from(relationsMap.values());
+  const queryFrom = Rfind(v => v.alias === 'from', relationValues);
+  const queryTo = Rfind(v => v.alias === 'to', relationValues);
+  // If map contains a key filtering
+  if (queryFrom.internal_id_key) {
+    fromConnection = Rfind(connection => connection.internal_id_key === queryFrom.internal_id_key, connections);
+    toConnection = Rfind(connection => connection.internal_id_key !== queryFrom.internal_id_key, connections);
+    return elMergeRelation(concept, fromConnection, toConnection);
   }
-  const to = { to: null, toId: toConnection.id, toRole, fromTypes: toConnection.types };
-  return mergeAll([concept, from, to]);
+  if (queryTo.internal_id_key) {
+    toConnection = Rfind(connection => connection.internal_id_key !== queryTo.internal_id_key, connections);
+    fromConnection = Rfind(connection => connection.internal_id_key === queryTo.internal_id_key, connections);
+    return elMergeRelation(concept, fromConnection, toConnection);
+  }
+  // If map contains a role filtering.
+  // Only need to check on one side, the 2 roles are provisioned in this case.
+  if (queryFrom.role) {
+    fromConnection = Rfind(connection => connection.role === queryFrom.role, connections);
+    toConnection = Rfind(connection => connection.role !== queryFrom.role, connections);
+    return elMergeRelation(concept, fromConnection, toConnection);
+  }
+  // If nothing in map to reconstruct
+  fromConnection = Rfind(connection => connection.role === bindingByAlias.from, connections);
+  toConnection = Rfind(connection => connection.role !== bindingByAlias.to, connections);
+  return elMergeRelation(concept, fromConnection, toConnection);
 };
+// endregion
+
+// region elastic common loader.
 export const elPaginate = async (indexName, options) => {
   const {
     first = 200,
