@@ -104,7 +104,7 @@ const intrusionSetMutationRelationDelete = graphql`
   ) {
     intrusionSetEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-          ...IntrusionSetEditionOverview_intrusionSet
+        ...IntrusionSetEditionOverview_intrusionSet
       }
     }
   }
@@ -208,11 +208,11 @@ class IntrusionSetEditionOverviewComponent extends Component {
       commitMutation({
         mutation: intrusionSetMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.intrusionSet.id,
           input: {
-            fromRole: 'creator',
-            toId: this.props.intrusionSet.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: value.value,
+            toRole: 'creator',
             through: 'created_by_ref',
           },
         },
@@ -228,11 +228,11 @@ class IntrusionSetEditionOverviewComponent extends Component {
       commitMutation({
         mutation: intrusionSetMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.intrusionSet.id,
           input: {
-            fromRole: 'creator',
-            toId: this.props.intrusionSet.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: value.value,
+            toRole: 'creator',
             through: 'created_by_ref',
           },
         },
@@ -257,11 +257,11 @@ class IntrusionSetEditionOverviewComponent extends Component {
       commitMutation({
         mutation: intrusionSetMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: this.props.intrusionSet.id,
           input: {
-            fromRole: 'marking',
-            toId: this.props.intrusionSet.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: head(added).value,
+            toRole: 'marking',
             through: 'object_marking_refs',
           },
         },

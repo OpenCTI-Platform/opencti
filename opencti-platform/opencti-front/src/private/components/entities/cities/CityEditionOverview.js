@@ -202,11 +202,11 @@ class CityEditionOverviewComponent extends Component {
       commitMutation({
         mutation: cityMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.city.id,
           input: {
-            fromRole: 'creator',
-            toId: this.props.city.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: value.value,
+            toRole: 'creator',
             through: 'created_by_ref',
           },
         },
@@ -222,11 +222,11 @@ class CityEditionOverviewComponent extends Component {
       commitMutation({
         mutation: cityMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.city.id,
           input: {
-            fromRole: 'creator',
-            toId: this.props.city.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: value.value,
+            toRole: 'creator',
             through: 'created_by_ref',
           },
         },
@@ -252,11 +252,11 @@ class CityEditionOverviewComponent extends Component {
       commitMutation({
         mutation: cityMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: this.props.city.id,
           input: {
-            fromRole: 'marking',
-            toId: this.props.city.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: head(added).value,
+            toRole: 'marking',
             through: 'object_marking_refs',
           },
         },

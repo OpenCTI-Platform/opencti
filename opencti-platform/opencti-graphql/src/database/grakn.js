@@ -588,6 +588,7 @@ export const find = async (query, entities, { uniqueKey, infer, noCache } = find
     return uniqBy(u => u[uniqFilter].grakn_id, result);
   });
 };
+
 /**
  * Query and get entities of the first row
  * @param query
@@ -1461,7 +1462,7 @@ const createRelationRaw = async (fromInternalId, input, opts = {}) => {
 // region business relations
 const addOwner = async (fromInternalId, createdByOwnerId, opts = {}) => {
   if (!createdByOwnerId) return undefined;
-  const input = { fromRole: 'to', toId: createdByOwnerId, toRole: 'owner', through: 'owned_by' };
+  const input = { fromRole: 'so', toId: createdByOwnerId, toRole: 'owner', through: 'owned_by' };
   return createRelationRaw(fromInternalId, input, opts);
 };
 const addCreatedByRef = async (fromInternalId, createdByRefId, opts = {}) => {

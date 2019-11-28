@@ -222,11 +222,11 @@ class SectorEditionOverviewComponent extends Component {
       commitMutation({
         mutation: sectorMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.sector.id,
           input: {
-            fromRole: 'creator',
-            toId: this.props.sector.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: value.value,
+            toRole: 'creator',
             through: 'created_by_ref',
           },
         },
@@ -242,11 +242,11 @@ class SectorEditionOverviewComponent extends Component {
       commitMutation({
         mutation: sectorMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.sector.id,
           input: {
-            fromRole: 'creator',
-            toId: this.props.sector.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: value.value,
+            toRole: 'creator',
             through: 'created_by_ref',
           },
         },
@@ -274,9 +274,9 @@ class SectorEditionOverviewComponent extends Component {
         variables: {
           id: head(added).value,
           input: {
-            fromRole: 'marking',
+            fromRole: 'so',
             toId: this.props.sector.id,
-            toRole: 'so',
+            toRole: 'marking',
             through: 'object_marking_refs',
           },
         },

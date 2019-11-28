@@ -205,11 +205,11 @@ class IncidentEditionOverviewComponent extends Component {
       commitMutation({
         mutation: incidentMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.incident.id,
           input: {
-            fromRole: 'creator',
-            toId: this.props.incident.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: value.value,
+            toRole: 'creator',
             through: 'created_by_ref',
           },
         },
@@ -225,11 +225,11 @@ class IncidentEditionOverviewComponent extends Component {
       commitMutation({
         mutation: incidentMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.incident.id,
           input: {
-            fromRole: 'creator',
-            toId: this.props.incident.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: value.value,
+            toRole: 'creator',
             through: 'created_by_ref',
           },
         },
@@ -255,11 +255,11 @@ class IncidentEditionOverviewComponent extends Component {
       commitMutation({
         mutation: incidentMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: this.props.incident.id,
           input: {
-            fromRole: 'marking',
-            toId: this.props.incident.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: head(added).value,
+            toRole: 'marking',
             through: 'object_marking_refs',
           },
         },

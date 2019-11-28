@@ -202,11 +202,11 @@ class PersonEditionOverviewComponent extends Component {
       commitMutation({
         mutation: personMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.person.id,
           input: {
-            fromRole: 'creator',
-            toId: this.props.person.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: value.value,
+            toRole: 'creator',
             through: 'created_by_ref',
           },
         },
@@ -222,11 +222,11 @@ class PersonEditionOverviewComponent extends Component {
       commitMutation({
         mutation: personMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.person.id,
           input: {
-            fromRole: 'creator',
-            toId: this.props.person.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: value.value,
+            toRole: 'creator',
             through: 'created_by_ref',
           },
         },
@@ -252,11 +252,11 @@ class PersonEditionOverviewComponent extends Component {
       commitMutation({
         mutation: personMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: this.props.person.id,
           input: {
-            fromRole: 'marking',
-            toId: this.props.person.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: head(added).value,
+            toRole: 'marking',
             through: 'object_marking_refs',
           },
         },

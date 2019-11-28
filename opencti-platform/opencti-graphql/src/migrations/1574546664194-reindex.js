@@ -7,6 +7,10 @@ module.exports.up = async next => {
   await executeWrite(wTx => {
     wTx.tx.query(query);
   });
+  const query2 = `match $r isa owned_by; delete;`;
+  await executeWrite(wTx => {
+    wTx.tx.query(query2);
+  });
   await index();
   logger.info(`[MIGRATION] reindex > Migration complete`);
   next();

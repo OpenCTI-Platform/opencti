@@ -242,9 +242,6 @@ export const elCount = (indexName, options) => {
 // region elastic common loader.
 const elReconstructRelation = (concept, relationsMap = null) => {
   const naturalDirections = rolesMap[concept.relationship_type];
-  if (naturalDirections === undefined) {
-    throw new Error('test');
-  }
   const bindingByAlias = invertObj(naturalDirections);
   // Need to rebuild the from and the to.
   const { connections } = concept;
