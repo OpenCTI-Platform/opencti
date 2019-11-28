@@ -606,7 +606,9 @@ export const indexElements = async (elements, retry = 0) => {
     if (i.relationship_type) {
       const connections = [];
       if (i.fromRole === undefined || i.toRole === undefined) {
-        throw new Error('[ELASTIC] Cant index relation connections without from or to');
+        throw new Error(
+          `[ELASTIC] Cant index relation ${i.id} connections without from (${i.fromId}) or to (${i.toId})`
+        );
       }
       connections.push({ id: i.fromId, types: i.fromTypes, role: i.fromRole });
       connections.push({ id: i.toId, types: i.toTypes, role: i.toRole });
@@ -1265,7 +1267,6 @@ export const paginateRelationships = async (query, options, key = 'rel', extraRe
     const {
       first = 200,
       after,
-      types = ['stix_relation'],
       inferred,
       fromId,
       fromTypes = [],
@@ -1277,49 +1278,8 @@ export const paginateRelationships = async (query, options, key = 'rel', extraRe
       firstSeenStop,
       lastSeenStart,
       lastSeenStop,
-      weights,
-      canUseCache = false
+      weights
     } = options;
-    // Only use Elastic if no extra relation needed and inferred of course.
-    if (
-      canUseCache && // Explicitly express that can use the cache
-      (inferred === undefined || inferred === false) && // Only for real relations
-      extraRel === null && // No support of relation to relation
-      fromTypes &&
-      fromTypes.length <= 1 && // Can only force one type with current elPaginate
-      toTypes &&
-      toTypes.length <= 1 // Can only force one type with current elPaginate
-    ) {
-      const filters = [];
-      if (fromTypes && fromTypes.length > 0) filters.push({ key: 'fromTypes', values: fromTypes });
-      if (toTypes && toTypes.length > 0) filters.push({ key: 'toTypes', values: toTypes });
-      if (fromId) {
-        const from = await loadEntityById(fromId);
-        filters.push({ key: 'fromId', values: [from.grakn_id] });
-      }
-      if (toId) {
-        const to = await loadEntityById(toId);
-        filters.push({ key: 'toId', values: [to.grakn_id] });
-      }
-      if (firstSeenStart) filters.push({ key: 'first_seen', operator: 'gt', values: [firstSeenStart] });
-      if (firstSeenStop) filters.push({ key: 'first_seen', operator: 'lt', values: [firstSeenStop] });
-      if (lastSeenStart) filters.push({ key: 'last_seen', operator: 'gt', values: [lastSeenStart] });
-      if (lastSeenStop) filters.push({ key: 'last_seen', operator: 'lt', values: [lastSeenStop] });
-      if (weights) filters.push({ key: 'weight', values: weights });
-      return elPaginate(INDEX_STIX_RELATIONS, {
-        first,
-        after,
-        types,
-        orderBy,
-        orderMode,
-        filters
-      });
-    }
-    console.log(
-      `[GRAKN] FETCH grakn relations (inferred: ${inferred} / extraRel: ${extraRel} / fromTypes: ${
-        fromTypes ? fromTypes.length : 0
-      } / toTypes: ${toTypes ? toTypes.length : 0})`
-    );
     const offset = after ? cursorToOffset(after) : 0;
     const finalQuery = `
       ${query};
