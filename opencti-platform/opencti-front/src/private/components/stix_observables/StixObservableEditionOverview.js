@@ -228,10 +228,10 @@ class StixObservableEditionOverviewComponent extends Component {
       commitMutation({
         mutation: stixObservableMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.stixObservable.id,
           input: {
             fromRole: 'so',
-            toId: this.props.stixObservable.id,
+            toId: value.value,
             toRole: 'creator',
             through: 'created_by_ref',
           },
@@ -258,10 +258,10 @@ class StixObservableEditionOverviewComponent extends Component {
       commitMutation({
         mutation: stixObservableMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: this.props.stixObservable.id,
           input: {
             fromRole: 'so',
-            toId: this.props.stixObservable.id,
+            toId: head(added).value,
             toRole: 'marking',
             through: 'object_marking_refs',
           },

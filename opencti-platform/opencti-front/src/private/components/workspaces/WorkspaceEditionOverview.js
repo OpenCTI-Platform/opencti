@@ -183,10 +183,10 @@ class WorkspaceEditionOverviewComponent extends Component {
       commitMutation({
         mutation: workspaceMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: this.props.workspace.id,
           input: {
             fromRole: 'so',
-            toId: this.props.workspace.id,
+            toId: head(added).value,
             toRole: 'marking',
             through: 'object_marking_refs',
           },

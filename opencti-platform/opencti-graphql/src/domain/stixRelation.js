@@ -388,8 +388,8 @@ export const stixRelationsNumber = args => ({
 // endregion
 
 // region mutations
-export const addStixRelation = async (user, stixRelation) => {
-  const created = await createRelation(stixRelation.fromId, stixRelation);
+export const addStixRelation = async (user, stixRelation, reversedReturn = false) => {
+  const created = await createRelation(stixRelation.fromId, stixRelation, { reversedReturn });
   return notify(BUS_TOPICS.StixRelation.ADDED_TOPIC, created, user);
 };
 export const stixRelationDelete = async stixRelationId => {

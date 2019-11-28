@@ -272,10 +272,10 @@ class SectorEditionOverviewComponent extends Component {
       commitMutation({
         mutation: sectorMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: this.props.sector.id,
           input: {
             fromRole: 'so',
-            toId: this.props.sector.id,
+            toId: head(added).value,
             toRole: 'marking',
             through: 'object_marking_refs',
           },

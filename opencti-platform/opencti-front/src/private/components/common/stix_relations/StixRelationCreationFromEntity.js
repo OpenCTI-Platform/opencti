@@ -3,7 +3,18 @@ import * as PropTypes from 'prop-types';
 import { Field, Form, Formik } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  ascend, assoc, compose, head, includes, map, path, pathOr, pipe, pluck, sortWith, union,
+  ascend,
+  assoc,
+  compose,
+  head,
+  includes,
+  map,
+  path,
+  pathOr,
+  pipe,
+  pluck,
+  sortWith,
+  union,
 } from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
@@ -21,16 +32,25 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Fab from '@material-ui/core/Fab';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { ConnectionHandler } from 'relay-runtime';
-import { commitMutation, fetchQuery, QueryRenderer } from '../../../../relay/environment';
+import {
+  commitMutation,
+  fetchQuery,
+  QueryRenderer,
+} from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { parse } from '../../../../utils/Time';
-import { resolveRelationsTypes, resolveRoles } from '../../../../utils/Relation';
+import {
+  resolveRelationsTypes,
+  resolveRoles,
+} from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
 import Select from '../../../../components/Select';
 import DatePickerField from '../../../../components/DatePickerField';
-import StixRelationCreationFromEntityLines, { stixRelationCreationFromEntityLinesQuery } from './StixRelationCreationFromEntityLines';
+import StixRelationCreationFromEntityLines, {
+  stixRelationCreationFromEntityLinesQuery,
+} from './StixRelationCreationFromEntityLines';
 import StixDomainEntityCreation from '../stix_domain_entities/StixDomainEntityCreation';
 import SearchInput from '../../../../components/SearchInput';
 import Autocomplete from '../../../../components/Autocomplete';
@@ -187,8 +207,9 @@ const stixRelationCreationFromEntityQuery = graphql`
 const stixRelationCreationFromEntityMutation = graphql`
   mutation StixRelationCreationFromEntityMutation(
     $input: StixRelationAddInput!
+    $reversedReturn: Boolean
   ) {
-    stixRelationAdd(input: $input) {
+    stixRelationAdd(input: $input, reversedReturn: $reversedReturn) {
       ...EntityStixRelationLine_node
     }
   }
@@ -273,13 +294,17 @@ class StixRelationCreationFromEntity extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const roles = resolveRoles(values.relationship_type);
-    const fromEntityId = this.props.entityId;
-    const toEntityId = this.state.targetEntity.id;
+    const fromEntityId = this.props.isFrom
+      ? this.props.entityId
+      : this.state.targetEntity.id;
+    const toEntityId = this.props.isFrom
+      ? this.state.targetEntity.id
+      : this.props.entityId;
     const finalValues = pipe(
       assoc('fromId', fromEntityId),
-      assoc('fromRole', this.props.isFrom ? roles.fromRole : roles.toRole),
+      assoc('fromRole', roles.fromRole),
       assoc('toId', toEntityId),
-      assoc('toRole', this.props.isFrom ? roles.toRole : roles.fromRole),
+      assoc('toRole', roles.toRole),
       assoc('first_seen', parse(values.first_seen).format()),
       assoc('last_seen', parse(values.last_seen).format()),
       assoc('killChainPhases', pluck('value', values.killChainPhases)),
@@ -289,6 +314,7 @@ class StixRelationCreationFromEntity extends Component {
       mutation: stixRelationCreationFromEntityMutation,
       variables: {
         input: finalValues,
+        reversedReturn: !this.props.isFrom,
       },
       updater: (store) => {
         const payload = store.getRootField('stixRelationAdd');
@@ -488,7 +514,10 @@ class StixRelationCreationFromEntity extends Component {
                               />
                             </div>
                             <div className={classes.type}>
-                              {includes('Stix-Observable', fromEntity.parent_types)
+                              {includes(
+                                'Stix-Observable',
+                                fromEntity.parent_types,
+                              )
                                 ? t(`observable_${fromEntity.entity_type}`)
                                 : t(`entity_${fromEntity.entity_type}`)}
                             </div>
@@ -496,7 +525,10 @@ class StixRelationCreationFromEntity extends Component {
                           <div className={classes.content}>
                             <span className={classes.name}>
                               {truncate(
-                                includes('Stix-Observable', fromEntity.parent_types)
+                                includes(
+                                  'Stix-Observable',
+                                  fromEntity.parent_types,
+                                )
                                   ? fromEntity.observable_value
                                   : fromEntity.name,
                                 120,
@@ -536,7 +568,10 @@ class StixRelationCreationFromEntity extends Component {
                               />
                             </div>
                             <div className={classes.type}>
-                              {includes('Stix-Observable', toEntity.parent_types)
+                              {includes(
+                                'Stix-Observable',
+                                toEntity.parent_types,
+                              )
                                 ? t(`observable_${toEntity.entity_type}`)
                                 : t(`entity_${toEntity.entity_type}`)}
                             </div>
@@ -544,7 +579,10 @@ class StixRelationCreationFromEntity extends Component {
                           <div className={classes.content}>
                             <span className={classes.name}>
                               {truncate(
-                                includes('Stix-Observable', toEntity.parent_types)
+                                includes(
+                                  'Stix-Observable',
+                                  toEntity.parent_types,
+                                )
                                   ? toEntity.observable_value
                                   : toEntity.name,
                                 120,

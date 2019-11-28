@@ -247,7 +247,8 @@ const elReconstructRelation = (concept, relationsMap = null) => {
   const { connections } = concept;
   const relationValues = relationsMap ? Array.from(relationsMap.values()) : undefined;
   // Looking for a from
-  const roleFromMap = relationValues ? Rfind(v => v.alias === 'from', relationValues).role : undefined;
+  const roleFromMap =
+    relationValues && relationValues.length > 0 ? Rfind(v => v.alias === 'from', relationValues).role : undefined;
   const fromRole = roleFromMap || bindingByAlias.from;
   const fromConnection = Rfind(connection => connection.role === fromRole, connections);
   if (fromConnection === undefined || fromRole === undefined) {
@@ -255,7 +256,8 @@ const elReconstructRelation = (concept, relationsMap = null) => {
   }
   const from = { from: null, fromId: fromConnection.id, fromRole, fromTypes: fromConnection.types };
   // Looking for a to
-  const roleToMap = relationValues ? Rfind(v => v.alias === 'to', relationValues).role : undefined;
+  const roleToMap =
+    relationValues && relationValues.length > 0 ? Rfind(v => v.alias === 'to', relationValues).role : undefined;
   const toRole = roleToMap || bindingByAlias.to;
   const toConnection = Rfind(connection => connection.role === toRole, connections);
   if (toConnection === undefined || toRole === undefined) {

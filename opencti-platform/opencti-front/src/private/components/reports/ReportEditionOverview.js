@@ -205,10 +205,10 @@ class ReportEditionOverviewComponent extends Component {
       commitMutation({
         mutation: reportMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.report.id,
           input: {
             fromRole: 'so',
-            toId: this.props.report.id,
+            toId: value.value,
             toRole: 'creator',
             through: 'created_by_ref',
           },
@@ -225,10 +225,10 @@ class ReportEditionOverviewComponent extends Component {
       commitMutation({
         mutation: reportMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.report.id,
           input: {
             fromRole: 'so',
-            toId: this.props.report.id,
+            toId: value.value,
             toRole: 'creator',
             through: 'created_by_ref',
           },
@@ -255,10 +255,10 @@ class ReportEditionOverviewComponent extends Component {
       commitMutation({
         mutation: reportMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: this.props.report.id,
           input: {
             fromRole: 'so',
-            toId: this.props.report.id,
+            toId: head(added).value,
             toRole: 'marking',
             through: 'object_marking_refs',
           },
