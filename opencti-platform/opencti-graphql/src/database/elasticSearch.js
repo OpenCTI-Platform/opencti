@@ -139,8 +139,8 @@ export const elCreateIndexes = async () => {
 export const elDeleteIndexes = async (indexesToDelete = PLATFORM_INDICES) => {
   return Promise.all(
     indexesToDelete.map(index => {
-      return el.indices.delete({ index }).catch(() => {
-        return false;
+      return el.indices.delete({ index }).catch(err => {
+        logger.error(`[ELASTICSEARCH] Delete indices fail > ${err}`);
       });
     })
   );
@@ -173,7 +173,6 @@ export const elDeleteInstanceIds = async ids => {
     })
     .catch(err => {
       logger.error(`[ELASTICSEARCH] elDeleteInstanceIds > ${err}`);
-      return false;
     });
 };
 
@@ -413,7 +412,9 @@ export const elPaginate = async (indexName, options) => {
       }
       return dataWithIds;
     })
-    .catch(err => console.log('[ELASTIC] Paginate error', err));
+    .catch(err => {
+      logger.error(`[ELASTICSEARCH] Paginate fail > ${err}`);
+    });
 };
 export const elLoadByTerms = async (terms, relationsMap, indices = PLATFORM_INDICES) => {
   const query = {
@@ -427,7 +428,9 @@ export const elLoadByTerms = async (terms, relationsMap, indices = PLATFORM_INDI
       }
     }
   };
-  const data = await el.search(query).catch(err => console.log('[ELASTIC] loadTerm error', err));
+  const data = await el.search(query).catch(err => {
+    logger.error(`[ELASTICSEARCH] Load term fail > ${err}`);
+  });
   const total = data.body.hits.total.value;
   if (total > 1) {
     throw new Error(`[ELASTIC] Expect only one response expected for ${terms}`);
@@ -470,8 +473,8 @@ export const elReindex = async indexMaps => {
             }
           }
         })
-        .catch(() => {
-          return false;
+        .catch(err => {
+          logger.error(`[ELASTICSEARCH] Re index > fail ${err}`);
         });
     })
   );
