@@ -230,10 +230,10 @@ class AttackPatternEditionOverviewComponent extends Component {
       commitMutation({
         mutation: attackPatternMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.attackPattern.id,
           input: {
             fromRole: 'so',
-            toId: this.props.attackPattern.id,
+            toId: value.value,
             toRole: 'creator',
             through: 'created_by_ref',
           },
@@ -250,10 +250,10 @@ class AttackPatternEditionOverviewComponent extends Component {
       commitMutation({
         mutation: attackPatternMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.attackPattern.id,
           input: {
             fromRole: 'so',
-            toId: this.props.attackPattern.id,
+            toId: value.value,
             toRole: 'creator',
             through: 'created_by_ref',
           },
@@ -280,11 +280,11 @@ class AttackPatternEditionOverviewComponent extends Component {
       commitMutation({
         mutation: attackPatternMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: this.props.attackPattern.id,
           input: {
-            fromRole: 'kill_chain_phase',
-            toId: this.props.attackPattern.id,
-            toRole: 'phase_belonging',
+            fromRole: 'phase_belonging',
+            toId: head(added).value,
+            toRole: 'kill_chain_phase',
             through: 'kill_chain_phases',
           },
         },

@@ -77,7 +77,7 @@ const stixRelationResolvers = {
       relationAdd: ({ input }) => stixRelationAddRelation(user, id, input),
       relationDelete: ({ relationId }) => stixRelationDeleteRelation(user, id, relationId)
     }),
-    stixRelationAdd: (_, { input }, { user }) => addStixRelation(user, input)
+    stixRelationAdd: (_, { input, reversedReturn }, { user }) => addStixRelation(user, input, reversedReturn)
   },
   Subscription: {
     stixRelation: {

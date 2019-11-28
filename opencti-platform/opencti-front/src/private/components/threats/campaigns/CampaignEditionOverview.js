@@ -205,10 +205,10 @@ class CampaignEditionOverviewComponent extends Component {
       commitMutation({
         mutation: campaignMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.campaign.id,
           input: {
             fromRole: 'so',
-            toId: this.props.campaign.id,
+            toId: value.value,
             toRole: 'creator',
             through: 'created_by_ref',
           },

@@ -208,10 +208,10 @@ class CourseOfActionEditionOverviewComponent extends Component {
       commitMutation({
         mutation: courseOfActionMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.courseOfAction.id,
           input: {
             fromRole: 'so',
-            toId: this.props.courseOfAction.id,
+            toId: value.value,
             toRole: 'creator',
             through: 'created_by_ref',
           },
@@ -228,10 +228,10 @@ class CourseOfActionEditionOverviewComponent extends Component {
       commitMutation({
         mutation: courseOfActionMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.courseOfAction.id,
           input: {
             fromRole: 'so',
-            toId: this.props.courseOfAction.id,
+            toId: value.value,
             toRole: 'creator',
             through: 'created_by_ref',
           },
@@ -258,10 +258,10 @@ class CourseOfActionEditionOverviewComponent extends Component {
       commitMutation({
         mutation: courseOfActionMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: this.props.courseOfAction.id,
           input: {
             fromRole: 'so',
-            toId: this.props.courseOfAction.id,
+            toId: head(added).value,
             toRole: 'marking',
             through: 'object_marking_refs',
           },

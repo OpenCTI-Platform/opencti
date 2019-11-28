@@ -289,7 +289,7 @@ const extractRelationAlias = (query, alias, role, relationType) => {
  */
 export const extractQueryVars = query => {
   const vars = uniq(map(m => ({ alias: m.replace('$', '') }), query.match(/\$[a-z_]+/gi)));
-  const relationsVars = Array.from(query.matchAll(/\(([a-z_\s:$]+),([a-z_\s:$]+)\)[\s]*isa[\s]*([a-z_]+)/g));
+  const relationsVars = Array.from(query.matchAll(/\(([a-z_\-\s:$]+),([a-z_\-\s:$]+)\)[\s]*isa[\s]*([a-z_\-]+)/g));
   const roles = flatten(
     map(r => {
       const [, left, right, relationType] = r;
@@ -488,12 +488,16 @@ const loadConcept = async (query, concept, args = {}) => {
       const rolesPromises = Promise.all(
         map(async roleItem => {
           // eslint-disable-next-line prettier/prettier
-          const roleId = last(roleItem).values().next().value.id;
+          const roleId = last(roleItem)
+            .values()
+            .next().value.id;
           const conceptFromMap = relationsMap.get(roleId);
           if (conceptFromMap) {
             const { alias, role, internalIdKey } = conceptFromMap;
             // eslint-disable-next-line prettier/prettier
-            return head(roleItem).label().then(async roleLabel => {
+            return head(roleItem)
+              .label()
+              .then(async roleLabel => {
                 // Alias when role are not specified need to be force the opencti natural direction.
                 let useAlias = alias;
                 // If role specified in the query, just use the grakn binding.
@@ -1412,7 +1416,7 @@ const flatAttributesForObject = data => {
   )(elements);
 };
 const createRelationRaw = async (fromInternalId, input, opts = {}) => {
-  const { indexable = true } = opts;
+  const { indexable = true, reversedReturn = false } = opts;
   const relationId = uuid();
   // 01. First fix the direction of the relation
   const isStixRelation = includes('stix_id_key', Object.keys(input)) || input.relationship_type;
@@ -1433,9 +1437,7 @@ const createRelationRaw = async (fromInternalId, input, opts = {}) => {
     relationAttributes.name = input.name ? input.name : ''; // Force name of the relation
     relationAttributes.description = input.description;
     relationAttributes.role_played = input.role_played ? input.role_played : 'Unknown';
-    relationAttributes.score = input.score ? input.score : 50;
-    relationAttributes.weight = input.weight;
-    relationAttributes.expiration = input.expiration;
+    relationAttributes.weight = input.weight ? input.weight : 1;
     relationAttributes.entity_type = entityType;
     relationAttributes.relationship_type = relationshipType;
     relationAttributes.updated_at = currentDate;
@@ -1496,7 +1498,18 @@ const createRelationRaw = async (fromInternalId, input, opts = {}) => {
     await indexElements([createdRel]);
   }
   // 06. Return result
-  return createdRel;
+  if (reversedReturn !== true) {
+    return createdRel;
+  }
+  // 07. Return result inversed if asked
+  return pipe(
+    assoc('fromId', createdRel.toId),
+    assoc('fromRole', createdRel.toRole),
+    assoc('fromTypes', createdRel.toTypes),
+    assoc('toId', createdRel.fromId),
+    assoc('toRole', createdRel.fromRole),
+    assoc('toTypes', createdRel.fromTypes)
+  )(createdRel);
 };
 
 // region business relations

@@ -221,10 +221,10 @@ class ToolEditionOverviewComponent extends Component {
       commitMutation({
         mutation: toolMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.tool.id,
           input: {
             fromRole: 'so',
-            toId: this.props.tool.id,
+            toId: value.value,
             toRole: 'creator',
             through: 'created_by_ref',
           },
@@ -241,10 +241,10 @@ class ToolEditionOverviewComponent extends Component {
       commitMutation({
         mutation: toolMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.tool.id,
           input: {
             fromRole: 'so',
-            toId: this.props.tool.id,
+            toId: value.value,
             toRole: 'creator',
             through: 'created_by_ref',
           },
@@ -271,11 +271,11 @@ class ToolEditionOverviewComponent extends Component {
       commitMutation({
         mutation: toolMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: this.props.tool.id,
           input: {
-            fromRole: 'kill_chain_phase',
-            toId: this.props.tool.id,
-            toRole: 'phase_belonging',
+            fromRole: 'phase_belonging',
+            toId: head(added).value,
+            toRole: 'kill_chain_phase',
             through: 'kill_chain_phases',
           },
         },
@@ -311,10 +311,10 @@ class ToolEditionOverviewComponent extends Component {
       commitMutation({
         mutation: toolMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: this.props.tool.id,
           input: {
             fromRole: 'so',
-            toId: this.props.tool.id,
+            toId: head(added).value,
             toRole: 'marking',
             through: 'object_marking_refs',
           },

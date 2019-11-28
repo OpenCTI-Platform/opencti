@@ -1629,6 +1629,7 @@ input AttackPatternAddInput {
   description: String!
   platform: [String]
   required_permission: [String]
+  external_id: String
   alias: [String]
   createdByRef: String
   markingDefinitions: [String]
@@ -3299,7 +3300,7 @@ type Mutation {
   stixObservableAdd(input: StixObservableAddInput): StixObservable @auth
   stixObservableEdit(id: ID!): StixObservableEditMutations @auth
   # StixRelation
-  stixRelationAdd(input: StixRelationAddInput): StixRelation @auth
+  stixRelationAdd(input: StixRelationAddInput, reversedReturn: Boolean): StixRelation @auth
   stixRelationEdit(id: ID!): StixRelationEditMutations @auth
   # Workspace
   workspaceAdd(input: WorkspaceAddInput): Workspace @auth
