@@ -394,23 +394,26 @@ export const elPaginate = async (indexName, options) => {
     }
   };
   logger.debug(`[ELASTICSEARCH] paginate > ${JSON.stringify(query)}`);
-  return el.search(query).then(data => {
-    const dataWithIds = map(n => {
-      const loadedElement = pipe(
-        assoc('id', n._source.internal_id_key),
-        assoc('_index', n._index)
-      )(n._source);
-      if (loadedElement.relationship_type) {
-        return elReconstructRelation(loadedElement, relationsMap);
+  return el
+    .search(query)
+    .then(data => {
+      const dataWithIds = map(n => {
+        const loadedElement = pipe(
+          assoc('id', n._source.internal_id_key),
+          assoc('_index', n._index)
+        )(n._source);
+        if (loadedElement.relationship_type) {
+          return elReconstructRelation(loadedElement, relationsMap);
+        }
+        return loadedElement;
+      }, data.body.hits.hits);
+      if (connectionFormat) {
+        const nodeHits = map(n => ({ node: n }), dataWithIds);
+        return buildPagination(first, offset, nodeHits, data.body.hits.total.value);
       }
-      return loadedElement;
-    }, data.body.hits.hits);
-    if (connectionFormat) {
-      const nodeHits = map(n => ({ node: n }), dataWithIds);
-      return buildPagination(first, offset, nodeHits, data.body.hits.total.value);
-    }
-    return dataWithIds;
-  });
+      return dataWithIds;
+    })
+    .catch(err => console.log('[ELASTIC] Paginate error', err));
 };
 export const elLoadByTerms = async (terms, relationsMap, indices = PLATFORM_INDICES) => {
   const query = {
@@ -424,7 +427,7 @@ export const elLoadByTerms = async (terms, relationsMap, indices = PLATFORM_INDI
       }
     }
   };
-  const data = await el.search(query);
+  const data = await el.search(query).catch(err => console.log('[ELASTIC] loadTerm error', err));
   const total = data.body.hits.total.value;
   if (total > 1) {
     throw new Error(`[ELASTIC] Expect only one response expected for ${terms}`);
