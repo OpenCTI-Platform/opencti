@@ -275,12 +275,8 @@ const extractRelationAlias = (query, alias, role, relationType) => {
   if (role !== resolveLeftRole) {
     throw new Error(`[GRAKN] Incorrect role specified for alias: ${alias} - role: ${role} - relation: ${relationType}`);
   }
-  variables.push({
-    role: resolveRightRole,
-    alias: resolveRightAlias,
-    internalIdKey: getAliasInternalIdFilter(query, resolveRightAlias)
-  });
-  variables.push({ role, alias, internalIdKey: getAliasInternalIdFilter(query, alias) });
+  variables.push({ role: resolveRightRole, alias: resolveRightAlias });
+  variables.push({ role, alias });
   return variables;
 };
 /**
@@ -289,34 +285,33 @@ const extractRelationAlias = (query, alias, role, relationType) => {
  */
 export const extractQueryVars = query => {
   const vars = uniq(map(m => ({ alias: m.replace('$', '') }), query.match(/\$[a-z_]+/gi)));
-  const relationsVars = Array.from(query.matchAll(/\(([a-z_\-\s:$]+),([a-z_\-\s:$]+)\)[\s]*isa[\s]*([a-z_\-]+)/g));
+  const relationsVars = Array.from(query.matchAll(/\(([a-z_\-\s:$]+),([a-z_\-\s:$]+)\)[\s]*isa[\s]*([a-z_-]+)/g));
   const roles = flatten(
     map(r => {
       const [, left, right, relationType] = r;
       const [leftRole, leftAlias] = includes(':', left) ? left.trim().split(':') : [null, left];
       const [rightRole, rightAlias] = includes(':', right) ? right.trim().split(':') : [null, right];
       const lAlias = leftAlias.trim().replace('$', '');
+      const lKeyFilter = getAliasInternalIdFilter(query, lAlias);
       const rAlias = rightAlias.trim().replace('$', '');
-      // Roles must be fully specified or not specified.
-      // Need to complete the leftRole
+      const rKeyFilter = getAliasInternalIdFilter(query, rAlias);
+      // If one filtering key is specified, just return the duo with no roles
+      if (lKeyFilter || rKeyFilter) {
+        return [{ alias: leftAlias, internalIdKey: lKeyFilter }, { alias: rAlias, internalIdKey: rKeyFilter }];
+      }
+      // If no filtering, roles must be fully specified or not specified.
+      // If missing left role
       if (leftRole === null && rightRole !== null) {
         return extractRelationAlias(query, rAlias, rightRole, relationType);
       }
+      // If missing right role
       if (leftRole !== null && rightRole === null) {
         return extractRelationAlias(query, lAlias, leftRole, relationType);
       }
-      // We also need to know if the alias is fixed by filtering
+      // Else, we have both or nothing
       return [
-        {
-          role: rightRole ? rightRole.trim() : undefined,
-          alias: rAlias,
-          internalIdKey: getAliasInternalIdFilter(query, rAlias)
-        },
-        {
-          role: leftRole ? leftRole.trim() : undefined,
-          alias: lAlias,
-          internalIdKey: getAliasInternalIdFilter(query, lAlias)
-        }
+        { role: rightRole ? rightRole.trim() : undefined, alias: rAlias },
+        { role: leftRole ? leftRole.trim() : undefined, alias: lAlias }
       ];
     }, relationsVars)
   );
