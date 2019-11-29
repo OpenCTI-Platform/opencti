@@ -13,6 +13,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { elVersion } from '../database/elasticSearch';
 import { getRabbitMQVersion } from '../database/rabbitmq';
+import { getMinIOVersion } from '../database/minio';
 import { version } from '../../package.json';
 
 export const getApplicationInfo = () => ({
@@ -21,8 +22,8 @@ export const getApplicationInfo = () => ({
     { name: 'Grakn', version: getGraknVersion() },
     { name: 'Elasticsearch', version: elVersion() },
     { name: 'RabbitMQ', version: getRabbitMQVersion() },
-    { name: 'Redis', version: getRedisVersion() }
-    // TODO Add Minio
+    { name: 'Redis', version: getRedisVersion() },
+    { name: 'MinIO', version: getMinIOVersion() }
   ]
 });
 
