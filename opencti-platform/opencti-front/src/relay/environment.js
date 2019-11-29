@@ -105,7 +105,7 @@ export class QueryRenderer extends Component {
         environment={environment}
         query={query}
         variables={variables}
-        fetchPolicy="store-and-network"
+        fetchPolicy="network-only"
         render={(data) => {
           const { error } = data;
           const types = error ? map((e) => e.name, error) : [];
