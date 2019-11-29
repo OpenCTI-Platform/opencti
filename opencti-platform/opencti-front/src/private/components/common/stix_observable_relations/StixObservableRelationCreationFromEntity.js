@@ -1,20 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Field, Form, Formik } from 'formik';
+import { Formik, Field, Form } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  ascend,
-  assoc,
-  compose,
-  head,
-  includes,
-  map,
-  path,
-  pathOr,
-  pipe,
-  pluck,
-  sortWith,
-  union,
+  compose, map, pipe, head, assoc,
 } from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
@@ -23,7 +12,7 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import MenuItem from '@material-ui/core/MenuItem';
-import { Add, ArrowRightAlt, Close } from '@material-ui/icons';
+import { Close, ArrowRightAlt, Add } from '@material-ui/icons';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -32,30 +21,22 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Fab from '@material-ui/core/Fab';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { ConnectionHandler } from 'relay-runtime';
-import {
-  commitMutation,
-  fetchQuery,
-  QueryRenderer,
-} from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { parse } from '../../../../utils/Time';
 import {
-  resolveRelationsTypes,
   resolveRoles,
+  resolveRelationsTypes,
 } from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
-import TextField from '../../../../components/TextField';
 import Select from '../../../../components/Select';
 import DatePickerField from '../../../../components/DatePickerField';
-import StixRelationCreationFromEntityLines, {
-  stixRelationCreationFromEntityLinesQuery,
-} from './StixRelationCreationFromEntityLines';
-import StixDomainEntityCreation from '../stix_domain_entities/StixDomainEntityCreation';
+import StixObservableRelationCreationFromEntityLines, {
+  stixObservableRelationCreationFromEntityLinesQuery,
+} from './StixObservableRelationCreationFromEntityLines';
+import StixObservableCreation from '../../stix_observables/StixObservableCreation';
 import SearchInput from '../../../../components/SearchInput';
-import Autocomplete from '../../../../components/Autocomplete';
-import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
-import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
 import { truncate } from '../../../../utils/String';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
 
@@ -74,7 +55,7 @@ const styles = (theme) => ({
   createButton: {
     position: 'fixed',
     bottom: 30,
-    right: 290,
+    right: 30,
     zIndex: 1001,
   },
   title: {
@@ -189,14 +170,14 @@ const styles = (theme) => ({
   },
 });
 
-const stixRelationCreationFromEntityQuery = graphql`
-  query StixRelationCreationFromEntityQuery($id: String) {
+const stixObservableRelationCreationFromEntityQuery = graphql`
+  query StixObservableRelationCreationFromEntityQuery($id: String) {
     stixEntity(id: $id) {
       id
       entity_type
+      parent_types
       name
       description
-      parent_types
       ... on StixObservable {
         observable_value
       }
@@ -204,43 +185,37 @@ const stixRelationCreationFromEntityQuery = graphql`
   }
 `;
 
-const stixRelationCreationFromEntityMutation = graphql`
-  mutation StixRelationCreationFromEntityMutation(
-    $input: StixRelationAddInput!
-    $reversedReturn: Boolean
+const stixObservableRelationCreationFromEntityMutation = graphql`
+  mutation StixObservableRelationCreationFromEntityMutation(
+    $input: StixObservableRelationAddInput!
   ) {
-    stixRelationAdd(input: $input, reversedReturn: $reversedReturn) {
-      ...EntityStixRelationLine_node
+    stixObservableRelationAdd(input: $input) {
+      ...StixObservableObservableLine_node
     }
   }
 `;
 
-const stixRelationValidation = (t) => Yup.object().shape({
+const stixObservableRelationValidation = (t) => Yup.object().shape({
   relationship_type: Yup.string().required(t('This field is required')),
-  weight: Yup.number()
-    .typeError(t('The value must be a number'))
-    .integer(t('The value must be a number'))
-    .required(t('This field is required')),
   first_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
   last_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  description: Yup.string(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
-    'Pagination_stixRelations',
+    'Pagination_stixObservableRelations',
     paginationOptions,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class StixRelationCreationFromEntity extends Component {
+class StixObservableRelationCreationFromEntity extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -248,8 +223,6 @@ class StixRelationCreationFromEntity extends Component {
       step: 0,
       targetEntity: null,
       search: '',
-      killChainPhases: [],
-      markingDefinitions: [],
     };
   }
 
@@ -261,62 +234,25 @@ class StixRelationCreationFromEntity extends Component {
     this.setState({ step: 0, targetEntity: null, open: false });
   }
 
-  searchKillchainPhases(event) {
-    fetchQuery(killChainPhasesSearchQuery, {
-      search: event.target.value,
-    }).then((data) => {
-      const killChainPhases = pipe(
-        pathOr([], ['killChainPhases', 'edges']),
-        sortWith([ascend(path(['node', 'order']))]),
-        map((n) => ({
-          label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-          value: n.node.id,
-        })),
-      )(data);
-      this.setState({
-        killChainPhases: union(this.state.killChainPhases, killChainPhases),
-      });
-    });
-  }
-
-  searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsSearchQuery, {
-      search: event.target.value,
-    }).then((data) => {
-      const markingDefinitions = pipe(
-        pathOr([], ['markingDefinitions', 'edges']),
-        map((n) => ({ label: n.node.definition, value: n.node.id })),
-      )(data);
-      this.setState({ markingDefinitions });
-    });
-  }
-
   onSubmit(values, { setSubmitting, resetForm }) {
     const roles = resolveRoles(values.relationship_type);
-    const fromEntityId = this.props.isFrom
-      ? this.props.entityId
-      : this.state.targetEntity.id;
-    const toEntityId = this.props.isFrom
-      ? this.state.targetEntity.id
-      : this.props.entityId;
+    const fromEntityId = this.props.entityId;
+    const toEntityId = this.state.targetEntity.id;
     const finalValues = pipe(
       assoc('fromId', fromEntityId),
-      assoc('fromRole', roles.fromRole),
+      assoc('fromRole', this.props.isFrom ? roles.fromRole : roles.toRole),
       assoc('toId', toEntityId),
-      assoc('toRole', roles.toRole),
+      assoc('toRole', this.props.isFrom ? roles.toRole : roles.fromRole),
       assoc('first_seen', parse(values.first_seen).format()),
       assoc('last_seen', parse(values.last_seen).format()),
-      assoc('killChainPhases', pluck('value', values.killChainPhases)),
-      assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
     )(values);
     commitMutation({
-      mutation: stixRelationCreationFromEntityMutation,
+      mutation: stixObservableRelationCreationFromEntityMutation,
       variables: {
         input: finalValues,
-        reversedReturn: !this.props.isFrom,
       },
       updater: (store) => {
-        const payload = store.getRootField('stixRelationAdd');
+        const payload = store.getRootField('stixObservableRelationAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node');
         const container = store.getRoot();
         sharedUpdater(
@@ -379,12 +315,12 @@ class StixRelationCreationFromEntity extends Component {
         </div>
         <div className={classes.containerList}>
           <QueryRenderer
-            query={stixRelationCreationFromEntityLinesQuery}
+            query={stixObservableRelationCreationFromEntityLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixRelationCreationFromEntityLines
+                  <StixObservableRelationCreationFromEntityLines
                     handleSelect={this.handleSelectEntity.bind(this)}
                     data={props}
                   />
@@ -411,7 +347,7 @@ class StixRelationCreationFromEntity extends Component {
               );
             }}
           />
-          <StixDomainEntityCreation
+          <StixObservableCreation
             display={this.state.open}
             contextual={true}
             inputValue={this.state.search}
@@ -433,23 +369,17 @@ class StixRelationCreationFromEntity extends Component {
       toEntity = sourceEntity;
     }
     const relationshipTypes = resolveRelationsTypes(
-      includes('Stix-Observable', fromEntity.parent_types)
-        ? 'observable'
-        : fromEntity.entity_type,
+      fromEntity.entity_type,
       toEntity.entity_type,
     );
     const defaultRelationshipType = head(relationshipTypes)
       ? head(relationshipTypes)
-      : 'related-to';
+      : 'linked';
     const initialValues = {
       relationship_type: defaultRelationshipType,
-      weight: 1,
-      role_played: '',
+      role_played: 'Unknown',
       first_seen: new Date(),
       last_seen: new Date(),
-      description: '',
-      killChainPhases: [],
-      markingDefinitions: [],
     };
     return (
       <QueryRenderer
@@ -462,12 +392,10 @@ class StixRelationCreationFromEntity extends Component {
               <Formik
                 enableReinitialize={true}
                 initialValues={initialValues}
-                validationSchema={stixRelationValidation(t)}
+                validationSchema={stixObservableRelationValidation(t)}
                 onSubmit={this.onSubmit.bind(this)}
                 onReset={this.handleClose.bind(this)}
-                render={({
-                  submitForm, handleReset, isSubmitting, values,
-                }) => (
+                render={({ submitForm, handleReset, isSubmitting }) => (
                   <Form>
                     <div className={classes.header}>
                       <IconButton
@@ -509,25 +437,12 @@ class StixRelationCreationFromEntity extends Component {
                               />
                             </div>
                             <div className={classes.type}>
-                              {includes(
-                                'Stix-Observable',
-                                fromEntity.parent_types,
-                              )
-                                ? t(`observable_${fromEntity.entity_type}`)
-                                : t(`entity_${fromEntity.entity_type}`)}
+                              {t(`observable_${fromEntity.entity_type}`)}
                             </div>
                           </div>
                           <div className={classes.content}>
                             <span className={classes.name}>
-                              {truncate(
-                                includes(
-                                  'Stix-Observable',
-                                  fromEntity.parent_types,
-                                )
-                                  ? fromEntity.observable_value
-                                  : fromEntity.name,
-                                120,
-                              )}
+                              {truncate(fromEntity.observable_value, 20)}
                             </span>
                           </div>
                         </div>
@@ -563,25 +478,12 @@ class StixRelationCreationFromEntity extends Component {
                               />
                             </div>
                             <div className={classes.type}>
-                              {includes(
-                                'Stix-Observable',
-                                toEntity.parent_types,
-                              )
-                                ? t(`observable_${toEntity.entity_type}`)
-                                : t(`entity_${toEntity.entity_type}`)}
+                              {t(`observable_${toEntity.entity_type}`)}
                             </div>
                           </div>
                           <div className={classes.content}>
                             <span className={classes.name}>
-                              {truncate(
-                                includes(
-                                  'Stix-Observable',
-                                  toEntity.parent_types,
-                                )
-                                  ? toEntity.observable_value
-                                  : toEntity.name,
-                                120,
-                              )}
+                              {truncate(toEntity.observable_value, 20)}
                             </span>
                           </div>
                         </div>
@@ -605,50 +507,30 @@ class StixRelationCreationFromEntity extends Component {
                           ),
                           relationshipTypes,
                         )}
-                        <MenuItem value="related-to">
-                          {t('relation_related-to')}
+                        <MenuItem value="linked">
+                          {t('relation_linked')}
                         </MenuItem>
                       </Field>
                       <Field
-                        name="weight"
+                        name="role_played"
                         component={Select}
-                        label={t('Confidence level')}
+                        label={t('Played role')}
                         fullWidth={true}
                         inputProps={{
-                          name: 'weight',
-                          id: 'weight',
+                          name: 'role_played',
+                          id: 'role_played',
                         }}
                         containerstyle={{ marginTop: 20, width: '100%' }}
                       >
-                        <MenuItem value={1}>{t('Low')}</MenuItem>
-                        <MenuItem value={2}>{t('Moderate')}</MenuItem>
-                        <MenuItem value={3}>{t('Good')}</MenuItem>
-                        <MenuItem value={4}>{t('Strong')}</MenuItem>
+                        {rolesPlayedEdges.map((rolePlayedEdge) => (
+                          <MenuItem
+                            key={rolePlayedEdge.node.value}
+                            value={rolePlayedEdge.node.value}
+                          >
+                            {t(rolePlayedEdge.node.value)}
+                          </MenuItem>
+                        ))}
                       </Field>
-                      {values.relationship_type === 'indicates' ? (
-                        <Field
-                          name="role_played"
-                          component={Select}
-                          label={t('Played role')}
-                          fullWidth={true}
-                          inputProps={{
-                            name: 'role_played',
-                            id: 'role_played',
-                          }}
-                          containerstyle={{ marginTop: 20, width: '100%' }}
-                        >
-                          {rolesPlayedEdges.map((rolePlayedEdge) => (
-                            <MenuItem
-                              key={rolePlayedEdge.node.value}
-                              value={rolePlayedEdge.node.value}
-                            >
-                              {t(rolePlayedEdge.node.value)}
-                            </MenuItem>
-                          ))}
-                        </Field>
-                      ) : (
-                        ''
-                      )}
                       <Field
                         name="first_seen"
                         component={DatePickerField}
@@ -662,31 +544,6 @@ class StixRelationCreationFromEntity extends Component {
                         label={t('Last seen')}
                         fullWidth={true}
                         style={{ marginTop: 20 }}
-                      />
-                      <Field
-                        name="description"
-                        component={TextField}
-                        label={t('Description')}
-                        fullWidth={true}
-                        multiline={true}
-                        rows="4"
-                        style={{ marginTop: 20 }}
-                      />
-                      <Field
-                        name="killChainPhases"
-                        component={Autocomplete}
-                        multiple={true}
-                        label={t('Kill chain phases')}
-                        options={this.state.killChainPhases}
-                        onInputChange={this.searchKillchainPhases.bind(this)}
-                      />
-                      <Field
-                        name="markingDefinitions"
-                        component={Autocomplete}
-                        multiple={true}
-                        label={t('Marking')}
-                        options={this.state.markingDefinitions}
-                        onInputChange={this.searchMarkingDefinitions.bind(this)}
                       />
                       <div className={classes.buttonBack}>
                         <Button
@@ -776,7 +633,7 @@ class StixRelationCreationFromEntity extends Component {
           onClose={this.handleClose.bind(this)}
         >
           <QueryRenderer
-            query={stixRelationCreationFromEntityQuery}
+            query={stixObservableRelationCreationFromEntityQuery}
             variables={{ id: entityId }}
             render={({ props }) => {
               if (props && props.stixEntity) {
@@ -796,7 +653,7 @@ class StixRelationCreationFromEntity extends Component {
   }
 }
 
-StixRelationCreationFromEntity.propTypes = {
+StixObservableRelationCreationFromEntity.propTypes = {
   entityId: PropTypes.string,
   isFrom: PropTypes.bool,
   targetEntityTypes: PropTypes.array,
@@ -810,4 +667,4 @@ StixRelationCreationFromEntity.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixRelationCreationFromEntity);
+)(StixObservableRelationCreationFromEntity);

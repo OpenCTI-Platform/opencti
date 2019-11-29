@@ -5,7 +5,7 @@ import FormControl from '@material-ui/core/FormControl';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import { fieldToSelect } from 'formik-material-ui';
 
-const Select = props => (
+const Select = (props) => (
   <FormControl
     style={props.containerstyle}
     error={

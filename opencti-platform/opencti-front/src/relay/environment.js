@@ -15,7 +15,7 @@ import {
 } from 'react-relay';
 import * as PropTypes from 'prop-types';
 import {
-  map, isEmpty, difference, filter, split,
+  map, isEmpty, difference, filter, split, pathOr,
 } from 'ramda';
 import { urlMiddleware, RelayNetworkLayer } from 'react-relay-network-modern';
 import uploadMiddleware from './uploadMiddleware';
@@ -143,19 +143,24 @@ export const commitMutation = ({
   onCompleted,
   onError: (error) => {
     if (setSubmitting) setSubmitting(false);
-    const authRequired = filter(
-      (e) => e.data && e.data.type === 'authentication',
-      error.res.errors,
-    );
-    if (!isEmpty(authRequired)) {
-      MESSAGING$.redirect.next('/login');
-    } else {
-      const messages = map(
-        (e) => ({ type: 'error', text: e.message }),
+    if (error && error.res && error.res.errors) {
+      const authRequired = filter(
+        (e) => e.data.type === 'authentication',
         error.res.errors,
       );
-      MESSAGING$.messages.next(messages);
-      if (onError) onError(error);
+      if (!isEmpty(authRequired)) {
+        MESSAGING$.redirect.next('/login');
+      } else {
+        const messages = map(
+          (e) => ({
+            type: 'error',
+            text: pathOr(e.message, ['data', 'details'], e),
+          }),
+          error.res.errors,
+        );
+        MESSAGING$.messages.next(messages);
+        if (onError) onError(error);
+      }
     }
   },
 });

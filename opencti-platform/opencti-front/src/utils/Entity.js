@@ -33,7 +33,28 @@ export const resolveLink = (type) => {
       return '/dashboard/threats/malwares';
     case 'report':
       return '/dashboard/reports/all';
-    case 'observable':
+    case 'autonomous-system':
+    case 'domain':
+    case 'ipv4-addr':
+    case 'ipv6-addr':
+    case 'url':
+    case 'email-address':
+    case 'email-subject':
+    case 'mutex':
+    case 'file':
+    case 'file-name':
+    case 'file-path':
+    case 'file-md5':
+    case 'file-sha1':
+    case 'file-sha256':
+    case 'pdb-path':
+    case 'registry-key':
+    case 'registry-key-value':
+    case 'windows-service-name':
+    case 'windows-service-display-name':
+    case 'windows-scheduled-task':
+    case 'x509-certificate-issuer':
+    case 'x509-certificate-serial-number':
       return '/dashboard/observables/all';
     default:
       return null;

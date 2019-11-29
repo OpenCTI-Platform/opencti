@@ -46,8 +46,6 @@ class StixObservables extends Component {
       searchTerm: '',
       view: 'lines',
       types: [],
-      lastSeenStart: null,
-      lastSeenStop: null,
     };
   }
 
@@ -67,18 +65,9 @@ class StixObservables extends Component {
     }
   }
 
-  handleChangeLastSeenStart(lastSeenStart) {
-    this.setState({ lastSeenStart });
-  }
-
-  handleChangeLastSeenStop(lastSeenStop) {
-    this.setState({ lastSeenStop });
-  }
-
   renderLines(paginationOptions) {
     const { sortBy, orderAsc } = this.state;
-    const displaySeen = !!(this.state.lastSeenStart || this.state.lastSeenStop);
-    let dataColumns = {
+    const dataColumns = {
       entity_type: {
         label: 'Type',
         width: '20%',
@@ -100,35 +89,6 @@ class StixObservables extends Component {
         isSortable: true,
       },
     };
-    if (displaySeen) {
-      dataColumns = {
-        entity_type: {
-          label: 'Type',
-          width: '15%',
-          isSortable: true,
-        },
-        observable_value: {
-          label: 'Value',
-          width: '35%',
-          isSortable: true,
-        },
-        first_seen: {
-          label: 'First seen',
-          width: '15%',
-          isSortable: true,
-        },
-        last_seen: {
-          label: 'Last seen',
-          width: '15%',
-          isSortable: true,
-        },
-        markingDefinitions: {
-          label: 'Marking',
-          width: '10%',
-          isSortable: true,
-        },
-      };
-    }
     return (
       <ListLines
         sortBy={sortBy}
@@ -136,7 +96,6 @@ class StixObservables extends Component {
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
-        displayImport={true}
       >
         <QueryRenderer
           query={stixObservablesLinesQuery}
@@ -157,18 +116,10 @@ class StixObservables extends Component {
   render() {
     const { classes } = this.props;
     const {
-      view,
-      types,
-      sortBy,
-      orderAsc,
-      lastSeenStart,
-      lastSeenStop,
-      searchTerm,
+      view, types, sortBy, orderAsc, searchTerm,
     } = this.state;
     const paginationOptions = {
       types: this.state.types.length > 0 ? this.state.types : null,
-      lastSeenStart,
-      lastSeenStop,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
@@ -180,10 +131,6 @@ class StixObservables extends Component {
         <StixObservablesRightBar
           types={types}
           handleToggle={this.handleToggle.bind(this)}
-          lastSeenStart={lastSeenStart}
-          lastSeenStop={lastSeenStop}
-          handleChangeLastSeenStart={this.handleChangeLastSeenStart.bind(this)}
-          handleChangeLastSeenStop={this.handleChangeLastSeenStop.bind(this)}
         />
       </div>
     );

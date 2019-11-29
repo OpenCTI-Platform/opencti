@@ -76,23 +76,43 @@ class TopMenuObservable extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/observables/all/${observableId}/enrichment`}
+          to={`/dashboard/observables/all/${observableId}/links`}
           variant={
             location.pathname
-            === `/dashboard/observables/all/${observableId}/enrichment`
+            === `/dashboard/observables/all/${observableId}/links`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/observables/all/${observableId}/enrichment`
+            === `/dashboard/observables/all/${observableId}/links`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Enrichment')}
+          {t('Linked observables')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/observables/all/${observableId}/knowledge`}
+          variant={
+            location.pathname
+            === `/dashboard/observables/all/${observableId}/knowledge`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/observables/all/${observableId}/knowledge`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Knowledge')}
         </Button>
       </div>
     );

@@ -222,8 +222,6 @@ ListLines.propTypes = {
   handleChangeView: PropTypes.func,
   handleRemoveFilter: PropTypes.func,
   views: PropTypes.array,
-  displayExport: PropTypes.bool,
-  displayImport: PropTypes.bool,
   keyword: PropTypes.string,
   filters: PropTypes.object,
   sortBy: PropTypes.string,

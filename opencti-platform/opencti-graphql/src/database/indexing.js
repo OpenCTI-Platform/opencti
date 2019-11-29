@@ -90,9 +90,8 @@ export const index = async () => {
   await indexElement('permission', true);
   await indexElement('user_permission', true);
   await indexElement('stix_relation', true);
+  await indexElement('stix_observable_relation', true);
   await indexElement('relation_embedded', true);
   await indexElement('stix_relation_embedded', true);
-  await indexElement('stix_relation_observable_embedded', true);
-  await indexElement('stix_relation_observable_grouping', true);
   await indexElement('stix_sighting', true);
 };

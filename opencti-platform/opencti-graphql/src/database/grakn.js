@@ -24,6 +24,7 @@ import {
   mergeAll,
   mergeRight,
   pipe,
+  split,
   pluck,
   tail,
   toPairs,
@@ -33,6 +34,7 @@ import {
 import moment from 'moment';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import Grakn from 'grakn-client';
+import { DatabaseError } from '../config/errors';
 import conf, { logger } from '../config/conf';
 import { buildPagination, fillTimeSeries, randomKey } from './utils';
 import { isInversed, rolesMap } from './graknRoles';
@@ -61,16 +63,16 @@ export const TYPE_OPENCTI_INTERNAL = 'Internal';
 export const TYPE_STIX_DOMAIN = 'Stix-Domain';
 export const TYPE_STIX_DOMAIN_ENTITY = 'Stix-Domain-Entity';
 export const TYPE_STIX_OBSERVABLE = 'Stix-Observable';
-export const TYPE_STIX_OBSERVABLE_DATA = 'Stix-Observable-Data';
 export const TYPE_STIX_RELATION = 'stix_relation';
+export const TYPE_STIX_OBSERVABLE_RELATION = 'stix_observable_relation';
 export const TYPE_RELATION_EMBEDDED = 'relation_embedded';
 export const TYPE_STIX_RELATION_EMBEDDED = 'stix_relation_embedded';
 export const inferIndexFromConceptTypes = types => {
   // Observable index
   if (includes(TYPE_STIX_OBSERVABLE, types)) return INDEX_STIX_OBSERVABLE;
-  if (includes(TYPE_STIX_OBSERVABLE_DATA, types)) return INDEX_STIX_OBSERVABLE;
   // Relation index
   if (includes(TYPE_STIX_RELATION, types)) return INDEX_STIX_RELATIONS;
+  if (includes(TYPE_STIX_OBSERVABLE_RELATION, types)) return INDEX_STIX_RELATIONS;
   if (includes(TYPE_STIX_RELATION_EMBEDDED, types)) return INDEX_STIX_RELATIONS;
   if (includes(TYPE_RELATION_EMBEDDED, types)) return INDEX_STIX_RELATIONS;
   // Everything else in entities index
@@ -187,6 +189,12 @@ const commitWriteTx = async wTx => {
     await wTx.tx.commit();
   } catch (err) {
     logger.error('[GRAKN] CommitWriteTx error > ', err);
+    if (err.code === 3) {
+      throw new DatabaseError({
+        data: { details: split('\n', err.details)[1] }
+      });
+    }
+    throw new DatabaseError({ data: { details: err.details } });
   }
 };
 export const executeWrite = async executeFunction => {
@@ -297,7 +305,10 @@ export const extractQueryVars = query => {
       const rKeyFilter = getAliasInternalIdFilter(query, rAlias);
       // If one filtering key is specified, just return the duo with no roles
       if (lKeyFilter || rKeyFilter) {
-        return [{ alias: leftAlias, internalIdKey: lKeyFilter }, { alias: rAlias, internalIdKey: rKeyFilter }];
+        return [
+          { alias: leftAlias, internalIdKey: lKeyFilter },
+          { alias: rAlias, internalIdKey: rKeyFilter }
+        ];
       }
       // If no filtering, roles must be fully specified or not specified.
       // If missing left role
@@ -679,7 +690,10 @@ export const indexElements = async (elements, retry = 0) => {
     filter(e => e.relationship_type !== undefined),
     map(e => {
       const relationshipType = e.relationship_type;
-      return [{ from: e.fromId, relationshipType, to: e.toId }, { from: e.toId, relationshipType, to: e.fromId }];
+      return [
+        { from: e.fromId, relationshipType, to: e.toId },
+        { from: e.toId, relationshipType, to: e.fromId }
+      ];
     }),
     flatten,
     groupBy(i => i.from)
@@ -1329,14 +1343,18 @@ export const paginateRelationships = async (query, options, key = 'rel', extraRe
       ${toId ? `$to has internal_id_key "${escapeString(toId)}";` : ''} 
       ${
         fromTypes && fromTypes.length > 0
-          ? `${join(' ', map(fromType => `{ $from isa ${fromType}; } or`, tail(fromTypes)))} { $from isa ${head(
-              fromTypes
-            )}; };`
+          ? `${join(
+              ' ',
+              map(fromType => `{ $from isa ${fromType}; } or`, tail(fromTypes))
+            )} { $from isa ${head(fromTypes)}; };`
           : ''
       } 
     ${
       toTypes && toTypes.length > 0
-        ? `${join(' ', map(toType => `{ $to isa ${toType}; } or`, tail(toTypes)))} { $to isa ${head(toTypes)}; };`
+        ? `${join(
+            ' ',
+            map(toType => `{ $to isa ${toType}; } or`, tail(toTypes))
+          )} { $to isa ${head(toTypes)}; };`
         : ''
     } 
       ${firstSeenStart || firstSeenStop ? `$rel has first_seen $fs; ` : ''} 
@@ -1411,12 +1429,17 @@ const flatAttributesForObject = data => {
   )(elements);
 };
 const createRelationRaw = async (fromInternalId, input, opts = {}) => {
-  const { indexable = true, reversedReturn = false } = opts;
+  const { indexable = true, reversedReturn = false, isStixObservableRelation = false } = opts;
   const relationId = uuid();
   // 01. First fix the direction of the relation
   const isStixRelation = includes('stix_id_key', Object.keys(input)) || input.relationship_type;
   const relationshipType = input.relationship_type || input.through;
-  const entityType = isStixRelation ? TYPE_STIX_RELATION : TYPE_RELATION_EMBEDDED;
+  // eslint-disable-next-line no-nested-ternary
+  const entityType = isStixRelation
+    ? isStixObservableRelation
+      ? TYPE_STIX_OBSERVABLE_RELATION
+      : TYPE_STIX_RELATION
+    : TYPE_RELATION_EMBEDDED;
   const isInv = isInversed(relationshipType, input.fromRole);
   if (isInv) {
     const message = `{ from '${input.fromRole}' to '${input.toRole}' through ${relationshipType} }`;
@@ -1616,10 +1639,7 @@ export const createEntity = async (entity, type, opts = {}) => {
     data = pipe(assoc('alias', data.alias ? data.alias : ['']))(data);
   }
   if (modelType === TYPE_STIX_OBSERVABLE) {
-    data = pipe(
-      assoc('stix_id_key', stixId),
-      assoc('name', data.name ? data.name : '')
-    )(data);
+    data = pipe(assoc('stix_id_key', stixId), assoc('name', data.name ? data.name : ''))(data);
   }
   if (modelType === TYPE_STIX_DOMAIN || modelType === TYPE_STIX_DOMAIN_ENTITY) {
     data = pipe(

@@ -3,7 +3,7 @@ import { createError } from 'apollo-errors';
 export const LEVEL_WARNING = 'warning';
 export const LEVEL_ERROR = 'error';
 export const TYPE_AUTH = 'authentication';
-const TYPE_TECHNICAL = 'technical';
+export const TYPE_TECHNICAL = 'technical';
 const TYPE_BUSINESS = 'business';
 
 // TYPE_BUSINESS
@@ -11,12 +11,6 @@ export const AuthenticationFailure = createError('AuthenticationFailure', {
   message: 'Wrong name or password',
   data: { type: TYPE_BUSINESS, level: LEVEL_WARNING }
 });
-
-export const MissingElement = createError('MissingElement', {
-  message: 'Please set a functional error message',
-  data: { type: TYPE_BUSINESS, level: LEVEL_WARNING }
-});
-
 export const buildValidationError = field => {
   const ErrorType = createError('Functional', {
     message: `Validation error for ${field}`,
@@ -37,6 +31,11 @@ export const ForbiddenAccess = createError('ForbiddenAccess', {
 });
 
 // TYPE_TECHNICAL
+export const DatabaseError = createError('DatabaseError', {
+  message: 'A database error has occured!',
+  data: { type: TYPE_TECHNICAL }
+});
+
 export const Unknown = createError('Unknown', {
   message: 'An unknown error has occurred!  Please try again later.',
   data: { type: TYPE_TECHNICAL, level: LEVEL_ERROR }

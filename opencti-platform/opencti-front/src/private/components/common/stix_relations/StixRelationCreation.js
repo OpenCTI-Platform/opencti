@@ -204,7 +204,6 @@ class StixRelationCreation extends Component {
       existingRelations: [],
       killChainPhases: [],
       markingDefinitions: [],
-      currentType: null,
     };
   }
 
@@ -319,6 +318,7 @@ class StixRelationCreation extends Component {
     const initialValues = {
       relationship_type: defaultRelationshipType,
       weight: defaultWeight,
+      role_played: '',
       first_seen: defaultFirstSeen,
       last_seen: defaultLastSeen,
       description: '',
@@ -416,9 +416,6 @@ class StixRelationCreation extends Component {
                   id: 'relationship_type',
                 }}
                 containerstyle={{ marginTop: 20, width: '100%' }}
-                onChange={(name, value) => {
-                  this.setState({ currentType: value });
-                }}
               >
                 {map(
                   (type) => (
@@ -472,12 +469,12 @@ class StixRelationCreation extends Component {
                 style={{ marginTop: 20 }}
               />
               <Field
-                  name="killChainPhases"
-                  component={Autocomplete}
-                  multiple={true}
-                  label={t('Kill chain phases')}
-                  options={this.state.killChainPhases}
-                  onInputChange={this.searchKillchainPhases.bind(this)}
+                name="killChainPhases"
+                component={Autocomplete}
+                multiple={true}
+                label={t('Kill chain phases')}
+                options={this.state.killChainPhases}
+                onInputChange={this.searchKillchainPhases.bind(this)}
               />
               <Field
                 name="markingDefinitions"
@@ -635,7 +632,7 @@ class StixRelationCreation extends Component {
               <div
                 className={classes.itemHeader}
                 style={{
-                  borderBottom: `1px solid ${itemColor(from.type)}`,
+                  borderBottom: '1px solid #ffffff',
                 }}
               >
                 <div className={classes.icon}>
@@ -673,7 +670,7 @@ class StixRelationCreation extends Component {
               <div
                 className={classes.itemHeader}
                 style={{
-                  borderBottom: `1px solid ${itemColor(to.type)}`,
+                  borderBottom: '1px solid #ffffff',
                 }}
               >
                 <div className={classes.icon}>

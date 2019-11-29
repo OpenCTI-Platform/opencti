@@ -2,31 +2,41 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
+import { createRefetchContainer } from 'react-relay';
+import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
-import StixObservableEntitiesLines, {
-  stixObservableEntitiesLinesQuery,
-} from './StixObservableEntitiesLines';
-import StixRelationCreationFromEntity from '../common/stix_relations/StixRelationCreationFromEntity';
+import StixObservableObservablesLines, {
+  stixObservableObservablesLinesQuery,
+} from './StixObservableObservablesLines';
+import StixObservableRelationCreationFromEntity from '../common/stix_observable_relations/StixObservableRelationCreationFromEntity';
+import StixObservableHeader from './StixObservableHeader';
 
 const styles = () => ({
   paper: {
     minHeight: '100%',
-    margin: '0 0 0 0',
+    margin: '5px 0 0 0',
     padding: '25px 15px 15px 15px',
     borderRadius: 6,
   },
 });
 
-class StixObservableEntities extends Component {
+const StixObservableLinksQuery = graphql`
+  query StixObservableLinksQuery($id: String!) {
+    stixObservable(id: $id) {
+      ...StixObservableLinks_stixObservable
+    }
+  }
+`;
+
+class StixObservableLinks extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      sortBy: null,
-      orderAsc: false,
+      sortBy: 'first_seen',
+      orderAsc: true,
       searchTerm: '',
       view: 'lines',
     };
@@ -43,35 +53,35 @@ class StixObservableEntities extends Component {
   renderLines(paginationOptions) {
     const { sortBy, orderAsc } = this.state;
     const dataColumns = {
+      relationship_type: {
+        label: 'Relation',
+        width: '15%',
+        isSortable: true,
+      },
       entity_type: {
         label: 'Entity type',
         width: '15%',
         isSortable: false,
       },
-      name: {
-        label: 'Name',
-        width: '22%',
+      observable_value: {
+        label: 'Observable value',
+        width: '25%',
         isSortable: false,
       },
       role_played: {
         label: 'Played role',
         width: '15%',
-        isSortable: true,
+        isSortable: false,
       },
       first_seen: {
         label: 'First obs.',
         width: '15%',
-        isSortable: true,
+        isSortable: false,
       },
       last_seen: {
         label: 'Last obs.',
         width: '15%',
-        isSortable: true,
-      },
-      weight: {
-        label: 'Confidence',
-        width: '12%',
-        isSortable: true,
+        isSortable: false,
       },
     };
     return (
@@ -85,14 +95,15 @@ class StixObservableEntities extends Component {
         secondaryAction={true}
       >
         <QueryRenderer
-          query={stixObservableEntitiesLinesQuery}
+          query={stixObservableObservablesLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
-            <StixObservableEntitiesLines
+            <StixObservableObservablesLines
               data={props}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              displayRelation={true}
             />
           )}
         />
@@ -104,35 +115,20 @@ class StixObservableEntities extends Component {
     const {
       view, sortBy, orderAsc, searchTerm,
     } = this.state;
-    const {
-      classes, t, entityId, relationType,
-    } = this.props;
+    const { classes, stixObservable } = this.props;
     const paginationOptions = {
-      fromId: entityId,
-      relationType,
+      fromId: stixObservable.id,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div style={{ marginTop: 40 }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Relations to threats')}
-        </Typography>
-        <StixRelationCreationFromEntity
+      <div className={classes.container}>
+        <StixObservableHeader stixObservable={stixObservable} />
+        <StixObservableRelationCreationFromEntity
           paginationOptions={paginationOptions}
-          entityId={entityId}
-          variant="inLine"
+          entityId={stixObservable.id}
           isFrom={true}
-          targetEntityTypes={[
-            'Threat-Actor',
-            'Intrusion-Set',
-            'Campaign',
-            'Incident',
-            'Malware',
-            'Tool',
-            'Vulnerability',
-          ]}
         />
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -143,15 +139,27 @@ class StixObservableEntities extends Component {
   }
 }
 
-StixObservableEntities.propTypes = {
-  entityId: PropTypes.string,
-  relationType: PropTypes.string,
+StixObservableLinks.propTypes = {
+  stixObservable: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
 };
 
+const StixObservableLinksFragment = createRefetchContainer(
+  StixObservableLinks,
+  {
+    stixObservable: graphql`
+      fragment StixObservableLinks_stixObservable on StixObservable {
+        id
+        ...StixObservableHeader_stixObservable
+      }
+    `,
+  },
+  StixObservableLinksQuery,
+);
+
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixObservableEntities);
+)(StixObservableLinksFragment);
