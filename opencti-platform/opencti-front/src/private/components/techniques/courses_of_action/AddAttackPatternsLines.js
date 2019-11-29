@@ -60,7 +60,6 @@ class AddAttackPatternsLinesContainer extends Component {
     const {
       courseOfActionId,
       courseOfActionAttackPatterns,
-      courseOfActionPaginationOptions,
     } = this.props;
     const entityCoursesOfActionIds = map(
       (n) => n.node.id,
@@ -143,9 +142,8 @@ class AddAttackPatternsLinesContainer extends Component {
 }
 
 AddAttackPatternsLinesContainer.propTypes = {
-  entityId: PropTypes.string,
-  entityCoursesOfAction: PropTypes.array,
-  entityPaginationOptions: PropTypes.object,
+  courseOfActionId: PropTypes.string,
+  courseOfActionAttackPatterns: PropTypes.array,
   data: PropTypes.object,
   classes: PropTypes.object,
 };
