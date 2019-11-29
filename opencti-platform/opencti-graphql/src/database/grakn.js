@@ -1150,6 +1150,7 @@ export const listRelations = async args => {
  * @returns {Promise}
  */
 export const getRelationInferredById = async id => {
+  const currentDate = now();
   return executeRead(async rTx => {
     const decodedQuery = Buffer.from(id, 'base64').toString('ascii');
     const query = `match ${decodedQuery} get;`;
@@ -1182,7 +1183,9 @@ export const getRelationInferredById = async id => {
       id,
       entity_type: TYPE_STIX_RELATION,
       relationship_type: relationTypeValue,
-      inferred: true
+      inferred: true,
+      created_at: currentDate,
+      updated_at: currentDate
     };
     // const fromPromise = loadConcept(fromObject);
     // const toPromise = loadConcept(toObject);
@@ -1278,7 +1281,9 @@ export const getRelationInferredById = async id => {
             inferred,
             relationship_type: inference.relationType,
             fromId: inferenceFrom.id,
-            toId: inferenceTo.id
+            toId: inferenceTo.id,
+            created_at: currentDate,
+            updated_at: currentDate
           }
         };
       })
