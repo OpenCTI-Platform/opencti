@@ -41,6 +41,7 @@ class StixObservableEntities extends Component {
   }
 
   renderLines(paginationOptions) {
+    const { entityId } = this.props;
     const { sortBy, orderAsc } = this.state;
     const dataColumns = {
       entity_type: {
@@ -93,6 +94,7 @@ class StixObservableEntities extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              entityId={entityId}
             />
           )}
         />

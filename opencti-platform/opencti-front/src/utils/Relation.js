@@ -67,6 +67,8 @@ const relationsTypesMapping = {
   targets_country: ['localization'],
   targets_city: ['localization'],
   targets_region: ['localization'],
+  'observable_stix-relation': ['indicates'],
+  observable_uses: ['indicates'],
   'observable_threat-actor': ['indicates'],
   'observable_intrusion-set': ['indicates'],
   observable_campaign: ['indicates'],

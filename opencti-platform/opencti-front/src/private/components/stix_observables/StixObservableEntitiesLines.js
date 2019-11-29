@@ -34,6 +34,7 @@ class StixObservableEntitiesLines extends Component {
       entityLink,
       paginationOptions,
       displayRelation,
+      entityId,
     } = this.props;
     return (
       <ListLinesContent
@@ -48,7 +49,10 @@ class StixObservableEntitiesLines extends Component {
           this.props.data,
         )}
         LineComponent={
-          <StixObservableEntityLine displayRelation={displayRelation} />
+          <StixObservableEntityLine
+            displayRelation={displayRelation}
+            entityId={entityId}
+          />
         }
         DummyLineComponent={
           <StixObservableEntityLineDummy displayRelation={displayRelation} />
@@ -66,6 +70,7 @@ StixObservableEntitiesLines.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object.isRequired,
+  entityId: PropTypes.string,
   data: PropTypes.object,
   relay: PropTypes.object,
   stixRelations: PropTypes.object,

@@ -21,7 +21,7 @@ import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
   container: {
-    padding: '20px 0 20px 0',
+    padding: '20px 0 0 0',
   },
   expansionPanel: {
     backgroundColor: '#193E45',
@@ -46,6 +46,16 @@ const styles = (theme) => ({
   },
   icon: {
     color: theme.palette.primary.main,
+  },
+  noResult: {
+    top: 95,
+    left: 16,
+    right: 0,
+    position: 'absolute',
+    color: '#ffffff',
+    fontSize: 15,
+    zIndex: -5,
+    backgroundColor: '#14262c',
   },
 });
 
@@ -82,52 +92,77 @@ class StixRelationCreationFromEntityLinesContainer extends Component {
     const byType = groupBy((stixDomainEntity) => stixDomainEntity.entity_type);
     const stixDomainEntities = byType(stixDomainEntitiesNodes);
     const stixDomainEntitiesTypes = keys(stixDomainEntities);
+    let increment = 0;
 
     return (
       <div className={classes.container}>
-        {stixDomainEntitiesTypes.length > 0 ? stixDomainEntitiesTypes.map((type) => (
-          <ExpansionPanel
-            key={type}
-            expanded={this.isExpanded(
-              type,
-              stixDomainEntities[type].length,
-              stixDomainEntitiesTypes.length,
-            )}
-            onChange={this.handleChangePanel.bind(this, type)}
-            classes={{ root: classes.expansionPanel }}
-          >
-            <ExpansionPanelSummary expandIcon={<ExpandMore />}>
-              <Typography className={classes.heading}>
-                {t(`entity_${type}`)}
-              </Typography>
-              <Typography className={classes.secondaryHeading}>
-                {stixDomainEntities[type].length} {t('entitie(s)')}
-              </Typography>
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails
-              classes={{ root: classes.expansionPanelContent }}>
-              <List classes={{ root: classes.list }}>
-                {stixDomainEntities[type].map((stixDomainEntity) => (
-                  <ListItem
-                    key={stixDomainEntity.id}
-                    classes={{ root: classes.menuItem }}
-                    divider={true}
-                    button={true}
-                    onClick={handleSelect.bind(this, stixDomainEntity)}
-                  >
-                    <ListItemIcon>
-                      <ItemIcon type={type} />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={stixDomainEntity.name}
-                      secondary={truncate(stixDomainEntity.description, 100)}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
-        )) : <div style={{ paddingLeft: 20 }}>{t('No entities were found for this search.')}</div>}
+        {stixDomainEntitiesTypes.length > 0 ? (
+          stixDomainEntitiesTypes.map((type) => {
+            increment += 1;
+            return (
+              <ExpansionPanel
+                key={type}
+                expanded={this.isExpanded(
+                  type,
+                  stixDomainEntities[type].length,
+                  stixDomainEntitiesTypes.length,
+                )}
+                onChange={this.handleChangePanel.bind(this, type)}
+                classes={{ root: classes.expansionPanel }}
+                style={{
+                  marginBottom:
+                    increment === stixDomainEntitiesTypes.length
+                    && this.isExpanded(
+                      type,
+                      stixDomainEntities[type].length,
+                      stixDomainEntitiesTypes.length,
+                    )
+                      ? 16
+                      : 0,
+                }}
+              >
+                <ExpansionPanelSummary expandIcon={<ExpandMore />}>
+                  <Typography className={classes.heading}>
+                    {t(`entity_${type}`)}
+                  </Typography>
+                  <Typography className={classes.secondaryHeading}>
+                    {stixDomainEntities[type].length} {t('entitie(s)')}
+                  </Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails
+                  classes={{ root: classes.expansionPanelContent }}
+                >
+                  <List classes={{ root: classes.list }}>
+                    {stixDomainEntities[type].map((stixDomainEntity) => (
+                      <ListItem
+                        key={stixDomainEntity.id}
+                        classes={{ root: classes.menuItem }}
+                        divider={true}
+                        button={true}
+                        onClick={handleSelect.bind(this, stixDomainEntity)}
+                      >
+                        <ListItemIcon>
+                          <ItemIcon type={type} />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={stixDomainEntity.name}
+                          secondary={truncate(
+                            stixDomainEntity.description,
+                            100,
+                          )}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </ExpansionPanelDetails>
+              </ExpansionPanel>
+            );
+          })
+        ) : (
+          <div className={classes.noResult}>
+            {t('No entities were found for this search.')}
+          </div>
+        )}
       </div>
     );
   }
@@ -142,8 +177,8 @@ StixRelationCreationFromEntityLinesContainer.propTypes = {
   fld: PropTypes.func,
 };
 
-export const stixRelationCreationFromEntityLinesQuery = graphql`
-  query StixRelationCreationFromEntityLinesQuery(
+export const stixRelationCreationFromEntityStixDomainEntitiesLinesQuery = graphql`
+  query StixRelationCreationFromEntityStixDomainEntitiesLinesQuery(
     $search: String
     $types: [String]
     $count: Int!
@@ -151,7 +186,7 @@ export const stixRelationCreationFromEntityLinesQuery = graphql`
     $orderBy: StixDomainEntitiesOrdering
     $orderMode: OrderingMode
   ) {
-    ...StixRelationCreationFromEntityLines_data
+    ...StixRelationCreationFromEntityStixDomainEntitiesLines_data
       @arguments(
         search: $search
         types: $types
@@ -163,11 +198,11 @@ export const stixRelationCreationFromEntityLinesQuery = graphql`
   }
 `;
 
-const StixRelationCreationFromEntityLines = createPaginationContainer(
+const StixRelationCreationFromEntityStixDomainEntitiesLines = createPaginationContainer(
   StixRelationCreationFromEntityLinesContainer,
   {
     data: graphql`
-      fragment StixRelationCreationFromEntityLines_data on Query
+      fragment StixRelationCreationFromEntityStixDomainEntitiesLines_data on Query
         @argumentDefinitions(
           search: { type: "String" }
           types: { type: "[String]" }
@@ -218,11 +253,11 @@ const StixRelationCreationFromEntityLines = createPaginationContainer(
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: stixRelationCreationFromEntityLinesQuery,
+    query: stixRelationCreationFromEntityStixDomainEntitiesLinesQuery,
   },
 );
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixRelationCreationFromEntityLines);
+)(StixRelationCreationFromEntityStixDomainEntitiesLines);

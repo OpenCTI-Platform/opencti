@@ -863,6 +863,14 @@ define
       (characterize: $origin, indicator: $object) isa indicates;
     };
 
+    IndicatationOfUsesRule sub rule,
+    when {
+      $rel(user: $user, usage: $entity) isa uses;
+      (characterize: $rel, indicator: $object) isa indicates;
+    }, then {
+      (characterize: $user, indicator: $object) isa indicates;
+    };
+
     ## TARGETS RULES
     AttributionTargetsRule sub rule,
     when {
