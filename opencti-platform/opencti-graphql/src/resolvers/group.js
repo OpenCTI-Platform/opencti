@@ -14,8 +14,8 @@ const groupResolvers = {
     groups: (_, args) => findAll(args)
   },
   Group: {
-    members: (group, args) => members(group.id, args),
-    permissions: (group, args) => permissions(group.id, args),
+    members: group => members(group.id),
+    permissions: group => permissions(group.id),
     editContext: group => fetchEditContext(group.id)
   },
   Mutation: {

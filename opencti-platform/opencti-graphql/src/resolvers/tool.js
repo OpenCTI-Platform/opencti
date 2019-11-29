@@ -20,7 +20,7 @@ const toolResolvers = {
     tags: `${REL_INDEX_PREFIX}tagged.value`
   },
   Tool: {
-    killChainPhases: (tool, args) => killChainPhases(tool.id, args)
+    killChainPhases: tool => killChainPhases(tool.id)
   },
   Mutation: {
     toolEdit: (_, { id }, { user }) => ({

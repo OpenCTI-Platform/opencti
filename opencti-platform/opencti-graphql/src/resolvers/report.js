@@ -59,7 +59,7 @@ const reportResolvers = {
   },
   Report: {
     objectRefs: (report, args) => objectRefs(report.id, args),
-    observableRefs: (report, args) => observableRefs(report.id, args),
+    observableRefs: report => observableRefs(report.id),
     relationRefs: (report, args) => relationRefs(report.id, args)
   },
   Mutation: {

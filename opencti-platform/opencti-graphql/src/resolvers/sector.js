@@ -15,7 +15,7 @@ const sectorResolvers = {
     sectors: (_, args) => findAll(args)
   },
   Sector: {
-    subsectors: (sector, args) => subsectors(sector.id, args),
+    subsectors: sector => subsectors(sector.id),
     isSubsector: (sector, args) => isSubsector(sector.id, args)
   },
   SectorsFilter: {

@@ -255,7 +255,7 @@ const getAliasInternalIdFilter = (query, alias) => {
   const keyVars = Array.from(query.matchAll(reg));
   return keyVars.length > 0 ? last(head(keyVars)) : undefined;
 };
-const extractRelationAlias = (query, alias, role, relationType) => {
+const extractRelationAlias = (alias, role, relationType) => {
   const variables = [];
   if (alias !== 'from' && alias !== 'to') {
     throw new Error('[GRAKN] Query cant have relation alias without roles (except for from/to)');
@@ -302,11 +302,11 @@ export const extractQueryVars = query => {
       // If no filtering, roles must be fully specified or not specified.
       // If missing left role
       if (leftRole === null && rightRole !== null) {
-        return extractRelationAlias(query, rAlias, rightRole, relationType);
+        return extractRelationAlias(rAlias, rightRole, relationType);
       }
       // If missing right role
       if (leftRole !== null && rightRole === null) {
-        return extractRelationAlias(query, lAlias, leftRole, relationType);
+        return extractRelationAlias(lAlias, leftRole, relationType);
       }
       // Else, we have both or nothing
       return [

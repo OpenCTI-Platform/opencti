@@ -23,9 +23,9 @@ const identityResolvers = {
       return 'Unknown';
     },
     createdByRef: identity => createdByRef(identity.id),
-    markingDefinitions: (identity, args) => markingDefinitions(identity.id, args),
-    tags: (identity, args) => tags(identity.id, args),
-    reports: (identity, args) => reports(identity.id, args),
+    markingDefinitions: identity => markingDefinitions(identity.id),
+    tags: identity => tags(identity.id),
+    reports: identity => reports(identity.id),
     stixRelations: (identity, args) => stixRelations(identity.id, args)
   },
   Mutation: {

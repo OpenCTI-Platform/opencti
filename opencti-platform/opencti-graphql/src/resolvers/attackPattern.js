@@ -17,8 +17,8 @@ const attackPatternResolvers = {
     attackPatterns: (_, args) => findAll(args)
   },
   AttackPattern: {
-    killChainPhases: (attPatt, args) => killChainPhases(attPatt.id, args),
-    coursesOfAction: (attPatt, args) => coursesOfAction(attPatt.id, args)
+    killChainPhases: attackPattern => killChainPhases(attackPattern.id),
+    coursesOfAction: attackPattern => coursesOfAction(attackPattern.id)
   },
   AttackPatternsOrdering: {
     markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,

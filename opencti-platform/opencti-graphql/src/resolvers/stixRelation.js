@@ -60,7 +60,7 @@ const stixRelationResolvers = {
     stixRelationsNumber: (_, args) => stixRelationsNumber(args)
   },
   StixRelation: {
-    killChainPhases: (rel, args) => killChainPhases(rel.id, args),
+    killChainPhases: rel => killChainPhases(rel.id),
     from: rel => loadByGraknId(rel.fromId),
     to: rel => loadByGraknId(rel.toId)
   },

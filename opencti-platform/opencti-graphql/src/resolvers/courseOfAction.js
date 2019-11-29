@@ -15,7 +15,7 @@ const courseOfActionResolvers = {
     coursesOfAction: (_, args) => findAll(args)
   },
   CourseOfAction: {
-    attackPatterns: (courseOfAction, args) => attackPatterns(courseOfAction.id, args)
+    attackPatterns: courseOfAction => attackPatterns(courseOfAction.id)
   },
   CoursesOfActionOrdering: {
     tags: `${REL_INDEX_PREFIX}tagged.value`,
