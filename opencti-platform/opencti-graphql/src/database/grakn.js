@@ -285,8 +285,8 @@ const extractRelationAlias = (alias, role, relationType) => {
   if (role !== resolveLeftRole) {
     throw new Error(`[GRAKN] Incorrect role specified for alias: ${alias} - role: ${role} - relation: ${relationType}`);
   }
-  variables.push({ role: resolveRightRole, alias: resolveRightAlias });
-  variables.push({ role, alias });
+  variables.push({ role: resolveRightRole, alias: resolveRightAlias, forceNatural: false });
+  variables.push({ role, alias, forceNatural: false });
   return variables;
 };
 /**
@@ -308,8 +308,8 @@ export const extractQueryVars = query => {
       // If one filtering key is specified, just return the duo with no roles
       if (lKeyFilter || rKeyFilter) {
         return [
-          { alias: leftAlias, internalIdKey: lKeyFilter },
-          { alias: rAlias, internalIdKey: rKeyFilter }
+          { alias: lAlias, internalIdKey: lKeyFilter, forceNatural: false },
+          { alias: rAlias, internalIdKey: rKeyFilter, forceNatural: false }
         ];
       }
       // If no filtering, roles must be fully specified or not specified.
@@ -322,9 +322,11 @@ export const extractQueryVars = query => {
         return extractRelationAlias(lAlias, leftRole, relationType);
       }
       // Else, we have both or nothing
+      const roleForRight = rightRole ? rightRole.trim() : undefined;
+      const roleForLeft = leftRole ? leftRole.trim() : undefined;
       return [
-        { role: rightRole ? rightRole.trim() : undefined, alias: rAlias },
-        { role: leftRole ? leftRole.trim() : undefined, alias: lAlias }
+        { role: roleForRight, alias: rAlias, forceNatural: roleForRight === undefined },
+        { role: roleForLeft, alias: lAlias, forceNatural: roleForLeft === undefined }
       ];
     }, relationsVars)
   );
@@ -496,22 +498,18 @@ const loadConcept = async (query, concept, args = {}) => {
       const rolesPromises = Promise.all(
         map(async roleItem => {
           // eslint-disable-next-line prettier/prettier
-          const roleId = last(roleItem)
-            .values()
-            .next().value.id;
+          const roleId = last(roleItem).values().next().value.id;
           const conceptFromMap = relationsMap.get(roleId);
           if (conceptFromMap) {
-            const { alias, role, internalIdKey } = conceptFromMap;
+            const { alias, forceNatural } = conceptFromMap;
             // eslint-disable-next-line prettier/prettier
-            return head(roleItem)
-              .label()
-              .then(async roleLabel => {
+            return head(roleItem).label().then(async roleLabel => {
                 // Alias when role are not specified need to be force the opencti natural direction.
                 let useAlias = alias;
                 // If role specified in the query, just use the grakn binding.
                 // If alias is filtering by an internal_id_key, just use the grakn binding.
                 // If not, retrieve the alias (from or to) inside the roles map.
-                if (role === undefined && internalIdKey === undefined) {
+                if (forceNatural) {
                   const directedRole = rolesMap[head(types)];
                   if (directedRole === undefined) {
                     throw new Error(`Undefined directed roles for ${head(types)}, query: ${query}`);
@@ -692,10 +690,7 @@ export const indexElements = async (elements, retry = 0) => {
     filter(e => e.relationship_type !== undefined),
     map(e => {
       const relationshipType = e.relationship_type;
-      return [
-        { from: e.fromId, relationshipType, to: e.toId },
-        { from: e.toId, relationshipType, to: e.fromId }
-      ];
+      return [{ from: e.fromId, relationshipType, to: e.toId }, { from: e.toId, relationshipType, to: e.fromId }];
     }),
     flatten,
     groupBy(i => i.from)
@@ -1355,18 +1350,14 @@ export const paginateRelationships = async (query, options, key = 'rel', extraRe
       ${toId ? `$to has internal_id_key "${escapeString(toId)}";` : ''} 
       ${
         fromTypes && fromTypes.length > 0
-          ? `${join(
-              ' ',
-              map(fromType => `{ $from isa ${fromType}; } or`, tail(fromTypes))
-            )} { $from isa ${head(fromTypes)}; };`
+          ? `${join(' ', map(fromType => `{ $from isa ${fromType}; } or`, tail(fromTypes)))} { $from isa ${head(
+              fromTypes
+            )}; };`
           : ''
       } 
     ${
       toTypes && toTypes.length > 0
-        ? `${join(
-            ' ',
-            map(toType => `{ $to isa ${toType}; } or`, tail(toTypes))
-          )} { $to isa ${head(toTypes)}; };`
+        ? `${join(' ', map(toType => `{ $to isa ${toType}; } or`, tail(toTypes)))} { $to isa ${head(toTypes)}; };`
         : ''
     } 
       ${firstSeenStart || firstSeenStop ? `$rel has first_seen $fs; ` : ''} 
@@ -1651,7 +1642,10 @@ export const createEntity = async (entity, type, opts = {}) => {
     data = pipe(assoc('alias', data.alias ? data.alias : ['']))(data);
   }
   if (modelType === TYPE_STIX_OBSERVABLE) {
-    data = pipe(assoc('stix_id_key', stixId), assoc('name', data.name ? data.name : ''))(data);
+    data = pipe(
+      assoc('stix_id_key', stixId),
+      assoc('name', data.name ? data.name : '')
+    )(data);
   }
   if (modelType === TYPE_STIX_DOMAIN || modelType === TYPE_STIX_DOMAIN_ENTITY) {
     data = pipe(
