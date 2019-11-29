@@ -92,7 +92,7 @@ const reportMutationRelationAdd = graphql`
   ) {
     reportEdit(id: $id) {
       relationAdd(input: $input) {
-        from {
+        node {
           ...ReportEditionOverview_report
         }
       }
@@ -107,7 +107,9 @@ const reportMutationRelationDelete = graphql`
   ) {
     reportEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        ...ReportEditionOverview_report
+        node {
+          ...ReportEditionOverview_report
+        }
       }
     }
   }
@@ -205,11 +207,11 @@ class ReportEditionOverviewComponent extends Component {
       commitMutation({
         mutation: reportMutationRelationAdd,
         variables: {
-          id: this.props.report.id,
+          id: value.value,
           input: {
-            fromRole: 'so',
-            toId: value.value,
-            toRole: 'creator',
+            fromRole: 'creator',
+            toId: this.props.report.id,
+            toRole: 'so',
             through: 'created_by_ref',
           },
         },
@@ -225,11 +227,11 @@ class ReportEditionOverviewComponent extends Component {
       commitMutation({
         mutation: reportMutationRelationAdd,
         variables: {
-          id: this.props.report.id,
+          id: value.value,
           input: {
-            fromRole: 'so',
-            toId: value.value,
-            toRole: 'creator',
+            fromRole: 'creator',
+            toId: this.props.report.id,
+            toRole: 'so',
             through: 'created_by_ref',
           },
         },
@@ -255,11 +257,11 @@ class ReportEditionOverviewComponent extends Component {
       commitMutation({
         mutation: reportMutationRelationAdd,
         variables: {
-          id: this.props.report.id,
+          id: head(added).value,
           input: {
-            fromRole: 'so',
-            toId: head(added).value,
-            toRole: 'marking',
+            fromRole: 'marking',
+            toId: this.props.report.id,
+            toRole: 'so',
             through: 'object_marking_refs',
           },
         },

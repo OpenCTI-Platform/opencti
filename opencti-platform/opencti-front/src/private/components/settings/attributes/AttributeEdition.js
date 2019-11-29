@@ -80,6 +80,7 @@ class AttributeEditionContainer extends Component {
       optimisticUpdater: (store) => {
         // Artificially remove of a line to force refresh in the updater.
         // Attribute like this should have stable UUID.
+        // TODO improve that part
         const container = store.getRoot();
         const userProxy = store.get(container.getDataID());
         const conn = ConnectionHandler.getConnection(

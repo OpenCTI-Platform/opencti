@@ -110,7 +110,7 @@ class AddAttackPatterns extends Component {
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6" classes={{ root: classes.title }}>
-              {t('Add attack patterns')}
+              {t('Add attack pattern')}
             </Typography>
             <div className={classes.search}>
               <SearchInput

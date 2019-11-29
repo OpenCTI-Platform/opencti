@@ -1,12 +1,11 @@
 {
   "name": "opencti-graphql",
-  "version": "2.1.0",
+  "version": "2.0.2",
   "main": "src/server.js",
   "author": "Luatix",
   "license": "AGPL-3.0-or-later",
   "scripts": {
     "start": "babel-node --max_old_space_size=8192 -r node_modules/dotenv/config ./src/server.js --e development",
-    "index": "babel-node -r node_modules/dotenv/config ./src/indexer.js",
     "build": "babel --out-dir ./dist ./src",
     "serv": "node dist/server.js",
     "migrate:add": "migrate create --migrations-dir=./src/migrations",
@@ -38,7 +37,6 @@
     "await": "^0.2.6",
     "axios": "^0.19.0",
     "bcryptjs": "^2.4.3",
-    "bluebird": "^3.7.1",
     "body-parser": "^1.19.0",
     "bytes": "^3.1.0",
     "compression": "^1.7.4",

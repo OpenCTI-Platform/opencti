@@ -17,7 +17,7 @@ import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 
-const styles = (theme) => ({
+const styles = theme => ({
   avatar: {
     width: 24,
     height: 24,
@@ -34,16 +34,18 @@ const externalReferenceLinesMutationRelationAdd = graphql`
   ) {
     externalReferenceEdit(id: $id) {
       relationAdd(input: $input) {
-        id
-        to {
+        node {
           ... on ExternalReference {
-              id
-              source_name
-              description
-              url
-              hash
-              external_id
+            id
+            source_name
+            description
+            url
+            hash
+            external_id
           }
+        }
+        relation {
+          id
         }
       }
     }
@@ -57,15 +59,23 @@ export const externalReferenceMutationRelationDelete = graphql`
   ) {
     externalReferenceEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        id
+        node {
+          ... on ExternalReference {
+            id
+          }
+        }
       }
     }
   }
 `;
 
-const sharedUpdater = (store, entityId, newEdge) => {
-  const entity = store.get(entityId);
-  const conn = ConnectionHandler.getConnection(entity, 'Pagination_externalReferences');
+const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
+  const userProxy = store.get(userId);
+  const conn = ConnectionHandler.getConnection(
+    userProxy,
+    'Pagination_externalReferences',
+    paginationOptions,
+  );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
@@ -74,9 +84,10 @@ class AddExternalReferencesLinesContainer extends Component {
     const {
       entityId,
       entityExternalReferences,
+      entityPaginationOptions,
     } = this.props;
     const entityExternalReferencesIds = map(
-      (n) => n.node.id,
+      n => n.node.id,
       entityExternalReferences,
     );
     const alreadyAdded = entityExternalReferencesIds.includes(
@@ -86,19 +97,24 @@ class AddExternalReferencesLinesContainer extends Component {
     if (alreadyAdded) {
       const existingExternalReference = head(
         filter(
-          (n) => n.node.id === externalReference.id,
+          n => n.node.id === externalReference.id,
           entityExternalReferences,
         ),
       );
       commitMutation({
         mutation: externalReferenceMutationRelationDelete,
         variables: {
-          id: entityId,
+          id: externalReference.id,
           relationId: existingExternalReference.relation.id,
         },
         updater: (store) => {
-          const entity = store.get(entityId);
-          const conn = ConnectionHandler.getConnection(entity, 'Pagination_externalReferences');
+          const container = store.getRoot();
+          const userProxy = store.get(container.getDataID());
+          const conn = ConnectionHandler.getConnection(
+            userProxy,
+            'Pagination_externalReferences',
+            entityPaginationOptions,
+          );
           ConnectionHandler.deleteNode(conn, externalReference.id);
         },
       });
@@ -116,14 +132,16 @@ class AddExternalReferencesLinesContainer extends Component {
           input,
         },
         updater: (store) => {
-          const payload = store.getRootField('externalReferenceEdit')
+          const payload = store
+            .getRootField('externalReferenceEdit')
             .getLinkedRecord('relationAdd', { input });
-          const relationId = payload.getValue('id');
-          const node = payload.getLinkedRecord('to');
-          const relation = store.get(relationId);
-          payload.setLinkedRecord(node, 'node');
-          payload.setLinkedRecord(relation, 'relation');
-          sharedUpdater(store, entityId, payload);
+          const container = store.getRoot();
+          sharedUpdater(
+            store,
+            container.getDataID(),
+            entityPaginationOptions,
+            payload,
+          );
         },
       });
     }
@@ -132,7 +150,7 @@ class AddExternalReferencesLinesContainer extends Component {
   render() {
     const { classes, data, entityExternalReferences } = this.props;
     const entityExternalReferencesIds = map(
-      (n) => n.node.id,
+      n => n.node.id,
       entityExternalReferences,
     );
     return (
@@ -186,6 +204,7 @@ class AddExternalReferencesLinesContainer extends Component {
 AddExternalReferencesLinesContainer.propTypes = {
   entityId: PropTypes.string,
   entityExternalReferences: PropTypes.array,
+  entityPaginationOptions: PropTypes.object,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
@@ -240,10 +259,12 @@ const AddExternalReferencesLines = createPaginationContainer(
         count: totalCount,
       };
     },
-    getVariables(props, { count, cursor }) {
+    getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         count,
         cursor,
+        orderBy: fragmentVariables.orderBy,
+        orderMode: fragmentVariables.orderMode,
       };
     },
     query: addExternalReferencesLinesQuery,

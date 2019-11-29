@@ -2,14 +2,16 @@ import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addKillChainPhase,
-  findAll,
-  findById,
-  killChainPhaseAddRelation,
-  killChainPhaseCleanContext,
   killChainPhaseDelete,
-  killChainPhaseDeleteRelation,
+  findAll,
+  findByEntity,
+  findById,
+  findByPhaseName,
   killChainPhaseEditContext,
-  killChainPhaseEditField
+  killChainPhaseEditField,
+  killChainPhaseAddRelation,
+  killChainPhaseDeleteRelation,
+  killChainPhaseCleanContext
 } from '../domain/killChainPhase';
 import { markingDefinitions } from '../domain/stixEntity';
 import { fetchEditContext, pubsub } from '../database/redis';
@@ -18,10 +20,19 @@ import withCancel from '../schema/subscriptionWrapper';
 const killChainPhaseResolvers = {
   Query: {
     killChainPhase: (_, { id }) => findById(id),
-    killChainPhases: (_, args) => findAll(args)
+    killChainPhases: (_, args) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return findByEntity(args);
+      }
+      if (args.phaseName && args.phaseName.length > 0) {
+        return findByPhaseName(args);
+      }
+      return findAll(args);
+    }
   },
   KillChainPhase: {
-    markingDefinitions: killChainPhase => markingDefinitions(killChainPhase.id),
+    markingDefinitions: (killChainPhase, args) =>
+      markingDefinitions(killChainPhase.id, args),
     editContext: killChainPhase => fetchEditContext(killChainPhase.id)
   },
   Mutation: {
@@ -31,9 +42,11 @@ const killChainPhaseResolvers = {
       contextPatch: ({ input }) => killChainPhaseEditContext(user, id, input),
       contextClean: () => killChainPhaseCleanContext(user, id),
       relationAdd: ({ input }) => killChainPhaseAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => killChainPhaseDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) =>
+        killChainPhaseDeleteRelation(user, id, relationId)
     }),
-    killChainPhaseAdd: (_, { input }, { user }) => addKillChainPhase(user, input)
+    killChainPhaseAdd: (_, { input }, { user }) =>
+      addKillChainPhase(user, input)
   },
   Subscription: {
     killChainPhase: {

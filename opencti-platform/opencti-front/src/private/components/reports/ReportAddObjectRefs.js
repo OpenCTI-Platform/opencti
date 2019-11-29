@@ -20,7 +20,7 @@ import ReportAddObjectRefsLines, {
 import StixDomainEntityCreation from '../common/stix_domain_entities/StixDomainEntityCreation';
 import { QueryRenderer } from '../../../relay/environment';
 
-const styles = (theme) => ({
+const styles = theme => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',

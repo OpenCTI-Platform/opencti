@@ -5,7 +5,14 @@ import {
   connectorsForExport,
   connectorsForImport
 } from '../domain/connector';
-import { connectorForWork, jobsForWork, updateJob, computeWorkStatus, initiateJob, deleteWork } from '../domain/work';
+import {
+  connectorForWork,
+  jobsForWork,
+  updateJob,
+  computeWorkStatus,
+  initiateJob,
+  deleteWork
+} from '../domain/work';
 
 const connectorResolvers = {
   Query: {
@@ -22,7 +29,8 @@ const connectorResolvers = {
     registerConnector: (_, { input }) => registerConnector(input),
     pingConnector: (_, { id, state }) => pingConnector(id, state),
     initiateJob: (_, { workId }) => initiateJob(workId),
-    updateJob: (_, { jobId, status, messages }) => updateJob(jobId, status, messages),
+    updateJob: (_, { jobId, status, messages }) =>
+      updateJob(jobId, status, messages),
     deleteWork: (_, { id }) => deleteWork(id)
   }
 };

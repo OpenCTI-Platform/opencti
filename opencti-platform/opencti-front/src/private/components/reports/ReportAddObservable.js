@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Field, Form, Formik } from 'formik';
+import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -10,20 +10,28 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
-  assoc, compose, forEach, head, map, pathOr, pipe, pluck, union,
+  compose,
+  pathOr,
+  map,
+  union,
+  pipe,
+  pluck,
+  head,
+  forEach,
+  assoc,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
-import { dateMonthsAfter, dateMonthsAgo, parse } from '../../../utils/Time';
+import { dateMonthsAgo, dateMonthsAfter, parse } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
-import { commitMutation, fetchQuery } from '../../../relay/environment';
+import { fetchQuery, commitMutation } from '../../../relay/environment';
 import Autocomplete from '../../../components/Autocomplete';
 import TextField from '../../../components/TextField';
 import DatePickerField from '../../../components/DatePickerField';
 import Select from '../../../components/Select';
 import { markingDefinitionsSearchQuery } from '../settings/MarkingDefinitions';
 
-const styles = (theme) => ({
+const styles = theme => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -117,8 +125,8 @@ const reportAddObservableThreatsSearchQuery = graphql`
 `;
 
 const reportAddObservableObservableSearchQuery = graphql`
-  query ReportAddObservableObservableSearchQuery($filters: [StixObservablesFiltering]) {
-    stixObservables(filters: $filters) {
+  query ReportAddObservableObservableSearchQuery($observableValue: String) {
+    stixObservables(observableValue: $observableValue) {
       edges {
         node {
           id
@@ -188,7 +196,12 @@ const reportMutationRelationAddSimple = graphql`
   ) {
     reportEdit(id: $id) {
       relationAdd(input: $input) {
-        id
+        node {
+          id
+        }
+        relation {
+          id
+        }
       }
     }
   }
@@ -202,16 +215,18 @@ const reportMutationRelationAdd = graphql`
   ) {
     reportEdit(id: $id) {
       relationAdd(input: $input) {
-        id
-        from {
+        node {
           ...ReportObservablesLines_report @arguments(relationType: $relationType)
+        }
+        relation {
+          id
         }
       }
     }
   }
 `;
 
-const reportValidation = (t) => Yup.object().shape({
+const reportValidation = t => Yup.object().shape({
   type: Yup.string().required(t('This field is required')),
   role_played: Yup.string().required(t('This field is required')),
   observable_value: Yup.string().required(t('This field is required')),
@@ -247,7 +262,7 @@ class ReportAddObservable extends Component {
         .concat(pathOr([], ['incidents', 'edges'], data))
         .concat(pathOr([], ['malwares', 'edges'], data));
       const threats = map(
-        (n) => ({
+        n => ({
           label: n.node.name,
           value: n.node.id,
           type: n.node.entity_type,
@@ -264,7 +279,7 @@ class ReportAddObservable extends Component {
     }).then((data) => {
       const markingDefinitions = pipe(
         pathOr([], ['markingDefinitions', 'edges']),
-        map((n) => ({ label: n.node.definition, value: n.node.id })),
+        map(n => ({ label: n.node.definition, value: n.node.id })),
       )(data);
       this.setState({
         markingDefinitions: union(
@@ -291,10 +306,9 @@ class ReportAddObservable extends Component {
       assoc('threats', pluck('value', values.threats)),
     )(values);
     setSubmitting(true);
-    const filters = [
-      { key: 'observable_value', values: [finalValues.observable_value] },
-    ];
-    fetchQuery(reportAddObservableObservableSearchQuery, { filters }).then((data) => {
+    fetchQuery(reportAddObservableObservableSearchQuery, {
+      observableValue: finalValues.observable_value,
+    }).then((data) => {
       if (data.stixObservables.edges.length === 0) {
         commitMutation({
           mutation: stixObservableMutation,
@@ -354,7 +368,6 @@ class ReportAddObservable extends Component {
               },
             },
             onCompleted: (data) => {
-              // Create all relations from report to from,to and relation
               const relationId = data.stixRelationAdd.id;
               const inputRelation = {
                 fromRole: 'so',

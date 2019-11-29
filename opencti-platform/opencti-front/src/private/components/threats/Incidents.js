@@ -1,16 +1,23 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  assoc, compose, dissoc, head, last, map, pipe, propOr, toPairs,
+  compose, propOr, assoc, dissoc, mapObjIndexed, map,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
-import IncidentsCards, { incidentsCardsQuery } from './incidents/IncidentsCards';
-import IncidentsLines, { incidentsLinesQuery } from './incidents/IncidentsLines';
+import IncidentsCards, {
+  incidentsCardsQuery,
+} from './incidents/IncidentsCards';
+import IncidentsLines, {
+  incidentsLinesQuery,
+} from './incidents/IncidentsLines';
 import IncidentCreation from './incidents/IncidentCreation';
 
 class Incidents extends Component {
@@ -170,19 +177,11 @@ class Incidents extends Component {
     const {
       view, sortBy, orderAsc, searchTerm, filters,
     } = this.state;
-    const buildQueryFilters = pipe(
-      toPairs,
-      map((pair) => {
-        const values = last(pair);
-        const valIds = map((v) => v.id, values);
-        return { key: head(pair), values: valIds };
-      }),
-    )(filters);
     const paginationOptions = {
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
-      filters: buildQueryFilters,
+      filters: mapObjIndexed((value) => map((n) => n.id, value), filters),
     };
     return (
       <div>

@@ -11,7 +11,7 @@ import AttackPatternDetails from './AttackPatternDetails';
 import AttackPatternEdition from './AttackPatternEdition';
 import AttackPatternPopover from './AttackPatternPopover';
 import EntityExternalReferences from '../../common/external_references/EntityExternalReferences';
-import AttackPatternCoursesOfAction from './AttackPatternCoursesOfAction';
+import EntityCoursesOfAction from '../courses_of_action/EntityCoursesOfAction';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityStixRelationsChart from '../../common/stix_relations/EntityStixRelationsChart';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
@@ -56,7 +56,7 @@ class AttackPatternComponent extends Component {
           style={{ marginTop: 30 }}
         >
           <Grid item={true} xs={4}>
-            <AttackPatternCoursesOfAction attackPattern={attackPattern} />
+            <EntityCoursesOfAction entityId={attackPattern.id} />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityStixRelationsChart
@@ -88,7 +88,6 @@ const AttackPattern = createFragmentContainer(AttackPatternComponent, {
       alias
       ...AttackPatternOverview_attackPattern
       ...AttackPatternDetails_attackPattern
-      ...AttackPatternCoursesOfAction_attackPattern
     }
   `,
 });

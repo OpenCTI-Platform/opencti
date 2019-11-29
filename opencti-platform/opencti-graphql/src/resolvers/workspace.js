@@ -27,8 +27,9 @@ const workspaceResolvers = {
   },
   Workspace: {
     ownedBy: workspace => ownedBy(workspace.id),
-    markingDefinitions: workspace => markingDefinitions(workspace.id),
-    tags: workspace => tags(workspace.id),
+    markingDefinitions: (workspace, args) =>
+      markingDefinitions(workspace.id, args),
+    tags: (workspace, args) => tags(workspace.id, args),
     objectRefs: (workspace, args) => objectRefs(workspace.id, args),
     editContext: workspace => fetchEditContext(workspace.id)
   },
@@ -39,7 +40,8 @@ const workspaceResolvers = {
       contextPatch: ({ input }) => workspaceEditContext(user, id, input),
       relationAdd: ({ input }) => workspaceAddRelation(user, id, input),
       relationsAdd: ({ input }) => workspaceAddRelations(user, id, input),
-      relationDelete: ({ relationId }) => workspaceDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) =>
+        workspaceDeleteRelation(user, id, relationId)
     }),
     workspaceAdd: (_, { input }, { user }) => addWorkspace(user, input)
   },

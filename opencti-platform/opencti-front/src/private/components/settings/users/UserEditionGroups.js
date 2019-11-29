@@ -17,7 +17,7 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { groupsSearchQuery } from '../Groups';
 
-const styles = (theme) => ({
+const styles = theme => ({
   list: {
     width: '100%',
     maxWidth: 360,
@@ -35,7 +35,7 @@ const userMutationRelationAdd = graphql`
   ) {
     userEdit(id: $id) {
       relationAdd(input: $input) {
-        from {
+        node {
           ...UserEditionGroups_user
         }
       }
@@ -47,7 +47,9 @@ const userMutationRelationDelete = graphql`
   mutation UserEditionGroupsRelationDeleteMutation($id: ID!, $relationId: ID!) {
     userEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        ...UserEditionGroups_user
+        node {
+          ...UserEditionGroups_user
+        }
       }
     }
   }
@@ -59,11 +61,11 @@ class UserEditionGroupsComponent extends Component {
       commitMutation({
         mutation: userMutationRelationAdd,
         variables: {
-          id: this.props.user.id,
+          id: groupId,
           input: {
-            fromRole: 'member',
-            toId: groupId,
-            toRole: 'grouping',
+            fromRole: 'grouping',
+            toId: this.props.user.id,
+            toRole: 'member',
             through: 'membership',
           },
         },
@@ -83,7 +85,7 @@ class UserEditionGroupsComponent extends Component {
     const { classes, user } = this.props;
     const userGroups = pipe(
       pathOr([], ['groups', 'edges']),
-      map((n) => ({ id: n.node.id, relation: n.relation.id })),
+      map(n => ({ id: n.node.id, relation: n.relation.id })),
     )(user);
 
     return (
@@ -96,7 +98,7 @@ class UserEditionGroupsComponent extends Component {
               // Done
               const groups = pipe(
                 pathOr([], ['groups', 'edges']),
-                map((n) => n.node),
+                map(n => n.node),
               )(props);
               return (
                 <List dense={true} className={classes.root}>

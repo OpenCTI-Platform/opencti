@@ -23,8 +23,7 @@
     "port": 6379
   },
   "elasticsearch": {
-    "url": "http://localhost:9200",
-    "noQueryCache": false
+    "url": "http://localhost:9200"
   },
   "minio": {
     "endpoint": "localhost",

@@ -58,7 +58,7 @@ class StixRelationInferences extends Component {
         const newNodeFrom = new EntityNodeModel({
           id: inference.from.id,
           name:
-            includes('Stix-Observable', inference.from.parent_types)
+            inference.from.parent_type === 'Stix-Observable'
               ? inference.from.observable_value
               : inference.from.name,
           type: inference.from.entity_type,
@@ -78,7 +78,7 @@ class StixRelationInferences extends Component {
         const newNodeTo = new EntityNodeModel({
           id: inference.to.id,
           name:
-            includes('Stix-Observable', inference.to.parent_types)
+            inference.to.parent_type === 'Stix-Observable'
               ? inference.to.observable_value
               : inference.to.name,
           type: inference.to.entity_type,

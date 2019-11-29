@@ -20,7 +20,8 @@ const countryResolvers = {
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) =>
+        stixDomainEntityDeleteRelation(user, id, relationId)
     }),
     countryAdd: (_, { input }, { user }) => addCountry(user, input)
   }

@@ -10,6 +10,12 @@ export const OPENCTI_WEB_TOKEN = 'Default';
 export const OPENCTI_ISSUER = 'OpenCTI';
 export const OPENCTI_DEFAULT_DURATION = 'P99Y';
 
+export const RABBITMQ_EXCHANGE_NAME = 'amqp.opencti';
+export const RABBITMQ_IMPORT_ROUTING_KEY = 'import.platform';
+export const RABBITMQ_EXPORT_ROUTING_KEY = 'export.platform';
+
+export const KEY_IMPORT = 'import-';
+
 export const BUS_TOPICS = {
   Settings: {
     EDIT_TOPIC: 'SETTINGS_EDIT_TOPIC',

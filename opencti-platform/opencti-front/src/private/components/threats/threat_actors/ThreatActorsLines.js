@@ -53,7 +53,7 @@ export const threatActorsLinesQuery = graphql`
     $cursor: ID
     $orderBy: ThreatActorsOrdering
     $orderMode: OrderingMode
-    $filters: [ThreatActorsFiltering]
+    $filters: ThreatActorsFiltering
   ) {
     ...ThreatActorsLines_data
       @arguments(
@@ -78,7 +78,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "ThreatActorsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[ThreatActorsFiltering]" }
+          filters: { type: "ThreatActorsFiltering" }
         ) {
         threatActors(
           search: $search

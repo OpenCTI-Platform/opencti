@@ -58,7 +58,7 @@ export const personsLinesQuery = graphql`
     $cursor: ID
     $orderBy: UsersOrdering
     $orderMode: OrderingMode
-    $filters: [UsersFiltering]
+    $filters: UsersFiltering
   ) {
     ...PersonsLines_data
       @arguments(
@@ -83,7 +83,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "UsersOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[UsersFiltering]" }
+          filters: { type: "UsersFiltering" }
         ) {
         users(
           search: $search

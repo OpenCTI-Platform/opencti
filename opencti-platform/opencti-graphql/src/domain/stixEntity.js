@@ -1,67 +1,112 @@
-import { assoc } from 'ramda';
+import { assoc, map } from 'ramda';
+import uuid from 'uuid/v4';
 import {
   escapeString,
-  findWithConnectedRelations,
-  loadEntityById,
-  loadEntityByStixId,
-  loadWithConnectedRelations
+  getById,
+  getObject,
+  load,
+  paginate
 } from '../database/grakn';
-import { findAll as relationFindAll, search as relationSearch } from './stixRelation';
-import { buildPagination } from '../database/utils';
+import {
+  findAll as relationFindAll,
+  search as relationSearch
+} from './stixRelation';
 
-export const findById = (id, isStixId) => {
-  return isStixId ? loadEntityByStixId(id) : loadEntityById(id);
+const findByStixId = stixId => {
+  const query = `match $x isa entity;
+   { $x isa Stix-Domain; } or { $x isa Stix-Observable; } or { $x isa stix_relation; };
+   $x has stix_id_key "${escapeString(stixId)}"; get;`;
+  return load(query, ['x']).then(data => {
+    return data && data.x;
+  });
 };
 
-export const createdByRef = async stixEntityId => {
-  return loadWithConnectedRelations(
-    `match $to isa Identity; $rel(creator:$to, so:$from) isa created_by_ref;
-   $from has internal_id_key "${escapeString(stixEntityId)}"; get; offset 0; limit 1;`,
-    'to',
+export const findById = (id, isStixId) => {
+  return isStixId ? findByStixId(id) : getById(id);
+};
+
+export const markingDefinitions = (stixEntityId, args) => {
+  return paginate(
+    `match $m isa Marking-Definition; 
+    $rel(marking:$m, so:$x) isa object_marking_refs; 
+    $x has internal_id_key "${escapeString(stixEntityId)}"`,
+    args,
+    false,
+    null,
+    false,
+    false
+  );
+};
+
+export const tags = (stixEntityId, args) => {
+  return paginate(
+    `match $t isa Tag; 
+    $rel(tagging:$t, so:$x) isa tagged; 
+    $x has internal_id_key "${escapeString(stixEntityId)}"`,
+    args,
+    false,
+    null,
+    false,
+    false
+  );
+};
+
+export const createdByRef = stixEntityId => {
+  return getObject(
+    `match $i isa Identity;
+    $rel(creator:$i, so:$x) isa created_by_ref; 
+    $x has internal_id_key "${escapeString(stixEntityId)}"; 
+    get; 
+    offset 0; 
+    limit 1;`,
+    'i',
     'rel'
   );
 };
-export const reports = stixEntityId => {
-  return findWithConnectedRelations(
-    `match $to isa Report; $rel(knowledge_aggregation:$to, so:$from) isa object_refs;
-   $from has internal_id_key "${escapeString(stixEntityId)}";
-   get;`,
-    'to',
-    'rel'
-  ).then(data => buildPagination(0, 0, data, data.length));
+
+export const linkCreatedByRef = async (wTx, fromId, createdByRefId) => {
+  if (createdByRefId) {
+    await wTx.tx.query(
+      `match $from id ${fromId};
+      $to has internal_id_key "${escapeString(createdByRefId)}";
+      insert (so: $from, creator: $to)
+      isa created_by_ref, has internal_id_key "${uuid()}";`
+    );
+  }
 };
-export const tags = async stixEntityId => {
-  return findWithConnectedRelations(
-    `match $to isa Tag; $rel(tagging:$to, so:$from) isa tagged;
-   $from has internal_id_key "${escapeString(stixEntityId)}";
-   get;`,
-    'to',
-    'rel'
-  ).then(data => buildPagination(0, 0, data, data.length));
+
+export const linkMarkingDef = async (wTx, fromId, markingDefs) => {
+  if (markingDefs) {
+    const create = markingDefinition => {
+      return wTx.tx.query(
+        `match $from id ${fromId}; 
+        $to has internal_id_key "${escapeString(markingDefinition)}"; 
+        insert (so: $from, marking: $to) isa object_marking_refs, has internal_id_key "${uuid()}";`
+      );
+    };
+    await Promise.all(map(create, markingDefs));
+  }
 };
-export const markingDefinitions = async stixEntityId => {
-  return findWithConnectedRelations(
-    `match $to isa Marking-Definition; $rel(marking:$to, so:$from) isa object_marking_refs;
-   $from has internal_id_key "${escapeString(stixEntityId)}"; get;`,
-    'to',
-    'rel'
-  ).then(data => buildPagination(0, 0, data, data.length));
+
+export const linkKillChains = async (wTx, fromId, killChains) => {
+  if (killChains) {
+    const createKillChainPhase = killChainPhase =>
+      wTx.tx.query(
+        `match $from id ${fromId}; 
+        $to has internal_id_key "${escapeString(killChainPhase)}";
+        insert (phase_belonging: $from, kill_chain_phase: $to) isa kill_chain_phases, has internal_id_key "${uuid()}";`
+      );
+    await Promise.all(map(createKillChainPhase, killChains));
+  }
 };
-export const killChainPhases = async stixDomainEntityId => {
-  return findWithConnectedRelations(
-    `match $to isa Kill-Chain-Phase; $rel(kill_chain_phase:$to, phase_belonging:$from) isa kill_chain_phases;
-    $from has internal_id_key "${escapeString(stixDomainEntityId)}"; get;`,
-    'to',
-    'rel'
-  ).then(data => buildPagination(0, 0, data, data.length));
-};
-export const externalReferences = async stixDomainEntityId => {
-  return findWithConnectedRelations(
-    `match $to isa External-Reference; $rel(external_reference:$to, so:$from) isa external_references;
-    $from has internal_id_key "${escapeString(stixDomainEntityId)}"; get;`,
-    'to',
-    'rel'
-  ).then(data => buildPagination(0, 0, data, data.length));
+
+export const reports = (stixEntityId, args) => {
+  return paginate(
+    `match $r isa Report; 
+    $rel(knowledge_aggregation:$r, so:$x) isa object_refs; 
+    $x has internal_id_key "${escapeString(stixEntityId)}"`,
+    args
+  );
 };
 
 export const stixRelations = (stixEntityId, args) => {

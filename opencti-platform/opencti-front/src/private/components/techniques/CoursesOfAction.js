@@ -1,14 +1,19 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  assoc, compose, dissoc, head, last, map, pipe, propOr, toPairs,
+  compose, propOr, assoc, dissoc, mapObjIndexed, map,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
-import CoursesOfActionLines, { coursesOfActionLinesQuery } from './courses_of_action/CoursesOfActionLines';
+import CoursesOfActionLines, {
+  coursesOfActionLinesQuery,
+} from './courses_of_action/CoursesOfActionLines';
 import CourseOfActionCreation from './courses_of_action/CourseOfActionCreation';
 
 class CoursesOfAction extends Component {
@@ -116,19 +121,11 @@ class CoursesOfAction extends Component {
     const {
       view, sortBy, orderAsc, searchTerm, filters,
     } = this.state;
-    const buildQueryFilters = pipe(
-      toPairs,
-      map((pair) => {
-        const values = last(pair);
-        const valIds = map((v) => v.id, values);
-        return { key: head(pair), values: valIds };
-      }),
-    )(filters);
     const paginationOptions = {
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
-      filters: buildQueryFilters,
+      filters: mapObjIndexed((value) => map((n) => n.id, value), filters),
     };
     return (
       <div>

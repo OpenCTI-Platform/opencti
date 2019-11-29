@@ -35,12 +35,10 @@ enum Status {
 type RelationEmbedded {
   id: ID!
   entity_type: String!
-  from: GlobalObject
-  fromRole: String
-  fromTypes: [String]
-  to: GlobalObject
-  toRole: String
-  toTypes: [String]
+}
+type RelationData {
+  node: GlobalObject
+  relation: RelationEmbedded
 }
 type createdByRef {
   node: Identity
@@ -211,25 +209,17 @@ input AttributeEditInput {
 
 ### Tags
 enum TagsOrdering {
-  value
   tag_type
+  value
   color
   created_at
   updated_at
-}
-enum TagsFilter {
-  value
-  tag_type
-  tagsFor
 }
 type TagConnection {
   pageInfo: PageInfo!
   edges: [TagEdge]
 }
-input TagsFiltering {
-  key: TagsFilter!
-  values: [String]
-}
+
 type TagEdge {
   cursor: String!
   node: Tag!
@@ -353,7 +343,7 @@ interface StixEntity {
   internal_id_key: String!
   stix_id_key: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_type: String!
   name: String!
   description: String
   tags: TagConnection
@@ -361,7 +351,6 @@ interface StixEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  externalReferences(first: Int): ExternalReferenceConnection
   stixRelations(
     first: Int
     after: ID
@@ -399,14 +388,8 @@ enum StixDomainEntitiesOrdering {
   tags
   markingDefinitions
 }
-enum StixDomainEntitiesFilter {
-  name
-  stix_id_key
-  hasExternalReference
-}
 input StixDomainEntitiesFiltering {
-  key: StixDomainEntitiesFilter!
-  values: [String]
+  tags: [String]
 }
 type StixDomainEntityConnection {
   pageInfo: PageInfo!
@@ -424,7 +407,7 @@ interface StixDomainEntity {
   stix_id_key: String!
   internal_id_key: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_type: String!
   description: String
   graph_data: String
   editContext: [EditUserContext]
@@ -460,13 +443,8 @@ enum StixObservablesOrdering {
   tags
   markingDefinitions
 }
-enum StixObservablesFilter {
-  stix_id_key
-  observable_value
-}
 input StixObservablesFiltering {
-  key: StixObservablesFilter!
-  values: [String]
+  tags: [String]
 }
 type StixObservableConnection {
   pageInfo: PageInfo!
@@ -482,7 +460,7 @@ type StixObservable implements GlobalObject & StixEntity {
   internal_id_key: String!
   stix_id_key: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_type: String!
   name: String!
   observable_value: String!
   first_seen: DateTime
@@ -491,7 +469,6 @@ type StixObservable implements GlobalObject & StixEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  externalReferences(first: Int): ExternalReferenceConnection
   tags: TagConnection
   reports: ReportConnection
   stixRelations(
@@ -563,7 +540,7 @@ type StixRelation implements GlobalObject & StixEntity {
   internal_id_key: String!
   stix_id_key: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_type: String!
   name: String!
   relationship_type: String
   inferred: Boolean
@@ -581,15 +558,12 @@ type StixRelation implements GlobalObject & StixEntity {
   createdByRef: createdByRef
   killChainPhases: KillChainPhaseConnection
   markingDefinitions: MarkingDefinitionConnection
-  externalReferences(first: Int): ExternalReferenceConnection
   tags: TagConnection
   reports: ReportConnection
   from: StixEntity
   fromRole: String
-  fromTypes: [String]
   to: StixEntity
   toRole: String
-  toTypes: [String]
   inferences: StixRelationConnection
   stixRelations(
     first: Int
@@ -648,13 +622,6 @@ enum WorkspacesOrdering {
   created_at
   updated_at
 }
-enum WorkspaceFilter {
-  workspace_type
-}
-input WorkspaceFiltering {
-  key: WorkspaceFilter!
-  values: [String]
-}
 type WorkspaceConnection {
   pageInfo: PageInfo!
   edges: [WorkspaceEdge]
@@ -711,7 +678,7 @@ interface Identity {
   internal_id_key: String!
   stix_id_key: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -774,8 +741,7 @@ enum UsersOrdering {
   markingDefinitions
 }
 input UsersFiltering {
-  key: String!
-  values: [String]
+  tags: [String]
 }
 enum UserRole {
   ROLE_ROOT
@@ -794,7 +760,7 @@ type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   internal_id_key: String!
   stix_id_key: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -810,7 +776,6 @@ type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  externalReferences(first: Int): ExternalReferenceConnection
   tags: TagConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
@@ -891,12 +856,8 @@ enum OrganizationsOrdering {
   tags
   markingDefinitions
 }
-enum OrganizationsFilter {
-  tags
-}
 input OrganizationsFiltering {
-  key: OrganizationsFilter!
-  values: [String]
+  tags: [String]
 }
 type OrganizationConnection {
   pageInfo: PageInfo!
@@ -911,7 +872,7 @@ type Organization implements GlobalObject & StixEntity & StixDomainEntity & Iden
   internal_id_key: String!
   stix_id_key: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -924,7 +885,6 @@ type Organization implements GlobalObject & StixEntity & StixDomainEntity & Iden
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  externalReferences(first: Int): ExternalReferenceConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   tags: TagConnection
@@ -984,12 +944,8 @@ enum SectorsOrdering {
   tags
   markingDefinitions
 }
-enum SectorsFilter {
-  gatheredBy
-}
 input SectorsFiltering {
-  key: SectorsFilter!
-  values: [String]
+  tags: [String]
 }
 type SectorConnection {
   pageInfo: PageInfo!
@@ -1005,7 +961,7 @@ type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   internal_id_key: String!
   stix_id_key: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -1019,7 +975,6 @@ type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  externalReferences(first: Int): ExternalReferenceConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   tags: TagConnection
@@ -1079,8 +1034,7 @@ enum CitiesOrdering {
   markingDefinitions
 }
 input CitiesFiltering {
-  key: String!
-  values: [String]
+  tags: [String]
 }
 type CityConnection {
   pageInfo: PageInfo!
@@ -1095,7 +1049,7 @@ type City implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   internal_id_key: String!
   stix_id_key: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -1107,7 +1061,6 @@ type City implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  externalReferences(first: Int): ExternalReferenceConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   tags: TagConnection
@@ -1167,8 +1120,7 @@ enum CountriesOrdering {
   markingDefinitions
 }
 input CountriesFiltering {
-  key: String!
-  values: [String]
+  tags: [String]
 }
 type CountryConnection {
   pageInfo: PageInfo!
@@ -1183,7 +1135,7 @@ type Country implements GlobalObject & StixEntity & StixDomainEntity & Identity 
   internal_id_key: String!
   stix_id_key: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -1195,7 +1147,6 @@ type Country implements GlobalObject & StixEntity & StixDomainEntity & Identity 
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  externalReferences(first: Int): ExternalReferenceConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   tags: TagConnection
@@ -1255,8 +1206,7 @@ enum RegionsOrdering {
   markingDefinitions
 }
 input RegionsFiltering {
-  key: String!
-  values: [String]
+  tags: [String]
 }
 type RegionConnection {
   pageInfo: PageInfo!
@@ -1271,7 +1221,7 @@ type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   internal_id_key: String!
   stix_id_key: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -1283,7 +1233,6 @@ type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  externalReferences(first: Int): ExternalReferenceConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   tags: TagConnection
@@ -1349,7 +1298,7 @@ type Group implements GlobalObject {
   id: ID!
   internal_id_key: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_type: String!
   name: String!
   description: String
   editContext: [EditUserContext]
@@ -1377,16 +1326,6 @@ enum MarkingDefinitionsOrdering {
   modified
   created_at
   updated_at
-}
-enum MarkingDefinitionsFilter {
-  definition
-  definition_type
-  stix_id_key
-  markedBy
-}
-input MarkingDefinitionsFiltering {
-  key: MarkingDefinitionsFilter!
-  values: [String]
 }
 type MarkingDefinitionConnection {
   pageInfo: PageInfo!
@@ -1437,15 +1376,6 @@ enum ExternalReferencesOrdering {
   created_at
   updated_at
 }
-enum ExternalReferencesFilter {
-  stix_id_key
-  url
-  usedBy
-}
-input ExternalReferencesFiltering {
-  key: ExternalReferencesFilter!
-  values: [String]
-}
 type ExternalReferenceConnection {
   pageInfo: PageInfo!
   edges: [ExternalReferenceEdge]
@@ -1494,15 +1424,6 @@ enum KillChainPhasesOrdering {
   created_at
   updated_at
 }
-enum KillChainPhasesFilter {
-  stix_id_key
-  kill_chain_name
-  phase_name
-}
-input KillChainPhasesFiltering {
-  key: KillChainPhasesFilter!
-  values: [String]
-}
 type KillChainPhaseConnection {
   pageInfo: PageInfo!
   edges: [KillChainPhaseEdge]
@@ -1544,21 +1465,16 @@ input KillChainPhaseAddInput {
 enum AttackPatternsOrdering {
   stix_id_key
   name
+  killChainPhases
   created
   modified
   created_at
   updated_at
   tags
-  killChainPhases
   markingDefinitions
 }
-enum AttackPatternsFilter {
-  tags
-  mitigateBy
-}
 input AttackPatternsFiltering {
-  key: AttackPatternsFilter!
-  values: [String]
+  tags: [String]
 }
 type AttackPatternConnection {
   pageInfo: PageInfo!
@@ -1574,7 +1490,7 @@ type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
   internal_id_key: String!
   stix_id_key: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -1588,13 +1504,12 @@ type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  externalReferences(first: Int): ExternalReferenceConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   tags: TagConnection
+  externalReferences: ExternalReferenceConnection
   killChainPhases: KillChainPhaseConnection
   reports: ReportConnection
-  coursesOfAction: CourseOfActionConnection
   stixRelations(
     first: Int
     after: ID
@@ -1630,7 +1545,6 @@ input AttackPatternAddInput {
   description: String!
   platform: [String]
   required_permission: [String]
-  external_id: String
   alias: [String]
   createdByRef: String
   markingDefinitions: [String]
@@ -1652,13 +1566,8 @@ enum CoursesOfActionOrdering {
   tags
   markingDefinitions
 }
-enum CoursesOfActionFilter {
-  tags
-  mitigateBy
-}
 input CoursesOfActionFiltering {
-  key: CoursesOfActionFilter!
-  values: [String]
+  tags: [String]
 }
 type CourseOfActionConnection {
   pageInfo: PageInfo!
@@ -1674,7 +1583,7 @@ type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
   internal_id_key: String!
   stix_id_key: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -1686,12 +1595,10 @@ type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  externalReferences(first: Int): ExternalReferenceConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
-  attackPatterns: AttackPatternConnection
   stixRelations(
     first: Int
     after: ID
@@ -1744,14 +1651,8 @@ enum ThreatActorsOrdering {
   tags
   markingDefinitions
 }
-enum ThreatActorsFilter {
-  name
-  alias
-  tags
-}
 input ThreatActorsFiltering {
-  key: ThreatActorsFilter!
-  values: [String]
+  tags: [String]
 }
 type ThreatActorConnection {
   pageInfo: PageInfo!
@@ -1766,7 +1667,7 @@ type ThreatActor implements GlobalObject & StixEntity & StixDomainEntity & Ident
   internal_id_key: String!
   stix_id_key: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -1785,7 +1686,6 @@ type ThreatActor implements GlobalObject & StixEntity & StixDomainEntity & Ident
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  externalReferences(first: Int): ExternalReferenceConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   tags: TagConnection
@@ -1849,14 +1749,8 @@ enum IntrusionSetsOrdering {
   tags
   markingDefinitions
 }
-enum IntrusionSetsFilter {
-  name
-  alias
-  tags
-}
 input IntrusionSetsFiltering {
-  key: IntrusionSetsFilter!
-  values: [String]
+  tags: [String]
 }
 type IntrusionSetConnection {
   pageInfo: PageInfo!
@@ -1871,7 +1765,7 @@ type IntrusionSet implements GlobalObject & StixEntity & StixDomainEntity {
   internal_id_key: String!
   stix_id_key: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -1890,7 +1784,6 @@ type IntrusionSet implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  externalReferences(first: Int): ExternalReferenceConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   tags: TagConnection
@@ -1958,14 +1851,8 @@ enum CampaignsOrdering {
   tags
   markingDefinitions
 }
-enum CampaignsFilter {
-  name
-  alias
-  tags
-}
 input CampaignsFiltering {
-  key: CampaignsFilter!
-  values: [String]
+  tags: [String]
 }
 type CampaignConnection {
   pageInfo: PageInfo!
@@ -1980,7 +1867,7 @@ type Campaign implements GlobalObject & StixEntity & StixDomainEntity {
   internal_id_key: String!
   stix_id_key: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -1995,7 +1882,6 @@ type Campaign implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  externalReferences(first: Int): ExternalReferenceConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   tags: TagConnection
@@ -2058,14 +1944,8 @@ enum IncidentsOrdering {
   tags
   markingDefinitions
 }
-enum IncidentsFilter {
-  name
-  alias
-  tags
-}
 input IncidentsFiltering {
-  key: IncidentsFilter!
-  values: [String]
+  tags: [String]
 }
 type IncidentConnection {
   pageInfo: PageInfo!
@@ -2080,7 +1960,7 @@ type Incident implements GlobalObject & StixEntity & StixDomainEntity {
   internal_id_key: String!
   stix_id_key: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -2095,7 +1975,6 @@ type Incident implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  externalReferences(first: Int): ExternalReferenceConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   tags: TagConnection
@@ -2156,14 +2035,8 @@ enum MalwaresOrdering {
   tags
   markingDefinitions
 }
-enum MalwaresFilter {
-  name
-  alias
-  tags
-}
 input MalwaresFiltering {
-  key: MalwaresFilter!
-  values: [String]
+  tags: [String]
 }
 type MalwareConnection {
   pageInfo: PageInfo!
@@ -2178,7 +2051,7 @@ type Malware implements GlobalObject & StixEntity & StixDomainEntity {
   internal_id_key: String!
   stix_id_key: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -2190,7 +2063,6 @@ type Malware implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  externalReferences(first: Int): ExternalReferenceConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   tags: TagConnection
@@ -2250,14 +2122,8 @@ enum ToolsOrdering {
   tags
   markingDefinitions
 }
-enum ToolsFilter {
-  name
-  alias
-  tags
-}
 input ToolsFiltering {
-  key: ToolsFilter!
-  values: [String]
+  tags: [String]
 }
 type ToolConnection {
   pageInfo: PageInfo!
@@ -2272,7 +2138,7 @@ type Tool implements GlobalObject & StixEntity & StixDomainEntity {
   internal_id_key: String!
   stix_id_key: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -2285,7 +2151,6 @@ type Tool implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  externalReferences(first: Int): ExternalReferenceConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   tags: TagConnection
@@ -2346,14 +2211,8 @@ enum VulnerabilitiesOrdering {
   tags
   markingDefinitions
 }
-enum VulnerabilitiesFilter {
-  name
-  alias
-  tags
-}
 input VulnerabilitiesFiltering {
-  key: VulnerabilitiesFilter!
-  values: [String]
+  tags: [String]
 }
 type VulnerabilityConnection {
   pageInfo: PageInfo!
@@ -2368,7 +2227,7 @@ type Vulnerability implements GlobalObject & StixEntity & StixDomainEntity {
   internal_id_key: String!
   stix_id_key: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_type: String!
   name: String!
   stix_label: [String]
   alias: [String]
@@ -2380,7 +2239,6 @@ type Vulnerability implements GlobalObject & StixEntity & StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
-  externalReferences(first: Int): ExternalReferenceConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   tags: TagConnection
@@ -2441,16 +2299,8 @@ enum ReportsOrdering {
   tags
   markingDefinitions
 }
-enum ReportsFilter {
-  name
-  published
-  report_class
-  createdBy
-  knowledgeContains
-}
 input ReportsFiltering {
-  key: ReportsFilter!
-  values: [String]!
+  tags: [String]
 }
 type ReportConnection {
   pageInfo: PageInfo!
@@ -2469,7 +2319,7 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
   internal_id_key: String!
   stix_id_key: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_type: String!
   name: String!
   stix_label: [String]
   description: String
@@ -2489,7 +2339,7 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   tags: TagConnection
-  externalReferences(first: Int): ExternalReferenceConnection
+  externalReferences: ExternalReferenceConnection
   objectRefs: StixDomainEntityConnection
   observableRefs: StixObservableConnection
   relationRefs(relationType: String, knowledgeLevels: [String]): StixRelationConnection
@@ -2570,7 +2420,7 @@ type Query {
     after: ID
     orderBy: AttributesOrdering
     orderMode: OrderingMode
-    type: String
+    type: String!
     search: String
   ): AttributeConnection @auth
   # Tags
@@ -2580,12 +2430,10 @@ type Query {
     after: ID
     orderBy: TagsOrdering
     orderMode: OrderingMode
-    filters: [TagsFiltering]
-    filterMode: FilterMode
-    search: String
     tag_type: String
     value: String
     objectId: String
+    search: String
   ): TagConnection @auth
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: ROLE_ADMIN)
   connectors: [Connector] @auth
@@ -2595,16 +2443,21 @@ type Query {
   # StixEntities
   stixEntity(id: String, isStixId: Boolean): StixEntity @auth
   # StixDomainEntities
-  stixDomainEntity(id: String, isStixId: Boolean): StixDomainEntity @auth
+  stixDomainEntity(id: String): StixDomainEntity @auth
   stixDomainEntities(
     first: Int
     after: ID
-    types: [String]
     orderBy: StixDomainEntitiesOrdering
     orderMode: OrderingMode
-    filters: [StixDomainEntitiesFiltering]
+    filters: StixDomainEntitiesFiltering
     filterMode: FilterMode
+    name: String
+    names: [String]
+    stix_id_key: String
     search: String
+    externalReferenceId: String
+    type: String
+    types: [String]
   ): StixDomainEntityConnection @auth
   stixDomainEntitiesTimeSeries(
     type: String
@@ -2620,12 +2473,18 @@ type Query {
   stixObservables(
     first: Int
     after: ID
+    stix_id: String
     orderBy: StixObservablesOrdering
     orderMode: OrderingMode
-    filters: [StixObservablesFiltering]
+    filters: StixObservablesFiltering
     filterMode: FilterMode
-    search: String
     types: [String]
+    observableValue: String
+    search: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
   ): StixObservableConnection @auth
   stixObservablesNumber(type: String, endDate: DateTime): Number @auth
   stixObservablesTimeSeries(type: String): [TimeSeries] @auth
@@ -2706,8 +2565,7 @@ type Query {
     orderBy: WorkspacesOrdering
     orderMode: OrderingMode
     search: String
-    filters: [WorkspaceFiltering]
-    filterMode: FilterMode
+    workspaceType: String
   ): WorkspaceConnection @auth
   workspacesNumber(endDate: DateTime): Number @auth
   # Identities
@@ -2727,7 +2585,7 @@ type Query {
     after: ID
     orderBy: UsersOrdering
     orderMode: OrderingMode
-    filters: [UsersFiltering]
+    filters: UsersFiltering
     filterMode: FilterMode
     search: String
     isUser: Boolean
@@ -2740,7 +2598,7 @@ type Query {
     after: ID
     orderBy: OrganizationsOrdering
     orderMode: OrderingMode
-    filters: [OrganizationsFiltering]
+    filters: OrganizationsFiltering
     filterMode: FilterMode
     search: String
   ): OrganizationConnection @auth
@@ -2751,7 +2609,7 @@ type Query {
     after: ID
     orderBy: SectorsOrdering
     orderMode: OrderingMode
-    filters: [SectorsFiltering]
+    filters: SectorsFiltering
     filterMode: FilterMode
     search: String
   ): SectorConnection @auth
@@ -2762,7 +2620,7 @@ type Query {
     after: ID
     orderBy: CitiesOrdering
     orderMode: OrderingMode
-    filters: [CitiesFiltering]
+    filters: CitiesFiltering
     filterMode: FilterMode
     search: String
   ): CityConnection @auth
@@ -2773,7 +2631,7 @@ type Query {
     after: ID
     orderBy: CountriesOrdering
     orderMode: OrderingMode
-    filters: [CountriesFiltering]
+    filters: CountriesFiltering
     filterMode: FilterMode
     search: String
   ): CountryConnection @auth
@@ -2784,7 +2642,7 @@ type Query {
     after: ID
     orderBy: RegionsOrdering
     orderMode: OrderingMode
-    filters: [RegionsFiltering]
+    filters: RegionsFiltering
     filterMode: FilterMode
     search: String
   ): RegionConnection @auth
@@ -2798,14 +2656,16 @@ type Query {
     search: String
   ): GroupConnection @auth
   # MarkingDefinitions
-  markingDefinition(id: String!, isStixId: Boolean): MarkingDefinition @auth
+  markingDefinition(id: String!): MarkingDefinition @auth
   markingDefinitions(
     first: Int
     after: ID
     orderBy: MarkingDefinitionsOrdering
     orderMode: OrderingMode
-    filters: [MarkingDefinitionsFiltering]
-    filterMode: FilterMode
+    definition_type: String
+    definition: String
+    stix_id_key: String
+    objectId: String
     search: String
   ): MarkingDefinitionConnection @auth
   # ExternalReferences
@@ -2815,8 +2675,7 @@ type Query {
     after: ID
     orderBy: ExternalReferencesOrdering
     orderMode: OrderingMode
-    filters: [ExternalReferencesFiltering]
-    filterMode: FilterMode
+    objectId: String
     search: String
   ): ExternalReferenceConnection @auth
   # KillChainPhases
@@ -2826,9 +2685,9 @@ type Query {
     after: ID
     orderBy: KillChainPhasesOrdering
     orderMode: OrderingMode
-    filters: [KillChainPhasesFiltering]
-    filterMode: FilterMode
+    objectId: String
     search: String
+    phaseName: String
   ): KillChainPhaseConnection @auth
   # AttackPatterns
   attackPattern(id: String!): AttackPattern @auth
@@ -2837,8 +2696,10 @@ type Query {
     after: ID
     orderBy: AttackPatternsOrdering
     orderMode: OrderingMode
-    filters: [AttackPatternsFiltering]
+    filters: AttackPatternsFiltering
     filterMode: FilterMode
+    objectId: String
+    courseOfActionId: String
     search: String
   ): AttackPatternConnection @auth
   # CoursesOfAction
@@ -2848,8 +2709,9 @@ type Query {
     after: ID
     orderBy: CoursesOfActionOrdering
     orderMode: OrderingMode
-    filters: [CoursesOfActionFiltering]
+    filters: CoursesOfActionFiltering
     filterMode: FilterMode
+    objectId: String
     search: String
   ): CourseOfActionConnection @auth
   # ThreatActors
@@ -2859,7 +2721,7 @@ type Query {
     after: ID
     orderBy: ThreatActorsOrdering
     orderMode: OrderingMode
-    filters: [ThreatActorsFiltering]
+    filters: ThreatActorsFiltering
     filterMode: FilterMode
     search: String
   ): ThreatActorConnection @auth
@@ -2870,7 +2732,7 @@ type Query {
     after: ID
     orderBy: IntrusionSetsOrdering
     orderMode: OrderingMode
-    filters: [IntrusionSetsFiltering]
+    filters: IntrusionSetsFiltering
     filterMode: FilterMode
     search: String
   ): IntrusionSetConnection @auth
@@ -2881,7 +2743,7 @@ type Query {
     after: ID
     orderBy: CampaignsOrdering
     orderMode: OrderingMode
-    filters: [CampaignsFiltering]
+    filters: CampaignsFiltering
     filterMode: FilterMode
     search: String
   ): CampaignConnection @auth
@@ -2900,7 +2762,7 @@ type Query {
     after: ID
     orderBy: IncidentsOrdering
     orderMode: OrderingMode
-    filters: [IncidentsFiltering]
+    filters: IncidentsFiltering
     filterMode: FilterMode
     search: String
   ): IncidentConnection @auth
@@ -2919,7 +2781,7 @@ type Query {
     after: ID
     orderBy: MalwaresOrdering
     orderMode: OrderingMode
-    filters: [MalwaresFiltering]
+    filters: MalwaresFiltering
     filterMode: FilterMode
     search: String
   ): MalwareConnection @auth
@@ -2930,7 +2792,7 @@ type Query {
     after: ID
     orderBy: ToolsOrdering
     orderMode: OrderingMode
-    filters: [ToolsFiltering]
+    filters: ToolsFiltering
     filterMode: FilterMode
     search: String
   ): ToolConnection @auth
@@ -2941,7 +2803,7 @@ type Query {
     after: ID
     orderBy: VulnerabilitiesOrdering
     orderMode: OrderingMode
-    filters: [VulnerabilitiesFiltering]
+    filters: VulnerabilitiesFiltering
     filterMode: FilterMode
     search: String
   ): VulnerabilityConnection @auth
@@ -2952,9 +2814,14 @@ type Query {
     after: ID
     orderBy: ReportsOrdering
     orderMode: OrderingMode
-    filters: [ReportsFiltering]
+    filters: ReportsFiltering
     filterMode: FilterMode
+    objectId: String
+    authorId: String
+    reportClass: String
     search: String
+    name: String
+    published: DateTime
   ): ReportConnection @auth
   reportsTimeSeries(
     objectId: String
@@ -3012,8 +2879,8 @@ type TagEditMutations {
   fieldPatch(input: EditInput): Tag
   contextPatch(input: EditContext): Tag
   contextClean: Tag
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Tag
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # StixDomain
@@ -3022,9 +2889,9 @@ type StixDomainEntityEditMutations {
   fieldPatch(input: EditInput): StixDomainEntity
   contextPatch(input: EditContext): StixDomainEntity
   contextClean: StixDomainEntity
-  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationAdd(input: RelationAddInput): RelationData
   relationsAdd(input: RelationsAddInput): StixEntity
-  relationDelete(relationId: ID!): StixEntity
+  relationDelete(relationId: ID!): RelationData
   importPush(file: Upload!): File @auth
   exportAsk(format: String!, exportType: String!): [File]
   exportPush(file: Upload!): Boolean @auth(for: ROLE_ADMIN)
@@ -3036,8 +2903,8 @@ type StixObservableEditMutations {
   fieldPatch(input: EditInput): StixObservable
   contextPatch(input: EditContext): StixObservable
   contextClean: StixObservable
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): StixObservable
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
   askEnrichment(connectorId: ID!): Work
 }
 
@@ -3047,8 +2914,8 @@ type StixRelationEditMutations {
   fieldPatch(input: EditInput): StixRelation
   contextPatch(input: EditContext): StixRelation
   contextClean: StixRelation
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): StixRelation
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # Workspace
@@ -3057,9 +2924,9 @@ type WorkspaceEditMutations {
   fieldPatch(input: EditInput): Workspace
   contextPatch(input: EditContext): Workspace
   contextClean: Workspace
-  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationAdd(input: RelationAddInput): RelationData
   relationsAdd(input: RelationsAddInput): Workspace
-  relationDelete(relationId: ID!): Workspace
+  relationDelete(relationId: ID!): RelationData
 }
 
 # Identity
@@ -3068,8 +2935,8 @@ type IdentityEditMutations {
   fieldPatch(input: EditInput): Identity
   contextPatch(input: EditContext): Identity
   contextClean: Identity
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Identity
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # User
@@ -3079,8 +2946,8 @@ type UserEditMutations {
   contextPatch(input: EditContext): User
   contextClean: User
   tokenRenew: User
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): User
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # Organization
@@ -3089,8 +2956,8 @@ type OrganizationEditMutations {
   fieldPatch(input: EditInput): Organization
   contextPatch(input: EditContext): Organization
   contextClean: Organization
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Organization
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # Sector
@@ -3099,8 +2966,8 @@ type SectorEditMutations {
   fieldPatch(input: EditInput): Sector
   contextPatch(input: EditContext): Sector
   contextClean: Sector
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Sector
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # City
@@ -3109,8 +2976,8 @@ type CityEditMutations {
   fieldPatch(input: EditInput): City
   contextPatch(input: EditContext): City
   contextClean: City
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): City
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # Country
@@ -3119,8 +2986,8 @@ type CountryEditMutations {
   fieldPatch(input: EditInput): Country
   contextPatch(input: EditContext): Country
   contextClean: Country
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Country
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # Region
@@ -3129,8 +2996,8 @@ type RegionEditMutations {
   fieldPatch(input: EditInput): Region
   contextPatch(input: EditContext): Region
   contextClean: Region
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Region
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # Group
@@ -3139,8 +3006,8 @@ type GroupEditMutations {
   fieldPatch(input: EditInput): Group
   contextPatch(input: EditContext): Group
   contextClean: Group
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Group
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # MarkingDefinition
@@ -3149,8 +3016,8 @@ type MarkingDefinitionEditMutations {
   fieldPatch(input: EditInput): MarkingDefinition
   contextPatch(input: EditContext): MarkingDefinition
   contextClean: MarkingDefinition
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): MarkingDefinition
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # ExternalReference
@@ -3159,8 +3026,8 @@ type ExternalReferenceEditMutations {
   fieldPatch(input: EditInput): ExternalReference
   contextPatch(input: EditContext): ExternalReference
   contextClean: ExternalReference
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): ExternalReference
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # KillChainPhase
@@ -3169,8 +3036,8 @@ type KillChainPhaseEditMutations {
   fieldPatch(input: EditInput): KillChainPhase
   contextPatch(input: EditContext): KillChainPhase
   contextClean: KillChainPhase
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): KillChainPhase
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # AttackPattern
@@ -3179,8 +3046,8 @@ type AttackPatternEditMutations {
   fieldPatch(input: EditInput): AttackPattern
   contextPatch(input: EditContext): AttackPattern
   contextClean: AttackPattern
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): AttackPattern
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # CourseOfAction
@@ -3189,8 +3056,8 @@ type CourseOfActionEditMutations {
   fieldPatch(input: EditInput): CourseOfAction
   contextPatch(input: EditContext): CourseOfAction
   contextClean: CourseOfAction
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): CourseOfAction
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # ThreatActor
@@ -3199,8 +3066,8 @@ type ThreatActorEditMutations {
   fieldPatch(input: EditInput): ThreatActor
   contextPatch(input: EditContext): ThreatActor
   contextClean: ThreatActor
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): ThreatActor
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # IntrusionSet
@@ -3209,8 +3076,8 @@ type IntrusionSetEditMutations {
   fieldPatch(input: EditInput): IntrusionSet
   contextPatch(input: EditContext): IntrusionSet
   contextClean: IntrusionSet
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): IntrusionSet
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # Campaign
@@ -3219,8 +3086,8 @@ type CampaignEditMutations {
   fieldPatch(input: EditInput): Campaign
   contextPatch(input: EditContext): Campaign
   contextClean: Campaign
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Campaign
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # Incident
@@ -3229,8 +3096,8 @@ type IncidentEditMutations {
   fieldPatch(input: EditInput): Incident
   contextPatch(input: EditContext): Incident
   contextClean: Incident
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Incident
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # Malware
@@ -3239,8 +3106,8 @@ type MalwareEditMutations {
   fieldPatch(input: EditInput): Malware
   contextPatch(input: EditContext): Malware
   contextClean: Malware
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Malware
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # Tool
@@ -3249,8 +3116,8 @@ type ToolEditMutations {
   fieldPatch(input: EditInput): Tool
   contextPatch(input: EditContext): Tool
   contextClean: Tool
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Tool
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # Vulnerability
@@ -3259,8 +3126,8 @@ type VulnerabilityEditMutations {
   fieldPatch(input: EditInput): Vulnerability
   contextPatch(input: EditContext): Vulnerability
   contextClean: Vulnerability
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Vulnerability
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # Report
@@ -3269,8 +3136,8 @@ type ReportEditMutations {
   fieldPatch(input: EditInput): Report
   contextPatch(input: EditContext): Report
   contextClean: Report
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Report
+  relationAdd(input: RelationAddInput): RelationData
+  relationDelete(relationId: ID!): RelationData
 }
 
 # Mutations
@@ -3278,6 +3145,7 @@ type Mutation {
   # Login
   token(input: UserLoginInput): String
   # Settings
+  settingsAdd(input: SettingsAddInput): Settings @auth(for: ROLE_ADMIN)
   settingsEdit(id: ID!): SettingsEditMutations @auth(for: ROLE_ADMIN)
   # Attribute
   attributeAdd(input: AttributeAddInput): Attribute @auth(for: ROLE_ADMIN)
@@ -3302,7 +3170,7 @@ type Mutation {
   stixObservableAdd(input: StixObservableAddInput): StixObservable @auth
   stixObservableEdit(id: ID!): StixObservableEditMutations @auth
   # StixRelation
-  stixRelationAdd(input: StixRelationAddInput, reversedReturn: Boolean): StixRelation @auth
+  stixRelationAdd(input: StixRelationAddInput): StixRelation @auth
   stixRelationEdit(id: ID!): StixRelationEditMutations @auth
   # Workspace
   workspaceAdd(input: WorkspaceAddInput): Workspace @auth

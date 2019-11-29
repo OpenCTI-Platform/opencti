@@ -1,25 +1,17 @@
 import { addOrganization, findAll, findById } from '../domain/organization';
 import {
-  stixDomainEntityAddRelation,
-  stixDomainEntityCleanContext,
-  stixDomainEntityDelete,
-  stixDomainEntityDeleteRelation,
   stixDomainEntityEditContext,
-  stixDomainEntityEditField
+  stixDomainEntityCleanContext,
+  stixDomainEntityEditField,
+  stixDomainEntityAddRelation,
+  stixDomainEntityDeleteRelation,
+  stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
-import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const organizationResolvers = {
   Query: {
     organization: (_, { id }) => findById(id),
     organizations: (_, args) => findAll(args)
-  },
-  OrganizationsOrdering: {
-    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
-    tags: `${REL_INDEX_PREFIX}tagged.value`
-  },
-  OrganizationsFilter: {
-    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`
   },
   Mutation: {
     organizationEdit: (_, { id }, { user }) => ({
@@ -28,7 +20,8 @@ const organizationResolvers = {
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) =>
+        stixDomainEntityDeleteRelation(user, id, relationId)
     }),
     organizationAdd: (_, { input }, { user }) => addOrganization(user, input)
   }

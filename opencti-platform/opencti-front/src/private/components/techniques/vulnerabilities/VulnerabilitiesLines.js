@@ -50,7 +50,7 @@ export const vulnerabilitiesLinesQuery = graphql`
     $cursor: ID
     $orderBy: VulnerabilitiesOrdering
     $orderMode: OrderingMode
-    $filters: [VulnerabilitiesFiltering]
+    $filters: VulnerabilitiesFiltering
   ) {
     ...VulnerabilitiesLines_data
       @arguments(
@@ -75,7 +75,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "VulnerabilitiesOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[VulnerabilitiesFiltering]" }
+          filters: { type: "VulnerabilitiesFiltering" }
         ) {
         vulnerabilities(
           search: $search

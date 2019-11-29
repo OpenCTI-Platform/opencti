@@ -61,7 +61,7 @@ class StixObservables extends Component {
 
   handleToggle(type) {
     if (this.state.types.includes(type)) {
-      this.setState({ types: filter((t) => t !== type, this.state.types) });
+      this.setState({ types: filter(t => t !== type, this.state.types) });
     } else {
       this.setState({ types: append(type, this.state.types) });
     }

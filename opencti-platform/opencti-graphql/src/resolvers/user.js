@@ -1,25 +1,24 @@
 import {
-  addPerson,
   addUser,
+  addPerson,
   findAll,
   findById,
+  groups,
+  token,
   login,
   logout,
-  meEditField,
-  setAuthenticationCookie,
-  token,
-  userDelete,
   userEditField,
-  userRenewToken
+  meEditField,
+  userRenewToken,
+  setAuthenticationCookie,
+  userDelete
 } from '../domain/user';
 import {
-  stixDomainEntityAddRelation,
+  stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
-  stixDomainEntityDeleteRelation,
-  stixDomainEntityEditContext
+  stixDomainEntityAddRelation,
+  stixDomainEntityDeleteRelation
 } from '../domain/stixDomainEntity';
-import { groups } from '../domain/group';
-import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const userResolvers = {
   Query: {
@@ -27,12 +26,8 @@ const userResolvers = {
     users: (_, args) => findAll(args),
     me: (_, args, { user }) => findById(user.id)
   },
-  UsersOrdering: {
-    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
-    tags: `${REL_INDEX_PREFIX}tagged.value`
-  },
   User: {
-    groups: user => groups(user.id),
+    groups: (user, args) => groups(user.id, args),
     token: (user, args, context) => token(user.id, args, context)
   },
   Mutation: {
@@ -49,7 +44,8 @@ const userResolvers = {
       contextClean: () => stixDomainEntityCleanContext(user, id),
       tokenRenew: () => userRenewToken(id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) =>
+        stixDomainEntityDeleteRelation(user, id, relationId)
     }),
     meEdit: (_, { input }, { user }) => meEditField(user, user.id, input),
     personAdd: (_, { input }, { user }) => addPerson(user, input),

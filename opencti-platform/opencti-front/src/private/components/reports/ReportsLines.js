@@ -45,21 +45,25 @@ ReportsLines.propTypes = {
 
 export const reportsLinesQuery = graphql`
   query ReportsLinesPaginationQuery(
+    $objectId: String
+    $authorId: String
+    $reportClass: String
     $search: String
     $count: Int!
     $cursor: ID
     $orderBy: ReportsOrdering
     $orderMode: OrderingMode
-    $filters: [ReportsFiltering]
   ) {
     ...ReportsLines_data
       @arguments(
+        objectId: $objectId
+        authorId: $authorId
+        reportClass: $reportClass
         search: $search
         count: $count
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
-        filters: $filters
       )
   }
 `;
@@ -70,20 +74,24 @@ export default createPaginationContainer(
     data: graphql`
       fragment ReportsLines_data on Query
         @argumentDefinitions(
+          objectId: { type: "String" }
+          authorId: { type: "String" }
+          reportClass: { type: "String" }
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
           orderBy: { type: "ReportsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[ReportsFiltering]" }
         ) {
         reports(
+          objectId: $objectId
+          authorId: $authorId
+          reportClass: $reportClass
           search: $search
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
-          filters: $filters
         ) @connection(key: "Pagination_reports") {
           edges {
             node {
@@ -128,12 +136,14 @@ export default createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
+        objectId: fragmentVariables.objectId,
+        authorId: fragmentVariables.authorId,
+        reportClass: fragmentVariables.reportClass,
+        search: fragmentVariables.search,
         count,
         cursor,
-        search: fragmentVariables.search,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
-        filters: fragmentVariables.filters,
       };
     },
     query: reportsLinesQuery,

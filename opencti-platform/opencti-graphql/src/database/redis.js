@@ -31,28 +31,22 @@ export const getRedisVersion = () => {
   return 'Disconnected';
 };
 
-export const notify = (topic, instance, user, context) => {
-  if (pubsub) pubsub.publish(topic, { instance, user, context });
-  return instance;
-};
-
 /**
  * Delete the user context for a specific edition
  * @param user the user
  * @param instanceId
  * @returns {*}
  */
-export const delEditContext = (user, instanceId) => {
-  return isActive() && client.del(`edit:${instanceId}:${user.id}`);
-};
+export const delEditContext = (user, instanceId) =>
+  isActive() && client.del(`edit:${instanceId}:${user.id}`);
 
 /**
  * Delete the user context
  * @param user the user
  * @returns {Promise<>}
  */
-export const delUserContext = user => {
-  return isActive()
+export const delUserContext = user =>
+  isActive()
     ? new Promise((resolve, reject) => {
         const stream = client.scanStream({
           match: `*:*:${user.id}`,
@@ -74,8 +68,7 @@ export const delUserContext = user => {
           resolve();
         });
       })
-    : null;
-};
+    : Promise.resolve();
 
 /**
  * Set the user edition context in redis
@@ -100,8 +93,8 @@ export const setEditContext = (user, instanceId, input) => {
  * @param instanceId
  * @returns {Promise<any>}
  */
-export const fetchEditContext = instanceId => {
-  return isActive()
+export const fetchEditContext = instanceId =>
+  isActive()
     ? new Promise((resolve, reject) => {
         const elementsPromise = [];
         const stream = client.scanStream({
@@ -124,23 +117,50 @@ export const fetchEditContext = instanceId => {
         });
       })
     : Promise.resolve([]);
+
+/**
+ * Get a key/value
+ * @param key
+ * @returns {Promise}
+ */
+export const getKeyValue = key => {
+  if (isActive()) {
+    logger.debug(`[REDIS] get > ${key}`);
+    return Promise.resolve({ key, value: client.get(key) });
+  }
+  return Promise.resolve(null);
 };
 
-// region cache for access token
-export const getAccessCache = async key => {
+/**
+ * Store a key/value
+ * @param input
+ * @returns {Promise<any>}
+ */
+export const storeKeyValue = async input => {
   if (isActive()) {
-    const data = await client.get(key);
-    return data && JSON.parse(data);
+    logger.debug(
+      `[REDIS] set > { ${input.key}: ${input.value} } (timeout: ${input.timeout})`
+    );
+    if (input.timeout) {
+      await client.set(input.key, input.value, 'ex', input.timeout);
+    } else {
+      await client.set(input.key, input.value);
+    }
+    return Promise.resolve(input);
   }
-  return undefined;
+  return Promise.resolve(null);
 };
 
-export const storeAccessCache = async (tokenValue, access) => {
+/**
+ * Delete a key/value
+ * @param key
+ * @returns {Promise<any>}
+ */
+export const deleteKeyValue = async key => {
   if (isActive()) {
-    const val = JSON.stringify(access);
-    await client.set(tokenValue, val, 'ex', 90);
-    return access;
+    logger.debug(`[REDIS] delete > ${key}`);
+    await client.delete(key);
+    return Promise.resolve(true);
   }
-  return undefined;
+  return Promise.resolve(null);
 };
-// endregion

@@ -2,34 +2,43 @@ import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixObservable,
+  stixObservableDelete,
   findAll,
   findById,
-  stixObservableAddRelation,
-  stixObservableAskEnrichment,
-  stixObservableCleanContext,
-  stixObservableDelete,
-  stixObservableDeleteRelation,
-  stixObservableEditContext,
-  stixObservableEditField,
+  findByValue,
   stixObservablesNumber,
-  stixObservablesTimeSeries
+  search,
+  stixObservablesTimeSeries,
+  stixObservableEditContext,
+  stixObservableCleanContext,
+  stixObservableEditField,
+  stixObservableAddRelation,
+  stixObservableDeleteRelation,
+  stixObservableAskEnrichment,
+  findByStixId
 } from '../domain/stixObservable';
 import { pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
 import { workForEntity } from '../domain/work';
 import { connectorsForEnrichment } from '../domain/connector';
-import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const stixObservableResolvers = {
   Query: {
     stixObservable: (_, { id }) => findById(id),
-    stixObservables: (_, args) => findAll(args),
+    stixObservables: (_, args) => {
+      if (args.stix_id_key && args.stix_id_key.length > 0) {
+        return findByStixId(args);
+      }
+      if (args.search && args.search.length > 0) {
+        return search(args);
+      }
+      if (args.observableValue && args.observableValue.length > 0) {
+        return findByValue(args);
+      }
+      return findAll(args);
+    },
     stixObservablesTimeSeries: (_, args) => stixObservablesTimeSeries(args),
     stixObservablesNumber: (_, args) => stixObservablesNumber(args)
-  },
-  StixObservablesOrdering: {
-    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
-    tags: `${REL_INDEX_PREFIX}tagged.value`
   },
   StixObservable: {
     jobs: (stixObservable, args) => workForEntity(stixObservable.id, args),
@@ -43,10 +52,13 @@ const stixObservableResolvers = {
       contextPatch: ({ input }) => stixObservableEditContext(user, id, input),
       contextClean: () => stixObservableCleanContext(user, id),
       relationAdd: ({ input }) => stixObservableAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixObservableDeleteRelation(user, id, relationId),
-      askEnrichment: ({ connectorId }) => stixObservableAskEnrichment(id, connectorId)
+      relationDelete: ({ relationId }) =>
+        stixObservableDeleteRelation(user, id, relationId),
+      askEnrichment: ({ connectorId }) =>
+        stixObservableAskEnrichment(id, connectorId)
     }),
-    stixObservableAdd: (_, { input }, { user }) => addStixObservable(user, input)
+    stixObservableAdd: (_, { input }, { user }) =>
+      addStixObservable(user, input)
   },
   Subscription: {
     stixObservable: {

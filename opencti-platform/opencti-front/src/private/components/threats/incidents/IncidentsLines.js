@@ -50,7 +50,7 @@ export const incidentsLinesQuery = graphql`
     $cursor: ID
     $orderBy: IncidentsOrdering
     $orderMode: OrderingMode
-    $filters: [IncidentsFiltering]
+    $filters: IncidentsFiltering
   ) {
     ...IncidentsLines_data
       @arguments(
@@ -75,7 +75,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "IncidentsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[IncidentsFiltering]" }
+          filters: { type: "IncidentsFiltering" }
         ) {
         incidents(
           search: $search

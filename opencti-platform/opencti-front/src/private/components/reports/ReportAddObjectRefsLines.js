@@ -57,9 +57,11 @@ export const reportMutationRelationAdd = graphql`
   ) {
     reportEdit(id: $id) {
       relationAdd(input: $input) {
-        id
-        from {
+        node {
           ...ReportKnowledgeGraph_report
+        }
+        relation {
+          id
         }
       }
     }
@@ -73,7 +75,9 @@ export const reportMutationRelationDelete = graphql`
   ) {
     reportEdit(id: $id) {
       relationDelete(relationId: $relationId) {
+        node {
           ...ReportKnowledgeGraph_report
+        }
       }
     }
   }
@@ -103,15 +107,15 @@ class ReportAddObjectRefsLinesContainer extends Component {
       });
     } else {
       const input = {
-        fromRole: 'knowledge_aggregation',
-        toId: stixDomain.id,
-        toRole: 'so',
+        fromRole: 'so',
+        toId: reportId,
+        toRole: 'knowledge_aggregation',
         through: 'object_refs',
       };
       commitMutation({
         mutation: reportMutationRelationAdd,
         variables: {
-          id: reportId,
+          id: stixDomain.id,
           input,
         },
       });

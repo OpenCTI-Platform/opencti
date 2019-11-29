@@ -89,7 +89,7 @@ const threatActorMutationRelationAdd = graphql`
   ) {
     threatActorEdit(id: $id) {
       relationAdd(input: $input) {
-        from {
+        node {
           ...ThreatActorEditionOverview_threatActor
         }
       }
@@ -104,7 +104,9 @@ const threatActorMutationRelationDelete = graphql`
   ) {
     threatActorEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        ...ThreatActorEditionOverview_threatActor
+        node {
+          ...ThreatActorEditionOverview_threatActor
+        }
       }
     }
   }
@@ -209,11 +211,11 @@ class ThreatActorEditionOverviewComponent extends Component {
       commitMutation({
         mutation: threatActorMutationRelationAdd,
         variables: {
-          id: this.props.threatActor.id,
+          id: value.value,
           input: {
-            fromRole: 'so',
-            toRole: 'creator',
-            toId: value.value,
+            fromRole: 'creator',
+            toId: this.props.threatActor.id,
+            toRole: 'so',
             through: 'created_by_ref',
           },
         },
@@ -229,11 +231,11 @@ class ThreatActorEditionOverviewComponent extends Component {
       commitMutation({
         mutation: threatActorMutationRelationAdd,
         variables: {
-          id: this.props.threatActor.id,
+          id: value.value,
           input: {
-            fromRole: 'so',
-            toRole: 'creator',
-            toId: value.value,
+            fromRole: 'creator',
+            toId: this.props.threatActor.id,
+            toRole: 'so',
             through: 'created_by_ref',
           },
         },
@@ -259,11 +261,11 @@ class ThreatActorEditionOverviewComponent extends Component {
       commitMutation({
         mutation: threatActorMutationRelationAdd,
         variables: {
-          id: this.props.threatActor.id,
+          id: head(added).value,
           input: {
-            fromRole: 'so',
-            toRole: 'marking',
-            toId: head(added).value,
+            fromRole: 'marking',
+            toId: this.props.threatActor.id,
+            toRole: 'so',
             through: 'object_marking_refs',
           },
         },

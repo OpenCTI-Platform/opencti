@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { KeyboardDatePicker } from '@material-ui/pickers';
+import { dateFormat } from '../utils/Time';
 import inject18n from './i18n';
 
 class DatePickerField extends Component {
@@ -48,7 +49,7 @@ class DatePickerField extends Component {
             typeof onSubmit === 'function'
             && this.currentDate !== event.target.value
           ) {
-            onSubmit(field.name, event.target.value.toISOString());
+            onSubmit(field.name, dateFormat(event.target.value));
             this.currentDate = event.target.value;
           }
         }}
@@ -59,7 +60,7 @@ class DatePickerField extends Component {
             && event.key === 'Enter'
             && this.currentDate !== event.target.value
           ) {
-            onSubmit(field.name, event.target.value.toISOString());
+            onSubmit(field.name, dateFormat(event.target.value));
             this.currentDate = event.target.value;
           }
         }}
@@ -70,7 +71,7 @@ class DatePickerField extends Component {
             && typeof onSubmit === 'function'
             && this.currentDate !== date
           ) {
-            onSubmit(field.name, date.toISOString());
+            onSubmit(field.name, dateFormat(date));
             this.currentDate = date;
           }
         }}

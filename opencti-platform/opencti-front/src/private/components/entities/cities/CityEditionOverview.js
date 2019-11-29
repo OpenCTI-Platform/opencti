@@ -31,7 +31,7 @@ import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
 
-const styles = (theme) => ({
+const styles = theme => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -86,7 +86,7 @@ const cityMutationRelationAdd = graphql`
   ) {
     cityEdit(id: $id) {
       relationAdd(input: $input) {
-        from {
+        node {
           ...CityEditionOverview_city
         }
       }
@@ -101,13 +101,15 @@ const cityMutationRelationDelete = graphql`
   ) {
     cityEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        ...CityEditionOverview_city
+        node {
+          ...CityEditionOverview_city
+        }
       }
     }
   }
 `;
 
-const cityValidation = (t) => Yup.object().shape({
+const cityValidation = t => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string()
     .min(3, t('The value is too short'))
@@ -133,7 +135,7 @@ class CityEditionOverviewComponent extends Component {
     }).then((data) => {
       const identities = pipe(
         pathOr([], ['identities', 'edges']),
-        map((n) => ({ label: n.node.name, value: n.node.id })),
+        map(n => ({ label: n.node.name, value: n.node.id })),
       )(data);
       this.setState({ identities: union(this.state.identities, identities) });
     });
@@ -153,7 +155,7 @@ class CityEditionOverviewComponent extends Component {
     }).then((data) => {
       const markingDefinitions = pipe(
         pathOr([], ['markingDefinitions', 'edges']),
-        map((n) => ({ label: n.node.definition, value: n.node.id })),
+        map(n => ({ label: n.node.definition, value: n.node.id })),
       )(data);
       this.setState({
         markingDefinitions: union(
@@ -202,11 +204,11 @@ class CityEditionOverviewComponent extends Component {
       commitMutation({
         mutation: cityMutationRelationAdd,
         variables: {
-          id: this.props.city.id,
+          id: value.value,
           input: {
-            fromRole: 'so',
-            toId: value.value,
-            toRole: 'creator',
+            fromRole: 'creator',
+            toId: this.props.city.id,
+            toRole: 'so',
             through: 'created_by_ref',
           },
         },
@@ -222,11 +224,11 @@ class CityEditionOverviewComponent extends Component {
       commitMutation({
         mutation: cityMutationRelationAdd,
         variables: {
-          id: this.props.city.id,
+          id: value.value,
           input: {
-            fromRole: 'so',
-            toId: value.value,
-            toRole: 'creator',
+            fromRole: 'creator',
+            toId: this.props.city.id,
+            toRole: 'so',
             through: 'created_by_ref',
           },
         },
@@ -238,7 +240,7 @@ class CityEditionOverviewComponent extends Component {
     const { city } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
-      map((n) => ({
+      map(n => ({
         label: n.node.definition,
         value: n.node.id,
         relationId: n.relation.id,
@@ -252,11 +254,11 @@ class CityEditionOverviewComponent extends Component {
       commitMutation({
         mutation: cityMutationRelationAdd,
         variables: {
-          id: this.props.city.id,
+          id: head(added).value,
           input: {
-            fromRole: 'so',
-            toId: head(added).value,
-            toRole: 'marking',
+            fromRole: 'marking',
+            toId: this.props.city.id,
+            toRole: 'so',
             through: 'object_marking_refs',
           },
         },
@@ -287,7 +289,7 @@ class CityEditionOverviewComponent extends Component {
       };
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
-      map((n) => ({
+      map(n => ({
         label: n.node.definition,
         value: n.node.id,
         relationId: n.relation.id,

@@ -50,21 +50,21 @@ WorkspacesLines.propTypes = {
 
 export const workspacesLinesQuery = graphql`
   query WorkspacesLinesPaginationQuery(
+    $workspaceType: String
     $search: String
     $count: Int!
     $cursor: ID
     $orderBy: WorkspacesOrdering
     $orderMode: OrderingMode
-    $filters: [WorkspaceFiltering]
   ) {
     ...WorkspacesLines_data
       @arguments(
+        workspaceType: $workspaceType
         search: $search
         count: $count
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
-        filters: $filters
       )
   }
 `;
@@ -75,20 +75,20 @@ export default createPaginationContainer(
     data: graphql`
       fragment WorkspacesLines_data on Query
         @argumentDefinitions(
+          workspaceType: { type: "String" }
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
           orderBy: { type: "WorkspacesOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[WorkspaceFiltering]" }
         ) {
         workspaces(
+          workspaceType: $workspaceType
           search: $search
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
-          filters: $filters
         ) @connection(key: "Pagination_workspaces") {
           edges {
             node {
@@ -123,7 +123,6 @@ export default createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
-        filters: fragmentVariables.filters,
       };
     },
     query: workspacesLinesQuery,

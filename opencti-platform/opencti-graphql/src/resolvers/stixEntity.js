@@ -4,8 +4,7 @@ import {
   markingDefinitions,
   reports,
   stixRelations,
-  tags,
-  externalReferences
+  tags
 } from '../domain/stixEntity';
 import { fetchEditContext } from '../database/redis';
 
@@ -20,16 +19,18 @@ const stixEntityResolvers = {
         return 'StixObservable';
       }
       if (obj.entity_type) {
-        return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) => letter.toUpperCase());
+        return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) =>
+          letter.toUpperCase()
+        );
       }
       return 'Unknown';
     },
-    createdByRef: stixEntity => createdByRef(stixEntity.id),
-    editContext: stixEntity => fetchEditContext(stixEntity.id),
-    externalReferences: stixEntity => externalReferences(stixEntity.id),
-    tags: stixEntity => tags(stixEntity.id),
-    reports: stixEntity => reports(stixEntity.id),
-    markingDefinitions: stixEntity => markingDefinitions(stixEntity.id),
+    createdByRef: entity => createdByRef(entity.id),
+    editContext: entity => fetchEditContext(entity.id),
+    tags: (entity, args) => tags(entity.id, args),
+    reports: (entity, args) => reports(entity.id, args),
+    markingDefinitions: (stixEntity, args) =>
+      markingDefinitions(stixEntity.id, args),
     stixRelations: (stixEntity, args) => stixRelations(stixEntity.id, args)
   }
 };

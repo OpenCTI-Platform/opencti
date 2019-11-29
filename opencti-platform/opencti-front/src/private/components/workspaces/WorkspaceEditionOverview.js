@@ -26,7 +26,7 @@ import TextField from '../../../components/TextField';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import { markingDefinitionsSearchQuery } from '../settings/MarkingDefinitions';
 
-const styles = (theme) => ({
+const styles = theme => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -84,7 +84,7 @@ const workspaceMutationRelationAdd = graphql`
   ) {
     workspaceEdit(id: $id) {
       relationAdd(input: $input) {
-        from {
+        node {
           ...WorkspaceEditionOverview_workspace
         }
       }
@@ -99,13 +99,15 @@ const workspaceMutationRelationDelete = graphql`
   ) {
     workspaceEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        ...WorkspaceEditionOverview_workspace
+        node {
+          ...WorkspaceEditionOverview_workspace
+        }
       }
     }
   }
 `;
 
-const workspaceValidation = (t) => Yup.object().shape({
+const workspaceValidation = t => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   published: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
@@ -130,7 +132,7 @@ class WorkspaceEditionOverviewComponent extends Component {
     }).then((data) => {
       const markingDefinitions = pipe(
         pathOr([], ['markingDefinitions', 'edges']),
-        map((n) => ({ label: n.node.definition, value: n.node.id })),
+        map(n => ({ label: n.node.definition, value: n.node.id })),
       )(data);
       this.setState({ markingDefinitions });
     });
@@ -169,7 +171,7 @@ class WorkspaceEditionOverviewComponent extends Component {
     const { workspace } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
-      map((n) => ({
+      map(n => ({
         label: n.node.definition,
         value: n.node.id,
         relationId: n.relation.id,
@@ -183,11 +185,11 @@ class WorkspaceEditionOverviewComponent extends Component {
       commitMutation({
         mutation: workspaceMutationRelationAdd,
         variables: {
-          id: this.props.workspace.id,
+          id: head(added).value,
           input: {
-            fromRole: 'so',
-            toId: head(added).value,
-            toRole: 'marking',
+            fromRole: 'marking',
+            toId: this.props.workspace.id,
+            toRole: 'so',
             through: 'object_marking_refs',
           },
         },
@@ -211,7 +213,7 @@ class WorkspaceEditionOverviewComponent extends Component {
     } = this.props;
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
-      map((n) => ({
+      map(n => ({
         label: n.node.definition,
         value: n.node.id,
         relationId: n.relation.id,

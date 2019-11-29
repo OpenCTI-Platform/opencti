@@ -2,17 +2,18 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
+import Paper from '@material-ui/core/Paper';
+import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Avatar from '@material-ui/core/Avatar';
-import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import CourseOfActionAttackPatternsLines, {
-  courseOfActionAttackPatternsLinesQuery,
-} from './CourseOfActionAttackPatternsLines';
+import EntityCoursesOfActionLines, {
+  entityCoursesOfActionLinesQuery,
+} from './EntityCoursesOfActionLines';
 
 const styles = (theme) => ({
   paper: {
@@ -37,19 +38,19 @@ const styles = (theme) => ({
   },
 });
 
-class CoursesOfActionAttackPatterns extends Component {
+class EntityCoursesOfAction extends Component {
   render() {
-    const { t, classes, courseOfActionId } = this.props;
+    const { t, classes, entityId } = this.props;
     const paginationOptions = {
-      courseOfActionId,
+      objectId: entityId,
       orderBy: 'created_at',
       orderMode: 'desc',
     };
     return (
       <QueryRenderer
-        query={courseOfActionAttackPatternsLinesQuery}
+        query={entityCoursesOfActionLinesQuery}
         variables={{
-          courseOfActionId,
+          objectId: entityId,
           count: 200,
           orderBy: 'created_at',
           orderMode: 'desc',
@@ -57,41 +58,49 @@ class CoursesOfActionAttackPatterns extends Component {
         render={({ props }) => {
           if (props) {
             return (
-              <CourseOfActionAttackPatternsLines
-                courseOfActionId={courseOfActionId}
+              <EntityCoursesOfActionLines
+                entityId={entityId}
                 data={props}
                 paginationOptions={paginationOptions}
               />
             );
           }
           return (
-            <div style={{ marginTop: 20 }}>
+            <div style={{ height: '100%' }}>
               <Typography
-                variant="h3"
+                variant="h4"
                 gutterBottom={true}
                 style={{ float: 'left' }}
               >
-                {t('Mitigated TTPs')}
+                {t('Courses of action')}
               </Typography>
-              <List>
-                {Array.from(Array(5), (e, i) => (
-                  <ListItem key={i} dense={true} divider={true} button={false}>
-                    <ListItemIcon>
-                      <Avatar classes={{ root: classes.avatarDisabled }}>
-                        {i}
-                      </Avatar>
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <span className="fakeItem" style={{ width: '80%' }} />
-                      }
-                      secondary={
-                        <span className="fakeItem" style={{ width: '90%' }} />
-                      }
-                    />
-                  </ListItem>
-                ))}
-              </List>
+              <div className="clearfix" />
+              <Paper classes={{ root: classes.paper }} elevation={2}>
+                <List>
+                  {Array.from(Array(5), (e, i) => (
+                    <ListItem
+                      key={i}
+                      dense={true}
+                      divider={true}
+                      button={false}
+                    >
+                      <ListItemIcon>
+                        <Avatar classes={{ root: classes.avatarDisabled }}>
+                          {i}
+                        </Avatar>
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={
+                          <span className="fakeItem" style={{ width: '80%' }} />
+                        }
+                        secondary={
+                          <span className="fakeItem" style={{ width: '90%' }} />
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Paper>
             </div>
           );
         }}
@@ -100,8 +109,8 @@ class CoursesOfActionAttackPatterns extends Component {
   }
 }
 
-CoursesOfActionAttackPatterns.propTypes = {
-  courseOfActionId: PropTypes.string,
+EntityCoursesOfAction.propTypes = {
+  entityId: PropTypes.string,
   limit: PropTypes.number,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -111,4 +120,4 @@ CoursesOfActionAttackPatterns.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(CoursesOfActionAttackPatterns);
+)(EntityCoursesOfAction);

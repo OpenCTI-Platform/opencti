@@ -18,7 +18,11 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
       dateFormat = 'YYYY-MM-DD';
   }
 
-  const elementsOfInterval = endDateParsed.diff(startDateParsed, `${interval}s`, false);
+  const elementsOfInterval = endDateParsed.diff(
+    startDateParsed,
+    `${interval}s`,
+    false
+  );
 
   const newData = [];
   for (let i = 0; i <= elementsOfInterval; i += 1) {

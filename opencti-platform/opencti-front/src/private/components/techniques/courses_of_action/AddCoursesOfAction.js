@@ -17,7 +17,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import AddCoursesOfActionLines, {
   addCoursesOfActionLinesQuery,
 } from './AddCoursesOfActionLines';
-import CourseOfActionCreation from '../courses_of_action/CourseOfActionCreation';
+import CourseOfActionCreation from './CourseOfActionCreation';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -86,8 +86,9 @@ class AddCoursesOfAction extends Component {
     const {
       t,
       classes,
-      attackPatternId,
-      attackPatternCoursesOfAction,
+      entityId,
+      entityCoursesOfAction,
+      entityPaginationOptions,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
@@ -138,8 +139,9 @@ class AddCoursesOfAction extends Component {
                 if (props) {
                   return (
                     <AddCoursesOfActionLines
-                      attackPatternId={attackPatternId}
-                      attackPatternCoursesOfAction={attackPatternCoursesOfAction}
+                      entityId={entityId}
+                      entityCoursesOfAction={entityCoursesOfAction}
+                      entityPaginationOptions={entityPaginationOptions}
                       data={props}
                     />
                   );
@@ -187,8 +189,9 @@ class AddCoursesOfAction extends Component {
 }
 
 AddCoursesOfAction.propTypes = {
-  attackPatternId: PropTypes.string,
-  attackPatternCoursesOfAction: PropTypes.array,
+  entityId: PropTypes.string,
+  entityCoursesOfAction: PropTypes.array,
+  entityPaginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

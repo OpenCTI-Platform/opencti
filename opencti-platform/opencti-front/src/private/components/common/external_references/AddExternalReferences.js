@@ -19,7 +19,7 @@ import AddExternalReferencesLines, {
 } from './AddExternalReferencesLines';
 import ExternalReferenceCreation from './ExternalReferenceCreation';
 
-const styles = (theme) => ({
+const styles = theme => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -88,6 +88,7 @@ class AddExternalReferences extends Component {
       classes,
       entityId,
       entityExternalReferences,
+      entityPaginationOptions,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
@@ -140,6 +141,7 @@ class AddExternalReferences extends Component {
                     <AddExternalReferencesLines
                       entityId={entityId}
                       entityExternalReferences={entityExternalReferences}
+                      entityPaginationOptions={entityPaginationOptions}
                       data={props}
                     />
                   );
@@ -189,6 +191,7 @@ class AddExternalReferences extends Component {
 AddExternalReferences.propTypes = {
   entityId: PropTypes.string,
   entityExternalReferences: PropTypes.array,
+  entityPaginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

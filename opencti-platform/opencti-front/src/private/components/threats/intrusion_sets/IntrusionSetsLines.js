@@ -54,7 +54,7 @@ export const intrusionSetsLinesQuery = graphql`
     $cursor: ID
     $orderBy: IntrusionSetsOrdering
     $orderMode: OrderingMode
-    $filters: [IntrusionSetsFiltering]
+    $filters: IntrusionSetsFiltering
   ) {
     ...IntrusionSetsLines_data
       @arguments(
@@ -79,7 +79,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "IntrusionSetsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[IntrusionSetsFiltering]" }
+          filters: { type: "IntrusionSetsFiltering" }
         ) {
         intrusionSets(
           search: $search

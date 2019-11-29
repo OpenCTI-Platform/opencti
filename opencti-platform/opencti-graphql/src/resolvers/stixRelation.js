@@ -2,28 +2,28 @@ import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixRelation,
+  stixRelationDelete,
   findAll,
-  findAllWithInferences,
+  findByStixId,
   findById,
   findByIdInferred,
-  findByStixId,
-  search,
-  stixRelationAddRelation,
-  stixRelationCleanContext,
-  stixRelationDelete,
-  stixRelationDeleteRelation,
-  stixRelationEditContext,
-  stixRelationEditField,
+  findAllWithInferences,
+  stixRelationsTimeSeries,
+  stixRelationsTimeSeriesWithInferences,
   stixRelationsDistribution,
   stixRelationsDistributionWithInferences,
   stixRelationsNumber,
-  stixRelationsTimeSeries,
-  stixRelationsTimeSeriesWithInferences
+  search,
+  stixRelationEditContext,
+  stixRelationCleanContext,
+  stixRelationEditField,
+  stixRelationAddRelation,
+  stixRelationDeleteRelation
 } from '../domain/stixRelation';
 import { pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
-import { killChainPhases } from '../domain/stixEntity';
-import { loadByGraknId } from '../database/grakn';
+import { getByGraknId } from '../database/grakn';
+import { killChainPhases } from '../domain/stixDomainEntity';
 
 const stixRelationResolvers = {
   Query: {
@@ -40,19 +40,31 @@ const stixRelationResolvers = {
       if (args.stix_id_key && args.stix_id_key.length > 0) {
         return findByStixId(args);
       }
-      if (args.resolveInferences && args.resolveRelationRole && args.resolveRelationType) {
+      if (
+        args.resolveInferences &&
+        args.resolveRelationRole &&
+        args.resolveRelationType
+      ) {
         return findAllWithInferences(args);
       }
       return findAll(args);
     },
     stixRelationsTimeSeries: (_, args) => {
-      if (args.resolveInferences && args.resolveRelationRole && args.resolveRelationType) {
+      if (
+        args.resolveInferences &&
+        args.resolveRelationRole &&
+        args.resolveRelationType
+      ) {
         return stixRelationsTimeSeriesWithInferences(args);
       }
       return stixRelationsTimeSeries(args);
     },
     stixRelationsDistribution: (_, args) => {
-      if (args.resolveInferences && args.resolveRelationRole && args.resolveRelationType) {
+      if (
+        args.resolveInferences &&
+        args.resolveRelationRole &&
+        args.resolveRelationType
+      ) {
         return stixRelationsDistributionWithInferences(args);
       }
       return stixRelationsDistribution(args);
@@ -60,13 +72,9 @@ const stixRelationResolvers = {
     stixRelationsNumber: (_, args) => stixRelationsNumber(args)
   },
   StixRelation: {
-    killChainPhases: rel => killChainPhases(rel.id),
-    from: rel => loadByGraknId(rel.fromId),
-    to: rel => loadByGraknId(rel.toId)
-  },
-  RelationEmbedded: {
-    from: rel => loadByGraknId(rel.fromId),
-    to: rel => loadByGraknId(rel.toId)
+    killChainPhases: (rel, args) => killChainPhases(rel.id, args),
+    from: rel => rel.from || getByGraknId(rel.fromId),
+    to: rel => rel.to || getByGraknId(rel.toId)
   },
   Mutation: {
     stixRelationEdit: (_, { id }, { user }) => ({
@@ -75,9 +83,10 @@ const stixRelationResolvers = {
       contextPatch: ({ input }) => stixRelationEditContext(user, id, input),
       contextClean: () => stixRelationCleanContext(user, id),
       relationAdd: ({ input }) => stixRelationAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixRelationDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) =>
+        stixRelationDeleteRelation(user, id, relationId)
     }),
-    stixRelationAdd: (_, { input, reversedReturn }, { user }) => addStixRelation(user, input, reversedReturn)
+    stixRelationAdd: (_, { input }, { user }) => addStixRelation(user, input)
   },
   Subscription: {
     stixRelation: {

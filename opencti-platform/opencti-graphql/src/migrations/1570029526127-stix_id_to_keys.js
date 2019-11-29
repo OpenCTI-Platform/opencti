@@ -4,19 +4,26 @@ import {
   attributeExists,
   conceptTypes,
   executeWrite,
-  inferIndexFromConceptTypes,
-  loadEntityByGraknId
+  getAttributes,
+  inferIndexFromConceptTypes
 } from '../database/grakn';
 import { logger } from '../config/conf';
-import { elIndex } from '../database/elasticSearch';
+import { index } from '../database/elasticSearch';
 
 module.exports.up = async next => {
   logger.info(
     `[MIGRATION] stix_id_to_keys > Starting the migration of all STIX_ID to keys... /!\\ This migration could take some time!`
   );
-  const entities = ['stix_sighting', 'stix_relation', 'Stix-Domain', 'Stix-Observable'];
+  const entities = [
+    'stix_sighting',
+    'stix_relation',
+    'Stix-Domain',
+    'Stix-Observable'
+  ];
 
-  logger.info(`[MIGRATION] stix_id_to_keys > Migrating all attributes stix_id to stix_id_key...`);
+  logger.info(
+    `[MIGRATION] stix_id_to_keys > Migrating all attributes stix_id to stix_id_key...`
+  );
 
   const isExisting = await attributeExists('stix_id');
   if (isExisting) {
@@ -41,15 +48,17 @@ module.exports.up = async next => {
                   .get('s')
                   .value();
                 if (stixIds.includes(entityStixId)) {
-                  logger.info(`[MIGRATION] stix_id_to_keys > ${entityStixId} is a duplicate, generating a new stix_id`);
+                  logger.info(
+                    `[MIGRATION] stix_id_to_keys > ${entityStixId} is a duplicate, generating a new stix_id`
+                  );
                   entityStixId = uuid();
                 }
                 stixIds.push(entityStixId);
                 const graknQuery = `match $x id ${conceptId}; insert $x has stix_id_key "${entityStixId}";`;
                 let elasticQuery = null;
-                // elReindex if necessary
+                // reindex if necessary
                 if (getIndex) {
-                  const attributes = await loadEntityByGraknId(concept.id);
+                  const attributes = await getAttributes(concept);
                   const finalAttributes = pipe(
                     assoc('id', entityStixId),
                     assoc('stix_id_key', entityStixId)
@@ -60,21 +69,28 @@ module.exports.up = async next => {
               })
             );
             const actionsBatches = splitEvery(100, actionsToDo);
-            // eslint-disable-next-line no-restricted-syntax
             for (const actionsBatch of actionsBatches) {
-              // eslint-disable-next-line no-await-in-loop
               await Promise.all(
                 actionsBatch.map(async action => {
-                  logger.info(`[MIGRATION] stix_id_to_keys > ${action.graknQuery}`);
+                  logger.info(
+                    `[MIGRATION] stix_id_to_keys > ${action.graknQuery}`
+                  );
                   if (action.elasticQuery !== null) {
-                    logger.info(`[MIGRATION] stix_id_to_keys > Reindex ${action.id}`);
-                    await elIndex(action.elasticQuery.index, action.elasticQuery.data);
+                    logger.info(
+                      `[MIGRATION] stix_id_to_keys > Reindex ${action.id}`
+                    );
+                    await index(
+                      action.elasticQuery.index,
+                      action.elasticQuery.data
+                    );
                   }
                   return wTx.tx.query(action.graknQuery);
                 })
               );
             }
-            logger.info(`[MIGRATION] stix_id_to_keys > Writing ${entity} new key attributes...`);
+            logger.info(
+              `[MIGRATION] stix_id_to_keys > Writing ${entity} new key attributes...`
+            );
           });
         }
         return false;

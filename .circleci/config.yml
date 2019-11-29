@@ -4,7 +4,7 @@ jobs:
   build:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:12.13.1-stretch
+      - image: circleci/node:11-stretch
     steps:
       - checkout
       - run: 
@@ -26,16 +26,16 @@ jobs:
   test:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:12.13.1-stretch
+      - image: circleci/node:11-stretch
         environment:
           APP__REACTIVE: false
           GRAKN__HOSTNAME: 127.0.0.1
           ELASTICSEARCH__HOSTNAME: 127.0.0.1
       - image: graknlabs/grakn:1.5.9
-      - image: docker.elastic.co/elasticsearch/elasticsearch:7.4.2
+      - image: docker.elastic.co/elasticsearch/elasticsearch:7.4.0
         environment:
           - "discovery.type=single-node"
-          - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+          - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     steps:
       - attach_workspace:
           at: ~/
@@ -63,7 +63,7 @@ jobs:
   package_rolling:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:12.13.1-stretch
+      - image: circleci/node:11-stretch
     steps:
       - attach_workspace:
           at: ~/
@@ -86,7 +86,7 @@ jobs:
   deploy_demo:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:12.13.1-stretch
+      - image: circleci/node:11-stretch
     steps:
       - attach_workspace:
           at: ~/
@@ -123,7 +123,7 @@ jobs:
   deploy_reference:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:12.13.1-stretch
+      - image: circleci/node:11-stretch
     steps:
       - attach_workspace:
           at: ~/
@@ -160,7 +160,7 @@ jobs:
   deploy_testing:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:12.13.1-stretch
+      - image: circleci/node:11-stretch
     steps:
       - attach_workspace:
           at: ~/
@@ -197,7 +197,7 @@ jobs:
   deploy_documentation:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:12.13.1-stretch
+      - image: circleci/node:11-stretch
     steps:
       - checkout
       - run:

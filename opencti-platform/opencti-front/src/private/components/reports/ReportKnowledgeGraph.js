@@ -562,21 +562,21 @@ class ReportKnowledgeGraphComponent extends Component {
       lastLinkLastSeen: result.last_seen,
     });
     const input = {
-      fromRole: 'knowledge_aggregation',
-      toRole: 'so',
-      toId: result.id,
+      fromRole: 'so',
+      toId: this.props.report.id,
+      toRole: 'knowledge_aggregation',
       through: 'object_refs',
     };
     commitMutation({
       mutation: reportMutationRelationAdd,
       variables: {
-        id: this.props.report.id,
+        id: result.id,
         input,
       },
       onCompleted: (data) => {
         const newNode = new RelationNodeModel({
           id: result.id,
-          relationId: data.reportEdit.relationAdd.id,
+          relationId: data.reportEdit.relationAdd.relation.id,
           type: result.relationship_type,
           first_seen: result.first_seen,
           last_seen: result.last_seen,

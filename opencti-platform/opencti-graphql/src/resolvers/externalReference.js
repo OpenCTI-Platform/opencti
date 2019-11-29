@@ -2,26 +2,28 @@ import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addExternalReference,
-  externalReferenceAddRelation,
-  externalReferenceCleanContext,
   externalReferenceDelete,
-  externalReferenceDeleteRelation,
+  findAll,
+  findByEntity,
+  findById,
   externalReferenceEditContext,
   externalReferenceEditField,
-  findAll,
-  findById
+  externalReferenceAddRelation,
+  externalReferenceDeleteRelation,
+  externalReferenceCleanContext
 } from '../domain/externalReference';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
-import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const externalReferenceResolvers = {
   Query: {
     externalReference: (_, { id }) => findById(id),
-    externalReferences: (_, args) => findAll(args)
-  },
-  ExternalReferencesFilter: {
-    usedBy: `${REL_INDEX_PREFIX}external_references.internal_id_key`
+    externalReferences: (_, args) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return findByEntity(args);
+      }
+      return findAll(args);
+    }
   },
   ExternalReference: {
     editContext: externalReference => fetchEditContext(externalReference.id)
@@ -30,12 +32,15 @@ const externalReferenceResolvers = {
     externalReferenceEdit: (_, { id }, { user }) => ({
       delete: () => externalReferenceDelete(id),
       fieldPatch: ({ input }) => externalReferenceEditField(user, id, input),
-      contextPatch: ({ input }) => externalReferenceEditContext(user, id, input),
+      contextPatch: ({ input }) =>
+        externalReferenceEditContext(user, id, input),
       contextClean: () => externalReferenceCleanContext(user, id),
       relationAdd: ({ input }) => externalReferenceAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => externalReferenceDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) =>
+        externalReferenceDeleteRelation(user, id, relationId)
     }),
-    externalReferenceAdd: (_, { input }, { user }) => addExternalReference(user, input)
+    externalReferenceAdd: (_, { input }, { user }) =>
+      addExternalReference(user, input)
   },
   Subscription: {
     externalReference: {

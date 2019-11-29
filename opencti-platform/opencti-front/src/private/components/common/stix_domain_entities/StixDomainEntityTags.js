@@ -73,6 +73,7 @@ const stixDomainEntityMutationRelationDelete = graphql`
   ) {
     stixDomainEntityEdit(id: $id) {
       relationDelete(relationId: $relationId) {
+        node {
           ... on StixEntity {
             tags {
               edges {
@@ -88,6 +89,7 @@ const stixDomainEntityMutationRelationDelete = graphql`
               }
             }
           }
+        }
       }
     }
   }
