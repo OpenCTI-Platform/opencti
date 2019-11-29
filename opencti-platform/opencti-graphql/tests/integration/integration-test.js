@@ -24,7 +24,7 @@ const server = new ApolloServer({
   })
 });
 export const { query } = createTestClient(server);
-jest.setTimeout(15000);
+jest.setTimeout(30000);
 
 // Starting tests
 require('./database/grakn');

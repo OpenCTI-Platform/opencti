@@ -71,7 +71,7 @@ const graknStateStorage = {
   }
 };
 
-const applyMigration = () => {
+const applyMigration = async () => {
   logger.info('[MIGRATION] > Starting migration process');
   return new Promise((resolve, reject) => {
     const migrationsDirectory = path.join(__dirname, '../migrations');

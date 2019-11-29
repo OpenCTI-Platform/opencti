@@ -6,9 +6,7 @@ module.exports.up = async next => {
   try {
     await write('undefine UserTargetsRule sub rule;');
   } catch (err) {
-    logger.info(
-      '[MIGRATION] delete_user_targets_rule > Undefine the rule (not exists)'
-    );
+    logger.info('[MIGRATION] delete_user_targets_rule > Undefine the rule (not exists)');
   }
   next();
 };
