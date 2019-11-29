@@ -71,17 +71,17 @@ const graknStateStorage = {
   }
 };
 
-const applyMigration = async () => {
+const applyMigration = () => {
   logger.info('[MIGRATION] > Starting migration process');
   return new Promise((resolve, reject) => {
     const migrationsDirectory = path.join(__dirname, '../migrations');
-    migrate.load({ stateStore: graknStateStorage, migrationsDirectory }, async (err, set) => {
+    return migrate.load({ stateStore: graknStateStorage, migrationsDirectory }, async (err, set) => {
       if (err) reject(err);
       logger.info('[MIGRATION] > Migration state successfully updated, starting migrations');
-      set.up(err2 => {
+      return set.up(err2 => {
         if (err2) reject(err2);
         logger.info('[MIGRATION] > Migrations successfully ran');
-        resolve(true);
+        return resolve(true);
       });
     });
   });
