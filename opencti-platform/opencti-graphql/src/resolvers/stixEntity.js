@@ -20,7 +20,7 @@ const stixEntityResolvers = {
         return 'StixObservable';
       }
       if (obj.entity_type) {
-        return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) => letter.toUpperCase());
+        return obj.entity_type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
       }
       return 'Unknown';
     },

@@ -947,19 +947,22 @@ export const deleteEntityById = async id => {
     const query = `match $x has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
     logger.debug(`[GRAKN - infer: false] deleteEntityById > ${query}`);
     await wTx.tx.query(query, { infer: false });
-    await elDeleteInstanceIds(append(id, relationsIds));
+    await elDeleteInstanceIds(append(eid, relationsIds));
     return id;
   });
 };
 export const deleteRelationById = async relationId => {
   const eid = escapeString(relationId);
+  const read = `match $from has internal_id_key "${eid}"; { $to isa entity; } or { $to isa relation; }; $rel($from, $to) isa relation; get;`;
+  const relationsToDeIndex = await find(read, ['rel']);
+  const relationsIds = map(r => r.rel.id, relationsToDeIndex);
   await executeWrite(async wTx => {
-    const query = `match $x has internal_id_key "${eid}"; delete $x;`;
+    const query = `match $x has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
     logger.debug(`[GRAKN - infer: false] deleteRelationById > ${query}`);
     await wTx.tx.query(query, { infer: false });
     // [ELASTIC] Update - Delete the inner indexed relations in entities
     await elRemoveRelationConnection(eid);
-    await elDeleteInstanceIds([eid]);
+    await elDeleteInstanceIds(append(eid, relationsIds));
   });
   return eid;
 };
