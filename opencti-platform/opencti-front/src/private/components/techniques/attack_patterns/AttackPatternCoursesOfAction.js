@@ -17,7 +17,7 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { truncate } from '../../../../utils/String';
 import AddCoursesOfAction from './AddCoursesOfAction';
-import { courseOfActionMutationRelationDelete } from './AddCoursesOfActionLines';
+import { addCoursesOfActionMutationRelationDelete } from './AddCoursesOfActionLines';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 
@@ -47,7 +47,7 @@ const styles = (theme) => ({
 class AttackPatternCoursesOfActionComponent extends Component {
   removeCourseOfAction(courseOfActionEdge) {
     commitMutation({
-      mutation: courseOfActionMutationRelationDelete,
+      mutation: addCoursesOfActionMutationRelationDelete,
       variables: {
         id: this.props.attackPattern.id,
         relationId: courseOfActionEdge.relation.id,

@@ -12,7 +12,6 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Avatar from '@material-ui/core/Avatar';
 import { CheckCircle } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
-import { ConnectionHandler } from 'relay-runtime';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -27,7 +26,7 @@ const styles = (theme) => ({
   },
 });
 
-const attackPatternsLinesMutationRelationAdd = graphql`
+const addAattackPatternsLinesMutationRelationAdd = graphql`
   mutation AddAttackPatternsLinesRelationAddMutation(
     $id: ID!
     $input: RelationAddInput!
@@ -35,40 +34,26 @@ const attackPatternsLinesMutationRelationAdd = graphql`
     courseOfActionEdit(id: $id) {
       relationAdd(input: $input) {
         id
-        to {
-          ... on CourseOfAction {
-            id
-            name
-            description
-          }
+        from {
+          ...CourseOfActionAttackPatterns_courseOfAction
         }
       }
     }
   }
 `;
 
-export const attackPatternsLinesMutationRelationDelete = graphql`
+export const addAttackPatternsLinesMutationRelationDelete = graphql`
   mutation AddAttackPatternsLinesRelationDeleteMutation(
     $id: ID!
     $relationId: ID!
   ) {
     courseOfActionEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        id
+        ...CourseOfActionAttackPatterns_courseOfAction
       }
     }
   }
 `;
-
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_attackPatterns',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
 
 class AddAttackPatternsLinesContainer extends Component {
   toggleAttackPattern(attackPattern) {
@@ -91,20 +76,10 @@ class AddAttackPatternsLinesContainer extends Component {
         ),
       );
       commitMutation({
-        mutation: attackPatternsLinesMutationRelationDelete,
+        mutation: addAttackPatternsLinesMutationRelationDelete,
         variables: {
           id: courseOfActionId,
           relationId: existingCourseOfAction.relation.id,
-        },
-        updater: (store) => {
-          const container = store.getRoot();
-          const userProxy = store.get(container.getDataID());
-          const conn = ConnectionHandler.getConnection(
-            userProxy,
-            'Pagination_coursesOfAction',
-            courseOfActionPaginationOptions,
-          );
-          ConnectionHandler.deleteNode(conn, attackPattern.id);
         },
       });
     } else {
@@ -116,24 +91,10 @@ class AddAttackPatternsLinesContainer extends Component {
         stix_id_key: 'create',
       };
       commitMutation({
-        mutation: attackPatternsLinesMutationRelationAdd,
+        mutation: addAattackPatternsLinesMutationRelationAdd,
         variables: {
           id: courseOfActionId,
           input,
-        },
-        updater: (store) => {
-          const payload = store
-            .getRootField('courseOfActionEdit')
-            .getLinkedRecord('relationAdd', { input })
-            .getLinkedRecord('to');
-          const newEdge = payload.setLinkedRecord(payload, 'node');
-          const container = store.getRoot();
-          sharedUpdater(
-            store,
-            container.getDataID(),
-            courseOfActionPaginationOptions,
-            newEdge,
-          );
         },
       });
     }

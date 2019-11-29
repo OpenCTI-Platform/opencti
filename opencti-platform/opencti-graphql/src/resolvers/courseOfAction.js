@@ -1,4 +1,4 @@
-import { addCourseOfAction, findAll, findById } from '../domain/courseOfAction';
+import { addCourseOfAction, findAll, findById, attackPatterns } from '../domain/courseOfAction';
 import {
   stixDomainEntityAddRelation,
   stixDomainEntityCleanContext,
@@ -13,6 +13,9 @@ const courseOfActionResolvers = {
   Query: {
     courseOfAction: (_, { id }) => findById(id),
     coursesOfAction: (_, args) => findAll(args)
+  },
+  CourseOfAction: {
+    attackPatterns: (courseOfAction, args) => attackPatterns(courseOfAction.id, args)
   },
   CoursesOfActionOrdering: {
     tags: `${REL_INDEX_PREFIX}tagged.value`,

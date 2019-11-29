@@ -26,7 +26,7 @@ const styles = (theme) => ({
   },
 });
 
-const courseOfActionLinesMutationRelationAdd = graphql`
+const addCoursesOfActionLinesMutationRelationAdd = graphql`
   mutation AddCoursesOfActionLinesRelationAddMutation(
     $id: ID!
     $input: RelationAddInput!
@@ -42,7 +42,7 @@ const courseOfActionLinesMutationRelationAdd = graphql`
   }
 `;
 
-export const courseOfActionMutationRelationDelete = graphql`
+export const addCoursesOfActionMutationRelationDelete = graphql`
   mutation AddCoursesOfActionLinesRelationDeleteMutation(
     $id: ID!
     $relationId: ID!
@@ -74,7 +74,7 @@ class AddCoursesOfActionLinesContainer extends Component {
         ),
       );
       commitMutation({
-        mutation: courseOfActionMutationRelationDelete,
+        mutation: addCoursesOfActionMutationRelationDelete,
         variables: {
           id: attackPatternId,
           relationId: existingCourseOfAction.relation.id,
@@ -89,7 +89,7 @@ class AddCoursesOfActionLinesContainer extends Component {
         stix_id_key: 'create',
       };
       commitMutation({
-        mutation: courseOfActionLinesMutationRelationAdd,
+        mutation: addCoursesOfActionLinesMutationRelationAdd,
         variables: {
           id: courseOfAction.id,
           input,
