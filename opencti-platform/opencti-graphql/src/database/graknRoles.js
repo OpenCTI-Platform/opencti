@@ -101,6 +101,24 @@ export const rolesMap = {
   gathering: {
     gather: 'from',
     part_of: 'to'
+  },
+  // endregion
+  // region stix_observable_relation
+  linked: {
+    link_from: 'from',
+    link_to: 'to'
+  },
+  resolves: {
+    resolving: 'from',
+    resolved: 'to'
+  },
+  belongs: {
+    belonging_to: 'from',
+    belonged_to: 'to'
+  },
+  corresponds: {
+    correspond_from: 'from',
+    correspond_to: 'to'
   }
   // endregion
 };

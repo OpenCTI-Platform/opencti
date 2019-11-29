@@ -42,7 +42,7 @@ export const addStixObservableRelation = async (user, stixObservableRelation, re
     reversedReturn,
     isStixObservableRelation: true
   });
-  return notify(BUS_TOPICS.stixObservableRelation.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS.StixObservableRelation.ADDED_TOPIC, created, user);
 };
 export const stixObservableRelationDelete = async stixObservableRelationId =>
   stixRelationDelete(stixObservableRelationId);

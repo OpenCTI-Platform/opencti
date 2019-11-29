@@ -1432,14 +1432,13 @@ const createRelationRaw = async (fromInternalId, input, opts = {}) => {
   const { indexable = true, reversedReturn = false, isStixObservableRelation = false } = opts;
   const relationId = uuid();
   // 01. First fix the direction of the relation
-  const isStixRelation =
-    !isStixObservableRelation && (includes('stix_id_key', Object.keys(input)) || input.relationship_type);
+  const isStixRelation = includes('stix_id_key', Object.keys(input)) || input.relationship_type;
   const relationshipType = input.relationship_type || input.through;
   // eslint-disable-next-line no-nested-ternary
   const entityType = isStixRelation
-    ? TYPE_STIX_RELATION
-    : isStixObservableRelation
-    ? TYPE_STIX_OBSERVABLE_RELATION
+    ? isStixObservableRelation
+      ? TYPE_STIX_OBSERVABLE_RELATION
+      : TYPE_STIX_RELATION
     : TYPE_RELATION_EMBEDDED;
   const isInv = isInversed(relationshipType, input.fromRole);
   if (isInv) {
