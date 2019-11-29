@@ -663,6 +663,8 @@ const i18n = {
       'observable_file-md5': 'Fichier (MD5)',
       'observable_file-sha1': 'Fichier (SHA1)',
       'observable_file-sha256': 'Fichier (SHA256)',
+      'observable_registry-key': 'Clé de registre',
+      'observable_registry-key-value': 'Valeur de clé de registre',
       Status: 'Statut',
       // Relations
       Targets: 'Cible',
@@ -786,6 +788,8 @@ const i18n = {
       'observable_file-md5': 'File hash (MD5)',
       'observable_file-sha1': 'File hash (SHA1)',
       'observable_file-sha256': 'File hash (SHA256)',
+      'observable_registry-key': 'Registry key',
+      'observable_registry-key-value': 'Registry key value',
       // Relations
       relation_targets: 'targets',
       relation_uses: 'uses',
