@@ -16,6 +16,7 @@ import {
   timeSeries,
   updateAttribute
 } from '../database/grakn';
+import { findById as findMarkingDefintionById } from './markingDefinition';
 import { elCount } from '../database/elasticSearch';
 import { generateFileExportName, upload } from '../database/minio';
 import { connectorsForExport } from './connector';
@@ -52,9 +53,13 @@ export const stixDomainEntitiesNumber = args => ({
 const askJobExports = async (entity, format, exportType, maxMarkingDefinition) => {
   const connectors = await connectorsForExport(format, true);
   // Create job for every connectors
+  const maxMarkingDefinitionEntity =
+    maxMarkingDefinition && maxMarkingDefinition.length > 0
+      ? await findMarkingDefintionById(maxMarkingDefinition)
+      : null;
   const workList = await Promise.all(
     map(connector => {
-      const fileName = generateFileExportName(format, connector, exportType, entity);
+      const fileName = generateFileExportName(format, connector, exportType, maxMarkingDefinitionEntity, entity);
       return createWork(connector, entity.id, fileName).then(({ work, job }) => ({
         connector,
         job,
