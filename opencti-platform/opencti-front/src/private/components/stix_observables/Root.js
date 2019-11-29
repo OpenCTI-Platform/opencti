@@ -4,6 +4,7 @@ import { Route, withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer, requestSubscription } from '../../../relay/environment';
 import TopBar from '../nav/TopBar';
+import StixRelation from '../common/stix_relations/StixRelation';
 import StixObservable from './StixObservable';
 import StixObservableLinks from './StixObservableLinks';
 import StixObservableKnowledge from './StixObservableKnowledge';
@@ -57,6 +58,7 @@ class RootStixObservable extends Component {
         params: { observableId },
       },
     } = this.props;
+    const inversedRoles = ['location'];
     return (
       <div>
         <TopBar me={me || null} />
@@ -94,6 +96,17 @@ class RootStixObservable extends Component {
                       <StixObservableKnowledge
                         {...routeProps}
                         stixObservable={props.stixObservable}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/observables/all/:observableId/relations/:relationId"
+                    render={(routeProps) => (
+                      <StixRelation
+                        entityId={observableId}
+                        inversedRoles={inversedRoles}
+                        {...routeProps}
                       />
                     )}
                   />

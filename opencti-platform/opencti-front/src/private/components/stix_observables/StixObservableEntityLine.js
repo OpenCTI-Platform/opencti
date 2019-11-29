@@ -57,10 +57,13 @@ class StixObservableEntityLineComponent extends Component {
       node,
       paginationOptions,
       displayRelation,
+      entityId,
     } = this.props;
-    const link = `${resolveLink(node.to.entity_type)}/${
-      node.to.id
-    }/observables/relations/${node.id}`;
+    console.log(node);
+    const link = node.to.parent_types.includes('stix_relation')
+      ? `/dashboard/observables/all/${entityId}/relations/${node.id}`
+      : `${resolveLink(node.to.entity_type)
+          + node.to.id}/observables/relations/${node.id}`;
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -156,6 +159,7 @@ StixObservableEntityLineComponent.propTypes = {
   t: PropTypes.func,
   nsd: PropTypes.func,
   displayRelation: PropTypes.bool,
+  entityId: PropTypes.string,
 };
 
 const StixObservableEntityLineFragment = createFragmentContainer(
@@ -175,8 +179,16 @@ const StixObservableEntityLineFragment = createFragmentContainer(
           ... on StixDomainEntity {
             id
             entity_type
+            parent_types
             name
             description
+            created_at
+            updated_at
+          }
+          ... on StixRelation {
+            id
+            parent_types
+            entity_type
             created_at
             updated_at
           }
