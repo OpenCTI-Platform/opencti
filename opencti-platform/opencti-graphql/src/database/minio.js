@@ -1,14 +1,11 @@
 import * as Minio from 'minio';
-import { assoc, isEmpty, concat, map, isNil, sort } from 'ramda';
+import { assoc, concat, isEmpty, isNil, map, sort } from 'ramda';
 import querystring from 'querystring';
 import mime from 'mime-types';
 import conf, { logger } from '../config/conf';
-import { getById, now, sinceNowInMinutes } from './grakn';
+import { loadEntityById, now, sinceNowInMinutes } from './grakn';
 import { buildPagination } from './utils';
-import {
-  deleteWorkForFile,
-  loadExportWorksAsProgressFiles
-} from '../domain/work';
+import { deleteWorkForFile, loadExportWorksAsProgressFiles } from '../domain/work';
 
 const bucketName = conf.get('minio:bucket_name') || 'opencti-bucket';
 const bucketRegion = conf.get('minio:bucket_region') || 'us-east-1';
@@ -37,9 +34,7 @@ export const isStorageAlive = () => {
 };
 
 const extractName = (entityId, entityType, filename = '') => {
-  return isEmpty(entityType) || isNil(entityType)
-    ? `global/${filename}`
-    : `${entityType}/${entityId}/${filename}`;
+  return isEmpty(entityType) || isNil(entityType) ? `global/${filename}` : `${entityType}/${entityId}/${filename}`;
 };
 
 /**
@@ -50,12 +45,7 @@ const extractName = (entityId, entityType, filename = '') => {
  * @param entity the target entity of the export
  * @returns {string}
  */
-export const generateFileExportName = (
-  format,
-  connector,
-  exportType,
-  entity
-) => {
+export const generateFileExportName = (format, connector, exportType, entity) => {
   const creation = now();
   const fileExt = mime.extension(format);
   const entityInFile = `${entity.entity_type}-${entity.name}`;
@@ -98,10 +88,7 @@ const rawFilesListing = directory => {
 };
 
 export const filesListing = async (first, category, entity = null) => {
-  const name = extractName(
-    entity ? entity.id : null,
-    entity ? entity.entity_type : null
-  );
+  const name = extractName(entity ? entity.id : null, entity ? entity.entity_type : null);
   const files = await rawFilesListing(`${category}/${name}`);
   let allFiles = files;
   if (category === 'export') {
@@ -123,28 +110,18 @@ export const upload = async (user, category, file, entityId = null) => {
   };
   let entityType = null;
   if (entityId) {
-    const entity = await getById(entityId);
+    const entity = await loadEntityById(entityId);
     entityType = entity.entity_type;
   }
-  const fileDirName = `${category}/${extractName(
-    entityId,
-    entityType,
-    filename
-  )}`;
+  // eslint-disable-next-line prettier/prettier
+  const fileDirName = `${category}/${extractName(entityId, entityType, filename)}`;
   logger.debug(`FileManager > upload file ${filename} by ${user.email}`);
   // Upload the file in the storage
   return new Promise((resolve, reject) => {
-    return minioClient.putObject(
-      bucketName,
-      fileDirName,
-      createReadStream(),
-      null,
-      metadata,
-      err => {
-        if (err) return reject(err);
-        return resolve(loadFile(fileDirName));
-      }
-    );
+    return minioClient.putObject(bucketName, fileDirName, createReadStream(), null, metadata, err => {
+      if (err) return reject(err);
+      return resolve(loadFile(fileDirName));
+    });
   });
 };
 

@@ -175,10 +175,10 @@ class StixRelationContainer extends Component {
       : stixRelation.fromRole;
     const to = linkedEntity.id === entityId ? stixRelation.from : stixRelation.to;
     const linkTo = resolveLink(
-      to.parent_type === 'Stix-Observable' ? 'observable' : to.entity_type,
+      includes('Stix-Observable', to.parent_types) ? 'observable' : to.entity_type,
     );
     const linkFrom = resolveLink(
-      from.parent_type === 'Stix-Observable' ? 'observable' : from.entity_type,
+      includes('Stix-Observable', from.parent_types) ? 'observable' : from.entity_type,
     );
 
     return (
@@ -206,7 +206,7 @@ class StixRelationContainer extends Component {
                 />
               </div>
               <div className={classes.type}>
-                {from.parent_type === 'Stix-Observable'
+                {includes('Stix-Observable', from.parent_types)
                   ? t(`observable_${from.entity_type}`)
                   : t(`entity_${from.entity_type}`)}
               </div>
@@ -214,7 +214,7 @@ class StixRelationContainer extends Component {
             <div className={classes.content}>
               <span className={classes.name}>
                 {truncate(
-                  from.parent_type === 'Stix-Observable'
+                  includes('Stix-Observable', from.parent_types)
                     ? from.observable_value
                     : from.name,
                   120,
@@ -225,7 +225,7 @@ class StixRelationContainer extends Component {
         </Link>
         <div className={classes.middle}>
           {includes(fromRole, inversedRoles)
-          || to.parent_type === 'Stix-Observable' ? (
+          || includes('Stix-Observable', to.parent_types) ? (
             <ArrowRightAlt
               fontSize="large"
               style={{ transform: 'rotate(180deg)' }}
@@ -280,7 +280,7 @@ class StixRelationContainer extends Component {
                 />
               </div>
               <div className={classes.type}>
-                {to.parent_type === 'Stix-Observable'
+                {includes('Stix-Observable', to.parent_types)
                   ? t(`observable_${to.entity_type}`)
                   : t(`entity_${to.entity_type}`)}
               </div>
@@ -288,7 +288,7 @@ class StixRelationContainer extends Component {
             <div className={classes.content}>
               <span className={classes.name}>
                 {truncate(
-                  to.parent_type === 'Stix-Observable'
+                  includes('Stix-Observable', to.parent_types)
                     ? to.observable_value
                     : to.name,
                   120,
@@ -484,7 +484,7 @@ const StixRelationOverview = createFragmentContainer(StixRelationContainer, {
               id
               name
               entity_type
-              parent_type
+              parent_types
               ... on StixObservable {
                 observable_value
               }
@@ -493,7 +493,7 @@ const StixRelationOverview = createFragmentContainer(StixRelationContainer, {
               id
               name
               entity_type
-              parent_type
+              parent_types
               ... on StixObservable {
                 observable_value
               }
@@ -504,7 +504,7 @@ const StixRelationOverview = createFragmentContainer(StixRelationContainer, {
       from {
         id
         entity_type
-        parent_type
+        parent_types
         name
         description
         ... on StixObservable {
@@ -514,7 +514,7 @@ const StixRelationOverview = createFragmentContainer(StixRelationContainer, {
       to {
         id
         entity_type
-        parent_type
+        parent_types
         name
         description
         ... on StixObservable {

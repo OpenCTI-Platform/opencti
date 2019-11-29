@@ -39,7 +39,7 @@ class CourseOfActionDetailsComponent extends Component {
             tags={courseOfAction.tags}
             id={courseOfAction.id}
           />
-          <CoursesOfActionAttackPatterns courseOfActionId={courseOfAction.id} />
+          <CoursesOfActionAttackPatterns courseOfAction={courseOfAction} />
         </Paper>
       </div>
     );
@@ -72,6 +72,7 @@ const CourseOfActionDetails = createFragmentContainer(
             }
           }
         }
+        ...CourseOfActionAttackPatterns_courseOfAction
       }
     `,
   },

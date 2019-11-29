@@ -1,39 +1,25 @@
-import { assoc, head, join, map, tail } from 'ramda';
-import uuid from 'uuid/v4';
+import { assoc, pipe } from 'ramda';
 import {
-  dayFormat,
+  createEntity,
   escapeString,
-  executeWrite,
-  getById,
-  graknNow,
-  monthFormat,
-  notify,
-  paginate,
-  prepareDate,
+  listEntities,
+  loadEntityById,
+  now,
   timeSeries,
-  yearFormat
+  TYPE_STIX_DOMAIN_ENTITY
 } from '../database/grakn';
-import { BUS_TOPICS, logger } from '../config/conf';
-import { paginate as elPaginate } from '../database/elasticSearch';
-import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { BUS_TOPICS } from '../config/conf';
+import { notify } from '../database/redis';
 
+export const findById = incidentId => {
+  return loadEntityById(incidentId);
+};
 export const findAll = args => {
-  return elPaginate('stix_domain_entities', assoc('type', 'incident', args));
+  const typedArgs = assoc('types', ['Incident'], args);
+  return listEntities(['name', 'alias'], typedArgs);
 };
 
-export const incidentsTimeSeries = args => {
-  return timeSeries('match $i isa Incident', args);
-};
-
-export const findByEntity = args => {
-  return paginate(
-    `match $x isa Incident;
-    $rel($x, $to) isa stix_relation;
-    $to has internal_id_key "${escapeString(args.objectId)}"`,
-    args
-  );
-};
-
+// region time series
 export const incidentsTimeSeriesByEntity = args => {
   return timeSeries(
     `match $x isa Incident; 
@@ -42,79 +28,20 @@ export const incidentsTimeSeriesByEntity = args => {
     args
   );
 };
-
-export const findById = incidentId => getById(incidentId);
+export const incidentsTimeSeries = args => {
+  return timeSeries('match $i isa Incident', args);
+};
+// endregion
 
 export const addIncident = async (user, incident) => {
-  const incidentId = await executeWrite(async wTx => {
-    const internalId = incident.internal_id_key
-      ? escapeString(incident.internal_id_key)
-      : uuid();
-    const now = graknNow();
-    const query = `insert $incident isa Incident,
-    has internal_id_key "${internalId}",
-    has entity_type "incident",
-    has stix_id_key "${
-      incident.stix_id_key
-        ? escapeString(incident.stix_id_key)
-        : `x-opencti-incident--${uuid()}`
-    }",
-    has stix_label "",
-    ${
-      incident.alias
-        ? `${join(
-            ' ',
-            map(
-              val => `has alias "${escapeString(val)}",`,
-              tail(incident.alias)
-            )
-          )} has alias "${escapeString(head(incident.alias))}",`
-        : 'has alias "",'
-    }
-    has name "${escapeString(incident.name)}",
-    has description "${escapeString(incident.description)}",
-    has first_seen ${
-      incident.first_seen ? prepareDate(incident.first_seen) : now
-    },
-    has first_seen_day "${
-      incident.first_seen ? dayFormat(incident.first_seen) : dayFormat(now)
-    }",
-    has first_seen_month "${
-      incident.first_seen ? monthFormat(incident.first_seen) : monthFormat(now)
-    }",
-    has first_seen_year "${
-      incident.first_seen ? yearFormat(incident.first_seen) : yearFormat(now)
-    }",
-    has last_seen ${incident.last_seen ? prepareDate(incident.last_seen) : now},
-    has last_seen_day "${
-      incident.last_seen ? dayFormat(incident.last_seen) : dayFormat(now)
-    }",
-    has last_seen_month "${
-      incident.last_seen ? monthFormat(incident.last_seen) : monthFormat(now)
-    }",
-    has last_seen_year "${
-      incident.last_seen ? yearFormat(incident.last_seen) : yearFormat(now)
-    }",
-    has created ${incident.created ? prepareDate(incident.created) : now},
-    has modified ${incident.modified ? prepareDate(incident.modified) : now},
-    has revoked false,
-    has created_at ${now},
-    has created_at_day "${dayFormat(now)}",
-    has created_at_month "${monthFormat(now)}",
-    has created_at_year "${yearFormat(now)}", 
-    has updated_at ${now};
-  `;
-    logger.debug(`[GRAKN - infer: false] addIncident > ${query}`);
-    const incidentIterator = await wTx.tx.query(query);
-    const createdIncident = await incidentIterator.next();
-    const createdIncidentId = await createdIncident.map().get('incident').id;
-
-    // Create associated relations
-    await linkCreatedByRef(wTx, createdIncidentId, incident.createdByRef);
-    await linkMarkingDef(wTx, createdIncidentId, incident.markingDefinitions);
-    return internalId;
+  const currentDate = now();
+  const incidentToCreate = pipe(
+    assoc('first_seen', incident.first_seen ? incident.first_seen : currentDate),
+    assoc('last_seen', incident.first_seen ? incident.first_seen : currentDate)
+  )(incident);
+  const created = await createEntity(incidentToCreate, 'Incident', {
+    modelType: TYPE_STIX_DOMAIN_ENTITY,
+    stixIdType: 'x-opencti-incident'
   });
-  return getById(incidentId).then(created => {
-    return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
-  });
+  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };

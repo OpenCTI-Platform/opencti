@@ -22,6 +22,7 @@ import uploadMiddleware from './uploadMiddleware';
 
 // Dev tools
 export const IN_DEV_MODE = process.env.NODE_ENV === 'development';
+console.log('IN_DEV_MODE', IN_DEV_MODE);
 if (IN_DEV_MODE) installRelayDevTools();
 
 // Service bus
@@ -87,7 +88,7 @@ const network = new RelayNetworkLayer(
 
 const store = new Store(new RecordSource());
 // Activate the read from store then network
-store.holdGC();
+// store.holdGC();
 export const environment = new Environment({
   network,
   store,
@@ -143,13 +144,16 @@ export const commitMutation = ({
   onError: (error) => {
     if (setSubmitting) setSubmitting(false);
     const authRequired = filter(
-      (e) => e.data.type === 'authentication',
+      (e) => e.data && e.data.type === 'authentication',
       error.res.errors,
     );
     if (!isEmpty(authRequired)) {
       MESSAGING$.redirect.next('/login');
     } else {
-      const messages = map((e) => ({ type: 'error', text: e.message }), error.res.errors);
+      const messages = map(
+        (e) => ({ type: 'error', text: e.message }),
+        error.res.errors,
+      );
       MESSAGING$.messages.next(messages);
       if (onError) onError(error);
     }

@@ -1,16 +1,11 @@
 import uuid from 'uuid/v4';
-import { assoc, map, filter, pipe } from 'ramda';
+import { assoc, filter, map, pipe } from 'ramda';
 import moment from 'moment';
-import { getById, now, sinceNowInMinutes } from '../database/grakn';
-import {
-  elDeleteByField,
-  getAttributes,
-  index,
-  paginate
-} from '../database/elasticSearch';
+import { now, sinceNowInMinutes } from '../database/grakn';
+import { elDeleteByField, elIndex, elLoadById, elPaginate, INDEX_WORK_JOBS } from '../database/elasticSearch';
+import { loadConnectorById } from './connector';
 
-const WORK_INDEX = 'work_jobs_index';
-
+// region utils
 export const workToExportFile = work => {
   return {
     id: work.internal_id_key,
@@ -24,30 +19,28 @@ export const workToExportFile = work => {
     }
   };
 };
+// endregion
 
 export const connectorForWork = async id => {
-  const work = await getAttributes(WORK_INDEX, id);
-  if (work) return getById(work.connector_id);
+  const work = await elLoadById(id, null, INDEX_WORK_JOBS);
+  if (work) return loadConnectorById(work.connector_id);
   return null;
 };
 
 export const jobsForWork = async id => {
-  return paginate(WORK_INDEX, {
+  return elPaginate(INDEX_WORK_JOBS, {
     type: 'Job',
     connectionFormat: false,
     orderBy: 'created_at',
     orderMode: 'asc',
-    filters: {
-      work_id: id
-    }
+    filters: [{ key: 'work_id', values: [id] }]
   });
 };
 
 export const computeWorkStatus = async id => {
   const jobs = await jobsForWork(id);
   // Status can be progress / partial / complete
-  const isProgress = job =>
-    job.job_status === 'wait' || job.job_status === 'progress';
+  const isProgress = job => job.job_status === 'wait' || job.job_status === 'progress';
   const nbProgress = filter(job => isProgress(job), jobs).length;
   if (nbProgress > 0) return 'progress';
   const nbErrors = filter(l => l.job_status === 'error', jobs).length;
@@ -58,23 +51,19 @@ export const computeWorkStatus = async id => {
 };
 
 export const workForEntity = async (entityId, args) => {
-  return paginate(WORK_INDEX, {
+  return elPaginate(INDEX_WORK_JOBS, {
     type: 'Work',
     connectionFormat: false,
     first: args.first,
-    filters: {
-      work_entity: entityId
-    }
+    filters: [{ key: 'work_entity', values: [entityId] }]
   });
 };
 
 export const loadFileWorks = async fileId => {
-  return paginate(WORK_INDEX, {
+  return elPaginate(INDEX_WORK_JOBS, {
     type: 'Work',
     connectionFormat: false,
-    filters: {
-      work_file: fileId
-    }
+    filters: [{ key: 'work_file', values: [fileId] }]
   });
 };
 
@@ -83,20 +72,15 @@ export const loadExportWorksAsProgressFiles = async entityId => {
   // Filter if all jobs completed
   const worksWithStatus = await Promise.all(
     map(w => {
-      return computeWorkStatus(w.work_id).then(status =>
-        assoc('status', status, w)
-      );
+      return computeWorkStatus(w.work_id).then(status => assoc('status', status, w));
     }, works)
   );
-  const onlyProgressWorks = filter(
-    w => w.status === 'progress',
-    worksWithStatus
-  );
+  const onlyProgressWorks = filter(w => w.status === 'progress', worksWithStatus);
   return map(item => workToExportFile(item), onlyProgressWorks);
 };
 
 export const deleteWork = async workId => {
-  return elDeleteByField(WORK_INDEX, 'work_id', workId);
+  return elDeleteByField(INDEX_WORK_JOBS, 'work_id', workId);
 };
 
 export const deleteWorkForFile = async fileId => {
@@ -107,7 +91,7 @@ export const deleteWorkForFile = async fileId => {
 
 export const initiateJob = workId => {
   const jobInternalId = uuid();
-  return index(WORK_INDEX, {
+  return elIndex(INDEX_WORK_JOBS, {
     id: jobInternalId,
     internal_id_key: jobInternalId,
     grakn_id: jobInternalId,
@@ -123,7 +107,7 @@ export const initiateJob = workId => {
 export const createWork = async (connector, entityId = null, fileId = null) => {
   // Create the work and a initial job
   const workInternalId = uuid();
-  const createdWork = await index(WORK_INDEX, {
+  const createdWork = await elIndex(INDEX_WORK_JOBS, {
     id: workInternalId,
     internal_id_key: workInternalId,
     grakn_id: workInternalId,
@@ -141,12 +125,12 @@ export const createWork = async (connector, entityId = null, fileId = null) => {
 };
 
 export const updateJob = async (jobId, status, messages) => {
-  const job = await getAttributes(WORK_INDEX, jobId);
+  const job = await elLoadById(jobId, null, INDEX_WORK_JOBS);
   const updatedJob = pipe(
     assoc('job_status', status),
     assoc('messages', messages),
     assoc('updated_at', now())
   )(job);
-  await index(WORK_INDEX, updatedJob);
+  await elIndex(INDEX_WORK_JOBS, updatedJob);
   return updatedJob;
 };

@@ -35,7 +35,7 @@ import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -87,7 +87,7 @@ const toolMutationRelationAdd = graphql`
   ) {
     toolEdit(id: $id) {
       relationAdd(input: $input) {
-        node {
+        from {
           ...ToolEditionOverview_tool
         }
       }
@@ -102,15 +102,13 @@ const toolMutationRelationDelete = graphql`
   ) {
     toolEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        node {
-          ...ToolEditionOverview_tool
-        }
+        ...ToolEditionOverview_tool
       }
     }
   }
 `;
 
-const toolValidation = t => Yup.object().shape({
+const toolValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string()
     .min(3, t('The value is too short'))
@@ -136,7 +134,7 @@ class ToolEditionOverviewComponent extends Component {
     }).then((data) => {
       const identities = pipe(
         pathOr([], ['identities', 'edges']),
-        map(n => ({ label: n.node.name, value: n.node.id })),
+        map((n) => ({ label: n.node.name, value: n.node.id })),
       )(data);
       this.setState({ identities: union(this.state.identities, identities) });
     });
@@ -157,7 +155,7 @@ class ToolEditionOverviewComponent extends Component {
       const killChainPhases = pipe(
         pathOr([], ['killChainPhases', 'edges']),
         sortWith([ascend(path(['node', 'phase_order']))]),
-        map(n => ({
+        map((n) => ({
           label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
           value: n.node.id,
         })),
@@ -174,7 +172,7 @@ class ToolEditionOverviewComponent extends Component {
     }).then((data) => {
       const markingDefinitions = pipe(
         pathOr([], ['markingDefinitions', 'edges']),
-        map(n => ({ label: n.node.definition, value: n.node.id })),
+        map((n) => ({ label: n.node.definition, value: n.node.id })),
       )(data);
       this.setState({
         markingDefinitions: union(
@@ -223,11 +221,11 @@ class ToolEditionOverviewComponent extends Component {
       commitMutation({
         mutation: toolMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.tool.id,
           input: {
-            fromRole: 'creator',
-            toId: this.props.tool.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: value.value,
+            toRole: 'creator',
             through: 'created_by_ref',
           },
         },
@@ -243,11 +241,11 @@ class ToolEditionOverviewComponent extends Component {
       commitMutation({
         mutation: toolMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.tool.id,
           input: {
-            fromRole: 'creator',
-            toId: this.props.tool.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: value.value,
+            toRole: 'creator',
             through: 'created_by_ref',
           },
         },
@@ -259,7 +257,7 @@ class ToolEditionOverviewComponent extends Component {
     const { tool } = this.props;
     const currentKillChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
-      map(n => ({
+      map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
         relationId: n.relation.id,
@@ -273,11 +271,11 @@ class ToolEditionOverviewComponent extends Component {
       commitMutation({
         mutation: toolMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: this.props.tool.id,
           input: {
-            fromRole: 'kill_chain_phase',
-            toId: this.props.tool.id,
-            toRole: 'phase_belonging',
+            fromRole: 'phase_belonging',
+            toId: head(added).value,
+            toRole: 'kill_chain_phase',
             through: 'kill_chain_phases',
           },
         },
@@ -299,7 +297,7 @@ class ToolEditionOverviewComponent extends Component {
     const { tool } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
-      map(n => ({
+      map((n) => ({
         label: n.node.definition,
         value: n.node.id,
         relationId: n.relation.id,
@@ -313,11 +311,11 @@ class ToolEditionOverviewComponent extends Component {
       commitMutation({
         mutation: toolMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: this.props.tool.id,
           input: {
-            fromRole: 'marking',
-            toId: this.props.tool.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: head(added).value,
+            toRole: 'marking',
             through: 'object_marking_refs',
           },
         },
@@ -348,7 +346,7 @@ class ToolEditionOverviewComponent extends Component {
       };
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
-      map(n => ({
+      map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
         relationId: n.relation.id,
@@ -356,7 +354,7 @@ class ToolEditionOverviewComponent extends Component {
     )(tool);
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
-      map(n => ({
+      map((n) => ({
         label: n.node.definition,
         value: n.node.id,
         relationId: n.relation.id,

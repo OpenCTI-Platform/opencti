@@ -6,7 +6,6 @@ import {
   settingsEditField,
   settingsEditContext,
   settingsCleanContext,
-  addSettings,
   getApplicationInfo
 } from '../domain/settings';
 import { fetchEditContext, pubsub } from '../database/redis';
@@ -25,8 +24,7 @@ const settingsResolvers = {
       delete: () => settingsDelete(id),
       fieldPatch: ({ input }) => settingsEditField(user, id, input),
       contextPatch: ({ input }) => settingsEditContext(user, id, input)
-    }),
-    settingsAdd: (_, { input }, { user }) => addSettings(user, input)
+    })
   },
   Subscription: {
     settings: {

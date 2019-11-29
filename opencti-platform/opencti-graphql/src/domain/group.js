@@ -1,80 +1,55 @@
-import uuid from 'uuid/v4';
+import { assoc } from 'ramda';
 import {
-  dayFormat,
+  createEntity,
   deleteEntityById,
   escapeString,
-  executeWrite,
-  getById,
-  graknNow,
-  monthFormat,
-  notify,
-  paginate,
-  yearFormat
+  findWithConnectedRelations,
+  listEntities,
+  loadEntityById,
+  TYPE_OPENCTI_INTERNAL
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { notify } from '../database/redis';
+import { buildPagination } from '../database/utils';
 
+export const findById = groupId => {
+  return loadEntityById(groupId);
+};
 export const findAll = args => {
-  return paginate(
-    `match $g isa Group ${
-      args.search
-        ? `; $g has name $name;
-   $g has description $description;
-   { $name contains "${escapeString(args.search)}"; } or
-   { $description contains "${escapeString(args.search)}"; }`
-        : ''
-    }`,
-    args
-  );
+  const typedArgs = assoc('types', ['Group'], args);
+  return listEntities(['name'], typedArgs);
 };
 
-export const findById = groupId => getById(groupId);
-
-export const members = (groupId, args) => {
-  return paginate(
-    `match $user isa User; 
-    $rel((member:$user, grouping:$g) isa membership; 
-    $g has internal_id_key "${escapeString(groupId)}"`,
-    args
-  );
+export const members = async groupId => {
+  return findWithConnectedRelations(
+    `match $to isa User; $rel(member:$to, grouping:$from) isa membership;
+   $from has internal_id_key "${escapeString(groupId)}";
+   get;`,
+    'to',
+    'rel'
+  ).then(data => buildPagination(0, 0, data, data.length));
 };
-
-export const permissions = (groupId, args) => {
-  return paginate(
-    `match $marking isa Marking-Definition; 
-    $rel(allow:$marking, allowed:$g) isa permission; 
-    $g has internal_id_key "${escapeString(groupId)}"`,
-    args
-  );
+export const groups = userId => {
+  return findWithConnectedRelations(
+    `match $from isa User; $rel(member:$from, grouping:$to) isa membership;
+   $from has internal_id_key "${escapeString(userId)}";
+   get;`,
+    'to',
+    'rel'
+  ).then(data => buildPagination(0, 0, data, data.length));
+};
+export const permissions = async groupId => {
+  return findWithConnectedRelations(
+    `match $to isa Marking-Definition; $rel(allow:$to, allowed:$from) isa permission;
+   $from has internal_id_key "${escapeString(groupId)}";
+   get;`,
+    'to',
+    'rel'
+  ).then(data => buildPagination(0, 0, data, data.length));
 };
 
 export const addGroup = async (user, group) => {
-  const groupId = await executeWrite(async wTx => {
-    const internalId = group.internal_id_key
-      ? escapeString(group.internal_id_key)
-      : uuid();
-    const groupIterator = await wTx.tx.query(`insert $group isa Group,
-    has internal_id_key "${internalId}",
-    has entity_type "group",
-    has name "${escapeString(group.name)}",
-    has description "${escapeString(group.description)}",
-    has created_at ${graknNow()},
-    has created_at_day "${dayFormat(graknNow())}",
-    has created_at_month "${monthFormat(graknNow())}",
-    has created_at_year "${yearFormat(graknNow())}",  
-    has updated_at ${graknNow()};
-  `);
-    const createGroup = await groupIterator.next();
-    const createdGroupId = await createGroup.map().get('group').id;
-
-    // Create associated relations
-    await linkCreatedByRef(wTx, createdGroupId, group.createdByRef);
-    await linkMarkingDef(wTx, createdGroupId, group.markingDefinitions);
-    return internalId;
-  });
-  return getById(groupId).then(created =>
-    notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user)
-  );
+  const created = await createEntity(group, 'Group', { modelType: TYPE_OPENCTI_INTERNAL });
+  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
-
 export const groupDelete = groupId => deleteEntityById(groupId);

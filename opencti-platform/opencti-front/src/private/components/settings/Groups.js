@@ -58,7 +58,7 @@ class Groups extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'KillChainPhases-view',
+      'Groups-view',
       this.state,
     );
   }
