@@ -67,6 +67,9 @@ const i18n = {
         'Souhaitez-vous retirer cette entité de ce rapport ?',
       'Do you want to delete this attribute?':
         'Souhaitez-vous supprimer cet attribut ?',
+      'Do you want to remove this external reference?':
+        'Souhaitez-vous supprimer cette référence externe ?',
+      'Confirmation required': 'Confirmation requise',
       Information: 'Informations',
       'Last reports': 'Derniers rapports',
       'Last reports wrote by the entity':

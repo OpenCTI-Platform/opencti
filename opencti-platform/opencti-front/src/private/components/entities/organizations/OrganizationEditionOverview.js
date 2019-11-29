@@ -33,7 +33,7 @@ import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -91,7 +91,7 @@ const organizationMutationRelationAdd = graphql`
   ) {
     organizationEdit(id: $id) {
       relationAdd(input: $input) {
-        node {
+        from {
           ...OrganizationEditionOverview_organization
         }
       }
@@ -106,15 +106,13 @@ const organizationMutationRelationDelete = graphql`
   ) {
     organizationEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        node {
-          ...OrganizationEditionOverview_organization
-        }
+        ...OrganizationEditionOverview_organization
       }
     }
   }
 `;
 
-const organizationValidation = t => Yup.object().shape({
+const organizationValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string()
     .min(3, t('The value is too short'))
@@ -141,7 +139,7 @@ class OrganizationEditionOverviewComponent extends Component {
     }).then((data) => {
       const identities = pipe(
         pathOr([], ['identities', 'edges']),
-        map(n => ({ label: n.node.name, value: n.node.id })),
+        map((n) => ({ label: n.node.name, value: n.node.id })),
       )(data);
       this.setState({ identities: union(this.state.identities, identities) });
     });
@@ -161,7 +159,7 @@ class OrganizationEditionOverviewComponent extends Component {
     }).then((data) => {
       const markingDefinitions = pipe(
         pathOr([], ['markingDefinitions', 'edges']),
-        map(n => ({ label: n.node.definition, value: n.node.id })),
+        map((n) => ({ label: n.node.definition, value: n.node.id })),
       )(data);
       this.setState({
         markingDefinitions: union(
@@ -213,11 +211,11 @@ class OrganizationEditionOverviewComponent extends Component {
       commitMutation({
         mutation: organizationMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.organization.id,
           input: {
-            fromRole: 'creator',
-            toId: this.props.organization.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: value.value,
+            toRole: 'creator',
             through: 'created_by_ref',
           },
         },
@@ -233,11 +231,11 @@ class OrganizationEditionOverviewComponent extends Component {
       commitMutation({
         mutation: organizationMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.organization.id,
           input: {
-            fromRole: 'creator',
-            toId: this.props.organization.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: value.value,
+            toRole: 'creator',
             through: 'created_by_ref',
           },
         },
@@ -249,7 +247,7 @@ class OrganizationEditionOverviewComponent extends Component {
     const { organization } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
-      map(n => ({
+      map((n) => ({
         label: n.node.definition,
         value: n.node.id,
         relationId: n.relation.id,
@@ -263,11 +261,11 @@ class OrganizationEditionOverviewComponent extends Component {
       commitMutation({
         mutation: organizationMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: this.props.organization.id,
           input: {
-            fromRole: 'marking',
-            toId: this.props.organization.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: head(added).value,
+            toRole: 'marking',
             through: 'object_marking_refs',
           },
         },
@@ -302,7 +300,7 @@ class OrganizationEditionOverviewComponent extends Component {
       };
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
-      map(n => ({
+      map((n) => ({
         label: n.node.definition,
         value: n.node.id,
         relationId: n.relation.id,

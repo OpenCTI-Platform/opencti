@@ -1,140 +1,63 @@
-import uuid from 'uuid/v4';
-import { delEditContext, setEditContext } from '../database/redis';
+import { assoc } from 'ramda';
+import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
+  createEntity,
   createRelation,
-  dayFormat,
   deleteEntityById,
   deleteRelationById,
-  escapeString,
   executeWrite,
-  getById,
-  getId,
-  graknNow,
-  monthFormat,
-  notify,
-  paginate,
-  prepareDate,
-  updateAttribute,
-  yearFormat
+  listEntities,
+  loadEntityById,
+  TYPE_STIX_DOMAIN,
+  updateAttribute
 } from '../database/grakn';
-import { BUS_TOPICS, logger } from '../config/conf';
-import {
-  deleteEntity,
-  paginate as elPaginate
-} from '../database/elasticSearch';
-import { linkCreatedByRef, linkMarkingDef } from './stixEntity';
+import { BUS_TOPICS } from '../config/conf';
 
-export const findAll = args => elPaginate('external_references', args);
-
-export const findByEntity = args => {
-  return paginate(
-    `match $e isa External-Reference; 
-    $rel(external_reference:$e, so:$so) isa external_references;
-    $so has internal_id_key "${escapeString(args.objectId)}"`,
-    args
-  );
+export const findById = externalReferenceId => {
+  return loadEntityById(externalReferenceId);
+};
+export const findAll = args => {
+  const typedArgs = assoc('types', ['External-Reference'], args);
+  return listEntities(['source_name', 'description'], typedArgs);
 };
 
-export const findById = externalReferenceId => getById(externalReferenceId);
-
 export const addExternalReference = async (user, externalReference) => {
-  const externalId = await executeWrite(async wTx => {
-    const internalId = externalReference.internal_id_key
-      ? escapeString(externalReference.internal_id_key)
-      : uuid();
-    const now = graknNow();
-    const query = `insert $externalReference isa External-Reference,
-    has internal_id_key "${internalId}",
-    has entity_type "external-reference",
-    has stix_id_key "${
-      externalReference.stix_id_key
-        ? escapeString(externalReference.stix_id_key)
-        : `external-reference--${uuid()}`
-    }",
-    has source_name "${escapeString(externalReference.source_name)}",
-    has description "${escapeString(externalReference.description)}",
-    has url "${
-      externalReference.url ? escapeString(externalReference.url) : ''
-    }",
-    has hash "${escapeString(externalReference.hash)}",
-    has external_id "${escapeString(externalReference.external_id)}",
-    has created ${
-      externalReference.created ? prepareDate(externalReference.created) : now
-    },
-    has modified ${
-      externalReference.modified ? prepareDate(externalReference.modified) : now
-    },
-    has revoked false,
-    has created_at ${now},
-    has created_at_day "${dayFormat(now)}",
-    has created_at_month "${monthFormat(now)}",
-    has created_at_year "${yearFormat(now)}",  
-    has updated_at ${now};
-  `;
-    logger.debug(`[GRAKN - infer: false] addExternalReference > ${query}`);
-    const externalReferenceIterator = await wTx.tx.query(query);
-    const createExternalRef = await externalReferenceIterator.next();
-    const createdId = await createExternalRef.map().get('externalReference').id;
-
-    // Create associated relations
-    await linkCreatedByRef(wTx, createdId, externalReference.createdByRef);
-    await linkMarkingDef(wTx, createdId, externalReference.markingDefinitions);
-    return internalId;
-  });
-  return getById(externalId).then(created => {
-    return notify(BUS_TOPICS.ExternalReference.ADDED_TOPIC, created, user);
-  });
+  const created = await createEntity(externalReference, 'External-Reference', TYPE_STIX_DOMAIN);
+  return notify(BUS_TOPICS.ExternalReference.ADDED_TOPIC, created, user);
 };
 
 export const externalReferenceDelete = async externalReferenceId => {
-  const graknId = await getId(externalReferenceId);
-  await deleteEntity('external_references', graknId);
   return deleteEntityById(externalReferenceId);
 };
-
-export const externalReferenceAddRelation = (
-  user,
-  externalReferenceId,
-  input
-) =>
-  createRelation(externalReferenceId, input).then(relationData => {
-    notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, relationData.node, user);
+export const externalReferenceAddRelation = (user, externalReferenceId, input) => {
+  return createRelation(externalReferenceId, input).then(relationData => {
+    notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, relationData, user);
     return relationData;
   });
-
-export const externalReferenceDeleteRelation = (
-  user,
-  externalReferenceId,
-  relationId
-) =>
-  deleteRelationById(externalReferenceId, relationId).then(relationData => {
-    notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, relationData.node, user);
-    return relationData;
+};
+export const externalReferenceDeleteRelation = async (user, externalReferenceId, relationId) => {
+  await deleteRelationById(relationId);
+  const data = await loadEntityById(externalReferenceId);
+  return notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, data, user);
+};
+export const externalReferenceEditField = (user, externalReferenceId, input) => {
+  return executeWrite(wTx => {
+    return updateAttribute(externalReferenceId, input, wTx);
+  }).then(async () => {
+    const externalReference = await loadEntityById(externalReferenceId);
+    return notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference, user);
   });
+};
 
 export const externalReferenceCleanContext = (user, externalReferenceId) => {
   delEditContext(user, externalReferenceId);
-  return getById(externalReferenceId).then(externalReference =>
+  return loadEntityById(externalReferenceId).then(externalReference =>
     notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference, user)
   );
 };
-
-export const externalReferenceEditContext = (
-  user,
-  externalReferenceId,
-  input
-) => {
+export const externalReferenceEditContext = (user, externalReferenceId, input) => {
   setEditContext(user, externalReferenceId, input);
-  return getById(externalReferenceId).then(externalReference =>
+  return loadEntityById(externalReferenceId).then(externalReference =>
     notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference, user)
   );
 };
-
-export const externalReferenceEditField = (user, externalReferenceId, input) =>
-  updateAttribute(externalReferenceId, input).then(externalReference => {
-    return notify(
-      BUS_TOPICS.ExternalReference.EDIT_TOPIC,
-      externalReference,
-      user
-    );
-  });

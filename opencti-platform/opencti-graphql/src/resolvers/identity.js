@@ -7,13 +7,7 @@ import {
   stixDomainEntityDeleteRelation,
   stixDomainEntityDelete
 } from '../domain/stixDomainEntity';
-import {
-  createdByRef,
-  markingDefinitions,
-  reports,
-  stixRelations,
-  tags
-} from '../domain/stixEntity';
+import { createdByRef, markingDefinitions, reports, stixRelations, tags } from '../domain/stixEntity';
 
 const identityResolvers = {
   Query: {
@@ -24,17 +18,14 @@ const identityResolvers = {
     // eslint-disable-next-line no-underscore-dangle
     __resolveType(obj) {
       if (obj.entity_type) {
-        return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) =>
-          letter.toUpperCase()
-        );
+        return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) => letter.toUpperCase());
       }
       return 'Unknown';
     },
     createdByRef: identity => createdByRef(identity.id),
-    markingDefinitions: (identity, args) =>
-      markingDefinitions(identity.id, args),
-    tags: (identity, args) => tags(identity.id, args),
-    reports: (identity, args) => reports(identity.id, args),
+    markingDefinitions: identity => markingDefinitions(identity.id),
+    tags: identity => tags(identity.id),
+    reports: identity => reports(identity.id),
     stixRelations: (identity, args) => stixRelations(identity.id, args)
   },
   Mutation: {
@@ -44,8 +35,7 @@ const identityResolvers = {
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) =>
-        stixDomainEntityDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
     }),
     identityAdd: (_, { input }, { user }) => addIdentity(user, input)
   }

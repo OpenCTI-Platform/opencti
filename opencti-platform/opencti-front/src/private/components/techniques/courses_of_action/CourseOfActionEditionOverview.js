@@ -31,7 +31,7 @@ import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -89,7 +89,7 @@ const courseOfActionMutationRelationAdd = graphql`
   ) {
     courseOfActionEdit(id: $id) {
       relationAdd(input: $input) {
-        node {
+        from {
           ...CourseOfActionEditionOverview_courseOfAction
         }
       }
@@ -104,15 +104,13 @@ const courseOfActionMutationRelationDelete = graphql`
   ) {
     courseOfActionEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        node {
-          ...CourseOfActionEditionOverview_courseOfAction
-        }
+        ...CourseOfActionEditionOverview_courseOfAction
       }
     }
   }
 `;
 
-const courseOfActionValidation = t => Yup.object().shape({
+const courseOfActionValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string()
     .min(3, t('The value is too short'))
@@ -138,7 +136,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
     }).then((data) => {
       const identities = pipe(
         pathOr([], ['identities', 'edges']),
-        map(n => ({ label: n.node.name, value: n.node.id })),
+        map((n) => ({ label: n.node.name, value: n.node.id })),
       )(data);
       this.setState({ identities: union(this.state.identities, identities) });
     });
@@ -158,7 +156,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
     }).then((data) => {
       const markingDefinitions = pipe(
         pathOr([], ['markingDefinitions', 'edges']),
-        map(n => ({ label: n.node.definition, value: n.node.id })),
+        map((n) => ({ label: n.node.definition, value: n.node.id })),
       )(data);
       this.setState({
         markingDefinitions: union(
@@ -210,11 +208,11 @@ class CourseOfActionEditionOverviewComponent extends Component {
       commitMutation({
         mutation: courseOfActionMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.courseOfAction.id,
           input: {
-            fromRole: 'creator',
-            toId: this.props.courseOfAction.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: value.value,
+            toRole: 'creator',
             through: 'created_by_ref',
           },
         },
@@ -230,11 +228,11 @@ class CourseOfActionEditionOverviewComponent extends Component {
       commitMutation({
         mutation: courseOfActionMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.courseOfAction.id,
           input: {
-            fromRole: 'creator',
-            toId: this.props.courseOfAction.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: value.value,
+            toRole: 'creator',
             through: 'created_by_ref',
           },
         },
@@ -246,7 +244,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
     const { courseOfAction } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
-      map(n => ({
+      map((n) => ({
         label: n.node.definition,
         value: n.node.id,
         relationId: n.relation.id,
@@ -260,11 +258,11 @@ class CourseOfActionEditionOverviewComponent extends Component {
       commitMutation({
         mutation: courseOfActionMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: this.props.courseOfAction.id,
           input: {
-            fromRole: 'marking',
-            toId: this.props.courseOfAction.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: head(added).value,
+            toRole: 'marking',
             through: 'object_marking_refs',
           },
         },
@@ -303,7 +301,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
       };
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
-      map(n => ({
+      map((n) => ({
         label: n.node.definition,
         value: n.node.id,
         relationId: n.relation.id,

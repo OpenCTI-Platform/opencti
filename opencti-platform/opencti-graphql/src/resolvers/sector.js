@@ -1,18 +1,13 @@
+import { addSector, findAll, findById, isSubsector, subsectors } from '../domain/sector';
 import {
-  addSector,
-  findAll,
-  findById,
-  subsectors,
-  isSubsector
-} from '../domain/sector';
-import {
-  stixDomainEntityEditContext,
-  stixDomainEntityCleanContext,
-  stixDomainEntityEditField,
   stixDomainEntityAddRelation,
+  stixDomainEntityCleanContext,
+  stixDomainEntityDelete,
   stixDomainEntityDeleteRelation,
-  stixDomainEntityDelete
+  stixDomainEntityEditContext,
+  stixDomainEntityEditField
 } from '../domain/stixDomainEntity';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const sectorResolvers = {
   Query: {
@@ -20,8 +15,11 @@ const sectorResolvers = {
     sectors: (_, args) => findAll(args)
   },
   Sector: {
-    subsectors: (sector, args) => subsectors(sector.id, args),
+    subsectors: sector => subsectors(sector.id),
     isSubsector: (sector, args) => isSubsector(sector.id, args)
+  },
+  SectorsFilter: {
+    gatheredBy: `${REL_INDEX_PREFIX}gathering.internal_id_key`
   },
   Mutation: {
     sectorEdit: (_, { id }, { user }) => ({
@@ -30,8 +28,7 @@ const sectorResolvers = {
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) =>
-        stixDomainEntityDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
     }),
     sectorAdd: (_, { input }, { user }) => addSector(user, input)
   }

@@ -52,7 +52,7 @@ export const attackPatternsLinesQuery = graphql`
     $cursor: ID
     $orderBy: AttackPatternsOrdering
     $orderMode: OrderingMode
-    $filters: AttackPatternsFiltering
+    $filters: [AttackPatternsFiltering]
   ) {
     ...AttackPatternsLines_data
       @arguments(
@@ -78,7 +78,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "AttackPatternsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "AttackPatternsFiltering" }
+          filters: { type: "[AttackPatternsFiltering]" }
         ) {
         attackPatterns(
           search: $search

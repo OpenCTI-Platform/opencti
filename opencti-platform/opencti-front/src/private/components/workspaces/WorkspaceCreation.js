@@ -20,7 +20,7 @@ import Autocomplete from '../../../components/Autocomplete';
 import TextField from '../../../components/TextField';
 import { markingDefinitionsSearchQuery } from '../settings/MarkingDefinitions';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -71,7 +71,7 @@ const workspaceMutation = graphql`
   }
 `;
 
-const workspaceValidation = t => Yup.object().shape({
+const workspaceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string(),
 });
@@ -109,7 +109,7 @@ class WorkspaceCreation extends Component {
     }).then((data) => {
       const markingDefinitions = pipe(
         pathOr([], ['markingDefinitions', 'edges']),
-        map(n => ({ label: n.node.definition, value: n.node.id })),
+        map((n) => ({ label: n.node.definition, value: n.node.id })),
       )(data);
       this.setState({ markingDefinitions });
     });

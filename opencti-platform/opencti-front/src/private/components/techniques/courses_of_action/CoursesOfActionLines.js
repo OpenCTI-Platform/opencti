@@ -55,7 +55,7 @@ export const coursesOfActionLinesQuery = graphql`
     $cursor: ID
     $orderBy: CoursesOfActionOrdering
     $orderMode: OrderingMode
-    $filters: CoursesOfActionFiltering
+    $filters: [CoursesOfActionFiltering]
   ) {
     ...CoursesOfActionLines_data
       @arguments(
@@ -81,7 +81,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "CoursesOfActionOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "CoursesOfActionFiltering" }
+          filters: { type: "[CoursesOfActionFiltering]" }
         ) {
         coursesOfAction(
           search: $search
