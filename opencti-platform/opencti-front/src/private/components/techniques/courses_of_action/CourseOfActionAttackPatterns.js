@@ -2,29 +2,32 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Avatar from '@material-ui/core/Avatar';
-import Typography from '@material-ui/core/Typography';
+import { Link } from 'react-router-dom';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import IconButton from '@material-ui/core/IconButton';
+import { LinkOff } from '@material-ui/icons';
+import { createFragmentContainer } from 'react-relay';
+import graphql from 'babel-plugin-relay/macro';
+import { truncate } from '../../../../utils/String';
+import AddCoursesOfAction from './AddAttackPatterns';
+import { addAttackPatternsLinesMutationRelationDelete } from './AddAttackPatternsLines';
+import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { QueryRenderer } from '../../../../relay/environment';
-import CourseOfActionAttackPatternsLines, {
-  courseOfActionAttackPatternsLinesQuery,
-} from './CourseOfActionAttackPatternsLines';
 
 const styles = (theme) => ({
-  paper: {
-    minHeight: '100%',
-    margin: '3px 0 0 0',
-    padding: 0,
-    borderRadius: 6,
-  },
   avatar: {
     width: 24,
     height: 24,
     backgroundColor: theme.palette.primary.main,
+  },
+  list: {
+    padding: 0,
   },
   avatarDisabled: {
     width: 24,
@@ -37,78 +40,101 @@ const styles = (theme) => ({
   },
 });
 
-class CoursesOfActionAttackPatterns extends Component {
+class CourseOfActionAttackPatternComponent extends Component {
+  removeAttackPattern(attackPatternEdge) {
+    commitMutation({
+      mutation: addAttackPatternsLinesMutationRelationDelete,
+      variables: {
+        id: this.props.courseOfAction.id,
+        relationId: attackPatternEdge.relation.id,
+      },
+    });
+  }
+
   render() {
-    const { t, classes, courseOfActionId } = this.props;
-    const paginationOptions = {
-      courseOfActionId,
-      orderBy: 'created_at',
-      orderMode: 'desc',
-    };
+    const { t, classes, courseOfAction } = this.props;
     return (
-      <QueryRenderer
-        query={courseOfActionAttackPatternsLinesQuery}
-        variables={{
-          courseOfActionId,
-          count: 200,
-          orderBy: 'created_at',
-          orderMode: 'desc',
-        }}
-        render={({ props }) => {
-          if (props) {
+      <div style={{ marginTop: 20 }}>
+        <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+          {t('Mitigated TTPs')}
+        </Typography>
+        <AddCoursesOfAction
+          courseOfActionId={courseOfAction.id}
+          courseOfActionAttackPatterns={courseOfAction.attackPatterns.edges}
+        />
+        <div className="clearfix" />
+        <List classes={{ root: classes.list }}>
+          {courseOfAction.attackPatterns.edges.map((attackPatternEdge) => {
+            const attackPattern = attackPatternEdge.node;
             return (
-              <CourseOfActionAttackPatternsLines
-                courseOfActionId={courseOfActionId}
-                data={props}
-                paginationOptions={paginationOptions}
-              />
-            );
-          }
-          return (
-            <div style={{ marginTop: 20 }}>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ float: 'left' }}
+              <ListItem
+                key={attackPattern.id}
+                dense={true}
+                divider={true}
+                button={true}
+                component={Link}
+                to={`/dashboard/techniques/attack_patterns/${attackPattern.id}`}
               >
-                {t('Mitigated TTPs')}
-              </Typography>
-              <List>
-                {Array.from(Array(5), (e, i) => (
-                  <ListItem key={i} dense={true} divider={true} button={false}>
-                    <ListItemIcon>
-                      <Avatar classes={{ root: classes.avatarDisabled }}>
-                        {i}
-                      </Avatar>
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <span className="fakeItem" style={{ width: '80%' }} />
-                      }
-                      secondary={
-                        <span className="fakeItem" style={{ width: '90%' }} />
-                      }
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            </div>
-          );
-        }}
-      />
+                <ListItemIcon>
+                  <Avatar classes={{ root: classes.avatar }}>
+                    {attackPattern.name.substring(0, 1)}
+                  </Avatar>
+                </ListItemIcon>
+                <ListItemText
+                  primary={attackPattern.name}
+                  secondary={truncate(attackPattern.description, 60)}
+                />
+                <ListItemSecondaryAction>
+                  <IconButton
+                    aria-label="Remove"
+                    onClick={this.removeAttackPattern.bind(
+                      this,
+                      attackPatternEdge,
+                    )}
+                  >
+                    <LinkOff />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </ListItem>
+            );
+          })}
+        </List>
+      </div>
     );
   }
 }
 
-CoursesOfActionAttackPatterns.propTypes = {
-  courseOfActionId: PropTypes.string,
-  limit: PropTypes.number,
+CourseOfActionAttackPatternComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
+  courseOfAction: PropTypes.object,
 };
+
+const CourseOfActionAttackPattern = createFragmentContainer(
+  CourseOfActionAttackPatternComponent,
+  {
+    courseOfAction: graphql`
+      fragment CourseOfActionAttackPatterns_courseOfAction on CourseOfAction {
+        id
+        attackPatterns {
+          edges {
+            node {
+              id
+              name
+              description
+            }
+            relation {
+              id
+            }
+          }
+        }
+      }
+    `,
+  },
+);
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(CoursesOfActionAttackPatterns);
+)(CourseOfActionAttackPattern);

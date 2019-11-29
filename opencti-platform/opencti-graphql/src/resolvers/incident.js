@@ -1,18 +1,13 @@
+import { addIncident, findAll, findById, incidentsTimeSeries, incidentsTimeSeriesByEntity } from '../domain/incident';
 import {
-  addIncident,
-  findAll,
-  findById,
-  incidentsTimeSeriesByEntity,
-  incidentsTimeSeries
-} from '../domain/incident';
-import {
-  stixDomainEntityEditContext,
-  stixDomainEntityCleanContext,
-  stixDomainEntityEditField,
   stixDomainEntityAddRelation,
+  stixDomainEntityCleanContext,
+  stixDomainEntityDelete,
   stixDomainEntityDeleteRelation,
-  stixDomainEntityDelete
+  stixDomainEntityEditContext,
+  stixDomainEntityEditField
 } from '../domain/stixDomainEntity';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const incidentResolvers = {
   Query: {
@@ -25,6 +20,13 @@ const incidentResolvers = {
       return incidentsTimeSeries(args);
     }
   },
+  IncidentsOrdering: {
+    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
+    tags: `${REL_INDEX_PREFIX}tagged.value`
+  },
+  IncidentsFilter: {
+    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`
+  },
   Mutation: {
     incidentEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainEntityDelete(id),
@@ -32,8 +34,7 @@ const incidentResolvers = {
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) =>
-        stixDomainEntityDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
     }),
     incidentAdd: (_, { input }, { user }) => addIncident(user, input)
   }

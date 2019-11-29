@@ -119,7 +119,7 @@ const stixDomainEntityMutationRelationAdd = graphql`
   ) {
     stixDomainEntityEdit(id: $id) {
       relationAdd(input: $input) {
-        node {
+        from {
           ...StixDomainEntityEditionOverview_stixDomainEntity
         }
       }
@@ -134,9 +134,7 @@ const stixDomainEntityMutationRelationDelete = graphql`
   ) {
     stixDomainEntityEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        node {
           ...StixDomainEntityEditionOverview_stixDomainEntity
-        }
       }
     }
   }
@@ -203,11 +201,11 @@ class StixDomainEntityEditionContainer extends Component {
       commitMutation({
         mutation: stixDomainEntityMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: stixDomainEntity.id,
           input: {
-            fromRole: 'marking',
-            toId: stixDomainEntity.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toRole: 'marking',
+            toId: head(added).value,
             through: 'object_marking_refs',
           },
         },
