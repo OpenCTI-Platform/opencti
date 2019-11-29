@@ -1534,6 +1534,22 @@ const addMarkingDefs = async (internalId, markingDefIds, opts = {}) => {
   }
   return markings;
 };
+const addTag = async (fromInternalId, tagId, opts = {}) => {
+  if (!tagId) return undefined;
+  const input = { fromRole: 'so', toId: tagId, toRole: 'tagging', through: 'tagged' };
+  return createRelationRaw(fromInternalId, input, opts);
+};
+const addTags = async (internalId, tagsIds, opts = {}) => {
+  if (!tagsIds || isEmpty(tagsIds)) return undefined;
+  const tags = [];
+  // Relations cannot be created in parallel.
+  for (let i = 0; i < tagsIds.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    const tag = await addTag(internalId, tagsIds[i], opts);
+    tags.push(tag);
+  }
+  return tags;
+};
 const addKillChain = async (fromInternalId, killChainId, opts = {}) => {
   if (!killChainId) return undefined;
   const input = {
@@ -1554,22 +1570,6 @@ const addKillChains = async (internalId, killChainIds, opts = {}) => {
     killChains.push(killChain);
   }
   return killChains;
-};
-const addTag = async (fromInternalId, tagId, opts = {}) => {
-  if (!tagId) return undefined;
-  const input = { fromRole: 'so', toId: tagId, toRole: 'tagging', through: 'tagged' };
-  return createRelationRaw(fromInternalId, input, opts);
-};
-const addTags = async (internalId, tagsIds, opts = {}) => {
-  if (!tagsIds || isEmpty(tagsIds)) return undefined;
-  const markings = [];
-  // Relations cannot be created in parallel.
-  for (let i = 0; i < tagsIds.length; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
-    const tag = await addTag(internalId, tagsIds[i], opts);
-    tags.push(tag);
-  }
-  return tags;
 };
 // endregion
 
@@ -1608,6 +1608,7 @@ export const createEntity = async (entity, type, opts = {}) => {
     dissoc('createdByOwner'),
     dissoc('createdByRef'),
     dissoc('markingDefinitions'),
+    dissoc('tags'),
     dissoc('killChainPhases')
   )(entity);
   // For stix domain entity, force the initialization of the alias list.
@@ -1663,8 +1664,8 @@ export const createEntity = async (entity, type, opts = {}) => {
   await addOwner(internalId, entity.createdByOwner, opts);
   await addCreatedByRef(internalId, entity.createdByRef, opts);
   await addMarkingDefs(internalId, entity.markingDefinitions, opts);
-  await addKillChains(internalId, entity.killChainPhases, opts);
   await addTags(internalId, entity.tags, opts);
+  await addKillChains(internalId, entity.killChainPhases, opts);
   // Else simply return the data
   return completedData;
 };
