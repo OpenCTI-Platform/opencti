@@ -52,7 +52,7 @@ export const campaignsLinesQuery = graphql`
     $cursor: ID
     $orderBy: CampaignsOrdering
     $orderMode: OrderingMode
-    $filters: CampaignsFiltering
+    $filters: [CampaignsFiltering]
   ) {
     ...CampaignsLines_data
       @arguments(
@@ -77,7 +77,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "CampaignsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "CampaignsFiltering" }
+          filters: { type: "[CampaignsFiltering]" }
         ) {
         campaigns(
           search: $search

@@ -33,8 +33,9 @@ import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
+import TagAutocompleteField from '../../common/form/TagAutocompleteField';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -85,7 +86,7 @@ const toolMutation = graphql`
   }
 `;
 
-const toolValidation = t => Yup.object().shape({
+const toolValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string()
     .min(3, t('The value is too short'))
@@ -131,7 +132,7 @@ class ToolCreation extends Component {
     }).then((data) => {
       const identities = pipe(
         pathOr([], ['identities', 'edges']),
-        map(n => ({ label: n.node.name, value: n.node.id })),
+        map((n) => ({ label: n.node.name, value: n.node.id })),
       )(data);
       this.setState({ identities: union(this.state.identities, identities) });
     });
@@ -152,7 +153,7 @@ class ToolCreation extends Component {
       const killChainPhases = pipe(
         pathOr([], ['killChainPhases', 'edges']),
         sortWith([ascend(path(['node', 'order']))]),
-        map(n => ({
+        map((n) => ({
           label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
           value: n.node.id,
         })),
@@ -169,7 +170,7 @@ class ToolCreation extends Component {
     }).then((data) => {
       const markingDefinitions = pipe(
         pathOr([], ['markingDefinitions', 'edges']),
-        map(n => ({ label: n.node.definition, value: n.node.id })),
+        map((n) => ({ label: n.node.definition, value: n.node.id })),
       )(data);
       this.setState({
         markingDefinitions: union(
@@ -185,6 +186,7 @@ class ToolCreation extends Component {
       assoc('createdByRef', values.createdByRef.value),
       assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
       assoc('killChainPhases', pluck('value', values.killChainPhases)),
+      assoc('tags', pluck('value', values.tags)),
     )(values);
     commitMutation({
       mutation: toolMutation,
@@ -251,6 +253,7 @@ class ToolCreation extends Component {
                 createdByRef: '',
                 markingDefinitions: [],
                 killChainPhases: [],
+                tags: [],
               }}
               validationSchema={toolValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -303,6 +306,7 @@ class ToolCreation extends Component {
                       options={this.state.markingDefinitions}
                       onInputChange={this.searchMarkingDefinitions.bind(this)}
                     />
+                    <TagAutocompleteField />
                     <div className={classes.buttons}>
                       <Button
                         variant="contained"

@@ -137,6 +137,26 @@ class TopMenuCountry extends Component {
         >
           {t('Observables')}
         </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/entities/countries/${countryId}/files`}
+          variant={
+            location.pathname
+            === `/dashboard/entities/countries/${countryId}/files`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/entities/countries/${countryId}/files`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Files')}
+        </Button>
       </div>
     );
   }

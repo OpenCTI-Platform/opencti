@@ -17,7 +17,7 @@ import inject18n from '../../../components/i18n';
 import { commitMutation, fetchQuery } from '../../../relay/environment';
 import { stixRelationEditionDeleteMutation } from '../common/stix_relations/StixRelationEdition';
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
     margin: 0,
   },
@@ -48,10 +48,8 @@ const reportRefPopoverDeletionMutation = graphql`
   ) {
     reportEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        node {
-          ...ReportEntities_report
-          ...ReportObservablesLines_report @arguments(relationType: $relationType)
-        }
+       ...ReportEntities_report
+       ...ReportObservablesLines_report @arguments(relationType: $relationType)
       }
     }
   }

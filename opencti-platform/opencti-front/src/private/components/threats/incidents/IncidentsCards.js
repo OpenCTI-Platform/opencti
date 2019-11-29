@@ -75,7 +75,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "IncidentsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "IncidentsFiltering" }
+          filters: { type: "[IncidentsFiltering]" }
         ) {
         incidents(
           search: $search

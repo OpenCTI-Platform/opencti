@@ -122,6 +122,7 @@ const AttackPatternDetails = createFragmentContainer(
   {
     attackPattern: graphql`
       fragment AttackPatternDetails_attackPattern on AttackPattern {
+        id
         platform
         required_permission
         tags {

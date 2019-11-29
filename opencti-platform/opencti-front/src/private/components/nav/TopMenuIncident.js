@@ -8,7 +8,7 @@ import { ArrowForwardIos } from '@material-ui/icons';
 import { Fire } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
     padding: '2px 5px 2px 5px',
@@ -137,6 +137,26 @@ class TopMenuIncident extends Component {
           classes={{ root: classes.button }}
         >
           {t('Observables')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/threats/incidents/${incidentId}/files`}
+          variant={
+            location.pathname
+            === `/dashboard/threats/incidents/${incidentId}/files`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/threats/incidents/${incidentId}/files`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Files')}
         </Button>
       </div>
     );

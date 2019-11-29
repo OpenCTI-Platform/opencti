@@ -195,15 +195,6 @@ const dashboardStixObservablesNumberQuery = graphql`
   }
 `;
 
-const dashboardWorkspacesNumberQuery = graphql`
-  query DashboardWorkspacesNumberQuery($endDate: DateTime) {
-    workspacesNumber(endDate: $endDate) {
-      total
-      count
-    }
-  }
-`;
-
 class Dashboard extends Component {
   render() {
     const {
@@ -339,12 +330,12 @@ class Dashboard extends Component {
               style={{ height: 120 }}
             >
               <QueryRenderer
-                query={dashboardWorkspacesNumberQuery}
-                variables={{ endDate: dayAgo() }}
+                query={dashboardStixDomainEntitiesNumberQuery}
+                variables={{ type: 'workspace', endDate: dayAgo() }}
                 render={({ props }) => {
-                  if (props && props.workspacesNumber) {
-                    const { total } = props.workspacesNumber;
-                    const difference = total - props.workspacesNumber.count;
+                  if (props && props.stixDomainEntitiesNumber) {
+                    const { total } = props.stixDomainEntitiesNumber;
+                    const difference = total - props.stixDomainEntitiesNumber.count;
                     return (
                       <CardContent>
                         <div className={classes.number}>{n(total)}</div>

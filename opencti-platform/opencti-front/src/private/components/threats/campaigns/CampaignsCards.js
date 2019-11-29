@@ -46,7 +46,7 @@ export const campaignsCardsQuery = graphql`
     $cursor: ID
     $orderBy: CampaignsOrdering
     $orderMode: OrderingMode
-    $filters: CampaignsFiltering
+    $filters: [CampaignsFiltering]
   ) {
     ...CampaignsCards_data
       @arguments(
@@ -71,7 +71,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "CampaignsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "CampaignsFiltering" }
+          filters: { type: "[CampaignsFiltering]" }
         ) {
         campaigns(
           search: $search

@@ -175,9 +175,9 @@ const stixObservableRelationCreationFromEntityQuery = graphql`
     stixEntity(id: $id) {
       id
       entity_type
+      parent_types
       name
       description
-      parent_type
       ... on StixObservable {
         observable_value
       }

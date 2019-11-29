@@ -150,60 +150,60 @@ define
   # STIX SRO roles
 
   # targets
-  target sub role;
   source sub role;
+  target sub role;
 
   # uses
-  usage sub role;
   user sub role;
+  usage sub role;
 
   # attributed-to
-  origin sub role;
   attribution sub role;
+  origin sub role;
 
   # mitigates
-  problem sub role;
   mitigation sub role;
+  problem sub role;
 
   # indicates
-  characterize sub role;
   indicator sub role;
+  characterize sub role;
 
   # variant-of
-  original sub role;
   variation sub role;
+  original sub role;
 
   # impersonates
-  genuine sub role;
   dummy sub role;
+  genuine sub role;
 
   # related-to
-  relate_to sub role;
   relate_from sub role;
+  relate_to sub role;
 
   # localization
-  location sub role;
   localized sub role;
+  location sub role;
 
   # belonging
-  gather sub role;
   part_of sub role;
+  gather sub role;
 
   # drops
-  dropping sub role;
   dropped sub role;
+  dropping sub role;
 
   # sighting
-  sighting_of sub role;
   sighted_in sub role;
+  sighting_of sub role;
 
   ## RELATIONSHIPS
 
   # Login relationship
   authorize sub relation,
     key internal_id_key,
-    relates authorization,
-    relates client;
+    relates client,
+    relates authorization;
 
   # Migration relationships
   migrate sub relation,
@@ -214,21 +214,21 @@ define
   # Group membership relationships
   membership sub relation,
     key internal_id_key,
-    relates grouping,
-    relates member;
+    relates member,
+    relates grouping;
 
   # Access relationships
   permission sub relation,
     key internal_id_key,
     has grant,
-    relates allow,
-    relates allowed;
+    relates allowed,
+    relates allow;
 
   user_permission sub relation,
     key internal_id_key,
     has grant,
-    relates allow,
-    relates allowed;
+    relates allowed,
+    relates allow;
 
   # OpenCTI embeded relationships
   relation_embedded sub relation,
@@ -236,16 +236,16 @@ define
     key internal_id_key;
 
   authored_by sub relation_embedded,
-    relates author,
-    relates so;
+    relates so,
+    relates author;
 
   owned_by sub relation_embedded,
-    relates owner,
-    relates to;
+    relates so,
+    relates owner;
 
   tagged sub relation_embedded,
-    relates tagging,
-    relates so;
+    relates so,
+    relates tagging;
 
   # STIX embeded relationships
   stix_relation_embedded sub relation,
@@ -253,24 +253,24 @@ define
     key internal_id_key;
 
   created_by_ref sub stix_relation_embedded,
-    relates creator,
-    relates so;
+    relates so,
+    relates creator;
 
   object_marking_refs sub stix_relation_embedded,
-    relates marking,
+    relates so,
+    relates marking;
+
+  object_refs sub stix_relation_embedded,
+    relates knowledge_aggregation,
     relates so;
 
   external_references sub stix_relation_embedded,
-    relates external_reference,
-    relates so;
+    relates so,
+    relates external_reference;
 
   kill_chain_phases sub stix_relation_embedded,
     relates phase_belonging,
     relates kill_chain_phase;
-
-  object_refs sub stix_relation_embedded,
-    relates so,
-    relates knowledge_aggregation;
 
   # STIX SRO relationships
   stix_sighting sub relation,
@@ -327,13 +327,13 @@ define
   # targets
   targets sub stix_relation,
     plays localized,
-    relates target,
-    relates source;
+    relates source,
+    relates target;
 
   # uses
   uses sub stix_relation,
-    relates usage,
-    relates user;
+    relates user,
+    relates usage;
 
   # related-to
   related-to sub stix_relation,
@@ -342,18 +342,18 @@ define
 
   # mitigates
   mitigates sub stix_relation,
-    relates problem,
-    relates mitigation;
+    relates mitigation,
+    relates problem;
 
   # impersonates
   impersonates sub stix_relation,
-    relates genuine,
-    relates dummy;
+    relates dummy,
+    relates genuine;
 
   # indicates
   indicates sub stix_relation,
-    relates characterize,
-    relates indicator;
+    relates indicator,
+    relates characterize;
 
   # comes-after
   comes-after sub stix_relation,
@@ -371,13 +371,13 @@ define
 
   # variant-of
   variant-of sub parentship,
-    relates original,
-    relates variation;
+    relates variation,
+    relates original;
 
   # localization
   localization sub parentship,
-    relates location,
-    relates localized;
+    relates localized,
+    relates location;
 
   # belonging
   gathering sub parentship,
@@ -466,6 +466,7 @@ define
   Tag sub entity,
     key internal_id_key,
     has tag_type,
+    has entity_type,
     key value,
     has color,
     has created_at,
@@ -477,11 +478,15 @@ define
 
   Connector sub entity,
     key internal_id_key,
+    has entity_type,
     has name,
     has connector_type,
     has connector_scope,
     has connector_state,
     has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
     has updated_at;
 
   Group sub entity,
@@ -510,7 +515,6 @@ define
     has created_at_month,
     has created_at_year,
     has updated_at,
-    plays to,
     plays so,
     plays knowledge_aggregation;
 
@@ -588,6 +592,7 @@ define
   Attack-Pattern sub Stix-Domain-Entity,
     has platform,
     has required_permission,
+    has external_id,
     plays phase_belonging,
     plays user,
     plays usage,

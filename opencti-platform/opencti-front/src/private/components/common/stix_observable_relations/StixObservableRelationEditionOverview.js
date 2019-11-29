@@ -129,7 +129,7 @@ const stixObservableRelationMutationRelationAdd = graphql`
   ) {
     stixObservableRelationEdit(id: $id) {
       relationAdd(input: $input) {
-        node {
+        from {
           ...StixObservableRelationEditionOverview_stixObservableRelation
         }
       }
@@ -144,9 +144,7 @@ const stixObservableRelationMutationRelationDelete = graphql`
   ) {
     stixObservableRelationEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        node {
-          ...StixObservableRelationEditionOverview_stixObservableRelation
-        }
+        ...StixObservableRelationEditionOverview_stixObservableRelation
       }
     }
   }
@@ -218,11 +216,11 @@ class StixObservableRelationEditionContainer extends Component {
       commitMutation({
         mutation: stixObservableRelationMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: stixObservableRelation.id,
           input: {
-            fromRole: 'marking',
-            toId: stixObservableRelation.id,
-            toRole: 'so',
+            fromRole: 'so',
+            toId: head(added).value,
+            toRole: 'marking',
             through: 'object_marking_refs',
           },
         },

@@ -2,37 +2,26 @@ import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addTag,
-  tagDelete,
   findAll,
-  findByValue,
   findById,
-  findByEntity,
-  tagEditContext,
-  tagEditField,
   tagAddRelation,
+  tagCleanContext,
+  tagDelete,
   tagDeleteRelation,
-  tagCleanContext
+  tagEditContext,
+  tagEditField
 } from '../domain/tag';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const tagResolvers = {
   Query: {
     tag: (_, { id }) => findById(id),
-    tags: (_, args) => {
-      if (
-        args.tag_type &&
-        args.tag_type.length > 0 &&
-        args.value &&
-        args.value.length > 0
-      ) {
-        return findByValue(args);
-      }
-      if (args.objectId && args.objectId.length > 0) {
-        return findByEntity(args);
-      }
-      return findAll(args);
-    }
+    tags: (_, args) => findAll(args)
+  },
+  TagsFilter: {
+    tagsFor: `${REL_INDEX_PREFIX}tagged.internal_id_key`
   },
   Tag: {
     editContext: tag => fetchEditContext(tag.id)
@@ -43,8 +32,7 @@ const tagResolvers = {
       fieldPatch: ({ input }) => tagEditField(user, id, input),
       contextPatch: ({ input }) => tagEditContext(user, id, input),
       relationAdd: ({ input }) => tagAddRelation(user, id, input),
-      relationDelete: ({ relationId }) =>
-        tagDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => tagDeleteRelation(user, id, relationId)
     }),
     tagAdd: (_, { input }, { user }) => addTag(user, input)
   },

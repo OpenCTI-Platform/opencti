@@ -1,4 +1,4 @@
-FROM node:12.9.1-alpine
+FROM node:12.13.1-alpine
 
 # Copy work files
 COPY opencti-front /opt/opencti-build/opencti-front

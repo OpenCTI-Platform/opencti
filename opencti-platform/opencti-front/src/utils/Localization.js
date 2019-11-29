@@ -67,6 +67,9 @@ const i18n = {
         'Souhaitez-vous retirer cette entité de ce rapport ?',
       'Do you want to delete this attribute?':
         'Souhaitez-vous supprimer cet attribut ?',
+      'Do you want to remove this external reference?':
+        'Souhaitez-vous supprimer cette référence externe ?',
+      'Confirmation required': 'Confirmation requise',
       Information: 'Informations',
       'Last reports': 'Derniers rapports',
       'Last reports wrote by the entity':
@@ -148,6 +151,7 @@ const i18n = {
       'Entity aliases': "Alias de l'entité",
       'Create a marking definition': 'Créer un marquage',
       'Update a marking definition': 'Modifier un marquage',
+      'Max marking definition level': 'Niveau de marquage maximum',
       'Create a tag': 'Créer un tag',
       'Update a tag': 'Modifier un tag',
       'Create a kill chain phase': 'Créer une étape de kill chain',
@@ -383,6 +387,7 @@ const i18n = {
         'Export complet (entité et ses voisins)',
       'Uploaded files': 'Fichiers uploadés',
       'File successfully removed': 'Fichier supprimé avec succès',
+      'File successfully uploaded': 'Fichier uploadé avec succès',
       'Launch an import of this file': 'Lancer un import de ce fichier',
       'Download this file': 'Télécharger ce fichier',
       'Delete this file': 'Supprimer ce fichier',

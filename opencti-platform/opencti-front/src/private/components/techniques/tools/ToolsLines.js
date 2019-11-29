@@ -52,7 +52,7 @@ export const toolsLinesQuery = graphql`
     $cursor: ID
     $orderBy: ToolsOrdering
     $orderMode: OrderingMode
-    $filters: ToolsFiltering
+    $filters: [ToolsFiltering]
   ) {
     ...ToolsLines_data
       @arguments(
@@ -77,7 +77,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "ToolsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "ToolsFiltering" }
+          filters: { type: "[ToolsFiltering]" }
         ) {
         tools(
           search: $search

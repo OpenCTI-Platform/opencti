@@ -10,6 +10,9 @@ import TopBar from '../../nav/TopBar';
 import Sector from './Sector';
 import SectorReports from './SectorReports';
 import SectorKnowledge from './SectorKnowledge';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import RegionPopover from '../regions/RegionPopover';
+import FileManager from '../../common/files/FileManager';
 
 const subscription = graphql`
   subscription RootSectorSubscription($id: ID!) {
@@ -18,6 +21,8 @@ const subscription = graphql`
         ...Sector_sector
         ...SectorEditionContainer_sector
       }
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
     }
   }
 `;
@@ -30,6 +35,14 @@ const sectorQuery = graphql`
       ...SectorSubsectors_sector
       ...SectorReports_sector
       ...SectorKnowledge_sector
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
+      id
+      name
+      alias
+    }
+    connectorsForExport {
+      ...FileManager_connectorsExport
     }
   }
 `;
@@ -72,14 +85,14 @@ class RootSector extends Component {
                   <Route
                     exact
                     path="/dashboard/entities/sectors/:sectorId"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <Sector {...routeProps} sector={props.sector} />
                     )}
                   />
                   <Route
                     exact
                     path="/dashboard/entities/sectors/:sectorId/reports"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <SectorReports {...routeProps} sector={props.sector} />
                     )}
                   />
@@ -94,8 +107,26 @@ class RootSector extends Component {
                   />
                   <Route
                     path="/dashboard/entities/sectors/:sectorId/knowledge"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <SectorKnowledge {...routeProps} sector={props.sector} />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/entities/sectors/:sectorId/files"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.sector}
+                          PopoverComponent={<RegionPopover />}
+                        />
+                        <FileManager
+                          {...routeProps}
+                          id={sectorId}
+                          connectorsExport={props.connectorsForExport}
+                          entity={props.sector}
+                        />
+                      </React.Fragment>
                     )}
                   />
                 </div>

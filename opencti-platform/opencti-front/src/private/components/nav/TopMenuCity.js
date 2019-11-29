@@ -138,6 +138,26 @@ class TopMenuCity extends Component {
         >
           {t('Observables')}
         </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/entities/cities/${cityId}/files`}
+          variant={
+            location.pathname
+            === `/dashboard/entities/cities/${cityId}/files`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/entities/cities/${cityId}/files`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Files')}
+        </Button>
       </div>
     );
   }
