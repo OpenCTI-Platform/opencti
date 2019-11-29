@@ -130,19 +130,15 @@ export const upload = async (user, category, file, entityId = null) => {
 
 export const getMinIOVersion = () => {
   const serverHeaderPrefix = 'MinIO/';
-  const method = 'HEAD';
-  /* eslint-disable no-unused-vars */
-  return new Promise((resolve, reject) => {
-    /* eslint-enable no-unused-vars */
+  return new Promise(resolve => {
     // MinIO server information is included in the "Server" header of the
     // response. Make "bucketExists" request to get the header value.
-    minioClient.makeRequest({ method, bucketName }, '', 200, '', true, (err, response) => {
+    minioClient.makeRequest({ method: 'HEAD', bucketName }, '', 200, '', true, (err, response) => {
       if (err) {
         logger.error('[MINIO] Error requesting server version: ', err);
         resolve('Disconnected');
         return;
       }
-
       const serverHeader = response.headers.server || '';
       if (serverHeader.startsWith(serverHeaderPrefix)) {
         const version = serverHeader.substring(serverHeaderPrefix.length);
