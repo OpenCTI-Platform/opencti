@@ -25,8 +25,9 @@ import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
+import TagAutocompleteField from '../../common/form/TagAutocompleteField';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -77,7 +78,7 @@ const organizationMutation = graphql`
   }
 `;
 
-const organizationValidation = t => Yup.object().shape({
+const organizationValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string()
     .min(3, t('The value is too short'))
@@ -123,7 +124,7 @@ class OrganizationCreation extends Component {
     }).then((data) => {
       const identities = pipe(
         pathOr([], ['identities', 'edges']),
-        map(n => ({ label: n.node.name, value: n.node.id })),
+        map((n) => ({ label: n.node.name, value: n.node.id })),
       )(data);
       this.setState({ identities: union(this.state.identities, identities) });
     });
@@ -143,7 +144,7 @@ class OrganizationCreation extends Component {
     }).then((data) => {
       const markingDefinitions = pipe(
         pathOr([], ['markingDefinitions', 'edges']),
-        map(n => ({ label: n.node.definition, value: n.node.id })),
+        map((n) => ({ label: n.node.definition, value: n.node.id })),
       )(data);
       this.setState({
         markingDefinitions: union(
@@ -158,6 +159,7 @@ class OrganizationCreation extends Component {
     const finalValues = pipe(
       assoc('createdByRef', values.createdByRef.value),
       assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
+      assoc('tags', pluck('value', values.tags)),
     )(values);
     commitMutation({
       mutation: organizationMutation,
@@ -224,6 +226,7 @@ class OrganizationCreation extends Component {
                 organization_class: 'other',
                 createdByRef: '',
                 markingDefinitions: [],
+                tags: [],
               }}
               validationSchema={organizationValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -287,6 +290,7 @@ class OrganizationCreation extends Component {
                       options={this.state.markingDefinitions}
                       onInputChange={this.searchMarkingDefinitions.bind(this)}
                     />
+                    <TagAutocompleteField />
                     <div className={classes.buttons}>
                       <Button
                         variant="contained"

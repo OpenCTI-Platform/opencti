@@ -872,6 +872,7 @@ input PersonAddInput {
   lastname: String
   createdByRef: String
   markingDefinitions: [String]
+  tags: [String]
 }
 input UserLoginInput {
   email: String!
