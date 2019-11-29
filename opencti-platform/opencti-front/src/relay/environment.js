@@ -15,13 +15,14 @@ import {
 } from 'react-relay';
 import * as PropTypes from 'prop-types';
 import {
-  map, isEmpty, difference, filter, split,
+  map, isEmpty, difference, filter, split, pathOr,
 } from 'ramda';
 import { urlMiddleware, RelayNetworkLayer } from 'react-relay-network-modern';
 import uploadMiddleware from './uploadMiddleware';
 
 // Dev tools
 export const IN_DEV_MODE = process.env.NODE_ENV === 'development';
+console.log('IN_DEV_MODE', IN_DEV_MODE);
 if (IN_DEV_MODE) installRelayDevTools();
 
 // Service bus
@@ -87,7 +88,7 @@ const network = new RelayNetworkLayer(
 
 const store = new Store(new RecordSource());
 // Activate the read from store then network
-store.holdGC();
+// store.holdGC();
 export const environment = new Environment({
   network,
   store,
@@ -142,16 +143,24 @@ export const commitMutation = ({
   onCompleted,
   onError: (error) => {
     if (setSubmitting) setSubmitting(false);
-    const authRequired = filter(
-      (e) => e.data.type === 'authentication',
-      error.res.errors,
-    );
-    if (!isEmpty(authRequired)) {
-      MESSAGING$.redirect.next('/login');
-    } else {
-      const messages = map((e) => ({ type: 'error', text: e.message }), error.res.errors);
-      MESSAGING$.messages.next(messages);
-      if (onError) onError(error);
+    if (error && error.res && error.res.errors) {
+      const authRequired = filter(
+        (e) => e.data.type === 'authentication',
+        error.res.errors,
+      );
+      if (!isEmpty(authRequired)) {
+        MESSAGING$.redirect.next('/login');
+      } else {
+        const messages = map(
+          (e) => ({
+            type: 'error',
+            text: pathOr(e.message, ['data', 'details'], e),
+          }),
+          error.res.errors,
+        );
+        MESSAGING$.messages.next(messages);
+        if (onError) onError(error);
+      }
     }
   },
 });

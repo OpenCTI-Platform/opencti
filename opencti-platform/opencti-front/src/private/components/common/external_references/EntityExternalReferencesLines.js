@@ -27,15 +27,12 @@ import { commitMutation } from '../../../../relay/environment';
 import AddExternalReferences from './AddExternalReferences';
 import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
 
-const styles = theme => ({
+const styles = (theme) => ({
   paper: {
     minHeight: '100%',
     margin: '-4px 0 0 0',
     padding: 0,
     borderRadius: 6,
-  },
-  list: {
-    padding: 0,
   },
   avatar: {
     width: 24,
@@ -54,7 +51,6 @@ const styles = theme => ({
 });
 
 class EntityExternalReferencesLinesContainer extends Component {
-
   constructor(props) {
     super(props);
     this.state = {
@@ -68,7 +64,7 @@ class EntityExternalReferencesLinesContainer extends Component {
     const openedState = {
       displayDialog: true,
       removeExternalReference: externalReferenceEdge,
-    }
+    };
     this.setState(openedState);
   }
 
@@ -76,7 +72,7 @@ class EntityExternalReferencesLinesContainer extends Component {
     const closedState = {
       displayDialog: false,
       removeExternalReference: null,
-    }
+    };
     this.setState(closedState);
   }
 
@@ -89,16 +85,14 @@ class EntityExternalReferencesLinesContainer extends Component {
     commitMutation({
       mutation: externalReferenceMutationRelationDelete,
       variables: {
-        id: externalReferenceEdge.node.id,
+        id: this.props.entityId,
         relationId: externalReferenceEdge.relation.id,
       },
       updater: (store) => {
-        const container = store.getRoot();
-        const userProxy = store.get(container.getDataID());
+        const entity = store.get(this.props.entityId);
         const conn = ConnectionHandler.getConnection(
-          userProxy,
+          entity,
           'Pagination_externalReferences',
-          this.props.paginationOptions,
         );
         ConnectionHandler.deleteNode(conn, externalReferenceEdge.node.id);
       },
@@ -111,7 +105,7 @@ class EntityExternalReferencesLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, entityId, data, paginationOptions,
+      t, classes, entityId, data,
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
@@ -120,26 +114,62 @@ class EntityExternalReferencesLinesContainer extends Component {
         </Typography>
         <AddExternalReferences
           entityId={entityId}
-          entityExternalReferences={data.externalReferences.edges}
-          entityPaginationOptions={paginationOptions}
+          entityExternalReferences={data.stixEntity.externalReferences.edges}
         />
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <List classes={{ root: classes.list }}>
-            {data.externalReferences.edges.map((externalReferenceEdge) => {
-              const externalReference = externalReferenceEdge.node;
-              const externalReferenceId = externalReference.external_id
-                ? `(${externalReference.external_id})`
-                : '';
-              if (externalReference.url) {
+          <List>
+            {data.stixEntity.externalReferences.edges.map(
+              (externalReferenceEdge) => {
+                const externalReference = externalReferenceEdge.node;
+                const externalReferenceId = externalReference.external_id
+                  ? `(${externalReference.external_id})`
+                  : '';
+                if (externalReference.url) {
+                  return (
+                    <ListItem
+                      key={externalReference.id}
+                      dense={true}
+                      divider={true}
+                      button={true}
+                      component="a"
+                      href={externalReference.url}
+                    >
+                      <ListItemIcon>
+                        <Avatar classes={{ root: classes.avatar }}>
+                          {externalReference.source_name.substring(0, 1)}
+                        </Avatar>
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={`${externalReference.source_name} ${externalReferenceId}`}
+                        secondary={truncate(
+                          externalReference.description !== null
+                            && externalReference.description.length > 0
+                            ? externalReference.description
+                            : externalReference.url,
+                          120,
+                        )}
+                      />
+                      <ListItemSecondaryAction>
+                        <IconButton
+                          aria-label="Remove"
+                          onClick={this.handleOpenDialog.bind(
+                            this,
+                            externalReferenceEdge,
+                          )}
+                        >
+                          <LinkOff />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  );
+                }
                 return (
                   <ListItem
                     key={externalReference.id}
                     dense={true}
                     divider={true}
-                    button={true}
-                    component="a"
-                    href={externalReference.url}
+                    button={false}
                   >
                     <ListItemIcon>
                       <Avatar classes={{ root: classes.avatar }}>
@@ -148,13 +178,7 @@ class EntityExternalReferencesLinesContainer extends Component {
                     </ListItemIcon>
                     <ListItemText
                       primary={`${externalReference.source_name} ${externalReferenceId}`}
-                      secondary={truncate(
-                        externalReference.description !== null
-                          && externalReference.description.length > 0
-                          ? externalReference.description
-                          : externalReference.url,
-                        120,
-                      )}
+                      secondary={truncate(externalReference.description, 120)}
                     />
                     <ListItemSecondaryAction>
                       <IconButton
@@ -169,37 +193,8 @@ class EntityExternalReferencesLinesContainer extends Component {
                     </ListItemSecondaryAction>
                   </ListItem>
                 );
-              }
-              return (
-                <ListItem
-                  key={externalReference.id}
-                  dense={true}
-                  divider={true}
-                  button={false}
-                >
-                  <ListItemIcon>
-                    <Avatar classes={{ root: classes.avatar }}>
-                      {externalReference.source_name.substring(0, 1)}
-                    </Avatar>
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={`${externalReference.source_name} ${externalReferenceId}`}
-                    secondary={truncate(externalReference.description, 120)}
-                  />
-                  <ListItemSecondaryAction>
-                    <IconButton
-                      aria-label="Remove"
-                      onClick={this.handleOpenDialog.bind(
-                        this,
-                        externalReferenceEdge,
-                      )}
-                    >
-                      <LinkOff />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
-              );
-            })}
+              },
+            )}
           </List>
         </Paper>
         <Dialog
@@ -209,11 +204,16 @@ class EntityExternalReferencesLinesContainer extends Component {
         >
           <DialogTitle>{t('Confirmation required')}</DialogTitle>
           <DialogContent>
-            { this.state.removeExternalReference != null &&
+            {this.state.removeExternalReference != null && (
               <DialogContentText>
-                {t('Removing')} '{truncate(this.state.removeExternalReference.node.source_name, 30)}'.
+                {t('Removing')} '
+                {truncate(
+                  this.state.removeExternalReference.node.source_name,
+                  30,
+                )}
+                '.
               </DialogContentText>
-            }
+            )}
             <DialogContentText>
               {t('Do you want to remove this external reference?')}
             </DialogContentText>
@@ -242,7 +242,6 @@ class EntityExternalReferencesLinesContainer extends Component {
 
 EntityExternalReferencesLinesContainer.propTypes = {
   entityId: PropTypes.string,
-  paginationOptions: PropTypes.object,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
@@ -251,21 +250,9 @@ EntityExternalReferencesLinesContainer.propTypes = {
 };
 
 export const entityExternalReferencesLinesQuery = graphql`
-  query EntityExternalReferencesLinesQuery(
-    $objectId: String!
-    $count: Int!
-    $cursor: ID
-    $orderBy: ExternalReferencesOrdering
-    $orderMode: OrderingMode
-  ) {
+  query EntityExternalReferencesLinesQuery($count: Int!, $entityId: String) {
     ...EntityExternalReferencesLines_data
-      @arguments(
-        objectId: $objectId
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+      @arguments(count: $count, entityId: $entityId)
   }
 `;
 
@@ -275,33 +262,25 @@ const EntityExternalReferencesLines = createPaginationContainer(
     data: graphql`
       fragment EntityExternalReferencesLines_data on Query
         @argumentDefinitions(
-          objectId: { type: "String!" }
           count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: {
-            type: "ExternalReferencesOrdering"
-            defaultValue: "source_name"
-          }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          entityId: { type: "String" }
         ) {
-        externalReferences(
-          objectId: $objectId
-          first: $count
-          after: $cursor
-          orderBy: $orderBy
-          orderMode: $orderMode
-        ) @connection(key: "Pagination_externalReferences") {
-          edges {
-            node {
-              id
-              source_name
-              description
-              url
-              hash
-              external_id
-            }
-            relation {
-              id
+        stixEntity(id: $entityId) {
+          id
+          externalReferences(first: $count)
+            @connection(key: "Pagination_externalReferences") {
+            edges {
+              node {
+                id
+                source_name
+                description
+                url
+                hash
+                external_id
+              }
+              relation {
+                id
+              }
             }
           }
         }
@@ -311,7 +290,7 @@ const EntityExternalReferencesLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.externalReferences;
+      return props.data && props.data.stixEntity.externalReferences;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -319,12 +298,10 @@ const EntityExternalReferencesLines = createPaginationContainer(
         count: totalCount,
       };
     },
-    getVariables(props, { count, cursor }, fragmentVariables) {
+    getVariables(props, { count }, fragmentVariables) {
       return {
         count,
-        cursor,
-        orderBy: fragmentVariables.orderBy,
-        orderMode: fragmentVariables.orderMode,
+        entityId: fragmentVariables.entityId,
       };
     },
     query: entityExternalReferencesLinesQuery,

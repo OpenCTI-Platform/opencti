@@ -11,6 +11,9 @@ import IntrusionSet from './IntrusionSet';
 import IntrusionSetReports from './IntrusionSetReports';
 import IntrusionSetKnowledge from './IntrusionSetKnowledge';
 import IntrusionSetObservables from './IntrusionSetObservables';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import FileManager from '../../common/files/FileManager';
+import IntrusionSetPopover from './IntrusionSetPopover';
 
 const subscription = graphql`
   subscription RootIntrusionSetSubscription($id: ID!) {
@@ -19,6 +22,8 @@ const subscription = graphql`
         ...IntrusionSet_intrusionSet
         ...IntrusionSetEditionContainer_intrusionSet
       }
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
     }
   }
 `;
@@ -26,12 +31,20 @@ const subscription = graphql`
 const intrusionSetQuery = graphql`
   query RootIntrusionSetQuery($id: String!) {
     intrusionSet(id: $id) {
+      id
+      name
+      alias
       ...IntrusionSet_intrusionSet
       ...IntrusionSetOverview_intrusionSet
       ...IntrusionSetDetails_intrusionSet
       ...IntrusionSetReports_intrusionSet
       ...IntrusionSetKnowledge_intrusionSet
       ...IntrusionSetObservables_intrusionSet
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
+    }
+    connectorsForExport {
+      ...FileManager_connectorsExport
     }
   }
 `;
@@ -74,7 +87,7 @@ class RootIntrusionSet extends Component {
                   <Route
                     exact
                     path="/dashboard/threats/intrusion_sets/:intrusionSetId"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <IntrusionSet
                         {...routeProps}
                         intrusionSet={props.intrusionSet}
@@ -84,7 +97,7 @@ class RootIntrusionSet extends Component {
                   <Route
                     exact
                     path="/dashboard/threats/intrusion_sets/:intrusionSetId/reports"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <IntrusionSetReports
                         {...routeProps}
                         intrusionSet={props.intrusionSet}
@@ -102,7 +115,7 @@ class RootIntrusionSet extends Component {
                   />
                   <Route
                     path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <IntrusionSetKnowledge
                         {...routeProps}
                         intrusionSet={props.intrusionSet}
@@ -111,11 +124,29 @@ class RootIntrusionSet extends Component {
                   />
                   <Route
                     path="/dashboard/threats/intrusion_sets/:intrusionSetId/observables"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <IntrusionSetObservables
                         {...routeProps}
                         intrusionSet={props.intrusionSet}
                       />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/threats/intrusion_sets/:intrusionSetId/files"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.intrusionSet}
+                          PopoverComponent={<IntrusionSetPopover />}
+                        />
+                        <FileManager
+                          {...routeProps}
+                          id={intrusionSetId}
+                          connectorsExport={props.connectorsForExport}
+                          entity={props.intrusionSet}
+                        />
+                      </React.Fragment>
                     )}
                   />
                 </div>

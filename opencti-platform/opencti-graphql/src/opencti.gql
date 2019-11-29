@@ -128,7 +128,6 @@ define
 
   # STIX common roles
   so sub role;
-  soo sub role;
   kill_chain_phase sub role;
 
   # STIX embeded roles
@@ -138,71 +137,73 @@ define
   phase_belonging sub role;
   knowledge_aggregation sub role;
 
-  # STIX observables embeded roles
-  resolves_to sub role;
-  belongs_to sub role;
-
   # STIX observables roles
-  observable_group sub role;
-  observable_part_of sub role;
+  link_from sub role;
+  link_to sub role;
+  resolving sub role;
+  resolved sub role;
+  belonging_to sub role;
+  belonged_to sub role;
+  correspond_from sub role;
+  correspond_to sub role;
 
   # STIX SRO roles
 
   # targets
-  target sub role;
   source sub role;
+  target sub role;
 
   # uses
-  usage sub role;
   user sub role;
+  usage sub role;
 
   # attributed-to
-  origin sub role;
   attribution sub role;
+  origin sub role;
 
   # mitigates
-  problem sub role;
   mitigation sub role;
+  problem sub role;
 
   # indicates
-  characterize sub role;
   indicator sub role;
+  characterize sub role;
 
   # variant-of
-  original sub role;
   variation sub role;
+  original sub role;
 
   # impersonates
-  genuine sub role;
   dummy sub role;
+  genuine sub role;
 
   # related-to
-  relate_to sub role;
   relate_from sub role;
+  relate_to sub role;
 
   # localization
-  location sub role;
   localized sub role;
+  location sub role;
 
   # belonging
-  gather sub role;
   part_of sub role;
+  gather sub role;
 
   # drops
-  dropping sub role;
   dropped sub role;
+  dropping sub role;
 
   # sighting
-  sighting_of sub role;
   sighted_in sub role;
+  sighting_of sub role;
 
   ## RELATIONSHIPS
 
   # Login relationship
   authorize sub relation,
     key internal_id_key,
-    relates authorization,
-    relates client;
+    relates client,
+    relates authorization;
 
   # Migration relationships
   migrate sub relation,
@@ -213,21 +214,21 @@ define
   # Group membership relationships
   membership sub relation,
     key internal_id_key,
-    relates grouping,
-    relates member;
+    relates member,
+    relates grouping;
 
   # Access relationships
   permission sub relation,
     key internal_id_key,
     has grant,
-    relates allow,
-    relates allowed;
+    relates allowed,
+    relates allow;
 
   user_permission sub relation,
     key internal_id_key,
     has grant,
-    relates allow,
-    relates allowed;
+    relates allowed,
+    relates allow;
 
   # OpenCTI embeded relationships
   relation_embedded sub relation,
@@ -235,16 +236,16 @@ define
     key internal_id_key;
 
   authored_by sub relation_embedded,
-    relates author,
-    relates so;
+    relates so,
+    relates author;
 
   owned_by sub relation_embedded,
-    relates owner,
-    relates to;
+    relates so,
+    relates owner;
 
   tagged sub relation_embedded,
-    relates tagging,
-    relates so;
+    relates so,
+    relates tagging;
 
   # STIX embeded relationships
   stix_relation_embedded sub relation,
@@ -252,90 +253,26 @@ define
     key internal_id_key;
 
   created_by_ref sub stix_relation_embedded,
-    relates creator,
-    relates so;
+    relates so,
+    relates creator;
 
   object_marking_refs sub stix_relation_embedded,
-    relates marking,
+    relates so,
+    relates marking;
+
+  object_refs sub stix_relation_embedded,
+    relates knowledge_aggregation,
     relates so;
 
   external_references sub stix_relation_embedded,
-    relates external_reference,
-    relates so;
+    relates so,
+    relates external_reference;
 
   kill_chain_phases sub stix_relation_embedded,
     relates phase_belonging,
     relates kill_chain_phase;
 
-  object_refs sub stix_relation_embedded,
-    relates so,
-    relates knowledge_aggregation;
-
-  # STIX SOO embeded relationships
-   stix_relation_observable_embedded sub relation,
-    abstract,
-    key internal_id_key,
-    has created,
-    has modified,
-    has revoked,
-    has entity_type,
-    has relationship_type,
-    has weight,
-    has first_seen,
-    has first_seen_day,
-    has first_seen_month,
-    has first_seen_year,
-    has last_seen,
-    has last_seen_day,
-    has last_seen_month,
-    has last_seen_year,
-    has name,
-    has description,
-    has created_at,
-    has created_at_day,
-    has created_at_month,
-    has created_at_year,
-    has updated_at,
-    plays so;
-
-  resolves_to_refs sub stix_relation_observable_embedded,
-    relates soo,
-    relates resolves_to;
-
-  belongs_to_refs sub stix_relation_observable_embedded,
-    relates soo,
-    relates belongs_to;
-
-  # STIX SOO embeded relationships
-   stix_relation_observable_grouping sub relation,
-    abstract,
-    key internal_id_key,
-    has created,
-    has modified,
-    has revoked,
-    has entity_type,
-    has relationship_type,
-    has weight,
-    has first_seen,
-    has first_seen_day,
-    has first_seen_month,
-    has first_seen_year,
-    has last_seen,
-    has last_seen_day,
-    has last_seen_month,
-    has last_seen_year,
-    has name,
-    has description,
-    has created_at,
-    has created_at_day,
-    has created_at_month,
-    has created_at_year,
-    has updated_at,
-    relates observable_group,
-    relates observable_part_of;
-
   # STIX SRO relationships
-
   stix_sighting sub relation,
     key internal_id_key,
     key stix_id_key,
@@ -366,7 +303,6 @@ define
     has entity_type,
     has relationship_type,
     has weight,
-    has score,
     has first_seen,
     has first_seen_day,
     has first_seen_month,
@@ -375,10 +311,6 @@ define
     has last_seen_day,
     has last_seen_month,
     has last_seen_year,
-    has expiration,
-    has expiration_day,
-    has expiration_month,
-    has expiration_year,
     has name,
     has description,
     has role_played,
@@ -395,13 +327,13 @@ define
   # targets
   targets sub stix_relation,
     plays localized,
-    relates target,
-    relates source;
+    relates source,
+    relates target;
 
   # uses
   uses sub stix_relation,
-    relates usage,
-    relates user;
+    relates user,
+    relates usage;
 
   # related-to
   related-to sub stix_relation,
@@ -410,18 +342,18 @@ define
 
   # mitigates
   mitigates sub stix_relation,
-    relates problem,
-    relates mitigation;
+    relates mitigation,
+    relates problem;
 
   # impersonates
   impersonates sub stix_relation,
-    relates genuine,
-    relates dummy;
+    relates dummy,
+    relates genuine;
 
   # indicates
   indicates sub stix_relation,
-    relates characterize,
-    relates indicator;
+    relates indicator,
+    relates characterize;
 
   # comes-after
   comes-after sub stix_relation,
@@ -439,13 +371,13 @@ define
 
   # variant-of
   variant-of sub parentship,
-    relates original,
-    relates variation;
+    relates variation,
+    relates original;
 
   # localization
   localization sub parentship,
-    relates location,
-    relates localized;
+    relates localized,
+    relates location;
 
   # belonging
   gathering sub parentship,
@@ -456,6 +388,52 @@ define
   drops sub parentship,
     relates dropping,
     relates dropped;
+
+  # STIX SOO relationships
+  stix_observable_relation sub relation,
+    abstract,
+    key internal_id_key,
+    key stix_id_key,
+    has created,
+    has modified,
+    has revoked,
+    has entity_type,
+    has relationship_type,
+    has first_seen,
+    has first_seen_day,
+    has first_seen_month,
+    has first_seen_year,
+    has last_seen,
+    has last_seen_day,
+    has last_seen_month,
+    has last_seen_year,
+    has name,
+    has description,
+    has role_played,
+    has weight,
+    has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
+    has updated_at,
+    plays phase_belonging,
+    plays so;
+
+  linked sub stix_observable_relation,
+    relates link_from,
+    relates link_to;
+
+  resolves sub stix_observable_relation,
+    relates resolving,
+    relates resolved;
+
+  belongs sub stix_observable_relation,
+    relates belonging_to,
+    relates belonged_to;
+
+  corresponds sub stix_observable_relation,
+    relates correspond_from,
+    relates correspond_to;
 
   ## ENTITIES
   # Migration entities
@@ -490,6 +468,7 @@ define
   Tag sub entity,
     key internal_id_key,
     has tag_type,
+    has entity_type,
     key value,
     has color,
     has created_at,
@@ -501,11 +480,15 @@ define
 
   Connector sub entity,
     key internal_id_key,
+    has entity_type,
     has name,
     has connector_type,
     has connector_scope,
     has connector_state,
     has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
     has updated_at;
 
   Group sub entity,
@@ -534,7 +517,6 @@ define
     has created_at_month,
     has created_at_year,
     has updated_at,
-    plays to,
     plays so,
     plays knowledge_aggregation;
 
@@ -612,6 +594,7 @@ define
   Attack-Pattern sub Stix-Domain-Entity,
     has platform,
     has required_permission,
+    has external_id,
     plays phase_belonging,
     plays user,
     plays usage,
@@ -774,7 +757,7 @@ define
     plays problem,
     plays characterize;
 
-   Stix-Observable sub entity,
+  Stix-Observable sub entity,
     abstract,
     key internal_id_key,
     key stix_id_key,
@@ -788,82 +771,71 @@ define
     has created_at_year,
     has updated_at,
     plays so,
-    plays soo,
     plays indicator,
     plays part_of,
-    plays observable_group,
-    plays observable_part_of;
+    plays link_from,
+    plays link_to;
 
-    Domain sub Stix-Observable;
+  Autonomous-System sub Stix-Observable,
+    plays belonged_to;
 
-    IPv4-Addr sub Stix-Observable,
-    plays localized,
-    plays resolves_to;
+  Domain sub Stix-Observable,
+    plays resolved;
 
-    IPv6-Addr sub Stix-Observable,
-    plays localized,
-    plays resolves_to;
+  IPv4-Addr sub Stix-Observable,
+    plays resolving,
+    plays belonging_to,
+    plays localized;
 
-    URL sub Stix-Observable;
+  IPv6-Addr sub Stix-Observable,
+    plays resolving,
+    plays belonging_to,
+    plays localized;
 
-    Email sub Stix-Observable;
-    Email-Address sub Email;
-    Email-Subject sub Email;
+  URL sub Stix-Observable;
 
-    Mutex sub Stix-Observable;
+  Email sub Stix-Observable;
+  Email-Address sub Email;
+  Email-Subject sub Email;
 
-    File sub Stix-Observable;
-    File-Name sub File;
-    File-Path sub File;
-    File-MD5 sub File;
-    File-SHA1 sub File;
-    File-SHA256 sub File;
+  Mutex sub Stix-Observable;
 
-    Registry-Key sub Stix-Observable;
-    Registry-Key-Value sub Registry-Key;
+  File sub Stix-Observable,
+    plays correspond_from,
+    plays correspond_to;
+  File-Name sub File;
+  File-Path sub File;
+  File-MD5 sub File;
+  File-SHA1 sub File;
+  File-SHA256 sub File;
 
-    PDB-Path sub Stix-Observable;
+  Registry-Key sub Stix-Observable;
+  Registry-Key-Value sub Registry-Key;
 
-    Windows-Service sub Stix-Observable;
-    Windows-Service-Name sub Windows-Service;
-    Windows-Service-Display-Name sub Windows-Service;
+  PDB-Path sub Stix-Observable;
 
-    Windows-Scheduled-Task sub Stix-Observable;
+  Windows-Service sub Stix-Observable;
+  Windows-Service-Name sub Windows-Service;
+  Windows-Service-Display-Name sub Windows-Service;
 
-    X509-Certificate sub Stix-Observable;
-    X509-Certificate-Issuer sub X509-Certificate;
-    X509-Certificate-Serial-Number sub X509-Certificate;
+  Windows-Scheduled-Task sub Stix-Observable;
 
-    Stix-Observable-Data sub entity,
-    abstract,
-    key internal_id_key,
-    has entity_type,
-    has value,
-    has created_at,
-    has created_at_day,
-    has created_at_month,
-    has created_at_year,
-    has updated_at,
-    plays so;
+  X509-Certificate sub Stix-Observable;
+  X509-Certificate-Issuer sub X509-Certificate;
+  X509-Certificate-Serial-Number sub X509-Certificate;
 
-    Autonomous-System sub Stix-Observable-Data,
-    has number,
-    has name,
-    has rir,
-    plays belongs_to;.
-
-    ## ACCESS RULES
-    #PermissionRule sub rule
-    #when {
-    #  (member: $user, grouping: $group) isa membership;
-    #  (allowed: $group, allow: $marking) isa permission;
-    #  $marking isa Marking-Definition has level $markingLevel has definition_type $markingType;
-    #  $markingDefinition isa Marking-Definition has level $markingDefinitionLevel has definition_type $markingDefinitionType;
-    #  $markingDefinitionType == $markingType;
-    #  $markingDefinitionLevel <= $markingLevel;
-    #} then {
-    #  (allowed: $user, allow: $markingDefinition) isa user_permission;
-    #};
+  ## ACCESS RULES
+  #PermissionRule sub rule
+  #when {
+  #  (member: $user, grouping: $group) isa membership;
+  #  (allowed: $group, allow: $marking) isa permission;
+  #  $marking isa Marking-Definition has level $markingLevel has definition_type $markingType;
+  #  $markingDefinition isa Marking-Definition has level $markingDefinitionLevel has definition_type $markingDefinitionType;
+  #  $markingDefinitionType == $markingType;
+  #  $markingDefinitionLevel <= $markingLevel;
+  #} then {
+  #  (allowed: $user, allow: $markingDefinition) isa user_permission;
+  #};
 
     ## USES RULES
     AttributionUsesRule sub rule,
@@ -885,10 +857,10 @@ define
 
     UsageIndicatesRule sub rule,
     when {
-      (user: $user, usage: $entity) isa uses;
+      (user: $origin, usage: $entity) isa uses;
       (characterize: $entity, indicator: $object) isa indicates;
     }, then {
-      (characterize: $user, indicator: $object) isa indicates;
+      (characterize: $origin, indicator: $object) isa indicates;
     };
 
     IndicatationOfUsesRule sub rule,
@@ -907,7 +879,16 @@ define
     }, then {
       (source: $origin, target: $target) isa targets;
     };
-    
+
+    IncidentUsageTargetsRule sub rule,
+    when {
+      $user isa Incident;
+      (user: $user, usage: $entity) isa uses;
+      (source: $user, target: $target) isa targets;
+    }, then {
+      (source: $entity, target: $target) isa targets;
+    };
+
     GatheringTargetsRule sub rule,
     when {
       (gather: $parent, part_of: $entity) isa gathering;

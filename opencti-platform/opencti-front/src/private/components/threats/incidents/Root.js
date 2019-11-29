@@ -11,6 +11,9 @@ import Incident from './Incident';
 import IncidentReports from './IncidentReports';
 import IncidentKnowledge from './IncidentKnowledge';
 import IncidentObservables from './IncidentObservables';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import FileManager from '../../common/files/FileManager';
+import IncidentPopover from './IncidentPopover';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -19,6 +22,8 @@ const subscription = graphql`
         ...Incident_incident
         ...IncidentEditionContainer_incident
       }
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
     }
   }
 `;
@@ -26,12 +31,20 @@ const subscription = graphql`
 const incidentQuery = graphql`
   query RootIncidentQuery($id: String!) {
     incident(id: $id) {
+      id
+      name
+      alias
       ...Incident_incident
       ...IncidentOverview_incident
       ...IncidentDetails_incident
       ...IncidentReports_incident
       ...IncidentKnowledge_incident
       ...IncidentObservables_incident
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
+    }
+    connectorsForExport {
+      ...FileManager_connectorsExport
     }
   }
 `;
@@ -74,14 +87,14 @@ class RootIncident extends Component {
                   <Route
                     exact
                     path="/dashboard/threats/incidents/:incidentId"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <Incident {...routeProps} incident={props.incident} />
                     )}
                   />
                   <Route
                     exact
                     path="/dashboard/threats/incidents/:incidentId/reports"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <IncidentReports
                         {...routeProps}
                         incident={props.incident}
@@ -99,7 +112,7 @@ class RootIncident extends Component {
                   />
                   <Route
                     path="/dashboard/threats/incidents/:incidentId/knowledge"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <IncidentKnowledge
                         {...routeProps}
                         incident={props.incident}
@@ -108,11 +121,29 @@ class RootIncident extends Component {
                   />
                   <Route
                     path="/dashboard/threats/incidents/:incidentId/observables"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <IncidentObservables
                         {...routeProps}
                         incident={props.incident}
                       />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/threats/incidents/:incidentId/files"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.incident}
+                          PopoverComponent={<IncidentPopover />}
+                        />
+                        <FileManager
+                          {...routeProps}
+                          id={incidentId}
+                          connectorsExport={props.connectorsForExport}
+                          entity={props.incident}
+                        />
+                      </React.Fragment>
                     )}
                   />
                 </div>

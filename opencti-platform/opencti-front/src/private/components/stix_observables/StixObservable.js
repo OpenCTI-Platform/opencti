@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -8,7 +8,7 @@ import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../components/i18n';
 import StixObservableHeader from './StixObservableHeader';
 import StixObservableOverview from './StixObservableOverview';
-import StixObservableAverages from './StixObservableAverages';
+import StixObservableDetails from './StixObservableDetails';
 import StixObservableEdition from './StixObservableEdition';
 import EntityLastReports from '../reports/EntityLastReports';
 import StixObservableEntities from './StixObservableEntities';
@@ -31,12 +31,13 @@ class StixObservableComponent extends Component {
         <Grid
           container={true}
           spacing={3}
-          classes={{ container: classes.gridContainer }}>
+          classes={{ container: classes.gridContainer }}
+        >
           <Grid item={true} xs={3}>
             <StixObservableOverview stixObservable={stixObservable} />
           </Grid>
           <Grid item={true} xs={3}>
-            <StixObservableAverages stixObservable={stixObservable} />
+            <StixObservableDetails stixObservable={stixObservable} />
           </Grid>
           <Grid item={true} xs={6}>
             <EntityLastReports entityId={stixObservable.id} />
@@ -64,7 +65,7 @@ const StixObservable = createFragmentContainer(StixObservableComponent, {
       id
       ...StixObservableHeader_stixObservable
       ...StixObservableOverview_stixObservable
-      ...StixObservableAverages_stixObservable
+      ...StixObservableDetails_stixObservable
     }
   `,
 });

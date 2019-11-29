@@ -10,19 +10,20 @@ import { formatError as apolloFormatError } from 'apollo-errors';
 import { GraphQLError } from 'graphql';
 import compression from 'compression';
 import helmet from 'helmet';
-import { dissocPath, filter, isEmpty, map, not, pipe } from 'ramda';
+import { dissocPath, filter, isEmpty, map, not, pipe, pathOr } from 'ramda';
 import path from 'path';
 import nconf from 'nconf';
-import conf, {
-  DEV_MODE,
-  isAppRealTime,
-  logger,
-  OPENCTI_TOKEN
-} from './config/conf';
+import conf, { DEV_MODE, isAppRealTime, logger, OPENCTI_TOKEN } from './config/conf';
 import passport, { ACCESS_PROVIDERS } from './config/security';
 import { authentication, setAuthenticationCookie } from './domain/user';
 import schema from './schema/schema';
-import { buildValidationError, TYPE_AUTH, Unknown } from './config/errors';
+import {
+  buildValidationError,
+  TYPE_AUTH,
+  LEVEL_ERROR,
+  LEVEL_WARNING,
+  Unknown
+} from './config/errors';
 import init from './initialization';
 import { downloadFile, loadFile } from './database/minio';
 
@@ -34,19 +35,12 @@ app.use(helmet());
 app.use(bodyParser.json({ limit: '100mb' }));
 
 // Static for generated fronted
-const extractTokenFromBearer = bearer =>
-  bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null;
+const extractTokenFromBearer = bearer => (bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null);
 const AppBasePath = nconf.get('app:base_path');
-const basePath =
-  isEmpty(AppBasePath) || AppBasePath.startsWith('/')
-    ? AppBasePath
-    : `/${AppBasePath}`;
+const basePath = isEmpty(AppBasePath) || AppBasePath.startsWith('/') ? AppBasePath : `/${AppBasePath}`;
 // -- Generated CSS with correct base path
 app.use('/static/css/*', (req, res) => {
-  const data = readFileSync(
-    path.join(__dirname, `../public${req.baseUrl}`),
-    'utf8'
-  );
+  const data = readFileSync(path.join(__dirname, `../public${req.baseUrl}`), 'utf8');
   const withBasePath = data.replace(/%BASE_PATH%/g, basePath);
   res.header('Content-Type', 'text/css');
   return res.send(withBasePath);
@@ -77,25 +71,21 @@ app.use('/storage/view/:file(*)', async (req, res) => {
   const stream = await downloadFile(file);
   stream.pipe(res);
 });
+
 // region Login
 const urlencodedParser = bodyParser.urlencoded({ extended: true });
 app.get('/auth/:provider', (req, res, next) => {
   const { provider } = req.params;
   passport.authenticate(provider)(req, res, next);
 });
-app.get(
-  '/auth/:provider/callback',
-  urlencodedParser,
-  passport.initialize(),
-  (req, res, next) => {
-    const { provider } = req.params;
-    passport.authenticate(provider, (err, token) => {
-      if (err || !token) return res.status(err.status).send(err);
-      setAuthenticationCookie(token, res);
-      return res.redirect('/dashboard');
-    })(req, res, next);
-  }
-);
+app.get('/auth/:provider/callback', urlencodedParser, passport.initialize(), (req, res, next) => {
+  const { provider } = req.params;
+  passport.authenticate(provider, (err, token) => {
+    if (err || !token) return res.status(err.status).send(err);
+    setAuthenticationCookie(token, res);
+    return res.redirect('/dashboard');
+  })(req, res, next);
+});
 // endregion
 
 const server = new ApolloServer({
@@ -115,7 +105,6 @@ const server = new ApolloServer({
   },
   tracing: DEV_MODE,
   formatError: error => {
-    logger.error('[OPENCTI] Technical error > ', error); // Log the complete error.
     let e = apolloFormatError(error);
     if (e instanceof GraphQLError) {
       const errorCode = e.extensions.exception.code;
@@ -126,6 +115,12 @@ const server = new ApolloServer({
       } else {
         e = apolloFormatError(new Unknown());
       }
+    }
+    const errorLevel = pathOr(LEVEL_ERROR, ['data', 'level'], e);
+    if (errorLevel === LEVEL_WARNING) {
+      logger.warn('[OPENCTI] Technical error > ', error); // Log the complete error.
+    } else {
+      logger.error('[OPENCTI] Technical error > ', error); // Log the complete error.
     }
     // Remove the exception stack in production.
     return DEV_MODE ? e : dissocPath(['extensions', 'exception'], e);
@@ -161,7 +156,7 @@ server.applyMiddleware({
   app,
   onHealthCheck: () =>
     new Promise(resolve => {
-      // TODO @JRI Implements a real health function
+      // TODO @Julien Implements a real health function
       // Check grakn and ES connection?
       resolve();
     })
@@ -203,21 +198,17 @@ init()
         onShutdown
       });
       logger.info(
-        `[API] Bootstrap > ready on http://localhost:${PORT}${
-          server.graphqlPath
-        }, base path ${nconf.get('app:base_path')}`
+        `[API] Bootstrap > ready on http://localhost:${PORT}${server.graphqlPath}, base path ${nconf.get(
+          'app:base_path'
+        )}`
       );
       logger.info(
         `[API] Bootstrap > Health check available at: http://localhost:${PORT}/.well-known/apollo/server-health`
       );
       if (isAppRealTime) {
-        logger.info(
-          `[API] Bootstrap > WebSocket ready at ws://localhost:${PORT}${server.subscriptionsPath}`
-        );
+        logger.info(`[API] Bootstrap > WebSocket ready at ws://localhost:${PORT}${server.subscriptionsPath}`);
       } else {
-        logger.info(
-          `[API] Bootstrap > WebSocket deactivated, config your redis and activate it`
-        );
+        logger.info(`[API] Bootstrap > WebSocket deactivated, config your redis and activate it`);
       }
     });
   })

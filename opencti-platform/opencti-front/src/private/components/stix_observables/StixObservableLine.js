@@ -76,36 +76,12 @@ class StixObservableLineComponent extends Component {
               >
                 {node.observable_value}
               </div>
-              {dataColumns.created_at ? (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.created_at.width }}
-                >
-                  {fd(node.created_at)}
-                </div>
-              ) : (
-                ''
-              )}
-              {dataColumns.first_seen ? (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.first_seen.width }}
-                >
-                  {fd(node.first_seen)}
-                </div>
-              ) : (
-                ''
-              )}
-              {dataColumns.last_seen ? (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.last_seen.width }}
-                >
-                  {fd(node.last_seen)}
-                </div>
-              ) : (
-                ''
-              )}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created_at.width }}
+              >
+                {fd(node.created_at)}
+              </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.markingDefinitions.width }}
@@ -191,36 +167,12 @@ class StixObservableLineDummyComponent extends Component {
               >
                 <div className="fakeItem" style={{ width: '70%' }} />
               </div>
-              {dataColumns.created_at ? (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.created_at.width }}
-                >
-                  <div className="fakeItem" style={{ width: 140 }} />
-                </div>
-              ) : (
-                ''
-              )}
-              {dataColumns.first_seen ? (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.first_seen.width }}
-                >
-                  <div className="fakeItem" style={{ width: 140 }} />
-                </div>
-              ) : (
-                ''
-              )}
-              {dataColumns.last_seen ? (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.last_seen.width }}
-                >
-                  <div className="fakeItem" style={{ width: 140 }} />
-                </div>
-              ) : (
-                ''
-              )}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created_at.width }}
+              >
+                <div className="fakeItem" style={{ width: 140 }} />
+              </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.markingDefinitions.width }}

@@ -186,7 +186,7 @@ const StixRelationCreationFromEntityStixObservablesLines = createPaginationConta
             node {
               id
               entity_type
-              parent_type
+              parent_types
               observable_value
             }
           }

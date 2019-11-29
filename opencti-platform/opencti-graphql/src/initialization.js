@@ -1,6 +1,6 @@
 // Admin user initialization
 import { logger } from './config/conf';
-import { createIndexes, elasticIsAlive } from './database/elasticSearch';
+import { elCreateIndexes, elIsAlive } from './database/elasticSearch';
 import { graknIsAlive, write } from './database/grakn';
 import applyMigration from './database/migration';
 import { initializeAdminUser } from './config/security';
@@ -14,7 +14,7 @@ export const checkSystemDependencies = async () => {
   await graknIsAlive();
   logger.info(`[PRE-CHECK] > Grakn is alive`);
   // Check if elasticsearch is available
-  await elasticIsAlive();
+  await elIsAlive();
   logger.info(`[PRE-CHECK] > Elasticsearch is alive`);
   // Check if minio is here
   await isStorageAlive();
@@ -28,7 +28,7 @@ export const initializeSchema = async () => {
   await write(schema);
   logger.info(`[INIT] > Grakn schema loaded`);
   // Create default indexes
-  await createIndexes();
+  await elCreateIndexes();
   logger.info(`[INIT] > Elasticsearch indexes loaded`);
 };
 

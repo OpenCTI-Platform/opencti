@@ -54,18 +54,16 @@ const inlineStyles = {
 
 const entityLastReportsQuery = graphql`
   query EntityLastReportsQuery(
-    $objectId: String
-    $authorId: String
     $first: Int
     $orderBy: ReportsOrdering
     $orderMode: OrderingMode
+    $filters: [ReportsFiltering]
   ) {
     reports(
-      objectId: $objectId
-      authorId: $authorId
       first: $first
       orderBy: $orderBy
       orderMode: $orderMode
+      filters: $filters  
     ) {
       edges {
         node {
@@ -91,6 +89,9 @@ class EntityLastReports extends Component {
     const {
       t, nsd, classes, entityId, authorId,
     } = this.props;
+    const filters = [];
+    if (authorId) filters.push({ key: 'createdBy', values: [authorId] });
+    if (entityId) filters.push({ key: 'knowledgeContains', values: [entityId] });
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -102,11 +103,10 @@ class EntityLastReports extends Component {
           <QueryRenderer
             query={entityLastReportsQuery}
             variables={{
-              objectId: authorId ? null : entityId,
-              authorId: authorId || null,
               first: 8,
               orderBy: 'published',
               orderMode: 'desc',
+              filters,
             }}
             render={({ props }) => {
               if (props && props.reports) {
@@ -125,8 +125,7 @@ class EntityLastReports extends Component {
                           classes={{ root: classes.item }}
                           divider={true}
                           component={Link}
-                          to={`/dashboard/reports/all/${report.id}`}
-                        >
+                          to={`/dashboard/reports/all/${report.id}`}>
                           <ListItemIcon classes={{ root: classes.itemIcon }}>
                             <Description />
                           </ListItemIcon>

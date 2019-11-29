@@ -60,10 +60,10 @@ class StixObservableEntityLineComponent extends Component {
       entityId,
     } = this.props;
     console.log(node);
-    const link = node.to.parent_type === 'stix_relation'
+    const link = node.to.parent_types.includes('stix_relation')
       ? `/dashboard/observables/all/${entityId}/relations/${node.id}`
       : `${resolveLink(node.to.entity_type)
-            + node.to.id}/observables/relations/${node.id}`;
+          + node.to.id}/observables/relations/${node.id}`;
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -179,7 +179,7 @@ const StixObservableEntityLineFragment = createFragmentContainer(
           ... on StixDomainEntity {
             id
             entity_type
-            parent_type
+            parent_types
             name
             description
             created_at
@@ -187,7 +187,7 @@ const StixObservableEntityLineFragment = createFragmentContainer(
           }
           ... on StixRelation {
             id
-            parent_type
+            parent_types
             entity_type
             created_at
             updated_at
@@ -250,13 +250,13 @@ class StixObservableEntityLineDummyComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.first_seen.width }}
               >
-                <div className="fakeItem" style={{ width: 140 }} />
+                <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.last_seen.width }}
               >
-                <div className="fakeItem" style={{ width: 140 }} />
+                <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}

@@ -8,7 +8,7 @@ import { ArrowForwardIos } from '@material-ui/icons';
 import { Diamond } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
     padding: '2px 5px 2px 5px',
@@ -139,6 +139,26 @@ class TopMenuIntrusionSet extends Component {
           classes={{ root: classes.button }}
         >
           {t('Observables')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/files`}
+          variant={
+            location.pathname
+            === `/dashboard/threats/intrusion_sets/${intrusionSetId}/files`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/threats/intrusion_sets/${intrusionSetId}/files`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Files')}
         </Button>
       </div>
     );

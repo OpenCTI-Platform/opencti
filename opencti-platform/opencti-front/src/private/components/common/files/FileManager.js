@@ -26,8 +26,13 @@ import Button from '@material-ui/core/Button';
 import FileExportViewer from './FileExportViewer';
 import FileImportViewer from './FileImportViewer';
 import Select from '../../../../components/Select';
-import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import {
+  commitMutation,
+  MESSAGING$,
+  QueryRenderer,
+} from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
+import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
 
 const styles = () => ({
   container: {
@@ -49,9 +54,14 @@ export const FileManagerExportMutation = graphql`
     $id: ID!
     $format: String!
     $exportType: String!
+    $maxMarkingDefinition: String
   ) {
     stixDomainEntityEdit(id: $id) {
-      exportAsk(format: $format, exportType: $exportType) {
+      exportAsk(
+        format: $format
+        exportType: $exportType
+        maxMarkingDefinition: $maxMarkingDefinition
+      ) {
         id
         name
         uploadStatus
@@ -96,14 +106,23 @@ const FileManager = ({
   const handleCloseExport = () => setOpenExport(false);
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
+    const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
+      ? null
+      : values.maxMarkingDefinition;
     commitMutation({
       mutation: FileManagerExportMutation,
-      variables: { id, format: values.format, exportType: values.type },
+      variables: {
+        id,
+        format: values.format,
+        exportType: values.type,
+        maxMarkingDefinition,
+      },
       updater: (store) => {
         const root = store.getRootField('stixDomainEntityEdit');
         const payloads = root.getLinkedRecords('exportAsk', {
           format: values.format,
           exportType: values.type,
+          maxMarkingDefinition,
         });
         const entityPage = store.get(id);
         const conn = ConnectionHandler.getConnection(
@@ -120,7 +139,7 @@ const FileManager = ({
         setSubmitting(false);
         resetForm();
         handleCloseExport();
-        MESSAGING$.notifySuccess(t('Export successfully started'));
+        MESSAGING$.notifySuccess('Export successfully started');
       },
     });
   };
@@ -143,8 +162,9 @@ const FileManager = ({
         <Formik
           enableReinitialize={true}
           initialValues={{
-            type: '',
-            mode: '',
+            format: '',
+            type: 'full',
+            maxMarkingDefinition: 'none',
           }}
           validationSchema={exportValidation(t)}
           onSubmit={onSubmit}
@@ -153,51 +173,87 @@ const FileManager = ({
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
                 open={openExport}
+                keepMounted={true}
                 onClose={handleCloseExport}
                 fullWidth={true}
               >
                 <DialogTitle>{t('Generate an export')}</DialogTitle>
-                <DialogContent>
-                  <Field
-                    name="format"
-                    component={Select}
-                    label={t('Export format')}
-                    fullWidth={true}
-                    inputProps={{
-                      name: 'format',
-                      id: 'format',
-                    }}
-                    containerstyle={{ width: '100%' }}
-                  >
-                    {exportScopes.map((value, i) => (
-                      <MenuItem
-                        key={i}
-                        value={value}
-                        disabled={!isExportActive(value)}
-                      >
-                        {value}
-                      </MenuItem>
-                    ))}
-                  </Field>
-                  <Field
-                    name="type"
-                    component={Select}
-                    label={t('Export type')}
-                    fullWidth={true}
-                    inputProps={{
-                      name: 'type',
-                      id: 'type',
-                    }}
-                    containerstyle={{ marginTop: 20, width: '100%' }}
-                  >
-                    <MenuItem value="simple">
-                      {t('Simple export (just the entity)')}
-                    </MenuItem>
-                    <MenuItem value="full">
-                      {t('Full export (entity and first neighbours)')}
-                    </MenuItem>
-                  </Field>
-                </DialogContent>
+                <QueryRenderer
+                  query={markingDefinitionsSearchQuery}
+                  variables={{ first: 200 }}
+                  render={({ props }) => {
+                    if (props && props.markingDefinitions) {
+                      return (
+                        <DialogContent>
+                          <Field
+                            name="format"
+                            component={Select}
+                            label={t('Export format')}
+                            fullWidth={true}
+                            inputProps={{
+                              name: 'format',
+                              id: 'format',
+                            }}
+                            containerstyle={{ width: '100%' }}
+                          >
+                            {exportScopes.map((value, i) => (
+                              <MenuItem
+                                key={i}
+                                value={value}
+                                disabled={!isExportActive(value)}
+                              >
+                                {value}
+                              </MenuItem>
+                            ))}
+                          </Field>
+                          <Field
+                            name="type"
+                            component={Select}
+                            label={t('Export type')}
+                            fullWidth={true}
+                            inputProps={{
+                              name: 'type',
+                              id: 'type',
+                            }}
+                            containerstyle={{ marginTop: 20, width: '100%' }}
+                          >
+                            <MenuItem value="simple">
+                              {t('Simple export (just the entity)')}
+                            </MenuItem>
+                            <MenuItem value="full">
+                              {t('Full export (entity and first neighbours)')}
+                            </MenuItem>
+                          </Field>
+                          <Field
+                            name="maxMarkingDefinition"
+                            component={Select}
+                            label={t('Max marking definition level')}
+                            fullWidth={true}
+                            inputProps={{
+                              name: 'maxMarkingDefinition',
+                              id: 'maxMarkingDefinition',
+                            }}
+                            containerstyle={{ marginTop: 20, width: '100%' }}
+                          >
+                            <MenuItem value="none">{t('None')}</MenuItem>
+                            {map(
+                              (markingDefinition) => (
+                                <MenuItem
+                                  key={markingDefinition.node.id}
+                                  value={markingDefinition.node.id}
+                                >
+                                  {markingDefinition.node.definition}
+                                </MenuItem>
+                              ),
+                              props.markingDefinitions.edges,
+                            )}
+                          </Field>
+                        </DialogContent>
+                      );
+                    }
+                    return <div> &nbsp; </div>;
+                  }}
+                />
                 <DialogActions>
                   <Button
                     onClick={handleReset}

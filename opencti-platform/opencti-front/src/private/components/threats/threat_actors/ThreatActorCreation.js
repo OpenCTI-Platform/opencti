@@ -23,6 +23,7 @@ import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
+import TagAutocompleteField from '../../common/form/TagAutocompleteField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -156,6 +157,7 @@ class ThreatActorCreation extends Component {
     const finalValues = pipe(
       assoc('createdByRef', values.createdByRef.value),
       assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
+      assoc('tags', pluck('value', values.tags)),
     )(values);
     commitMutation({
       mutation: threatActorMutation,
@@ -221,6 +223,7 @@ class ThreatActorCreation extends Component {
                 description: '',
                 createdByRef: '',
                 markingDefinitions: [],
+                tags: [],
               }}
               validationSchema={threatActorValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -265,6 +268,7 @@ class ThreatActorCreation extends Component {
                       options={this.state.markingDefinitions}
                       onInputChange={this.searchMarkingDefinitions.bind(this)}
                     />
+                    <TagAutocompleteField />
                     <div className={classes.buttons}>
                       <Button
                         variant="contained"

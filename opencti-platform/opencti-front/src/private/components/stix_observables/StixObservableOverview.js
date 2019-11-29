@@ -31,9 +31,9 @@ class StixObservableOverviewComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Typography variant="h3" gutterBottom={true}>
-            {t('Observable value')}
+            {t('Observable type')}
           </Typography>
-          {stixObservable.observable_value}
+          {t(`observable_${stixObservable.entity_type}`)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -58,7 +58,11 @@ class StixObservableOverviewComponent extends Component {
             {t('Creator')}
           </Typography>
           <ItemCreator
-              createdByRef={pathOr(null, ['createdByRef', 'node'], stixObservable)}
+            createdByRef={pathOr(
+              null,
+              ['createdByRef', 'node'],
+              stixObservable,
+            )}
           />
           <Typography
             variant="h3"
@@ -88,12 +92,14 @@ const StixObservableOverview = createFragmentContainer(
       fragment StixObservableOverview_stixObservable on StixObservable {
         id
         name
+        entity_type
         description
         created_at
         updated_at
-        observable_value
         createdByRef {
           node {
+            id
+            entity_type
             name
           }
         }

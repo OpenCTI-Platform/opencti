@@ -15,6 +15,10 @@ import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import MenuItem from '@material-ui/core/MenuItem';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContent from '@material-ui/core/DialogContent';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
 import inject18n from '../../../components/i18n';
 import { commitMutation, fetchQuery } from '../../../relay/environment';
 import Autocomplete from '../../../components/Autocomplete';
@@ -42,6 +46,11 @@ const styles = (theme) => ({
     position: 'fixed',
     bottom: 30,
     right: 280,
+  },
+  createButtonContextual: {
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
   },
   buttons: {
     marginTop: 20,
@@ -185,7 +194,7 @@ class StixObservableCreation extends Component {
     this.handleClose();
   }
 
-  render() {
+  renderClassic() {
     const { t, classes } = this.props;
     return (
       <div>
@@ -244,6 +253,7 @@ class StixObservableCreation extends Component {
                       }}
                       containerstyle={{ width: '100%' }}
                     >
+                      <MenuItem value="Autonomous-System">{t('Autonomous system')}</MenuItem>
                       <MenuItem value="Domain">{t('Domain')}</MenuItem>
                       <MenuItem value="Email-Address">
                         {t('Email address')}
@@ -363,6 +373,153 @@ class StixObservableCreation extends Component {
       </div>
     );
   }
+
+  renderContextual() {
+    const {
+      t, classes, inputValue, display,
+    } = this.props;
+    return (
+      <div style={{ display: display ? 'block' : 'none' }}>
+        <Fab
+          onClick={this.handleOpen.bind(this)}
+          color="secondary"
+          aria-label="Add"
+          className={classes.createButtonContextual}
+        >
+          <Add />
+        </Fab>
+        <Formik
+          initialValues={{
+            type: '',
+            observable_value: inputValue,
+            description: '',
+            createdByRef: '',
+            markingDefinitions: [],
+          }}
+          validationSchema={stixObservableValidation(t)}
+          onSubmit={this.onSubmit.bind(this)}
+          onReset={this.onReset.bind(this)}
+          render={({
+            submitForm,
+            handleReset,
+            isSubmitting,
+          }) => (
+            <Form>
+              <Dialog
+                open={this.state.open}
+                onClose={this.handleClose.bind(this)}
+                fullWidth={true}
+              >
+                <DialogTitle>{t('Create an entity')}</DialogTitle>
+                <DialogContent>
+                  <Field
+                    name="type"
+                    component={Select}
+                    label={t('Observable type')}
+                    fullWidth={true}
+                    inputProps={{
+                      name: 'type',
+                      id: 'type',
+                    }}
+                    containerstyle={{ width: '100%' }}
+                  >
+                    <MenuItem value="Autonomous-System">{t('Autonomous system')}</MenuItem>
+                    <MenuItem value="Domain">{t('Domain')}</MenuItem>
+                    <MenuItem value="Email-Address">
+                      {t('Email address')}
+                    </MenuItem>
+                    <MenuItem value="Email-Subject">
+                      {t('Email subject')}
+                    </MenuItem>
+                    <MenuItem value="File-Name">{t('File name')}</MenuItem>
+                    <MenuItem value="File-Path">{t('File path')}</MenuItem>
+                    <MenuItem value="File-MD5">{t('File MD5 hash')}</MenuItem>
+                    <MenuItem value="File-SHA1">{t('File SHA1 hash')}</MenuItem>
+                    <MenuItem value="File-SHA256">
+                      {t('File SHA256 hash')}
+                    </MenuItem>
+                    <MenuItem value="IPv4-Addr">{t('IPv4 address')}</MenuItem>
+                    <MenuItem value="IPv6-Addr">{t('IPv6 address')}</MenuItem>
+                    <MenuItem value="Mutex">{t('Mutex')}</MenuItem>
+                    <MenuItem value="PDB-Path">{t('PDB Path')}</MenuItem>
+                    <MenuItem value="Registry-Key">
+                      {t('Registry key')}
+                    </MenuItem>
+                    <MenuItem value="Registry-Key-Value">
+                      {t('Registry key value')}
+                    </MenuItem>
+                    <MenuItem value="Mutex">{t('Mutex')}</MenuItem>
+                    <MenuItem value="URL">{t('URL')}</MenuItem>
+                    <MenuItem value="Windows-Service-Name">
+                      {t('Windows Service Name')}
+                    </MenuItem>
+                    <MenuItem value="Windows-Service-Display-Name">
+                      {t('Windows Service Display Name')}
+                    </MenuItem>
+                    <MenuItem value="Windows-Scheduled-Task">
+                      {t('Windows Scheduled Task')}
+                    </MenuItem>
+                    <MenuItem value="X509-Certificate-Issuer">
+                      {t('X509 Certificate Issuer')}
+                    </MenuItem>
+                    <MenuItem value="X509-Certificate-Serial-Number">
+                      {t('X509 Certificate Serial number')}
+                    </MenuItem>
+                  </Field>
+                  <Field
+                    name="observable_value"
+                    component={TextField}
+                    label={t('Observable value')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows="4"
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    name="description"
+                    component={TextField}
+                    label={t('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows="4"
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    name="markingDefinitions"
+                    component={Autocomplete}
+                    multiple={true}
+                    label={t('Marking')}
+                    options={this.state.markingDefinitions}
+                    onInputChange={this.searchMarkingDefinitions.bind(this)}
+                  />
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleReset} disabled={isSubmitting}>
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    color="primary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                  >
+                    {t('Create')}
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </Form>
+          )}
+        />
+      </div>
+    );
+  }
+
+  render() {
+    const { contextual } = this.props;
+    if (contextual) {
+      return this.renderContextual();
+    }
+    return this.renderClassic();
+  }
 }
 
 StixObservableCreation.propTypes = {
@@ -370,6 +527,9 @@ StixObservableCreation.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  contextual: PropTypes.bool,
+  display: PropTypes.bool,
+  inputValue: PropTypes.string,
 };
 
 export default compose(

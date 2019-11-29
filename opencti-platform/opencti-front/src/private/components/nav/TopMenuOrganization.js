@@ -139,6 +139,26 @@ class TopMenuOrganization extends Component {
         >
           {t('Observables')}
         </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/entities/organizations/${organizationId}/files`}
+          variant={
+            location.pathname
+            === `/dashboard/entities/organizations/${organizationId}/files`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/entities/organizations/${organizationId}/files`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Files')}
+        </Button>
       </div>
     );
   }

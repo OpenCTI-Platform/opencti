@@ -18,9 +18,12 @@ class ErrorBoundaryComponent extends React.Component {
   render() {
     if (this.state.stack) {
       if (this.state.error instanceof ApplicationError) {
-        const types = map(e => e.name, this.state.error.data.res.errors);
+        const types = map((e) => e.name, this.state.error.data.res.errors);
         // Auth problem is always handled by a login redirect
-        if (includes('AuthRequired', types) || includes('ForbiddenAccess', types)) {
+        if (
+          includes('AuthRequired', types)
+          || includes('ForbiddenAccess', types)
+        ) {
           return <Redirect to="/login" />;
         }
         // Return the error display element.
@@ -44,7 +47,7 @@ ErrorBoundaryComponent.propTypes = {
 };
 export const ErrorBoundary = compose(withRouter)(ErrorBoundaryComponent);
 
-export const BoundaryRoute = props => (
+export const BoundaryRoute = (props) => (
   <ErrorBoundary display={props.display || <SimpleError />}>
     <Route {...props} />
   </ErrorBoundary>

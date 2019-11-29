@@ -66,7 +66,7 @@ class StixRelationStixRelationsLinesContainer extends Component {
             {data.stixRelations.edges.map((stixRelationEdge) => {
               const stixRelation = stixRelationEdge.node;
               const link = `${resolveLink(
-                stixRelation.to.parent_type === 'Stix-Observable'
+                stixRelation.to.parent_types.includes('Stix-Observable')
                   ? 'observable'
                   : stixRelation.to.entity_type,
               )}/${stixRelation.to.id}`;
@@ -84,12 +84,12 @@ class StixRelationStixRelationsLinesContainer extends Component {
                   </ListItemIcon>
                   <ListItemText
                     primary={
-                      stixRelation.to.parent_type === 'Stix-Observable'
+                      stixRelation.to.parent_types.includes('Stix-Observable')
                         ? stixRelation.to.observable_value
                         : stixRelation.to.name
                     }
                     secondary={
-                      stixRelation.to.parent_type === 'Stix-Observable'
+                      stixRelation.to.parent_types.includes('Stix-Observable')
                         ? t(`observable_${stixRelation.to.entity_type}`)
                         : t(`entity_${stixRelation.to.entity_type}`)
                     }
@@ -167,12 +167,12 @@ const StixRelationStixRelationsLines = createPaginationContainer(
                   id
                   name
                   entity_type
-                  parent_type
+                  parent_types
                 }
                 ... on StixObservable {
                   id
                   entity_type
-                  parent_type
+                  parent_types
                   observable_value
                 }
               }

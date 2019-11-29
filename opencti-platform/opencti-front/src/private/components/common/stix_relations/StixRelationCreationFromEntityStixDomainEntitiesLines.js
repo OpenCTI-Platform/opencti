@@ -223,7 +223,7 @@ const StixRelationCreationFromEntityStixDomainEntitiesLines = createPaginationCo
             node {
               id
               entity_type
-              parent_type
+              parent_types
               name
               description
             }

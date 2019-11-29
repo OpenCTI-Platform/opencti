@@ -5,9 +5,9 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
 import StixObservablePopover from './StixObservablePopover';
+import { truncate } from '../../../utils/String';
 
 const styles = () => ({
   title: {
@@ -26,9 +26,7 @@ const styles = () => ({
 
 class StixObservableHeaderComponent extends Component {
   render() {
-    const {
-      t, classes, variant, stixObservable,
-    } = this.props;
+    const { classes, variant, stixObservable } = this.props;
     return (
       <div>
         <Typography
@@ -36,7 +34,7 @@ class StixObservableHeaderComponent extends Component {
           gutterBottom={true}
           classes={{ root: classes.title }}
         >
-          {t(`observable_${stixObservable.entity_type}`)}
+          {truncate(stixObservable.observable_value, 50)}
         </Typography>
         <div className={classes.popover}>
           <StixObservablePopover stixObservableId={stixObservable.id} />
@@ -65,8 +63,6 @@ StixObservableHeaderComponent.propTypes = {
   stixObservable: PropTypes.object,
   variant: PropTypes.string,
   classes: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
 };
 
 const StixObservableHeader = createFragmentContainer(
@@ -76,6 +72,7 @@ const StixObservableHeader = createFragmentContainer(
       fragment StixObservableHeader_stixObservable on StixObservable {
         id
         entity_type
+        observable_value
         markingDefinitions {
           edges {
             node {
@@ -89,7 +86,4 @@ const StixObservableHeader = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixObservableHeader);
+export default compose(withStyles(styles))(StixObservableHeader);

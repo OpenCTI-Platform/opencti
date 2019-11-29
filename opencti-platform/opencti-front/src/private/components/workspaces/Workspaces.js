@@ -102,7 +102,9 @@ class Workspaces extends Component {
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
-      workspaceType,
+      filters: [
+        { key: 'workspace_type', values: [workspaceType] },
+      ],
     };
     return (
       <div>

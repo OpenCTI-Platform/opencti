@@ -8,7 +8,7 @@ import { ArrowForwardIos } from '@material-ui/icons';
 import { ProgressWrench } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
     padding: '2px 5px 2px 5px',
@@ -75,6 +75,26 @@ class TopMenuCourseOfAction extends Component {
           classes={{ root: classes.button }}
         >
           {t('Overview')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/files`}
+          variant={
+            location.pathname
+            === `/dashboard/techniques/courses_of_action/${courseOfActionId}/files`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/techniques/courses_of_action/${courseOfActionId}/files`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Files')}
         </Button>
       </div>
     );

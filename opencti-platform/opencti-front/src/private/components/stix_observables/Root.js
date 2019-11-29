@@ -4,16 +4,18 @@ import { Route, withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer, requestSubscription } from '../../../relay/environment';
 import TopBar from '../nav/TopBar';
-import StixObservable from './StixObservable';
-import StixObservableEnrichment from './StixObservableEnrichment';
 import StixRelation from '../common/stix_relations/StixRelation';
+import StixObservable from './StixObservable';
+import StixObservableLinks from './StixObservableLinks';
+import StixObservableKnowledge from './StixObservableKnowledge';
 
 const subscription = graphql`
   subscription RootStixObservableSubscription($id: ID!) {
     stixObservable(id: $id) {
       ...StixObservable_stixObservable
       ...StixObservableEditionContainer_stixObservable
-      ...StixObservableEnrichment_stixObservable
+      ...StixObservableKnowledge_stixObservable
+      ...StixObservableLinks_stixObservable
     }
   }
 `;
@@ -24,8 +26,9 @@ const stixObservableQuery = graphql`
       ...StixObservable_stixObservable
       ...StixObservableHeader_stixObservable
       ...StixObservableOverview_stixObservable
-      ...StixObservableAverages_stixObservable
-      ...StixObservableEnrichment_stixObservable
+      ...StixObservableDetails_stixObservable
+      ...StixObservableKnowledge_stixObservable
+      ...StixObservableLinks_stixObservable
     }
   }
 `;
@@ -78,9 +81,19 @@ class RootStixObservable extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/observables/all/:observableId/enrichment"
+                    path="/dashboard/observables/all/:observableId/links"
                     render={(routeProps) => (
-                      <StixObservableEnrichment
+                      <StixObservableLinks
+                        {...routeProps}
+                        stixObservable={props.stixObservable}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/observables/all/:observableId/knowledge"
+                    render={(routeProps) => (
+                      <StixObservableKnowledge
                         {...routeProps}
                         stixObservable={props.stixObservable}
                       />

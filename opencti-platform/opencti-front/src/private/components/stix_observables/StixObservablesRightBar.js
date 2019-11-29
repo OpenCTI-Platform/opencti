@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { DatePicker } from '@material-ui/pickers';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListSubheader from '@material-ui/core/ListSubheader';
@@ -11,7 +10,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Drawer from '@material-ui/core/Drawer';
 import inject18n from '../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: 250,
@@ -41,11 +40,7 @@ class StixObservablesRightBar extends Component {
       classes,
       t,
       types,
-      lastSeenStart,
-      lastSeenStop,
       handleToggle,
-      handleChangeLastSeenStart,
-      handleChangeLastSeenStop,
     } = this.props;
     return (
       <Drawer
@@ -61,6 +56,15 @@ class StixObservablesRightBar extends Component {
             </ListSubheader>
           }
         >
+          <ListItem
+            dense={true}
+            button={true}
+            onClick={handleToggle.bind(this, 'Autonomous-System')}
+            classes={{ root: classes.item }}
+          >
+            <Checkbox checked={types.includes('Autonomous-System')} disableRipple={true} />
+            <ListItemText primary={t('Autonomous systems')} />
+          </ListItem>
           <ListItem
             dense={true}
             button={true}
@@ -130,42 +134,50 @@ class StixObservablesRightBar extends Component {
             <Checkbox checked={types.includes('File')} disableRipple={true} />
             <ListItemText primary={t('Files')} />
           </ListItem>
-        </List>
-        <List
-          subheader={
-            <ListSubheader component="div">{t('Parameters')}</ListSubheader>
-          }
-        >
-          <ListItem dense={true} classes={{ root: classes.itemField }}>
-            <DatePicker
-              name="lastSeenStart"
-              label={t('Start date')}
-              fullWidth={true}
-              value={lastSeenStart}
-              emptyLabel={t('Nonee')}
-              format="YYYY-MM-DD"
-              clearable={true}
-              autoOk={true}
-              clearLabel={t('Clear')}
-              cancelLabel={t('Cancel')}
-              onChange={handleChangeLastSeenStart.bind(this)}
-            />
+          <ListItem
+            dense={true}
+            button={true}
+            onClick={handleToggle.bind(this, 'Registry-Key')}
+            classes={{ root: classes.item }}
+          >
+            <Checkbox checked={types.includes('Registry-Key')} disableRipple={true} />
+            <ListItemText primary={t('Registry')} />
           </ListItem>
-          <ListItem dense={true} classes={{ root: classes.itemField }}>
-            <DatePicker
-              name="lastSeenStart"
-              label={t('End date')}
-              fullWidth={true}
-              value={lastSeenStop}
-              emptyLabel={t('Nonee')}
-              format="YYYY-MM-DD"
-              clearable={true}
-              autoOk={true}
-              clearLabel={t('Clear')}
-              cancelLabel={t('Cancel')}
-              onChange={handleChangeLastSeenStop.bind(this)}
-              style={{ marginTop: 20 }}
-            />
+          <ListItem
+            dense={true}
+            button={true}
+            onClick={handleToggle.bind(this, 'PDB-Path')}
+            classes={{ root: classes.item }}
+          >
+            <Checkbox checked={types.includes('PDB-Path')} disableRipple={true} />
+            <ListItemText primary={t('Chemin PDB')} />
+          </ListItem>
+          <ListItem
+            dense={true}
+            button={true}
+            onClick={handleToggle.bind(this, 'Windows-Service')}
+            classes={{ root: classes.item }}
+          >
+            <Checkbox checked={types.includes('Windows-Service')} disableRipple={true} />
+            <ListItemText primary={t('Windows services')} />
+          </ListItem>
+          <ListItem
+            dense={true}
+            button={true}
+            onClick={handleToggle.bind(this, 'Windows-Scheduled-Task')}
+            classes={{ root: classes.item }}
+          >
+            <Checkbox checked={types.includes('Windows-Scheduled-Task')} disableRipple={true} />
+            <ListItemText primary={t('Windows scheduled tasks')} />
+          </ListItem>
+          <ListItem
+            dense={true}
+            button={true}
+            onClick={handleToggle.bind(this, 'X509-Certificate')}
+            classes={{ root: classes.item }}
+          >
+            <Checkbox checked={types.includes('X509-Certificate')} disableRipple={true} />
+            <ListItemText primary={t('X509 Certificates')} />
           </ListItem>
         </List>
       </Drawer>
@@ -175,11 +187,7 @@ class StixObservablesRightBar extends Component {
 
 StixObservablesRightBar.propTypes = {
   types: PropTypes.array,
-  lastSeenStart: PropTypes.string,
-  lastSeenStop: PropTypes.string,
   handleToggle: PropTypes.func,
-  handleChangeLastSeenStart: PropTypes.func,
-  handleChangeLastSeenStop: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
