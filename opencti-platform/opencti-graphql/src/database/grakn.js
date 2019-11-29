@@ -67,14 +67,16 @@ export const TYPE_STIX_RELATION = 'stix_relation';
 export const TYPE_STIX_OBSERVABLE_RELATION = 'stix_observable_relation';
 export const TYPE_RELATION_EMBEDDED = 'relation_embedded';
 export const TYPE_STIX_RELATION_EMBEDDED = 'stix_relation_embedded';
-export const inferIndexFromConceptTypes = types => {
+export const inferIndexFromConceptTypes = (types, parentType = null) => {
   // Observable index
-  if (includes(TYPE_STIX_OBSERVABLE, types)) return INDEX_STIX_OBSERVABLE;
+  if (includes(TYPE_STIX_OBSERVABLE, types) || parentType === TYPE_STIX_OBSERVABLE) return INDEX_STIX_OBSERVABLE;
   // Relation index
-  if (includes(TYPE_STIX_RELATION, types)) return INDEX_STIX_RELATIONS;
-  if (includes(TYPE_STIX_OBSERVABLE_RELATION, types)) return INDEX_STIX_RELATIONS;
-  if (includes(TYPE_STIX_RELATION_EMBEDDED, types)) return INDEX_STIX_RELATIONS;
-  if (includes(TYPE_RELATION_EMBEDDED, types)) return INDEX_STIX_RELATIONS;
+  if (includes(TYPE_STIX_RELATION, types) || parentType === TYPE_STIX_RELATION) return INDEX_STIX_RELATIONS;
+  if (includes(TYPE_STIX_OBSERVABLE_RELATION, types) || parentType === TYPE_STIX_OBSERVABLE_RELATION)
+    return INDEX_STIX_RELATIONS;
+  if (includes(TYPE_STIX_RELATION_EMBEDDED, types) || parentType === TYPE_STIX_RELATION_EMBEDDED)
+    return INDEX_STIX_RELATIONS;
+  if (includes(TYPE_RELATION_EMBEDDED, types) || parentType === TYPE_RELATION_EMBEDDED) return INDEX_STIX_RELATIONS;
   // Everything else in entities index
   return INDEX_STIX_ENTITIES;
 };
@@ -945,19 +947,22 @@ export const deleteEntityById = async id => {
     const query = `match $x has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
     logger.debug(`[GRAKN - infer: false] deleteEntityById > ${query}`);
     await wTx.tx.query(query, { infer: false });
-    await elDeleteInstanceIds(append(id, relationsIds));
+    await elDeleteInstanceIds(append(eid, relationsIds));
     return id;
   });
 };
 export const deleteRelationById = async relationId => {
   const eid = escapeString(relationId);
+  const read = `match $from has internal_id_key "${eid}"; { $to isa entity; } or { $to isa relation; }; $rel($from, $to) isa relation; get;`;
+  const relationsToDeIndex = await find(read, ['rel']);
+  const relationsIds = map(r => r.rel.id, relationsToDeIndex);
   await executeWrite(async wTx => {
-    const query = `match $x has internal_id_key "${eid}"; delete $x;`;
+    const query = `match $x has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
     logger.debug(`[GRAKN - infer: false] deleteRelationById > ${query}`);
     await wTx.tx.query(query, { infer: false });
     // [ELASTIC] Update - Delete the inner indexed relations in entities
     await elRemoveRelationConnection(eid);
-    await elDeleteInstanceIds([eid]);
+    await elDeleteInstanceIds(append(eid, relationsIds));
   });
   return eid;
 };
@@ -1010,7 +1015,17 @@ export const loadWithConnectedRelations = (query, key, relationKey = null, infer
 // If first specified in args, the result will be paginated
 export const listEntities = async (searchFields, args) => {
   // filters contains potential relations like, mitigates, tagged ...
-  const { first = 200, after, withCache = true, types, search, filters, orderBy, orderMode = 'asc' } = args;
+  const {
+    first = 200,
+    after,
+    withCache = true,
+    types,
+    parentType = null,
+    search,
+    filters,
+    orderBy,
+    orderMode = 'asc'
+  } = args;
   const validFilters = filter(f => f && f.values.filter(n => n).length > 0, filters || []);
   const offset = after ? cursorToOffset(after) : 0;
   const isRelationOrderBy = orderBy !== undefined && orderBy !== null && includes('.', orderBy);
@@ -1032,7 +1047,7 @@ export const listEntities = async (searchFields, args) => {
   const unsupportedOrdering = isRelationOrderBy && last(orderBy.split('.')) !== 'internal_id_key';
   const supportedByCache = !unsupportedOrdering && !unSupportedRelations && !forceNoCache();
   if (supportedByCache && withCache) {
-    const index = inferIndexFromConceptTypes(args.types);
+    const index = inferIndexFromConceptTypes(types, parentType);
     return elPaginate(index, args);
   }
   logger.debug(`[GRAKN] ListEntities on Grakn, supportedByCache: ${supportedByCache} - withCache: ${withCache}`);

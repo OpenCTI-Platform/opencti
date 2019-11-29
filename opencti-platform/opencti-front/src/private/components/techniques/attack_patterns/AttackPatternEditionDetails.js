@@ -13,6 +13,7 @@ import inject18n from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
 import Select from '../../../../components/Select';
+import TextField from "../../../../components/TextField";
 
 const styles = theme => ({
   drawerPaper: {
@@ -66,6 +67,7 @@ export const attackPatternEditionDetailsFocus = graphql`
 `;
 
 const attackPatternValidation = () => Yup.object().shape({
+  external_id: Yup.string(),
   platform: Yup.string(),
   required_permission: Yup.string(),
 });
@@ -110,7 +112,7 @@ class AttackPatternEditionDetailsComponent extends Component {
         'required_permission',
         propOr([], 'required_permission', attackPattern),
       ),
-      pick(['platform', 'required_permission']),
+      pick(['external_id', 'platform', 'required_permission']),
     )(attackPattern);
 
     return (
@@ -123,6 +125,21 @@ class AttackPatternEditionDetailsComponent extends Component {
           render={() => (
             <div>
               <Form style={{ margin: '20px 0 20px 0' }}>
+                <Field
+                  name="external_id"
+                  component={TextField}
+                  label={t('External ID')}
+                  fullWidth={true}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="external_id"
+                    />
+                  }
+                />
                 <Field
                   name="platform"
                   component={Select}
@@ -197,6 +214,7 @@ const AttackPatternEditionDetails = createFragmentContainer(
     attackPattern: graphql`
       fragment AttackPatternEditionDetails_attackPattern on AttackPattern {
         id
+        external_id
         platform
         required_permission
       }

@@ -90,17 +90,13 @@ export const rolesMap = {
     localized: 'from',
     location: 'to'
   },
-  belonging: {
-    part_of: 'from',
-    gather: 'to'
-  },
   drops: {
     dropping: 'from',
     dropped: 'to'
   },
   gathering: {
-    gather: 'from',
-    part_of: 'to'
+    part_of: 'from',
+    gather: 'to'
   },
   // endregion
   // region stix_observable_relation

@@ -185,7 +185,7 @@ define
   localized sub role;
   location sub role;
 
-  # belonging
+  # gathering
   part_of sub role;
   gather sub role;
 
@@ -379,7 +379,7 @@ define
     relates localized,
     relates location;
 
-  # belonging
+  # gathering
   gathering sub parentship,
     relates gather,
     relates part_of;

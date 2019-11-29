@@ -1675,6 +1675,7 @@ type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
   description: String
   platform: [String]
   required_permission: [String]
+  external_id: String
   created: DateTime
   modified: DateTime
   revoked: Boolean

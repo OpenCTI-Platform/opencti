@@ -272,7 +272,6 @@ class StixObservableCreation extends Component {
                       </MenuItem>
                       <MenuItem value="IPv4-Addr">{t('IPv4 address')}</MenuItem>
                       <MenuItem value="IPv6-Addr">{t('IPv6 address')}</MenuItem>
-                      <MenuItem value="Mutex">{t('Mutex')}</MenuItem>
                       <MenuItem value="PDB-Path">{t('PDB Path')}</MenuItem>
                       <MenuItem value="Registry-Key">
                         {t('Registry key')}
@@ -440,7 +439,6 @@ class StixObservableCreation extends Component {
                     </MenuItem>
                     <MenuItem value="IPv4-Addr">{t('IPv4 address')}</MenuItem>
                     <MenuItem value="IPv6-Addr">{t('IPv6 address')}</MenuItem>
-                    <MenuItem value="Mutex">{t('Mutex')}</MenuItem>
                     <MenuItem value="PDB-Path">{t('PDB Path')}</MenuItem>
                     <MenuItem value="Registry-Key">
                       {t('Registry key')}

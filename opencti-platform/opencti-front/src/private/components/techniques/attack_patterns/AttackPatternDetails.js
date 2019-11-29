@@ -5,6 +5,7 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
+import Chip from '@material-ui/core/Chip';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -32,6 +33,15 @@ class AttackPatternDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
+          <Typography variant="h3" gutterBottom={true}>
+            {t('External ID')}
+          </Typography>
+          <Chip
+            size="small"
+            label={attackPattern.external_id}
+            color="primary"
+            style={{ marginBottom: 20 }}
+          />
           <StixDomainEntityTags
             tags={attackPattern.tags}
             id={attackPattern.id}
@@ -69,11 +79,7 @@ class AttackPatternDetailsComponent extends Component {
           </Typography>
           <List>
             {propOr([], 'platform', attackPattern).map((platform) => (
-              <ListItem
-                key={platform}
-                dense={true}
-                divider={true}
-              >
+              <ListItem key={platform} dense={true} divider={true}>
                 <ListItemIcon>
                   <SettingsApplications />
                 </ListItemIcon>
@@ -91,11 +97,7 @@ class AttackPatternDetailsComponent extends Component {
           <List>
             {propOr([], 'required_permission', attackPattern).map(
               (permission) => (
-                <ListItem
-                  key={permission}
-                  dense={true}
-                  divider={true}
-                >
+                <ListItem key={permission} dense={true} divider={true}>
                   <ListItemIcon>
                     <PermIdentity />
                   </ListItemIcon>
@@ -123,6 +125,7 @@ const AttackPatternDetails = createFragmentContainer(
     attackPattern: graphql`
       fragment AttackPatternDetails_attackPattern on AttackPattern {
         id
+        external_id
         platform
         required_permission
         tags {
@@ -153,7 +156,4 @@ const AttackPatternDetails = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(AttackPatternDetails);
+export default compose(inject18n, withStyles(styles))(AttackPatternDetails);

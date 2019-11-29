@@ -1,4 +1,4 @@
-import { assoc, dissoc, map } from 'ramda';
+import { assoc, dissoc, map, pipe } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
@@ -25,7 +25,10 @@ export const findById = stixObservableId => {
 };
 export const findAll = async args => {
   const noTypes = !args.types || args.types.length === 0;
-  const finalArgs = assoc('types', noTypes ? ['Stix-Observable'] : args.types, args);
+  const finalArgs = pipe(
+    assoc('types', noTypes ? ['Stix-Observable'] : args.types),
+    assoc('parentType', 'Stix-Observable')
+  )(args);
   return listEntities(['name', 'description', 'observable_value'], finalArgs);
 };
 

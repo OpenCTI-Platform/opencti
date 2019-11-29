@@ -41,7 +41,7 @@ const styles = (theme) => ({
   },
 });
 
-class ReportLineComponent extends Component {
+class EntityStixRelationLineComponent extends Component {
   render() {
     const {
       nsd,
@@ -115,7 +115,7 @@ class ReportLineComponent extends Component {
   }
 }
 
-ReportLineComponent.propTypes = {
+EntityStixRelationLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   entityLink: PropTypes.string,
   paginationOptions: PropTypes.object,
@@ -125,34 +125,40 @@ ReportLineComponent.propTypes = {
   nsd: PropTypes.func,
 };
 
-const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
-  node: graphql`
-    fragment EntityStixRelationLine_node on StixRelation {
-      id
-      relationship_type
-      weight
-      first_seen
-      last_seen
-      description
-      inferred
-      to {
-        ... on StixDomainEntity {
-          id
-          entity_type
-          name
-          description
-          created_at
-          updated_at
+const EntityStixRelationLineFragment = createFragmentContainer(
+  EntityStixRelationLineComponent,
+  {
+    node: graphql`
+      fragment EntityStixRelationLine_node on StixRelation {
+        id
+        entity_type
+        parent_types
+        relationship_type
+        weight
+        first_seen
+        last_seen
+        description
+        inferred
+        to {
+          ... on StixDomainEntity {
+            id
+            entity_type
+            parent_types
+            name
+            description
+            created_at
+            updated_at
+          }
         }
       }
-    }
-  `,
-});
+    `,
+  },
+);
 
 export const EntityStixRelationLine = compose(
   inject18n,
   withStyles(styles),
-)(ReportLineFragment);
+)(EntityStixRelationLineFragment);
 
 class EntityStixRelationLineDummyComponent extends Component {
   render() {
