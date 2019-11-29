@@ -27,7 +27,7 @@ export const findAll = async args => {
   const noTypes = !args.types || args.types.length === 0;
   const finalArgs = pipe(
     assoc('types', noTypes ? ['Stix-Observable'] : args.types),
-    assoc('parentType', ['Stix-Observable'])
+    assoc('parentType', 'Stix-Observable')
   )(args);
   return listEntities(['name', 'description', 'observable_value'], finalArgs);
 };
