@@ -1,31 +1,31 @@
+import { addCampaign, campaignsTimeSeries, campaignsTimeSeriesByEntity, findAll, findById } from '../domain/campaign';
 import {
-  addCampaign,
-  findAll,
-  findById,
-  campaignsTimeSeries,
-  campaignsTimeSeriesByEntity
-} from '../domain/campaign';
-import {
-  stixDomainEntityEditContext,
-  stixDomainEntityCleanContext,
-  stixDomainEntityEditField,
   stixDomainEntityAddRelation,
+  stixDomainEntityCleanContext,
+  stixDomainEntityDelete,
   stixDomainEntityDeleteRelation,
-  stixDomainEntityDelete
+  stixDomainEntityEditContext,
+  stixDomainEntityEditField
 } from '../domain/stixDomainEntity';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const campaignResolvers = {
   Query: {
     campaign: (_, { id }) => findById(id),
-    campaigns: (_, args) => {
-      return findAll(args);
-    },
+    campaigns: (_, args) => findAll(args),
     campaignsTimeSeries: (_, args) => {
       if (args.objectId && args.objectId.length > 0) {
         return campaignsTimeSeriesByEntity(args);
       }
       return campaignsTimeSeries(args);
     }
+  },
+  CampaignsOrdering: {
+    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
+    tags: `${REL_INDEX_PREFIX}tagged.value`
+  },
+  CampaignsFilter: {
+    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`
   },
   Mutation: {
     campaignEdit: (_, { id }, { user }) => ({
@@ -34,8 +34,7 @@ const campaignResolvers = {
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) =>
-        stixDomainEntityDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
     }),
     campaignAdd: (_, { input }, { user }) => addCampaign(user, input)
   }

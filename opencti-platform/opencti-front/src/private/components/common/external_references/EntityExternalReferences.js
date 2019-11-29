@@ -15,7 +15,7 @@ import EntityExternalReferencesLines, {
   entityExternalReferencesLinesQuery,
 } from './EntityExternalReferencesLines';
 
-const styles = theme => ({
+const styles = (theme) => ({
   paper: {
     minHeight: '100%',
     margin: '3px 0 0 0',
@@ -41,37 +41,20 @@ const styles = theme => ({
 class EntityExternalReferences extends Component {
   render() {
     const { t, classes, entityId } = this.props;
-    const paginationOptions = {
-      objectId: entityId,
-      orderBy: 'created_at',
-      orderMode: 'desc',
-    };
     return (
       <QueryRenderer
         query={entityExternalReferencesLinesQuery}
-        variables={{
-          objectId: entityId,
-          count: 200,
-          orderBy: 'created_at',
-          orderMode: 'desc',
-        }}
+        variables={{ entityId, count: 200 }}
         render={({ props }) => {
           if (props) {
-            return (
-              <EntityExternalReferencesLines
-                entityId={entityId}
-                data={props}
-                paginationOptions={paginationOptions}
-              />
-            );
+            return (<EntityExternalReferencesLines entityId={entityId} data={props}/>);
           }
           return (
             <div style={{ height: '100%' }}>
               <Typography
                 variant="h4"
                 gutterBottom={true}
-                style={{ float: 'left' }}
-              >
+                style={{ float: 'left' }}>
                 {t('External references')}
               </Typography>
               <div className="clearfix" />

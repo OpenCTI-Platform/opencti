@@ -48,8 +48,6 @@ StixObservablesLines.propTypes = {
 export const stixObservablesLinesQuery = graphql`
   query StixObservablesLinesPaginationQuery(
     $types: [String]
-    $lastSeenStart: DateTime
-    $lastSeenStop: DateTime
     $search: String
     $count: Int!
     $cursor: ID
@@ -59,8 +57,6 @@ export const stixObservablesLinesQuery = graphql`
     ...StixObservablesLines_data
       @arguments(
         types: $types
-        lastSeenStart: $lastSeenStart
-        lastSeenStop: $lastSeenStop
         search: $search
         count: $count
         cursor: $cursor
@@ -93,8 +89,6 @@ export default createPaginationContainer(
       fragment StixObservablesLines_data on Query
         @argumentDefinitions(
           types: { type: "[String]" }
-          lastSeenStart: { type: "DateTime" }
-          lastSeenStop: { type: "DateTime" }
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
@@ -106,8 +100,6 @@ export default createPaginationContainer(
         ) {
         stixObservables(
           types: $types
-          lastSeenStart: $lastSeenStart
-          lastSeenStop: $lastSeenStop
           search: $search
           first: $count
           after: $cursor
@@ -156,8 +148,6 @@ export default createPaginationContainer(
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         types: fragmentVariables.types,
-        lastSeenStart: fragmentVariables.lastSeenStart,
-        lastSeenStop: fragmentVariables.lastSeenStop,
         search: fragmentVariables.search,
         count,
         cursor,

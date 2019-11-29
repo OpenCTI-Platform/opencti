@@ -1,33 +1,33 @@
+import { addAttackPattern, findAll, findById, coursesOfAction } from '../domain/attackPattern';
 import {
-  addAttackPattern,
-  findAll,
-  findById,
-  findByCourseOfAction
-} from '../domain/attackPattern';
-import {
-  killChainPhases,
-  externalReferences,
-  stixDomainEntityEditContext,
-  stixDomainEntityCleanContext,
-  stixDomainEntityEditField,
   stixDomainEntityAddRelation,
+  stixDomainEntityCleanContext,
+  stixDomainEntityDelete,
   stixDomainEntityDeleteRelation,
-  stixDomainEntityDelete
+  stixDomainEntityEditContext,
+  stixDomainEntityEditField
 } from '../domain/stixDomainEntity';
+import { killChainPhases } from '../domain/stixEntity';
+
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const attackPatternResolvers = {
   Query: {
     attackPattern: (_, { id }) => findById(id),
-    attackPatterns: (_, args) => {
-      if (args.courseOfActionId && args.courseOfActionId.length > 0) {
-        return findByCourseOfAction(args);
-      }
-      return findAll(args);
-    }
+    attackPatterns: (_, args) => findAll(args)
   },
   AttackPattern: {
-    externalReferences: (attPatt, args) => externalReferences(attPatt.id, args),
-    killChainPhases: (attPatt, args) => killChainPhases(attPatt.id, args)
+    killChainPhases: attackPattern => killChainPhases(attackPattern.id),
+    coursesOfAction: attackPattern => coursesOfAction(attackPattern.id)
+  },
+  AttackPatternsOrdering: {
+    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
+    tags: `${REL_INDEX_PREFIX}tagged.value`,
+    killChainPhases: `${REL_INDEX_PREFIX}kill_chain_phases.phase_name`
+  },
+  AttackPatternsFilter: {
+    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
+    mitigateBy: `${REL_INDEX_PREFIX}mitigates.internal_id_key`
   },
   Mutation: {
     attackPatternEdit: (_, { id }, { user }) => ({
@@ -36,8 +36,7 @@ const attackPatternResolvers = {
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) =>
-        stixDomainEntityDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
     }),
     attackPatternAdd: (_, { input }, { user }) => addAttackPattern(user, input)
   }

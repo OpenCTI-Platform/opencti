@@ -1,6 +1,4 @@
-import {
-  Environment, RecordSource, Store,
-} from 'relay-runtime';
+import { Environment, RecordSource, Store } from 'relay-runtime';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { installRelayDevTools } from 'relay-devtools';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
@@ -24,14 +22,15 @@ import uploadMiddleware from './uploadMiddleware';
 
 // Dev tools
 export const IN_DEV_MODE = process.env.NODE_ENV === 'development';
+console.log('IN_DEV_MODE', IN_DEV_MODE);
 if (IN_DEV_MODE) installRelayDevTools();
 
 // Service bus
 const MESSENGER$ = new Subject().pipe(debounce(() => timer(500)));
 export const MESSAGING$ = {
   messages: MESSENGER$,
-  notifyError: text => MESSENGER$.next([{ type: 'error', text }]),
-  notifySuccess: text => MESSENGER$.next([{ type: 'message', text }]),
+  notifyError: (text) => MESSENGER$.next([{ type: 'error', text }]),
+  notifySuccess: (text) => MESSENGER$.next([{ type: 'message', text }]),
   redirect: new Subject(),
 };
 
@@ -51,7 +50,8 @@ export const ACCESS_PROVIDERS = split(
 
 // Network
 const envBasePath = isEmpty(window.BASE_PATH) || window.BASE_PATH.startsWith('/')
-  ? window.BASE_PATH : `/${window.BASE_PATH}`;
+  ? window.BASE_PATH
+  : `/${window.BASE_PATH}`;
 export const APP_BASE_PATH = IN_DEV_MODE ? '' : envBasePath;
 
 // Subscription
@@ -88,7 +88,7 @@ const network = new RelayNetworkLayer(
 
 const store = new Store(new RecordSource());
 // Activate the read from store then network
-store.holdGC();
+// store.holdGC();
 export const environment = new Environment({
   network,
   store,
@@ -105,10 +105,10 @@ export class QueryRenderer extends Component {
         environment={environment}
         query={query}
         variables={variables}
-        fetchPolicy='store-and-network'
+        fetchPolicy="store-and-network"
         render={(data) => {
           const { error } = data;
-          const types = error ? map(e => e.name, error) : [];
+          const types = error ? map((e) => e.name, error) : [];
           const unmanagedErrors = difference(types, managedErrorTypes || []);
           if (!isEmpty(unmanagedErrors)) throw new ApplicationError(error);
           return render(data);
@@ -141,24 +141,27 @@ export const commitMutation = ({
   optimisticUpdater,
   optimisticResponse,
   onCompleted,
-  onError: (errors) => {
+  onError: (error) => {
     if (setSubmitting) setSubmitting(false);
     const authRequired = filter(
-      e => e.data.type === 'authentication',
-      errors,
+      (e) => e.data && e.data.type === 'authentication',
+      error.res.errors,
     );
     if (!isEmpty(authRequired)) {
       MESSAGING$.redirect.next('/login');
     } else {
-      const messages = map(e => ({ type: 'error', text: e.message }), errors);
+      const messages = map(
+        (e) => ({ type: 'error', text: e.message }),
+        error.res.errors,
+      );
       MESSAGING$.messages.next(messages);
-      if (onError) onError(errors);
+      if (onError) onError(error);
     }
   },
 });
 
 const deactivateSubscription = { dispose: () => undefined };
 // eslint-disable-next-line max-len
-export const requestSubscription = args => (WS_ACTIVATED ? RS(environment, args) : deactivateSubscription);
+export const requestSubscription = (args) => (WS_ACTIVATED ? RS(environment, args) : deactivateSubscription);
 
 export const fetchQuery = (query, args) => FQ(environment, query, args);

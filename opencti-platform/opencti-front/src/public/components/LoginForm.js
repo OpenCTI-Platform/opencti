@@ -23,7 +23,7 @@ const loginMutation = graphql`
   }
 `;
 
-const loginValidation = t => Yup.object().shape({
+const loginValidation = (t) => Yup.object().shape({
   email: Yup.string()
     .email(t('The value must be an email address'))
     .required(t('This field is required')),
@@ -37,9 +37,9 @@ class LoginForm extends Component {
       variables: {
         input: values,
       },
-      onError: (errors) => {
-        const error = this.props.t(head(errors).message);
-        setErrors({ email: error });
+      onError: (error) => {
+        const errorMessage = this.props.t(head(error.res.errors).message);
+        setErrors({ email: errorMessage });
       },
       setSubmitting,
       onCompleted: () => {
