@@ -81,7 +81,7 @@ const applyMigration = () => {
       return set.up(err2 => {
         if (err2) reject(err2);
         logger.info('[MIGRATION] > Migrations successfully ran');
-        return resolve(true);
+        resolve(true);
       });
     });
   });
