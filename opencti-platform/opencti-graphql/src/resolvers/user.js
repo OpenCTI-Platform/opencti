@@ -32,7 +32,7 @@ const userResolvers = {
     tags: `${REL_INDEX_PREFIX}tagged.value`
   },
   User: {
-    groups: (user, args) => groups(user.id, args),
+    groups: user => groups(user.id),
     token: (user, args, context) => token(user.id, args, context)
   },
   Mutation: {
