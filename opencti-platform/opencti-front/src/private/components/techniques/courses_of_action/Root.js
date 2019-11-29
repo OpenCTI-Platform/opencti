@@ -8,6 +8,9 @@ import {
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import CourseOfAction from './CourseOfAction';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import FileManager from '../../common/files/FileManager';
+import CourseOfActionPopover from './CourseOfActionPopover';
 
 const subscription = graphql`
   subscription RootCoursesOfActionSubscription($id: ID!) {
@@ -16,6 +19,8 @@ const subscription = graphql`
         ...CourseOfAction_courseOfAction
         ...CourseOfActionEditionContainer_courseOfAction
       }
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
     }
   }
 `;
@@ -23,9 +28,17 @@ const subscription = graphql`
 const courseOfActionQuery = graphql`
   query RootCourseOfActionQuery($id: String!) {
     courseOfAction(id: $id) {
+      id
+      name
+      alias
       ...CourseOfAction_courseOfAction
       ...CourseOfActionOverview_courseOfAction
       ...CourseOfActionDetails_courseOfAction
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
+    }
+    connectorsForExport {
+      ...FileManager_connectorsExport
     }
   }
 `;
@@ -68,11 +81,29 @@ class RootCourseOfAction extends Component {
                   <Route
                     exact
                     path="/dashboard/techniques/courses_of_action/:courseOfActionId"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <CourseOfAction
                         {...routeProps}
                         courseOfAction={props.courseOfAction}
                       />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/techniques/courses_of_action/:courseOfActionId/files"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.courseOfAction}
+                          PopoverComponent={<CourseOfActionPopover />}
+                        />
+                        <FileManager
+                          {...routeProps}
+                          id={courseOfActionId}
+                          connectorsExport={props.connectorsForExport}
+                          entity={props.courseOfAction}
+                        />
+                      </React.Fragment>
                     )}
                   />
                 </div>

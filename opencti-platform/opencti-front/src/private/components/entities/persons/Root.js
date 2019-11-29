@@ -10,6 +10,9 @@ import TopBar from '../../nav/TopBar';
 import Person from './Person';
 import PersonReports from './PersonReports';
 import PersonKnowledge from './PersonKnowledge';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import FileManager from '../../common/files/FileManager';
+import PersonPopover from './PersonPopover';
 
 const subscription = graphql`
   subscription RootPersonsSubscription($id: ID!) {
@@ -18,6 +21,8 @@ const subscription = graphql`
         ...Person_person
         ...PersonEditionContainer_person
       }
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
     }
   }
 `;
@@ -25,11 +30,19 @@ const subscription = graphql`
 const personQuery = graphql`
   query RootPersonQuery($id: String!) {
     user(id: $id) {
+      id
+      name
+      alias
       ...Person_person
       ...PersonOverview_person
       ...PersonDetails_person
       ...PersonReports_person
       ...PersonKnowledge_person
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
+    }
+    connectorsForExport {
+      ...FileManager_connectorsExport
     }
   }
 `;
@@ -72,14 +85,14 @@ class RootPerson extends Component {
                   <Route
                     exact
                     path="/dashboard/entities/persons/:personId"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <Person {...routeProps} person={props.user} />
                     )}
                   />
                   <Route
                     exact
                     path="/dashboard/entities/persons/:personId/reports"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <PersonReports {...routeProps} person={props.user} />
                     )}
                   />
@@ -94,8 +107,26 @@ class RootPerson extends Component {
                   />
                   <Route
                     path="/dashboard/entities/persons/:personId/knowledge"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <PersonKnowledge {...routeProps} person={props.user} />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/entities/persons/:personId/files"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.user}
+                          PopoverComponent={<PersonPopover />}
+                        />
+                        <FileManager
+                          {...routeProps}
+                          id={personId}
+                          connectorsExport={props.connectorsForExport}
+                          entity={props.user}
+                        />
+                      </React.Fragment>
                     )}
                   />
                 </div>

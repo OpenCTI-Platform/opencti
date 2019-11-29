@@ -3027,7 +3027,7 @@ type StixDomainEntityEditMutations {
   relationsAdd(input: RelationsAddInput): StixEntity
   relationDelete(relationId: ID!): StixEntity
   importPush(file: Upload!): File @auth
-  exportAsk(format: String!, exportType: String!): [File]
+  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
   exportPush(file: Upload!): Boolean @auth(for: ROLE_ADMIN)
 }
 

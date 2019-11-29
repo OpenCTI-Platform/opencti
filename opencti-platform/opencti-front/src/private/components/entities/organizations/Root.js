@@ -11,6 +11,9 @@ import Organization from './Organization';
 import OrganizationReports from './OrganizationReports';
 import OrganizationKnowledge from './OrganizationKnowledge';
 import OrganizationObservables from './OrganizationObservables';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import FileManager from '../../common/files/FileManager';
+import OrganizationPopover from './OrganizationPopover';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
@@ -19,6 +22,8 @@ const subscription = graphql`
         ...Organization_organization
         ...OrganizationEditionContainer_organization
       }
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
     }
   }
 `;
@@ -26,12 +31,20 @@ const subscription = graphql`
 const organizationQuery = graphql`
   query RootOrganizationQuery($id: String!) {
     organization(id: $id) {
+      id
+      name
+      alias
       ...Organization_organization
       ...OrganizationOverview_organization
       ...OrganizationDetails_organization
       ...OrganizationReports_organization
       ...OrganizationKnowledge_organization
       ...OrganizationObservables_organization
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
+    }
+    connectorsForExport {
+      ...FileManager_connectorsExport
     }
   }
 `;
@@ -116,6 +129,24 @@ class RootOrganization extends Component {
                         {...routeProps}
                         organization={props.organization}
                       />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/entities/organizations/:organizationId/files"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.organization}
+                          PopoverComponent={<OrganizationPopover />}
+                        />
+                        <FileManager
+                          {...routeProps}
+                          id={organizationId}
+                          connectorsExport={props.connectorsForExport}
+                          entity={props.organization}
+                        />
+                      </React.Fragment>
                     )}
                   />
                 </div>

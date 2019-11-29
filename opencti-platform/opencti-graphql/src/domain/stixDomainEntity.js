@@ -16,8 +16,8 @@ import {
   timeSeries,
   updateAttribute
 } from '../database/grakn';
+import { findById as findMarkingDefintionById } from './markingDefinition';
 import { elCount } from '../database/elasticSearch';
-
 import { generateFileExportName, upload } from '../database/minio';
 import { connectorsForExport } from './connector';
 import { createWork, workToExportFile } from './work';
@@ -50,13 +50,16 @@ export const stixDomainEntitiesNumber = args => ({
   total: elCount('stix_domain_entities', dissoc('endDate', args))
 });
 // endregion
-
-const askJobExports = async (entity, format, exportType) => {
+const askJobExports = async (entity, format, exportType, maxMarkingDefinition) => {
   const connectors = await connectorsForExport(format, true);
   // Create job for every connectors
+  const maxMarkingDefinitionEntity =
+    maxMarkingDefinition && maxMarkingDefinition.length > 0
+      ? await findMarkingDefintionById(maxMarkingDefinition)
+      : null;
   const workList = await Promise.all(
     map(connector => {
-      const fileName = generateFileExportName(format, connector, exportType, entity);
+      const fileName = generateFileExportName(format, connector, exportType, maxMarkingDefinitionEntity, entity);
       return createWork(connector, entity.id, fileName).then(({ work, job }) => ({
         connector,
         job,
@@ -71,6 +74,7 @@ const askJobExports = async (entity, format, exportType) => {
       const message = {
         work_id: work.internal_id_key, // work(id)
         job_id: job.internal_id_key, // job(id)
+        max_marking_definition: maxMarkingDefinition && maxMarkingDefinition.length > 0 ? maxMarkingDefinition : null, // markingDefinition(id)
         export_type: exportType, // simple or full
         entity_type: entity.entity_type, // report, threat, ...
         entity_id: entity.id, // report(id), thread(id), ...
@@ -84,9 +88,18 @@ const askJobExports = async (entity, format, exportType) => {
 export const stixDomainEntityImportPush = (user, entityId, file) => {
   return upload(user, 'import', file, entityId);
 };
-export const stixDomainEntityExportAsk = async (domainEntityId, format, exportType) => {
+
+/**
+ * Create export element waiting for completion
+ * @param domainEntityId
+ * @param format
+ * @param exportType > stix2-bundle-full | stix2-bundle-simple
+ * @param maxMarkingDefinition > maxMarkingDefinitionEntity
+ * @returns {*}
+ */
+export const stixDomainEntityExportAsk = async (domainEntityId, format, exportType, maxMarkingDefinition) => {
   const entity = await loadEntityById(domainEntityId);
-  const workList = await askJobExports(entity, format, exportType);
+  const workList = await askJobExports(entity, format, exportType, maxMarkingDefinition);
   // Return the work list to do
   return map(w => workToExportFile(w.work), workList);
 };

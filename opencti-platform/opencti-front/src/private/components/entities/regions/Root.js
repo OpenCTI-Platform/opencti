@@ -11,6 +11,9 @@ import Region from './Region';
 import RegionReports from './RegionReports';
 import RegionKnowledge from './RegionKnowledge';
 import RegionObservables from './RegionObservables';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import FileManager from '../../common/files/FileManager';
+import RegionPopover from './RegionPopover';
 
 const subscription = graphql`
   subscription RootRegionsSubscription($id: ID!) {
@@ -19,6 +22,8 @@ const subscription = graphql`
         ...Region_region
         ...RegionEditionContainer_region
       }
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
     }
   }
 `;
@@ -26,11 +31,19 @@ const subscription = graphql`
 const regionQuery = graphql`
   query RootRegionQuery($id: String!) {
     region(id: $id) {
+      id
+      name
+      alias
       ...Region_region
       ...RegionOverview_region
       ...RegionReports_region
       ...RegionKnowledge_region
       ...RegionObservables_region
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
+    }
+    connectorsForExport {
+      ...FileManager_connectorsExport
     }
   }
 `;
@@ -106,6 +119,24 @@ class RootRegion extends Component {
                         {...routeProps}
                         region={props.region}
                       />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/entities/regions/:regionId/files"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.region}
+                          PopoverComponent={<RegionPopover />}
+                        />
+                        <FileManager
+                          {...routeProps}
+                          id={regionId}
+                          connectorsExport={props.connectorsForExport}
+                          entity={props.region}
+                        />
+                      </React.Fragment>
                     )}
                   />
                 </div>

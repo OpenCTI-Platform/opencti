@@ -10,6 +10,9 @@ import TopBar from '../../nav/TopBar';
 import AttackPattern from './AttackPattern';
 import AttackPatternReports from './AttackPatternReports';
 import AttackPatternKnowledge from './AttackPatternKnowledge';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import FileManager from '../../common/files/FileManager';
+import AttackPatternPopover from './AttackPatternPopover';
 
 const subscription = graphql`
   subscription RootAttackPatternSubscription($id: ID!) {
@@ -18,6 +21,8 @@ const subscription = graphql`
         ...AttackPattern_attackPattern
         ...AttackPatternEditionContainer_attackPattern
       }
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
     }
   }
 `;
@@ -25,11 +30,19 @@ const subscription = graphql`
 const attackPatternQuery = graphql`
   query RootAttackPatternQuery($id: String!) {
     attackPattern(id: $id) {
+      id
+      name
+      alias
       ...AttackPattern_attackPattern
       ...AttackPatternOverview_attackPattern
       ...AttackPatternDetails_attackPattern
       ...AttackPatternReports_attackPattern
       ...AttackPatternKnowledge_attackPattern
+      ...FileImportViewer_entity
+      ...FileExportViewer_entity
+    }
+    connectorsForExport {
+      ...FileManager_connectorsExport
     }
   }
 `;
@@ -72,7 +85,7 @@ class RootAttackPattern extends Component {
                   <Route
                     exact
                     path="/dashboard/techniques/attack_patterns/:attackPatternId"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <AttackPattern
                         {...routeProps}
                         attackPattern={props.attackPattern}
@@ -82,7 +95,7 @@ class RootAttackPattern extends Component {
                   <Route
                     exact
                     path="/dashboard/techniques/attack_patterns/:attackPatternId/reports"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <AttackPatternReports
                         {...routeProps}
                         attackPattern={props.attackPattern}
@@ -100,11 +113,29 @@ class RootAttackPattern extends Component {
                   />
                   <Route
                     path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <AttackPatternKnowledge
                         {...routeProps}
                         attackPattern={props.attackPattern}
                       />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/techniques/attack_patterns/:attackPatternId/files"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.attackPattern}
+                          PopoverComponent={<AttackPatternPopover />}
+                        />
+                        <FileManager
+                          {...routeProps}
+                          id={attackPatternId}
+                          connectorsExport={props.connectorsForExport}
+                          entity={props.attackPattern}
+                        />
+                      </React.Fragment>
                     )}
                   />
                 </div>
