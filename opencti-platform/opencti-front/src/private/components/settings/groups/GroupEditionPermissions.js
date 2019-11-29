@@ -17,7 +17,7 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { markingDefinitionsSearchQuery } from '../MarkingDefinitions';
 
-const styles = theme => ({
+const styles = (theme) => ({
   list: {
     width: '100%',
     maxWidth: 360,
@@ -35,7 +35,7 @@ const groupMutationRelationAdd = graphql`
   ) {
     groupEdit(id: $id) {
       relationAdd(input: $input) {
-        node {
+        from {
           ...GroupEditionPermissions_group
         }
       }
@@ -50,9 +50,7 @@ const groupMutationRelationDelete = graphql`
   ) {
     groupEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        node {
-          ...GroupEditionPermissions_group
-        }
+        ...GroupEditionPermissions_group
       }
     }
   }
@@ -64,11 +62,11 @@ class GroupEditionPermissionsComponent extends Component {
       commitMutation({
         mutation: groupMutationRelationAdd,
         variables: {
-          id: markingDefinitionId,
+          id: this.props.group.id,
           input: {
-            fromRole: 'allow',
-            toId: this.props.group.id,
-            toRole: 'allowed',
+            fromRole: 'allowed',
+            toId: markingDefinitionId,
+            toRole: 'allow',
             through: 'permission',
           },
         },
@@ -88,7 +86,7 @@ class GroupEditionPermissionsComponent extends Component {
     const { classes, group } = this.props;
     const groupMarkingDefinitions = pipe(
       pathOr([], ['permissions', 'edges']),
-      map(n => ({ id: n.node.id, relation: n.relation.id })),
+      map((n) => ({ id: n.node.id, relation: n.relation.id })),
     )(group);
 
     return (
@@ -101,7 +99,7 @@ class GroupEditionPermissionsComponent extends Component {
               // Done
               const markingDefinitions = pipe(
                 pathOr([], ['markingDefinitions', 'edges']),
-                map(n => n.node),
+                map((n) => n.node),
               )(props);
               return (
                 <List dense={true} className={classes.root}>

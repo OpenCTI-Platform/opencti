@@ -3,69 +3,49 @@ import { BUS_TOPICS } from '../config/conf';
 import {
   addStixDomainEntity,
   findAll,
-  findByExternalReference,
   findById,
-  findByName,
-  findByStixId,
   stixDomainEntitiesNumber,
   stixDomainEntitiesTimeSeries,
   stixDomainEntityAddRelation,
-  stixDomainEntityExportAsk,
+  stixDomainEntityAddRelations,
   stixDomainEntityCleanContext,
   stixDomainEntityDelete,
   stixDomainEntityDeleteRelation,
   stixDomainEntityEditContext,
   stixDomainEntityEditField,
+  stixDomainEntityExportAsk,
   stixDomainEntityExportPush,
-  stixDomainEntityImportPush,
-  stixDomainEntityAddRelations
+  stixDomainEntityImportPush
 } from '../domain/stixDomainEntity';
-import { fetchEditContext, pubsub } from '../database/redis';
+import { pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
 import { filesListing } from '../database/minio';
-import {
-  createdByRef,
-  markingDefinitions,
-  reports,
-  tags
-} from '../domain/stixEntity';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const stixDomainEntityResolvers = {
   Query: {
-    stixDomainEntity: (_, { id }) => findById(id),
-    stixDomainEntities: (_, args) => {
-      if (args.stix_id_key && args.stix_id_key.length > 0) {
-        return findByStixId(args);
-      }
-      if (args.name && args.name.length > 0) {
-        return findByName(args);
-      }
-      if (args.externalReferenceId && args.externalReferenceId.length > 0) {
-        return findByExternalReference(args);
-      }
-      return findAll(args);
-    },
-    stixDomainEntitiesTimeSeries: (_, args) =>
-      stixDomainEntitiesTimeSeries(args),
+    stixDomainEntity: (_, { id, isStixId }) => findById(id, isStixId),
+    stixDomainEntities: (_, args) => findAll(args),
+    stixDomainEntitiesTimeSeries: (_, args) => stixDomainEntitiesTimeSeries(args),
     stixDomainEntitiesNumber: (_, args) => stixDomainEntitiesNumber(args)
+  },
+  StixDomainEntitiesOrdering: {
+    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
+    tags: `${REL_INDEX_PREFIX}tagged.value`
+  },
+  StixDomainEntitiesFilter: {
+    hasExternalReference: `${REL_INDEX_PREFIX}external_references.internal_id_key`
   },
   StixDomainEntity: {
     // eslint-disable-next-line no-underscore-dangle
     __resolveType(obj) {
       if (obj.entity_type) {
-        return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) =>
-          letter.toUpperCase()
-        );
+        return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) => letter.toUpperCase());
       }
       return 'Unknown';
     },
     importFiles: (entity, { first }) => filesListing(first, 'import', entity),
-    exportFiles: (entity, { first }) => filesListing(first, 'export', entity),
-    createdByRef: entity => createdByRef(entity.id),
-    editContext: entity => fetchEditContext(entity.id),
-    tags: (entity, args) => tags(entity.id, args),
-    reports: (entity, args) => reports(entity.id, args),
-    markingDefinitions: (entity, args) => markingDefinitions(entity.id, args)
+    exportFiles: (entity, { first }) => filesListing(first, 'export', entity)
   },
   Mutation: {
     stixDomainEntityEdit: (_, { id }, { user }) => ({
@@ -74,17 +54,13 @@ const stixDomainEntityResolvers = {
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationsAdd: ({ input }) =>
-        stixDomainEntityAddRelations(user, id, input),
-      relationDelete: ({ relationId }) =>
-        stixDomainEntityDeleteRelation(user, id, relationId),
+      relationsAdd: ({ input }) => stixDomainEntityAddRelations(user, id, input),
+      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId),
       importPush: ({ file }) => stixDomainEntityImportPush(user, id, file),
-      exportAsk: ({ format, exportType }) =>
-        stixDomainEntityExportAsk(id, format, exportType),
+      exportAsk: ({ format, exportType }) => stixDomainEntityExportAsk(id, format, exportType),
       exportPush: ({ file }) => stixDomainEntityExportPush(user, id, file)
     }),
-    stixDomainEntityAdd: (_, { input }, { user }) =>
-      addStixDomainEntity(user, input)
+    stixDomainEntityAdd: (_, { input }, { user }) => addStixDomainEntity(user, input)
   },
   Subscription: {
     stixDomainEntity: {

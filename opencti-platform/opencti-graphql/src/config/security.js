@@ -9,7 +9,7 @@ import conf, { logger } from './conf';
 
 // Admin user initialization
 export const initializeAdminUser = async () => {
-  logger.info(`[ADMIN_SETUP] > initializeAdminUser`);
+  logger.info(`[ADMIN_SETUP] Initialize admin user`);
   const empty = anyPass([isNil, isEmpty]);
   const DEFAULT_CONF_VALUE = 'ChangeMe';
   const adminEmail = conf.get('app:admin:email');
@@ -22,19 +22,15 @@ export const initializeAdminUser = async () => {
     adminPassword === DEFAULT_CONF_VALUE ||
     adminToken === DEFAULT_CONF_VALUE
   ) {
-    throw new Error(
-      '[ADMIN_SETUP] > You need to configure the environment vars'
-    );
+    throw new Error('[ADMIN_SETUP] You need to configure the environment vars');
   } else {
     // Check fields
-    if (!validator.isEmail(adminEmail))
-      throw new Error('[ADMIN_SETUP] > email must be a valid email address');
-    if (!validator.isUUID(adminToken))
-      throw new Error('[ADMIN_SETUP] > Token must be a valid UUID');
+    if (!validator.isEmail(adminEmail)) throw new Error('[ADMIN_SETUP] > email must be a valid email address');
+    if (!validator.isUUID(adminToken)) throw new Error('[ADMIN_SETUP] > Token must be a valid UUID');
     // Initialize the admin account
     // noinspection JSIgnoredPromiseFromCall
     await initAdmin(adminEmail, adminPassword, adminToken);
-    logger.info(`[ADMIN_SETUP] admin user initialize`);
+    logger.info(`[ADMIN_SETUP] admin user initialized`);
   }
 };
 
@@ -49,22 +45,19 @@ if (conf.get('providers:facebook')) {
     profileFields: ['id', 'emails', 'name'],
     scope: 'email'
   };
-  const facebookStrategy = new FacebookStrategy(
-    facebookOptions,
-    (accessToken, refreshToken, profile, done) => {
-      // eslint-disable-next-line no-underscore-dangle
-      const data = profile._json;
-      const name = `${data.last_name} ${data.first_name}`;
-      const { email } = data;
-      loginFromProvider(email, name)
-        .then(token => {
-          done(null, token);
-        })
-        .catch(err => {
-          done(err);
-        });
-    }
-  );
+  const facebookStrategy = new FacebookStrategy(facebookOptions, (accessToken, refreshToken, profile, done) => {
+    // eslint-disable-next-line no-underscore-dangle
+    const data = profile._json;
+    const name = `${data.last_name} ${data.first_name}`;
+    const { email } = data;
+    loginFromProvider(email, name)
+      .then(token => {
+        done(null, token);
+      })
+      .catch(err => {
+        done(err);
+      });
+  });
   passport.use(facebookStrategy);
   providers.push('facebook');
 }
@@ -76,21 +69,18 @@ if (conf.get('providers:google')) {
     callbackURL: conf.get('providers:google:callback_uri'),
     scope: 'email'
   };
-  const googleStrategy = new GoogleStrategy(
-    googleOptions,
-    (token, tokenSecret, profile, done) => {
-      const name = profile.displayName;
-      const email = head(profile.emails).value;
-      // let picture = head(profile.photos).value;
-      loginFromProvider(email, name)
-        .then(loggedToken => {
-          done(null, loggedToken);
-        })
-        .catch(err => {
-          done(err);
-        });
-    }
-  );
+  const googleStrategy = new GoogleStrategy(googleOptions, (token, tokenSecret, profile, done) => {
+    const name = profile.displayName;
+    const email = head(profile.emails).value;
+    // let picture = head(profile.photos).value;
+    loginFromProvider(email, name)
+      .then(loggedToken => {
+        done(null, loggedToken);
+      })
+      .catch(err => {
+        done(err);
+      });
+  });
   passport.use(googleStrategy);
   providers.push('google');
 }
@@ -102,21 +92,18 @@ if (conf.get('providers:github')) {
     callbackURL: conf.get('providers:github:callback_uri'),
     scope: 'user:email'
   };
-  const githubStrategy = new GithubStrategy(
-    githubOptions,
-    (token, tokenSecret, profile, done) => {
-      const { name } = profile;
-      const email = head(profile.emails).value;
-      // let picture = profile.avatar_url;
-      loginFromProvider(email, name)
-        .then(loggedToken => {
-          done(null, loggedToken);
-        })
-        .catch(err => {
-          done(err);
-        });
-    }
-  );
+  const githubStrategy = new GithubStrategy(githubOptions, (token, tokenSecret, profile, done) => {
+    const { name } = profile;
+    const email = head(profile.emails).value;
+    // let picture = profile.avatar_url;
+    loginFromProvider(email, name)
+      .then(loggedToken => {
+        done(null, loggedToken);
+      })
+      .catch(err => {
+        done(err);
+      });
+  });
   passport.use(githubStrategy);
   providers.push('github');
 }
