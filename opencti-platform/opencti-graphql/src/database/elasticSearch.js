@@ -13,8 +13,7 @@ import {
   join,
   map,
   mergeAll,
-  pipe,
-  split
+  pipe
 } from 'ramda';
 import { buildPagination } from './utils';
 import conf, { logger } from '../config/conf';
@@ -326,11 +325,18 @@ export const elPaginate = async (indexName, options) => {
     } else if (trimedSearch.startsWith('"')) {
       finalSearch = `${trimedSearch}`;
     } else {
+      // Try to decode before search
+      let decodedSearch;
+      try {
+        decodedSearch = decodeURIComponent(trimedSearch);
+      } catch (e) {
+        decodedSearch = trimedSearch;
+      }
+      const splitSearch = decodedSearch.split(/[\s/\-\\]+/);
       finalSearch = pipe(
-        split(' '),
         map(n => `*${n}*`),
         join(' ')
-      )(trimedSearch);
+      )(splitSearch);
     }
     must = append(
       {
