@@ -31,14 +31,19 @@ class Search extends Component {
         params: { keyword },
       },
     } = this.props;
+    let searchWords = '';
+    try {
+      searchWords = decodeURIComponent(keyword);
+    } catch (e) {
+      // Do nothing
+    }
     return (
       <div>
-        <TopBar me={me || null} keyword={keyword} />
+        <TopBar me={me || null} keyword={searchWords} />
         <Typography
           variant="h1"
           gutterBottom={true}
-          style={{ marginBottom: 20 }}
-        >
+          style={{ marginBottom: 20 }}>
           {t('Search for an entity')}
         </Typography>
         <QueryRenderer
