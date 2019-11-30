@@ -33,6 +33,7 @@ export const resolveLink = (type) => {
       return '/dashboard/threats/malwares';
     case 'report':
       return '/dashboard/reports/all';
+    case 'observable':
     case 'autonomous-system':
     case 'domain':
     case 'ipv4-addr':

@@ -498,12 +498,16 @@ const loadConcept = async (query, concept, args = {}) => {
       const rolesPromises = Promise.all(
         map(async roleItem => {
           // eslint-disable-next-line prettier/prettier
-          const roleId = last(roleItem).values().next().value.id;
+          const roleId = last(roleItem)
+            .values()
+            .next().value.id;
           const conceptFromMap = relationsMap.get(roleId);
           if (conceptFromMap) {
             const { alias, forceNatural } = conceptFromMap;
             // eslint-disable-next-line prettier/prettier
-            return head(roleItem).label().then(async roleLabel => {
+            return head(roleItem)
+              .label()
+              .then(async roleLabel => {
                 // Alias when role are not specified need to be force the opencti natural direction.
                 let useAlias = alias;
                 // If role specified in the query, just use the grakn binding.
@@ -1058,7 +1062,10 @@ export const listEntities = async (searchFields, args) => {
   // Handle order by field
   if (isRelationOrderBy) {
     const [relation, field] = orderBy.split('.');
-    relationsFields.push(`($elem, $${relation}) isa ${relation}; $${relation} has ${field} $order;`);
+    const curatedRelation = relation.replace(REL_INDEX_PREFIX, '');
+    relationsFields.push(
+      `($elem, $${curatedRelation}) isa ${curatedRelation}; $${curatedRelation} has ${field} $order;`
+    );
   } else if (orderBy) {
     attributesFields.push(`$elem has ${orderBy} $order;`);
   }
@@ -1070,16 +1077,16 @@ export const listEntities = async (searchFields, args) => {
       const isRelationFilter = includes('.', filterKey);
       if (isRelationFilter) {
         const [relation, field] = filterKey.split('.');
+        const curatedRelation = relation.replace(REL_INDEX_PREFIX, '');
         const sourceRole = validFilters[index].fromRole ? `${validFilters[index].fromRole}:` : '';
         const toRole = validFilters[index].toRole ? `${validFilters[index].toRole}:` : '';
-        const targetRef = relation;
-        const relId = `rel_${relation}`;
-        relationsFields.push(`$${relId} (${sourceRole}$elem, ${toRole}$${targetRef}) isa ${relation};`);
+        const relId = `rel_${curatedRelation}`;
+        relationsFields.push(`$${relId} (${sourceRole}$elem, ${toRole}$${curatedRelation}) isa ${curatedRelation};`);
         for (let valueIndex = 0; valueIndex < filterValues.length; valueIndex += 1) {
           const val = filterValues[valueIndex];
           // Apply filter on target.
           // TODO @Julien Support more than only string filters
-          attributesFields.push(`$${targetRef} has ${field} "${val}";`);
+          attributesFields.push(`$${curatedRelation} has ${field} "${val}";`);
         }
       } else {
         for (let valueIndex = 0; valueIndex < filterValues.length; valueIndex += 1) {

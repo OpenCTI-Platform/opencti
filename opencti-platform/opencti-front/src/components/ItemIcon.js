@@ -101,6 +101,7 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'x509-certificate-issuer':
     case 'x509-certificate-serial-number':
       return <HexagonOutline style={style} fontSize={fontSize} />;
+    case 'stix_relation':
     case 'stix-relation':
     case 'targets':
     case 'uses':

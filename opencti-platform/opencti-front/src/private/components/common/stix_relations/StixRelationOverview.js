@@ -175,13 +175,17 @@ class StixRelationContainer extends Component {
       ? stixRelation.toRole
       : stixRelation.fromRole;
     const to = linkedEntity.id === entityId ? stixRelation.from : stixRelation.to;
-    const linkTo = resolveLink(
-      includes('Stix-Observable', to.parent_types) ? 'observable' : to.entity_type,
-    );
-    const linkFrom = resolveLink(
-      includes('Stix-Observable', from.parent_types) ? 'observable' : from.entity_type,
-    );
-
+    const linkFrom = from.entity_type === 'stix-relation'
+      || from.entity_type === 'stix_relation'
+      ? `${resolveLink(from.from.entity_type)}/${
+        from.from.id
+      }/knowledge/relations`
+      : resolveLink(from.entity_type);
+    const linkTo = to.entity_type === 'stix-relation' || to.entity_type === 'stix_relation'
+      ? `${resolveLink(to.from.entity_type)}/${
+        to.from.id
+      }/knowledge/relations`
+      : resolveLink(to.entity_type);
     return (
       <div className={classes.container}>
         <Link to={`${linkFrom}/${from.id}`}>
@@ -209,15 +213,26 @@ class StixRelationContainer extends Component {
               <div className={classes.type}>
                 {includes('Stix-Observable', from.parent_types)
                   ? t(`observable_${from.entity_type}`)
-                  : t(`entity_${from.entity_type}`)}
+                  : t(
+                    `entity_${
+                      from.entity_type === 'stix_relation'
+                        || from.entity_type === 'stix-relation'
+                        ? from.parent_types[0]
+                        : from.entity_type
+                    }`,
+                  )}
               </div>
             </div>
             <div className={classes.content}>
               <span className={classes.name}>
                 {truncate(
+                  /* eslint-disable-next-line no-nested-ternary */
                   includes('Stix-Observable', from.parent_types)
                     ? from.observable_value
-                    : from.name,
+                    : from.entity_type === 'stix_relation'
+                      || from.entity_type === 'stix-relation'
+                      ? `${from.from.name} ${String.fromCharCode(8594)} ${from.to.name}`
+                      : from.name,
                   50,
                 )}
               </span>
@@ -283,15 +298,26 @@ class StixRelationContainer extends Component {
               <div className={classes.type}>
                 {includes('Stix-Observable', to.parent_types)
                   ? t(`observable_${to.entity_type}`)
-                  : t(`entity_${to.entity_type}`)}
+                  : t(
+                    `entity_${
+                      to.entity_type === 'stix_relation'
+                        || to.entity_type === 'stix-relation'
+                        ? to.parent_types[0]
+                        : to.entity_type
+                    }`,
+                  )}
               </div>
             </div>
             <div className={classes.content}>
               <span className={classes.name}>
                 {truncate(
+                  /* eslint-disable-next-line no-nested-ternary */
                   includes('Stix-Observable', to.parent_types)
                     ? to.observable_value
-                    : to.name,
+                    : to.entity_type === 'stix_relation'
+                      || to.entity_type === 'stix-relation'
+                      ? `${to.from.name} ${String.fromCharCode(8594)} ${to.to.name}`
+                      : to.name,
                   50,
                 )}
               </span>
@@ -501,6 +527,18 @@ const StixRelationOverview = createFragmentContainer(StixRelationContainer, {
               ... on StixObservable {
                 observable_value
               }
+              ... on StixRelation {
+                from {
+                  id
+                  entity_type
+                  name
+                }
+                to {
+                  id
+                  entity_type
+                  name
+                }
+              }
             }
           }
         }
@@ -514,6 +552,18 @@ const StixRelationOverview = createFragmentContainer(StixRelationContainer, {
         ... on StixObservable {
           observable_value
         }
+        ... on StixRelation {
+          from {
+            id
+            entity_type
+            name
+          }
+          to {
+            id
+            entity_type
+            name
+          }
+        }
       }
       to {
         id
@@ -523,6 +573,18 @@ const StixRelationOverview = createFragmentContainer(StixRelationContainer, {
         description
         ... on StixObservable {
           observable_value
+        }
+        ... on StixRelation {
+          from {
+            id
+            entity_type
+            name
+          }
+          to {
+            id
+            entity_type
+            name
+          }
         }
       }
     }
