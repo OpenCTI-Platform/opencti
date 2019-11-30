@@ -13,8 +13,7 @@ import {
   join,
   map,
   mergeAll,
-  pipe,
-  split
+  pipe
 } from 'ramda';
 import { buildPagination } from './utils';
 import conf, { logger } from '../config/conf';
