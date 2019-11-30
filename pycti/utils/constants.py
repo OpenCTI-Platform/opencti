@@ -14,9 +14,11 @@ class ObservableTypes(Enum):
     NOTE: should this be a mapping between the stix2 SDO objects (i.e. stix2/v20/sdo.py)?
 
     """
+    AUTONOMOUS_SYSTEM = "Autonomous-System"
     DOMAIN = "Domain"
     EMAIL_ADDR = "Email-Address"
     EMAIL_SUBJECT = "Email-Subject"
+    DIRECTORY = "Directory"
     FILE_NAME = "File-Name"
     FILE_PATH = "File-Path"
     FILE_HASH_MD5 = "File-MD5"
@@ -24,6 +26,7 @@ class ObservableTypes(Enum):
     FILE_HASH_SHA256 = "File-SHA256"
     IPV4_ADDR = "IPv4-Addr"
     IPV6_ADDR = "IPv6-Addr"
+    MAC_ADDR = "Mac-Addr"
     MUTEX = "Mutex"
     PDB_PATH = "PDB-Path"
     REGISTRY_KEY = "Registry-Key"
