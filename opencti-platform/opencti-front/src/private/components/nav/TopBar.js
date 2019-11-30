@@ -123,7 +123,10 @@ class TopBar extends Component {
 
   handleSearch(keyword) {
     if (keyword.length > 0) {
-      this.props.history.push(`/dashboard/search/${keyword}`);
+      // With need to double encode because of react router.
+      // Waiting for history 5.0 integrated to react router.
+      const encodeKey = encodeURIComponent(encodeURIComponent(keyword));
+      this.props.history.push(`/dashboard/search/${encodeKey}`);
     }
   }
 
@@ -336,8 +339,7 @@ class TopBar extends Component {
                   ? 'primary'
                   : 'inherit'
               }
-              classes={{ root: classes.button }}
-            >
+              classes={{ root: classes.button }}>
               <UploadNetworkOutline fontSize="large" />
             </IconButton>
           </Tooltip>
@@ -347,8 +349,7 @@ class TopBar extends Component {
             aria-owns={this.state.open ? 'menu-appbar' : null}
             aria-haspopup="true"
             onClick={this.handleOpenMenu.bind(this)}
-            color="inherit"
-          >
+            color="inherit">
             <AccountCircle fontSize="large" />
           </IconButton>
           <Menu
@@ -356,13 +357,11 @@ class TopBar extends Component {
             style={{ marginTop: 40, zIndex: 2100 }}
             anchorEl={this.state.anchorEl}
             open={this.state.menuOpen}
-            onClose={this.handleCloseMenu.bind(this)}
-          >
+            onClose={this.handleCloseMenu.bind(this)}>
             <MenuItem
               component={Link}
               to="/dashboard/profile"
-              onClick={this.handleCloseMenu.bind(this)}
-            >
+              onClick={this.handleCloseMenu.bind(this)}>
               {t('Profile')}
             </MenuItem>
             <MenuItem onClick={this.handleLogout.bind(this)}>

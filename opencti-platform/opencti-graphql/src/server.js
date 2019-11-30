@@ -17,13 +17,7 @@ import conf, { DEV_MODE, isAppRealTime, logger, OPENCTI_TOKEN } from './config/c
 import passport, { ACCESS_PROVIDERS } from './config/security';
 import { authentication, setAuthenticationCookie } from './domain/user';
 import schema from './schema/schema';
-import {
-  buildValidationError,
-  TYPE_AUTH,
-  LEVEL_ERROR,
-  LEVEL_WARNING,
-  Unknown
-} from './config/errors';
+import { buildValidationError, TYPE_AUTH, LEVEL_ERROR, LEVEL_WARNING, Unknown } from './config/errors';
 import init from './initialization';
 import { downloadFile, loadFile } from './database/minio';
 
@@ -34,21 +28,19 @@ app.use(compression());
 app.use(helmet());
 app.use(bodyParser.json({ limit: '100mb' }));
 
-// Static for generated fronted
 const extractTokenFromBearer = bearer => (bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null);
 const AppBasePath = nconf.get('app:base_path');
 const basePath = isEmpty(AppBasePath) || AppBasePath.startsWith('/') ? AppBasePath : `/${AppBasePath}`;
 // -- Generated CSS with correct base path
-app.use('/static/css/*', (req, res) => {
-  const data = readFileSync(path.join(__dirname, `../public${req.baseUrl}`), 'utf8');
+app.get('/static/css/*', (req, res) => {
+  const data = readFileSync(path.join(__dirname, `../public${req.url}`), 'utf8');
   const withBasePath = data.replace(/%BASE_PATH%/g, basePath);
   res.header('Content-Type', 'text/css');
-  return res.send(withBasePath);
+  res.send(withBasePath);
 });
-// -- Render other statics in standard way
 app.use('/static', express.static(path.join(__dirname, '../public/static')));
 // -- File download
-app.use('/storage/get/:file(*)', async (req, res) => {
+app.get('/storage/get/:file(*)', async (req, res) => {
   let token = req.cookies ? req.cookies[OPENCTI_TOKEN] : null;
   token = token || extractTokenFromBearer(req.headers.authorization);
   const auth = await authentication(token);
@@ -59,7 +51,7 @@ app.use('/storage/get/:file(*)', async (req, res) => {
   stream.pipe(res);
 });
 // -- File view
-app.use('/storage/view/:file(*)', async (req, res) => {
+app.get('/storage/view/:file(*)', async (req, res) => {
   let token = req.cookies ? req.cookies[OPENCTI_TOKEN] : null;
   token = token || extractTokenFromBearer(req.headers.authorization);
   const auth = await authentication(token);
@@ -71,13 +63,13 @@ app.use('/storage/view/:file(*)', async (req, res) => {
   const stream = await downloadFile(file);
   stream.pipe(res);
 });
-
-// region Login
+// -- Passport login
 const urlencodedParser = bodyParser.urlencoded({ extended: true });
 app.get('/auth/:provider', (req, res, next) => {
   const { provider } = req.params;
   passport.authenticate(provider)(req, res, next);
 });
+// -- Passport callback
 app.get('/auth/:provider/callback', urlencodedParser, passport.initialize(), (req, res, next) => {
   const { provider } = req.params;
   passport.authenticate(provider, (err, token) => {
@@ -86,7 +78,25 @@ app.get('/auth/:provider/callback', urlencodedParser, passport.initialize(), (re
     return res.redirect('/dashboard');
   })(req, res, next);
 });
-// endregion
+// -- Get everything else
+app.get('*', (req, res) => {
+  const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');
+  const withOptionValued = data
+    .replace(/%BASE_PATH%/g, basePath)
+    .replace(/%WS_ACTIVATED%/g, isAppRealTime)
+    .replace(/%ACCESS_PROVIDERS%/g, ACCESS_PROVIDERS);
+  res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+  res.header('Expires', '-1');
+  res.header('Pragma', 'no-cache');
+  return res.send(withOptionValued);
+});
+// -- Error handling
+const ErrorMiddleware = (err, req, res, next) => {
+  logger.error(`[EXPRESS] Error calling  ${err.stack}`);
+  res.redirect('/');
+  next();
+};
+app.use(ErrorMiddleware);
 
 const server = new ApolloServer({
   schema,
@@ -151,7 +161,6 @@ const server = new ApolloServer({
     }
   }
 });
-
 server.applyMiddleware({
   app,
   onHealthCheck: () =>
@@ -162,18 +171,6 @@ server.applyMiddleware({
     })
 });
 
-app.all('*', (req, res) => {
-  const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');
-  const withOptionValued = data
-    .replace(/%BASE_PATH%/g, basePath)
-    .replace(/%WS_ACTIVATED%/g, isAppRealTime)
-    .replace(/%ACCESS_PROVIDERS%/g, ACCESS_PROVIDERS);
-  res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-  res.header('Expires', '-1');
-  res.header('Pragma', 'no-cache');
-  return res.send(withOptionValued);
-});
-
 const httpServer = http.createServer(app);
 if (isAppRealTime) {
   server.installSubscriptionHandlers(httpServer);
@@ -182,7 +179,6 @@ if (isAppRealTime) {
 function onSignal() {
   logger.info('OpenCTI is starting cleanup');
 }
-
 function onShutdown() {
   logger.info('Cleanup finished, OpenCTI shutdown');
 }
