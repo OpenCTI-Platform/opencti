@@ -694,8 +694,7 @@ define
     plays attribution,
     plays user,
     plays source,
-    plays characterize,
-    plays phase_belonging;
+    plays characterize;
 
   Intrusion-Set sub Stix-Domain-Entity,
     has first_seen,
@@ -715,8 +714,7 @@ define
     plays source,
     plays user,
     plays origin,
-    plays characterize,
-    plays phase_belonging;
+    plays characterize;
 
   Malware sub Stix-Domain-Entity,
     plays phase_belonging,
@@ -738,8 +736,7 @@ define
     has published_year,
     has published_month,
     has source_confidence_level,
-    plays knowledge_aggregation,
-    plays phase_belonging;
+    plays knowledge_aggregation;
 
   Tool sub Stix-Domain-Entity,
     has tool_version,

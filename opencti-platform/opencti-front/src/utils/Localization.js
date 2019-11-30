@@ -471,7 +471,7 @@ const i18n = {
       Person: 'Personne',
       'Search for an entity': 'Rechercher une entité',
       'Linked knowledge': 'Connaissance liée',
-      'Linked entities': 'Entitées liées',
+      'Linked entities': 'Entités liées',
       'Linked observables': 'Observables liés',
       'Links with threats': 'Liens avec des menaces',
       'External references': 'Références externes',
