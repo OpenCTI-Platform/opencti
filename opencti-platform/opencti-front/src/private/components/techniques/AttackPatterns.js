@@ -62,14 +62,14 @@ class AttackPatterns extends Component {
       sortBy, orderAsc, searchTerm, filters,
     } = this.state;
     const dataColumns = {
-      killChainPhases: {
-        label: 'Kill chain phases',
-        width: '20%',
+      external_id: {
+        label: 'External ID',
+        width: '10%',
         isSortable: true,
       },
       name: {
         label: 'Name',
-        width: '20%',
+        width: '30%',
         isSortable: true,
       },
       tags: {
