@@ -498,16 +498,12 @@ const loadConcept = async (query, concept, args = {}) => {
       const rolesPromises = Promise.all(
         map(async roleItem => {
           // eslint-disable-next-line prettier/prettier
-          const roleId = last(roleItem)
-            .values()
-            .next().value.id;
+          const roleId = last(roleItem).values().next().value.id;
           const conceptFromMap = relationsMap.get(roleId);
           if (conceptFromMap) {
             const { alias, forceNatural } = conceptFromMap;
             // eslint-disable-next-line prettier/prettier
-            return head(roleItem)
-              .label()
-              .then(async roleLabel => {
+            return head(roleItem).label().then(async roleLabel => {
                 // Alias when role are not specified need to be force the opencti natural direction.
                 let useAlias = alias;
                 // If role specified in the query, just use the grakn binding.
@@ -942,24 +938,30 @@ export const updateAttribute = async (id, input, wTx) => {
 };
 
 export const deleteEntityById = async id => {
-  // 00. Load everything we need to remove in elastic
   const eid = escapeString(id);
-  const read = `match $from has internal_id_key "${eid}"; { $to isa entity; } or { $to isa relation; }; $rel($from, $to) isa relation; get;`;
+  // 00. Load everything we need to remove in elastic
+  const read = `match $from has internal_id_key "${eid}"; $rel($from, $to) isa relation; get;`;
   const relationsToDeIndex = await find(read, ['rel']);
-  const relationsIds = map(r => r.rel.id, relationsToDeIndex);
+  const answers = map(r => r.rel.id, relationsToDeIndex);
+  const relationsIds = filter(r => r, answers); // Because of relation to attributes
+  // 01. Execute the delete in grakn and elastic
   return executeWrite(async wTx => {
     const query = `match $x has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
     logger.debug(`[GRAKN - infer: false] deleteEntityById > ${query}`);
     await wTx.tx.query(query, { infer: false });
+    // [ELASTIC] Delete entity and relations connected to
     await elDeleteInstanceIds(append(eid, relationsIds));
     return id;
   });
 };
 export const deleteRelationById = async relationId => {
   const eid = escapeString(relationId);
-  const read = `match $from has internal_id_key "${eid}"; { $to isa entity; } or { $to isa relation; }; $rel($from, $to) isa relation; get;`;
+  // 00. Load everything we need to remove in elastic
+  const read = `match $from has internal_id_key "${eid}"; $rel($from, $to) isa relation; get;`;
   const relationsToDeIndex = await find(read, ['rel']);
-  const relationsIds = map(r => r.rel.id, relationsToDeIndex);
+  const answers = map(r => r.rel.id, relationsToDeIndex);
+  const relationsIds = filter(r => r, answers); // Because of relation to attributes
+  // 01. Execute the delete in grakn and elastic
   await executeWrite(async wTx => {
     const query = `match $x has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
     logger.debug(`[GRAKN - infer: false] deleteRelationById > ${query}`);
@@ -1321,9 +1323,9 @@ export const getRelationInferredById = async id => {
         )(relation);
       }
       return pipe(
-        assoc('fromId', fromObject),
+        assoc('fromId', fromObject.id),
         assoc('fromRole', fromRoleLabel),
-        assoc('toId', toObject),
+        assoc('toId', toObject.id),
         assoc('toRole', toRoleLabel),
         assoc('inferences', { edges: relationInferences })
       )(relation);
