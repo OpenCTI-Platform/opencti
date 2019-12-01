@@ -944,7 +944,7 @@ class OpenCTIApiClient:
                                            modified=None,
                                            update=False
                                            ):
-        return self.intrusion_set.create_or_update(
+        return self.intrusion_set.create(
             name=name,
             description=description,
             alias=alias,
@@ -1127,25 +1127,25 @@ class OpenCTIApiClient:
                                                                        name=name)
         if object_result is not None:
             if update:
-                self.update_stix_domain_entity_field(object_result['id'], 'name', name)
+                self.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
                 object_result['name'] = name
-                self.update_stix_domain_entity_field(object_result['id'], 'description', description)
+                self.stix_domain_entity.update_field(id=object_result['id'], key='description', value=description)
                 object_result['description'] = description
                 if alias is not None:
                     if 'alias' in object_result:
                         new_aliases = object_result['alias'] + list(set(alias) - set(object_result['alias']))
                     else:
                         new_aliases = alias
-                    self.update_stix_domain_entity_field(object_result['id'], 'alias', new_aliases)
+                    self.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
                     object_result['alias'] = new_aliases
                 if objective is not None:
-                    self.update_stix_domain_entity_field(object_result['id'], 'objective', objective)
+                    self.stix_domain_entity.update_field(id=object_result['id'], key='objective', value=objective)
                 object_result['objective'] = objective
                 if first_seen is not None:
-                    self.update_stix_domain_entity_field(object_result['id'], 'first_seen', first_seen)
+                    self.stix_domain_entity.update_field(id=object_result['id'], key='first_seen', value=first_seen)
                 object_result['first_seen'] = first_seen
                 if last_seen is not None:
-                    self.update_stix_domain_entity_field(object_result['id'], 'last_seen', last_seen)
+                    self.stix_domain_entity.update_field(id=object_result['id'], key='last_seen', value=last_seen)
                     object_result['last_seen'] = last_seen
             return object_result
         else:
@@ -1213,6 +1213,7 @@ class OpenCTIApiClient:
                     else:
                         new_aliases = alias
                     self.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
+                    object_result['alias'] = new_aliases
             return object_result
         else:
             return self.create_malware(
@@ -1266,16 +1267,16 @@ class OpenCTIApiClient:
                                                                        name=name)
         if object_result is not None:
             if update:
-                self.update_stix_domain_entity_field(object_result['id'], 'name', name)
+                self.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
                 object_result['name'] = name
-                self.update_stix_domain_entity_field(object_result['id'], 'description', description)
+                self.stix_domain_entity.update_field(id=object_result['id'], key='description', value=description)
                 object_result['description'] = description
                 if alias is not None:
                     if 'alias' in object_result:
                         new_aliases = object_result['alias'] + list(set(alias) - set(object_result['alias']))
                     else:
                         new_aliases = alias
-                    self.update_stix_domain_entity_field(object_result['id'], 'alias', new_aliases)
+                    self.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
                     object_result['alias'] = new_aliases
             return object_result
         else:
@@ -1330,16 +1331,16 @@ class OpenCTIApiClient:
                                                                        name=name)
         if object_result is not None:
             if update:
-                self.update_stix_domain_entity_field(object_result['id'], 'name', name)
+                self.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
                 object_result['name'] = name
-                self.update_stix_domain_entity_field(object_result['id'], 'description', description)
+                self.stix_domain_entity.update_field(id=object_result['id'], key='description', value=description)
                 object_result['description'] = description
                 if alias is not None:
                     if 'alias' in object_result:
                         new_aliases = object_result['alias'] + list(set(alias) - set(object_result['alias']))
                     else:
                         new_aliases = alias
-                    self.update_stix_domain_entity_field(object_result['id'], 'alias', new_aliases)
+                    self.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
                     object_result['alias'] = new_aliases
             return object_result
         else:
@@ -1453,14 +1454,14 @@ class OpenCTIApiClient:
             if update:
                 self.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
                 object_result['name'] = name
-                self.update_stix_domain_entity_field(object_result['id'], 'description', description)
+                self.stix_domain_entity.update_field(id=object_result['id'], key='description', value=description)
                 object_result['description'] = description
                 if alias is not None:
                     if 'alias' in object_result:
                         new_aliases = object_result['alias'] + list(set(alias) - set(object_result['alias']))
                     else:
                         new_aliases = alias
-                    self.update_stix_domain_entity_field(object_result['id'], 'alias', new_aliases)
+                    self.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
                     object_result['alias'] = new_aliases
             return object_result
         else:
@@ -1572,16 +1573,23 @@ class OpenCTIApiClient:
             object_result = None
         if object_result is not None:
             if update:
-                self.update_stix_domain_entity_field(object_result['id'], 'name', name)
+                self.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
                 object_result['name'] = name
-                self.update_stix_domain_entity_field(object_result['id'], 'description', description)
+                self.stix_domain_entity.update_field(id=object_result['id'], key='description', value=description)
                 object_result['description'] = description
                 if object_status is not None:
-                    self.update_stix_domain_entity_field(object_result['id'], 'object_status', object_status)
+                    self.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='object_status',
+                        value=object_status
+                    )
                     object_result['object_status'] = object_status
                 if source_confidence_level is not None:
-                    self.update_stix_domain_entity_field(object_result['id'], 'source_confidence_level',
-                                                         source_confidence_level)
+                    self.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='source_confidence_level',
+                        value=source_confidence_level
+                    )
                     object_result['source_confidence_level'] = source_confidence_level
             return object_result
         else:
@@ -1614,8 +1622,10 @@ class OpenCTIApiClient:
                                                             created=None,
                                                             modified=None
                                                             ):
-        object_result = self.stix_domain_entity.read(types=['Report'], filters=[
-            {'key': 'hasExternalReference', 'values': [external_reference_id]}])
+        object_result = self.stix_domain_entity.read(
+            types=['Report'],
+            filters=[{'key': 'hasExternalReference', 'values': [external_reference_id]}]
+        )
         if object_result is not None:
             return object_result
         else:

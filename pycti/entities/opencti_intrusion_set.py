@@ -156,7 +156,7 @@ class IntrusionSet:
         :return Intrusion-Set object
     """
 
-    def create(self, **kwargs):
+    def create_raw(self, **kwargs):
         name = kwargs.get('name', None)
         description = kwargs.get('description', None)
         alias = kwargs.get('alias', None)
@@ -210,7 +210,7 @@ class IntrusionSet:
         :return Intrusion-Set object
     """
 
-    def create_or_update(self, **kwargs):
+    def create(self, **kwargs):
         name = kwargs.get('name', None)
         description = kwargs.get('description', None)
         alias = kwargs.get('alias', None)
@@ -252,7 +252,7 @@ class IntrusionSet:
                     object_result['last_seen'] = goal
             return object_result
         else:
-            return self.create(
+            return self.create_raw(
                 name=name,
                 description=description,
                 alias=alias,
