@@ -13,6 +13,7 @@ from pycti.entities.opencti_stix_entity import StixEntity
 from pycti.entities.opencti_stix_domain_entity import StixDomainEntity
 from pycti.entities.opencti_stix_observable import StixObservable
 from pycti.entities.opencti_stix_relation import StixRelation
+from pycti.entities.opencti_stix_observable_relation import StixObservableRelation
 from pycti.entities.opencti_identity import Identity
 from pycti.entities.opencti_threat_actor import ThreatActor
 from pycti.entities.opencti_intrusion_set import IntrusionSet

@@ -6,13 +6,9 @@ from enum import Enum
 
 class ObservableTypes(Enum):
     """These are the possible values for OpenCTI's observable types.
-
     Use in conjuction with the STIX custom property 'x_opencti_observable_type'.
-
     ref: https://github.com/OpenCTI-Platform/opencti/blob/8854c2576dc17da9da54e54b116779bd2131617c/opencti-front/src/private/components/report/ReportAddObservable.js
-
     NOTE: should this be a mapping between the stix2 SDO objects (i.e. stix2/v20/sdo.py)?
-
     """
     AUTONOMOUS_SYSTEM = "Autonomous-System"
     DOMAIN = "Domain"
@@ -96,6 +92,7 @@ class CustomProperties:
     EXPIRATION = 'x_opencti_expiration'
     SOURCE_REF = 'x_opencti_source_ref'
     TARGET_REF = 'x_opencti_target_ref'
+    IGNORE_DATES = 'x_opencti_ignore_dates'
 
     # generic property - applies to most SDOs
     ALIASES = 'x_opencti_aliases'

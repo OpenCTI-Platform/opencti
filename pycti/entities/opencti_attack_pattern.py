@@ -167,7 +167,7 @@ class AttackPattern:
         :return Attack-Pattern object
     """
 
-    def create(self, **kwargs):
+    def create_raw(self, **kwargs):
         name = kwargs.get('name', None)
         description = kwargs.get('description', None)
         alias = kwargs.get('alias', None)
@@ -212,10 +212,10 @@ class AttackPattern:
         Create a Attack-Pattern object only if it not exists, update it on request
 
         :param name: the name of the Attack-Pattern
-        :returnAttack-Pattern object
+        :return Attack-Pattern object
     """
 
-    def create_or_update(self, **kwargs):
+    def create(self, **kwargs):
         name = kwargs.get('name', None)
         description = kwargs.get('description', None)
         alias = kwargs.get('alias', None)
@@ -241,7 +241,7 @@ class AttackPattern:
                     else:
                         new_aliases = alias
                     self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
-                    object_result['alias'] = alias
+                    object_result['alias'] = new_aliases
                 if platform is not None:
                     self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='platform', value=platform)
                     object_result['platform'] = platform
@@ -253,7 +253,7 @@ class AttackPattern:
                     object_result['external_id'] = external_id
             return object_result
         else:
-            return self.create(
+            return self.create_raw(
                 name=name,
                 description=description,
                 alias=alias,
@@ -269,11 +269,11 @@ class AttackPattern:
     """
         Import an Attack-Pattern object from a STIX2 object
 
-        :param stixObject: the id of the Attack-Pattern
+        :param stixObject: the Stix-Object Attack-Pattern
         :return Attack-Pattern object
     """
 
-    def from_stix2(self, **kwargs):
+    def import_from_stix2(self, **kwargs):
         stix_object = kwargs.get('stixObject', None)
         update = kwargs.get('update', False)
         if stix_object is not None:
@@ -283,7 +283,7 @@ class AttackPattern:
                 for external_reference in stix_object['external_references']:
                     if external_reference['source_name'] == 'mitre-attack':
                         external_id = external_reference['external_id']
-            return self.create_or_update(
+            return self.create(
                 name=stix_object['name'],
                 description=self.opencti.stix2.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
                 alias=self.opencti.stix2.pick_aliases(stix_object),

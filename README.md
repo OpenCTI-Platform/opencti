@@ -17,11 +17,11 @@ $ pip3 install pycti
 
 ### Client usage
 
-To learn about how to use the OpenCTI Python client and read some examples and cases, refer to [the client documentation](https://opencti-client-for-python.readthedocs.io/en/latest).
+To learn about how to use the OpenCTI Python client and read some examples and cases, refer to [the client documentation](https://opencti-platform.github.io/docs/clients/python/overview).
 
 ### API reference
 
-To learn about the methods available for executing queries and retrieving their answers, refer to [the client API Reference](https://opencti-client-for-python.readthedocs.io/en/latest).
+To learn about the methods available for executing queries and retrieving their answers, refer to [the client API Reference](https://opencti-platform.github.io/docs/clients/python/reference).
 
 ## About
 

@@ -60,8 +60,6 @@ class StixObservable:
                         first_seen
                         last_seen
                         role_played
-                        expiration
-                        score
                         to {
                             id
                             name
@@ -107,7 +105,8 @@ class StixObservable:
                 }
             }
         """
-        result = self.opencti.query(query, {'filters': filters, 'search': search, 'first': first, 'after': after, 'orderBy': order_by, 'orderMode': order_mode})
+        result = self.opencti.query(query, {'filters': filters, 'search': search, 'first': first, 'after': after,
+                                            'orderBy': order_by, 'orderMode': order_mode})
         return self.opencti.process_multiple(result['data']['stixObservables'])
 
     """
@@ -138,26 +137,118 @@ class StixObservable:
                 return result[0]
             else:
                 return None
+        else:
+            self.opencti.log('error', 'Missing parameters: id or filters')
+            return None
 
     """
-        Read a StixObservable object by stix_id or name
+        Create a Stix-Observable object
 
-        :param type: the Stix-Domain-Entity type
-        :param stix_id_key: the STIX ID of the Stix-Domain-Entity
-        :param name: the name of the Stix-Domain-Entity
-        :return Stix-Domain-Entity object
+        :param type: the type of the Observable
+        :return Stix-Observable object
     """
 
-    def get_by_stix_id_or_name(self, **kwargs):
+    def create_raw(self, **kwargs):
+        type = kwargs.get('type', None)
+        observable_value = kwargs.get('observable_value', None)
+        description = kwargs.get('description', None)
+        id = kwargs.get('id', None)
         stix_id_key = kwargs.get('stix_id_key', None)
-        name = kwargs.get('name', None)
-        published = kwargs.get('published', None)
-        object_result = None
-        if stix_id_key is not None:
-            object_result = self.read(filters=[{'key': 'stix_id_key', 'values': [stix_id_key]}])
-        if object_result is None and name is not None and published is not None:
-            object_result = self.read(filters=[
-                {'key': 'name', 'values': [name]},
-                {'key': 'published', 'values': [published]}
-            ])
-        return object_result
+        created = kwargs.get('created', None)
+        modified = kwargs.get('modified', None)
+
+        if type is not None and observable_value is not None:
+            self.opencti.log('info', 'Creating Stix-Observable {' + observable_value + '}.')
+            query = """
+               mutation StixObservableAdd($input: StixObservableAddInput) {
+                   stixObservableAdd(input: $input) {
+                       id
+                       entity_type
+                       observable_value
+                   }
+               }
+            """
+            result = self.opencti.query(query, {
+                'input': {
+                    'type': type,
+                    'observable_value': observable_value,
+                    'description': description,
+                    'internal_id_key': id,
+                    'stix_id_key': stix_id_key,
+                    'created': created,
+                    'modified': modified
+                }
+            })
+            return self.opencti.process_multiple_fields(result['data']['stixObservableAdd'])
+        else:
+            self.opencti.log('error', 'Missing parameters: type and observable_value')
+
+    """
+        Create a Stix-Observable object only if it not exists, update it on request
+
+        :param name: the name of the Stix-Observable
+        :return Stix-Observable object
+    """
+
+    def create(self, **kwargs):
+        type = kwargs.get('type', None)
+        observable_value = kwargs.get('observable_value', None)
+        description = kwargs.get('description', None)
+        id = kwargs.get('id', None)
+        stix_id_key = kwargs.get('stix_id_key', None)
+        created = kwargs.get('created', None)
+        modified = kwargs.get('modified', None)
+        update = kwargs.get('update', False)
+
+        object_result = self.read(filters=[{'key': 'observable_value', 'values': [observable_value]}])
+        if object_result is not None:
+            if update:
+                if description is not None:
+                    self.update_field(id=object_result['id'], key='description', value=description)
+                    object_result['description'] = description
+            return object_result
+        else:
+            return self.create_raw(
+                type=type,
+                observable_value=observable_value,
+                description=description,
+                id=id,
+                stix_id_key=stix_id_key,
+                created=created,
+                modified=modified)
+
+    """
+        Update a Stix-Observable object field
+
+        :param id: the Stix-Observable id
+        :param key: the key of the field
+        :param value: the value of the field
+        :return The updated Stix-Observable object
+    """
+
+    def update_field(self, **kwargs):
+        id = kwargs.get('id', None)
+        key = kwargs.get('key', None)
+        value = kwargs.get('value', None)
+        if id is not None and key is not None and value is not None:
+            self.opencti.log('info', 'Updating Stix-Observable {' + id + '} field {' + key + '}.')
+            query = """
+                mutation StixObservableEdit($id: ID!, $input: EditInput!) {
+                    stixObservableEdit(id: $id) {
+                        fieldPatch(input: $input) {
+                            """ + self.properties + """
+                        }
+                    }
+                }
+            """
+            result = self.opencti.query(query, {
+                'id': id,
+                'input': {
+                    'key': key,
+                    'value': value
+                }
+            })
+            return self.opencti.process_multiple_fields(result['data']['stixObservableEdit']['fieldPatch'])
+        else:
+            self.opencti.log('error', 'Missing parameters: id and key and value')
+            return None
