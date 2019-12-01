@@ -146,6 +146,8 @@ define
   belonged_to sub role;
   correspond_from sub role;
   correspond_to sub role;
+  container sub role;
+  contained sub role;
 
   # STIX SRO roles
 
@@ -430,6 +432,10 @@ define
   belongs sub stix_observable_relation,
     relates belonging_to,
     relates belonged_to;
+
+  contains sub stix_observable_relation,
+    relates container,
+    relates contained;
 
   corresponds sub stix_observable_relation,
     relates correspond_from,
@@ -776,6 +782,8 @@ define
   Autonomous-System sub Stix-Observable,
     plays belonged_to;
 
+  Mac-Addr sub Stix-Observable;
+
   Domain sub Stix-Observable,
     plays resolved;
 
@@ -799,12 +807,16 @@ define
 
   File sub Stix-Observable,
     plays correspond_from,
-    plays correspond_to;
+    plays correspond_to,
+    plays contained;
   File-Name sub File;
   File-Path sub File;
   File-MD5 sub File;
   File-SHA1 sub File;
   File-SHA256 sub File;
+
+  Directory sub Stix-Observable,
+    plays container;
 
   Registry-Key sub Stix-Observable;
   Registry-Key-Value sub Registry-Key;

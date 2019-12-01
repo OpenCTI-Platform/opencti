@@ -81,6 +81,9 @@ export const inferIndexFromConceptTypes = (types, parentType = null) => {
   return INDEX_STIX_ENTITIES;
 };
 
+export const sleep = ms => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+};
 export const now = () => {
   // eslint-disable-next-line prettier/prettier
   return moment()
@@ -140,7 +143,7 @@ const closeTx = async gTx => {
     logger.error('[GRAKN] CloseReadTx error > ', err);
   }
 };
-const takeReadTx = async (retry = false) => {
+const takeReadTx = async () => {
   if (session === null) {
     session = await client.session('grakn');
   }
@@ -149,12 +152,9 @@ const takeReadTx = async (retry = false) => {
     return { session, tx };
   } catch (err) {
     logger.error('[GRAKN] TakeReadTx error > ', err);
-    await session.close();
-    if (retry === false) {
-      session = null;
-      return takeReadTx(true);
-    }
-    return null;
+    session = null;
+    await sleep(5000);
+    return takeReadTx();
   }
 };
 const executeRead = async executeFunction => {
@@ -1464,25 +1464,25 @@ const createRelationRaw = async (fromInternalId, input, opts = {}) => {
     throw new Error(`[GRAKN] You cant create a relation in incorrect order ${message}`);
   }
   // 02. Prepare the data to create or index
+  const today = now();
   const relationAttributes = { internal_id_key: relationId };
   if (isStixRelation) {
     const currentDate = now();
-    const toCreate = input.stix_id_key === undefined || input.stix_id_key === 'create';
+    const toCreate = input.stix_id_key === undefined || input.stix_id_key === null || input.stix_id_key === 'create';
     relationAttributes.stix_id_key = toCreate ? `relationship--${uuid()}` : input.stix_id_key;
     relationAttributes.revoked = false;
     relationAttributes.name = input.name ? input.name : ''; // Force name of the relation
-    relationAttributes.description = input.description;
+    relationAttributes.description = input.description ? input.description : '';
     relationAttributes.role_played = input.role_played ? input.role_played : 'Unknown';
     relationAttributes.weight = input.weight ? input.weight : 1;
     relationAttributes.entity_type = entityType;
     relationAttributes.relationship_type = relationshipType;
     relationAttributes.updated_at = currentDate;
-    relationAttributes.created = input.created;
-    relationAttributes.modified = input.modified;
+    relationAttributes.created = input.created ? input.created : today;
+    relationAttributes.modified = input.modified ? input.modified : today;
     relationAttributes.created_at = currentDate;
-    relationAttributes.first_seen = input.first_seen;
-    relationAttributes.last_seen = input.last_seen;
-    relationAttributes.expiration = input.expiration;
+    relationAttributes.first_seen = input.first_seen ? input.first_seen : today;
+    relationAttributes.last_seen = input.last_seen ? input.last_seen : today;
   }
   // 02. Create the relation
   const graknRelation = await executeWrite(async wTx => {

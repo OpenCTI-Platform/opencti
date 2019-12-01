@@ -101,6 +101,9 @@ const siteConfig = {
   // You may provide arbitrary config keys to be used as needed by your
   // template. For example, if you need your repo's URL...
   repoUrl: 'https://github.com/OpenCTI-Platform/opencti',
+
+  // Sidebars
+  docsSideNavCollapsible: true,
 };
 
 module.exports = siteConfig;
