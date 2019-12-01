@@ -66,6 +66,13 @@ export const pingConnector = async (id, state) => {
   });
   return loadEntityById(id).then(data => completeConnector(data));
 };
+export const resetStateConnector = async id => {
+  await executeWrite(async wTx => {
+    const stateInput = { key: 'connector_state', value: [''] };
+    await updateAttribute(id, stateInput, wTx);
+  });
+  return loadEntityById(id).then(data => completeConnector(data));
+};
 export const registerConnector = async ({ id, name, type, scope }) => {
   const connector = await loadEntityById(id);
   // Register queues
