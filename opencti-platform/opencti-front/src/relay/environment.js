@@ -22,7 +22,6 @@ import uploadMiddleware from './uploadMiddleware';
 
 // Dev tools
 export const IN_DEV_MODE = process.env.NODE_ENV === 'development';
-console.log('IN_DEV_MODE', IN_DEV_MODE);
 if (IN_DEV_MODE) installRelayDevTools();
 
 // Service bus
@@ -105,7 +104,6 @@ export class QueryRenderer extends Component {
         environment={environment}
         query={query}
         variables={variables}
-        fetchPolicy="store-and-network"
         render={(data) => {
           const { error } = data;
           const types = error ? map((e) => e.name, error) : [];

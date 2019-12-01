@@ -42,7 +42,7 @@ class EntityStixRelations extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      sortBy: 'first_seen',
+      sortBy: null,
       orderAsc: false,
       searchTerm: '',
       openToType: false,
@@ -95,11 +95,10 @@ class EntityStixRelations extends Component {
 
   renderLines(paginationOptions) {
     const {
-      sortBy, orderAsc, inferred, resolveInferences,
+      sortBy, orderAsc,
     } = this.state;
-    const { entityLink, resolveRelationType } = this.props;
+    const { entityLink } = this.props;
     // sort only when inferences are disabled or inferences are resolved
-    const isRelationSortable = resolveInferences || !inferred || !resolveRelationType;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -114,17 +113,17 @@ class EntityStixRelations extends Component {
       first_seen: {
         label: 'First obs.',
         width: '15%',
-        isSortable: isRelationSortable,
+        isSortable: true,
       },
       last_seen: {
         label: 'Last obs.',
         width: '15%',
-        isSortable: isRelationSortable,
+        isSortable: true,
       },
       weight: {
         label: 'Confidence level',
         width: '15%',
-        isSortable: isRelationSortable,
+        isSortable: true,
       },
     };
     return (
@@ -193,12 +192,12 @@ class EntityStixRelations extends Component {
       resolveRelationRole,
       resolveRelationToTypes,
       resolveViaTypes,
-      inferred,
+      inferred: inferred && sortBy === null ? inferred : false,
       toTypes: toType === 'All' ? targetEntityTypes : [toType],
       fromId: entityId,
       relationType,
       search: searchTerm,
-      orderBy: resolveInferences || !inferred ? sortBy : null,
+      orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
 
@@ -347,7 +346,7 @@ class EntityStixRelations extends Component {
                     style={{ paddingTop: 5, marginRight: 15 }}
                     control={
                       <Switch
-                        checked={this.state.resolveInferences}
+                        checked={resolveInferences}
                         onChange={this.handleChangeResolveInferences.bind(this)}
                         color="primary"
                       />

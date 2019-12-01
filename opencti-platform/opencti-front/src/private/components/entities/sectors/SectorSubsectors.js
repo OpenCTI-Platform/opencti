@@ -18,12 +18,11 @@ const styles = () => ({
   paper: {
     minHeight: '100%',
     margin: '10px 0 0 0',
-    padding: '5px 0 10px 0',
+    padding: '5px 0 0 0',
     borderRadius: 6,
   },
-  item: {
-    paddingLeft: 10,
-    height: 50,
+  list: {
+    padding: 0,
   },
 });
 
@@ -36,7 +35,7 @@ class SectorSubsectorsComponent extends Component {
           {t('Subsectors')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <List>
+          <List classes={{ root: classes.list }}>
             {sector.subsectors.edges.map((subsectorEdge) => {
               const subsector = subsectorEdge.node;
               return (
@@ -44,7 +43,6 @@ class SectorSubsectorsComponent extends Component {
                   key={subsector.id}
                   dense={true}
                   divider={true}
-                  classes={{ root: classes.item }}
                   button={true}
                   component={Link}
                   to={`/dashboard/entities/sectors/${subsector.id}`}
@@ -86,7 +84,4 @@ const SectorSubsectors = createFragmentContainer(SectorSubsectorsComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(SectorSubsectors);
+export default compose(inject18n, withStyles(styles))(SectorSubsectors);
