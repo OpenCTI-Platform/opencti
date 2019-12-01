@@ -9,8 +9,6 @@ import {
 } from '../database/grakn';
 import { findAll as relationFindAll, search as relationSearch } from './stixRelation';
 import { buildPagination } from '../database/utils';
-import { notify } from '../database/redis';
-import { BUS_TOPICS } from '../config/conf';
 
 export const findById = (id, isStixId) => {
   return isStixId ? loadEntityByStixId(id) : loadEntityById(id);
