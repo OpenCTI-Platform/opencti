@@ -247,9 +247,7 @@ class Report:
                    mutation ReportEdit($id: ID!, $input: RelationAddInput) {
                        reportEdit(id: $id) {
                             relationAdd(input: $input) {
-                                node {
-                                    id
-                                }
+                                id
                             }
                        }
                    }

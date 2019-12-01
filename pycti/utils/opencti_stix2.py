@@ -244,20 +244,28 @@ class OpenCTIStix2:
                     # Resolve author
                     author_id = self.resolve_author(title)
                     if author_id is not None:
-                        self.opencti.update_stix_domain_entity_created_by_ref(report_id, author_id)
+                        self.opencti.stix_entity.update_created_by_ref(id=report_id, identity_id=author_id)
 
                     # Add marking
                     if 'marking_tlpwhite' in self.mapping_cache:
                         object_marking_ref_result = self.mapping_cache['marking_tlpwhite']
                     else:
-                        object_marking_ref_result = self.opencti.get_marking_definition_by_definition('TLP',
-                                                                                                      'TLP:WHITE')
+                        object_marking_ref_result = self.opencti.marking_definition.read(filters=[
+                            {'key': 'definition_type', 'values': ['TLP']},
+                            {'key': 'definition', 'values': ['TLP:WHITE']}]
+                        )
                     if object_marking_ref_result is not None:
                         self.mapping_cache['marking_tlpwhite'] = {'id': object_marking_ref_result['id']}
-                        self.opencti.add_marking_definition_if_not_exists(report_id,
-                                                                          object_marking_ref_result['id'])
+                        self.opencti.stix_entity.add_marking_definition(
+                            id=report_id,
+                            marking_definition_id=object_marking_ref_result['id']
+                        )
+
                     # Add external reference to report
-                    self.opencti.add_external_reference_if_not_exists(report_id, external_reference_id)
+                    self.opencti.stix_entity.add_external_reference(
+                        id=report_id,
+                        external_reference_id=external_reference_id
+                    )
                     reports[external_reference_id] = report_id
 
         return {
@@ -356,7 +364,7 @@ class OpenCTIStix2:
         reports = embedded_relationships['reports']
 
         # Check relation
-        stix_relation_result = self.opencti.stix_relation.read(stix_id_key=stix_relation['id'])
+        stix_relation_result = self.opencti.stix_relation.read(id=stix_relation['id'], isStixId=True)
         if stix_relation_result is not None:
             return stix_relation_result
 
@@ -413,16 +421,20 @@ class OpenCTIStix2:
             toType=target_type,
             relationship_type=stix_relation['relationship_type'],
             description=stix_relation['description'] if 'description' in stix_relation else None,
-            first_seen=stix_relation[CustomProperties.FIRST_SEEN] if CustomProperties.FIRST_SEEN in stix_relation else date,
-            last_seen=stix_relation[CustomProperties.LAST_SEEN] if CustomProperties.LAST_SEEN in stix_relation else date,
+            first_seen=stix_relation[
+                CustomProperties.FIRST_SEEN] if CustomProperties.FIRST_SEEN in stix_relation else date,
+            last_seen=stix_relation[
+                CustomProperties.LAST_SEEN] if CustomProperties.LAST_SEEN in stix_relation else date,
             weight=stix_relation[CustomProperties.WEIGHT] if CustomProperties.WEIGHT in stix_relation else 1,
-            role_played=stix_relation[CustomProperties.ROLE_PLAYED] if CustomProperties.ROLE_PLAYED in stix_relation else None,
+            role_played=stix_relation[
+                CustomProperties.ROLE_PLAYED] if CustomProperties.ROLE_PLAYED in stix_relation else None,
             id=stix_relation[CustomProperties.ID] if CustomProperties.ID in stix_relation else None,
             stix_id_key=stix_relation['id'] if 'id' in stix_relation else None,
             created=stix_relation['created'] if 'created' in stix_relation else None,
             modified=stix_relation['modified'] if 'modified' in stix_relation else None,
             update=update,
-            ignore_dates=stix_relation[CustomProperties.IGNORE_DATES] if CustomProperties.IGNORE_DATES in stix_relation else None,
+            ignore_dates=stix_relation[
+                CustomProperties.IGNORE_DATES] if CustomProperties.IGNORE_DATES in stix_relation else None,
         )
         if stix_relation_result is not None:
             self.mapping_cache[stix_relation['id']] = {'id': stix_relation_result['id']}

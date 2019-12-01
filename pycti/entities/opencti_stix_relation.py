@@ -181,7 +181,7 @@ class StixRelation:
 
     def read(self, **kwargs):
         id = kwargs.get('id', None)
-        stix_id_key = kwargs.get('stix_id_key', None)
+        is_stix_id = kwargs.get('isStixId', False)
         from_id = kwargs.get('fromId', None)
         to_id = kwargs.get('toId', None)
         relation_type = kwargs.get('relationType', None)
@@ -191,28 +191,17 @@ class StixRelation:
         last_seen_stop = kwargs.get('lastSeenStop', None)
         inferred = kwargs.get('inferred', None)
         if id is not None:
-            self.opencti.log('info', 'Reading stix_relation {' + id + '}.')
+            self.opencti.log('info', 'Reading stix_relation {' + id + '} (isStixId: ' + str(is_stix_id) + ').')
             query = """
-                query StixRelation($id: String!) {
-                    stixRelation(id: $id) {
+                query StixRelation($id: String!, $isStixId: Boolean) {
+                    stixRelation(id: $id, isStixId: $isStixId) {
                         """ + self.properties + """
                     }
                 }
              """
-            result = self.opencti.query(query, {'id': id})
+            result = self.opencti.query(query, {'id': id, 'isStixId': is_stix_id})
             return self.opencti.process_multiple_fields(result['data']['stixRelation'])
-        elif stix_id_key is not None:
-            self.opencti.log('info', 'Reading stix_relation with stix_id_key {' + stix_id_key + '}.')
-            query = """
-                query StixRelation($stix_id_key: String!) {
-                    stixRelation(stix_id_key: $stix_id_key) {
-                        """ + self.properties + """
-                    }
-                }
-             """
-            result = self.opencti.query(query, {'stix_id_key': stix_id_key})
-            return self.opencti.process_multiple_fields(result['data']['stixRelation'])
-        else:
+        elif from_id is not None and to_id is not None:
             result = self.list(
                 fromId=from_id,
                 toId=to_id,
@@ -227,6 +216,9 @@ class StixRelation:
                 return result[0]
             else:
                 return None
+        else:
+            self.opencti.log('error', 'Missing parameters: id or from_id and to_id')
+            return None
 
     """
         Create a stix_relation object
@@ -307,7 +299,7 @@ class StixRelation:
 
         stix_relation_result = None
         if stix_id_key is not None:
-            stix_relation_result = self.read(stix_id_key=stix_id_key)
+            stix_relation_result = self.read(id=stix_id_key, isStixId=True)
         if stix_relation_result is None:
             if ignore_dates is False and first_seen is not None and last_seen is not None:
                 first_seen = dateutil.parser.parse(first_seen)
