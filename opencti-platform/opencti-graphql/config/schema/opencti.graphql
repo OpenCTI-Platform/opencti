@@ -2727,13 +2727,12 @@ type Query {
   stixObservablesTimeSeries(type: String): [TimeSeries] @auth
   stixObservablesDistribution(type: String): [Distribution] @auth
   # StixRelations
-  stixRelation(id: String!): StixRelation @auth
+  stixRelation(id: String!, isStixId: Boolean): StixRelation @auth
   stixRelations(
     first: Int
     after: ID
     orderBy: StixRelationsOrdering
     orderMode: OrderingMode
-    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String
@@ -2795,13 +2794,12 @@ type Query {
     inferred: Boolean
   ): Number @auth
   # StixObservableRelations
-  stixObservableRelation(id: String!): StixObservableRelation @auth
+  stixObservableRelation(id: String!, isStixId: Boolean): StixObservableRelation @auth
   stixObservableRelations(
     first: Int
     after: ID
     orderBy: StixObservableRelationsOrdering
     orderMode: OrderingMode
-    stix_id_key: String
     fromId: String
     inferred: Boolean
     toId: String

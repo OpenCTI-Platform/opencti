@@ -28,6 +28,9 @@ import { loadByGraknId } from '../database/grakn';
 const stixRelationResolvers = {
   Query: {
     stixRelation: (_, { id }) => {
+      if (id.match(/[a-z-]+--[\w-]{36}/g)) {
+        return findByStixId(id);
+      }
       if (id.length !== 36) {
         return findByIdInferred(id);
       }
@@ -36,9 +39,6 @@ const stixRelationResolvers = {
     stixRelations: (_, args) => {
       if (args.search && args.search.length > 0) {
         return search(args);
-      }
-      if (args.stix_id_key && args.stix_id_key.length > 0) {
-        return findByStixId(args);
       }
       if (args.resolveInferences && args.resolveRelationRole && args.resolveRelationType) {
         return findAllWithInferences(args);

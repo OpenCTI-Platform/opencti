@@ -1,10 +1,10 @@
 import { assoc } from 'ramda';
 import {
   findAll as stixRelationFindAll,
-  findByStixId as stixRelationFindByStixId,
   search as searchStixRelations,
   findAllWithInferences as findAllWithInferencesStixRelations,
   findById as findByIdStixRelation,
+  findByStixId as findByStixIdStixRelation,
   findByIdInferred as findByIdInferredStixRelation,
   stixRelationDelete,
   stixRelationCleanContext,
@@ -20,8 +20,6 @@ import { notify } from '../database/redis';
 export const findAll = args =>
   stixRelationFindAll(args.relationType ? args : assoc('relationType', 'stix_observable_relation', args));
 
-export const findByStixId = args => stixRelationFindByStixId(args);
-
 export const search = args =>
   searchStixRelations(args.relationType ? args : assoc('relationType', 'stix_observable_relation', args));
 
@@ -30,7 +28,9 @@ export const findAllWithInferences = async args =>
     args.relationType ? args : assoc('relationType', 'stix_observable_relation', args)
   );
 
-export const findById = stixObservableRelationId => findByIdStixRelation(stixObservableRelationId);
+export const findById = id => findByIdStixRelation(id);
+
+export const findByStixId = id => findByStixIdStixRelation(id);
 
 export const findByIdInferred = stixObservableRelationId => {
   return findByIdInferredStixRelation(stixObservableRelationId);

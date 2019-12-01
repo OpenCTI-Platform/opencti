@@ -81,7 +81,6 @@ export const index = async () => {
   await indexElement('Workspace');
   await indexElement('Stix-Domain');
   await indexElement('Stix-Observable');
-  await indexElement('Stix-Observable-Data');
 
   // 04. Handle every entity subbing relation
   // migrate - Not needed, migration related.

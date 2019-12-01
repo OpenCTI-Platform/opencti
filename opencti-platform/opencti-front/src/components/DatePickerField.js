@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { KeyboardDatePicker } from '@material-ui/pickers';
 import inject18n from './i18n';
+import { parse } from '../utils/Time';
 
 class DatePickerField extends Component {
   constructor(props) {
@@ -48,8 +49,8 @@ class DatePickerField extends Component {
             typeof onSubmit === 'function'
             && this.currentDate !== event.target.value
           ) {
-            onSubmit(field.name, event.target.value.toISOString());
-            this.currentDate = event.target.value;
+            onSubmit(field.name, parse(field.value).toISOString());
+            this.currentDate = field.value;
           }
         }}
         onKeyPress={(event) => {
@@ -59,7 +60,7 @@ class DatePickerField extends Component {
             && event.key === 'Enter'
             && this.currentDate !== event.target.value
           ) {
-            onSubmit(field.name, event.target.value.toISOString());
+            onSubmit(field.name, parse(event.target.value).toISOString());
             this.currentDate = event.target.value;
           }
         }}
@@ -70,7 +71,7 @@ class DatePickerField extends Component {
             && typeof onSubmit === 'function'
             && this.currentDate !== date
           ) {
-            onSubmit(field.name, date.toISOString());
+            onSubmit(field.name, parse(date).toISOString());
             this.currentDate = date;
           }
         }}

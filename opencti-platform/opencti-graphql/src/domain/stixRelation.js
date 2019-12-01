@@ -36,6 +36,7 @@ import {
   getRelationInferredById,
   getSingleValueNumber,
   loadEntityById,
+  loadEntityByStixId,
   loadRelationById,
   loadRelationByStixId,
   paginateRelationships,
@@ -70,11 +71,11 @@ export const search = args => {
     args
   );
 };
-export const findById = stixRelationId => {
-  return loadRelationById(stixRelationId);
+export const findById = id => {
+  return loadRelationById(id);
 };
-export const findByStixId = args => {
-  return loadRelationByStixId(args.stix_id_key);
+export const findByStixId = id => {
+  return loadRelationByStixId(id);
 };
 export const findByIdInferred = stixRelationId => {
   return getRelationInferredById(stixRelationId);
@@ -95,10 +96,7 @@ export const findAllWithInferences = async args => {
     null,
     true
   );
-  const fromIds = append(
-    args.fromId,
-    map(e => e.node.id, entities)
-  );
+  const fromIds = append(args.fromId, map(e => e.node.id, entities));
   const query = `match $rel($from, $to) isa ${args.relationType ? escape(args.relationType) : 'stix_relation'}; ${join(
     ' ',
     map(fromId => `{ $from has internal_id_key "${escapeString(fromId)}"; } or`, fromIds)
@@ -165,10 +163,9 @@ export const stixRelationsTimeSeries = args => {
   return timeSeries(
     `match $x($from, $to) isa ${args.relationType ? escape(args.relationType) : 'stix_relation'}; ${
       args.toTypes && args.toTypes.length > 0
-        ? `${join(
-            ' ',
-            map(toType => `{ $to isa ${escape(toType)}; } or`, args.toTypes)
-          )} { $to isa ${escape(head(args.toTypes))}; };`
+        ? `${join(' ', map(toType => `{ $to isa ${escape(toType)}; } or`, args.toTypes))} { $to isa ${escape(
+            head(args.toTypes)
+          )}; };`
         : ''
     } ${args.fromId ? `$from has internal_id_key "${escapeString(args.fromId)}"` : '$from isa Stix-Domain-Entity'}`,
     args
@@ -188,19 +185,15 @@ export const stixRelationsTimeSeriesWithInferences = async args => {
     null,
     true
   );
-  const fromIds = append(
-    args.fromId,
-    map(e => e.node.id, entities)
-  );
+  const fromIds = append(args.fromId, map(e => e.node.id, entities));
   const query = `match $x($from, $to) isa ${args.relationType ? escape(args.relationType) : 'stix_relation'}; ${join(
     ' ',
     map(fromId => `{ $from has internal_id_key "${escapeString(fromId)}"; } or`, fromIds)
   )} { $from has internal_id_key "${escapeString(head(fromIds))}"; }${
     args.toTypes && args.toTypes.length > 0
-      ? `; ${join(
-          ' ',
-          map(toType => `{ $to isa ${escape(toType)}; } or`, args.toTypes)
-        )} { $to isa ${escape(head(args.toTypes))}; }`
+      ? `; ${join(' ', map(toType => `{ $to isa ${escape(toType)}; } or`, args.toTypes))} { $to isa ${escape(
+          head(args.toTypes)
+        )}; }`
       : ''
   }`;
   const resultPromise = timeSeries(query, assoc('inferred', false, args));
@@ -216,10 +209,9 @@ export const stixRelationsTimeSeriesWithInferences = async args => {
           resolveViaType.entityType
         )}; $link(${escape(resolveViaType.relationRole)}: $entity, $to) isa ${escape(resolveViaType.relationType)} ${
           args.toTypes && args.toTypes.length > 0
-            ? `; ${join(
-                ' ',
-                map(toType => `{ $to isa ${escape(toType)}; } or`, args.toTypes)
-              )} { $to isa ${escape(head(args.toTypes))}; }`
+            ? `; ${join(' ', map(toType => `{ $to isa ${escape(toType)}; } or`, args.toTypes))} { $to isa ${escape(
+                head(args.toTypes)
+              )}; }`
             : ''
         }`;
         return timeSeries(viaQuery, assoc('inferred', true, args));
@@ -236,10 +228,9 @@ export const stixRelationsTimeSeriesWithInferences = async args => {
           resolveViaType.relationRole
         }: $x, $to) isa ${escape(resolveViaType.relationType)} ${
           args.toTypes && args.toTypes.length > 0
-            ? `; ${join(
-                ' ',
-                map(toType => `{ $to isa ${escape(toType)}; } or`, args.toTypes)
-              )} { $to isa ${escape(head(args.toTypes))}; }`
+            ? `; ${join(' ', map(toType => `{ $to isa ${escape(toType)}; } or`, args.toTypes))} { $to isa ${escape(
+                head(args.toTypes)
+              )}; }`
             : ''
         }`
     )(args.resolveViaTypes);
@@ -269,10 +260,9 @@ export const stixRelationsDistribution = args => {
   return distribution(
     `match $rel($from, $x) isa ${args.relationType ? escape(args.relationType) : 'stix_relation'}; ${
       args.toTypes && args.toTypes.length > 0
-        ? `${join(
-            ' ',
-            map(toType => `{ $x isa ${escape(toType)}; } or`, args.toTypes)
-          )} { $x isa ${escape(head(args.toTypes))}; };`
+        ? `${join(' ', map(toType => `{ $x isa ${escape(toType)}; } or`, args.toTypes))} { $x isa ${escape(
+            head(args.toTypes)
+          )}; };`
         : ''
     } ${args.fromId ? `$from has internal_id_key "${escapeString(args.fromId)}"` : '$from isa Stix-Domain-Entity'}`,
     args
@@ -298,19 +288,15 @@ export const stixRelationsDistributionWithInferences = async args => {
     null,
     true
   );
-  const fromIds = append(
-    args.fromId,
-    map(e => e.node.id, entities)
-  );
+  const fromIds = append(args.fromId, map(e => e.node.id, entities));
   const query = `match $rel($from, $x) isa ${args.relationType ? escape(args.relationType) : 'stix_relation'}; ${join(
     ' ',
     map(fromId => `{ $from has internal_id_key "${escapeString(fromId)}"; } or`, fromIds)
   )} { $from has internal_id_key "${escapeString(head(fromIds))}"; }${
     args.toTypes && args.toTypes.length > 0
-      ? `; ${join(
-          ' ',
-          map(toType => `{ $x isa ${escape(toType)}; } or`, args.toTypes)
-        )} { $x isa ${escape(head(args.toTypes))}; }`
+      ? `; ${join(' ', map(toType => `{ $x isa ${escape(toType)}; } or`, args.toTypes))} { $x isa ${escape(
+          head(args.toTypes)
+        )}; }`
       : ''
   }`;
   const resultPromise = distribution(query, assoc('inferred', false, args));
@@ -326,10 +312,9 @@ export const stixRelationsDistributionWithInferences = async args => {
           resolveViaType.entityType
         }; $link(${escape(resolveViaType.relationRole)}: $entity, $x) isa ${escape(resolveViaType.relationType)}; ${
           args.toTypes && args.toTypes.length > 0
-            ? `${join(
-                ' ',
-                map(toType => `{ $x isa ${escape(toType)}; } or`, args.toTypes)
-              )} { $x isa ${escape(head(args.toTypes))}; };`
+            ? `${join(' ', map(toType => `{ $x isa ${escape(toType)}; } or`, args.toTypes))} { $x isa ${escape(
+                head(args.toTypes)
+              )}; };`
             : ''
         } $rel has first_seen $o`;
         return distribution(viaQuery, assoc('inferred', true, args));
@@ -346,10 +331,9 @@ export const stixRelationsDistributionWithInferences = async args => {
           resolveViaType.relationRole
         )}: $rel, $x) isa ${escape(resolveViaType.relationType)}; ${
           args.toTypes && args.toTypes.length > 0
-            ? `${join(
-                ' ',
-                map(toType => `{ $x isa ${escape(toType)}; } or`, args.toTypes)
-              )} { $x isa ${escape(head(args.toTypes))}; };`
+            ? `${join(' ', map(toType => `{ $x isa ${escape(toType)}; } or`, args.toTypes))} { $x isa ${escape(
+                head(args.toTypes)
+              )}; };`
             : ''
         } $rel has first_seen $o`
     )(args.resolveViaTypes);
