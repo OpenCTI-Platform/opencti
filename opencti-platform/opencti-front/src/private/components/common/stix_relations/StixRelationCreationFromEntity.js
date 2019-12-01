@@ -197,11 +197,23 @@ const stixRelationCreationFromEntityQuery = graphql`
     stixEntity(id: $id) {
       id
       entity_type
+      parent_types
       name
       description
-      parent_types
       ... on StixObservable {
         observable_value
+      }
+      ... on StixRelation {
+        from {
+          id
+          entity_type
+          name
+        }
+        to {
+          id
+          entity_type
+          name
+        }
       }
     }
   }
@@ -541,18 +553,35 @@ class StixRelationCreationFromEntity extends Component {
                                 fromEntity.parent_types,
                               )
                                 ? t(`observable_${fromEntity.entity_type}`)
-                                : t(`entity_${fromEntity.entity_type}`)}
+                                : t(
+                                  `entity_${
+                                    fromEntity.entity_type
+                                        === 'stix_relation'
+                                      || fromEntity.entity_type === 'stix-relation'
+                                      ? fromEntity.parent_types[0]
+                                      : fromEntity.entity_type
+                                  }`,
+                                )}
                             </div>
                           </div>
                           <div className={classes.content}>
                             <span className={classes.name}>
                               {truncate(
+                                /* eslint-disable-next-line no-nested-ternary */
                                 includes(
                                   'Stix-Observable',
                                   fromEntity.parent_types,
                                 )
                                   ? fromEntity.observable_value
-                                  : fromEntity.name,
+                                  : fromEntity.entity_type
+                                      === 'stix_relation'
+                                    || fromEntity.entity_type === 'stix-relation'
+                                    ? `${
+                                      fromEntity.from.name
+                                    } ${String.fromCharCode(8594)} ${
+                                      fromEntity.to.name
+                                    }`
+                                    : fromEntity.name,
                                 20,
                               )}
                             </span>
@@ -595,18 +624,34 @@ class StixRelationCreationFromEntity extends Component {
                                 toEntity.parent_types,
                               )
                                 ? t(`observable_${toEntity.entity_type}`)
-                                : t(`entity_${toEntity.entity_type}`)}
+                                : t(
+                                  `entity_${
+                                    toEntity.entity_type
+                                        === 'stix_relation'
+                                      || toEntity.entity_type === 'stix-relation'
+                                      ? toEntity.parent_types[0]
+                                      : toEntity.entity_type
+                                  }`,
+                                )}
                             </div>
                           </div>
                           <div className={classes.content}>
                             <span className={classes.name}>
                               {truncate(
+                                /* eslint-disable-next-line no-nested-ternary */
                                 includes(
                                   'Stix-Observable',
                                   toEntity.parent_types,
                                 )
                                   ? toEntity.observable_value
-                                  : toEntity.name,
+                                  : toEntity.entity_type === 'stix_relation'
+                                    || toEntity.entity_type === 'stix-relation'
+                                    ? `${
+                                      toEntity.from.name
+                                    } ${String.fromCharCode(8594)} ${
+                                      toEntity.to.name
+                                    }`
+                                    : toEntity.name,
                                 20,
                               )}
                             </span>
