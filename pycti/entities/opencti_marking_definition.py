@@ -72,7 +72,7 @@ class MarkingDefinition:
         if id is not None:
             self.opencti.log('info', 'Reading Marking-Definition {' + id + '}.')
             query = """
-                query MarkingDefinition($id: String!, isStixId: Boolean) {
+                query MarkingDefinition($id: String!, $isStixId: Boolean) {
                     markingDefinition(id: $id, isStixId: $isStixId) {
                         """ + self.properties + """
                     }
