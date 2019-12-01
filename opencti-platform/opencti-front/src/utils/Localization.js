@@ -208,6 +208,9 @@ const i18n = {
         "Aucun connecteur pour ce type d'observable",
       'This connector is active': 'Ce connecteur est actif',
       'This connector is disconnected': 'Ce connecteur est déconnecté',
+      'Reset the connector state': "Réinitialiser l'état du connecteur",
+      'The connector state has been reset':
+        "L'état du connecteur a été réinitialisé",
       'Refresh the knowledge using this connector':
         'Actualiser la connaissance en utilisant ce connecteur',
       // Menu

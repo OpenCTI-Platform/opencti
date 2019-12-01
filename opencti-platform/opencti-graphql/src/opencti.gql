@@ -61,6 +61,7 @@ define
   connector_type sub attribute, datatype string;
   connector_scope sub attribute, datatype string;
   connector_state sub attribute, datatype string;
+  connector_state_reset sub attribute, datatype boolean;
 
   # STIX SDO
   alias sub attribute, datatype string;
@@ -491,6 +492,7 @@ define
     has connector_type,
     has connector_scope,
     has connector_state,
+    has connector_state_reset,
     has created_at,
     has created_at_day,
     has created_at_month,

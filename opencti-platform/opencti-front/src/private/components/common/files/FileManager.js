@@ -299,7 +299,4 @@ const FileManagerFragment = createFragmentContainer(FileManager, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(FileManagerFragment);
+export default compose(inject18n, withStyles(styles))(FileManagerFragment);
