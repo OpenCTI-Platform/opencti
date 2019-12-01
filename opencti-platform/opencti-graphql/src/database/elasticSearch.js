@@ -316,7 +316,14 @@ export const elPaginate = async (indexName, options) => {
   let mustnot = [];
   let ordering = [];
   if (search !== null && search.length > 0) {
-    const trimedSearch = search.trim();
+    // Try to decode before search
+    let decodedSearch;
+    try {
+      decodedSearch = decodeURIComponent(search);
+    } catch (e) {
+      decodedSearch = search;
+    }
+    const trimedSearch = decodedSearch.trim();
     let finalSearch;
     if (trimedSearch.startsWith('http://')) {
       finalSearch = `"*${trimedSearch.replace('http://', '')}*"`;
@@ -325,13 +332,6 @@ export const elPaginate = async (indexName, options) => {
     } else if (trimedSearch.startsWith('"')) {
       finalSearch = `${trimedSearch}`;
     } else {
-      // Try to decode before search
-      let decodedSearch;
-      try {
-        decodedSearch = decodeURIComponent(trimedSearch);
-      } catch (e) {
-        decodedSearch = trimedSearch;
-      }
       const splitSearch = decodedSearch.split(/[\s/\\]+/);
       finalSearch = pipe(
         map(n => `*${n}*`),

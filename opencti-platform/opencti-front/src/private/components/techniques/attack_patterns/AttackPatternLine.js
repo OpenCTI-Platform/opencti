@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, pipe, pathOr, join, map, sort,
-} from 'ramda';
+import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -49,14 +47,8 @@ const styles = (theme) => ({
 class AttackPatternLineComponent extends Component {
   render() {
     const {
-      fd, classes, node, dataColumns, orderAsc, onTagClick,
+      fd, classes, node, dataColumns, onTagClick,
     } = this.props;
-    const killchainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map((n) => n.node.phase_name),
-      sort((a, b) => (orderAsc ? a.localeCompare(b) : b.localeCompare(a))),
-      join(', '),
-    )(node);
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -73,9 +65,9 @@ class AttackPatternLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.killChainPhases.width }}
+                style={{ width: dataColumns.external_id.width }}
               >
-                {killchainPhases}
+                {node.external_id}
               </div>
               <div
                 className={classes.bodyItem}
@@ -131,18 +123,10 @@ const AttackPatternLineFragment = createFragmentContainer(
     node: graphql`
       fragment AttackPatternLine_node on AttackPattern {
         id
+        external_id
         name
         created
         modified
-        killChainPhases {
-          edges {
-            node {
-              id
-              kill_chain_name
-              phase_name
-            }
-          }
-        }
         tags {
           edges {
             node {
@@ -179,7 +163,7 @@ class AttackPatternLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.killChainPhases.width }}
+                style={{ width: dataColumns.external_id.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
