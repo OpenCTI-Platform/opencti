@@ -498,16 +498,12 @@ const loadConcept = async (query, concept, args = {}) => {
       const rolesPromises = Promise.all(
         map(async roleItem => {
           // eslint-disable-next-line prettier/prettier
-          const roleId = last(roleItem)
-            .values()
-            .next().value.id;
+          const roleId = last(roleItem).values().next().value.id;
           const conceptFromMap = relationsMap.get(roleId);
           if (conceptFromMap) {
             const { alias, forceNatural } = conceptFromMap;
             // eslint-disable-next-line prettier/prettier
-            return head(roleItem)
-              .label()
-              .then(async roleLabel => {
+            return head(roleItem).label().then(async roleLabel => {
                 // Alias when role are not specified need to be force the opencti natural direction.
                 let useAlias = alias;
                 // If role specified in the query, just use the grakn binding.
@@ -1327,9 +1323,9 @@ export const getRelationInferredById = async id => {
         )(relation);
       }
       return pipe(
-        assoc('fromId', fromObject),
+        assoc('fromId', fromObject.id),
         assoc('fromRole', fromRoleLabel),
-        assoc('toId', toObject),
+        assoc('toId', toObject.id),
         assoc('toRole', toRoleLabel),
         assoc('inferences', { edges: relationInferences })
       )(relation);
