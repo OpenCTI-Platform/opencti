@@ -215,9 +215,21 @@ class OpenCTIStix2:
                     # Add a corresponding report
                     # Extract date
                     if 'description' in external_reference:
-                        matches = list(datefinder.find_dates(external_reference['description']))
+                        matches = list(datefinder.find_dates(
+                            external_reference['description'],
+                            False,
+                            False,
+                            False,
+                            datetime.datetime(2019, 1, 1)
+                        ))
                     else:
-                        matches = list(datefinder.find_dates(source_name))
+                        matches = list(datefinder.find_dates(
+                            source_name,
+                            False,
+                            False,
+                            False,
+                            datetime.datetime(2019, 1, 1)
+                        ))
                     if len(matches) > 0:
                         published = list(matches)[0].strftime('%Y-%m-%dT%H:%M:%SZ')
                     else:
@@ -389,10 +401,9 @@ class OpenCTIStix2:
             target_type = self.mapping_cache[stix_relation['target_ref']]['type']
         else:
             if CustomProperties.TARGET_REF in stix_relation:
-                stix_object_result = self.opencti.get_stix_domain_entity_by_id(
-                    stix_relation[CustomProperties.TARGET_REF])
+                stix_object_result = self.opencti.stix_entity.read(id=stix_relation[CustomProperties.TARGET_REF])
             else:
-                stix_object_result = self.opencti.get_stix_entity_by_stix_id_key(stix_relation['target_ref'])
+                stix_object_result = self.opencti.stix_entity.read(id=stix_relation['target_ref'], isStixId=True)
             if stix_object_result is not None:
                 target_id = stix_object_result['id']
                 target_type = stix_object_result['entity_type']
@@ -404,9 +415,21 @@ class OpenCTIStix2:
         if 'external_references' in stix_relation:
             for external_reference in stix_relation['external_references']:
                 if 'description' in external_reference:
-                    matches = list(datefinder.find_dates(external_reference['description']))
+                    matches = list(datefinder.find_dates(
+                        external_reference['description'],
+                        False,
+                        False,
+                        False,
+                        datetime.datetime(2019, 1, 1)
+                    ))
                 else:
-                    matches = list(datefinder.find_dates(external_reference['source_name']))
+                    matches = list(datefinder.find_dates(
+                        external_reference['source_name'],
+                        False,
+                        False,
+                        False,
+                        datetime.datetime(2019, 1, 1)
+                    ))
                 if len(matches) > 0:
                     date = matches[0].strftime('%Y-%m-%dT%H:%M:%SZ')
                 else:
@@ -420,7 +443,7 @@ class OpenCTIStix2:
             toId=target_id,
             toType=target_type,
             relationship_type=stix_relation['relationship_type'],
-            description=stix_relation['description'] if 'description' in stix_relation else None,
+            description=self.convert_markdown(stix_relation['description']) if 'description' in stix_relation else None,
             first_seen=stix_relation[
                 CustomProperties.FIRST_SEEN] if CustomProperties.FIRST_SEEN in stix_relation else date,
             last_seen=stix_relation[
@@ -484,9 +507,6 @@ class OpenCTIStix2:
         embedded_relationships = self.extract_embedded_relationships(stix_object)
         created_by_ref_id = embedded_relationships['created_by_ref']
         marking_definitions_ids = embedded_relationships['marking_definitions']
-        kill_chain_phases_ids = embedded_relationships['kill_chain_phases']
-        external_references_ids = embedded_relationships['external_references']
-        reports = embedded_relationships['reports']
 
         observables_to_create = {}
         relations_to_create = []
