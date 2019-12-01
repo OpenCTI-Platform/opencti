@@ -81,6 +81,9 @@ export const inferIndexFromConceptTypes = (types, parentType = null) => {
   return INDEX_STIX_ENTITIES;
 };
 
+export const sleep = ms => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+};
 export const now = () => {
   // eslint-disable-next-line prettier/prettier
   return moment()
@@ -140,7 +143,7 @@ const closeTx = async gTx => {
     logger.error('[GRAKN] CloseReadTx error > ', err);
   }
 };
-const takeReadTx = async (retry = false) => {
+const takeReadTx = async () => {
   if (session === null) {
     session = await client.session('grakn');
   }
@@ -149,12 +152,9 @@ const takeReadTx = async (retry = false) => {
     return { session, tx };
   } catch (err) {
     logger.error('[GRAKN] TakeReadTx error > ', err);
-    await session.close();
-    if (retry === false) {
-      session = null;
-      return takeReadTx(true);
-    }
-    return null;
+    session = null;
+    await sleep(5000);
+    return takeReadTx();
   }
 };
 const executeRead = async executeFunction => {
@@ -498,12 +498,16 @@ const loadConcept = async (query, concept, args = {}) => {
       const rolesPromises = Promise.all(
         map(async roleItem => {
           // eslint-disable-next-line prettier/prettier
-          const roleId = last(roleItem).values().next().value.id;
+          const roleId = last(roleItem)
+            .values()
+            .next().value.id;
           const conceptFromMap = relationsMap.get(roleId);
           if (conceptFromMap) {
             const { alias, forceNatural } = conceptFromMap;
             // eslint-disable-next-line prettier/prettier
-            return head(roleItem).label().then(async roleLabel => {
+            return head(roleItem)
+              .label()
+              .then(async roleLabel => {
                 // Alias when role are not specified need to be force the opencti natural direction.
                 let useAlias = alias;
                 // If role specified in the query, just use the grakn binding.
@@ -1058,7 +1062,10 @@ export const listEntities = async (searchFields, args) => {
   // Handle order by field
   if (isRelationOrderBy) {
     const [relation, field] = orderBy.split('.');
-    relationsFields.push(`($elem, $${relation}) isa ${relation}; $${relation} has ${field} $order;`);
+    const curatedRelation = relation.replace(REL_INDEX_PREFIX, '');
+    relationsFields.push(
+      `($elem, $${curatedRelation}) isa ${curatedRelation}; $${curatedRelation} has ${field} $order;`
+    );
   } else if (orderBy) {
     attributesFields.push(`$elem has ${orderBy} $order;`);
   }
@@ -1070,16 +1077,16 @@ export const listEntities = async (searchFields, args) => {
       const isRelationFilter = includes('.', filterKey);
       if (isRelationFilter) {
         const [relation, field] = filterKey.split('.');
+        const curatedRelation = relation.replace(REL_INDEX_PREFIX, '');
         const sourceRole = validFilters[index].fromRole ? `${validFilters[index].fromRole}:` : '';
         const toRole = validFilters[index].toRole ? `${validFilters[index].toRole}:` : '';
-        const targetRef = relation;
-        const relId = `rel_${relation}`;
-        relationsFields.push(`$${relId} (${sourceRole}$elem, ${toRole}$${targetRef}) isa ${relation};`);
+        const relId = `rel_${curatedRelation}`;
+        relationsFields.push(`$${relId} (${sourceRole}$elem, ${toRole}$${curatedRelation}) isa ${curatedRelation};`);
         for (let valueIndex = 0; valueIndex < filterValues.length; valueIndex += 1) {
           const val = filterValues[valueIndex];
           // Apply filter on target.
           // TODO @Julien Support more than only string filters
-          attributesFields.push(`$${targetRef} has ${field} "${val}";`);
+          attributesFields.push(`$${curatedRelation} has ${field} "${val}";`);
         }
       } else {
         for (let valueIndex = 0; valueIndex < filterValues.length; valueIndex += 1) {
@@ -1457,25 +1464,25 @@ const createRelationRaw = async (fromInternalId, input, opts = {}) => {
     throw new Error(`[GRAKN] You cant create a relation in incorrect order ${message}`);
   }
   // 02. Prepare the data to create or index
+  const today = now();
   const relationAttributes = { internal_id_key: relationId };
   if (isStixRelation) {
     const currentDate = now();
-    const toCreate = input.stix_id_key === undefined || input.stix_id_key === 'create';
+    const toCreate = input.stix_id_key === undefined || input.stix_id_key === null || input.stix_id_key === 'create';
     relationAttributes.stix_id_key = toCreate ? `relationship--${uuid()}` : input.stix_id_key;
     relationAttributes.revoked = false;
     relationAttributes.name = input.name ? input.name : ''; // Force name of the relation
-    relationAttributes.description = input.description;
+    relationAttributes.description = input.description ? input.description : '';
     relationAttributes.role_played = input.role_played ? input.role_played : 'Unknown';
     relationAttributes.weight = input.weight ? input.weight : 1;
     relationAttributes.entity_type = entityType;
     relationAttributes.relationship_type = relationshipType;
     relationAttributes.updated_at = currentDate;
-    relationAttributes.created = input.created;
-    relationAttributes.modified = input.modified;
+    relationAttributes.created = input.created ? input.created : today;
+    relationAttributes.modified = input.modified ? input.modified : today;
     relationAttributes.created_at = currentDate;
-    relationAttributes.first_seen = input.first_seen;
-    relationAttributes.last_seen = input.last_seen;
-    relationAttributes.expiration = input.expiration;
+    relationAttributes.first_seen = input.first_seen ? input.first_seen : today;
+    relationAttributes.last_seen = input.last_seen ? input.last_seen : today;
   }
   // 02. Create the relation
   const graknRelation = await executeWrite(async wTx => {

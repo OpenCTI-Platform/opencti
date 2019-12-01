@@ -86,6 +86,7 @@ export const itemColor = (type, dark) => {
       }
       return '#795548';
     case 'stix-relation':
+    case 'stix_relation':
     case 'targets':
     case 'uses':
     case 'related-to':

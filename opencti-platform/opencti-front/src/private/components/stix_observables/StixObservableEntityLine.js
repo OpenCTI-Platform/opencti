@@ -32,11 +32,6 @@ const styles = (theme) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  goIcon: {
-    position: 'absolute',
-    right: 10,
-    marginRight: 0,
-  },
   itemIconDisabled: {
     color: theme.palette.grey[700],
   },
@@ -59,9 +54,8 @@ class StixObservableEntityLineComponent extends Component {
       displayRelation,
       entityId,
     } = this.props;
-    console.log(node);
     const link = node.to.parent_types.includes('stix_relation')
-      ? `/dashboard/observables/all/${entityId}/relations/${node.id}`
+      ? `/dashboard/observables/all/${entityId}/knowledge/relations/${node.id}`
       : `${resolveLink(node.to.entity_type)}/${
         node.to.id
       }/observables/relations/${node.id}`;
@@ -93,13 +87,23 @@ class StixObservableEntityLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                {t(`entity_${node.to.entity_type}`)}
+                {t(
+                  `entity_${
+                    node.to.entity_type === 'stix_relation'
+                    || node.to.entity_type === 'stix-relation'
+                      ? node.to.parent_types[0]
+                      : node.to.entity_type
+                  }`,
+                )}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {node.to.name}
+                {node.to.entity_type === 'stix_relation'
+                || node.to.entity_type === 'stix-relation'
+                  ? `${node.to.from.name} ${String.fromCharCode(8594)} ${node.to.to.name}`
+                  : node.to.name}
               </div>
               {!displayRelation ? (
                 <div
@@ -192,6 +196,12 @@ const StixObservableEntityLineFragment = createFragmentContainer(
             entity_type
             created_at
             updated_at
+            from {
+              name
+            }
+            to {
+              name
+            }
           }
         }
       }

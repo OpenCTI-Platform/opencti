@@ -98,7 +98,7 @@ export const addStixObservable = async (user, stixObservable) => {
   const observableToCreate = dissoc('type', stixObservable);
   const created = await createEntity(observableToCreate, innerType, {
     modelType: TYPE_STIX_OBSERVABLE,
-    stixIdType: 'indicator'
+    stixIdType: 'observable'
   });
   await askEnrich(created.id, innerType);
   return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user);

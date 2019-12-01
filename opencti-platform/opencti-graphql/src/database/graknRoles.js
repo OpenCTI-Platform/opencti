@@ -115,6 +115,10 @@ export const rolesMap = {
   corresponds: {
     correspond_from: 'from',
     correspond_to: 'to'
+  },
+  contains: {
+    container: 'from',
+    contained: 'to'
   }
   // endregion
 };

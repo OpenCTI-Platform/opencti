@@ -24,6 +24,18 @@
     ],
     "Development": [
       "development/connectors"
+    ],
+    "Client libraries": [
+      "python",
+      {
+        "type": "subcategory",
+        "label": "Python",
+        "ids": [
+          "clients/python/overview",
+          "clients/python/guide",
+          "clients/python/reference"
+        ]
+      }
     ]
   }
 }

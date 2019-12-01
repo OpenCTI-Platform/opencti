@@ -101,9 +101,10 @@ class RootStixObservable extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/observables/all/:observableId/relations/:relationId"
+                    path="/dashboard/observables/all/:observableId/knowledge/relations/:relationId"
                     render={(routeProps) => (
                       <StixRelation
+                        observable={true}
                         entityId={observableId}
                         inversedRoles={inversedRoles}
                         {...routeProps}

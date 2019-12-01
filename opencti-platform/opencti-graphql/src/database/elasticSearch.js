@@ -332,7 +332,7 @@ export const elPaginate = async (indexName, options) => {
       } catch (e) {
         decodedSearch = trimedSearch;
       }
-      const splitSearch = decodedSearch.split(/[\s/\-\\]+/);
+      const splitSearch = decodedSearch.split(/[\s/\\]+/);
       finalSearch = pipe(
         map(n => `*${n}*`),
         join(' ')

@@ -10,7 +10,15 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
-  assoc, compose, forEach, head, map, pathOr, pipe, pluck, union,
+  assoc,
+  compose,
+  forEach,
+  head,
+  map,
+  pathOr,
+  pipe,
+  pluck,
+  union,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -117,7 +125,9 @@ const reportAddObservableThreatsSearchQuery = graphql`
 `;
 
 const reportAddObservableObservableSearchQuery = graphql`
-  query ReportAddObservableObservableSearchQuery($filters: [StixObservablesFiltering]) {
+  query ReportAddObservableObservableSearchQuery(
+    $filters: [StixObservablesFiltering]
+  ) {
     stixObservables(filters: $filters) {
       edges {
         node {
@@ -204,7 +214,8 @@ const reportMutationRelationAdd = graphql`
       relationAdd(input: $input) {
         id
         from {
-          ...ReportObservablesLines_report @arguments(relationType: $relationType)
+          ...ReportObservablesLines_report
+            @arguments(relationType: $relationType)
         }
       }
     }
@@ -294,37 +305,39 @@ class ReportAddObservable extends Component {
     const filters = [
       { key: 'observable_value', values: [finalValues.observable_value] },
     ];
-    fetchQuery(reportAddObservableObservableSearchQuery, { filters }).then((data) => {
-      if (data.stixObservables.edges.length === 0) {
-        commitMutation({
-          mutation: stixObservableMutation,
-          variables: {
-            input: {
-              type: finalValues.type,
-              observable_value: finalValues.observable_value,
-              markingDefinitions: finalValues.markingDefinitions,
+    fetchQuery(reportAddObservableObservableSearchQuery, { filters }).then(
+      (data) => {
+        if (data.stixObservables.edges.length === 0) {
+          commitMutation({
+            mutation: stixObservableMutation,
+            variables: {
+              input: {
+                type: finalValues.type,
+                observable_value: finalValues.observable_value,
+                markingDefinitions: finalValues.markingDefinitions,
+              },
             },
-          },
-          onCompleted: (result) => {
-            const observableId = result.stixObservableAdd.id;
-            this.createRelations(
-              finalValues,
-              observableId,
-              setSubmitting,
-              resetForm,
-            );
-          },
-        });
-      } else {
-        const observableId = head(data.stixObservables.edges).node.id;
-        this.createRelations(
-          finalValues,
-          observableId,
-          setSubmitting,
-          resetForm,
-        );
-      }
-    });
+            onCompleted: (result) => {
+              const observableId = result.stixObservableAdd.id;
+              this.createRelations(
+                finalValues,
+                observableId,
+                setSubmitting,
+                resetForm,
+              );
+            },
+          });
+        } else {
+          const observableId = head(data.stixObservables.edges).node.id;
+          this.createRelations(
+            finalValues,
+            observableId,
+            setSubmitting,
+            resetForm,
+          );
+        }
+      },
+    );
   }
 
   createRelations(values, observableId, setSubmitting, resetForm) {
@@ -356,38 +369,38 @@ class ReportAddObservable extends Component {
             onCompleted: (data) => {
               // Create all relations from report to from,to and relation
               const relationId = data.stixRelationAdd.id;
-              const inputRelation = {
-                fromRole: 'so',
-                toId: this.props.reportId,
-                toRole: 'knowledge_aggregation',
-                through: 'object_refs',
-              };
               const inputFrom = {
-                fromRole: 'so',
-                toId: this.props.reportId,
-                toRole: 'knowledge_aggregation',
+                fromRole: 'knowledge_aggregation',
+                toId: relationId,
+                toRole: 'so',
                 through: 'object_refs',
               };
               const inputTo = {
-                fromRole: 'so',
-                toId: this.props.reportId,
-                toRole: 'knowledge_aggregation',
+                fromRole: 'knowledge_aggregation',
+                toId: threat,
+                toRole: 'so',
                 through: 'object_refs',
               };
-              if (!objectRefsIds.includes(threat)) {
-                commitMutation({
-                  mutation: reportMutationRelationAddSimple,
-                  variables: {
-                    id: threat,
-                    input: inputFrom,
-                  },
-                });
-              }
+              const inputRelation = {
+                fromRole: 'knowledge_aggregation',
+                toId: observableId,
+                toRole: 'so',
+                through: 'object_refs',
+              };
               if (!objectRefsIds.includes(observableId)) {
                 commitMutation({
                   mutation: reportMutationRelationAddSimple,
                   variables: {
-                    id: observableId,
+                    id: this.props.reportId,
+                    input: inputFrom,
+                  },
+                });
+              }
+              if (!objectRefsIds.includes(threat)) {
+                commitMutation({
+                  mutation: reportMutationRelationAddSimple,
+                  variables: {
+                    id: this.props.reportId,
                     input: inputTo,
                   },
                 });
@@ -395,7 +408,7 @@ class ReportAddObservable extends Component {
               commitMutation({
                 mutation: reportMutationRelationAdd,
                 variables: {
-                  id: relationId,
+                  id: this.props.reportId,
                   relationType: 'indicates',
                   input: inputRelation,
                 },
@@ -411,29 +424,29 @@ class ReportAddObservable extends Component {
           const relationId = head(result.stixRelations.edges).node.id;
           const relationFromId = head(result.stixRelations.edges).node.from.id;
           const relationToId = head(result.stixRelations.edges).node.to.id;
-          const inputRelation = {
-            fromRole: 'so',
-            toId: this.props.reportId,
-            toRole: 'knowledge_aggregation',
-            through: 'object_refs',
-          };
           const inputFrom = {
-            fromRole: 'so',
-            toId: this.props.reportId,
-            toRole: 'knowledge_aggregation',
+            fromRole: 'knowledge_aggregation',
+            toId: relationToId,
+            toRole: 'so',
             through: 'object_refs',
           };
           const inputTo = {
-            fromRole: 'so',
-            toId: this.props.reportId,
-            toRole: 'knowledge_aggregation',
+            fromRole: 'knowledge_aggregation',
+            toId: relationToId,
+            toRole: 'so',
+            through: 'object_refs',
+          };
+          const inputRelation = {
+            fromRole: 'knowledge_aggregation',
+            toId: relationId,
+            toRole: 'so',
             through: 'object_refs',
           };
           if (!objectRefsIds.includes(relationFromId)) {
             commitMutation({
               mutation: reportMutationRelationAddSimple,
               variables: {
-                id: relationFromId,
+                id: this.props.reportId,
                 input: inputFrom,
               },
             });
@@ -442,7 +455,7 @@ class ReportAddObservable extends Component {
             commitMutation({
               mutation: reportMutationRelationAddSimple,
               variables: {
-                id: relationToId,
+                id: this.props.reportId,
                 input: inputTo,
               },
             });
@@ -450,7 +463,7 @@ class ReportAddObservable extends Component {
           commitMutation({
             mutation: reportMutationRelationAdd,
             variables: {
-              id: relationId,
+              id: this.props.reportId,
               relationType: 'indicates',
               input: inputRelation,
             },
@@ -699,7 +712,4 @@ ReportAddObservable.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(ReportAddObservable);
+export default compose(inject18n, withStyles(styles))(ReportAddObservable);

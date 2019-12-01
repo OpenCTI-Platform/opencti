@@ -401,6 +401,7 @@ enum StixDomainEntitiesOrdering {
 }
 enum StixDomainEntitiesFilter {
   name
+  alias
   stix_id_key
   hasExternalReference
 }
@@ -3139,7 +3140,12 @@ type TagEditMutations {
   relationDelete(relationId: ID!): Tag
 }
 
-# StixDomain
+# StixEntity
+type StixEntityEditMutations {
+  relationAdd(input: RelationAddInput): RelationEmbedded
+}
+
+# StixDomainEntity
 type StixDomainEntityEditMutations {
   delete: ID
   fieldPatch(input: EditInput): StixDomainEntity
@@ -3428,6 +3434,8 @@ type Mutation {
   # Tag
   tagAdd(input: TagAddInput): Tag
   tagEdit(id: ID!): TagEditMutations @auth(for: ROLE_ADMIN)
+  # StixEntity
+  stixEntityEdit(id: ID!): StixEntityEditMutations @auth
   # StixDomainEntity
   stixDomainEntityAdd(input: StixDomainEntityAddInput): StixDomainEntity @auth
   stixDomainEntityEdit(id: ID!): StixDomainEntityEditMutations @auth
@@ -3437,7 +3445,7 @@ type Mutation {
   # StixRelation
   stixRelationAdd(input: StixRelationAddInput, reversedReturn: Boolean): StixRelation @auth
   stixRelationEdit(id: ID!): StixRelationEditMutations @auth
-  # StixRelation
+  # StixObservableRelation
   stixObservableRelationAdd(input: StixObservableRelationAddInput): StixObservableRelation @auth
   stixObservableRelationEdit(id: ID!): StixObservableRelationEditMutations @auth
   # Workspace

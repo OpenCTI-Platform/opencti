@@ -1,5 +1,6 @@
 import { assoc } from 'ramda';
 import {
+  createRelation,
   escapeString,
   findWithConnectedRelations,
   loadEntityById,
@@ -8,6 +9,8 @@ import {
 } from '../database/grakn';
 import { findAll as relationFindAll, search as relationSearch } from './stixRelation';
 import { buildPagination } from '../database/utils';
+import { notify } from '../database/redis';
+import { BUS_TOPICS } from '../config/conf';
 
 export const findById = (id, isStixId) => {
   return isStixId ? loadEntityByStixId(id) : loadEntityById(id);
@@ -70,4 +73,8 @@ export const stixRelations = (stixEntityId, args) => {
     return relationSearch(finalArgs);
   }
   return relationFindAll(finalArgs);
+};
+
+export const stixEntityAddRelation = async (user, stixEntityId, input) => {
+  return createRelation(stixEntityId, input);
 };

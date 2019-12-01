@@ -95,7 +95,10 @@ class StixRelationStixRelationsLinesContainer extends Component {
                     }
                   />
                   <ListItemSecondaryAction>
-                    <StixRelationPopover stixRelationId={stixRelation.id} />
+                    <StixRelationPopover
+                      stixRelationId={stixRelation.id}
+                      paginationOptions={paginationOptions}
+                    />
                   </ListItemSecondaryAction>
                 </ListItem>
               );
