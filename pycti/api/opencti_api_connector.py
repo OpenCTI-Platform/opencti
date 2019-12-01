@@ -33,10 +33,12 @@ class OpenCTIApiConnector:
             mutation PingConnector($id: ID!, $state: String) {
                 pingConnector(id: $id, state: $state) {
                     id
+                    connector_state
                 }
             }
            """
-        self.api.query(query, {'id': connector_id, 'state': json.dumps(connector_state)})
+        result = self.api.query(query, {'id': connector_id, 'state': json.dumps(connector_state)})
+        return result['data']['pingConnector']
 
     def register(self, connector: OpenCTIConnector):
         query = """
