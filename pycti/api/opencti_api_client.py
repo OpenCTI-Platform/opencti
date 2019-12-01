@@ -23,6 +23,7 @@ from pycti.entities.opencti_stix_entity import StixEntity
 from pycti.entities.opencti_stix_domain_entity import StixDomainEntity
 from pycti.entities.opencti_stix_observable import StixObservable
 from pycti.entities.opencti_stix_relation import StixRelation
+from pycti.entities.opencti_stix_observable_relation import StixObservableRelation
 from pycti.entities.opencti_identity import Identity
 from pycti.entities.opencti_threat_actor import ThreatActor
 from pycti.entities.opencti_intrusion_set import IntrusionSet
@@ -83,6 +84,7 @@ class OpenCTIApiClient:
         self.stix_domain_entity = StixDomainEntity(self)
         self.stix_observable = StixObservable(self)
         self.stix_relation = StixRelation(self)
+        self.stix_observable_relation = StixObservableRelation(self)
         self.identity = Identity(self)
         self.threat_actor = ThreatActor(self)
         self.intrusion_set = IntrusionSet(self)
@@ -393,7 +395,7 @@ class OpenCTIApiClient:
             lastSeenStop=last_seen_stop,
         )
 
-    # TODO Move to StixRelation
+    @deprecated(version='2.1.0', reason="Replaced by the StixRelation class in pycti")
     def create_relation(self,
                         from_id,
                         from_role,
@@ -412,37 +414,24 @@ class OpenCTIApiClient:
                         created=None,
                         modified=None
                         ):
-        logging.info('Creating relation ' + from_role + ' => ' + to_role + '...')
-        query = """
-             mutation StixRelationAdd($input: StixRelationAddInput!) {
-                 stixRelationAdd(input: $input) {
-                     id
-                 }
-             }
-         """
-        result = self.query(query, {
-            'input': {
-                'fromId': from_id,
-                'fromRole': from_role,
-                'toId': to_id,
-                'toRole': to_role,
-                'relationship_type': type,
-                'description': description,
-                'role_played': role_played,
-                'score': score,
-                'expiration': expiration,
-                'first_seen': first_seen,
-                'last_seen': last_seen,
-                'weight': weight,
-                'internal_id_key': id,
-                'stix_id_key': stix_id_key,
-                'created': created,
-                'modified': modified
-            }
-        })
-        return result['data']['stixRelationAdd']
+        return self.stix_relation.create_raw(
+            fromId=from_id,
+            fromRole=from_role,
+            toId=to_id,
+            toRole=to_role,
+            relationship_type=type,
+            description=description,
+            first_seen=first_seen,
+            last_seen=last_seen,
+            weight=weight,
+            role_played=role_played,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified
+        )
 
-    # TODO Move to StixRelation
+    @deprecated(version='2.1.0', reason="Replaced by the StixRelation class in pycti")
     def create_relation_if_not_exists(self,
                                       from_id,
                                       from_type,
@@ -462,71 +451,23 @@ class OpenCTIApiClient:
                                       modified=None,
                                       update=False
                                       ):
-        stix_relation_result = None
-        if stix_id_key is not None:
-            stix_relation_result = self.stix_relation.read(stix_id_key=stix_id_key)
-        if stix_relation_result is None:
-            if first_seen is not None and last_seen is not None:
-                first_seen = dateutil.parser.parse(first_seen)
-                first_seen_start = (first_seen + datetime.timedelta(days=-1)).strftime('%Y-%m-%dT%H:%M:%S+00:00')
-                first_seen_stop = (first_seen + datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%S+00:00')
-                last_seen = dateutil.parser.parse(last_seen)
-                last_seen_start = (last_seen + datetime.timedelta(days=-1)).strftime('%Y-%m-%dT%H:%M:%S+00:00')
-                last_seen_stop = (last_seen + datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%S+00:00')
-            else:
-                first_seen_start = None
-                first_seen_stop = None
-                last_seen_start = None
-                last_seen_stop = None
-            stix_relation_result = self.stix_relation.read(
-                fromId=from_id,
-                toId=to_id,
-                relationType=type,
-                firstSeenStart=first_seen_start,
-                firstSeenStop=first_seen_stop,
-                lastSeenStart=last_seen_start,
-                lastSeenStop=last_seen_stop,
-            )
-        if stix_relation_result is not None:
-            if update:
-                self.stix_relation.update_field(id=stix_relation_result['id'], key='description', value=description)
-                stix_relation_result['description'] = description
-                self.stix_relation.update_field(id=stix_relation_result['id'], key='weight', value=weight)
-                stix_relation_result['weight'] = weight
-            return stix_relation_result
-        else:
-            roles = self.resolve_role(type, from_type, to_type)
-            if roles is not None:
-                final_from_id = from_id
-                final_to_id = to_id
-            else:
-                roles = self.resolve_role(type, to_type, from_type)
-                if roles is not None:
-                    final_from_id = to_id
-                    final_to_id = from_id
-                else:
-                    logging.info(
-                        'Cannot resolve roles, doing nothing (' + type + ': ' + from_type + ',' + to_type + ')')
-                    return None
-
-            return self.create_relation(
-                final_from_id,
-                roles['from_role'],
-                final_to_id,
-                roles['to_role'],
-                type,
-                description,
-                first_seen,
-                last_seen,
-                weight,
-                role_played,
-                score,
-                expiration,
-                id,
-                stix_id_key,
-                created,
-                modified
-            )
+        return self.stix_relation.create(
+            fromId=from_id,
+            fromType=from_type,
+            toId=to_id,
+            toType=to_type,
+            relationship_type=type,
+            description=description,
+            first_seen=first_seen,
+            last_seen=last_seen,
+            weight=weight,
+            role_played=role_played,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified,
+            update=update
+        )
 
     # TODO Move to StixRelation
     def delete_relation(self, id):
@@ -823,7 +764,7 @@ class OpenCTIApiClient:
                     else:
                         new_aliases = alias
                     self.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
-                    object_result['alias'] = alias
+                    object_result['alias'] = new_aliases
             return object_result
         else:
             return self.create_identity(
@@ -907,23 +848,24 @@ class OpenCTIApiClient:
                                           modified=None,
                                           update=False
                                           ):
-        object_result = self.stix_domain_entity.get_by_stix_id_or_name(types=['Threat-Actor'], stix_id_key=stix_id_key, name=name)
+        object_result = self.stix_domain_entity.get_by_stix_id_or_name(types=['Threat-Actor'], stix_id_key=stix_id_key,
+                                                                       name=name)
         if object_result is not None:
             if update:
-                self.update_stix_domain_entity_field(object_result['id'], 'name', name)
+                self.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
                 object_result['name'] = name
-                self.update_stix_domain_entity_field(object_result['id'], 'description', description)
+                self.stix_domain_entity.update_field(id=object_result['id'], key='description', value=description)
                 object_result['description'] = description
                 if alias is not None:
                     if 'alias' in object_result:
                         new_aliases = object_result['alias'] + list(set(alias) - set(object_result['alias']))
                     else:
                         new_aliases = alias
-                    self.update_stix_domain_entity_field(object_result['id'], 'alias', new_aliases)
-                    object_result['alias'] = alias
+                    self.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
+                    object_result['alias'] = new_aliases
                 if goal is not None:
-                    self.update_stix_domain_entity_field(object_result['id'], 'goal', goal)
-                    object_result['last_seen'] = goal
+                    self.stix_domain_entity.update_field(id=object_result['id'], key='goal', value=goal)
+                    object_result['goal'] = goal
             return object_result
         else:
             return self.create_threat_actor(
@@ -1081,7 +1023,8 @@ class OpenCTIApiClient:
                                       modified=None,
                                       update=False
                                       ):
-        object_result = self.stix_domain_entity.get_by_stix_id_or_name(types=['Campaign'], stix_id_key=stix_id_key, name=name)
+        object_result = self.stix_domain_entity.get_by_stix_id_or_name(types=['Campaign'], stix_id_key=stix_id_key,
+                                                                       name=name)
         if object_result is not None:
             if update:
                 self.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
@@ -1094,7 +1037,7 @@ class OpenCTIApiClient:
                     else:
                         new_aliases = alias
                     self.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
-                    object_result['alias'] = alias
+                    object_result['alias'] = new_aliases
                 if objective is not None:
                     self.stix_domain_entity.update_field(id=object_result['id'], key='objective', value=objective)
                 object_result['objective'] = objective
@@ -1180,7 +1123,8 @@ class OpenCTIApiClient:
                                       modified=None,
                                       update=False
                                       ):
-        object_result = self.stix_domain_entity.get_by_stix_id_or_name(types=['Incident'], stix_id_key=stix_id_key, name=name)
+        object_result = self.stix_domain_entity.get_by_stix_id_or_name(types=['Incident'], stix_id_key=stix_id_key,
+                                                                       name=name)
         if object_result is not None:
             if update:
                 self.update_stix_domain_entity_field(object_result['id'], 'name', name)
@@ -1193,7 +1137,7 @@ class OpenCTIApiClient:
                     else:
                         new_aliases = alias
                     self.update_stix_domain_entity_field(object_result['id'], 'alias', new_aliases)
-                    object_result['alias'] = alias
+                    object_result['alias'] = new_aliases
                 if objective is not None:
                     self.update_stix_domain_entity_field(object_result['id'], 'objective', objective)
                 object_result['objective'] = objective
@@ -1255,20 +1199,20 @@ class OpenCTIApiClient:
     def create_malware_if_not_exists(self, name, description, alias=None, id=None, stix_id_key=None, created=None,
                                      modified=None,
                                      update=False):
-        object_result = self.stix_domain_entity.get_by_stix_id_or_name(types=['Malware'], stix_id_key=stix_id_key, name=name)
+        object_result = self.stix_domain_entity.get_by_stix_id_or_name(types=['Malware'], stix_id_key=stix_id_key,
+                                                                       name=name)
         if object_result is not None:
             if update:
-                self.update_stix_domain_entity_field(object_result['id'], 'name', name)
+                self.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
                 object_result['name'] = name
-                self.update_stix_domain_entity_field(object_result['id'], 'description', description)
+                self.stix_domain_entity.update_field(id=object_result['id'], key='description', value=description)
                 object_result['description'] = description
                 if alias is not None:
                     if 'alias' in object_result:
                         new_aliases = object_result['alias'] + list(set(alias) - set(object_result['alias']))
                     else:
                         new_aliases = alias
-                    self.update_stix_domain_entity_field(object_result['id'], 'alias', new_aliases)
-                    object_result['alias'] = alias
+                    self.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
             return object_result
         else:
             return self.create_malware(
@@ -1318,7 +1262,8 @@ class OpenCTIApiClient:
     def create_tool_if_not_exists(self, name, description, alias=None, id=None, stix_id_key=None, created=None,
                                   modified=None,
                                   update=False):
-        object_result = self.stix_domain_entity.get_by_stix_id_or_name(types=['Tool'], stix_id_key=stix_id_key, name=name)
+        object_result = self.stix_domain_entity.get_by_stix_id_or_name(types=['Tool'], stix_id_key=stix_id_key,
+                                                                       name=name)
         if object_result is not None:
             if update:
                 self.update_stix_domain_entity_field(object_result['id'], 'name', name)
@@ -1331,7 +1276,7 @@ class OpenCTIApiClient:
                     else:
                         new_aliases = alias
                     self.update_stix_domain_entity_field(object_result['id'], 'alias', new_aliases)
-                    object_result['alias'] = alias
+                    object_result['alias'] = new_aliases
             return object_result
         else:
             return self.create_tool(
@@ -1381,7 +1326,8 @@ class OpenCTIApiClient:
     # TODO Move to Vulnerability
     def create_vulnerability_if_not_exists(self, name, description, alias=None, id=None, stix_id_key=None, created=None,
                                            modified=None, update=False):
-        object_result = self.stix_domain_entity.get_by_stix_id_or_name(types=['Vulnerability'], stix_id_key=stix_id_key, name=name)
+        object_result = self.stix_domain_entity.get_by_stix_id_or_name(types=['Vulnerability'], stix_id_key=stix_id_key,
+                                                                       name=name)
         if object_result is not None:
             if update:
                 self.update_stix_domain_entity_field(object_result['id'], 'name', name)
@@ -1394,7 +1340,7 @@ class OpenCTIApiClient:
                     else:
                         new_aliases = alias
                     self.update_stix_domain_entity_field(object_result['id'], 'alias', new_aliases)
-                    object_result['alias'] = alias
+                    object_result['alias'] = new_aliases
             return object_result
         else:
             return self.create_vulnerability(
@@ -1426,7 +1372,7 @@ class OpenCTIApiClient:
                               stix_id_key=None,
                               created=None,
                               modified=None):
-        return self.attack_pattern.create(
+        return self.attack_pattern.create_raw(
             name=name,
             description=description,
             alias=alias,
@@ -1450,7 +1396,7 @@ class OpenCTIApiClient:
                                             created=None,
                                             modified=None,
                                             update=False):
-        return self.attack_pattern.create_or_update(
+        return self.attack_pattern.create(
             name=name,
             description=description,
             alias=alias,
@@ -1501,10 +1447,11 @@ class OpenCTIApiClient:
     def create_course_of_action_if_not_exists(self, name, description, alias=None, id=None, stix_id_key=None,
                                               created=None,
                                               modified=None, update=False):
-        object_result = self.stix_domain_entity.get_by_stix_id_or_name(types=['Course-Of-Action'], stix_id_key=stix_id_key, name=name)
+        object_result = self.stix_domain_entity.get_by_stix_id_or_name(types=['Course-Of-Action'],
+                                                                       stix_id_key=stix_id_key, name=name)
         if object_result is not None:
             if update:
-                self.update_stix_domain_entity_field(object_result['id'], 'name', name)
+                self.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
                 object_result['name'] = name
                 self.update_stix_domain_entity_field(object_result['id'], 'description', description)
                 object_result['description'] = description
@@ -1514,7 +1461,7 @@ class OpenCTIApiClient:
                     else:
                         new_aliases = alias
                     self.update_stix_domain_entity_field(object_result['id'], 'alias', new_aliases)
-                    object_result['alias'] = alias
+                    object_result['alias'] = new_aliases
             return object_result
         else:
             return self.create_course_of_action(
@@ -1667,7 +1614,8 @@ class OpenCTIApiClient:
                                                             created=None,
                                                             modified=None
                                                             ):
-        object_result = self.stix_domain_entity.read(types=['Report'], filters=[{'key': 'hasExternalReference', 'values': [external_reference_id]}])
+        object_result = self.stix_domain_entity.read(types=['Report'], filters=[
+            {'key': 'hasExternalReference', 'values': [external_reference_id]}])
         if object_result is not None:
             return object_result
         else:
@@ -1699,7 +1647,7 @@ class OpenCTIApiClient:
     def get_stix_observables(self, limit=10000):
         return self.stix_observable.list(first=limit)
 
-    # TODO Move to StixObservable
+    @deprecated(version='2.1.0', reason="Replaced by the StixObservable class in pycti")
     def create_stix_observable(self,
                                type,
                                observable_value,
@@ -1709,30 +1657,17 @@ class OpenCTIApiClient:
                                created=None,
                                modified=None
                                ):
-        logging.info('Creating observable ' + observable_value + '...')
-        query = """
-           mutation StixObservableAdd($input: StixObservableAddInput) {
-               stixObservableAdd(input: $input) {
-                   id
-                   entity_type
-                   observable_value
-               }
-           }
-        """
-        result = self.query(query, {
-            'input': {
-                'type': type,
-                'observable_value': observable_value,
-                'description': description,
-                'internal_id_key': id,
-                'stix_id_key': stix_id_key,
-                'created': created,
-                'modified': modified
-            }
-        })
-        return result['data']['stixObservableAdd']
+        return self.stix_observable.create_raw(
+            type=type,
+            observable_value=observable_value,
+            description=description,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified
+        )
 
-    # TODO Move to StixObservable
+    @deprecated(version='2.1.0', reason="Replaced by the StixObservable class in pycti")
     def create_stix_observable_if_not_exists(self,
                                              type,
                                              observable_value,
@@ -1743,22 +1678,16 @@ class OpenCTIApiClient:
                                              modified=None,
                                              update=False
                                              ):
-        object_result = self.get_stix_observable_by_value(observable_value)
-        if object_result is not None:
-            if update:
-                self.update_stix_observable_field(object_result['id'], 'description', description)
-                object_result['description'] = description
-            return object_result
-        else:
-            return self.create_stix_observable(
-                type,
-                observable_value,
-                description,
-                id,
-                stix_id_key,
-                created,
-                modified
-            )
+        return self.stix_observable.create(
+            type=type,
+            observable_value=observable_value,
+            description=description,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified,
+            update=update
+        )
 
     @deprecated(version='2.1.0', reason="Replaced by the StixEntity class in pycti")
     def update_stix_domain_entity_created_by_ref(self, object_id, identity_id):
@@ -1789,8 +1718,8 @@ class OpenCTIApiClient:
             return {'from_role': 'relate_from', 'to_role': 'relate_to'}
 
         relation_type = relation_type.lower()
-        from_type = from_type.lower() if not ObservableTypes.has_value(from_type) else 'observable'
-        to_type = to_type.lower() if not ObservableTypes.has_value(to_type) else 'observable'
+        from_type = 'observable' if ObservableTypes.has_value(from_type) and relation_type == 'indicates' else from_type.lower()
+        to_type = to_type.lower()
 
         mapping = {
             'uses': {
@@ -1964,6 +1893,36 @@ class OpenCTIApiClient:
                 'tool': {
                     'malware': {'from_role': 'dropping', 'to_role': 'dropped'},
                     'tool': {'from_role': 'dropping', 'to_role': 'dropped'},
+                }
+            },
+            'belongs': {
+                'ipv4-addr': {
+                    'autonomous-system': {'from_role': 'belonging_to', 'to_role': 'belonged_to'}
+                },
+                'ipv6-addr': {
+                    'autonomous-system': {'from_role': 'belonging_to', 'to_role': 'belonged_to'}
+                }
+            },
+            'corresponds': {
+                'file-name': {
+                    'file-md5': {'from_role': 'correspond_from', 'to_role': 'correspond_to'},
+                    'file-sha1': {'from_role': 'correspond_from', 'to_role': 'correspond_to'},
+                    'file-sha256': {'from_role': 'correspond_from', 'to_role': 'correspond_to'},
+                },
+                'file-md5': {
+                    'file-name': {'from_role': 'correspond_from', 'to_role': 'correspond_to'},
+                    'file-sha1': {'from_role': 'correspond_from', 'to_role': 'correspond_to'},
+                    'file-sha256': {'from_role': 'correspond_from', 'to_role': 'correspond_to'},
+                },
+                'file-sha1': {
+                    'file-name': {'from_role': 'correspond_from', 'to_role': 'correspond_to'},
+                    'file-md5': {'from_role': 'correspond_from', 'to_role': 'correspond_to'},
+                    'file-sha256': {'from_role': 'correspond_from', 'to_role': 'correspond_to'},
+                },
+                'file-sha256': {
+                    'file-name': {'from_role': 'correspond_from', 'to_role': 'correspond_to'},
+                    'file-md5': {'from_role': 'correspond_from', 'to_role': 'correspond_to'},
+                    'file-sha1': {'from_role': 'correspond_from', 'to_role': 'correspond_to'},
                 }
             }
         }

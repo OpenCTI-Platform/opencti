@@ -11,7 +11,7 @@ api_token = '22566f94-9091-49ba-b583-efd76cf8b29c'
 opencti_api_client = OpenCTIApiClient(api_url, api_token)
 
 # Create the Intrusion Set
-intrusion_set = opencti_api_client.intrusion_set.create_or_update(
+intrusion_set = opencti_api_client.intrusion_set.create(
     name='My new Intrusion Set',
     description='Evil Cluster',
     first_seen=datetime.date.today().strftime('%Y-%m-%dT%H:%M:%S+00:00'),
