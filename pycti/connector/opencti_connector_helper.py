@@ -66,23 +66,29 @@ class ListenQueue(threading.Thread):
 
 
 class PingAlive(threading.Thread):
-    def __init__(self, connector_id, api, get_state):
+    def __init__(self, connector_id, api, get_state, set_state):
         threading.Thread.__init__(self)
         self.connector_id = connector_id
         self.in_error = False
         self.api = api
         self.get_state = get_state
+        self.set_state = set_state
 
     def ping(self):
         while True:
             try:
-                self.api.connector.ping(self.connector_id, self.get_state())
+                initial_state = self.get_state()
+                result = self.api.connector.ping(self.connector_id, initial_state)
+                remote_state = json.loads(result['connector_state']) if len(result['connector_state']) > 0 else None
+                if initial_state != remote_state:
+                    self.set_state(result['connector_state'])
+                    logging.info('Connector state has been remotely reset to: "' + self.get_state() + '"')
                 if self.in_error:
                     self.in_error = False
-                    logging.info('API Ping back to normal')
+                    logging.error('API Ping back to normal')
             except Exception:
                 self.in_error = True
-                logging.info('Error pinging the API')
+                logging.error('Error pinging the API')
             time.sleep(40)
 
     def run(self):
@@ -127,7 +133,7 @@ class OpenCTIConnectorHelper:
         self.config = connector_configuration['config']
 
         # Start ping thread
-        self.ping = PingAlive(self.connector.id, self.api, self.get_state)
+        self.ping = PingAlive(self.connector.id, self.api, self.get_state, self.set_state)
         self.ping.start()
 
         # Initialize caching
