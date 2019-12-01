@@ -3424,6 +3424,7 @@ type Mutation {
   # Connector
   pingConnector(id: ID!, state: String): Connector @auth(for: ROLE_ADMIN)
   registerConnector(input: RegisterConnectorInput): Connector @auth(for: ROLE_ADMIN)
+  resetStateConnector(id: ID!): Connector @auth(for: ROLE_ADMIN)
   deleteWork(id: ID!): ID! @auth
   initiateJob(workId: ID!): Job @auth
   updateJob(jobId: ID!, status: Status!, messages: [String]): Job @auth

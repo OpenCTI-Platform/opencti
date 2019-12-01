@@ -78,25 +78,6 @@ app.get('/auth/:provider/callback', urlencodedParser, passport.initialize(), (re
     return res.redirect('/dashboard');
   })(req, res, next);
 });
-// -- Get everything else
-app.get('*', (req, res) => {
-  const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');
-  const withOptionValued = data
-    .replace(/%BASE_PATH%/g, basePath)
-    .replace(/%WS_ACTIVATED%/g, isAppRealTime)
-    .replace(/%ACCESS_PROVIDERS%/g, ACCESS_PROVIDERS);
-  res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-  res.header('Expires', '-1');
-  res.header('Pragma', 'no-cache');
-  return res.send(withOptionValued);
-});
-// -- Error handling
-const ErrorMiddleware = (err, req, res, next) => {
-  logger.error(`[EXPRESS] Error calling  ${err.stack}`);
-  res.redirect('/');
-  next();
-};
-app.use(ErrorMiddleware);
 
 const server = new ApolloServer({
   schema,
@@ -175,6 +156,27 @@ const httpServer = http.createServer(app);
 if (isAppRealTime) {
   server.installSubscriptionHandlers(httpServer);
 }
+
+// -- Get everything else
+// Need to be here to let apollo catch the playground first
+app.get('*', (req, res) => {
+  const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');
+  const withOptionValued = data
+    .replace(/%BASE_PATH%/g, basePath)
+    .replace(/%WS_ACTIVATED%/g, isAppRealTime)
+    .replace(/%ACCESS_PROVIDERS%/g, ACCESS_PROVIDERS);
+  res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+  res.header('Expires', '-1');
+  res.header('Pragma', 'no-cache');
+  return res.send(withOptionValued);
+});
+// -- Error handling
+const ErrorMiddleware = (err, req, res, next) => {
+  logger.error(`[EXPRESS] Error calling  ${err.stack}`);
+  res.redirect('/');
+  next();
+};
+app.use(ErrorMiddleware);
 
 function onSignal() {
   logger.info('OpenCTI is starting cleanup');
