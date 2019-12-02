@@ -14,8 +14,11 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findById = (id, isStixId) => {
-  return isStixId ? loadEntityByStixId(id) : loadEntityById(id);
+export const findById = markingDefinitionId => {
+  if (markingDefinitionId.match(/[a-z-]+--[\w-]{36}/g)) {
+    return loadEntityByStixId(markingDefinitionId);
+  }
+  return loadEntityById(markingDefinitionId);
 };
 
 export const findAll = args => {

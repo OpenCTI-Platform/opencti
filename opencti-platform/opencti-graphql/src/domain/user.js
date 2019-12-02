@@ -22,6 +22,7 @@ import {
   listEntities,
   load,
   loadEntityById,
+  loadEntityByStixId,
   loadWithConnectedRelations,
   now,
   TYPE_OPENCTI_INTERNAL,
@@ -54,6 +55,9 @@ export const setAuthenticationCookie = (token, res) => {
 // endregion
 
 export const findById = (userId, args) => {
+  if (userId.match(/[a-z-]+--[\w-]{36}/g)) {
+    return loadEntityByStixId(userId);
+  }
   return loadEntityById(userId, args);
 };
 export const findAll = args => {

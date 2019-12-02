@@ -1,9 +1,12 @@
 import { assoc } from 'ramda';
-import { createEntity, listEntities, loadEntityById, TYPE_STIX_DOMAIN_ENTITY } from '../database/grakn';
+import { createEntity, listEntities, loadEntityById, loadEntityByStixId, TYPE_STIX_DOMAIN_ENTITY } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 
 export const findById = organizationId => {
+  if (organizationId.match(/[a-z-]+--[\w-]{36}/g)) {
+    return loadEntityByStixId(organizationId);
+  }
   return loadEntityById(organizationId);
 };
 export const findAll = args => {

@@ -4,6 +4,7 @@ import {
   escapeString,
   listEntities,
   loadEntityById,
+  loadEntityByStixId,
   now,
   timeSeries,
   TYPE_STIX_DOMAIN_ENTITY
@@ -12,6 +13,9 @@ import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 
 export const findById = incidentId => {
+  if (incidentId.match(/[a-z-]+--[\w-]{36}/g)) {
+    return loadEntityByStixId(incidentId);
+  }
   return loadEntityById(incidentId);
 };
 export const findAll = args => {

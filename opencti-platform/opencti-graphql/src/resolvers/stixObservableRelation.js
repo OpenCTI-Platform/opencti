@@ -6,7 +6,6 @@ import {
   findAll,
   findByStixId,
   findById,
-  findByIdInferred,
   findAllWithInferences,
   search,
   stixObservableRelationEditContext,
@@ -21,15 +20,7 @@ import { loadByGraknId } from '../database/grakn';
 
 const stixObservableRelationResolvers = {
   Query: {
-    stixObservableRelation: (_, { id }) => {
-      if (id.match(/[a-z-]+--[\w-]{36}/g)) {
-        return findByStixId(id);
-      }
-      if (id.length !== 36) {
-        return findByIdInferred(id);
-      }
-      return findById(id);
-    },
+    stixObservableRelation: (_, { id }) => findById(id),
     stixObservableRelations: (_, args) => {
       if (args.search && args.search.length > 0) {
         return search(args);

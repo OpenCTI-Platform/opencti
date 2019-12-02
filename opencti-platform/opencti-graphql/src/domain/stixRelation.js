@@ -35,8 +35,6 @@ import {
   findWithConnectedRelations,
   getRelationInferredById,
   getSingleValueNumber,
-  loadEntityById,
-  loadEntityByStixId,
   loadRelationById,
   loadRelationByStixId,
   paginateRelationships,
@@ -71,14 +69,14 @@ export const search = args => {
     args
   );
 };
-export const findById = id => {
-  return loadRelationById(id);
-};
-export const findByStixId = id => {
-  return loadRelationByStixId(id);
-};
-export const findByIdInferred = stixRelationId => {
-  return getRelationInferredById(stixRelationId);
+export const findById = stixRelationId => {
+  if (stixRelationId.match(/[a-z-]+--[\w-]{36}/g)) {
+    return loadRelationByStixId(stixRelationId);
+  }
+  if (stixRelationId.length !== 36) {
+    return getRelationInferredById(stixRelationId);
+  }
+  return loadRelationById(stixRelationId);
 };
 export const findAllWithInferences = async args => {
   const entities = await findWithConnectedRelations(
@@ -400,7 +398,7 @@ export const stixRelationEditField = (user, stixRelationId, input) => {
   return executeWrite(wTx => {
     return updateAttribute(stixRelationId, input, wTx);
   }).then(async () => {
-    const stixRelation = await loadEntityById(stixRelationId);
+    const stixRelation = await loadRelationById(stixRelationId);
     return notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, stixRelation, user);
   });
 };
@@ -420,13 +418,13 @@ export const stixRelationDeleteRelation = async (user, stixRelationId, relationI
 // region context
 export const stixRelationCleanContext = (user, stixRelationId) => {
   delEditContext(user, stixRelationId);
-  return loadEntityById(stixRelationId).then(stixRelation =>
+  return loadRelationById(stixRelationId).then(stixRelation =>
     notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, stixRelation, user)
   );
 };
 export const stixRelationEditContext = (user, stixRelationId, input) => {
   setEditContext(user, stixRelationId, input);
-  return loadEntityById(stixRelationId).then(stixRelation =>
+  return loadRelationById(stixRelationId).then(stixRelation =>
     notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, stixRelation, user)
   );
 };

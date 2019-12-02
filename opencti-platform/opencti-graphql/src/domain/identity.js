@@ -1,9 +1,12 @@
 import { assoc, dissoc } from 'ramda';
-import { createEntity, listEntities, loadEntityById } from '../database/grakn';
+import { createEntity, listEntities, loadEntityById, loadEntityByStixId } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 
 export const findById = identityId => {
+  if (identityId.match(/[a-z-]+--[\w-]{36}/g)) {
+    return loadEntityByStixId(identityId);
+  }
   return loadEntityById(identityId);
 };
 export const findAll = args => {

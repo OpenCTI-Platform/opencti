@@ -8,6 +8,7 @@ import {
   getSingleValueNumber,
   listEntities,
   loadEntityById,
+  loadEntityByStixId,
   paginateRelationships,
   prepareDate,
   timeSeries
@@ -17,6 +18,9 @@ import { notify } from '../database/redis';
 import { buildPagination } from '../database/utils';
 
 export const findById = reportId => {
+  if (reportId.match(/[a-z-]+--[\w-]{36}/g)) {
+    return loadEntityByStixId(reportId);
+  }
   return loadEntityById(reportId);
 };
 export const findAll = async args => {

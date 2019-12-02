@@ -1649,6 +1649,8 @@ enum AttackPatternsOrdering {
   markingDefinitions
 }
 enum AttackPatternsFilter {
+  external_id
+  name
   tags
   mitigateBy
 }
@@ -2690,9 +2692,9 @@ type Query {
   connectorsForImport: [Connector] @auth
   importFiles(first: Int): FileConnection @auth
   # StixEntities
-  stixEntity(id: String, isStixId: Boolean): StixEntity @auth
+  stixEntity(id: String): StixEntity @auth
   # StixDomainEntities
-  stixDomainEntity(id: String, isStixId: Boolean): StixDomainEntity @auth
+  stixDomainEntity(id: String): StixDomainEntity @auth
   stixDomainEntities(
     first: Int
     after: ID
@@ -2728,7 +2730,7 @@ type Query {
   stixObservablesTimeSeries(type: String): [TimeSeries] @auth
   stixObservablesDistribution(type: String): [Distribution] @auth
   # StixRelations
-  stixRelation(id: String!, isStixId: Boolean): StixRelation @auth
+  stixRelation(id: String!): StixRelation @auth
   stixRelations(
     first: Int
     after: ID
@@ -2795,7 +2797,7 @@ type Query {
     inferred: Boolean
   ): Number @auth
   # StixObservableRelations
-  stixObservableRelation(id: String!, isStixId: Boolean): StixObservableRelation @auth
+  stixObservableRelation(id: String!): StixObservableRelation @auth
   stixObservableRelations(
     first: Int
     after: ID
@@ -2920,7 +2922,7 @@ type Query {
     search: String
   ): GroupConnection @auth
   # MarkingDefinitions
-  markingDefinition(id: String!, isStixId: Boolean): MarkingDefinition @auth
+  markingDefinition(id: String!): MarkingDefinition @auth
   markingDefinitions(
     first: Int
     after: ID

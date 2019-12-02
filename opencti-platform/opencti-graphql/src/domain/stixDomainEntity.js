@@ -28,8 +28,11 @@ export const findAll = args => {
   const finalArgs = assoc('types', noTypes ? ['Stix-Domain-Entity'] : args.types, args);
   return listEntities(['name', 'alias'], finalArgs);
 };
-export const findById = (id, isStixId) => {
-  return isStixId ? loadEntityByStixId(id) : loadEntityById(id);
+export const findById = stixDomainEntityId => {
+  if (stixDomainEntityId.match(/[a-z-]+--[\w-]{36}/g)) {
+    return loadEntityByStixId(stixDomainEntityId);
+  }
+  return loadEntityById(stixDomainEntityId);
 };
 
 // region time series

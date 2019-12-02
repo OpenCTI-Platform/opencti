@@ -1,9 +1,12 @@
 import { assoc, pipe } from 'ramda';
-import { createEntity, listEntities, loadEntityById, now } from '../database/grakn';
+import { createEntity, listEntities, loadEntityById, loadEntityByStixId, now } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 
 export const findById = intrusionSetId => {
+  if (intrusionSetId.match(/[a-z-]+--[\w-]{36}/g)) {
+    return loadEntityByStixId(intrusionSetId);
+  }
   return loadEntityById(intrusionSetId);
 };
 export const findAll = args => {

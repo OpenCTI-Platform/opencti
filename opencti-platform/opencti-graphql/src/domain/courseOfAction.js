@@ -4,13 +4,17 @@ import {
   escapeString,
   findWithConnectedRelations,
   listEntities,
-  loadEntityById
+  loadEntityById,
+  loadEntityByStixId
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { buildPagination } from '../database/utils';
 
 export const findById = courseOfActionId => {
+  if (courseOfActionId.match(/[a-z-]+--[\w-]{36}/g)) {
+    return loadEntityByStixId(courseOfActionId);
+  }
   return loadEntityById(courseOfActionId);
 };
 export const findAll = args => {

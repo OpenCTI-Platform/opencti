@@ -10,8 +10,11 @@ import {
 import { findAll as relationFindAll, search as relationSearch } from './stixRelation';
 import { buildPagination } from '../database/utils';
 
-export const findById = (id, isStixId) => {
-  return isStixId ? loadEntityByStixId(id) : loadEntityById(id);
+export const findById = stixEntityId => {
+  if (stixEntityId.match(/[a-z-]+--[\w-]{36}/g)) {
+    return loadEntityByStixId(stixEntityId);
+  }
+  return loadEntityById(stixEntityId);
 };
 
 export const createdByRef = async stixEntityId => {

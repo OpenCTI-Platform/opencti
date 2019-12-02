@@ -6,6 +6,7 @@ import {
   getSingleValueNumber,
   listEntities,
   loadEntityById,
+  loadEntityByStixId,
   TYPE_STIX_DOMAIN_ENTITY
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -13,6 +14,9 @@ import { notify } from '../database/redis';
 import { buildPagination } from '../database/utils';
 
 export const findById = sectorId => {
+  if (sectorId.match(/[a-z-]+--[\w-]{36}/g)) {
+    return loadEntityByStixId(sectorId);
+  }
   return loadEntityById(sectorId);
 };
 export const findAll = args => {

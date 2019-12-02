@@ -1,9 +1,20 @@
 import { assoc, pipe } from 'ramda';
-import { createEntity, escapeString, listEntities, loadEntityById, now, timeSeries } from '../database/grakn';
+import {
+  createEntity,
+  escapeString,
+  listEntities,
+  loadEntityById,
+  loadEntityByStixId,
+  now,
+  timeSeries
+} from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 
 export const findById = campaignId => {
+  if (campaignId.match(/[a-z-]+--[\w-]{36}/g)) {
+    return loadEntityByStixId(campaignId);
+  }
   return loadEntityById(campaignId);
 };
 export const findAll = args => {

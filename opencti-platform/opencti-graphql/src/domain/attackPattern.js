@@ -1,10 +1,20 @@
 import { assoc } from 'ramda';
-import { createEntity, escapeString, findWithConnectedRelations, listEntities, loadEntityById } from '../database/grakn';
+import {
+  createEntity,
+  escapeString,
+  findWithConnectedRelations,
+  listEntities,
+  loadEntityById,
+  loadEntityByStixId
+} from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { buildPagination } from '../database/utils';
 
 export const findById = attackPatternId => {
+  if (attackPatternId.match(/[a-z-]+--[\w-]{36}/g)) {
+    return loadEntityByStixId(attackPatternId);
+  }
   return loadEntityById(attackPatternId);
 };
 export const findAll = args => {

@@ -4,8 +4,6 @@ import {
   search as searchStixRelations,
   findAllWithInferences as findAllWithInferencesStixRelations,
   findById as findByIdStixRelation,
-  findByStixId as findByStixIdStixRelation,
-  findByIdInferred as findByIdInferredStixRelation,
   stixRelationDelete,
   stixRelationCleanContext,
   stixRelationEditContext,
@@ -29,12 +27,6 @@ export const findAllWithInferences = async args =>
   );
 
 export const findById = id => findByIdStixRelation(id);
-
-export const findByStixId = id => findByStixIdStixRelation(id);
-
-export const findByIdInferred = stixObservableRelationId => {
-  return findByIdInferredStixRelation(stixObservableRelationId);
-};
 
 // region mutations
 export const addStixObservableRelation = async (user, stixObservableRelation, reversedReturn = false) => {
