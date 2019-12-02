@@ -1,4 +1,4 @@
-import { executeWrite } from '../database/grakn';
+import { executeWrite, write } from '../database/grakn';
 import { index } from '../database/indexing';
 import { logger } from '../config/conf';
 
@@ -12,6 +12,11 @@ module.exports.up = async next => {
     wTx.tx.query(`match $r isa stix_relation; not {$r ($x, $y) isa stix_relation;}; delete;`);
     wTx.tx.query(`match $r isa stix_relation_embedded; not {$r ($x, $y) isa stix_relation_embedded;}; delete;`);
   });
+  try {
+    await write('undefine UsageIndicatesRule sub rule;');
+  } catch (err) {
+    logger.info('[MIGRATION] reindex > Undefine the rule (not exists)');
+  }
   await index();
   logger.info(`[MIGRATION] reindex > Migration complete`);
   next();
