@@ -114,7 +114,14 @@ class IntrusionSet:
                 }
             }
         """
-        result = self.opencti.query(query, {'filters': filters, 'search': search, 'first': first, 'after': after, 'orderBy': order_by, 'orderMode': order_mode})
+        result = self.opencti.query(query, {
+            'filters': filters,
+            'search': search,
+            'first': first,
+            'after': after,
+            'orderBy': order_by,
+            'orderMode': order_mode
+        })
         return self.opencti.process_multiple(result['data']['intrusionSets'])
 
     """
@@ -227,12 +234,20 @@ class IntrusionSet:
         modified = kwargs.get('modified', None)
         update = kwargs.get('update', False)
 
-        object_result = self.opencti.stix_domain_entity.get_by_stix_id_or_name(types=['Intrusion-Set'], stix_id_key=stix_id_key, name=name)
+        object_result = self.opencti.stix_domain_entity.get_by_stix_id_or_name(
+            types=['Intrusion-Set'],
+            stix_id_key=stix_id_key,
+            name=name
+        )
         if object_result is not None:
             if update:
                 self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
                 object_result['name'] = name
-                self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='description', value=description)
+                self.opencti.stix_domain_entity.update_field(
+                    id=object_result['id'],
+                    key='description',
+                    value=description
+                )
                 object_result['description'] = description
                 if alias is not None:
                     if 'alias' in object_result:
@@ -240,16 +255,28 @@ class IntrusionSet:
                     else:
                         new_aliases = alias
                     self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
-                    object_result['alias'] = alias
+                    object_result['alias'] = new_aliases
                 if first_seen is not None:
-                    self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='first_seen', value=first_seen)
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='first_seen',
+                        value=first_seen
+                    )
                     object_result['first_seen'] = first_seen
                 if last_seen is not None:
-                    self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='last_seen', value=last_seen)
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='last_seen',
+                        value=last_seen
+                    )
                     object_result['last_seen'] = last_seen
                 if goal is not None:
-                    self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='goal', value=goal)
-                    object_result['last_seen'] = goal
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='goal',
+                        value=goal
+                    )
+                    object_result['goal'] = goal
             return object_result
         else:
             return self.create_raw(
@@ -295,8 +322,10 @@ class IntrusionSet:
             if self.opencti.not_empty(entity['alias']): intrusion_set['aliases'] = entity['alias']
             if self.opencti.not_empty(entity['description']): intrusion_set['description'] = entity['description']
             if self.opencti.not_empty(entity['goal']): intrusion_set['goals'] = entity['goal']
-            if self.opencti.not_empty(entity['sophistication']): intrusion_set['sophistication'] = entity['sophistication']
-            if self.opencti.not_empty(entity['resource_level']): intrusion_set['resource_level'] = entity['resource_level']
+            if self.opencti.not_empty(entity['sophistication']): intrusion_set['sophistication'] = entity[
+                'sophistication']
+            if self.opencti.not_empty(entity['resource_level']): intrusion_set['resource_level'] = entity[
+                'resource_level']
             if self.opencti.not_empty(entity['primary_motivation']): intrusion_set['primary_motivation'] = entity[
                 'primary_motivation']
             if self.opencti.not_empty(entity['secondary_motivation']): intrusion_set['secondary_motivations'] = entity[

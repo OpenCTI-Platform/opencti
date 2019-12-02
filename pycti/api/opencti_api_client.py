@@ -214,6 +214,14 @@ class OpenCTIApiClient:
             result.append(self.process_multiple_fields(row))
         return result
 
+    def process_multiple_ids(self, data):
+        result = []
+        if data is None:
+            return result
+        for edge in data['edges'] if 'edges' in data and data['edges'] is not None else []:
+            result.append(edge['node']['id'])
+        return result
+
     def process_multiple_fields(self, data):
         if data is None:
             return data
@@ -225,22 +233,31 @@ class OpenCTIApiClient:
             data['createdByRef'] = row
         if 'markingDefinitions' in data:
             data['markingDefinitions'] = self.process_multiple(data['markingDefinitions'])
+            data['markingDefinitionsIds'] = self.process_multiple_ids(data['markingDefinitions'])
         if 'tags' in data:
             data['tags'] = self.process_multiple(data['tags'])
+            data['tagsIds'] = self.process_multiple_ids(data['tags'])
         if 'reports' in data:
             data['reports'] = self.process_multiple(data['reports'])
+            data['reportsIds'] = self.process_multiple_ids(data['reports'])
         if 'killChainPhases' in data:
             data['killChainPhases'] = self.process_multiple(data['killChainPhases'])
+            data['killChainPhasesIds'] = self.process_multiple_ids(data['killChainPhases'])
         if 'externalReferences' in data:
             data['externalReferences'] = self.process_multiple(data['externalReferences'])
+            data['externalReferencesIds'] = self.process_multiple_ids(data['externalReferences'])
         if 'objectRefs' in data:
             data['objectRefs'] = self.process_multiple(data['objectRefs'])
+            data['objectRefsIds'] = self.process_multiple_ids(data['objectRefs'])
         if 'observableRefs' in data:
             data['observableRefs'] = self.process_multiple(data['observableRefs'])
+            data['observableRefsIds'] = self.process_multiple_ids(data['observableRefs'])
         if 'relationRefs' in data:
             data['relationRefs'] = self.process_multiple(data['relationRefs'])
+            data['relationRefsIds'] = self.process_multiple_ids(data['relationRefs'])
         if 'stixRelations' in data:
             data['stixRelations'] = self.process_multiple(data['stixRelations'])
+            data['stixRelationsIds'] = self.process_multiple_ids(data['stixRelations'])
         return data
 
     @deprecated(version='2.1.0', reason="Replaced by the StixDomainEntity class in pycti")
@@ -261,7 +278,7 @@ class OpenCTIApiClient:
 
     @deprecated(version='2.1.0', reason="Replaced by the StixDomainEntity class in pycti")
     def get_stix_entity_by_stix_id_key(self, stix_id_key):
-        return self.stix_entity.read(id=stix_id_key, isStixId=True)
+        return self.stix_entity.read(id=stix_id_key)
 
     @deprecated(version='2.1.0', reason="Replaced by the StixDomainEntity class in pycti")
     def search_stix_domain_entities(self, keyword, type='Stix-Domain-Entity'):
@@ -487,7 +504,7 @@ class OpenCTIApiClient:
 
     @deprecated(version='2.1.0', reason="Replaced by the MarkingDefinition class in pycti")
     def get_marking_definition_by_stix_id_key(self, stix_id_key):
-        return self.marking_definition.read(id=stix_id_key, isStixId=True)
+        return self.marking_definition.read(id=stix_id_key)
 
     @deprecated(version='2.1.0', reason="Replaced by the MarkingDefinition class in pycti")
     def get_marking_definition_by_definition(self, definition_type, definition):
@@ -1070,7 +1087,7 @@ class OpenCTIApiClient:
     def get_incidents(self, limit=10000):
         return self.incident.list(first=limit)
 
-    # TODO Move to Incident
+    @deprecated(version='2.1.0', reason="Replaced by the Incident class in pycti")
     def create_incident(self,
                         name,
                         description,
@@ -1083,33 +1100,20 @@ class OpenCTIApiClient:
                         created=None,
                         modified=None
                         ):
-        logging.info('Creating incident ' + name + '...')
-        query = """
-           mutation IncidentAdd($input: IncidentAddInput) {
-               incidentAdd(input: $input) {
-                   id
-                   entity_type
-                   alias
-               }
-           }
-        """
-        result = self.query(query, {
-            'input': {
-                'name': name,
-                'description': description,
-                'alias': alias,
-                'objective': objective,
-                'first_seen': first_seen,
-                'last_seen': last_seen,
-                'internal_id_key': id,
-                'stix_id_key': stix_id_key,
-                'created': created,
-                'modified': modified
-            }
-        })
-        return result['data']['incidentAdd']
+        return self.incident.create_raw(
+            name=name,
+            description=description,
+            alias=alias,
+            objective=objective,
+            first_seen=first_seen,
+            last_seen=last_seen,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified
+        )
 
-    # TODO Move to Incident
+    @deprecated(version='2.1.0', reason="Replaced by the Incident class in pycti")
     def create_incident_if_not_exists(self,
                                       name,
                                       description,
@@ -1123,44 +1127,19 @@ class OpenCTIApiClient:
                                       modified=None,
                                       update=False
                                       ):
-        object_result = self.stix_domain_entity.get_by_stix_id_or_name(types=['Incident'], stix_id_key=stix_id_key,
-                                                                       name=name)
-        if object_result is not None:
-            if update:
-                self.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
-                object_result['name'] = name
-                self.stix_domain_entity.update_field(id=object_result['id'], key='description', value=description)
-                object_result['description'] = description
-                if alias is not None:
-                    if 'alias' in object_result:
-                        new_aliases = object_result['alias'] + list(set(alias) - set(object_result['alias']))
-                    else:
-                        new_aliases = alias
-                    self.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
-                    object_result['alias'] = new_aliases
-                if objective is not None:
-                    self.stix_domain_entity.update_field(id=object_result['id'], key='objective', value=objective)
-                object_result['objective'] = objective
-                if first_seen is not None:
-                    self.stix_domain_entity.update_field(id=object_result['id'], key='first_seen', value=first_seen)
-                object_result['first_seen'] = first_seen
-                if last_seen is not None:
-                    self.stix_domain_entity.update_field(id=object_result['id'], key='last_seen', value=last_seen)
-                    object_result['last_seen'] = last_seen
-            return object_result
-        else:
-            return self.create_incident(
-                name,
-                description,
-                alias,
-                objective,
-                first_seen,
-                last_seen,
-                id,
-                stix_id_key,
-                created,
-                modified
-            )
+        return self.incident.create(
+            name=name,
+            description=description,
+            alias=alias,
+            objective=objective,
+            first_seen=first_seen,
+            last_seen=last_seen,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified,
+            update=update
+        )
 
     @deprecated(version='2.1.0', reason="Replaced by the Malware class in pycti")
     def get_malware(self, id):
@@ -1511,7 +1490,7 @@ class OpenCTIApiClient:
         else:
             return []
 
-    # TODO Move to Report
+    @deprecated(version='2.1.0', reason="Replaced by the Report class in pycti")
     def create_report(self,
                       name,
                       description,
@@ -1525,34 +1504,21 @@ class OpenCTIApiClient:
                       created=None,
                       modified=None
                       ):
-        logging.info('Creating report ' + name + '...')
-        query = """
-           mutation ReportAdd($input: ReportAddInput) {
-               reportAdd(input: $input) {
-                   id
-                   entity_type
-                   alias
-               }
-           }
-        """
-        result = self.query(query, {
-            'input': {
-                'name': name,
-                'description': description,
-                'published': published,
-                'report_class': report_class,
-                'object_status': object_status,
-                'source_confidence_level': source_confidence_level,
-                'graph_data': graph_data,
-                'internal_id_key': id,
-                'stix_id_key': stix_id_key,
-                'created': created,
-                'modified': modified
-            }
-        })
-        return result['data']['reportAdd']
+        return self.report.create_raw(
+            name=name,
+            description=description,
+            published=published,
+            report_class=report_class,
+            object_status=object_status,
+            source_confidence_level=source_confidence_level,
+            graph_data=graph_data,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified
+        )
 
-    # TODO Move to Report
+    @deprecated(version='2.1.0', reason="Replaced by the Report class in pycti")
     def create_report_if_not_exists(self,
                                     name,
                                     description,
@@ -1567,47 +1533,22 @@ class OpenCTIApiClient:
                                     modified=None,
                                     update=False
                                     ):
-        if stix_id_key is not None:
-            object_result = self.report.get_by_stix_id_or_name(stix_id_key=stix_id_key, name=name, published=published)
-        else:
-            object_result = None
-        if object_result is not None:
-            if update:
-                self.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
-                object_result['name'] = name
-                self.stix_domain_entity.update_field(id=object_result['id'], key='description', value=description)
-                object_result['description'] = description
-                if object_status is not None:
-                    self.stix_domain_entity.update_field(
-                        id=object_result['id'],
-                        key='object_status',
-                        value=object_status
-                    )
-                    object_result['object_status'] = object_status
-                if source_confidence_level is not None:
-                    self.stix_domain_entity.update_field(
-                        id=object_result['id'],
-                        key='source_confidence_level',
-                        value=source_confidence_level
-                    )
-                    object_result['source_confidence_level'] = source_confidence_level
-            return object_result
-        else:
-            return self.create_report(
-                name,
-                description,
-                published,
-                report_class,
-                object_status,
-                source_confidence_level,
-                graph_data,
-                id,
-                stix_id_key,
-                created,
-                modified
-            )
+        return self.report.create(
+            name=name,
+            description=description,
+            published=published,
+            report_class=report_class,
+            object_status=object_status,
+            source_confidence_level=source_confidence_level,
+            graph_data=graph_data,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified,
+            update=update
+        )
 
-    # TODO Move to Report
+    @deprecated(version='2.1.0', reason="Replaced by the Report class in pycti")
     def create_report_if_not_exists_from_external_reference(self,
                                                             external_reference_id,
                                                             name,
@@ -1622,28 +1563,21 @@ class OpenCTIApiClient:
                                                             created=None,
                                                             modified=None
                                                             ):
-        object_result = self.stix_domain_entity.read(
-            types=['Report'],
-            filters=[{'key': 'hasExternalReference', 'values': [external_reference_id]}]
+        return self.report.create(
+            name=name,
+            external_reference_id=external_reference_id,
+            description=description,
+            published=published,
+            report_class=report_class,
+            object_status=object_status,
+            source_confidence_level=source_confidence_level,
+            graph_data=graph_data,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified,
+            update=True
         )
-        if object_result is not None:
-            return object_result
-        else:
-            report = self.create_report(
-                name,
-                description,
-                published,
-                report_class,
-                object_status,
-                source_confidence_level,
-                graph_data,
-                id,
-                stix_id_key,
-                created,
-                modified
-            )
-            self.stix_entity.add_external_reference(id=report['id'], external_reference_id=external_reference_id)
-            return report
 
     @deprecated(version='2.1.0', reason="Replaced by the StixObservable class in pycti")
     def get_stix_observable_by_id(self, id):
@@ -1728,7 +1662,9 @@ class OpenCTIApiClient:
             return {'from_role': 'relate_from', 'to_role': 'relate_to'}
 
         relation_type = relation_type.lower()
-        from_type = 'observable' if ObservableTypes.has_value(from_type) and relation_type == 'indicates' else from_type.lower()
+        from_type = from_type.lower()
+        from_type = 'observable' if ((ObservableTypes.has_value(
+            from_type) and relation_type == 'indicates') or from_type == 'Stix-Observable') else from_type
         to_type = to_type.lower()
 
         mapping = {
@@ -1880,6 +1816,7 @@ class OpenCTIApiClient:
                     'campaign': {'from_role': 'indicator', 'to_role': 'characterize'},
                     'malware': {'from_role': 'indicator', 'to_role': 'characterize'},
                     'tool': {'from_role': 'indicator', 'to_role': 'characterize'},
+                    'stix_relation': {'from_role': 'indicator', 'to_role': 'characterize'},
                 }
             },
             'gathering': {

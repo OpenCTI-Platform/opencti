@@ -167,7 +167,6 @@ class StixRelation:
         Read a stix_relation object
         
         :param id: the id of the stix_relation
-        :param stix_id_key: the STIX id of the stix_relation
         :param fromId: the id of the source entity of the relation
         :param toId: the id of the target entity of the relation
         :param relationType: the relation type
@@ -181,7 +180,6 @@ class StixRelation:
 
     def read(self, **kwargs):
         id = kwargs.get('id', None)
-        is_stix_id = kwargs.get('isStixId', False)
         from_id = kwargs.get('fromId', None)
         to_id = kwargs.get('toId', None)
         relation_type = kwargs.get('relationType', None)
@@ -191,15 +189,15 @@ class StixRelation:
         last_seen_stop = kwargs.get('lastSeenStop', None)
         inferred = kwargs.get('inferred', None)
         if id is not None:
-            self.opencti.log('info', 'Reading stix_relation {' + id + '} (isStixId: ' + str(is_stix_id) + ').')
+            self.opencti.log('info', 'Reading stix_relation {' + id + '}.')
             query = """
-                query StixRelation($id: String!, $isStixId: Boolean) {
-                    stixRelation(id: $id, isStixId: $isStixId) {
+                query StixRelation($id: String!) {
+                    stixRelation(id: $id) {
                         """ + self.properties + """
                     }
                 }
              """
-            result = self.opencti.query(query, {'id': id, 'isStixId': is_stix_id})
+            result = self.opencti.query(query, {'id': id})
             return self.opencti.process_multiple_fields(result['data']['stixRelation'])
         elif from_id is not None and to_id is not None:
             result = self.list(
@@ -299,7 +297,7 @@ class StixRelation:
 
         stix_relation_result = None
         if stix_id_key is not None:
-            stix_relation_result = self.read(id=stix_id_key, isStixId=True)
+            stix_relation_result = self.read(id=stix_id_key)
         if stix_relation_result is None:
             if ignore_dates is False and first_seen is not None and last_seen is not None:
                 first_seen = dateutil.parser.parse(first_seen)

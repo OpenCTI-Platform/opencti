@@ -131,23 +131,21 @@ class StixEntity:
         Read a Stix-Entity object
 
         :param id: the id of the Stix-Entity
-        :param isStixId: is the id a STIX id?
         :return Stix-Entity object
     """
 
     def read(self, **kwargs):
         id = kwargs.get('id', None)
-        is_stix_id = kwargs.get('isStixId', False)
         if id is not None:
             self.opencti.log('info', 'Reading Stix-Entity {' + id + '}.')
             query = """
-                query StixEntity($id: String!, $isStixId: Boolean) {
-                    stixEntity(id: $id, isStixId: $isStixId) {
+                query StixEntity($id: String!) {
+                    stixEntity(id: $id) {
                         """ + self.properties + """
                     }
                 }
              """
-            result = self.opencti.query(query, {'id': id, 'isStixId': is_stix_id})
+            result = self.opencti.query(query, {'id': id})
             return self.opencti.process_multiple_fields(result['data']['stixEntity'])
         else:
             self.opencti.log('error', 'Missing parameters: id or filters')
@@ -351,18 +349,16 @@ class StixEntity:
         Get the reports about a Stix-Entity object
 
         :param id: the id of the Stix-Entity
-        :param isStixId: is the id a STIX id?
         :return Stix-Entity object
     """
 
     def reports(self, **kwargs):
         id = kwargs.get('id', None)
-        is_stix_id = kwargs.get('isStixId', False)
         if id is not None:
             self.opencti.log('info', 'Getting reports of the Stix-Entity {' + id + '}.')
             query = """
-                query StixEntity($id: String!, $isStixId: Boolean) {
-                    stixEntity(id: $id, isStixId: $isStixId) {
+                query StixEntity($id: String!) {
+                    stixEntity(id: $id) {
                         reports {
                             edges {
                                 node {
@@ -492,7 +488,7 @@ class StixEntity:
                     }
                 }
              """
-            result = self.opencti.query(query, {'id': id, 'isStixId': is_stix_id})
+            result = self.opencti.query(query, {'id': id})
             processed_result = self.opencti.process_multiple_fields(result['data']['stixEntity'])
             return processed_result['reports']
         else:

@@ -158,7 +158,6 @@ class StixObservableRelation:
 
     def read(self, **kwargs):
         id = kwargs.get('id', None)
-        is_stix_id = kwargs.get('isStixId', False)
         from_id = kwargs.get('fromId', None)
         to_id = kwargs.get('toId', None)
         relation_type = kwargs.get('relationType', None)
@@ -169,15 +168,15 @@ class StixObservableRelation:
         inferred = kwargs.get('inferred', None)
         if id is not None:
             self.opencti.log('info',
-                             'Reading stix_observable_relation {' + id + '} (isStixId: ' + str(is_stix_id) + ').')
+                             'Reading stix_observable_relation {' + id + '}.')
             query = """
-                query StixObservableRelation($id: String!, $isStixId: Boolean) {
-                    stixObservableRelation(id: $id, isStixId: $isStixId) {
+                query StixObservableRelation($id: String!) {
+                    stixObservableRelation(id: $id) {
                         """ + self.properties + """
                     }
                 }
              """
-            result = self.opencti.query(query, {'id': id, 'isStixId': is_stix_id})
+            result = self.opencti.query(query, {'id': id})
             return self.opencti.process_multiple_fields(result['data']['stixObservableRelation'])
         else:
             result = self.list(
@@ -274,7 +273,7 @@ class StixObservableRelation:
 
         stix_relation_result = None
         if stix_id_key is not None:
-            stix_relation_result = self.read(id=stix_id_key, isStixId=True)
+            stix_relation_result = self.read(id=stix_id_key)
         if stix_relation_result is None:
             if ignore_dates is False and first_seen is not None and last_seen is not None:
                 first_seen = dateutil.parser.parse(first_seen)
