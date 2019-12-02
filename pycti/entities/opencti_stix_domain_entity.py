@@ -112,7 +112,6 @@ class StixDomainEntity:
         Read a Stix-Domain-Entity object
         
         :param id: the id of the Stix-Domain-Entity
-        :param isStixId: is the id a STIX id?
         :param types: the array of types
         :param filters: the filters to apply if no id provided
         :return Stix-Domain-Entity object
@@ -120,19 +119,18 @@ class StixDomainEntity:
 
     def read(self, **kwargs):
         id = kwargs.get('id', None)
-        is_stix_id = kwargs.get('isStixId', False)
         types = kwargs.get('types', None)
         filters = kwargs.get('filters', None)
         if id is not None:
             self.opencti.log('info', 'Reading Stix-Domain-Entity {' + id + '}.')
             query = """
-                query StixDomainEntity($id: String!, $isStixId: Boolean) {
-                    stixDomainEntity(id: $id, isStixId: $isStixId) {
+                query StixDomainEntity($id: String!) {
+                    stixDomainEntity(id: $id) {
                         """ + self.properties + """
                     }
                 }
              """
-            result = self.opencti.query(query, {'id': id, 'isStixId': is_stix_id})
+            result = self.opencti.query(query, {'id': id})
             return self.opencti.process_multiple_fields(result['data']['stixDomainEntity'])
         elif filters is not None:
             result = self.list(types=types, filters=filters)
@@ -159,7 +157,7 @@ class StixDomainEntity:
         name = kwargs.get('name', None)
         object_result = None
         if stix_id_key is not None:
-            object_result = self.read(id=stix_id_key, isStixId=True)
+            object_result = self.read(id=stix_id_key)
         if object_result is None and name is not None and type is not None:
             object_result = self.read(types=types, filters=[{'key': 'name', 'values': [name]}])
             if object_result is None:

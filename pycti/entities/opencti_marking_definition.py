@@ -67,18 +67,17 @@ class MarkingDefinition:
 
     def read(self, **kwargs):
         id = kwargs.get('id', None)
-        is_stix_id = kwargs.get('isStixId', False)
         filters = kwargs.get('filters', None)
         if id is not None:
             self.opencti.log('info', 'Reading Marking-Definition {' + id + '}.')
             query = """
-                query MarkingDefinition($id: String!, $isStixId: Boolean) {
-                    markingDefinition(id: $id, isStixId: $isStixId) {
+                query MarkingDefinition($id: String!) {
+                    markingDefinition(id: $id) {
                         """ + self.properties + """
                     }
                 }
             """
-            result = self.opencti.query(query, {'id': id, 'isStixId': is_stix_id})
+            result = self.opencti.query(query, {'id': id})
             return self.opencti.process_multiple_fields(result['data']['markingDefinition'])
         elif filters is not None:
             result = self.list(filters=filters)

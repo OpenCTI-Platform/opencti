@@ -163,7 +163,8 @@ class Report:
                 }
             }
         """
-        result = self.opencti.query(query, {'filters': filters, 'search': search, 'first': first, 'after': after, 'orderBy': order_by, 'orderMode': order_mode})
+        result = self.opencti.query(query, {'filters': filters, 'search': search, 'first': first, 'after': after,
+                                            'orderBy': order_by, 'orderMode': order_mode})
         return self.opencti.process_multiple(result['data']['reports'])
 
     """
@@ -194,6 +195,147 @@ class Report:
                 return result[0]
             else:
                 return None
+
+    """
+        Create a Report object
+
+        :param name: the name of the Report
+        :return Report object
+    """
+
+    def create_raw(self, **kwargs):
+        name = kwargs.get('name', None)
+        description = kwargs.get('description', None)
+        published = kwargs.get('published', None)
+        report_class = kwargs.get('report_class', None)
+        object_status = kwargs.get('object_status', None)
+        source_confidence_level = kwargs.get('source_confidence_level', None)
+        graph_data = kwargs.get('graph_data', None)
+        id = kwargs.get('id', None)
+        stix_id_key = kwargs.get('stix_id_key', None)
+        created = kwargs.get('created', None)
+        modified = kwargs.get('modified', None)
+
+        if name is not None and description is not None and published is not None:
+            self.opencti.log('info', 'Creating Report {' + name + '}.')
+            query = """
+                mutation ReportAdd($input: ReportAddInput) {
+                    reportAdd(input: $input) {
+                        """ + self.properties + """
+                    }
+                }
+            """
+            result = self.opencti.query(query, {
+                'input': {
+                    'name': name,
+                    'description': description,
+                    'published': published,
+                    'report_class': report_class,
+                    'object_status': object_status,
+                    'source_confidence_level': source_confidence_level,
+                    'graph_data': graph_data,
+                    'internal_id_key': id,
+                    'stix_id_key': stix_id_key,
+                    'created': created,
+                    'modified': modified
+                }
+            })
+            return self.opencti.process_multiple_fields(result['data']['reportAdd'])
+        else:
+            self.opencti.log('error', 'Missing parameters: name and description and published')
+
+    """
+         Create a Report object only if it not exists, update it on request
+
+         :param name: the name of the Report
+         :return Report object
+     """
+
+    def create(self, **kwargs):
+        name = kwargs.get('name', None)
+        external_reference_id = kwargs.get('external_reference_id', None)
+        description = kwargs.get('description', None)
+        published = kwargs.get('published', None)
+        report_class = kwargs.get('report_class', None)
+        object_status = kwargs.get('object_status', None)
+        source_confidence_level = kwargs.get('source_confidence_level', None)
+        graph_data = kwargs.get('graph_data', None)
+        id = kwargs.get('id', None)
+        stix_id_key = kwargs.get('stix_id_key', None)
+        created = kwargs.get('created', None)
+        modified = kwargs.get('modified', None)
+        update = kwargs.get('update', False)
+
+        object_result = self.get_by_stix_id_or_name(stix_id_key=stix_id_key, name=name, published=published)
+        if object_result is None and external_reference_id is not None:
+            self.opencti.stix_domain_entity.read(
+                types=['Report'],
+                filters=[{'key': 'hasExternalReference', 'values': [external_reference_id]}]
+            )
+        if object_result is not None:
+            if update:
+                self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
+                object_result['name'] = name
+                self.opencti.stix_domain_entity.update_field(
+                    id=object_result['id'],
+                    key='description',
+                    value=description
+                )
+                object_result['description'] = description
+                if report_class is not None:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='report_class',
+                        value=report_class
+                    )
+                    object_result['report_class'] = report_class
+                if object_status is not None:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='object_status',
+                        value=object_status
+                    )
+                    object_result['object_status'] = object_status
+                if source_confidence_level is not None:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='source_confidence_level',
+                        value=source_confidence_level
+                    )
+                    object_result['source_confidence_level'] = source_confidence_level
+                if graph_data is not None:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='graph_data',
+                        value=graph_data
+                    )
+                    object_result['graph_data'] = graph_data
+                if external_reference_id is not None:
+                    self.opencti.stix_entity.add_external_reference(
+                        id=object_result['id'],
+                        external_reference_id=external_reference_id
+                    )
+            return object_result
+        else:
+            report = self.create_raw(
+                name=name,
+                description=description,
+                published=published,
+                report_class=report_class,
+                object_status=object_status,
+                source_confidence_level=source_confidence_level,
+                graph_data=graph_data,
+                id=id,
+                stix_id_key=stix_id_key,
+                created=created,
+                modified=modified
+            )
+            if external_reference_id is not None:
+                self.opencti.stix_entity.add_external_reference(
+                    id=report['id'],
+                    external_reference_id=external_reference_id
+                )
+            return report
 
     """
         Read a Report object by stix_id or name
@@ -294,10 +436,13 @@ class Report:
             report['created'] = self.opencti.stix2.format_date(entity['created'])
             report['modified'] = self.opencti.stix2.format_date(entity['modified'])
             if self.opencti.not_empty(entity['alias']): report[CustomProperties.ALIASES] = entity['alias']
-            if self.opencti.not_empty(entity['report_class']): report[CustomProperties.REPORT_CLASS] = entity['report_class']
-            if self.opencti.not_empty(entity['object_status']): report[CustomProperties.OBJECT_STATUS] = entity['object_status']
-            if self.opencti.not_empty(entity['source_confidence_level']): report[CustomProperties.SRC_CONF_LEVEL] = entity[
-                'source_confidence_level']
+            if self.opencti.not_empty(entity['report_class']): report[CustomProperties.REPORT_CLASS] = entity[
+                'report_class']
+            if self.opencti.not_empty(entity['object_status']): report[CustomProperties.OBJECT_STATUS] = entity[
+                'object_status']
+            if self.opencti.not_empty(entity['source_confidence_level']): report[CustomProperties.SRC_CONF_LEVEL] = \
+                entity[
+                    'source_confidence_level']
             if self.opencti.not_empty(entity['graph_data']): report[CustomProperties.GRAPH_DATA] = entity['graph_data']
             report[CustomProperties.ID] = entity['id']
             return self.opencti.stix2.prepare_export(entity, report, mode, max_marking_definition_entity)
