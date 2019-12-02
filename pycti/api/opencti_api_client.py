@@ -149,12 +149,21 @@ class OpenCTIApiClient:
                     multipart_files.append((str(file_index), (files.name, io.BytesIO(files.data.encode()))))
                     file_index += 1
             # Send the multipart request
-            r = requests.post(self.api_url, data=multipart_data, files=multipart_files, headers=self.request_headers,
-                              verify=self.ssl_verify)
+            r = requests.post(
+                self.api_url,
+                data=multipart_data,
+                files=multipart_files,
+                headers=self.request_headers,
+                verify=self.ssl_verify
+            )
         # If no
         else:
-            r = requests.post(self.api_url, json={'query': query, 'variables': variables}, headers=self.request_headers,
-                              verify=self.ssl_verify)
+            r = requests.post(
+                self.api_url,
+                json={'query': query, 'variables': variables},
+                headers=self.request_headers,
+                verify=self.ssl_verify
+            )
         # Build response
         if r.status_code == requests.codes.ok:
             result = r.json()
@@ -720,7 +729,7 @@ class OpenCTIApiClient:
     def get_identities(self, limit=10000):
         return self.identity.list(first=limit)
 
-    # TODO Move to Identity
+    @deprecated(version='2.1.0', reason="Replaced by the Identity class in pycti")
     def create_identity(
             self,
             type,
@@ -732,31 +741,18 @@ class OpenCTIApiClient:
             created=None,
             modified=None
     ):
-        logging.info('Creating identity ' + name + '...')
-        query = """
-            mutation IdentityAdd($input: IdentityAddInput) {
-                identityAdd(input: $input) {
-                    id
-                    entity_type
-                    alias
-                }
-            }
-        """
-        result = self.query(query, {
-            'input': {
-                'name': name,
-                'description': description,
-                'alias': alias,
-                'type': type,
-                'internal_id_key': id,
-                'stix_id_key': stix_id_key,
-                'created': created,
-                'modified': modified
-            }
-        })
-        return result['data']['identityAdd']
+        return self.identity.create_raw(
+            type=type,
+            name=name,
+            description=description,
+            alias=alias,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified
+        )
 
-    # TODO Move to Identity
+    @deprecated(version='2.1.0', reason="Replaced by the Identity class in pycti")
     def create_identity_if_not_exists(self,
                                       type,
                                       name,
@@ -768,32 +764,17 @@ class OpenCTIApiClient:
                                       modified=None,
                                       update=False
                                       ):
-        object_result = self.stix_domain_entity.get_by_stix_id_or_name(types=[type], stix_id_key=stix_id_key, name=name)
-        if object_result is not None:
-            if update:
-                self.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
-                object_result['name'] = name
-                self.stix_domain_entity.update_field(id=object_result['id'], key='description', value=description)
-                object_result['description'] = description
-                if alias is not None:
-                    if 'alias' in object_result:
-                        new_aliases = object_result['alias'] + list(set(alias) - set(object_result['alias']))
-                    else:
-                        new_aliases = alias
-                    self.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
-                    object_result['alias'] = new_aliases
-            return object_result
-        else:
-            return self.create_identity(
-                type,
-                name,
-                description,
-                alias,
-                id,
-                stix_id_key,
-                created,
-                modified
-            )
+        return self.identity.create(
+            type=type,
+            name=name,
+            description=description,
+            alias=alias,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified,
+            update=update
+        )
 
     @deprecated(version='2.1.0', reason="Replaced by the ThreatActor class in pycti")
     def get_threat_actor(self, id):
@@ -1821,15 +1802,18 @@ class OpenCTIApiClient:
             },
             'gathering': {
                 'sector': {
-                    'sector': {'from_role': 'gather', 'to_role': 'part_of'},
-                    'organization': {'from_role': 'gather', 'to_role': 'part_of'},
+                    'sector': {'from_role': 'part_of', 'to_role': 'gather'},
+                    'organization': {'from_role': 'part_of', 'to_role': 'gather'},
                 },
                 'organization': {
-                    'sector': {'from_role': 'gather', 'to_role': 'part_of'},
+                    'sector': {'from_role': 'part_of', 'to_role': 'gather'},
+                },
+                'person': {
+                    'organization': {'from_role': 'part_of', 'to_role': 'gather'},
                 },
                 'observable': {
-                    'organization': {'from_role': 'gather', 'to_role': 'part_of'},
-                    'person': {'from_role': 'gather', 'to_role': 'part_of'},
+                    'organization': {'from_role': 'part_of', 'to_role': 'gather'},
+                    'person': {'from_role': 'part_of', 'to_role': 'gather'},
                 },
             },
             'drops': {

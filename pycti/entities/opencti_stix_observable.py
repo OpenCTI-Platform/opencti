@@ -245,7 +245,7 @@ class StixObservable:
                 'id': id,
                 'input': {
                     'key': key,
-                    'value': value
+                    'value': str(value)
                 }
             })
             return self.opencti.process_multiple_fields(result['data']['stixObservableEdit']['fieldPatch'])
