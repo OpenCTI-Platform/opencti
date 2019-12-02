@@ -31,6 +31,9 @@ const stixObservableResolvers = {
     markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
     tags: `${REL_INDEX_PREFIX}tagged.value`
   },
+  StixObservablesFilter: {
+    indicates: `${REL_INDEX_PREFIX}indicates.internal_id_key`
+  },
   StixObservable: {
     jobs: (stixObservable, args) => workForEntity(stixObservable.id, args),
     connectors: (stixObservable, { onlyAlive = false }) =>

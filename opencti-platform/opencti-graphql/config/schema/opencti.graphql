@@ -464,6 +464,7 @@ enum StixObservablesOrdering {
 enum StixObservablesFilter {
   stix_id_key
   observable_value
+  indicates
 }
 input StixObservablesFiltering {
   key: StixObservablesFilter!
