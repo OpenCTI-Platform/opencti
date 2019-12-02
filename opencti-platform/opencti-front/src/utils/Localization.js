@@ -540,6 +540,7 @@ const i18n = {
         '[Killchain] Tactiques et procédures',
       'No widget in this workspace': 'Aucun widget dans cet espace de travail',
       'Averages of context relations': 'Moyennes des relations de contexte',
+      'Synthesis of knowledge': 'Synthèse de la connaissance',
       Statistics: 'Statistiques',
       Metrics: 'Métriques',
       'Queued messages': 'Messages en attente',

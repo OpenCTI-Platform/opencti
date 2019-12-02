@@ -13,8 +13,8 @@ import IntrusionSetPopover from './IntrusionSetPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import EntityStixRelationsDonut from '../../common/stix_relations/EntityStixRelationsDonut';
-import EntityStixRelationsRadar from '../../common/stix_relations/EntityStixRelationsRadar';
 import EntityReportsChart from '../../reports/EntityReportsChart';
+import EntityCampaignsChart from '../campaigns/EntityCampaignsChart';
 
 const styles = () => ({
   container: {
@@ -56,15 +56,7 @@ class IntrusionSetComponent extends Component {
           style={{ marginTop: 30 }}
         >
           <Grid item={true} xs={4}>
-            <EntityStixRelationsRadar
-              entityId={intrusionSet.id}
-              entityType="Kill-Chain-Phase"
-              relationType="kill_chain_phases"
-              field="phase_name"
-              resolveInferences={true}
-              resolveRelationType="uses"
-              resolveRelationRole="user"
-            />
+            <EntityCampaignsChart entityId={intrusionSet.id} />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityStixRelationsDonut
@@ -102,7 +94,4 @@ const IntrusionSet = createFragmentContainer(IntrusionSetComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(IntrusionSet);
+export default compose(inject18n, withStyles(styles))(IntrusionSet);

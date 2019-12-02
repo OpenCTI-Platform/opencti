@@ -743,11 +743,11 @@ enum WorkspacesOrdering {
   created_at
   updated_at
 }
-enum WorkspaceFilter {
+enum WorkspacesFilter {
   workspace_type
 }
-input WorkspaceFiltering {
-  key: WorkspaceFilter!
+input WorkspacesFiltering {
+  key: WorkspacesFilter!
   values: [String]
 }
 type WorkspaceConnection {
@@ -792,6 +792,14 @@ enum IdentitiesOrdering {
   created_at
   updated_at
 }
+enum IdentitiesFilter {
+  name
+  alias
+}
+input IdentitiesFiltering {
+  key: IdentitiesFilter!
+  values: [String]
+}
 type IdentityConnection {
   pageInfo: PageInfo!
   edges: [IdentityEdge]
@@ -811,6 +819,8 @@ interface Identity {
   stix_label: [String]
   alias: [String]
   description: String
+  created: DateTime
+  modified: DateTime
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   tags: TagConnection
@@ -840,8 +850,8 @@ interface Identity {
     search: String
     infrastructure: Boolean
   ): StixRelationConnection
-  created: DateTime
-  modified: DateTime
+  created_at: DateTime!
+  updated_at: DateTime!
 }
 input IdentityAddInput {
   internal_id_key: String
@@ -2543,6 +2553,7 @@ enum ReportsOrdering {
 enum ReportsFilter {
   name
   published
+  published_day
   report_class
   createdBy
   knowledgeContains
@@ -2830,7 +2841,7 @@ type Query {
     orderBy: WorkspacesOrdering
     orderMode: OrderingMode
     search: String
-    filters: [WorkspaceFiltering]
+    filters: [WorkspacesFiltering]
     filterMode: FilterMode
   ): WorkspaceConnection @auth
   workspacesNumber(endDate: DateTime): Number @auth
@@ -2842,6 +2853,8 @@ type Query {
     orderBy: IdentitiesOrdering
     orderMode: OrderingMode
     search: String
+    filters: [IdentitiesFiltering]
+    filterMode: FilterMode
   ): IdentityConnection @auth
   # Users
   me: User @auth
