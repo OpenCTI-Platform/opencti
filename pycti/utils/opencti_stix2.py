@@ -217,7 +217,6 @@ class OpenCTIStix2:
                             False,
                             False,
                             False,
-                            datetime.datetime(2019, 1, 1)
                         ))
                     else:
                         matches = list(datefinder.find_dates(
@@ -225,7 +224,6 @@ class OpenCTIStix2:
                             False,
                             False,
                             False,
-                            datetime.datetime(2019, 1, 1)
                         ))
                     if len(matches) > 0:
                         published = list(matches)[0].strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -418,7 +416,6 @@ class OpenCTIStix2:
                         False,
                         False,
                         False,
-                        datetime.datetime(2019, 1, 1)
                     ))
                 else:
                     matches = list(datefinder.find_dates(
@@ -426,7 +423,6 @@ class OpenCTIStix2:
                         False,
                         False,
                         False,
-                        datetime.datetime(2019, 1, 1)
                     ))
                 if len(matches) > 0:
                     date = matches[0].strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -1050,17 +1046,16 @@ class OpenCTIStix2:
                 type = 'Sector'
             else:
                 return None
-
-        return self.opencti.create_identity_if_not_exists(
-            type,
-            stix_object['name'],
-            self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
-            self.pick_aliases(stix_object),
-            stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
-            stix_object['id'] if 'id' in stix_object else None,
-            stix_object['created'] if 'created' in stix_object else None,
-            stix_object['modified'] if 'modified' in stix_object else None,
-            update
+        return self.opencti.identity.create(
+            type=type,
+            name=stix_object['name'],
+            description=self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
+            alias=self.pick_aliases(stix_object),
+            id=stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
+            stix_id_key=stix_object['id'] if 'id' in stix_object else None,
+            created=stix_object['created'] if 'created' in stix_object else None,
+            modified=stix_object['modified'] if 'modified' in stix_object else None,
+            update=update
         )
 
     def create_threat_actor(self, stix_object, update=False):
@@ -1301,6 +1296,8 @@ class OpenCTIStix2:
             return self.get_author('Cisco Talos')
         if 'secureworks' in title.lower():
             return self.get_author('Dell SecureWorks')
+        if 'microsoft' in title.lower():
+            return self.get_author('Microsoft')
         if 'mitre att&ck' in title.lower():
             return self.get_author('The MITRE Corporation')
         return None

@@ -300,12 +300,12 @@ class StixRelation:
             stix_relation_result = self.read(id=stix_id_key)
         if stix_relation_result is None:
             if ignore_dates is False and first_seen is not None and last_seen is not None:
-                first_seen = dateutil.parser.parse(first_seen)
-                first_seen_start = (first_seen + datetime.timedelta(days=-1)).strftime('%Y-%m-%dT%H:%M:%S+00:00')
-                first_seen_stop = (first_seen + datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%S+00:00')
-                last_seen = dateutil.parser.parse(last_seen)
-                last_seen_start = (last_seen + datetime.timedelta(days=-1)).strftime('%Y-%m-%dT%H:%M:%S+00:00')
-                last_seen_stop = (last_seen + datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%S+00:00')
+                first_seen_parsed = dateutil.parser.parse(first_seen)
+                first_seen_start = (first_seen_parsed + datetime.timedelta(days=-1)).strftime('%Y-%m-%dT%H:%M:%S+00:00')
+                first_seen_stop = (first_seen_parsed + datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%S+00:00')
+                last_seen_parsed = dateutil.parser.parse(last_seen)
+                last_seen_start = (last_seen_parsed + datetime.timedelta(days=-1)).strftime('%Y-%m-%dT%H:%M:%S+00:00')
+                last_seen_stop = (last_seen_parsed + datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%S+00:00')
             else:
                 first_seen_start = None
                 first_seen_stop = None
@@ -401,7 +401,7 @@ class StixRelation:
                 'id': id,
                 'input': {
                     'key': key,
-                    'value': value
+                    'value': str(value)
                 }
             })
             return self.opencti.process_multiple_fields(result['data']['stixRelationEdit']['fieldPatch'])

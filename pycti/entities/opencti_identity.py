@@ -105,7 +105,8 @@ class Identity:
                 }
             }
         """
-        result = self.opencti.query(query, {'filters': filters, 'search': search, 'first': first, 'after': after, 'orderBy': order_by, 'orderMode': order_mode})
+        result = self.opencti.query(query, {'filters': filters, 'search': search, 'first': first, 'after': after,
+                                            'orderBy': order_by, 'orderMode': order_mode})
         return self.opencti.process_multiple(result['data']['identities'])
 
     """
@@ -139,6 +140,101 @@ class Identity:
         else:
             self.opencti.log('error', 'Missing parameters: id or filters')
             return None
+
+    """
+        Create a Identity object
+
+        :param name: the name of the Identity
+        :return Identity object
+    """
+
+    def create_raw(self, **kwargs):
+        type = kwargs.get('type', None)
+        name = kwargs.get('name', None)
+        description = kwargs.get('description', None)
+        alias = kwargs.get('alias', None)
+        id = kwargs.get('id', None)
+        stix_id_key = kwargs.get('stix_id_key', None)
+        created = kwargs.get('created', None)
+        modified = kwargs.get('modified', None)
+
+        if name is not None and description is not None:
+            self.opencti.log('info', 'Creating Identity {' + name + '}.')
+            query = """
+                mutation IdentityAdd($input: IdentityAddInput) {
+                    identityAdd(input: $input) {
+                         """ + self.properties + """
+                    }
+                }
+            """
+            result = self.opencti.query(query, {
+                'input': {
+                    'name': name,
+                    'description': description,
+                    'alias': alias,
+                    'type': type,
+                    'internal_id_key': id,
+                    'stix_id_key': stix_id_key,
+                    'created': created,
+                    'modified': modified
+                }
+            })
+            return self.opencti.process_multiple_fields(result['data']['identityAdd'])
+        else:
+            self.opencti.log('error', 'Missing parameters: name and description')
+
+    """
+        Create a  Identity object only if it not exists, update it on request
+
+        :param name: the name of the Identity
+        :return Identity object
+    """
+
+    def create(self, **kwargs):
+        type = kwargs.get('type', None)
+        name = kwargs.get('name', None)
+        description = kwargs.get('description', None)
+        alias = kwargs.get('alias', None)
+        id = kwargs.get('id', None)
+        stix_id_key = kwargs.get('stix_id_key', None)
+        created = kwargs.get('created', None)
+        modified = kwargs.get('modified', None)
+        update = kwargs.get('update', False)
+
+        object_result = self.opencti.stix_domain_entity.get_by_stix_id_or_name(
+            types=[type],
+            stix_id_key=stix_id_key,
+            name=name
+        )
+        if object_result is not None:
+            if update:
+                self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
+                object_result['name'] = name
+                self.opencti.stix_domain_entity.update_field(
+                    id=object_result['id'],
+                    key='description',
+                    value=description
+                )
+                object_result['description'] = description
+                if alias is not None:
+                    if 'alias' in object_result:
+                        new_aliases = object_result['alias'] + list(set(alias) - set(object_result['alias']))
+                    else:
+                        new_aliases = alias
+                    self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
+                    object_result['alias'] = new_aliases
+            return object_result
+        else:
+            return self.create_raw(
+                type=type,
+                name=name,
+                description=description,
+                alias=alias,
+                id=id,
+                stix_id_key=stix_id_key,
+                created=created,
+                modified=modified
+            )
 
     """
         Export an Identity object in STIX2

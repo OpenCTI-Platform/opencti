@@ -1,6 +1,8 @@
 # coding: utf-8
 
 import json
+
+from dateutil.parser import parse
 from pycti.utils.constants import CustomProperties
 
 
@@ -197,6 +199,30 @@ class Report:
                 return None
 
     """
+        Read a Report object by stix_id or name
+
+        :param type: the Stix-Domain-Entity type
+        :param stix_id_key: the STIX ID of the Stix-Domain-Entity
+        :param name: the name of the Stix-Domain-Entity
+        :return Stix-Domain-Entity object
+    """
+
+    def get_by_stix_id_or_name(self, **kwargs):
+        stix_id_key = kwargs.get('stix_id_key', None)
+        name = kwargs.get('name', None)
+        published = kwargs.get('published', None)
+        object_result = None
+        if stix_id_key is not None:
+            object_result = self.read(filters=[{'key': 'stix_id_key', 'values': [stix_id_key]}])
+        if object_result is None and name is not None and published is not None:
+            published_final = parse(published).strftime('%Y-%m-%d')
+            object_result = self.read(filters=[
+                {'key': 'name', 'values': [name]},
+                {'key': 'published_day', 'values': [published_final]}
+            ])
+        return object_result
+
+    """
         Create a Report object
 
         :param name: the name of the Report
@@ -336,29 +362,6 @@ class Report:
                     external_reference_id=external_reference_id
                 )
             return report
-
-    """
-        Read a Report object by stix_id or name
-
-        :param type: the Stix-Domain-Entity type
-        :param stix_id_key: the STIX ID of the Stix-Domain-Entity
-        :param name: the name of the Stix-Domain-Entity
-        :return Stix-Domain-Entity object
-    """
-
-    def get_by_stix_id_or_name(self, **kwargs):
-        stix_id_key = kwargs.get('stix_id_key', None)
-        name = kwargs.get('name', None)
-        published = kwargs.get('published', None)
-        object_result = None
-        if stix_id_key is not None:
-            object_result = self.read(filters=[{'key': 'stix_id_key', 'values': [stix_id_key]}])
-        if object_result is None and name is not None and published is not None:
-            object_result = self.read(filters=[
-                {'key': 'name', 'values': [name]},
-                {'key': 'published', 'values': [published]}
-            ])
-        return object_result
 
     """
         Add a Stix-Entity object to Report object (object_refs)
