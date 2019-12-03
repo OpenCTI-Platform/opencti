@@ -2101,9 +2101,7 @@ class OpenCTIApiClient:
             observable_value=observable_value,
             description=description,
             id=id,
-            stix_id_key=stix_id_key,
-            created=created,
-            modified=modified
+            stix_id_key=stix_id_key
         )
 
     @deprecated(version='2.1.0', reason="Replaced by the StixObservable class in pycti")
@@ -2123,8 +2121,6 @@ class OpenCTIApiClient:
             description=description,
             id=id,
             stix_id_key=stix_id_key,
-            created=created,
-            modified=modified,
             update=update
         )
 
