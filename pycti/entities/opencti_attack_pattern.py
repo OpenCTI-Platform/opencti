@@ -86,7 +86,26 @@ class AttackPattern:
                         id
                     }
                 }
-            }            
+            }
+            externalReferences {
+                edges {
+                    node {
+                        id
+                        entity_type
+                        stix_id_key
+                        source_name
+                        description
+                        url
+                        hash
+                        external_id
+                        created
+                        modified
+                    }
+                    relation {
+                        id
+                    }
+                }
+            }        
         """
 
     """

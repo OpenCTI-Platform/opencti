@@ -1,15 +1,19 @@
 # coding: utf-8
 
 import datetime
+from dateutil.parser import parse
 
 from pycti import OpenCTIApiClient
 
 # Variables
-api_url = 'http://localhost:4000'
+api_url = 'https://demo.opencti.io'
 api_token = '22566f94-9091-49ba-b583-efd76cf8b29c'
 
 # OpenCTI initialization
 opencti_api_client = OpenCTIApiClient(api_url, api_token)
+
+# Define the date
+date = parse('2019-12-01').strftime('%Y-%m-%dT%H:%M:%SZ')
 
 # Create the incident
 incident = opencti_api_client.incident.create(
@@ -23,7 +27,7 @@ print(incident)
 report = opencti_api_client.report.create(
     name="Report about my new incident",
     description="Forensics and investigation report",
-    published=datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ'),
+    published=date,
     report_class="Internal Report"
 )
 print(report)
@@ -43,8 +47,8 @@ ttp1_relation = opencti_api_client.stix_relation.create(
     toId=ttp1['id'],
     relationship_type='uses',
     description='We saw the attacker use Spearphishing Attachment.',
-    first_seen=datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ'),
-    last_seen=datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ')
+    first_seen=date,
+    last_seen=date
 )
 # Add kill chain phases to the relation
 for kill_chain_phase_id in ttp1['killChainPhasesIds']:
@@ -64,8 +68,8 @@ observable_ttp1_relation = opencti_api_client.stix_relation.create(
     toId=ttp1_relation['id'],
     relationship_type='indicates',
     description='This email address is the sender of the spearphishing.',
-    first_seen=datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ'),
-    last_seen=datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ')
+    first_seen=date,
+    last_seen=date
 )
 # Elements for the report
 object_refs.extend([ttp1['id'], ttp1_relation['id'], observable_ttp1['id'], observable_ttp1_relation['id']])
@@ -81,8 +85,8 @@ ttp2_relation = opencti_api_client.stix_relation.create(
     toId=ttp2['id'],
     relationship_type='uses',
     description='We saw the attacker use Registry Run Keys / Startup Folder.',
-    first_seen=datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ'),
-    last_seen=datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ')
+    first_seen=date,
+    last_seen=date
 )
 # Add kill chain phases to the relation
 for kill_chain_phase_id in ttp2['killChainPhasesIds']:
@@ -102,8 +106,8 @@ observable_ttp2_relation = opencti_api_client.stix_relation.create(
     toId=ttp2_relation['id'],
     relationship_type='indicates',
     description='This registry key is used for persistence of tools.',
-    first_seen=datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ'),
-    last_seen=datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ')
+    first_seen=date,
+    last_seen=date
 )
 # Elements for the report
 object_refs.extend([ttp2['id'], ttp2_relation['id'], observable_ttp2['id'], observable_ttp2_relation['id']])
@@ -118,8 +122,8 @@ ttp3_relation = opencti_api_client.stix_relation.create(
     toId=ttp3['id'],
     relationship_type='uses',
     description='We saw the attacker use Data Encrypted.',
-    first_seen=datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ'),
-    last_seen=datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ')
+    first_seen=date,
+    last_seen=date
 )
 # Add kill chain phases to the relation
 for kill_chain_phase_id in ttp3['killChainPhasesIds']:
@@ -132,4 +136,4 @@ object_refs.extend([ttp3['id'], ttp3_relation['id']])
 
 # Add all element to the report
 for object_ref in object_refs:
-    opencti_api_client.report.add_stix_entity(id=report['id'], entity_id=object_ref)
+    opencti_api_client.report.add_stix_entity(id=report['id'], report=report, entity_id=object_ref)
