@@ -431,6 +431,7 @@ interface StixDomainEntity {
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
   tags: TagConnection
   reports: ReportConnection
   importFiles(first: Int): FileConnection
