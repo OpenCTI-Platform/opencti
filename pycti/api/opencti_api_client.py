@@ -537,8 +537,17 @@ class OpenCTIApiClient:
         query = """
             mutation MarkingDefinitionAdd($input: MarkingDefinitionAddInput) {
                 markingDefinitionAdd(input: $input) {
-                    id
-                    entity_type
+                        id
+                        stix_id_key
+                        entity_type
+                        definition_type
+                        definition
+                        level
+                        color
+                        created
+                        modified
+                        created_at
+                        updated_at
                 }
             }
         """
@@ -621,6 +630,17 @@ class OpenCTIApiClient:
             mutation ExternalReferenceAdd($input: ExternalReferenceAddInput) {
                 externalReferenceAdd(input: $input) {
                     id
+                    entity_type
+                    stix_id_key
+                    source_name
+                    description
+                    url
+                    hash
+                    external_id
+                    created
+                    modified
+                    created_at
+                    updated_at
                 }
             }
         """
@@ -681,7 +701,16 @@ class OpenCTIApiClient:
         query = """
                mutation KillChainPhaseAdd($input: KillChainPhaseAddInput) {
                    killChainPhaseAdd(input: $input) {
-                       id
+                        id
+                        entity_type
+                        stix_id_key
+                        kill_chain_name
+                        phase_name
+                        phase_order
+                        created
+                        modified
+                        created_at
+                        updated_at
                    }
                }
            """
@@ -804,9 +833,91 @@ class OpenCTIApiClient:
         query = """
             mutation ThreatActorAdd($input: ThreatActorAddInput) {
                 threatActorAdd(input: $input) {
-                   id
-                   entity_type
-                   alias
+                    id
+                    stix_id_key
+                    stix_label
+                    entity_type
+                    parent_types
+                    name
+                    alias
+                    description
+                    graph_data
+                    goal
+                    sophistication
+                    resource_level
+                    primary_motivation
+                    secondary_motivation
+                    personal_motivation
+                    created
+                    modified            
+                    created_at
+                    updated_at
+                    createdByRef {
+                        node {
+                            id
+                            entity_type
+                            stix_id_key
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                        }
+                        relation {
+                            id
+                        }
+                    }            
+                    markingDefinitions {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id_key
+                                definition_type
+                                definition
+                                level
+                                color
+                                created
+                                modified
+                            }
+                            relation {
+                                id
+                            }
+                        }
+                    }
+                    tags {
+                        edges {
+                            node {
+                                id
+                                tag_type
+                                value
+                                color
+                            }
+                            relation {
+                                id
+                            }
+                        }
+                    }
+                    externalReferences {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id_key
+                                source_name
+                                description
+                                url
+                                hash
+                                external_id
+                                created
+                                modified
+                            }
+                            relation {
+                                id
+                            }
+                        }
+                    }  
                 }
             }
         """
@@ -986,8 +1097,87 @@ class OpenCTIApiClient:
             mutation CampaignAdd($input: CampaignAddInput) {
                 campaignAdd(input: $input) {
                     id
+                    stix_id_key
+                    stix_label
                     entity_type
+                    parent_types
+                    name
                     alias
+                    description
+                    graph_data
+                    objective
+                    first_seen
+                    last_seen
+                    created
+                    modified
+                    created_at
+                    updated_at
+                    createdByRef {
+                        node {
+                            id
+                            entity_type
+                            stix_id_key
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                        }
+                        relation {
+                            id
+                        }
+                    }            
+                    markingDefinitions {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id_key
+                                definition_type
+                                definition
+                                level
+                                color
+                                created
+                                modified
+                            }
+                            relation {
+                                id
+                            }
+                        }
+                    }
+                    tags {
+                        edges {
+                            node {
+                                id
+                                tag_type
+                                value
+                                color
+                            }
+                            relation {
+                                id
+                            }
+                        }
+                    }
+                    externalReferences {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id_key
+                                source_name
+                                description
+                                url
+                                hash
+                                external_id
+                                created
+                                modified
+                            }
+                            relation {
+                                id
+                            }
+                        }
+                    }   
                 }
             }
         """
@@ -1136,9 +1326,102 @@ class OpenCTIApiClient:
         query = """
             mutation MalwareAdd($input: MalwareAddInput) {
                 malwareAdd(input: $input) {
-                   id
-                   entity_type
-                   alias
+                    id
+                    stix_id_key
+                    stix_label
+                    entity_type
+                    parent_types
+                    name
+                    alias
+                    description
+                    graph_data
+                    created
+                    modified            
+                    created_at
+                    updated_at
+                    killChainPhases {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id_key
+                                kill_chain_name
+                                phase_name
+                                phase_order
+                                created
+                                modified
+                            }
+                            relation {
+                                id
+                            }
+                        }
+                    }
+                    createdByRef {
+                        node {
+                            id
+                            entity_type
+                            stix_id_key
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                        }
+                        relation {
+                            id
+                        }
+                    }            
+                    markingDefinitions {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id_key
+                                definition_type
+                                definition
+                                level
+                                color
+                                created
+                                modified
+                            }
+                            relation {
+                                id
+                            }
+                        }
+                    }
+                    tags {
+                        edges {
+                            node {
+                                id
+                                tag_type
+                                value
+                                color
+                            }
+                            relation {
+                                id
+                            }
+                        }
+                    }
+                    externalReferences {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id_key
+                                source_name
+                                description
+                                url
+                                hash
+                                external_id
+                                created
+                                modified
+                            }
+                            relation {
+                                id
+                            }
+                        }
+                    }        
                 }
             }
         """
@@ -1200,9 +1483,86 @@ class OpenCTIApiClient:
         query = """
             mutation ToolAdd($input: ToolAddInput) {
                 toolAdd(input: $input) {
-                   id
-                   entity_type
-                   alias
+                    id
+                    stix_id_key
+                    stix_label
+                    entity_type
+                    parent_types
+                    name
+                    alias
+                    description
+                    graph_data
+                    tool_version
+                    created
+                    modified            
+                    created_at
+                    updated_at
+                    createdByRef {
+                        node {
+                            id
+                            entity_type
+                            stix_id_key
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                        }
+                        relation {
+                            id
+                        }
+                    }            
+                    markingDefinitions {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id_key
+                                definition_type
+                                definition
+                                level
+                                color
+                                created
+                                modified
+                            }
+                            relation {
+                                id
+                            }
+                        }
+                    }
+                    tags {
+                        edges {
+                            node {
+                                id
+                                tag_type
+                                value
+                                color
+                            }
+                            relation {
+                                id
+                            }
+                        }
+                    }
+                    externalReferences {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id_key
+                                source_name
+                                description
+                                url
+                                hash
+                                external_id
+                                created
+                                modified
+                            }
+                            relation {
+                                id
+                            }
+                        }
+                    }     
                 }
             }
         """
@@ -1265,9 +1625,85 @@ class OpenCTIApiClient:
         query = """
             mutation VulnerabilityAdd($input: VulnerabilityAddInput) {
                 vulnerabilityAdd(input: $input) {
-                   id
-                   entity_type
-                   alias
+                    id
+                    stix_id_key
+                    stix_label
+                    entity_type
+                    parent_types
+                    name
+                    alias
+                    description
+                    graph_data
+                    created
+                    modified            
+                    created_at
+                    updated_at
+                    createdByRef {
+                        node {
+                            id
+                            entity_type
+                            stix_id_key
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                        }
+                        relation {
+                            id
+                        }
+                    }            
+                    markingDefinitions {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id_key
+                                definition_type
+                                definition
+                                level
+                                color
+                                created
+                                modified
+                            }
+                            relation {
+                                id
+                            }
+                        }
+                    }
+                    tags {
+                        edges {
+                            node {
+                                id
+                                tag_type
+                                value
+                                color
+                            }
+                            relation {
+                                id
+                            }
+                        }
+                    } 
+                    externalReferences {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id_key
+                                source_name
+                                description
+                                url
+                                hash
+                                external_id
+                                created
+                                modified
+                            }
+                            relation {
+                                id
+                            }
+                        }
+                    }     
                 }
             }
         """
@@ -1385,9 +1821,85 @@ class OpenCTIApiClient:
         query = """
            mutation CourseOfActionAdd($input: CourseOfActionAddInput) {
                courseOfActionAdd(input: $input) {
-                   id
-                   entity_type
-                   alias
+                    id
+                    stix_id_key
+                    stix_label
+                    entity_type
+                    parent_types
+                    name
+                    alias
+                    description
+                    graph_data
+                    created
+                    modified            
+                    created_at
+                    updated_at
+                    createdByRef {
+                        node {
+                            id
+                            entity_type
+                            stix_id_key
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                        }
+                        relation {
+                            id
+                        }
+                    }            
+                    markingDefinitions {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id_key
+                                definition_type
+                                definition
+                                level
+                                color
+                                created
+                                modified
+                            }
+                            relation {
+                                id
+                            }
+                        }
+                    }
+                    tags {
+                        edges {
+                            node {
+                                id
+                                tag_type
+                                value
+                                color
+                            }
+                            relation {
+                                id
+                            }
+                        }
+                    }
+                    externalReferences {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id_key
+                                source_name
+                                description
+                                url
+                                hash
+                                external_id
+                                created
+                                modified
+                            }
+                            relation {
+                                id
+                            }
+                        }
+                    }         
                }
            }
         """

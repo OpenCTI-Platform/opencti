@@ -236,7 +236,7 @@ class StixEntity:
             if stix_entity is None:
                 stix_entity = self.read(id=id)
             if stix_entity is None:
-                self.opencti.log('error', 'Cannot add External-Reference, entity not found')
+                self.opencti.log('error', 'Cannot add Marking-Definition, entity not found')
                 return False
             markings_ids = []
             for marking in stix_entity['markingDefinitions']:
