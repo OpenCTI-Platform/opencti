@@ -154,7 +154,7 @@ const takeReadTx = async (retry = false) => {
     logger.error('[GRAKN] TakeReadTx error > ', err);
     if (retry === true) {
       logger.error('[GRAKN] TakeReadTx, retry failed, Grakn seems down, stopping...');
-      throw new Error('Grakn seems down');
+      process.exit(1);
     }
     return takeReadTx(true);
   }
@@ -183,7 +183,7 @@ const takeWriteTx = async (retry = false) => {
     logger.error('[GRAKN] TakeWriteTx error > ', err);
     if (retry === true) {
       logger.error('[GRAKN] TakeWriteTx, retry failed, Grakn seems down, stopping...');
-      throw new Error('Grakn seems down');
+      process.exit(1);
     }
     return takeWriteTx(true);
   }
@@ -938,7 +938,9 @@ export const updateAttribute = async (id, input, wTx) => {
   }
   // Update elasticsearch
   const currentIndex = inferIndexFromConceptTypes(currentInstanceData.parent_types);
-  const updateValueField = { [key]: val };
+  // eslint-disable-next-line no-nested-ternary
+  const typedVal = val === 'true' ? true : val === 'false' ? false : val
+  const updateValueField = { [key]: typedVal };
   await elUpdate(currentIndex, currentInstanceData.grakn_id, { doc: updateValueField });
   return id;
 };
