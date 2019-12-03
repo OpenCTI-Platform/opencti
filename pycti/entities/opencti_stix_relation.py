@@ -265,7 +265,7 @@ class StixRelation:
         query = """
                     mutation StixRelationAdd($input: StixRelationAddInput!) {
                         stixRelationAdd(input: $input) {
-                            id
+                           """ + self.properties + """
                         }
                     }
                 """
@@ -346,7 +346,7 @@ class StixRelation:
                     stix_relation_result['description'] = description
                 if weight is not None:
                     self.update_field(id=stix_relation_result['id'], key='weight', value=weight)
-                    stix_relation_result['weight'] = weight
+                    stix_relation_result['weight'] = str(weight)
                 if first_seen is not None:
                     new_first_seen = dateutil.parser.parse(first_seen)
                     old_first_seen = dateutil.parser.parse(stix_relation_result['first_seen'])
@@ -420,7 +420,7 @@ class StixRelation:
                 'id': id,
                 'input': {
                     'key': key,
-                    'value': str(value)
+                    'value': value
                 }
             })
             return self.opencti.process_multiple_fields(result['data']['stixRelationEdit']['fieldPatch'])

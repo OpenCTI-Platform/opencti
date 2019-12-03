@@ -211,7 +211,7 @@ class StixDomainEntity:
                 'id': id,
                 'input': {
                     'key': key,
-                    'value': str(value)
+                    'value': value
                 }
             })
             return self.opencti.process_multiple_fields(result['data']['stixDomainEntityEdit']['fieldPatch'])

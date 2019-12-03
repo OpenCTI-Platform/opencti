@@ -319,14 +319,14 @@ class Report:
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result['id'],
                         key='object_status',
-                        value=object_status
+                        value=str(object_status)
                     )
                     object_result['object_status'] = object_status
                 if source_confidence_level is not None:
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result['id'],
                         key='source_confidence_level',
-                        value=source_confidence_level
+                        value=str(source_confidence_level)
                     )
                     object_result['source_confidence_level'] = source_confidence_level
                 if graph_data is not None:
