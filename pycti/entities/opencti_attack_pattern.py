@@ -203,9 +203,7 @@ class AttackPattern:
             query = """
                 mutation AttackPatternAdd($input: AttackPatternAddInput) {
                     attackPatternAdd(input: $input) {
-                        id
-                        entity_type
-                        alias
+                        """ + self.properties + """
                     }
                 }
             """
