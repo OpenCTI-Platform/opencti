@@ -1481,7 +1481,7 @@ const createRelationRaw = async (fromInternalId, input, opts = {}) => {
   }
   // 02. Prepare the data to create or index
   const today = now();
-  const relationAttributes = { internal_id_key: relationId };
+  let relationAttributes = { internal_id_key: relationId };
   if (isStixRelation) {
     const currentDate = now();
     const toCreate = input.stix_id_key === undefined || input.stix_id_key === null || input.stix_id_key === 'create';
@@ -1499,6 +1499,21 @@ const createRelationRaw = async (fromInternalId, input, opts = {}) => {
     relationAttributes.created_at = currentDate;
     relationAttributes.first_seen = input.first_seen ? input.first_seen : today;
     relationAttributes.last_seen = input.last_seen ? input.last_seen : today;
+  }
+  // Add the additional fields for dates (day, month, year)
+  const dataKeys = Object.keys(relationAttributes);
+  for (let index = 0; index < dataKeys.length; index += 1) {
+    // Adding dates elements
+    if (includes(dataKeys[index], statsDateAttributes)) {
+      const dayValue = dayFormat(relationAttributes[dataKeys[index]]);
+      const monthValue = monthFormat(relationAttributes[dataKeys[index]]);
+      const yearValue = yearFormat(relationAttributes[dataKeys[index]]);
+      relationAttributes = pipe(
+        assoc(`${dataKeys[index]}_day`, dayValue),
+        assoc(`${dataKeys[index]}_month`, monthValue),
+        assoc(`${dataKeys[index]}_year`, yearValue)
+      )(relationAttributes);
+    }
   }
   // 02. Create the relation
   const graknRelation = await executeWrite(async wTx => {
@@ -1685,6 +1700,21 @@ export const createEntity = async (entity, type, opts = {}) => {
       assoc('modified', entity.modified ? entity.modified : today),
       assoc('revoked', false)
     )(data);
+  }
+  // Add the additional fields for dates (day, month, year)
+  const dataKeys = Object.keys(data);
+  for (let index = 0; index < dataKeys.length; index += 1) {
+    // Adding dates elements
+    if (includes(dataKeys[index], statsDateAttributes)) {
+      const dayValue = dayFormat(data[dataKeys[index]]);
+      const monthValue = monthFormat(data[dataKeys[index]]);
+      const yearValue = yearFormat(data[dataKeys[index]]);
+      data = pipe(
+        assoc(`${dataKeys[index]}_day`, dayValue),
+        assoc(`${dataKeys[index]}_month`, monthValue),
+        assoc(`${dataKeys[index]}_year`, yearValue)
+      )(data);
+    }
   }
   // Generate fields for query and build the query
   const queryElements = flatAttributesForObject(data);
