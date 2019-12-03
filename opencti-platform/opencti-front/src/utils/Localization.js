@@ -126,6 +126,7 @@ const i18n = {
         'La valeur doit être une date (AAAA-MM-JJ)',
       'The values do not match': 'Les valeurs ne correspondent pas',
       'No available options': 'Aucune option disponible',
+      'No description of this usage': 'Aucune description de cet usage',
       'Create a workspace': 'Créer un espace de travail',
       'Update a workspace': 'Modifier un espace de travail',
       'Add a widget': 'Ajouter un widget',

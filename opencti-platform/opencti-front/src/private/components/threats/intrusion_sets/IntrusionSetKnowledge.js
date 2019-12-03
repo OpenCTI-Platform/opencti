@@ -12,6 +12,7 @@ import EntityStixRelations from '../../common/stix_relations/EntityStixRelations
 import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
 import StixRelation from '../../common/stix_relations/StixRelation';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainEntityKillChain from '../../common/stix_domain_entities/StixDomainEntityKillChain';
 
 const styles = () => ({
   container: {
@@ -161,15 +162,9 @@ class IntrusionSetKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/ttp"
           render={(routeProps) => (
-            <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
-              entityId={intrusionSet.id}
-              relationType="uses"
-              targetEntityTypes={['Attack-Pattern']}
+            <StixDomainEntityKillChain
+              stixDomainEntityId={intrusionSet.id}
               entityLink={link}
-              exploreLink={`/dashboard/explore/attack_patterns/${intrusionSet.id}`}
-              creationIsFrom={true}
               {...routeProps}
             />
           )}
