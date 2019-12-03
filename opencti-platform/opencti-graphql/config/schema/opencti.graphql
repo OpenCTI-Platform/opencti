@@ -824,6 +824,7 @@ interface Identity {
   modified: DateTime
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
   tags: TagConnection
   reports: ReportConnection
   stixRelations(
