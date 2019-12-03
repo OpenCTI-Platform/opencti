@@ -261,14 +261,13 @@ class OpenCTIStix2:
                         object_status=2,
                         update=True
                     )
-
                     # Resolve author
-                    author_id = self.resolve_author(title)
-                    if author_id is not None:
+                    author = self.resolve_author(title)
+                    if author is not None and 'id 'in author:
                         self.opencti.stix_entity.update_created_by_ref(
                             id=report['id'],
                             entity=report,
-                            identity_id=author_id
+                            identity_id=author['id']
                         )
 
                     # Add marking
@@ -1357,13 +1356,13 @@ class OpenCTIStix2:
         if name in self.mapping_cache:
             return self.mapping_cache[name]
         else:
-            author_id = self.opencti.identity.create(
+            author = self.opencti.identity.create(
                 type='Organization',
                 name=name,
                 description='',
             )
-            self.mapping_cache[name] = author_id
-            return author_id
+            self.mapping_cache[name] = author
+            return author
 
     def import_bundle(self, stix_bundle, update=False, types=None) -> List:
         if types is None:

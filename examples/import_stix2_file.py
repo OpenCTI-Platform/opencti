@@ -13,4 +13,15 @@ opencti_api_client = OpenCTIApiClient(api_url, api_token)
 file_to_import = './enterprise-attack.json'
 
 # Import the bundle
-opencti_api_client.stix2.import_bundle_from_file(file_to_import, True)
+opencti_api_client.stix2.import_bundle_from_file(
+    file_to_import,
+    True,
+    [
+        'identity',
+        'attack-pattern',
+        'course-of-action',
+        'intrusion-set',
+        'malware',
+        'tool',
+        'report'
+    ])
