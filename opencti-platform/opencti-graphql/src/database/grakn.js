@@ -129,7 +129,7 @@ export const statsDateAttributes = ['first_seen', 'last_seen', 'published', 'exp
 // endregion
 
 // region client
-let client = new Grakn(`${conf.get('grakn:hostname')}:${conf.get('grakn:port')}`);
+const client = new Grakn(`${conf.get('grakn:hostname')}:${conf.get('grakn:port')}`);
 let session = null;
 // endregion
 
@@ -143,9 +143,8 @@ const closeTx = async gTx => {
     logger.error('[GRAKN] CloseReadTx error > ', err);
   }
 };
-const takeReadTx = async () => {
+const takeReadTx = async (retry = false) => {
   if (session === null) {
-    client = new Grakn(`${conf.get('grakn:hostname')}:${conf.get('grakn:port')}`);
     session = await client.session('grakn');
   }
   try {
@@ -153,14 +152,11 @@ const takeReadTx = async () => {
     return { session, tx };
   } catch (err) {
     logger.error('[GRAKN] TakeReadTx error > ', err);
-    try {
-      await session.close();
-    } catch (err2) {
-      logger.error('[GRAKN] TakeReadTx error > ', err2);
+    if (retry === true) {
+      logger.error('[GRAKN] TakeReadTx, retry failed, Grakn seems down, stopping...');
+      throw new Error('Grakn seems down');
     }
-    session = null;
-    await sleep(5000);
-    return takeReadTx();
+    return takeReadTx(true);
   }
 };
 const executeRead = async executeFunction => {
@@ -176,9 +172,8 @@ const executeRead = async executeFunction => {
   }
 };
 
-const takeWriteTx = async () => {
+const takeWriteTx = async (retry = false) => {
   if (session === null) {
-    client = new Grakn(`${conf.get('grakn:hostname')}:${conf.get('grakn:port')}`);
     session = await client.session('grakn');
   }
   try {
@@ -186,14 +181,11 @@ const takeWriteTx = async () => {
     return { session, tx };
   } catch (err) {
     logger.error('[GRAKN] TakeWriteTx error > ', err);
-    try {
-      await session.close();
-    } catch (err2) {
-      logger.error('[GRAKN] TakeWriteTx error > ', err2);
+    if (retry === true) {
+      logger.error('[GRAKN] TakeWriteTx, retry failed, Grakn seems down, stopping...');
+      throw new Error('Grakn seems down');
     }
-    session = null;
-    await sleep(5000);
-    return takeWriteTx();
+    return takeWriteTx(true);
   }
 };
 const commitWriteTx = async wTx => {
