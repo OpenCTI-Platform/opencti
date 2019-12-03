@@ -302,7 +302,7 @@ class OpenCTIStix2:
         object_refs_ids = embedded_relationships['object_refs']
         external_references_ids = embedded_relationships['external_references']
         reports = embedded_relationships['reports']
-        print(marking_definitions_ids)
+
         # Import
         importer = {
             'marking-definition': self.create_marking_definition,
@@ -342,8 +342,6 @@ class OpenCTIStix2:
                 )
             # Add marking definitions
             for marking_definition_id in marking_definitions_ids:
-                print(marking_definition_id)
-                print(stix_object_result)
                 self.opencti.stix_entity.add_marking_definition(
                     id=stix_object_result['id'],
                     entity=stix_object_result,
