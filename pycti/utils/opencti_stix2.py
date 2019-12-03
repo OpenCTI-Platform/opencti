@@ -1325,7 +1325,11 @@ class OpenCTIStix2:
         if name in self.mapping_cache:
             return self.mapping_cache[name]
         else:
-            author_id = self.opencti.create_identity_if_not_exists('Organization', name, '')['id']
+            author_id = self.opencti.identity.create(
+                type='Organization',
+                name=name,
+                description='',
+            )
             self.mapping_cache[name] = author_id
             return author_id
 
