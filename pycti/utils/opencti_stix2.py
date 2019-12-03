@@ -136,6 +136,19 @@ class OpenCTIStix2:
                     self.mapping_cache[object_marking_ref] = {'id': object_marking_ref_result['id']}
                     marking_definitions_ids.append(object_marking_ref_result['id'])
 
+        # TODO Import tags
+        # Object Tags
+        tags_ids = []
+        #if CustomProperties.TAG_TYPE in stix_object:
+        #    for tag in stix_object[CustomProperties.TAG_TYPE]:
+        #        if tag['id'] in self.mapping_cache:
+        #            tag_result = self.mapping_cache[tag['id']]
+        #        else:
+        #            object_marking_ref_result = self.opencti.tag.read(id=object_marking_ref)
+        #        if object_marking_ref_result is not None:
+        #           self.mapping_cache[object_marking_ref] = {'id': object_marking_ref_result['id']}
+        #           marking_definitions_ids.append(object_marking_ref_result['id'])
+
         # Kill Chain Phases
         kill_chain_phases_ids = []
         if 'kill_chain_phases' in stix_object:
@@ -891,6 +904,7 @@ class OpenCTIStix2:
             tags = []
             for entity_tag in entity['tags']:
                 tag = {
+                    'id': entity_tag['id'],
                     'tag_type': entity_tag['tag_type'],
                     'value': entity_tag['value'],
                     'color': entity_tag['color']
