@@ -2158,8 +2158,11 @@ class OpenCTIApiClient:
 
         relation_type = relation_type.lower()
         from_type = from_type.lower()
-        from_type = 'observable' if ((ObservableTypes.has_value(
-            from_type) and relation_type == 'indicates') or from_type == 'Stix-Observable') else from_type
+        from_type = 'observable' if (
+                (ObservableTypes.has_value(from_type) and (
+                        relation_type == 'indicates' or relation_type == 'localization' or relation_type == 'gathering')
+                 ) or from_type == 'Stix-Observable'
+        ) else from_type
         to_type = to_type.lower()
 
         mapping = {
