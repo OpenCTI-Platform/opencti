@@ -119,7 +119,7 @@ class StixDomainEntityKillChainLinesComponent extends Component {
                 </ListItemSecondaryAction>
               </ListItem>
               <Collapse
-                in={!(this.state.expandedLines[stixRelation.id] === false)}
+                in={this.state.expandedLines[stixRelation.id] !== false}
               >
                 <List>
                   {stixRelation.attackPatterns.map((attackPattern) => {
