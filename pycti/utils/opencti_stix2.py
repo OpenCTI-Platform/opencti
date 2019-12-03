@@ -266,7 +266,7 @@ class OpenCTIStix2:
                     )
                     # Resolve author
                     author = self.resolve_author(title)
-                    if author is not None and 'id 'in author:
+                    if author is not None:
                         self.opencti.stix_entity.update_created_by_ref(
                             id=report['id'],
                             entity=report,
