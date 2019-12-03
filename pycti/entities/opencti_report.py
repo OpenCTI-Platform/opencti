@@ -373,11 +373,16 @@ class Report:
 
     def add_stix_entity(self, **kwargs):
         id = kwargs.get('id', None)
+        report = kwargs.get('report', None)
         entity_id = kwargs.get('entity_id', None)
         if id is not None and entity_id is not None:
             self.opencti.log('info',
                              'Adding Stix-Entity {' + entity_id + '} to Report {' + id + '}')
-            report = self.read(id=id)
+            if report is None:
+                report = self.read(id=id)
+            if report is None:
+                self.opencti.log('error', 'Cannot add Object Ref, report not found')
+                return False
             refs_ids = []
             for ref in report['objectRefs']:
                 refs_ids.append(ref['id'])

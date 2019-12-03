@@ -239,7 +239,7 @@ class OpenCTIStix2:
 
                     if 'external_id' in external_reference:
                         title = title + ' (' + external_reference['external_id'] + ')'
-                    report_id = self.opencti.report.create(
+                    report = self.opencti.report.create(
                         name=title,
                         external_reference_id=external_reference_id,
                         description=external_reference['description'] if 'description' in external_reference else '',
@@ -247,12 +247,16 @@ class OpenCTIStix2:
                         report_class='Threat Report',
                         object_status=2,
                         update=True
-                    )['id']
+                    )
 
                     # Resolve author
                     author_id = self.resolve_author(title)
                     if author_id is not None:
-                        self.opencti.stix_entity.update_created_by_ref(id=report_id, identity_id=author_id)
+                        self.opencti.stix_entity.update_created_by_ref(
+                            id=report['id'],
+                            entity=report,
+                            identity_id=author_id
+                        )
 
                     # Add marking
                     if 'marking_tlpwhite' in self.mapping_cache:
@@ -265,16 +269,18 @@ class OpenCTIStix2:
                     if object_marking_ref_result is not None:
                         self.mapping_cache['marking_tlpwhite'] = {'id': object_marking_ref_result['id']}
                         self.opencti.stix_entity.add_marking_definition(
-                            id=report_id,
+                            id=report['id'],
+                            entity=report,
                             marking_definition_id=object_marking_ref_result['id']
                         )
 
                     # Add external reference to report
                     self.opencti.stix_entity.add_external_reference(
-                        id=report_id,
+                        id=report['id'],
+                        entity=report,
                         external_reference_id=external_reference_id
                     )
-                    reports[external_reference_id] = report_id
+                    reports[external_reference_id] = report['id']
 
         return {
             'created_by_ref': created_by_ref_id,
@@ -331,18 +337,21 @@ class OpenCTIStix2:
             if created_by_ref_id is not None and stix_object['type'] != 'marking-definition':
                 self.opencti.stix_entity.update_created_by_ref(
                     id=stix_object_result['id'],
+                    entity=stix_object_result,
                     identity_id=created_by_ref_id
                 )
             # Add marking definitions
             for marking_definition_id in marking_definitions_ids:
                 self.opencti.stix_entity.add_marking_definition(
                     id=stix_object_result['id'],
+                    entity=stix_object_result,
                     marking_definition_id=marking_definition_id
                 )
             # Add external references
             for external_reference_id in external_references_ids:
                 self.opencti.stix_entity.add_external_reference(
                     id=stix_object_result['id'],
+                    entity=stix_object_result,
                     external_reference_id=external_reference_id
                 )
                 if external_reference_id in reports:
@@ -354,11 +363,16 @@ class OpenCTIStix2:
             for kill_chain_phase_id in kill_chain_phases_ids:
                 self.opencti.stix_entity.add_kill_chain_phase(
                     id=stix_object_result['id'],
+                    entity=stix_object_result,
                     kill_chain_phase_id=kill_chain_phase_id
                 )
             # Add object refs
             for object_refs_id in object_refs_ids:
-                self.opencti.report.add_stix_entity(id=stix_object_result['id'], entity_id=object_refs_id)
+                self.opencti.report.add_stix_entity(
+                    id=stix_object_result['id'],
+                    report=stix_object_result,
+                    entity_id=object_refs_id
+                )
 
         return stix_object_result
 
@@ -462,18 +476,21 @@ class OpenCTIStix2:
         if created_by_ref_id is not None:
             self.opencti.stix_entity.update_created_by_ref(
                 id=stix_relation_result['id'],
+                entity=stix_relation_result,
                 identity_id=created_by_ref_id
             )
         # Add marking definitions
         for marking_definition_id in marking_definitions_ids:
             self.opencti.stix_entity.add_marking_definition(
                 id=stix_relation_result['id'],
+                entity=stix_relation_result,
                 marking_definition_id=marking_definition_id
             )
         # Add external references
         for external_reference_id in external_references_ids:
             self.opencti.stix_entity.add_external_reference(
                 id=stix_relation_result['id'],
+                entity=stix_relation_result,
                 external_reference_id=external_reference_id
             )
             if external_reference_id in reports:
@@ -493,6 +510,7 @@ class OpenCTIStix2:
         for kill_chain_phase_id in kill_chain_phases_ids:
             self.opencti.stix_entity.add_kill_chain_phase(
                 id=stix_relation_result['id'],
+                entity=stix_relation_result,
                 kill_chain_phase_id=kill_chain_phase_id
             )
 

@@ -161,11 +161,16 @@ class StixEntity:
 
     def update_created_by_ref(self, **kwargs):
         id = kwargs.get('id', None)
+        stix_entity = kwargs.get('entity', None)
         identity_id = kwargs.get('identity_id', None)
         if id is not None and identity_id is not None:
             self.opencti.log('info',
                              'Updating author of Stix-Entity {' + id + '} with Identity {' + identity_id + '}')
-            stix_entity = self.read(id=id)
+            if stix_entity is None:
+                stix_entity = self.read(id=id)
+            if stix_entity is None:
+                self.opencti.log('error', 'Cannot add External-Reference, entity not found')
+                return False
             current_identity_id = None
             current_relation_id = None
             if stix_entity['createdByRef'] is not None:
@@ -223,11 +228,16 @@ class StixEntity:
 
     def add_marking_definition(self, **kwargs):
         id = kwargs.get('id', None)
+        stix_entity = kwargs.get('entity', None)
         marking_definition_id = kwargs.get('marking_definition_id', None)
         if id is not None and marking_definition_id is not None:
             self.opencti.log('info',
                              'Adding Marking-Definition {' + marking_definition_id + '} to Stix-Entity {' + id + '}')
-            stix_entity = self.read(id=id)
+            if stix_entity is None:
+                stix_entity = self.read(id=id)
+            if stix_entity is None:
+                self.opencti.log('error', 'Cannot add External-Reference, entity not found')
+                return False
             markings_ids = []
             for marking in stix_entity['markingDefinitions']:
                 markings_ids.append(marking['id'])
@@ -267,11 +277,16 @@ class StixEntity:
 
     def add_external_reference(self, **kwargs):
         id = kwargs.get('id', None)
+        stix_entity = kwargs.get('entity', None)
         external_reference_id = kwargs.get('external_reference_id', None)
         if id is not None and external_reference_id is not None:
             self.opencti.log('info',
                              'Adding External-Reference {' + external_reference_id + '} to Stix-Entity {' + id + '}')
-            stix_entity = self.read(id=id)
+            if stix_entity is None:
+                stix_entity = self.read(id=id)
+            if stix_entity is None:
+                self.opencti.log('error', 'Cannot add External-Reference, entity not found')
+                return False
             external_references_ids = []
             for external_reference in stix_entity['externalReferences']:
                 external_references_ids.append(external_reference['id'])
@@ -311,10 +326,16 @@ class StixEntity:
 
     def add_kill_chain_phase(self, **kwargs):
         id = kwargs.get('id', None)
+        stix_entity = kwargs.get('entity', None)
         kill_chain_phase_id = kwargs.get('kill_chain_phase_id', None)
         if id is not None and kill_chain_phase_id is not None:
             self.opencti.log('info',
                              'Adding Kill-Chain-Phase {' + kill_chain_phase_id + '} to Stix-Entity {' + id + '}')
+            if stix_entity is None:
+                stix_entity = self.read(id=id)
+            if stix_entity is None:
+                self.opencti.log('error', 'Cannot add External-Reference, entity not found')
+                return False
             stix_entity = self.read(id=id)
             kill_chain_phases_ids = []
             for kill_chain_phase in stix_entity['killChainPhases']:
