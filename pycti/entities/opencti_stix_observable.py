@@ -173,8 +173,6 @@ class StixObservable:
         description = kwargs.get('description', None)
         id = kwargs.get('id', None)
         stix_id_key = kwargs.get('stix_id_key', None)
-        created = kwargs.get('created', None)
-        modified = kwargs.get('modified', None)
 
         if type is not None and observable_value is not None:
             self.opencti.log('info', 'Creating Stix-Observable {' + observable_value + '}.')
@@ -194,8 +192,6 @@ class StixObservable:
                     'description': description,
                     'internal_id_key': id,
                     'stix_id_key': stix_id_key,
-                    'created': created,
-                    'modified': modified
                 }
             })
             return self.opencti.process_multiple_fields(result['data']['stixObservableAdd'])
@@ -215,8 +211,6 @@ class StixObservable:
         description = kwargs.get('description', None)
         id = kwargs.get('id', None)
         stix_id_key = kwargs.get('stix_id_key', None)
-        created = kwargs.get('created', None)
-        modified = kwargs.get('modified', None)
         update = kwargs.get('update', False)
 
         object_result = self.read(filters=[{'key': 'observable_value', 'values': [observable_value]}])
@@ -232,9 +226,8 @@ class StixObservable:
                 observable_value=observable_value,
                 description=description,
                 id=id,
-                stix_id_key=stix_id_key,
-                created=created,
-                modified=modified)
+                stix_id_key=stix_id_key
+            )
 
     """
         Update a Stix-Observable object field
