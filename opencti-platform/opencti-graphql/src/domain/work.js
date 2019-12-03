@@ -29,7 +29,7 @@ export const connectorForWork = async id => {
 
 export const jobsForWork = async id => {
   return elPaginate(INDEX_WORK_JOBS, {
-    type: 'Job',
+    types: ['Job'],
     connectionFormat: false,
     orderBy: 'created_at',
     orderMode: 'asc',
