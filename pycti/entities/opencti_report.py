@@ -359,6 +359,7 @@ class Report:
             if external_reference_id is not None:
                 self.opencti.stix_entity.add_external_reference(
                     id=report['id'],
+                    entity=report,
                     external_reference_id=external_reference_id
                 )
             return report

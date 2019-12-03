@@ -345,8 +345,8 @@ class StixRelation:
                     self.update_field(id=stix_relation_result['id'], key='description', value=description)
                     stix_relation_result['description'] = description
                 if weight is not None:
-                    self.update_field(id=stix_relation_result['id'], key='weight', value=weight)
-                    stix_relation_result['weight'] = str(weight)
+                    self.update_field(id=stix_relation_result['id'], key='weight', value=str(weight))
+                    stix_relation_result['weight'] = weight
                 if first_seen is not None:
                     new_first_seen = dateutil.parser.parse(first_seen)
                     old_first_seen = dateutil.parser.parse(stix_relation_result['first_seen'])

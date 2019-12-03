@@ -224,20 +224,23 @@ class OpenCTIStix2:
                 ] and (types is None or 'report' in types):
                     # Add a corresponding report
                     # Extract date
-                    if 'description' in external_reference:
-                        matches = list(datefinder.find_dates(
-                            external_reference['description'],
-                            False,
-                            False,
-                            False,
-                        ))
-                    else:
-                        matches = list(datefinder.find_dates(
-                            source_name,
-                            False,
-                            False,
-                            False,
-                        ))
+                    try:
+                        if 'description' in external_reference:
+                            matches = list(datefinder.find_dates(
+                                external_reference['description'],
+                                False,
+                                False,
+                                False,
+                            ))
+                        else:
+                            matches = list(datefinder.find_dates(
+                                source_name,
+                                False,
+                                False,
+                                False,
+                            ))
+                    except:
+                        matches = []
                     if len(matches) > 0:
                         published = list(matches)[0].strftime('%Y-%m-%dT%H:%M:%SZ')
                     else:
@@ -436,20 +439,23 @@ class OpenCTIStix2:
         date = None
         if 'external_references' in stix_relation:
             for external_reference in stix_relation['external_references']:
-                if 'description' in external_reference:
-                    matches = list(datefinder.find_dates(
-                        external_reference['description'],
-                        False,
-                        False,
-                        False,
-                    ))
-                else:
-                    matches = list(datefinder.find_dates(
-                        external_reference['source_name'],
-                        False,
-                        False,
-                        False,
-                    ))
+                try:
+                    if 'description' in external_reference:
+                            matches = list(datefinder.find_dates(
+                                external_reference['description'],
+                                False,
+                                False,
+                                False,
+                            ))
+                    else:
+                        matches = list(datefinder.find_dates(
+                            external_reference['source_name'],
+                            False,
+                            False,
+                            False,
+                        ))
+                except:
+                    matches = []
                 if len(matches) > 0:
                     date = matches[0].strftime('%Y-%m-%dT%H:%M:%SZ')
                 else:
