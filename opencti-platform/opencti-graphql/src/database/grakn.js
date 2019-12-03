@@ -129,7 +129,7 @@ export const statsDateAttributes = ['first_seen', 'last_seen', 'published', 'exp
 // endregion
 
 // region client
-const client = new Grakn(`${conf.get('grakn:hostname')}:${conf.get('grakn:port')}`);
+let client = new Grakn(`${conf.get('grakn:hostname')}:${conf.get('grakn:port')}`);
 let session = null;
 // endregion
 
@@ -145,6 +145,7 @@ const closeTx = async gTx => {
 };
 const takeReadTx = async () => {
   if (session === null) {
+    client = new Grakn(`${conf.get('grakn:hostname')}:${conf.get('grakn:port')}`);
     session = await client.session('grakn');
   }
   try {
@@ -152,6 +153,11 @@ const takeReadTx = async () => {
     return { session, tx };
   } catch (err) {
     logger.error('[GRAKN] TakeReadTx error > ', err);
+    try {
+      await session.close();
+    } catch (err2) {
+      logger.error('[GRAKN] TakeReadTx error > ', err2);
+    }
     session = null;
     await sleep(5000);
     return takeReadTx();
@@ -170,8 +176,9 @@ const executeRead = async executeFunction => {
   }
 };
 
-const takeWriteTx = async (retry = false) => {
+const takeWriteTx = async () => {
   if (session === null) {
+    client = new Grakn(`${conf.get('grakn:hostname')}:${conf.get('grakn:port')}`);
     session = await client.session('grakn');
   }
   try {
@@ -179,11 +186,14 @@ const takeWriteTx = async (retry = false) => {
     return { session, tx };
   } catch (err) {
     logger.error('[GRAKN] TakeWriteTx error > ', err);
-    if (retry === false) {
-      session = null;
-      return takeWriteTx(true);
+    try {
+      await session.close();
+    } catch (err2) {
+      logger.error('[GRAKN] TakeWriteTx error > ', err2);
     }
-    return null;
+    session = null;
+    await sleep(5000);
+    return takeWriteTx();
   }
 };
 const commitWriteTx = async wTx => {

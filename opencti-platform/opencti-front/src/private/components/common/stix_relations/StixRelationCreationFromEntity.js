@@ -329,21 +329,26 @@ class StixRelationCreationFromEntity extends Component {
         reversedReturn: !this.props.isFrom,
       },
       updater: (store) => {
-        const payload = store.getRootField('stixRelationAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node');
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          this.props.paginationOptions,
-          newEdge,
-        );
+        if (typeof this.props.onCreate !== 'function') {
+          const payload = store.getRootField('stixRelationAdd');
+          const newEdge = payload.setLinkedRecord(payload, 'node');
+          const container = store.getRoot();
+          sharedUpdater(
+            store,
+            container.getDataID(),
+            this.props.paginationOptions,
+            newEdge,
+          );
+        }
       },
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
         this.handleClose();
+        if (typeof this.props.onCreate === 'function') {
+          this.props.onCreate();
+        }
       },
     });
   }
@@ -878,6 +883,7 @@ StixRelationCreationFromEntity.propTypes = {
   t: PropTypes.func,
   nsd: PropTypes.func,
   variant: PropTypes.string,
+  onCreate: PropTypes.func,
 };
 
 export default compose(

@@ -12,6 +12,7 @@ import StixRelation from '../../common/stix_relations/StixRelation';
 import ThreatActorPopover from './ThreatActorPopover';
 import ThreatActorKnowledgeBar from './ThreatActorKnowledgeBar';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainEntityKillChain from '../../common/stix_domain_entities/StixDomainEntityKillChain';
 
 const styles = () => ({
   container: {
@@ -36,7 +37,7 @@ class ThreatActorKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/relations/:relationId"
-          render={routeProps => (
+          render={(routeProps) => (
             <StixRelation
               entityId={threatActor.id}
               inversedRoles={inversedRoles}
@@ -47,7 +48,7 @@ class ThreatActorKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/overview"
-          render={routeProps => (
+          render={(routeProps) => (
             <StixDomainEntityKnowledge
               stixDomainEntityId={threatActor.id}
               stixDomainEntityType="threat-actor"
@@ -58,7 +59,7 @@ class ThreatActorKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/intrusion_sets"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               entityId={threatActor.id}
               relationType="attributed-to"
@@ -72,7 +73,7 @@ class ThreatActorKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/campaigns"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               resolveRelationType="attributed-to"
               resolveRelationRole="origin"
@@ -89,7 +90,7 @@ class ThreatActorKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/incidents"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               resolveRelationType="attributed-to"
               resolveRelationRole="origin"
@@ -105,7 +106,7 @@ class ThreatActorKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/victimology"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               resolveRelationType="attributed-to"
               resolveRelationRole="origin"
@@ -151,7 +152,7 @@ class ThreatActorKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/malwares"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               resolveRelationType="attributed-to"
               resolveRelationRole="origin"
@@ -167,16 +168,10 @@ class ThreatActorKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/ttp"
-          render={routeProps => (
-            <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
-              entityId={threatActor.id}
-              relationType="uses"
-              targetEntityTypes={['Attack-Pattern']}
+          render={(routeProps) => (
+            <StixDomainEntityKillChain
+              stixDomainEntityId={threatActor.id}
               entityLink={link}
-              exploreLink={`/dashboard/explore/attack_patterns/${threatActor.id}`}
-              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -184,7 +179,7 @@ class ThreatActorKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/tools"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               resolveRelationType="attributed-to"
               resolveRelationRole="origin"
@@ -200,7 +195,7 @@ class ThreatActorKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/vulnerabilities"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               resolveRelationType="attributed-to"
               resolveRelationRole="origin"

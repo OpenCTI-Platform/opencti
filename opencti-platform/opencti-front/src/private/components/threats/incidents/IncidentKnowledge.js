@@ -12,6 +12,7 @@ import StixRelation from '../../common/stix_relations/StixRelation';
 import IncidentPopover from './IncidentPopover';
 import IncidentKnowledgeBar from './IncidentKnowledgeBar';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainEntityKillChain from '../../common/stix_domain_entities/StixDomainEntityKillChain';
 
 const styles = () => ({
   container: {
@@ -133,13 +134,9 @@ class IncidentKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/incidents/:incidentId/knowledge/ttp"
           render={(routeProps) => (
-            <EntityStixRelations
-              entityId={incident.id}
-              relationType="uses"
-              targetEntityTypes={['Attack-Pattern']}
+            <StixDomainEntityKillChain
+              stixDomainEntityId={incident.id}
               entityLink={link}
-              exploreLink={`/dashboard/explore/attack_patterns/${incident.id}`}
-              creationIsFrom={true}
               {...routeProps}
             />
           )}

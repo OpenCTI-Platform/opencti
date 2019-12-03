@@ -12,6 +12,7 @@ import StixRelation from '../../common/stix_relations/StixRelation';
 import CampaignPopover from './CampaignPopover';
 import CampaignKnowledgeBar from './CampaignKnowledgeBar';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainEntityKillChain from "../../common/stix_domain_entities/StixDomainEntityKillChain";
 
 const styles = () => ({
   container: {
@@ -143,15 +144,9 @@ class CampaignKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/campaigns/:campaignId/knowledge/ttp"
           render={(routeProps) => (
-            <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
-              entityId={campaign.id}
-              relationType="uses"
-              targetEntityTypes={['Attack-Pattern']}
+            <StixDomainEntityKillChain
+              stixDomainEntityId={campaign.id}
               entityLink={link}
-              exploreLink={`/dashboard/explore/attack_patterns/${campaign.id}`}
-              creationIsFrom={true}
               {...routeProps}
             />
           )}

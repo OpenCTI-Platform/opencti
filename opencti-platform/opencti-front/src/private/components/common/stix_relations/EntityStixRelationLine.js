@@ -149,11 +149,32 @@ const EntityStixRelationLineFragment = createFragmentContainer(
             created_at
             updated_at
           }
+          ... on AttackPattern {
+            external_id
+            killChainPhases {
+              edges {
+                node {
+                  id
+                  phase_name
+                  phase_order
+                }
+              }
+            }
+          }
           ... on StixObservable {
             id
             entity_type
             parent_types
             observable_value
+          }
+        }
+        killChainPhases {
+          edges {
+            node {
+              id
+              phase_name
+              phase_order
+            }
           }
         }
       }

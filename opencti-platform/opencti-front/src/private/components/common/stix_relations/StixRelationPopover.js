@@ -18,7 +18,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import StixRelationEdition from './StixRelationEdition';
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
     margin: 0,
   },
@@ -95,19 +95,24 @@ class StixRelationPopover extends Component {
         id: this.props.stixRelationId,
       },
       updater: (store) => {
-        const container = store.getRoot();
-        const payload = store.getRootField('stixRelationEdit');
-        const userProxy = store.get(container.getDataID());
-        const conn = ConnectionHandler.getConnection(
-          userProxy,
-          'Pagination_stixRelations',
-          this.props.paginationOptions,
-        );
-        ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
+        if (typeof this.props.onDelete !== 'function') {
+          const container = store.getRoot();
+          const payload = store.getRootField('stixRelationEdit');
+          const userProxy = store.get(container.getDataID());
+          const conn = ConnectionHandler.getConnection(
+            userProxy,
+            'Pagination_stixRelations',
+            this.props.paginationOptions,
+          );
+          ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
+        }
       },
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleCloseDelete();
+        if (typeof this.props.onDelete === 'function') {
+          this.props.onDelete();
+        }
       },
     });
   }
@@ -184,9 +189,7 @@ StixRelationPopover.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  onDelete: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixRelationPopover);
+export default compose(inject18n, withStyles(styles))(StixRelationPopover);
