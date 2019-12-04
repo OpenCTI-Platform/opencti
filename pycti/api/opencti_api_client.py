@@ -2157,10 +2157,9 @@ class OpenCTIApiClient:
         from_type = 'observable' if (
                 (ObservableTypes.has_value(from_type) and (
                         relation_type == 'indicates' or relation_type == 'localization' or relation_type == 'gathering')
-                 ) or from_type == 'Stix-Observable'
+                 ) or from_type == 'stix-observable'
         ) else from_type
         to_type = to_type.lower()
-
         mapping = {
             'uses': {
                 'threat-actor': {
@@ -2308,6 +2307,7 @@ class OpenCTIApiClient:
                     'threat-actor': {'from_role': 'indicator', 'to_role': 'characterize'},
                     'intrusion-set': {'from_role': 'indicator', 'to_role': 'characterize'},
                     'campaign': {'from_role': 'indicator', 'to_role': 'characterize'},
+                    'incident': {'from_role': 'indicator', 'to_role': 'characterize'},
                     'malware': {'from_role': 'indicator', 'to_role': 'characterize'},
                     'tool': {'from_role': 'indicator', 'to_role': 'characterize'},
                     'stix_relation': {'from_role': 'indicator', 'to_role': 'characterize'},

@@ -6,14 +6,17 @@ from dateutil.parser import parse
 from pycti import OpenCTIApiClient
 
 # Variables
-api_url = 'https://demo.opencti.io'
-api_token = 'ab3c02bb-2849-4223-be5d-8f61207b4b43'
+api_url = 'http://localhost:4000'
+api_token = 'c2d944bb-aea6-4bd6-b3d7-6c10451e2256'
 
 # OpenCTI initialization
 opencti_api_client = OpenCTIApiClient(api_url, api_token)
 
 # Define the date
 date = parse('2019-12-01').strftime('%Y-%m-%dT%H:%M:%SZ')
+
+# Prepare all the elements of the report
+object_refs = []
 
 # Create the incident
 incident = opencti_api_client.incident.create(
@@ -22,6 +25,7 @@ incident = opencti_api_client.incident.create(
     objective="Espionage"
 )
 print(incident)
+object_refs.append(incident['id'])
 
 # Create the associated report
 report = opencti_api_client.report.create(
@@ -32,9 +36,6 @@ report = opencti_api_client.report.create(
 )
 print(report)
 
-# Prepare all the elements of the report
-object_refs = []
-
 # Associate the TTPs to the incident
 
 # Spearphishing Attachment
@@ -43,7 +44,7 @@ print(ttp1)
 ttp1_relation = opencti_api_client.stix_relation.create(
     fromType='Incident',
     fromId=incident['id'],
-    toType='Incident',
+    toType='Attack-Pattern',
     toId=ttp1['id'],
     relationship_type='uses',
     description='We saw the attacker use Spearphishing Attachment.',
@@ -56,11 +57,24 @@ for kill_chain_phase_id in ttp1['killChainPhasesIds']:
         id=ttp1_relation['id'],
         kill_chain_phase_id=kill_chain_phase_id
     )
-# Add observables to the relation
+
+# Create the observable
 observable_ttp1 = opencti_api_client.stix_observable.create(
-    type='Email-Addr',
+    type='Email-Address',
     observable_value='phishing@mail.com'
 )
+# Indicates the incident itself
+observable_ttp1_incident_relation = opencti_api_client.stix_relation.create(
+    fromType='Stix-Observable',
+    fromId=observable_ttp1['id'],
+    toType='Incident',
+    toId=incident['id'],
+    relationship_type='indicates',
+    description='This email address is the sender of the spearphishing in this incident.',
+    first_seen=date,
+    last_seen=date
+)
+# Indicates the relation Incident => uses => TTP
 observable_ttp1_relation = opencti_api_client.stix_relation.create(
     fromType='Stix-Observable',
     fromId=observable_ttp1['id'],
@@ -72,7 +86,12 @@ observable_ttp1_relation = opencti_api_client.stix_relation.create(
     last_seen=date
 )
 # Elements for the report
-object_refs.extend([ttp1['id'], ttp1_relation['id'], observable_ttp1['id'], observable_ttp1_relation['id']])
+object_refs.extend([
+    ttp1['id'],
+    ttp1_relation['id'],
+    observable_ttp1['id'],
+    observable_ttp1_incident_relation['id']
+])
 
 # Registry Run Keys / Startup Folder
 ttp2 = opencti_api_client.attack_pattern.read(filters=[{'key': 'external_id', 'values': ['T1060']}])
@@ -81,7 +100,7 @@ print(ttp2)
 ttp2_relation = opencti_api_client.stix_relation.create(
     fromType='Incident',
     fromId=incident['id'],
-    toType='Incident',
+    toType='Attack-Pattern',
     toId=ttp2['id'],
     relationship_type='uses',
     description='We saw the attacker use Registry Run Keys / Startup Folder.',
@@ -99,6 +118,18 @@ observable_ttp2 = opencti_api_client.stix_observable.create(
     type='Registry-Key',
     observable_value='Disk security'
 )
+# Indicates the incident itself
+observable_ttp2_incident_relation = opencti_api_client.stix_relation.create(
+    fromType='Stix-Observable',
+    fromId=observable_ttp2['id'],
+    toType='Incident',
+    toId=incident['id'],
+    relationship_type='indicates',
+    description='This registry key is used for persistence of tools in this incident.',
+    first_seen=date,
+    last_seen=date
+)
+# Indicates the relation Incident => uses => TTP
 observable_ttp2_relation = opencti_api_client.stix_relation.create(
     fromType='Stix-Observable',
     fromId=observable_ttp2['id'],
@@ -110,7 +141,12 @@ observable_ttp2_relation = opencti_api_client.stix_relation.create(
     last_seen=date
 )
 # Elements for the report
-object_refs.extend([ttp2['id'], ttp2_relation['id'], observable_ttp2['id'], observable_ttp2_relation['id']])
+object_refs.extend([
+    ttp2['id'],
+    ttp2_relation['id'],
+    observable_ttp2['id'],
+    observable_ttp2_incident_relation['id']
+])
 
 # Data Encrypted
 ttp3 = opencti_api_client.attack_pattern.read(filters=[{'key': 'external_id', 'values': ['T1022']}])
@@ -118,7 +154,7 @@ print(ttp3)
 ttp3_relation = opencti_api_client.stix_relation.create(
     fromType='Incident',
     fromId=incident['id'],
-    toType='Incident',
+    toType='Attack-Pattern',
     toId=ttp3['id'],
     relationship_type='uses',
     description='We saw the attacker use Data Encrypted.',
