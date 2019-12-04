@@ -724,7 +724,7 @@ class OpenCTIStix2:
             'threat-actor': self.opencti.threat_actor.to_stix2,
             'intrusion-set': self.opencti.intrusion_set.to_stix2,
             'campaign': self.opencti.campaign.to_stix2,
-            'x-opencti-incident': self.opencti.incident.to_stix2,
+            'incident': self.opencti.incident.to_stix2,
             'malware': self.opencti.malware.to_stix2,
             'tool': self.opencti.tool.to_stix2,
             'vulnerability': self.opencti.vulnerability.to_stix2,
@@ -736,11 +736,19 @@ class OpenCTIStix2:
             entity_type,
             lambda **kwargs: self.unknown_type({'type': entity_type})
         )
-        bundle['objects'] = do_export(
+        objects = do_export(
             id=entity_id,
             mode=mode,
             max_marking_definition_entity=max_marking_definition_entity
         )
+        for object in objects:
+            object['id'] = object['id'].replace('observable', 'indicator')
+            if 'source_ref' in object:
+                object['source_ref'] = object['source_ref'].replace('observable', 'indicator')
+            if 'target_ref' in object:
+                object['target_ref'] = object['target_ref'].replace('observable', 'indicator')
+            bundle['objects'].append(object)
+
         return bundle
 
     def export_bundle(self, types=[]):
@@ -972,7 +980,7 @@ class OpenCTIStix2:
                 'threat-actor': self.opencti.threat_actor.to_stix2,
                 'intrusion-set': self.opencti.intrusion_set.to_stix2,
                 'campaign': self.opencti.campaign.to_stix2,
-                'x-opencti-incident': self.opencti.incident.to_stix2,
+                'incident': self.opencti.incident.to_stix2,
                 'malware': self.opencti.malware.to_stix2,
                 'tool': self.opencti.tool.to_stix2,
                 'vulnerability': self.opencti.vulnerability.to_stix2,
@@ -992,13 +1000,12 @@ class OpenCTIStix2:
                 result = result + entity_object_bundle
             for observable_object in observables_to_get:
                 observable_object_data = self.export_stix_observable(
-                    self.opencti.process_multiple_fields(
-                        self.opencti.get_stix_observable_by_id(observable_object['id'])
-                    )
+                    self.opencti.stix_observable.read(id=observable_object['id'])
                 )
-                observable_object_bundle = self.filter_objects(uuids, observable_object_data)
-                uuids = uuids + [x['id'] for x in observable_object_bundle]
-                result = result + observable_object_bundle
+                if observable_object_data is not None:
+                    observable_object_bundle = self.filter_objects(uuids, observable_object_data)
+                    uuids = uuids + [x['id'] for x in observable_object_bundle]
+                    result = result + observable_object_bundle
             for relation_object in relations_to_get:
                 relation_object_data = self.opencti.stix_relation.to_stix2(id=relation_object['id'])
                 relation_object_bundle = self.filter_objects(uuids, relation_object_data)
@@ -1234,7 +1241,10 @@ class OpenCTIStix2:
                     first_seen = relation_first_seen
             stix_observable['valid_from'] = self.format_date(first_seen)
         final_stix_observable = self.prepare_observable(entity, stix_observable)
-        return self.prepare_export(entity, final_stix_observable)
+        if final_stix_observable is not None:
+            return self.prepare_export(entity, final_stix_observable)
+        else:
+            return None
 
     def create_indicator(self, stix_object, update=False):
         indicator_type = None
@@ -1327,16 +1337,31 @@ class OpenCTIStix2:
         else:
             observable_type = entity['entity_type']
 
-        if observable_type == 'file':
-            lhs = ObjectPath(observable_type, ['hashes', entity['entity_type'].split('-')[1].upper()])
-            ece = ObservationExpression(EqualityComparisonExpression(lhs, HashConstant(entity['observable_value'],
-                                                                                       entity['entity_type'].split('-')[
-                                                                                           1].upper())))
-        if observable_type == 'ipv4-addr' or observable_type == 'ipv6-addr' or observable_type == 'domain_name' or observable_type == 'url':
-            lhs = ObjectPath(observable_type, ["value"])
-            ece = ObservationExpression(EqualityComparisonExpression(lhs, entity['observable_value']))
-        stix_observable['pattern'] = str(ece)
-        return stix_observable
+        try:
+            if observable_type == 'file':
+                lhs = ObjectPath(observable_type, ['hashes', entity['entity_type'].split('-')[1].upper()])
+                ece = ObservationExpression(
+                    EqualityComparisonExpression(
+                        lhs,
+                        HashConstant(
+                            entity['observable_value'],
+                            entity['entity_type'].split('-')[1].upper())
+                    )
+                )
+            else:
+                lhs = ObjectPath(observable_type, ["value"])
+                ece = ObservationExpression(
+                    EqualityComparisonExpression(
+                        lhs,
+                        entity['observable_value'])
+                )
+        except:
+            ece = None
+        if ece is not None:
+            stix_observable['pattern'] = str(ece)
+            return stix_observable
+        else:
+            return None
 
     def get_author(self, name):
         if name in self.mapping_cache:
