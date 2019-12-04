@@ -75,6 +75,7 @@ const stixDomainEntityCreationMutation = graphql`
     stixDomainEntityAdd(input: $input) {
       id
       entity_type
+      parent_types
       name
       description
     }
