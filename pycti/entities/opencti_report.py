@@ -213,7 +213,7 @@ class Report:
         published = kwargs.get('published', None)
         object_result = None
         if stix_id_key is not None:
-            object_result = self.read(filters=[{'key': 'stix_id_key', 'values': [stix_id_key]}])
+            object_result = self.read(id=stix_id_key)
         if object_result is None and name is not None and published is not None:
             published_final = parse(published).strftime('%Y-%m-%d')
             object_result = self.read(filters=[
