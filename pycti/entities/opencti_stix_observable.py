@@ -179,9 +179,7 @@ class StixObservable:
             query = """
                mutation StixObservableAdd($input: StixObservableAddInput) {
                    stixObservableAdd(input: $input) {
-                       id
-                       entity_type
-                       observable_value
+                       """ + self.properties + """
                    }
                }
             """
