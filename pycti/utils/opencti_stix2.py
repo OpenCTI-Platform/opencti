@@ -220,8 +220,7 @@ class OpenCTIStix2:
                     'intrusion-set',
                     'campaign',
                     'incident',
-                    'malware',
-                    'attack-pattern'
+                    'malware'
                 ] and (types is None or 'report' in types):
                     # Add a corresponding report
                     # Extract date
