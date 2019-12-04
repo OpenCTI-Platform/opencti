@@ -565,7 +565,7 @@ class OpenCTIApiClient:
                 'modified': modified
             }
         })
-        return result['data']['markingDefinitionAdd']
+        return self.process_multiple_fields(result['data']['markingDefinitionAdd'])
 
     # TODO Move to MarkingDefinition
     def create_marking_definition_if_not_exists(self,
@@ -658,7 +658,7 @@ class OpenCTIApiClient:
                 'modified': modified
             }
         })
-        return result['data']['externalReferenceAdd']
+        return self.process_multiple_fields(result['data']['externalReferenceAdd'])
 
     # TODO Move to ExternalReference
     def create_external_reference_if_not_exists(self,
@@ -727,7 +727,7 @@ class OpenCTIApiClient:
                 'modified': modified
             }
         })
-        return result['data']['killChainPhaseAdd']
+        return self.process_multiple_fields(result['data']['killChainPhaseAdd'])
 
     # TODO Move to KillChainPhase
     def create_kill_chain_phase_if_not_exists(self,
@@ -940,7 +940,7 @@ class OpenCTIApiClient:
                 'modified': modified
             }
         })
-        return result['data']['threatActorAdd']
+        return self.process_multiple_fields(result['data']['threatActorAdd'])
 
     # TODO Move to ThreatActor
     def create_threat_actor_if_not_exists(self,
@@ -1197,7 +1197,7 @@ class OpenCTIApiClient:
                 'modified': modified
             }
         })
-        return result['data']['campaignAdd']
+        return self.process_multiple_fields(result['data']['campaignAdd'])
 
     # TODO Move to Campaign
     def create_campaign_if_not_exists(self,
@@ -1438,7 +1438,7 @@ class OpenCTIApiClient:
                 'modified': modified
             }
         })
-        return result['data']['malwareAdd']
+        return self.process_multiple_fields(result['data']['malwareAdd'])
 
     # TODO Move to Malware
     def create_malware_if_not_exists(self, name, description, alias=None, id=None, stix_id_key=None, created=None,
@@ -1579,7 +1579,7 @@ class OpenCTIApiClient:
                 'modified': modified
             }
         })
-        return result['data']['toolAdd']
+        return self.process_multiple_fields(result['data']['toolAdd'])
 
     # TODO Move to Tool
     def create_tool_if_not_exists(self, name, description, alias=None, id=None, stix_id_key=None, created=None,
@@ -1720,7 +1720,7 @@ class OpenCTIApiClient:
                 'modified': modified
             }
         })
-        return result['data']['vulnerabilityAdd']
+        return self.process_multiple_fields(result['data']['vulnerabilityAdd'])
 
     # TODO Move to Vulnerability
     def create_vulnerability_if_not_exists(self, name, description, alias=None, id=None, stix_id_key=None, created=None,
@@ -1916,7 +1916,7 @@ class OpenCTIApiClient:
                 'modified': modified
             }
         })
-        return result['data']['courseOfActionAdd']
+        return self.process_multiple_fields(result['data']['courseOfActionAdd'])
 
     # TODO Move to CourseOfAction
     def create_course_of_action_if_not_exists(self, name, description, alias=None, id=None, stix_id_key=None,
