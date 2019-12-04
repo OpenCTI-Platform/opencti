@@ -1649,6 +1649,7 @@ input KillChainPhaseAddInput {
 ### AttackPattern
 enum AttackPatternsOrdering {
   stix_id_key
+  external_id
   name
   created
   modified

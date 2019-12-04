@@ -1691,8 +1691,7 @@ export const createEntity = async (entity, type, opts = {}) => {
       assoc('stix_id_key', stixId),
       assoc('name', data.name ? data.name : '')
     )(data);
-  }
-  if (modelType === TYPE_STIX_DOMAIN || modelType === TYPE_STIX_DOMAIN_ENTITY) {
+  }  if (modelType === TYPE_STIX_DOMAIN || modelType === TYPE_STIX_DOMAIN_ENTITY) {
     data = pipe(
       assoc('stix_id_key', stixId),
       assoc('created', entity.created ? entity.created : today),
