@@ -1276,15 +1276,13 @@ class OpenCTIStix2:
 
         # check that the indicator type and value have been set before creating the indicator
         if indicator_type and indicator_value:
-            return self.opencti.create_stix_observable_if_not_exists(
-                indicator_type,
-                indicator_value,
-                self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
-                stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
-                stix_object['id'] if 'id' in stix_object else None,
-                stix_object['created'] if 'created' in stix_object else None,
-                stix_object['modified'] if 'modified' in stix_object else None,
-                update
+            return self.opencti.stix_observable.create(
+                type=indicator_type,
+                observable_value=indicator_value,
+                description=self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
+                id=stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
+                stix_id_key=stix_object['id'] if 'id' in stix_object else None,
+                update=update
             )
         else:
             # log that the indicator could not be parsed

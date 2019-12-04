@@ -166,7 +166,7 @@ class OpenCTIConnectorHelper:
         return datetime.datetime.utcnow().replace(microsecond=0, tzinfo=datetime.timezone.utc).isoformat()
 
     # Push Stix2 helper
-    def send_stix2_bundle(self, bundle, entities_types=None):
+    def send_stix2_bundle(self, bundle, entities_types=None, update=False, confidence_level=1):
         if entities_types is None:
             entities_types = []
         bundles = self.split_stix2_bundle(bundle)
@@ -175,11 +175,11 @@ class OpenCTIConnectorHelper:
         pika_connection = pika.BlockingConnection(pika.URLParameters(self.config['uri']))
         channel = pika_connection.channel()
         for bundle in bundles:
-            self._send_bundle(channel, bundle, entities_types)
+            self._send_bundle(channel, bundle, entities_types, update, confidence_level)
         channel.close()
         return bundles
 
-    def _send_bundle(self, channel, bundle, entities_types=None):
+    def _send_bundle(self, channel, bundle, entities_types=None, update=False, confidence_level=1):
         """
             This method send a STIX2 bundle to RabbitMQ to be consumed by workers
             :param bundle: A valid STIX2 bundle
@@ -205,6 +205,8 @@ class OpenCTIConnectorHelper:
         message = {
             'job_id': job_id,
             'entities_types': entities_types,
+            'update': update,
+            'confidence_level': confidence_level,
             'content': base64.b64encode(bundle.encode('utf-8')).decode('utf-8')
         }
 

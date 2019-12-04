@@ -580,7 +580,7 @@ class OpenCTIApiClient:
                                                 ):
         object_result = None
         if stix_id_key is not None:
-            object_result = self.marking_definition.read(filters=[{'key': 'stix_id_key', 'values': [stix_id_key]}])
+            object_result = self.marking_definition.read(id=stix_id_key)
             if object_result is None:
                 object_result = self.marking_definition.read(filters=[
                     {'key': 'definition_type', 'values': [definition_type]},
@@ -1977,7 +1977,7 @@ class OpenCTIApiClient:
 
     @deprecated(version='2.1.0', reason="Replaced by the Report class in pycti")
     def get_reports_by_stix_entity_stix_id(self, stix_entity_stix_id, limit=10000):
-        stix_entity_result = self.stix_entity.read(filters=[{'key': 'stix_id_key', 'values': [stix_entity_stix_id]}])
+        stix_entity_result = self.stix_entity.read(id=stix_entity_stix_id)
         if stix_entity_result is not None:
             return self.report.list(filters=[
                 {'key': 'knowledgeContains', 'values': [stix_entity_result['id']]},
