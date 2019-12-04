@@ -292,12 +292,14 @@ class Report:
         modified = kwargs.get('modified', None)
         update = kwargs.get('update', False)
 
-        object_result = self.get_by_stix_id_or_name(stix_id_key=stix_id_key, name=name, published=published)
-        if object_result is None and external_reference_id is not None:
-            self.opencti.stix_domain_entity.read(
+        object_result = None
+        if external_reference_id is not None:
+            object_result = self.opencti.stix_domain_entity.read(
                 types=['Report'],
                 filters=[{'key': 'hasExternalReference', 'values': [external_reference_id]}]
             )
+        if object_result is None and name is not None:
+            object_result = self.get_by_stix_id_or_name(stix_id_key=stix_id_key, name=name, published=published)
         if object_result is not None:
             if update:
                 self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
