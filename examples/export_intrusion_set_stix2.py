@@ -5,7 +5,7 @@ from pycti import OpenCTIApiClient
 
 # Variables
 api_url = 'https://demo.opencti.io'
-api_token = 'eef2655c-5727-44db-8219-72bc9a3f2db5'
+api_token = 'ab3c02bb-2849-4223-be5d-8f61207b4b43'
 
 # OpenCTI initialization
 opencti_api_client = OpenCTIApiClient(api_url, api_token)
