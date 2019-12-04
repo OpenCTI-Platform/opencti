@@ -241,7 +241,7 @@ class StixObservableRelation:
         query = """
                     mutation StixObservableRelationAdd($input: StixObservableRelationAddInput!) {
                         stixObservableRelationAdd(input: $input) {
-                            id
+                            """ + self.properties + """
                         }
                     }
                 """
