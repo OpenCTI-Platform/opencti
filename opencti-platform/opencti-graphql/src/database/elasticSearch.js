@@ -370,7 +370,7 @@ export const elPaginate = async (indexName, options) => {
         if (values[i] === null) {
           mustnot = append({ exists: { field: key } }, mustnot);
         } else if (operator === 'eq') {
-          must = append({ match_phrase: { [key]: values[i] } }, must);
+          must = append({ match_phrase: { [`${key}.keyword`]: values[i] } }, must);
         } else {
           must = append({ range: { [key]: { [operator]: values[i] } } }, must);
         }

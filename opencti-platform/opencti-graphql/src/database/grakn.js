@@ -939,7 +939,7 @@ export const updateAttribute = async (id, input, wTx) => {
   // Update elasticsearch
   const currentIndex = inferIndexFromConceptTypes(currentInstanceData.parent_types);
   // eslint-disable-next-line no-nested-ternary
-  const typedVal = val === 'true' ? true : val === 'false' ? false : val
+  const typedVal = val === 'true' ? true : val === 'false' ? false : val;
   const updateValueField = { [key]: typedVal };
   await elUpdate(currentIndex, currentInstanceData.grakn_id, { doc: updateValueField });
   return id;
@@ -1462,6 +1462,11 @@ const createRelationRaw = async (fromInternalId, input, opts = {}) => {
   // 01. First fix the direction of the relation
   const isStixRelation = includes('stix_id_key', Object.keys(input)) || input.relationship_type;
   const relationshipType = input.relationship_type || input.through;
+  if (fromInternalId === input.toId) {
+    throw new Error(
+      `[GRAKN] You cant create a relation with the same source and target (${fromInternalId} - ${relationshipType})`
+    );
+  }
   // eslint-disable-next-line no-nested-ternary
   const entityType = isStixRelation
     ? isStixObservableRelation
