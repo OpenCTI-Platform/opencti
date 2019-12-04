@@ -139,7 +139,7 @@ class OpenCTIStix2:
         # TODO Import tags
         # Object Tags
         tags_ids = []
-        #if CustomProperties.TAG_TYPE in stix_object:
+        # if CustomProperties.TAG_TYPE in stix_object:
         #    for tag in stix_object[CustomProperties.TAG_TYPE]:
         #        if tag['id'] in self.mapping_cache:
         #            tag_result = self.mapping_cache[tag['id']]
@@ -220,25 +220,16 @@ class OpenCTIStix2:
                     'intrusion-set',
                     'campaign',
                     'incident',
-                    'malware'
+                    'malware',
+                    'attack-pattern'
                 ] and (types is None or 'report' in types):
                     # Add a corresponding report
                     # Extract date
                     try:
                         if 'description' in external_reference:
-                            matches = list(datefinder.find_dates(
-                                external_reference['description'],
-                                False,
-                                False,
-                                False,
-                            ))
+                            matches = list(datefinder.find_dates(external_reference['description']))
                         else:
-                            matches = list(datefinder.find_dates(
-                                source_name,
-                                False,
-                                False,
-                                False,
-                            ))
+                            matches = list(datefinder.find_dates(source_name))
                     except:
                         matches = []
                     if len(matches) > 0:
@@ -441,19 +432,9 @@ class OpenCTIStix2:
             for external_reference in stix_relation['external_references']:
                 try:
                     if 'description' in external_reference:
-                            matches = list(datefinder.find_dates(
-                                external_reference['description'],
-                                False,
-                                False,
-                                False,
-                            ))
+                        matches = list(datefinder.find_dates(external_reference['description']))
                     else:
-                        matches = list(datefinder.find_dates(
-                            external_reference['source_name'],
-                            False,
-                            False,
-                            False,
-                        ))
+                        matches = list(datefinder.find_dates(external_reference['source_name']))
                 except:
                     matches = []
                 if len(matches) > 0:
