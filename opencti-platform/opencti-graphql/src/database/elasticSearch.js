@@ -19,7 +19,23 @@ import { buildPagination } from './utils';
 import conf, { logger } from '../config/conf';
 import { rolesMap } from './graknRoles';
 
-const dateFields = ['created', 'modified', 'created_at', 'updated_at', 'first_seen', 'last_seen', 'published'];
+const dateFields = [
+  'created',
+  'modified',
+  'created_at',
+  'created_at_day',
+  'created_at_month',
+  'updated_at',
+  'first_seen',
+  'first_seen_day',
+  'first_seen_month',
+  'last_seen',
+  'last_seen_day',
+  'last_seen_month',
+  'published',
+  'published_day',
+  'published_month'
+];
 const numberFields = ['object_status', 'phase_order'];
 
 export const REL_INDEX_PREFIX = 'rel_';
@@ -370,7 +386,10 @@ export const elPaginate = async (indexName, options) => {
         if (values[i] === null) {
           mustnot = append({ exists: { field: key } }, mustnot);
         } else if (operator === 'eq') {
-          must = append({ match_phrase: { [`${key}.keyword`]: values[i] } }, must);
+          must = append(
+            { match_phrase: { [`${dateFields.includes(key) ? key : `${key}.keyword`}`]: values[i] } },
+            must
+          );
         } else {
           must = append({ range: { [key]: { [operator]: values[i] } } }, must);
         }
