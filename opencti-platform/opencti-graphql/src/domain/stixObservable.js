@@ -97,7 +97,11 @@ export const addStixObservable = async (user, stixObservable) => {
   const innerType = stixObservable.type;
   let observableToCreate = dissoc('type', stixObservable);
   if (observableToCreate.stix_id_key) {
-    observableToCreate = assoc('stix_id_key', observableToCreate.stix_id_key.replace('indicator', 'observable'));
+    observableToCreate = assoc(
+      'stix_id_key',
+      observableToCreate.stix_id_key.replace('indicator', 'observable'),
+      observableToCreate
+    );
   }
   const created = await createEntity(observableToCreate, innerType, {
     modelType: TYPE_STIX_OBSERVABLE,
