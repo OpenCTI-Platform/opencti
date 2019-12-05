@@ -332,11 +332,7 @@ class OpenCTIStix2:
 
         # Add embedded relationships
         if stix_object_result is not None:
-            if stix_object['type'] == 'indicator':
-                stix_object_result_type = 'observable'
-            else:
-                stix_object_result_type = stix_object_result['entity_type']
-            self.mapping_cache[stix_object['id']] = {'id': stix_object_result['id'], 'type': stix_object_result_type}
+            self.mapping_cache[stix_object['id']] = {'id': stix_object_result['id'], 'type': stix_object_result['entity_type']}
 
             # Update created by ref
             if created_by_ref_id is not None and stix_object['type'] != 'marking-definition':
@@ -1205,20 +1201,22 @@ class OpenCTIStix2:
         )
 
     def create_report(self, stix_object, update=False):
-        return self.opencti.create_report_if_not_exists(
-            stix_object['name'],
-            self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
-            stix_object['published'] if 'published' in stix_object else '',
-            stix_object[
+        return self.opencti.report.create(
+            name=stix_object['name'],
+            description=self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
+            published=stix_object['published'] if 'published' in stix_object else '',
+            report_class=stix_object[
                 CustomProperties.REPORT_CLASS] if CustomProperties.REPORT_CLASS in stix_object else 'Threat Report',
-            stix_object[CustomProperties.OBJECT_STATUS] if CustomProperties.OBJECT_STATUS in stix_object else 0,
-            stix_object[CustomProperties.SRC_CONF_LEVEL] if CustomProperties.SRC_CONF_LEVEL in stix_object else 3,
-            stix_object[CustomProperties.GRAPH_DATA] if CustomProperties.GRAPH_DATA in stix_object else '',
-            stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
-            stix_object['id'] if 'id' in stix_object else None,
-            stix_object['created'] if 'created' in stix_object else None,
-            stix_object['modified'] if 'modified' in stix_object else None,
-            update
+            object_status=stix_object[
+                CustomProperties.OBJECT_STATUS] if CustomProperties.OBJECT_STATUS in stix_object else 0,
+            source_confidence_level=stix_object[
+                CustomProperties.SRC_CONF_LEVEL] if CustomProperties.SRC_CONF_LEVEL in stix_object else 1,
+            graph_data=stix_object[CustomProperties.GRAPH_DATA] if CustomProperties.GRAPH_DATA in stix_object else '',
+            id=stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
+            stix_id_key=stix_object['id'] if 'id' in stix_object else None,
+            created=stix_object['created'] if 'created' in stix_object else None,
+            modified=stix_object['modified'] if 'modified' in stix_object else None,
+            update=update
         )
 
     def export_stix_observable(self, entity):
