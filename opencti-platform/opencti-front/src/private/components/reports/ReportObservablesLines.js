@@ -7,15 +7,7 @@ import {
   ascend,
   descend,
   prop,
-  groupBy,
-  pipe,
-  values,
-  head,
-  merge,
-  concat,
   assoc,
-  find,
-  propEq,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
@@ -27,12 +19,9 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
-import { Tag } from 'mdi-material-ui';
+import { HexagonOutline } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
-import ItemConfidenceLevel from '../../../components/ItemConfidenceLevel';
-import { dateFormat } from '../../../utils/Time';
-import { resolveLink } from '../../../utils/Entity';
-import ReportAddObservable from './ReportAddObservable';
+import ReportAddObservableRefs from './ReportAddObservableRefs';
 import ReportRefPopover from './ReportRefPopover';
 
 const styles = (theme) => ({
@@ -77,42 +66,19 @@ const inlineStylesHeaders = {
   },
   entity_type: {
     float: 'left',
-    width: '10%',
+    width: '20%',
     fontSize: 12,
     fontWeight: '700',
   },
   observable_value: {
     float: 'left',
-    width: '20%',
+    width: '50%',
     fontSize: 12,
     fontWeight: '700',
   },
-  threat: {
+  created_at: {
     float: 'left',
     width: '15%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  role_played: {
-    float: 'left',
-    width: '10%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  first_seen: {
-    float: 'left',
-    width: '15%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  last_seen: {
-    float: 'left',
-    width: '15%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  weight: {
-    float: 'left',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -121,7 +87,7 @@ const inlineStylesHeaders = {
 const inlineStyles = {
   entity_type: {
     float: 'left',
-    width: '10%',
+    width: '20%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -129,45 +95,13 @@ const inlineStyles = {
   },
   observable_value: {
     float: 'left',
-    width: '20%',
+    width: '50%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  threat: {
-    float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  role_played: {
-    float: 'left',
-    width: '10%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  first_seen: {
-    float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  last_seen: {
-    float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  weight: {
+  created_at: {
     float: 'left',
     height: 20,
     whiteSpace: 'nowrap',
@@ -216,48 +150,15 @@ class ReportObservablesLinesComponent extends Component {
       t, fd, classes, report,
     } = this.props;
     const observableRefs = map(
-      (n) => ({ id: n.node.id, relationId: n.relation.id }),
+      (n) => assoc('relation', n.relation, n.node),
       report.observableRefs.edges,
-    );
-    const relationRefs = pipe(
-      map((n) => assoc('relation', n.relation, n.node)),
-      groupBy(prop('id')),
-      values,
-      map((n) => head(n)),
-      map((n) => (n.to.observable_value
-        ? merge(n, {
-          entity_type: n.to.entity_type,
-          threat: n.from.name,
-          threat_id: n.from.id,
-          threat_type: n.from.entity_type,
-          observable_id: n.to.id,
-          observable_value: n.to.observable_value,
-        })
-        : merge(n, {
-          entity_type: n.from.entity_type,
-          threat: n.to.name,
-          threat_id: n.to.id,
-          threat_type: n.to.entity_type,
-          observable_id: n.from.id,
-          observable_value: n.from.observable_value,
-        }))),
-      map((n) => assoc(
-        'observableRelationId',
-        find(propEq('id', n.observable_id))(observableRefs).id,
-        n,
-      )),
-    )(report.relationRefs.edges);
-    const observableRefsIds = map((n) => n.id, observableRefs);
-    const objectRefsIds = concat(
-      observableRefsIds,
-      map((n) => n.node.id, report.objectRefs.edges),
     );
     const sort = sortWith(
       this.state.orderAsc
         ? [ascend(prop(this.state.sortBy))]
         : [descend(prop(this.state.sortBy))],
     );
-    const sortedRelationRefs = sort(relationRefs);
+    const sortedObservableRefs = sort(observableRefs);
     return (
       <div>
         <List classes={{ root: classes.linesContainer }}>
@@ -282,31 +183,24 @@ class ReportObservablesLinesComponent extends Component {
                 <div>
                   {this.SortHeader('entity_type', 'Type', true)}
                   {this.SortHeader('observable_value', 'Value', true)}
-                  {this.SortHeader('threat', 'Linked threat', true)}
-                  {this.SortHeader('role_played', 'Role', true)}
-                  {this.SortHeader('first_seen', 'First seen', true)}
-                  {this.SortHeader('last_seen', 'Last seen', true)}
-                  {this.SortHeader('weight', 'Confidence level', true)}
+                  {this.SortHeader('created_at', 'Creation date', true)}
                 </div>
               }
             />
             <ListItemSecondaryAction>&nbsp;</ListItemSecondaryAction>
           </ListItem>
-          {sortedRelationRefs.map((relationRef) => {
-            const link = `${resolveLink(relationRef.threat_type)}/${
-              relationRef.threat_id
-            }/observables/relations`;
+          {sortedObservableRefs.map((observableRef) => {
             return (
               <ListItem
-                key={relationRef.id}
+                key={observableRef.id}
                 classes={{ root: classes.item }}
                 divider={true}
                 button={true}
                 component={Link}
-                to={`${link}/${relationRef.id}`}
+                to={`/dashboard/observables/all/${observableRef.id}`}
               >
                 <ListItemIcon classes={{ root: classes.itemIcon }}>
-                  <Tag />
+                  <HexagonOutline />
                 </ListItemIcon>
                 <ListItemText
                   primary={
@@ -315,48 +209,19 @@ class ReportObservablesLinesComponent extends Component {
                         className={classes.bodyItem}
                         style={inlineStyles.entity_type}
                       >
-                        {t(`observable_${relationRef.entity_type}`)}
+                        {t(`observable_${observableRef.entity_type}`)}
                       </div>
                       <div
                         className={classes.bodyItem}
                         style={inlineStyles.observable_value}
                       >
-                        {relationRef.observable_value}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.threat}
-                      >
-                        {relationRef.threat}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.role_played}
-                      >
-                        {relationRef.role_played
-                          ? t(relationRef.role_played)
-                          : t('Unknown')}
+                        {observableRef.observable_value}
                       </div>
                       <div
                         className={classes.bodyItem}
                         style={inlineStyles.first_seen}
                       >
-                        {fd(relationRef.first_seen)}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.last_seen}
-                      >
-                        {fd(relationRef.last_seen)}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.weight}
-                      >
-                        <ItemConfidenceLevel
-                          level={relationRef.inferred ? 99 : relationRef.weight}
-                          variant="inList"
-                        />
+                        {fd(observableRef.created_at)}
                       </div>
                     </div>
                   }
@@ -364,22 +229,17 @@ class ReportObservablesLinesComponent extends Component {
                 <ListItemSecondaryAction>
                   <ReportRefPopover
                     reportId={report.id}
-                    entityId={relationRef.id}
-                    relationId={relationRef.relation.id}
-                    secondaryRelationId={relationRef.observableRelationId}
-                    isRelation={true}
+                    entityId={observableRef.id}
+                    relationId={observableRef.relation.id}
                   />
                 </ListItemSecondaryAction>
               </ListItem>
             );
           })}
         </List>
-        <ReportAddObservable
+        <ReportAddObservableRefs
           reportId={report.id}
-          objectRefsIds={objectRefsIds}
-          firstSeen={dateFormat(report.published)}
-          lastSeen={dateFormat(report.published)}
-          weight={report.source_confidence_level}
+          reportObservableRefs={report.observableRefs.edges}
         />
       </div>
     );
@@ -403,55 +263,13 @@ const ReportObservablesLines = createFragmentContainer(
         id
         published
         source_confidence_level
-        objectRefs {
-          edges {
-            node {
-              id
-            }
-            relation {
-              id
-            }
-          }
-        }
         observableRefs {
           edges {
             node {
               id
-            }
-            relation {
-              id
-            }
-          }
-        }
-        relationRefs(relationType: $relationType) {
-          edges {
-            node {
-              id
+              observable_value
               entity_type
-              name
-              relationship_type
-              role_played
-              first_seen
-              last_seen
-              weight
               created_at
-              updated_at
-              from {
-                id
-                entity_type
-                name
-                ... on StixObservable {
-                  observable_value
-                }
-              }
-              to {
-                id
-                entity_type
-                name
-                ... on StixObservable {
-                  observable_value
-                }
-              }
             }
             relation {
               id

@@ -95,7 +95,10 @@ export const stixObservableAskEnrichment = async (id, connectorId) => {
 };
 export const addStixObservable = async (user, stixObservable) => {
   const innerType = stixObservable.type;
-  const observableToCreate = dissoc('type', stixObservable);
+  let observableToCreate = dissoc('type', stixObservable);
+  if (observableToCreate.stix_id_key) {
+    observableToCreate = assoc('stix_id_key', observableToCreate.stix_id_key.replace('indicator', 'observable'));
+  }
   const created = await createEntity(observableToCreate, innerType, {
     modelType: TYPE_STIX_OBSERVABLE,
     stixIdType: 'observable'

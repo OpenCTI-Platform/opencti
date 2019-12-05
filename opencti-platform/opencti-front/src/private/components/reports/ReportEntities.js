@@ -20,7 +20,7 @@ import ReportHeader from './ReportHeader';
 import ReportAddObjectRefs from './ReportAddObjectRefs';
 import ReportRefPopover from './ReportRefPopover';
 
-const styles = theme => ({
+const styles = (theme) => ({
   linesContainer: {
     marginTop: 10,
   },
@@ -132,14 +132,17 @@ class ReportEntitiesComponent extends Component {
 
   SortHeader(field, label, isSortable) {
     const { t } = this.props;
-    const sortComponent = this.state.orderAsc
-      ? <ArrowDropDown style={inlineStylesHeaders.iconSort} />
-      : <ArrowDropUp style={inlineStylesHeaders.iconSort} />;
+    const sortComponent = this.state.orderAsc ? (
+      <ArrowDropDown style={inlineStylesHeaders.iconSort} />
+    ) : (
+      <ArrowDropUp style={inlineStylesHeaders.iconSort} />
+    );
     if (isSortable) {
       return (
         <div
           style={inlineStylesHeaders[field]}
-          onClick={this.reverseBy.bind(this, field)}>
+          onClick={this.reverseBy.bind(this, field)}
+        >
           <span>{t(label)}</span>
           {this.state.sortBy === field ? sortComponent : ''}
         </div>
@@ -157,7 +160,7 @@ class ReportEntitiesComponent extends Component {
       t, fd, classes, report,
     } = this.props;
     const objectRefs = map(
-      n => assoc('relation', n.relation, n.node),
+      (n) => assoc('relation', n.relation, n.node),
       report.objectRefs.edges,
     );
     const sort = sortWith(
@@ -292,7 +295,4 @@ const ReportEntities = createFragmentContainer(ReportEntitiesComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(ReportEntities);
+export default compose(inject18n, withStyles(styles))(ReportEntities);

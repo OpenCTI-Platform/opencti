@@ -57,10 +57,9 @@ class StixRelationInferences extends Component {
       if (!includes(inference.from.id, createdNodesIds)) {
         const newNodeFrom = new EntityNodeModel({
           id: inference.from.id,
-          name:
-            includes('Stix-Observable', inference.from.parent_types)
-              ? inference.from.observable_value
-              : inference.from.name,
+          name: includes('Stix-Observable', inference.from.parent_types)
+            ? inference.from.observable_value
+            : inference.from.name,
           type: inference.from.entity_type,
           disabled: true,
         });
@@ -77,10 +76,9 @@ class StixRelationInferences extends Component {
       if (!includes(inference.to.id, createdNodesIds)) {
         const newNodeTo = new EntityNodeModel({
           id: inference.to.id,
-          name:
-            includes('Stix-Observable', inference.to.parent_types)
-              ? inference.to.observable_value
-              : inference.to.name,
+          name: includes('Stix-Observable', inference.to.parent_types)
+            ? inference.to.observable_value
+            : inference.to.name,
           type: inference.to.entity_type,
           disabled: true,
         });
@@ -116,8 +114,14 @@ class StixRelationInferences extends Component {
         const newLink = new SimpleLinkModel();
         newLink.setExtras({
           relation: inference,
-          link: `${resolveLink(inference.from.entity_type)}/${
-            inference.from.id
+          link: `${resolveLink(
+            inference.from.entity_type !== 'stix_relation'
+              ? inference.from.entity_type
+              : inference.to.entity_type,
+          )}/${
+            inference.from.entity_type !== 'stix_relation'
+              ? inference.from.id
+              : inference.to.id
           }/knowledge/relations/${inference.id}`,
         });
         newLink.setSourcePort(fromPort);

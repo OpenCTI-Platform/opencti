@@ -15,10 +15,10 @@ import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
-import ReportAddObjectRefsLines, {
-  reportAddObjectRefsLinesQuery,
-} from './ReportAddObjectRefsLines';
-import StixDomainEntityCreation from '../common/stix_domain_entities/StixDomainEntityCreation';
+import ReportAddObservableRefsLines, {
+  reportAddObservableRefsLinesQuery,
+} from './ReportAddObservableRefsLines';
+import StixObservableCreation from '../stix_observables/StixObservableCreation';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -67,7 +67,7 @@ const styles = (theme) => ({
   },
 });
 
-class ReportAddObjectRefs extends Component {
+class ReportAddObservableRefs extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false, search: '' };
@@ -87,7 +87,7 @@ class ReportAddObjectRefs extends Component {
 
   render() {
     const {
-      t, classes, reportId, reportObjectRefs,
+      t, classes, reportId, reportObservableRefs,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
@@ -132,7 +132,7 @@ class ReportAddObjectRefs extends Component {
           </div>
           <div className={classes.container}>
             <QueryRenderer
-              query={reportAddObjectRefsLinesQuery}
+              query={reportAddObservableRefsLinesQuery}
               variables={{
                 search: this.state.search,
                 orderBy: 'created_at',
@@ -142,9 +142,9 @@ class ReportAddObjectRefs extends Component {
               render={({ props }) => {
                 if (props) {
                   return (
-                    <ReportAddObjectRefsLines
+                    <ReportAddObservableRefsLines
                       reportId={reportId}
-                      reportObjectRefs={reportObjectRefs}
+                      reportObservableRefs={reportObservableRefs}
                       data={props}
                     />
                   );
@@ -180,7 +180,7 @@ class ReportAddObjectRefs extends Component {
             />
           </div>
         </Drawer>
-        <StixDomainEntityCreation
+        <StixObservableCreation
           display={this.state.open}
           contextual={true}
           inputValue={this.state.search}
@@ -191,9 +191,9 @@ class ReportAddObjectRefs extends Component {
   }
 }
 
-ReportAddObjectRefs.propTypes = {
+ReportAddObservableRefs.propTypes = {
   reportId: PropTypes.string,
-  reportObjectRefs: PropTypes.array,
+  reportObservableRefs: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
@@ -202,4 +202,4 @@ ReportAddObjectRefs.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(ReportAddObjectRefs);
+)(ReportAddObservableRefs);
