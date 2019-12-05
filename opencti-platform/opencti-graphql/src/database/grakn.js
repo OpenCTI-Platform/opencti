@@ -125,7 +125,7 @@ export const escapeString = s => (s ? s.replace(/\\/g, '\\\\').replace(/"/g, '\\
 
 // Attributes key that can contains multiple values.
 export const multipleAttributes = ['stix_label', 'alias', 'grant', 'platform', 'required_permission'];
-export const statsDateAttributes = ['first_seen', 'last_seen', 'published', 'expiration'];
+export const statsDateAttributes = ['created_at', 'first_seen', 'last_seen', 'published', 'expiration'];
 // endregion
 
 // region client
@@ -1691,7 +1691,8 @@ export const createEntity = async (entity, type, opts = {}) => {
       assoc('stix_id_key', stixId),
       assoc('name', data.name ? data.name : '')
     )(data);
-  }  if (modelType === TYPE_STIX_DOMAIN || modelType === TYPE_STIX_DOMAIN_ENTITY) {
+  }
+  if (modelType === TYPE_STIX_DOMAIN || modelType === TYPE_STIX_DOMAIN_ENTITY) {
     data = pipe(
       assoc('stix_id_key', stixId),
       assoc('created', entity.created ? entity.created : today),
