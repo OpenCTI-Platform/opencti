@@ -63,17 +63,6 @@ observable_ttp1 = opencti_api_client.stix_observable.create(
     type='Email-Address',
     observable_value='phishing@mail.com'
 )
-# Indicates the incident itself
-observable_ttp1_incident_relation = opencti_api_client.stix_relation.create(
-    fromType='Stix-Observable',
-    fromId=observable_ttp1['id'],
-    toType='Incident',
-    toId=incident['id'],
-    relationship_type='indicates',
-    description='This email address is the sender of the spearphishing in this incident.',
-    first_seen=date,
-    last_seen=date
-)
 # Indicates the relation Incident => uses => TTP
 observable_ttp1_relation = opencti_api_client.stix_relation.create(
     fromType='Stix-Observable',
@@ -90,7 +79,7 @@ object_refs.extend([
     ttp1['id'],
     ttp1_relation['id'],
     observable_ttp1['id'],
-    observable_ttp1_incident_relation['id']
+    observable_ttp1_relation['id']
 ])
 
 # Registry Run Keys / Startup Folder
@@ -118,17 +107,6 @@ observable_ttp2 = opencti_api_client.stix_observable.create(
     type='Registry-Key',
     observable_value='Disk security'
 )
-# Indicates the incident itself
-observable_ttp2_incident_relation = opencti_api_client.stix_relation.create(
-    fromType='Stix-Observable',
-    fromId=observable_ttp2['id'],
-    toType='Incident',
-    toId=incident['id'],
-    relationship_type='indicates',
-    description='This registry key is used for persistence of tools in this incident.',
-    first_seen=date,
-    last_seen=date
-)
 # Indicates the relation Incident => uses => TTP
 observable_ttp2_relation = opencti_api_client.stix_relation.create(
     fromType='Stix-Observable',
@@ -145,7 +123,7 @@ object_refs.extend([
     ttp2['id'],
     ttp2_relation['id'],
     observable_ttp2['id'],
-    observable_ttp2_incident_relation['id']
+    observable_ttp2_relation['id']
 ])
 
 # Data Encrypted
