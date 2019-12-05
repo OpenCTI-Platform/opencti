@@ -1,0 +1,41 @@
+{
+  "version-2.1.0-docs": {
+    "Getting Started": [
+      "version-2.1.0-getting-started/introduction",
+      "version-2.1.0-getting-started/architecture",
+      "version-2.1.0-getting-started/requirements"
+    ],
+    "Installation": [
+      "version-2.1.0-installation/docker",
+      "version-2.1.0-installation/manual",
+      "version-2.1.0-installation/connectors",
+      "version-2.1.0-development/installation"
+    ],
+    "Usage": [
+      "version-2.1.0-usage/overview",
+      "version-2.1.0-usage/model",
+      "version-2.1.0-usage/knowledge-create",
+      "version-2.1.0-usage/reports-create",
+      "version-2.1.0-usage/report-knowledge"
+    ],
+    "Reference": [
+      "version-2.1.0-reference/relations",
+      "version-2.1.0-reference/inferences"
+    ],
+    "Development": [
+      "version-2.1.0-development/connectors"
+    ],
+    "Client libraries": [
+      "version-2.1.0-python",
+      {
+        "type": "subcategory",
+        "label": "Python",
+        "ids": [
+          "version-2.1.0-clients/python/overview",
+          "version-2.1.0-clients/python/guide",
+          "version-2.1.0-clients/python/reference"
+        ]
+      }
+    ]
+  }
+}
