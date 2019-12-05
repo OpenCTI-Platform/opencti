@@ -30,7 +30,7 @@ export const findAll = args => {
 export const ownedBy = workspaceId => {
   return loadWithConnectedRelations(
     `match $x isa User; 
-    $rel(owner:$x, to:$workspace) isa owned_by; 
+    $rel(owner:$x, so:$workspace) isa owned_by; 
     $workspace has internal_id_key "${escapeString(workspaceId)}"; get; offset 0; limit 1;`,
     'x',
     'rel'
