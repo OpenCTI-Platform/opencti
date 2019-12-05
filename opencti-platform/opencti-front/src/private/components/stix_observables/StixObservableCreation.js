@@ -51,6 +51,7 @@ const styles = (theme) => ({
     position: 'fixed',
     bottom: 30,
     right: 30,
+    zIndex: 2000,
   },
   buttons: {
     marginTop: 20,
