@@ -145,7 +145,8 @@ class StixRelation:
         order_by = kwargs.get('orderBy', None)
         order_mode = kwargs.get('orderMode', None)
         self.opencti.log('info',
-                         'Listing stix_relations with {from_id: ' + str(from_id) + ', to_id: ' + str(to_id) + '}')
+                         'Listing stix_relations with {type: ' + relation_type + ', from_id: ' + str(
+                             from_id) + ', to_id: ' + str(to_id) + '}')
         query = """
             query StixRelations($fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $relationType: String, $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $inferred: Boolean, $first: Int, $after: ID, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode) {
                 stixRelations(fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationType: $relationType, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, inferred: $inferred, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
