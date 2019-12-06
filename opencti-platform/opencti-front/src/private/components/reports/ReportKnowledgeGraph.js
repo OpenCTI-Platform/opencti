@@ -44,9 +44,7 @@ import {
 } from './ReportAddObjectRefsLines';
 import StixRelationCreation from '../common/stix_relations/StixRelationCreation';
 import StixDomainEntityEdition from '../common/stix_domain_entities/StixDomainEntityEdition';
-import StixRelationEdition, {
-  stixRelationEditionDeleteMutation,
-} from '../common/stix_relations/StixRelationEdition';
+import StixRelationEdition from '../common/stix_relations/StixRelationEdition';
 
 const styles = () => ({
   container: {
@@ -450,19 +448,14 @@ class ReportKnowledgeGraphComponent extends Component {
           fetchQuery(reportKnowledgeGraphCheckRelationQuery, {
             id: node.extras.id,
           }).then((data) => {
-            if (data.stixRelation.reports.edges.length === 1) {
-              commitMutation({
-                mutation: stixRelationEditionDeleteMutation,
-                variables: {
-                  id: node.extras.id,
-                },
-              });
-            }
+            const relationIdToDelete = data.stixRelation.reports.edges.length === 1
+              ? node.extras.id
+              : node.extras.relationId;
             commitMutation({
               mutation: reportMutationRelationDelete,
               variables: {
                 id: this.props.report.id,
-                relationId: node.extras.relationId,
+                relationId: relationIdToDelete,
               },
             });
           });
@@ -877,7 +870,4 @@ const ReportKnowledgeGraph = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(ReportKnowledgeGraph);
+export default compose(inject18n, withStyles(styles))(ReportKnowledgeGraph);

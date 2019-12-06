@@ -63,8 +63,8 @@ export const rolesMap = {
     usage: 'to'
   },
   'attributed-to': {
-    origin: 'from',
-    attribution: 'to'
+    attribution: 'from',
+    origin: 'to'
   },
   mitigates: {
     mitigation: 'from',

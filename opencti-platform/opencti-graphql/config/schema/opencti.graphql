@@ -873,8 +873,8 @@ enum UsersOrdering {
   email
   firstname
   lastname
-  created_at
-  updated_at
+  created
+  modified
   tags
   markingDefinitions
 }

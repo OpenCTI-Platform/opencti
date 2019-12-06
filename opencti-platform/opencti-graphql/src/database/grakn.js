@@ -159,7 +159,7 @@ const takeReadTx = async (retry = false) => {
     return takeReadTx(true);
   }
 };
-const executeRead = async executeFunction => {
+export const executeRead = async executeFunction => {
   const rTx = await takeReadTx();
   try {
     const result = await executeFunction(rTx);
@@ -936,6 +936,13 @@ export const updateAttribute = async (id, input, wTx) => {
     const yearInput = { key: `${key}_year`, value: [yearValue] };
     await updateAttribute(id, yearInput, wTx);
   }
+  // Update modified / updated_at
+  if (currentInstanceData.parent_types.includes(TYPE_STIX_DOMAIN) && key !== 'modified' && key !== 'updated_at') {
+    const today = now();
+    await updateAttribute(id, { key: 'updated_at', value: [today] }, wTx);
+    await updateAttribute(id, { key: 'modified', value: [today] }, wTx);
+  }
+
   // Update elasticsearch
   const currentIndex = inferIndexFromConceptTypes(currentInstanceData.parent_types);
   // eslint-disable-next-line no-nested-ternary
@@ -957,6 +964,7 @@ export const deleteEntityById = async id => {
     const query = `match $x has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
     logger.debug(`[GRAKN - infer: false] deleteEntityById > ${query}`);
     await wTx.tx.query(query, { infer: false });
+  }).then(async () => {
     // [ELASTIC] Delete entity and relations connected to
     await elDeleteInstanceIds(append(eid, relationsIds));
     return id;
@@ -974,11 +982,12 @@ export const deleteRelationById = async relationId => {
     const query = `match $x has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
     logger.debug(`[GRAKN - infer: false] deleteRelationById > ${query}`);
     await wTx.tx.query(query, { infer: false });
+  }).then(async () => {
     // [ELASTIC] Update - Delete the inner indexed relations in entities
     await elRemoveRelationConnection(eid);
     await elDeleteInstanceIds(append(eid, relationsIds));
+    return relationId;
   });
-  return eid;
 };
 
 export const timeSeries = async (query, options) => {
