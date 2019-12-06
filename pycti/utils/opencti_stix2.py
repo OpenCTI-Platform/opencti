@@ -12,6 +12,7 @@ import dateutil.parser
 import pytz
 
 import stix2
+from stix2.pattern_visitor import create_pattern_object
 from stix2 import ObjectPath, ObservationExpression, EqualityComparisonExpression, HashConstant
 from pycti.utils.constants import ObservableTypes, CustomProperties
 
@@ -25,8 +26,13 @@ STIX2OPENCTI = {
     'file:hashes.sha1': ObservableTypes.FILE_HASH_SHA1.value,
     'file:hashes.sha256': ObservableTypes.FILE_HASH_SHA256.value,
     'ipv4-addr:value': ObservableTypes.IPV4_ADDR.value,
+    'ipv6-addr:value': ObservableTypes.IPV6_ADDR.value,
     'domain:value': ObservableTypes.DOMAIN.value,
     'url:value': ObservableTypes.URL.value,
+    'directory:value': ObservableTypes.DIRECTORY.value,
+    'domain-name:value': ObservableTypes.DOMAIN.value,
+    'email-addr:value': ObservableTypes.EMAIL_ADDR.value,
+    'email-message:subject': ObservableTypes.EMAIL_SUBJECT.value,
 }
 
 
@@ -1258,7 +1264,7 @@ class OpenCTIStix2:
             # checking that the pattern's operator is '='
             # The following pattern will be used for reference:
             #   [file:hashes.md5 = 'd41d8cd98f00b204e9800998ecf8427e']
-            pattern = stix2.pattern_visitor.create_pattern_object(stix_object['pattern'])
+            pattern = create_pattern_object(stix_object['pattern'])
             if pattern.operand.operator == '=':
 
                 # get the object type (here 'file') and check that it is a standard observable type
