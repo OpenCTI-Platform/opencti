@@ -205,11 +205,11 @@ class OpenCTIApiClient:
                 else:
                     return False
             if isinstance(value, list):
-                is_empty = True
+                is_not_empty = False
                 for v in value:
                     if len(v) > 0:
-                        is_empty = False
-                return is_empty
+                        is_not_empty = False
+                return is_not_empty
             if isinstance(value, int):
                 return True
             else:
