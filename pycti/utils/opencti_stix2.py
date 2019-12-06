@@ -35,6 +35,9 @@ STIX2OPENCTI = {
     'email-message:subject': ObservableTypes.EMAIL_SUBJECT.value,
 }
 
+# Identity
+IDENTITY_TYPES = ['user', 'city', 'country', 'region', 'organization', 'sector']
+
 
 class OpenCTIStix2:
     """
@@ -338,7 +341,8 @@ class OpenCTIStix2:
 
         # Add embedded relationships
         if stix_object_result is not None:
-            self.mapping_cache[stix_object['id']] = {'id': stix_object_result['id'], 'type': stix_object_result['entity_type']}
+            self.mapping_cache[stix_object['id']] = {'id': stix_object_result['id'],
+                                                     'type': stix_object_result['entity_type']}
 
             # Update created by ref
             if created_by_ref_id is not None and stix_object['type'] != 'marking-definition':
@@ -720,6 +724,10 @@ class OpenCTIStix2:
             'spec_version': '2.0',
             'objects': []
         }
+        # Map types
+        if entity_type in IDENTITY_TYPES:
+            entity_type = 'identity'
+
         # Export
         exporter = {
             'identity': self.opencti.identity.to_stix2,
@@ -993,6 +1001,9 @@ class OpenCTIStix2:
 
             # Get extra objects
             for entity_object in objects_to_get:
+                # Map types
+                if entity_object['entity_type'] in IDENTITY_TYPES:
+                    entity_object['entity_type'] = 'identity'
                 do_export = exporter.get(entity_object['entity_type'],
                                          lambda **kwargs: self.unknown_type({'type': entity_object['entity_type']}))
                 entity_object_data = do_export(id=entity_object['id'])
