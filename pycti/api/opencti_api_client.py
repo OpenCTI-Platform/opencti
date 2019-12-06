@@ -199,11 +199,17 @@ class OpenCTIApiClient:
 
     def not_empty(self, value):
         if value is not None:
-            if isinstance(value, str) or isinstance(value, list):
+            if isinstance(value, str):
                 if len(value) > 0:
                     return True
                 else:
                     return False
+            if isinstance(value, list):
+                is_empty = True
+                for v in value:
+                    if len(v) > 0:
+                        is_empty = False
+                return is_empty
             if isinstance(value, int):
                 return True
             else:

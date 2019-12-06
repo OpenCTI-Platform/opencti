@@ -14,7 +14,7 @@ opencti_api_client = OpenCTIApiClient(api_url, api_token)
 intrusion_set = opencti_api_client.intrusion_set.read(filters=[{'key': 'name', 'values': ['APT28']}])
 
 # Create the bundle
-bundle = opencti_api_client.stix2.export_entity('intrusion-set', intrusion_set['id'], 'full')
+bundle = opencti_api_client.stix2.export_entity('campaign', '0d31f298-da86-4330-8c0a-4fcfa44f6ae0', 'full')
 json_bundle = json.dumps(bundle, indent=4)
 
 # Write the bundle
