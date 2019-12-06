@@ -188,7 +188,7 @@ class OpenCTIStix2:
                 if object_ref in self.mapping_cache:
                     object_ref_result = self.mapping_cache[object_ref]
                 elif 'relationship' in object_ref:
-                    object_ref_result = self.opencti.stix_relation.read(stix_id_key=object_ref)
+                    object_ref_result = self.opencti.stix_relation.read(id=object_ref)
                 else:
                     object_ref_result = self.opencti.stix_entity.read(id=object_ref)
 
