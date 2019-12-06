@@ -906,12 +906,11 @@ class OpenCTIStix2:
         if 'tags' in entity and len(entity['tags']) > 0:
             tags = []
             for entity_tag in entity['tags']:
-                tag = {
-                    'id': entity_tag['id'],
-                    'tag_type': entity_tag['tag_type'],
-                    'value': entity_tag['value'],
-                    'color': entity_tag['color']
-                }
+                tag = dict()
+                tag['id'] = entity_tag['id']
+                tag['tag_type'] = entity_tag['tag_type']
+                tag['value'] = entity_tag['value']
+                tag['color'] = entity_tag['color']
                 tags.append(tag)
             stix_object[CustomProperties.TAG_TYPE] = tags
         if 'killChainPhases' in entity and len(entity['killChainPhases']) > 0:
@@ -931,17 +930,21 @@ class OpenCTIStix2:
         if 'externalReferences' in entity and len(entity['externalReferences']) > 0:
             external_references = []
             for entity_external_reference in entity['externalReferences']:
-                external_reference = {
-                    'id': entity_external_reference['stix_id_key'],
-                    'source_name': entity_external_reference['source_name'],
-                    'description': entity_external_reference['description'],
-                    'url': entity_external_reference['url'],
-                    'hash': entity_external_reference['hash'],
-                    'external_id': entity_external_reference['external_id'],
-                    CustomProperties.ID: entity_external_reference['id'],
-                    CustomProperties.CREATED: entity_external_reference['created'],
-                    CustomProperties.MODIFIED: entity_external_reference['modified'],
-                }
+                external_reference = dict()
+                external_reference['id'] = entity_external_reference['stix_id_key']
+                if self.opencti.not_empty(entity_external_reference['source_name']):
+                    external_reference['source_name'] = entity_external_reference['source_name']
+                if self.opencti.not_empty(entity_external_reference['description']):
+                    external_reference['description'] = entity_external_reference['description']
+                if self.opencti.not_empty(entity_external_reference['url']):
+                    external_reference['url'] = entity_external_reference['url']
+                if self.opencti.not_empty(entity_external_reference['hash']):
+                    external_reference['hash'] = entity_external_reference['hash']
+                if self.opencti.not_empty(entity_external_reference['external_id']):
+                    external_reference['external_id'] = entity_external_reference['external_id']
+                external_reference[CustomProperties.ID] = entity_external_reference['id']
+                external_reference[CustomProperties.CREATED] = entity_external_reference['created']
+                external_reference[CustomProperties.MODIFIED] = entity_external_reference['modified']
                 external_references.append(external_reference)
             stix_object['external_references'] = external_references
         if 'objectRefs' in entity and len(entity['objectRefs']) > 0:
