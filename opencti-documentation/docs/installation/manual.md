@@ -6,10 +6,10 @@ sidebar_label: Manual deployment
 
 ## Prerequisites
 
-- Node.JS (>= 10)
-- Grakn (>= 1.5.78
+- Node.JS (>= 12)
+- Grakn (>= 1.5.9)
 - Redis (>= 3.0)
-- ElasticSearch (>= 7.x)
+- ElasticSearch (>= 7.5)
 - Minio (>= 20191012)
 - RabbitMQ (>= 3.7)
 

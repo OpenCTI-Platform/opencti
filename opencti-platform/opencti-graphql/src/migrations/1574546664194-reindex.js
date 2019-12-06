@@ -17,6 +17,9 @@ module.exports.up = async next => {
       wTx.tx.query(`match $r isa stix_relation; not {$r ($x, $y) isa stix_relation;}; delete;`);
     });
     logger.info(`[MIGRATION] reindex > Delete orphan stix_relation_embedded`);
+    await executeWrite(wTx => {
+      wTx.tx.query(`match $r isa stix_relation_embedded; not {$r ($x, $y) isa stix_relation_embedded;}; delete;`);
+    });
   } catch (err) {
     logger.info(`[MIGRATION] reindex > Error during deleting orphan relations (${err}), try to index...`);
   }

@@ -1,6 +1,6 @@
 {
   "name": "opencti-front",
-  "version": "2.0.2",
+  "version": "2.1.1",
   "author": "Luatix",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
@@ -84,7 +84,7 @@
     "**/lodash": "4.17.15"
   },
   "engines": {
-    "node": ">= 10.*"
+    "node": ">= 12.*"
   },
   "scripts": {
     "start": "yarn relay && react-app-rewired start",

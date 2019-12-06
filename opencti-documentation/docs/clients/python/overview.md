@@ -27,8 +27,8 @@ from pycti import OpenCTIApiClient
 opencti_api_client = OpenCTIApiClient(api_url, api_token, log_level, ssl_verify)
 ```
 
-| Argument                 | Type               |  Description                                                        |
-| ------------------------ | ------------------ | --------------------------------------------------------------------|
+| Argument                   | Type               |  Description                                                        |
+| -------------------------- | ------------------ | --------------------------------------------------------------------|
 | api_url (*required*)       | String             |  The URL of the OpenCTI instance                                    |
 | api_token (*required*)     | String             |  The OpenCTI token                                                  |
 | log_level (*optional*)     | String             |  Log level, could be 'debug', 'info', 'warning' or 'error'          |
