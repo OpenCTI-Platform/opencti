@@ -177,7 +177,7 @@ class AttackPattern:
             else:
                 return None
         else:
-            self.opencti.log('error', 'Missing parameters: id or filters')
+            self.opencti.log('error', '[opencti_attack_pattern] Missing parameters: id or filters')
             return None
 
     """
@@ -224,7 +224,7 @@ class AttackPattern:
             })
             return self.opencti.process_multiple_fields(result['data']['attackPatternAdd'])
         else:
-            self.opencti.log('error', 'Missing parameters: name and description')
+            self.opencti.log('error', '[opencti_attack_pattern] Missing parameters: name and description')
 
     """
         Create a Attack-Pattern object only if it not exists, update it on request
@@ -322,7 +322,7 @@ class AttackPattern:
                 update=update
             )
         else:
-            self.opencti.log('error', 'Missing parameters: stixObject')
+            self.opencti.log('error', '[opencti_attack_pattern] Missing parameters: stixObject')
 
     """
         Export an Attack-Pattern object in STIX2
@@ -358,4 +358,4 @@ class AttackPattern:
             attack_pattern[CustomProperties.ID] = entity['id']
             return self.opencti.stix2.prepare_export(entity, attack_pattern, mode, max_marking_definition_entity)
         else:
-            self.opencti.log('error', 'Missing parameters: id or entity')
+            self.opencti.log('error', '[opencti_attack_pattern] Missing parameters: id or entity')

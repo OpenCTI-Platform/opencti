@@ -268,7 +268,7 @@ class Report:
             })
             return self.opencti.process_multiple_fields(result['data']['reportAdd'])
         else:
-            self.opencti.log('error', 'Missing parameters: name and description and published')
+            self.opencti.log('error', '[opencti_report] Missing parameters: name and description and published')
 
     """
          Create a Report object only if it not exists, update it on request
@@ -384,7 +384,7 @@ class Report:
             if report is None:
                 report = self.read(id=id)
             if report is None:
-                self.opencti.log('error', 'Cannot add Object Ref, report not found')
+                self.opencti.log('error', '[opencti_report] Cannot add Object Ref, report not found')
                 return False
             refs_ids = []
             for ref in report['objectRefs']:
@@ -416,7 +416,7 @@ class Report:
                 })
                 return True
         else:
-            self.opencti.log('error', 'Missing parameters: id and entity_id')
+            self.opencti.log('error', '[opencti_report] Missing parameters: id and entity_id')
             return False
 
     """
@@ -458,4 +458,4 @@ class Report:
             report[CustomProperties.ID] = entity['id']
             return self.opencti.stix2.prepare_export(entity, report, mode, max_marking_definition_entity)
         else:
-            self.opencti.log('error', 'Missing parameters: id or entity')
+            self.opencti.log('error', '[opencti_report] Missing parameters: id or entity')
