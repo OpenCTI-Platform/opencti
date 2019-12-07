@@ -84,7 +84,7 @@
     "**/lodash": "4.17.15"
   },
   "engines": {
-    "node": ">= 12.*"
+    "node": ">= 12.* < 13.0.0"
   },
   "scripts": {
     "start": "yarn relay && react-app-rewired start",

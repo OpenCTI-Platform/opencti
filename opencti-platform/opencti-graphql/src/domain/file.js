@@ -28,7 +28,8 @@ const uploadJobImport = async (fileId, fileMime) => {
           work_id: work.internal_id_key, // work(id)
           job_id: job.internal_id_key, // job(id)
           file_mime: fileMime, // Ex. application/json
-          file_path: `/storage/get/${fileId}` // Path to get the file
+          file_path: `/storage/get/${fileId}`, // Path to get the file
+          update: true
         };
         return pushToConnector(connector, message);
       }, workList)

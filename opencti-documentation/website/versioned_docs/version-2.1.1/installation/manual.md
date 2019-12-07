@@ -1,7 +1,8 @@
 ---
-id: manual
+id: version-2.1.1-manual
 title: Manual installation
 sidebar_label: Manual deployment
+original_id: manual
 ---
 
 ## Prerequisites

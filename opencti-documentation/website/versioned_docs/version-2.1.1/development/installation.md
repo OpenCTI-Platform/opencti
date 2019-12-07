@@ -1,7 +1,8 @@
 ---
-id: installation
+id: version-2.1.1-installation
 title: Development environment installation
 sidebar_label: Development environment
+original_id: installation
 ---
 
 ## Prerequisites
