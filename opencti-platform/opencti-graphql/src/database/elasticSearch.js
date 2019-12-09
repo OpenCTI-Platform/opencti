@@ -3,6 +3,7 @@ import { Client } from '@elastic/elasticsearch';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import {
   append,
+  concat,
   assoc,
   dissoc,
   filter,
@@ -11,9 +12,11 @@ import {
   head,
   invertObj,
   join,
+  last,
   map,
   mergeAll,
-  pipe
+  pipe,
+  toPairs
 } from 'ramda';
 import { buildPagination } from './utils';
 import conf, { logger } from '../config/conf';
@@ -250,6 +253,69 @@ export const elCount = (indexName, options) => {
   logger.debug(`[ELASTICSEARCH] countEntities > ${JSON.stringify(query)}`);
   return el.count(query).then(data => {
     return data.body.count;
+  });
+};
+export const elHistogramCount = (type, field, interval, start, end, filters) => {
+  const histoFilters = map(f => {
+    const key = f.isRelation ? 'rel_*.internal_id_key' : `${f.type}.keyword`;
+    return {
+      multi_match: {
+        fields: [key],
+        type: 'phrase',
+        query: f.value
+      }
+    };
+  }, filters);
+  let dateFormat;
+  switch (interval) {
+    case 'year':
+      dateFormat = 'yyyy';
+      break;
+    case 'month':
+      dateFormat = 'yyyy-MM';
+      break;
+    default:
+      dateFormat = 'yyyy-MM-dd';
+  }
+  const query = {
+    index: PLATFORM_INDICES,
+    _source_excludes: '*', // Dont need to get anything
+    body: {
+      query: {
+        bool: {
+          must: concat(
+            [
+              {
+                range: {
+                  created_at: {
+                    gte: start,
+                    lte: end
+                  }
+                }
+              }
+            ],
+            histoFilters
+          ),
+          should: [{ match_phrase: { entity_type: type } }, { match_phrase: { parent_types: type } }],
+          minimum_should_match: 1
+        }
+      },
+      aggs: {
+        count_over_time: {
+          date_histogram: {
+            field: `${field}_${interval}`,
+            calendar_interval: interval,
+            format: dateFormat,
+            keyed: true
+          }
+        }
+      }
+    }
+  };
+  return el.search(query).then(data => {
+    const { buckets } = data.body.aggregations.count_over_time;
+    const dataToPairs = toPairs(buckets);
+    return map(b => ({ date: head(b), value: last(b).doc_count }), dataToPairs);
   });
 };
 

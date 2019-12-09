@@ -15,13 +15,12 @@ import {
   stixRelationsDistribution,
   stixRelationsDistributionWithInferences,
   stixRelationsNumber,
-  stixRelationsTimeSeries,
   stixRelationsTimeSeriesWithInferences
 } from '../domain/stixRelation';
 import { pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
 import { killChainPhases } from '../domain/stixEntity';
-import { loadByGraknId } from '../database/grakn';
+import { loadByGraknId, timeSeriesRelations } from '../database/grakn';
 
 const stixRelationResolvers = {
   Query: {
@@ -39,7 +38,7 @@ const stixRelationResolvers = {
       if (args.resolveInferences && args.resolveRelationRole && args.resolveRelationType) {
         return stixRelationsTimeSeriesWithInferences(args);
       }
-      return stixRelationsTimeSeries(args);
+      return timeSeriesRelations(args);
     },
     stixRelationsDistribution: (_, args) => {
       if (args.resolveInferences && args.resolveRelationRole && args.resolveRelationType) {
