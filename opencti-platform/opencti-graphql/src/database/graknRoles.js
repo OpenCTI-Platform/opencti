@@ -74,6 +74,10 @@ export const rolesMap = {
     indicator: 'from',
     characterize: 'to'
   },
+  'comes-after': {
+    coming_from: 'from',
+    coming_after: 'to'
+  },
   'variant-of': {
     variation: 'from',
     original: 'to'
