@@ -79,6 +79,8 @@ class OpenCTIStix2:
             return stix_object[CustomProperties.ALIASES]
         elif 'x_mitre_aliases' in stix_object:
             return stix_object['x_mitre_aliases']
+        elif 'x_amitt_aliases' in stix_object:
+            return stix_object['x_amitt_aliases']
         elif 'aliases' in stix_object:
             return stix_object['aliases']
         return None
@@ -248,6 +250,10 @@ class OpenCTIStix2:
 
                     if 'mitre' in source_name and 'name' in stix_object:
                         title = '[MITRE ATT&CK] ' + stix_object['name']
+                        if 'modified' in stix_object:
+                            published = stix_object['modified']
+                    elif 'amitt' in source_name and 'name' in stix_object:
+                        title = '[AM!TT] ' + stix_object['name']
                         if 'modified' in stix_object:
                             published = stix_object['modified']
                     else:
