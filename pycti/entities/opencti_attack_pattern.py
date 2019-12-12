@@ -304,14 +304,15 @@ class AttackPattern:
             if 'external_references' in stix_object:
                 for external_reference in stix_object['external_references']:
                     if external_reference['source_name'] == 'mitre-attack' or external_reference[
-                        'source_name'] == 'mitre-pre-attack':
+                        'source_name'] == 'mitre-pre-attack' or external_reference['source_name'] == 'amitt-attack':
                         external_id = external_reference['external_id']
             return self.create(
                 name=stix_object['name'],
                 description=self.opencti.stix2.convert_markdown(
                     stix_object['description']) if 'description' in stix_object else '',
                 alias=self.opencti.stix2.pick_aliases(stix_object),
-                platform=stix_object['x_mitre_platforms'] if 'x_mitre_platforms' in stix_object else None,
+                platform=stix_object['x_mitre_platforms'] if 'x_mitre_platforms' in stix_object else \
+                    stix_object['x_amitt_platforms'] if 'x_amitt_platforms' in stix_object else None,
                 required_permission=stix_object[
                     'x_mitre_permissions_required'] if 'x_mitre_permissions_required' in stix_object else None,
                 external_id=external_id,
