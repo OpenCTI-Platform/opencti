@@ -344,12 +344,12 @@ class Report:
                         value=graph_data
                     )
                     object_result['graph_data'] = graph_data
-                if external_reference_id is not None:
-                    self.opencti.stix_entity.add_external_reference(
-                        id=object_result['id'],
-                        entity=object_result,
-                        external_reference_id=external_reference_id
-                    )
+            if external_reference_id is not None:
+                self.opencti.stix_entity.add_external_reference(
+                    id=object_result['id'],
+                    entity=object_result,
+                    external_reference_id=external_reference_id
+                )
             return object_result
         else:
             report = self.create_raw(

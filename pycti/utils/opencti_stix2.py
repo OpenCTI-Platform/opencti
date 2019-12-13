@@ -261,6 +261,8 @@ class OpenCTIStix2:
 
                     if 'external_id' in external_reference:
                         title = title + ' (' + external_reference['external_id'] + ')'
+
+                    author = self.resolve_author(title)
                     report = self.opencti.report.create(
                         name=title,
                         external_reference_id=external_reference_id,
@@ -268,17 +270,9 @@ class OpenCTIStix2:
                         published=published,
                         report_class='Threat Report',
                         object_status=2,
+                        createdByRef=author,
                         update=True
                     )
-                    # Resolve author
-                    author = self.resolve_author(title)
-                    if author is not None:
-                        self.opencti.stix_entity.update_created_by_ref(
-                            id=report['id'],
-                            entity=report,
-                            identity_id=author['id']
-                        )
-
                     # Add marking
                     if 'marking_tlpwhite' in self.mapping_cache:
                         object_marking_ref_result = self.mapping_cache['marking_tlpwhite']
