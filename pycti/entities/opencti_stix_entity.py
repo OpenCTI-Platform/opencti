@@ -169,7 +169,7 @@ class StixEntity:
             if stix_entity is None:
                 stix_entity = self.read(id=id)
             if stix_entity is None:
-                self.opencti.log('error', 'Cannot add External-Reference, entity not found')
+                self.opencti.log('error', 'Cannot update created_by_ref, entity not found')
                 return False
             current_identity_id = None
             current_relation_id = None

@@ -242,7 +242,7 @@ class Report:
         created = kwargs.get('created', None)
         modified = kwargs.get('modified', None)
 
-        if name is not None and description is not None and published is not None:
+        if name is not None and description is not None and published is not None and report_class is not None:
             self.opencti.log('info', 'Creating Report {' + name + '}.')
             query = """
                 mutation ReportAdd($input: ReportAddInput) {
@@ -268,7 +268,7 @@ class Report:
             })
             return self.opencti.process_multiple_fields(result['data']['reportAdd'])
         else:
-            self.opencti.log('error', '[opencti_report] Missing parameters: name and description and published')
+            self.opencti.log('error', '[opencti_report] Missing parameters: name and description and published and report_class')
 
     """
          Create a Report object only if it not exists, update it on request
@@ -302,36 +302,39 @@ class Report:
             object_result = self.get_by_stix_id_or_name(stix_id_key=stix_id_key, name=name, published=published)
         if object_result is not None:
             if update:
-                self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
-                object_result['name'] = name
-                self.opencti.stix_domain_entity.update_field(
-                    id=object_result['id'],
-                    key='description',
-                    value=description
-                )
-                object_result['description'] = description
-                if report_class is not None:
+                if object_result['name'] != name:
+                    self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
+                    object_result['name'] = name
+                if object_result['description'] != description:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='description',
+                        value=description
+                    )
+                    object_result['description'] = description
+                if report_class is not None and object_result['report_class'] != report_class:
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result['id'],
                         key='report_class',
                         value=report_class
                     )
                     object_result['report_class'] = report_class
-                if object_status is not None:
+                if object_status is not None and object_result['object_status'] != object_status:
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result['id'],
                         key='object_status',
                         value=str(object_status)
                     )
                     object_result['object_status'] = object_status
-                if source_confidence_level is not None:
+                if source_confidence_level is not None and object_result[
+                    'source_confidence_level'] != source_confidence_level:
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result['id'],
                         key='source_confidence_level',
                         value=str(source_confidence_level)
                     )
                     object_result['source_confidence_level'] = source_confidence_level
-                if graph_data is not None:
+                if graph_data is not None and object_result['graph_data'] != graph_data:
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result['id'],
                         key='graph_data',
@@ -341,6 +344,7 @@ class Report:
                 if external_reference_id is not None:
                     self.opencti.stix_entity.add_external_reference(
                         id=object_result['id'],
+                        entity=object_result,
                         external_reference_id=external_reference_id
                     )
             return object_result

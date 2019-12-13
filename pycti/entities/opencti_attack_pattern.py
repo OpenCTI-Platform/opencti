@@ -19,6 +19,7 @@ class AttackPattern:
             graph_data
             platform
             required_permission
+            external_id
             created
             modified
             created_at
@@ -246,32 +247,52 @@ class AttackPattern:
         modified = kwargs.get('modified', None)
         update = kwargs.get('update', False)
 
-        object_result = self.opencti.stix_domain_entity.get_by_stix_id_or_name(types=['Attack-Pattern'],
-                                                                               stix_id_key=stix_id_key, name=name)
+        object_result = self.opencti.stix_domain_entity.get_by_stix_id_or_name(
+            types=['Attack-Pattern'],
+            stix_id_key=stix_id_key,
+            name=name
+        )
         if object_result is not None:
             if update:
-                self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
-                object_result['name'] = name
-                self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='description',
-                                                             value=description)
-                object_result['description'] = description
-                if alias is not None:
+                # name
+                if object_result['name'] != name:
+                    self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
+                    object_result['name'] = name
+                # description
+                if object_result['description'] != description:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='description',
+                        value=description
+                    )
+                    object_result['description'] = description
+                # alias
+                if alias is not None and object_result['alias'] != alias:
                     if 'alias' in object_result:
                         new_aliases = object_result['alias'] + list(set(alias) - set(object_result['alias']))
                     else:
                         new_aliases = alias
                     self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
                     object_result['alias'] = new_aliases
-                if platform is not None:
+                # platform
+                if platform is not None and object_result['platform'] != platform:
                     self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='platform', value=platform)
                     object_result['platform'] = platform
-                if required_permission is not None:
-                    self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='required_permission',
-                                                                 value=required_permission)
+                # required_permission
+                if required_permission is not None and object_result['required_permission'] != required_permission:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='required_permission',
+                        value=required_permission
+                    )
                     object_result['required_permission'] = required_permission
-                if external_id is not None:
-                    self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='external_id',
-                                                                 value=external_id)
+                # external_id
+                if external_id is not None and object_result['external_id'] != external_id:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='external_id',
+                        value=external_id
+                    )
                     object_result['external_id'] = external_id
             return object_result
         else:
@@ -352,8 +373,8 @@ class AttackPattern:
             attack_pattern['modified'] = self.opencti.stix2.format_date(entity['modified'])
             if self.opencti.not_empty(entity['platform']): attack_pattern['x_mitre_platforms'] = entity['platform']
             if self.opencti.not_empty(entity['required_permission']): attack_pattern['x_mitre_permissions_required'] = \
-            entity[
-                'required_permission']
+                entity[
+                    'required_permission']
             if self.opencti.not_empty(entity['alias']): attack_pattern[CustomProperties.ALIASES] = entity['alias']
             attack_pattern[CustomProperties.ID] = entity['id']
             return self.opencti.stix2.prepare_export(entity, attack_pattern, mode, max_marking_definition_entity)

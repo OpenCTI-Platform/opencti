@@ -209,16 +209,17 @@ class OpenCTIStix2:
                 if url in self.mapping_cache:
                     external_reference_id = self.mapping_cache[url]['id']
                 else:
-                    external_reference_id = self.opencti.create_external_reference_if_not_exists(
-                        source_name,
-                        url,
-                        external_reference['external_id'] if 'external_id' in external_reference else None,
-                        external_reference['description'] if 'description' in external_reference else None,
-                        external_reference['id'] if 'id' in external_reference else None,
-                        external_reference[CustomProperties.ID] if CustomProperties.ID in external_reference else None,
-                        external_reference[
+                    external_reference_id = self.opencti.external_reference.create(
+                        source_name=source_name,
+                        url=url,
+                        external_id=external_reference['external_id'] if 'external_id' in external_reference else None,
+                        description=external_reference['description'] if 'description' in external_reference else None,
+                        id=external_reference[
+                            CustomProperties.ID] if CustomProperties.ID in external_reference else None,
+                        stix_id_key=external_reference['id'] if 'id' in external_reference else None,
+                        created=external_reference[
                             CustomProperties.CREATED] if CustomProperties.CREATED in external_reference else None,
-                        external_reference[
+                        modified=external_reference[
                             CustomProperties.MODIFIED] if CustomProperties.MODIFIED in external_reference else None,
                     )['id']
                 self.mapping_cache[url] = {'id': external_reference_id}
@@ -342,8 +343,10 @@ class OpenCTIStix2:
 
         # Add embedded relationships
         if stix_object_result is not None:
-            self.mapping_cache[stix_object['id']] = {'id': stix_object_result['id'],
-                                                     'type': stix_object_result['entity_type']}
+            self.mapping_cache[stix_object['id']] = {
+                'id': stix_object_result['id'],
+                'type': stix_object_result['entity_type']
+            }
 
             # Update created by ref
             if created_by_ref_id is not None and stix_object['type'] != 'marking-definition':
@@ -1057,24 +1060,25 @@ class OpenCTIStix2:
         else:
             return []
 
+    # TODO move in MarkingDefinition
     def create_marking_definition(self, stix_object, update=False):
         definition_type = stix_object['definition_type']
         definition = stix_object['definition'][stix_object['definition_type']]
         if stix_object['definition_type'] == 'tlp':
             definition_type = 'TLP'
             definition = 'TLP:' + stix_object['definition'][stix_object['definition_type']].upper()
-
-        return self.opencti.create_marking_definition_if_not_exists(
-            definition_type,
-            definition,
-            stix_object[CustomProperties.LEVEL] if CustomProperties.LEVEL in stix_object else 0,
-            stix_object[CustomProperties.COLOR] if CustomProperties.COLOR in stix_object else None,
-            stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
-            stix_object['id'],
-            stix_object['created'] if 'created' in stix_object else None,
-            stix_object[CustomProperties.MODIFIED] if CustomProperties.MODIFIED in stix_object else None,
+        return self.opencti.marking_definition.create(
+            definition_type=definition_type,
+            definition=definition,
+            level=stix_object[CustomProperties.LEVEL] if CustomProperties.LEVEL in stix_object else 0,
+            color=stix_object[CustomProperties.COLOR] if CustomProperties.COLOR in stix_object else None,
+            id=stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
+            stix_id_key=stix_object['id'],
+            created=stix_object['created'] if 'created' in stix_object else None,
+            modified=stix_object[CustomProperties.MODIFIED] if CustomProperties.MODIFIED in stix_object else None,
         )
 
+    # TODO move in Identity
     def create_identity(self, stix_object, update=False):
         if CustomProperties.IDENTITY_TYPE in stix_object:
             type = stix_object[CustomProperties.IDENTITY_TYPE].capitalize()
@@ -1101,6 +1105,7 @@ class OpenCTIStix2:
             update=update
         )
 
+    # TODO move in ThreatyActor
     def create_threat_actor(self, stix_object, update=False):
         return self.opencti.create_threat_actor_if_not_exists(
             stix_object['name'],
@@ -1142,18 +1147,18 @@ class OpenCTIStix2:
 
     # TODO move in Campaign
     def create_campaign(self, stix_object, update=False):
-        return self.opencti.create_campaign_if_not_exists(
-            stix_object['name'],
-            self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
-            self.pick_aliases(stix_object),
-            stix_object['objective'] if 'objective' in stix_object else None,
-            stix_object[CustomProperties.FIRST_SEEN] if CustomProperties.FIRST_SEEN in stix_object else None,
-            stix_object[CustomProperties.LAST_SEEN] if CustomProperties.LAST_SEEN in stix_object else None,
-            stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
-            stix_object['id'] if 'id' in stix_object else None,
-            stix_object['created'] if 'created' in stix_object else None,
-            stix_object['modified'] if 'modified' in stix_object else None,
-            update
+        return self.opencti.campaign.create(
+            name=stix_object['name'],
+            description=self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
+            alias=self.pick_aliases(stix_object),
+            objective=stix_object['objective'] if 'objective' in stix_object else None,
+            first_seen=stix_object[CustomProperties.FIRST_SEEN] if CustomProperties.FIRST_SEEN in stix_object else None,
+            last_seen=stix_object[CustomProperties.LAST_SEEN] if CustomProperties.LAST_SEEN in stix_object else None,
+            id=stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
+            stix_id_key=stix_object['id'] if 'id' in stix_object else None,
+            created=stix_object['created'] if 'created' in stix_object else None,
+            modified=stix_object['modified'] if 'modified' in stix_object else None,
+            uodate=update
         )
 
     # TODO move in Incident
@@ -1172,6 +1177,7 @@ class OpenCTIStix2:
             update=update
         )
 
+    # TODO move in Malware
     def create_malware(self, stix_object, update=False):
         return self.opencti.create_malware_if_not_exists(
             stix_object['name'],
@@ -1184,6 +1190,7 @@ class OpenCTIStix2:
             update
         )
 
+    # TODO move in Tool
     def create_tool(self, stix_object, update=False):
         return self.opencti.create_tool_if_not_exists(
             stix_object['name'],
@@ -1196,6 +1203,7 @@ class OpenCTIStix2:
             update
         )
 
+    # TODO move in Vulnerability
     def create_vulnerability(self, stix_object, update=False):
         return self.opencti.create_vulnerability_if_not_exists(
             stix_object['name'],
@@ -1211,18 +1219,20 @@ class OpenCTIStix2:
     def create_attack_pattern(self, stix_object, update=False):
         return self.opencti.attack_pattern.import_from_stix2(stixObject=stix_object, update=update)
 
+    # TODO move in Course Of Action
     def create_course_of_action(self, stix_object, update=False):
-        return self.opencti.create_course_of_action_if_not_exists(
-            stix_object['name'],
-            self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
-            self.pick_aliases(stix_object),
-            stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
-            stix_object['id'] if 'id' in stix_object else None,
-            stix_object['created'] if 'created' in stix_object else None,
-            stix_object['modified'] if 'modified' in stix_object else None,
-            update
+        return self.opencti.course_of_action.create(
+            name=stix_object['name'],
+            description=self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
+            alias=self.pick_aliases(stix_object),
+            id=stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
+            stix_id_key=stix_object['id'] if 'id' in stix_object else None,
+            created=stix_object['created'] if 'created' in stix_object else None,
+            modified=stix_object['modified'] if 'modified' in stix_object else None,
+            update=update
         )
 
+    # TODO move in Report
     def create_report(self, stix_object, update=False):
         return self.opencti.report.create(
             name=stix_object['name'],
@@ -1302,7 +1312,6 @@ class OpenCTIStix2:
                 observable_value=indicator_value,
                 description=self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
                 id=stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
-                stix_id_key=stix_object['id'] if 'id' in stix_object else None,
                 update=update
             )
         else:

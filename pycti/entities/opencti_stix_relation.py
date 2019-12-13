@@ -342,10 +342,10 @@ class StixRelation:
             )
         if stix_relation_result is not None:
             if update:
-                if description is not None:
+                if description is not None and stix_relation_result['description'] != description:
                     self.update_field(id=stix_relation_result['id'], key='description', value=description)
                     stix_relation_result['description'] = description
-                if weight is not None:
+                if weight is not None and stix_relation_result['weight'] != weight:
                     self.update_field(id=stix_relation_result['id'], key='weight', value=str(weight))
                     stix_relation_result['weight'] = weight
                 if first_seen is not None:
@@ -372,8 +372,10 @@ class StixRelation:
                     final_from_id = to_id
                     final_to_id = from_id
                 else:
-                    self.opencti.log('error',
-                                     'Relation creation failed, cannot resolve roles: {' + relationship_type + ': ' + from_type + ', ' + to_type + '}')
+                    self.opencti.log(
+                        'error',
+                        'Relation creation failed, cannot resolve roles: {' + relationship_type + ': ' + from_type + ', ' + to_type + '}'
+                    )
                     return None
 
             return self.create_raw(
