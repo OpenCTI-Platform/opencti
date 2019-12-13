@@ -1403,7 +1403,7 @@ class OpenCTIStix2:
     def import_bundle(self, stix_bundle, update=False, types=None) -> List:
         if types is None:
             types = []
-        self.mapping_cache = {}
+
         # Check if the bundle is correctly formatted
         if 'type' not in stix_bundle or stix_bundle['type'] != 'bundle':
             raise ValueError('JSON data type is not a STIX2 bundle')
