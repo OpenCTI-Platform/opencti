@@ -176,6 +176,7 @@ class Identity:
         stix_id_key = kwargs.get('stix_id_key', None)
         created = kwargs.get('created', None)
         modified = kwargs.get('modified', None)
+        created_by_ref = kwargs.get('createdByRef', None)
 
         if name is not None and description is not None:
             self.opencti.log('info', 'Creating Identity {' + name + '}.')
@@ -195,7 +196,8 @@ class Identity:
                     'internal_id_key': id,
                     'stix_id_key': stix_id_key,
                     'created': created,
-                    'modified': modified
+                    'modified': modified,
+                    'createdByRef': created_by_ref
                 }
             })
             return self.opencti.process_multiple_fields(result['data']['identityAdd'])
@@ -218,6 +220,7 @@ class Identity:
         stix_id_key = kwargs.get('stix_id_key', None)
         created = kwargs.get('created', None)
         modified = kwargs.get('modified', None)
+        created_by_ref = kwargs.get('createdByRef', None)
         update = kwargs.get('update', False)
 
         object_result = self.opencti.stix_domain_entity.get_by_stix_id_or_name(
@@ -252,7 +255,8 @@ class Identity:
                 id=id,
                 stix_id_key=stix_id_key,
                 created=created,
-                modified=modified
+                modified=modified,
+                createdByRef=created_by_ref
             )
 
     """

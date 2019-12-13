@@ -1128,154 +1128,39 @@ class OpenCTIApiClient:
     def get_malwares(self, limit=10000):
         return self.malware.list(first=limit)
 
-    # TODO Move to Malware
+    @deprecated(version='2.1.0', reason="Replaced by the Malware class in pycti")
     def create_malware(self, name, description, alias=None, id=None, stix_id_key=None, created=None, modified=None):
-        logging.info('Creating malware ' + name + '...')
-        query = """
-            mutation MalwareAdd($input: MalwareAddInput) {
-                malwareAdd(input: $input) {
-                    id
-                    stix_id_key
-                    stix_label
-                    entity_type
-                    parent_types
-                    name
-                    alias
-                    description
-                    graph_data
-                    created
-                    modified            
-                    created_at
-                    updated_at
-                    killChainPhases {
-                        edges {
-                            node {
-                                id
-                                entity_type
-                                stix_id_key
-                                kill_chain_name
-                                phase_name
-                                phase_order
-                                created
-                                modified
-                            }
-                            relation {
-                                id
-                            }
-                        }
-                    }
-                    createdByRef {
-                        node {
-                            id
-                            entity_type
-                            stix_id_key
-                            stix_label
-                            name
-                            alias
-                            description
-                            created
-                            modified
-                        }
-                        relation {
-                            id
-                        }
-                    }            
-                    markingDefinitions {
-                        edges {
-                            node {
-                                id
-                                entity_type
-                                stix_id_key
-                                definition_type
-                                definition
-                                level
-                                color
-                                created
-                                modified
-                            }
-                            relation {
-                                id
-                            }
-                        }
-                    }
-                    tags {
-                        edges {
-                            node {
-                                id
-                                tag_type
-                                value
-                                color
-                            }
-                            relation {
-                                id
-                            }
-                        }
-                    }
-                    externalReferences {
-                        edges {
-                            node {
-                                id
-                                entity_type
-                                stix_id_key
-                                source_name
-                                description
-                                url
-                                hash
-                                external_id
-                                created
-                                modified
-                            }
-                            relation {
-                                id
-                            }
-                        }
-                    }        
-                }
-            }
-        """
-        result = self.query(query, {
-            'input': {
-                'name': name,
-                'description': description,
-                'alias': alias,
-                'internal_id_key': id,
-                'stix_id_key': stix_id_key,
-                'created': created,
-                'modified': modified
-            }
-        })
-        return self.process_multiple_fields(result['data']['malwareAdd'])
+        return self.malware.create(
+            name=name,
+            description=description,
+            alias=alias,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified
+        )
 
-    # TODO Move to Malware
-    def create_malware_if_not_exists(self, name, description, alias=None, id=None, stix_id_key=None, created=None,
+    @deprecated(version='2.1.0', reason="Replaced by the Malware class in pycti")
+    def create_malware_if_not_exists(self,
+                                     name,
+                                     description,
+                                     alias=None,
+                                     id=None,
+                                     stix_id_key=None,
+                                     created=None,
                                      modified=None,
-                                     update=False):
-        object_result = self.stix_domain_entity.get_by_stix_id_or_name(types=['Malware'], stix_id_key=stix_id_key,
-                                                                       name=name)
-        if object_result is not None:
-            if update:
-                self.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
-                object_result['name'] = name
-                self.stix_domain_entity.update_field(id=object_result['id'], key='description', value=description)
-                object_result['description'] = description
-                if alias is not None:
-                    if 'alias' in object_result:
-                        new_aliases = object_result['alias'] + list(set(alias) - set(object_result['alias']))
-                    else:
-                        new_aliases = alias
-                    self.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
-                    object_result['alias'] = new_aliases
-            return object_result
-        else:
-            return self.create_malware(
-                name,
-                description,
-                alias,
-                id,
-                stix_id_key,
-                created,
-                modified
-            )
+                                     update=False
+                                     ):
+        return self.malware.create(
+            name=name,
+            description=description,
+            alias=alias,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified,
+            update=False
+        )
 
     @deprecated(version='2.1.0', reason="Replaced by the Tool class in pycti")
     def get_tool(self, id):
