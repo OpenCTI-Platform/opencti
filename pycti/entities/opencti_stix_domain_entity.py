@@ -82,7 +82,67 @@ class StixDomainEntity:
                         id
                     }
                 }
-            }       
+            }
+            ... on AttackPattern {
+                platform
+                required_permission
+                external_id
+            }
+            ... on ThreatActor {
+                goal
+                sophistication
+                resource_level
+                primary_motivation
+                secondary_motivation
+                personal_motivation
+            }
+            ... on IntrusionSet {
+                first_seen
+                last_seen
+                goal
+                sophistication
+                resource_level
+                primary_motivation
+                secondary_motivation
+            }
+            ... on Campaign {
+                objective
+                first_seen
+                last_seen
+            }
+            ... on Incident {
+                objective
+                first_seen
+                last_seen
+            }
+            ... on Malware {
+                killChainPhases {
+                    edges {
+                        node {
+                            id
+                            entity_type
+                            stix_id_key
+                            kill_chain_name
+                            phase_name
+                            phase_order
+                            created
+                            modified
+                        }
+                        relation {
+                            id
+                        }
+                    }
+                }
+            }
+            ... on Tool {
+                tool_version
+            }
+            ... on Report {
+                report_class
+                published
+                object_status
+                source_confidence_level
+            }
         """
 
     """
