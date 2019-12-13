@@ -53,7 +53,8 @@ class KillChainPhase:
                 }
             }
         """
-        result = self.opencti.query(query, {'filters': filters, 'first': first, 'after': after, 'orderBy': order_by, 'orderMode': order_mode})
+        result = self.opencti.query(query, {'filters': filters, 'first': first, 'after': after, 'orderBy': order_by,
+                                            'orderMode': order_mode})
         return self.opencti.process_multiple(result['data']['killChainPhases'])
 
     """
@@ -87,3 +88,73 @@ class KillChainPhase:
         else:
             self.opencti.log('error', 'Missing parameters: id or filters')
             return None
+
+    """
+        Create a Kill-Chain-Phase object
+
+        :param name: the name of the Kill-Chain-Phase
+        :return Kill-Chain-Phase object
+    """
+
+    def create_raw(self, **kwargs):
+        kill_chain_name = kwargs.get('kill_chain_name', None)
+        phase_name = kwargs.get('phase_name', None)
+        phase_order = kwargs.get('phase_order', 0)
+        id = kwargs.get('id', None)
+        stix_id_key = kwargs.get('stix_id_key', None)
+        created = kwargs.get('created', None)
+        modified = kwargs.get('modified', None)
+
+        if kill_chain_name is not None and phase_name is not None:
+            self.opencti.log('info', 'Creating Kill-Chain-Phase {' + phase_name + '}.')
+            query = """
+                mutation KillChainPhaseAdd($input: KillChainPhaseAddInput) {
+                    killChainPhaseAdd(input: $input) {
+                        """ + self.properties + """
+                    }
+                }
+            """
+            result = self.opencti.query(query, {
+                'input': {
+                    'kill_chain_name': kill_chain_name,
+                    'phase_name': phase_name,
+                    'phase_order': phase_order,
+                    'internal_id_key': id,
+                    'stix_id_key': stix_id_key,
+                    'created': created,
+                    'modified': modified
+                }
+            })
+            return self.opencti.process_multiple_fields(result['data']['killChainPhaseAdd'])
+        else:
+            self.opencti.log('error', '[opencti_kill_chain_phase] Missing parameters: kill_chain_name and phase_name')
+
+    """
+        Create a Kill-Chain-Phase object only if it not exists, update it on request
+
+        :param name: the name of the Kill-Chain-Phase
+        :return Kill-Chain-Phase object
+    """
+
+    def create(self, **kwargs):
+        kill_chain_name = kwargs.get('kill_chain_name', None)
+        phase_name = kwargs.get('phase_name', None)
+        phase_order = kwargs.get('phase_order', 0)
+        id = kwargs.get('id', None)
+        stix_id_key = kwargs.get('stix_id_key', None)
+        created = kwargs.get('created', None)
+        modified = kwargs.get('modified', None)
+
+        kill_chain_phase_result = self.read(filters=[{'key': 'phase_name', 'values': [phase_name]}])
+        if kill_chain_phase_result is not None:
+            return kill_chain_phase_result
+        else:
+            return self.create_raw(
+                kill_chain_name=kill_chain_name,
+                phase_name=phase_name,
+                phase_order=phase_order,
+                id=id,
+                stix_id_key=stix_id_key,
+                created=created,
+                modified=modified
+            )

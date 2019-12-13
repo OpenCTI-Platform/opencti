@@ -227,7 +227,7 @@ class IntrusionSet:
             })
             return self.opencti.process_multiple_fields(result['data']['intrusionSetAdd'])
         else:
-            self.opencti.log('error', 'Missing parameters: name and description')
+            self.opencti.log('error', '[opencti_intrusion_set] Missing parameters: name and description')
 
     """
         Create a Intrusion-Set object only if it not exists, update it on request
@@ -400,4 +400,4 @@ class IntrusionSet:
             intrusion_set[CustomProperties.ID] = entity['id']
             return self.opencti.stix2.prepare_export(entity, intrusion_set, mode, max_marking_definition_entity)
         else:
-            self.opencti.log('error', 'Missing parameters: id or entity')
+            self.opencti.log('error', '[opencti_intrusion_set] Missing parameters: id or entity')

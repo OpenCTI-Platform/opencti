@@ -164,8 +164,6 @@ class StixEntity:
         stix_entity = kwargs.get('entity', None)
         identity_id = kwargs.get('identity_id', None)
         if id is not None and identity_id is not None:
-            self.opencti.log('info',
-                             'Updating author of Stix-Entity {' + id + '} with Identity {' + identity_id + '}')
             if stix_entity is None:
                 stix_entity = self.read(id=id)
             if stix_entity is None:
@@ -181,6 +179,10 @@ class StixEntity:
             if current_identity_id == identity_id:
                 return True
             else:
+                self.opencti.log(
+                    'info',
+                    'Updating author of Stix-Entity {' + id + '} with Identity {' + identity_id + '}'
+                )
                 # Current identity is different, delete the old relation
                 if current_relation_id is not None:
                     query = """
@@ -231,8 +233,6 @@ class StixEntity:
         stix_entity = kwargs.get('entity', None)
         marking_definition_id = kwargs.get('marking_definition_id', None)
         if id is not None and marking_definition_id is not None:
-            self.opencti.log('info',
-                             'Adding Marking-Definition {' + marking_definition_id + '} to Stix-Entity {' + id + '}')
             if stix_entity is None:
                 stix_entity = self.read(id=id)
             if stix_entity is None:
@@ -244,6 +244,10 @@ class StixEntity:
             if marking_definition_id in markings_ids:
                 return True
             else:
+                self.opencti.log(
+                    'info',
+                    'Adding Marking-Definition {' + marking_definition_id + '} to Stix-Entity {' + id + '}'
+                )
                 query = """
                    mutation StixEntityAddRelation($id: ID!, $input: RelationAddInput) {
                        stixEntityEdit(id: $id) {
@@ -280,8 +284,6 @@ class StixEntity:
         stix_entity = kwargs.get('entity', None)
         external_reference_id = kwargs.get('external_reference_id', None)
         if id is not None and external_reference_id is not None:
-            self.opencti.log('info',
-                             'Adding External-Reference {' + external_reference_id + '} to Stix-Entity {' + id + '}')
             if stix_entity is None:
                 stix_entity = self.read(id=id)
             if stix_entity is None:
@@ -293,6 +295,10 @@ class StixEntity:
             if external_reference_id in external_references_ids:
                 return True
             else:
+                self.opencti.log(
+                    'info',
+                    'Adding External-Reference {' + external_reference_id + '} to Stix-Entity {' + id + '}'
+                )
                 query = """
                    mutation StixEntityAddRelation($id: ID!, $input: RelationAddInput) {
                        stixEntityEdit(id: $id) {
@@ -329,8 +335,6 @@ class StixEntity:
         stix_entity = kwargs.get('entity', None)
         kill_chain_phase_id = kwargs.get('kill_chain_phase_id', None)
         if id is not None and kill_chain_phase_id is not None:
-            self.opencti.log('info',
-                             'Adding Kill-Chain-Phase {' + kill_chain_phase_id + '} to Stix-Entity {' + id + '}')
             if stix_entity is None:
                 stix_entity = self.read(id=id)
             if stix_entity is None:
@@ -343,6 +347,10 @@ class StixEntity:
             if kill_chain_phase_id in kill_chain_phases_ids:
                 return True
             else:
+                self.opencti.log(
+                    'info',
+                    'Adding Kill-Chain-Phase {' + kill_chain_phase_id + '} to Stix-Entity {' + id + '}'
+                )
                 query = """
                    mutation StixEntityAddRelation($id: ID!, $input: RelationAddInput) {
                        stixEntityEdit(id: $id) {

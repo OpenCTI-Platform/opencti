@@ -638,7 +638,7 @@ class OpenCTIApiClient:
     def get_kill_chain_phase(self, phase_name):
         return self.kill_chain_phase.read(filters=[{'key': 'phase_name', 'values': [phase_name]}])
 
-    # TODO Move to KillChainPhase
+    @deprecated(version='2.1.0', reason="Replaced by the KillChainPhase class in pycti")
     def create_kill_chain_phase(self,
                                 kill_chain_name,
                                 phase_name,
@@ -647,37 +647,17 @@ class OpenCTIApiClient:
                                 stix_id_key=None,
                                 created=None,
                                 modified=None):
-        logging.info('Creating kill chain phase ' + phase_name + '...')
-        query = """
-               mutation KillChainPhaseAdd($input: KillChainPhaseAddInput) {
-                   killChainPhaseAdd(input: $input) {
-                        id
-                        entity_type
-                        stix_id_key
-                        kill_chain_name
-                        phase_name
-                        phase_order
-                        created
-                        modified
-                        created_at
-                        updated_at
-                   }
-               }
-           """
-        result = self.query(query, {
-            'input': {
-                'kill_chain_name': kill_chain_name,
-                'phase_name': phase_name,
-                'phase_order': phase_order,
-                'internal_id_key': id,
-                'stix_id_key': stix_id_key,
-                'created': created,
-                'modified': modified
-            }
-        })
-        return self.process_multiple_fields(result['data']['killChainPhaseAdd'])
+        return self.kill_chain_phase.create(
+            kill_chain_name=kill_chain_name,
+            phase_name=phase_name,
+            phase_order=phase_order,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified
+        )
 
-    # TODO Move to KillChainPhase
+    @deprecated(version='2.1.0', reason="Replaced by the KillChainPhase class in pycti")
     def create_kill_chain_phase_if_not_exists(self,
                                               kill_chain_name,
                                               phase_name,
@@ -686,19 +666,15 @@ class OpenCTIApiClient:
                                               stix_id_key=None,
                                               created=None,
                                               modified=None):
-        kill_chain_phase_result = self.kill_chain_phase.read(filters=[{'key': 'phase_name', 'values': [phase_name]}])
-        if kill_chain_phase_result is not None:
-            return kill_chain_phase_result
-        else:
-            return self.create_kill_chain_phase(
-                kill_chain_name,
-                phase_name,
-                phase_order,
-                id,
-                stix_id_key,
-                created,
-                modified
-            )
+        return self.kill_chain_phase.create(
+            kill_chain_name=kill_chain_name,
+            phase_name=phase_name,
+            phase_order=phase_order,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified
+        )
 
     @deprecated(version='2.1.0', reason="Replaced by the Identity class in pycti")
     def get_identity(self, id):
