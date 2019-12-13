@@ -14,6 +14,7 @@ import OrganizationObservables from './OrganizationObservables';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import FileManager from '../../common/files/FileManager';
 import OrganizationPopover from './OrganizationPopover';
+import Loader from '../../../../components/Loader';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
@@ -152,7 +153,7 @@ class RootOrganization extends Component {
                 </div>
               );
             }
-            return <div> &nbsp; </div>;
+            return <Loader />;
           }}
         />
       </div>

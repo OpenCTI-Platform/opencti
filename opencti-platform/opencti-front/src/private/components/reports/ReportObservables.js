@@ -4,6 +4,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer } from '../../../relay/environment';
 import ReportHeader from './ReportHeader';
 import ReportObservablesLines from './ReportObservablesLines';
+import Loader from '../../../components/Loader';
 
 const reportObservablesQuery = graphql`
   query ReportObservablesQuery($id: String!, $relationType: String) {
@@ -31,7 +32,7 @@ class ReportObservables extends Component {
                 </div>
               );
             }
-            return <div> &nbsp; </div>;
+            return <Loader />;
           }}
         />
       </div>

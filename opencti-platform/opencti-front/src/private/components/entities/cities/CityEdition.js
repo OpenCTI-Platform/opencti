@@ -14,6 +14,7 @@ import {
 import inject18n from '../../../../components/i18n';
 import CityEditionContainer from './CityEditionContainer';
 import { cityEditionOverviewFocus } from './CityEditionOverview';
+import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
   editButton: {
@@ -100,7 +101,7 @@ class CityEdition extends Component {
                   />
                 );
               }
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
         </Drawer>

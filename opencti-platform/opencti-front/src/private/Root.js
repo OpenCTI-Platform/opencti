@@ -26,7 +26,7 @@ import Connectors from './components/connectors/Connectors';
 import Profile from './components/Profile';
 import Message from '../components/Message';
 import { NoMatch, BoundaryRoute } from './components/Error';
-import Loader from './Loader';
+import Loader from '../components/Loader';
 
 const styles = (theme) => ({
   root: {

@@ -13,6 +13,7 @@ import AttackPatternKnowledge from './AttackPatternKnowledge';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import FileManager from '../../common/files/FileManager';
 import AttackPatternPopover from './AttackPatternPopover';
+import Loader from '../../../../components/Loader';
 
 const subscription = graphql`
   subscription RootAttackPatternSubscription($id: ID!) {
@@ -141,7 +142,7 @@ class RootAttackPattern extends Component {
                 </div>
               );
             }
-            return <div> &nbsp; </div>;
+            return <Loader />;
           }}
         />
       </div>

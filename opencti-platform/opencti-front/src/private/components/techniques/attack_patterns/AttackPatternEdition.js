@@ -14,6 +14,7 @@ import {
 import inject18n from '../../../../components/i18n';
 import AttackPatternEditionContainer from './AttackPatternEditionContainer';
 import { attackPatternEditionOverviewFocus } from './AttackPatternEditionOverview';
+import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
   editButton: {
@@ -101,7 +102,7 @@ class AttackPatternEdition extends Component {
                   />
                 );
               }
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
         </Drawer>

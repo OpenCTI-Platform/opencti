@@ -18,8 +18,9 @@ import MoreVert from '@material-ui/icons/MoreVert';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import ExternalReferenceEdition from './ExternalReferenceEdition';
+import Loader from '../../../../components/Loader';
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
     margin: 0,
   },
@@ -163,8 +164,7 @@ class ExternalReferencePopover extends Component {
                   />
                 );
               }
-              // Loading
-              return <div> &nbsp; </div>;
+              return <Loader variant='inElement' />;
             }}
           />
         </Drawer>

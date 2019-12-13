@@ -18,8 +18,9 @@ import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import KillChainPhaseEdition from './KillChainPhaseEdition';
+import Loader from '../../../../components/Loader';
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
     margin: 0,
   },
@@ -163,8 +164,7 @@ class KillChainPhasePopover extends Component {
                   />
                 );
               }
-              // Loading
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
         </Drawer>
@@ -208,7 +208,4 @@ KillChainPhasePopover.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(KillChainPhasePopover);
+export default compose(inject18n, withStyles(styles))(KillChainPhasePopover);

@@ -8,6 +8,7 @@ import StixRelation from '../common/stix_relations/StixRelation';
 import StixObservable from './StixObservable';
 import StixObservableLinks from './StixObservableLinks';
 import StixObservableKnowledge from './StixObservableKnowledge';
+import Loader from '../../../components/Loader';
 
 const subscription = graphql`
   subscription RootStixObservableSubscription($id: ID!) {
@@ -114,7 +115,7 @@ class RootStixObservable extends Component {
                 </div>
               );
             }
-            return <div> &nbsp; </div>;
+            return <Loader />;
           }}
         />
       </div>

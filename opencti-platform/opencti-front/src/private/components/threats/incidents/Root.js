@@ -14,6 +14,7 @@ import IncidentObservables from './IncidentObservables';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import FileManager from '../../common/files/FileManager';
 import IncidentPopover from './IncidentPopover';
+import Loader from '../../../../components/Loader';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -149,7 +150,7 @@ class RootIncident extends Component {
                 </div>
               );
             }
-            return <div> &nbsp; </div>;
+            return <Loader />;
           }}
         />
       </div>

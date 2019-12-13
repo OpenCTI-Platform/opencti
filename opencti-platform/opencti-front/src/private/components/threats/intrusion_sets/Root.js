@@ -14,6 +14,7 @@ import IntrusionSetObservables from './IntrusionSetObservables';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import FileManager from '../../common/files/FileManager';
 import IntrusionSetPopover from './IntrusionSetPopover';
+import Loader from "../../../../components/Loader";
 
 const subscription = graphql`
   subscription RootIntrusionSetSubscription($id: ID!) {
@@ -152,7 +153,7 @@ class RootIntrusionSet extends Component {
                 </div>
               );
             }
-            return <div> &nbsp; </div>;
+            return <Loader />;
           }}
         />
       </div>

@@ -5,6 +5,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer, requestSubscription } from '../../../relay/environment';
 import TopBar from '../nav/TopBar';
 import WorkspaceExplore from '../explore/WorkspaceExplore';
+import Loader from '../../../components/Loader';
 
 const subscription = graphql`
   subscription RootWorkspaceSubscription($id: ID!) {
@@ -62,7 +63,7 @@ class RootWorkspace extends Component {
                   <Route
                     exact
                     path="/dashboard/explore/:workspaceId"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <WorkspaceExplore
                         {...routeProps}
                         workspace={props.workspace}
@@ -72,7 +73,7 @@ class RootWorkspace extends Component {
                   <Route
                     exact
                     path="/dashboard/investigate/:workspaceId"
-                    render={routeProps => (
+                    render={(routeProps) => (
                       <WorkspaceExplore
                         {...routeProps}
                         workspace={props.workspace}
@@ -82,7 +83,7 @@ class RootWorkspace extends Component {
                 </div>
               );
             }
-            return <div> &nbsp; </div>;
+            return <Loader />;
           }}
         />
       </div>

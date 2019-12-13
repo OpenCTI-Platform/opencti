@@ -11,6 +11,7 @@ import CourseOfAction from './CourseOfAction';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import FileManager from '../../common/files/FileManager';
 import CourseOfActionPopover from './CourseOfActionPopover';
+import Loader from '../../../../components/Loader';
 
 const subscription = graphql`
   subscription RootCoursesOfActionSubscription($id: ID!) {
@@ -109,7 +110,7 @@ class RootCourseOfAction extends Component {
                 </div>
               );
             }
-            return <div> &nbsp; </div>;
+            return <Loader />;
           }}
         />
       </div>

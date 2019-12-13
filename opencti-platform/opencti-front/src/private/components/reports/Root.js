@@ -10,7 +10,7 @@ import ReportKnowledge from './ReportKnowledge';
 import ReportObservables from './ReportObservables';
 import FileManager from '../common/files/FileManager';
 import ReportHeader from './ReportHeader';
-import Loader from '../../Loader';
+import Loader from '../../../components/Loader';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {

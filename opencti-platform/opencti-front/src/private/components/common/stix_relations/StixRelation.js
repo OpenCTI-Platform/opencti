@@ -7,6 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixRelationOverview from './StixRelationOverview';
+import Loader from '../../../../components/Loader';
 
 const styles = () => ({
   container: {
@@ -49,7 +50,7 @@ class StixRelation extends Component {
                 />
               );
             }
-            return <div> &nbsp; </div>;
+            return <Loader />;
           }}
         />
       </div>
@@ -66,8 +67,4 @@ StixRelation.propTypes = {
   match: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(StixRelation);
+export default compose(inject18n, withRouter, withStyles(styles))(StixRelation);

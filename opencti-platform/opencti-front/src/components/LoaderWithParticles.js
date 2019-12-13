@@ -36,7 +36,7 @@ const styles = () => ({
   },
 });
 
-class Loader extends Component {
+class LoaderWithParticles extends Component {
   render() {
     const { classes, variant } = this.props;
     return (
@@ -70,10 +70,10 @@ class Loader extends Component {
   }
 }
 
-Loader.propTypes = {
+LoaderWithParticles.propTypes = {
   variant: PropTypes.string,
   history: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export default withStyles(styles)(Loader);
+export default withStyles(styles)(LoaderWithParticles);

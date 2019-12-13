@@ -19,8 +19,9 @@ import inject18n from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { incidentEditionQuery } from './IncidentEdition';
 import IncidentEditionContainer from './IncidentEditionContainer';
+import Loader from '../../../../components/Loader';
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
     margin: 0,
   },
@@ -171,8 +172,7 @@ class IncidentPopover extends Component {
                   />
                 );
               }
-              // Loading
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
         </Drawer>

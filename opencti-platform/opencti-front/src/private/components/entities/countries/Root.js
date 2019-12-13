@@ -14,6 +14,7 @@ import CountryObservables from './CountryObservables';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import FileManager from '../../common/files/FileManager';
 import CountryPopover from './CountryPopover';
+import Loader from '../../../../components/Loader';
 
 const subscription = graphql`
   subscription RootCountriesSubscription($id: ID!) {
@@ -145,7 +146,7 @@ class RootCountry extends Component {
                 </div>
               );
             }
-            return <div> &nbsp; </div>;
+            return <Loader />;
           }}
         />
       </div>

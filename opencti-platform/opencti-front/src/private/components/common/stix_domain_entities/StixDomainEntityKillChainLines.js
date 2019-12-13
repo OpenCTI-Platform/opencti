@@ -29,9 +29,11 @@ import { Launch, LockPattern } from 'mdi-material-ui';
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
 import IconButton from '@material-ui/core/IconButton';
 import { createRefetchContainer } from 'react-relay';
+import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import StixRelationPopover from '../stix_relations/StixRelationPopover';
 import StixRelationCreationFromEntity from '../stix_relations/StixRelationCreationFromEntity';
+import ItemYears from '../../../../components/ItemYears';
 
 const styles = (theme) => ({
   itemIcon: {
@@ -79,6 +81,15 @@ class StixDomainEntityKillChainLinesComponent extends Component {
     )(data.stixRelations.edges);
     const stixRelations = pipe(
       map((n) => n.node),
+      map((n) => assoc('firstSeenYear', yearFormat(n.first_seen), n)),
+      map((n) => assoc('lastSeenYear', yearFormat(n.last_seen), n)),
+      map((n) => assoc(
+        'years',
+        n.firstSeenYear === n.lastSeenYear
+          ? n.firstSeenYear
+          : `${n.firstSeenYear} - ${n.lastSeenYear}`,
+        n,
+      )),
       map((n) => assoc(
         'killChainPhase',
         n.killChainPhases.edges.length > 0
@@ -86,6 +97,7 @@ class StixDomainEntityKillChainLinesComponent extends Component {
           : n.to.killChainPhases.edges[0].node,
         n,
       )),
+      sortWith([ascend(prop('years'))]),
       groupBy(path(['killChainPhase', 'id'])),
       mapObjIndexed((value, key) => assoc('attackPatterns', value, killChainPhases[key])),
       values,
@@ -150,6 +162,10 @@ class StixDomainEntityKillChainLinesComponent extends Component {
                               }
                             />
                           }
+                        />
+                        <ItemYears
+                          variant="inList"
+                          years={attackPattern.years}
                         />
                         <ListItemSecondaryAction>
                           <StixRelationPopover

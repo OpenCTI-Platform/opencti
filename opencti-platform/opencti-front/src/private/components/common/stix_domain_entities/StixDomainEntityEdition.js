@@ -7,6 +7,7 @@ import Drawer from '@material-ui/core/Drawer';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixDomainEntityEditionOverview from './StixDomainEntityEditionOverview';
+import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -71,7 +72,7 @@ class StixDomainEntityEdition extends Component {
                   />
                 );
               }
-              return <div> &nbsp; </div>;
+              return <Loader variant='inElement' />;
             }}
           />
         ) : (

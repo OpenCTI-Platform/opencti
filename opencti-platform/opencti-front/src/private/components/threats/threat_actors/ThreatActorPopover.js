@@ -19,8 +19,9 @@ import inject18n from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { threatActorEditionQuery } from './ThreatActorEdition';
 import ThreatActorEditionContainer from './ThreatActorEditionContainer';
+import Loader from '../../../../components/Loader';
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
     margin: 0,
   },
@@ -176,7 +177,7 @@ class ThreatActorPopover extends Component {
                   />
                 );
               }
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
         </Drawer>

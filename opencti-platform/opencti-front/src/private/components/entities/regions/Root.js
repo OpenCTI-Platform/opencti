@@ -14,6 +14,7 @@ import RegionObservables from './RegionObservables';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import FileManager from '../../common/files/FileManager';
 import RegionPopover from './RegionPopover';
+import Loader from '../../../../components/Loader';
 
 const subscription = graphql`
   subscription RootRegionsSubscription($id: ID!) {
@@ -142,7 +143,7 @@ class RootRegion extends Component {
                 </div>
               );
             }
-            return <div> &nbsp; </div>;
+            return <Loader />;
           }}
         />
       </div>

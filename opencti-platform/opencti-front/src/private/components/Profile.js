@@ -6,6 +6,7 @@ import { withStyles } from '@material-ui/core/styles/index';
 import inject18n from '../../components/i18n';
 import { QueryRenderer } from '../../relay/environment';
 import ProfileOverview from './profile/ProfileOverview';
+import Loader from '../../components/Loader';
 
 const styles = () => ({
   container: {
@@ -32,7 +33,7 @@ class Profile extends Component {
             if (props) {
               return <ProfileOverview me={props.me} />;
             }
-            return <div> &nbsp; </div>;
+            return <Loader />;
           }}
         />
       </div>

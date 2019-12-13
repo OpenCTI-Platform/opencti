@@ -7,6 +7,7 @@ import inject18n from '../../../../components/i18n';
 import StixDomainEntityKillChainLines, {
   stixDomainEntityKillChainLinesStixRelationsQuery,
 } from './StixDomainEntityKillChainLines';
+import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
   itemIcon: {
@@ -42,7 +43,7 @@ class StixDomainEntityKillChain extends Component {
                 />
               );
             }
-            return <div> &nbsp; </div>;
+            return <Loader variant="withRightPadding" />;
           }}
         />
       </div>

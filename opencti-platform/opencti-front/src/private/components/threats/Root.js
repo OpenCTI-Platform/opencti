@@ -30,7 +30,7 @@ class Root extends Component {
         />
         <BoundaryRoute
           path="/dashboard/threats/threat_actors/:threatActorId"
-          render={routeProps => <RootThreatActor {...routeProps} me={me} />}
+          render={(routeProps) => <RootThreatActor {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
@@ -39,7 +39,7 @@ class Root extends Component {
         />
         <BoundaryRoute
           path="/dashboard/threats/intrusion_sets/:intrusionSetId"
-          render={routeProps => <RootIntrusionSet {...routeProps} me={me} />}
+          render={(routeProps) => <RootIntrusionSet {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
@@ -48,7 +48,7 @@ class Root extends Component {
         />
         <BoundaryRoute
           path="/dashboard/threats/campaigns/:campaignId"
-          render={routeProps => <RootCampaign {...routeProps} me={me} />}
+          render={(routeProps) => <RootCampaign {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
@@ -57,7 +57,7 @@ class Root extends Component {
         />
         <BoundaryRoute
           path="/dashboard/threats/incidents/:incidentId"
-          render={routeProps => <RootIncident {...routeProps} me={me} />}
+          render={(routeProps) => <RootIncident {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
@@ -66,7 +66,7 @@ class Root extends Component {
         />
         <BoundaryRoute
           path="/dashboard/threats/malwares/:malwareId"
-          render={routeProps => <RootMalware {...routeProps} me={me} />}
+          render={(routeProps) => <RootMalware {...routeProps} me={me} />}
         />
       </Switch>
     );

@@ -19,6 +19,7 @@ import inject18n from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { cityEditionQuery } from './CityEdition';
 import CityEditionContainer from './CityEditionContainer';
+import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
   container: {
@@ -170,7 +171,7 @@ class CityPopover extends Component {
                   />
                 );
               }
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
         </Drawer>
@@ -186,8 +187,4 @@ CityPopover.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(CityPopover);
+export default compose(inject18n, withRouter, withStyles(styles))(CityPopover);
