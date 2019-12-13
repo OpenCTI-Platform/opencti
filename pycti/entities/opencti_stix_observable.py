@@ -214,7 +214,7 @@ class StixObservable:
         object_result = self.read(filters=[{'key': 'observable_value', 'values': [observable_value]}])
         if object_result is not None:
             if update:
-                if description is not None:
+                if description is not None and object_result['description'] != 'description':
                     self.update_field(id=object_result['id'], key='description', value=description)
                     object_result['description'] = description
             return object_result

@@ -243,36 +243,44 @@ class Incident:
         )
         if object_result is not None:
             if update:
-                self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
-                object_result['name'] = name
-                self.opencti.stix_domain_entity.update_field(
-                    id=object_result['id'],
-                    key='description',
-                    value=description
-                )
-                object_result['description'] = description
-                if alias is not None:
+                # name
+                if object_result['name'] != name:
+                    self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
+                    object_result['name'] = name
+                # description
+                if object_result['description'] != description:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='description',
+                        value=description
+                    )
+                    object_result['description'] = description
+                # alias
+                if alias is not None and object_result['alias'] != alias:
                     if 'alias' in object_result:
                         new_aliases = object_result['alias'] + list(set(alias) - set(object_result['alias']))
                     else:
                         new_aliases = alias
                     self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
                     object_result['alias'] = new_aliases
-                if first_seen is not None:
+                # first_seen
+                if first_seen is not None and object_result['first_seen'] != first_seen:
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result['id'],
                         key='first_seen',
                         value=first_seen
                     )
                     object_result['first_seen'] = first_seen
-                if last_seen is not None:
+                # last_seen
+                if last_seen is not None and object_result['last_seen'] != last_seen:
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result['id'],
                         key='last_seen',
                         value=last_seen
                     )
                     object_result['last_seen'] = last_seen
-                if objective is not None:
+                # objective
+                if objective is not None and object_result['objective'] != objective:
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result['id'],
                         key='objective',

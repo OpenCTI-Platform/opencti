@@ -167,18 +167,14 @@ class OpenCTIStix2:
                 if kill_chain_phase['phase_name'] in self.mapping_cache:
                     kill_chain_phase_id = self.mapping_cache[kill_chain_phase['phase_name']]['id']
                 else:
-                    kill_chain_phase_id = self.opencti.create_kill_chain_phase_if_not_exists(
-                        kill_chain_phase['kill_chain_name'],
-                        kill_chain_phase['phase_name'],
-                        kill_chain_phase[
-                            CustomProperties.PHASE_ORDER] if CustomProperties.PHASE_ORDER in kill_chain_phase else 0,
-                        kill_chain_phase[
-                            CustomProperties.ID] if CustomProperties.ID in kill_chain_phase else None,
-                        kill_chain_phase['id'] if 'id' in kill_chain_phase else None,
-                        kill_chain_phase[
-                            CustomProperties.CREATED] if CustomProperties.CREATED in kill_chain_phase else None,
-                        kill_chain_phase[
-                            CustomProperties.MODIFIED] if CustomProperties.MODIFIED in kill_chain_phase else None,
+                    kill_chain_phase_id = self.opencti.kill_chain_phase.create(
+                        kill_chain_name=kill_chain_phase['kill_chain_name'],
+                        phase_name=kill_chain_phase['phase_name'],
+                        phase_order=kill_chain_phase[CustomProperties.PHASE_ORDER] if CustomProperties.PHASE_ORDER in kill_chain_phase else 0,
+                        id=kill_chain_phase[CustomProperties.ID] if CustomProperties.ID in kill_chain_phase else None,
+                        stix_id_key=kill_chain_phase['id'] if 'id' in kill_chain_phase else None,
+                        created=kill_chain_phase[CustomProperties.CREATED] if CustomProperties.CREATED in kill_chain_phase else None,
+                        modified=kill_chain_phase[CustomProperties.MODIFIED] if CustomProperties.MODIFIED in kill_chain_phase else None,
                     )['id']
                 self.mapping_cache[kill_chain_phase['phase_name']] = {'id': kill_chain_phase_id}
                 kill_chain_phases_ids.append(kill_chain_phase_id)
