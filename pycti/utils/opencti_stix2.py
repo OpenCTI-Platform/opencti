@@ -348,7 +348,7 @@ class OpenCTIStix2:
             }
 
             # Update created by ref
-            if created_by_ref_id is not None and stix_object['type'] != 'marking-definition':
+            if update and created_by_ref_id is not None and stix_object['type'] != 'marking-definition':
                 self.opencti.stix_entity.update_created_by_ref(
                     id=stix_object_result['id'],
                     entity=stix_object_result,
