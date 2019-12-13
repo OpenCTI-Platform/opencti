@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from pycti import OpenCTIApiClient, MarkingDefinition
+from pycti import OpenCTIApiClient
 
 # Variables
 api_url = 'https://demo.opencti.io'

@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from dateutil.parser import parse
-from pycti import OpenCTIApiClient, MarkingDefinition
+from pycti import OpenCTIApiClient
 
 # Variables
 api_url = 'https://demo.opencti.io'

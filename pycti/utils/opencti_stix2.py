@@ -170,11 +170,14 @@ class OpenCTIStix2:
                     kill_chain_phase_id = self.opencti.kill_chain_phase.create(
                         kill_chain_name=kill_chain_phase['kill_chain_name'],
                         phase_name=kill_chain_phase['phase_name'],
-                        phase_order=kill_chain_phase[CustomProperties.PHASE_ORDER] if CustomProperties.PHASE_ORDER in kill_chain_phase else 0,
+                        phase_order=kill_chain_phase[
+                            CustomProperties.PHASE_ORDER] if CustomProperties.PHASE_ORDER in kill_chain_phase else 0,
                         id=kill_chain_phase[CustomProperties.ID] if CustomProperties.ID in kill_chain_phase else None,
                         stix_id_key=kill_chain_phase['id'] if 'id' in kill_chain_phase else None,
-                        created=kill_chain_phase[CustomProperties.CREATED] if CustomProperties.CREATED in kill_chain_phase else None,
-                        modified=kill_chain_phase[CustomProperties.MODIFIED] if CustomProperties.MODIFIED in kill_chain_phase else None,
+                        created=kill_chain_phase[
+                            CustomProperties.CREATED] if CustomProperties.CREATED in kill_chain_phase else None,
+                        modified=kill_chain_phase[
+                            CustomProperties.MODIFIED] if CustomProperties.MODIFIED in kill_chain_phase else None,
                     )['id']
                 self.mapping_cache[kill_chain_phase['phase_name']] = {'id': kill_chain_phase_id}
                 kill_chain_phases_ids.append(kill_chain_phase_id)
@@ -1181,15 +1184,15 @@ class OpenCTIStix2:
 
     # TODO move in Malware
     def create_malware(self, stix_object, update=False):
-        return self.opencti.create_malware_if_not_exists(
-            stix_object['name'],
-            self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
-            self.pick_aliases(stix_object),
-            stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
-            stix_object['id'] if 'id' in stix_object else None,
-            stix_object['created'] if 'created' in stix_object else None,
-            stix_object['modified'] if 'modified' in stix_object else None,
-            update
+        return self.opencti.malware.create(
+            name=stix_object['name'],
+            description=self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
+            alias=self.pick_aliases(stix_object),
+            id=stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
+            stix_id_key=stix_object['id'] if 'id' in stix_object else None,
+            created=stix_object['created'] if 'created' in stix_object else None,
+            modified=stix_object['modified'] if 'modified' in stix_object else None,
+            update=update
         )
 
     # TODO move in Tool
