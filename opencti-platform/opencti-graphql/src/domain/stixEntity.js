@@ -1,6 +1,6 @@
 import { assoc } from 'ramda';
 import {
-  createRelation,
+  createRelation, deleteRelationById,
   escapeString,
   findWithConnectedRelations,
   loadEntityById,
@@ -9,6 +9,8 @@ import {
 } from '../database/grakn';
 import { findAll as relationFindAll, search as relationSearch } from './stixRelation';
 import { buildPagination } from '../database/utils';
+import { notify } from '../database/redis';
+import { BUS_TOPICS } from '../config/conf';
 
 export const findById = stixEntityId => {
   if (stixEntityId.match(/[a-z-]+--[\w-]{36}/g)) {
@@ -78,4 +80,10 @@ export const stixRelations = (stixEntityId, args) => {
 
 export const stixEntityAddRelation = async (user, stixEntityId, input) => {
   return createRelation(stixEntityId, input);
+};
+
+export const stixEntityDeleteRelation = async (user, stixEntityId, relationId) => {
+  await deleteRelationById(relationId);
+  const data = await loadEntityById(stixEntityId);
+  return notify(BUS_TOPICS.StixEntity.EDIT_TOPIC, data, user);
 };

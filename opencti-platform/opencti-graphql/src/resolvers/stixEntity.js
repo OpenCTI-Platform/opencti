@@ -6,7 +6,8 @@ import {
   stixRelations,
   tags,
   externalReferences,
-  stixEntityAddRelation
+  stixEntityAddRelation,
+  stixEntityDeleteRelation
 } from '../domain/stixEntity';
 import { fetchEditContext } from '../database/redis';
 
@@ -35,7 +36,8 @@ const stixEntityResolvers = {
   },
   Mutation: {
     stixEntityEdit: (_, { id }, { user }) => ({
-      relationAdd: ({ input }) => stixEntityAddRelation(user, id, input)
+      relationAdd: ({ input }) => stixEntityAddRelation(user, id, input),
+      relationDelete: ({ relationId }) => stixEntityDeleteRelation(user, id, relationId)
     })
   }
 };

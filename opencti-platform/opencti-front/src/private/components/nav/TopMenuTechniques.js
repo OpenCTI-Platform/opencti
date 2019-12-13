@@ -42,7 +42,7 @@ class TopMenuTechniques extends Component {
           classes={{ root: classes.button }}
         >
           <LockPattern className={classes.icon} fontSize="small" />
-          {t('Tactics and procedures')}
+          {t('Attack patterns')}
         </Button>
         <Button
           component={Link}

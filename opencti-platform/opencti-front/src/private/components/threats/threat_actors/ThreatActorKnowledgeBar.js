@@ -169,7 +169,7 @@ class ThreatActorKnowledgeBar extends Component {
               <LockPattern />
             </ListItemIcon>
             <ListItemText
-              primary={t('Tactics')}
+              primary={t('Techniques')}
               secondary={t('Used by this actor')}
             />
           </MenuItem>

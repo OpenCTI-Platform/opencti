@@ -169,7 +169,7 @@ class IntrusionSetKnowledgeBar extends Component {
               <LockPattern />
             </ListItemIcon>
             <ListItemText
-              primary={t('Tactics')}
+              primary={t('Techniques')}
               secondary={t('Used by this intrusion set')}
             />
           </MenuItem>

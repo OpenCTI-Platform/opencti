@@ -3158,6 +3158,7 @@ type TagEditMutations {
 # StixEntity
 type StixEntityEditMutations {
   relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): StixEntity
 }
 
 # StixDomainEntity

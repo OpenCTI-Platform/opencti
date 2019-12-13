@@ -23,7 +23,11 @@ export const findAll = args => {
 };
 
 export const addKillChainPhase = async (user, killChainPhase) => {
-  const killChainPhaseToCreate = assoc('phase_order', 0, killChainPhase);
+  const killChainPhaseToCreate = assoc(
+    'phase_order',
+    killChainPhase.phase_order ? killChainPhase.phase_order : 0,
+    killChainPhase
+  );
   const created = await createEntity(killChainPhaseToCreate, 'Kill-Chain-Phase', { modelType: TYPE_STIX_DOMAIN });
   return notify(BUS_TOPICS.KillChainPhase.ADDED_TOPIC, created, user);
 };

@@ -131,7 +131,7 @@ class IncidentKnowledgeBar extends Component {
               <LockPattern />
             </ListItemIcon>
             <ListItemText
-              primary={t('Tactics')}
+              primary={t('Techniques')}
               secondary={t('Used in this incident')}
             />
           </MenuItem>
