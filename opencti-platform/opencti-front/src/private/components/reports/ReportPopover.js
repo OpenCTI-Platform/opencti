@@ -19,8 +19,9 @@ import inject18n from '../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../relay/environment';
 import { reportEditionQuery } from './ReportEdition';
 import ReportEditionContainer from './ReportEditionContainer';
+import Loader from '../../../components/Loader';
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
     margin: 0,
   },
@@ -115,7 +116,8 @@ class ReportPopover extends Component {
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}>
+          style={{ marginTop: 50 }}
+        >
           <MenuItem onClick={this.handleOpenEdit.bind(this)}>
             {t('Update')}
           </MenuItem>
@@ -126,7 +128,8 @@ class ReportPopover extends Component {
         <Dialog
           open={this.state.displayDelete}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}>
+          onClose={this.handleCloseDelete.bind(this)}
+        >
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this report?')}
@@ -136,7 +139,8 @@ class ReportPopover extends Component {
             <Button
               onClick={this.handleCloseDelete.bind(this)}
               color="primary"
-              disabled={this.state.deleting}>
+              disabled={this.state.deleting}
+            >
               {t('Cancel')}
             </Button>
             <Button
@@ -167,7 +171,7 @@ class ReportPopover extends Component {
                   />
                 );
               }
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
         </Drawer>

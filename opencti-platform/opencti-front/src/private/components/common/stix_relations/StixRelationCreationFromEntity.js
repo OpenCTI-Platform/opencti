@@ -61,6 +61,7 @@ import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions
 import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
 import { truncate } from '../../../../utils/String';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
+import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -799,7 +800,7 @@ class StixRelationCreationFromEntity extends Component {
               />
             );
           }
-          return <div> &nbsp; </div>;
+          return <Loader variant="inElement" />;
         }}
       />
     );

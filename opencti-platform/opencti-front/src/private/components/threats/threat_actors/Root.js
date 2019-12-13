@@ -11,7 +11,7 @@ import ThreatActor from './ThreatActor';
 import ThreatActorReports from './ThreatActorReports';
 import ThreatActorKnowledge from './ThreatActorKnowledge';
 import ThreatActorObservables from './ThreatActorObservables';
-import Loader from '../../../Loader';
+import Loader from '../../../../components/Loader';
 import FileManager from '../../common/files/FileManager';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import ThreatActorPopover from './ThreatActorPopover';

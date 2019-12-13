@@ -14,8 +14,9 @@ import {
 import inject18n from '../../../../components/i18n';
 import PersonEditionContainer from './PersonEditionContainer';
 import { personEditionOverviewFocus } from './PersonEditionOverview';
+import Loader from '../../../../components/Loader';
 
-const styles = theme => ({
+const styles = (theme) => ({
   editButton: {
     position: 'fixed',
     bottom: 30,
@@ -100,7 +101,7 @@ class PersonEdition extends Component {
                   />
                 );
               }
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
         </Drawer>

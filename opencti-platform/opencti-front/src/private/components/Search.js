@@ -7,7 +7,7 @@ import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../relay/environment';
 import inject18n from '../../components/i18n';
 import TopBar from './nav/TopBar';
-import Loader from '../Loader';
+import LoaderWithParticles from '../../components/LoaderWithParticles';
 import StixDomainEntitiesLines, {
   stixDomainEntitiesLinesQuery,
 } from './common/stix_domain_entities/StixDomainEntitiesLines';
@@ -43,7 +43,8 @@ class Search extends Component {
         <Typography
           variant="h1"
           gutterBottom={true}
-          style={{ marginBottom: 20 }}>
+          style={{ marginBottom: 20 }}
+        >
           {t('Search for an entity')}
         </Typography>
         <QueryRenderer
@@ -58,7 +59,7 @@ class Search extends Component {
             if (props) {
               return <StixDomainEntitiesLines data={props} />;
             }
-            return <Loader variant="inside" />;
+            return <LoaderWithParticles variant="inside" />;
           }}
         />
         <QueryRenderer
@@ -90,8 +91,4 @@ Search.propTypes = {
   me: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(Search);
+export default compose(inject18n, withRouter, withStyles(styles))(Search);

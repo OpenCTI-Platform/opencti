@@ -14,8 +14,9 @@ import {
   WS_ACTIVATED,
 } from '../../../relay/environment';
 import { workspaceEditionOverviewFocus } from './WorkspaceEditionOverview';
+import Loader from '../../../components/Loader';
 
-const styles = theme => ({
+const styles = (theme) => ({
   editButton: {
     position: 'fixed',
     bottom: 30,
@@ -100,7 +101,7 @@ class WorkspaceEdition extends Component {
                   />
                 );
               }
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
         </Drawer>

@@ -7,6 +7,7 @@ import Drawer from '@material-ui/core/Drawer';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixRelationEditionOverview from './StixRelationEditionOverview';
+import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -79,7 +80,7 @@ class StixRelationEdition extends Component {
                   />
                 );
               }
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
         ) : (
@@ -101,7 +102,4 @@ StixRelationEdition.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixRelationEdition);
+export default compose(inject18n, withStyles(styles))(StixRelationEdition);

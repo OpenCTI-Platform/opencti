@@ -13,6 +13,7 @@ import SectorKnowledge from './SectorKnowledge';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import RegionPopover from '../regions/RegionPopover';
 import FileManager from '../../common/files/FileManager';
+import Loader from "../../../../components/Loader";
 
 const subscription = graphql`
   subscription RootSectorSubscription($id: ID!) {
@@ -132,7 +133,7 @@ class RootSector extends Component {
                 </div>
               );
             }
-            return <div> &nbsp; </div>;
+            return <Loader />;
           }}
         />
       </div>

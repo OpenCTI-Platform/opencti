@@ -33,6 +33,7 @@ import {
 } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
+import Loader from "../../../../components/Loader";
 
 const styles = () => ({
   container: {
@@ -251,7 +252,7 @@ const FileManager = ({
                         </DialogContent>
                       );
                     }
-                    return <div> &nbsp; </div>;
+                    return <Loader variant='inElement' />;
                   }}
                 />
                 <DialogActions>

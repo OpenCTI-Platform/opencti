@@ -19,8 +19,9 @@ import inject18n from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { toolEditionQuery } from './ToolEdition';
 import ToolEditionContainer from './ToolEditionContainer';
+import Loader from '../../../../components/Loader';
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
     margin: 0,
   },
@@ -170,7 +171,7 @@ class ToolPopover extends Component {
                   />
                 );
               }
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
         </Drawer>
@@ -186,8 +187,4 @@ ToolPopover.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(ToolPopover);
+export default compose(inject18n, withRouter, withStyles(styles))(ToolPopover);

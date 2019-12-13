@@ -19,8 +19,9 @@ import inject18n from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { organizationEditionQuery } from './OrganizationEdition';
 import OrganizationEditionContainer from './OrganizationEditionContainer';
+import Loader from '../../../../components/Loader';
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
     margin: 0,
   },
@@ -159,7 +160,7 @@ class OrganizationPopover extends Component {
         >
           <QueryRenderer
             query={organizationEditionQuery}
-            variables={{ id: id }}
+            variables={{ id }}
             render={({ props }) => {
               if (props) {
                 return (
@@ -170,7 +171,7 @@ class OrganizationPopover extends Component {
                   />
                 );
               }
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
         </Drawer>

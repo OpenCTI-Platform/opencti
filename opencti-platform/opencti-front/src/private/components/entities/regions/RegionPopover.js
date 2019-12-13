@@ -19,8 +19,9 @@ import inject18n from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { regionEditionQuery } from './RegionEdition';
 import RegionEditionContainer from './RegionEditionContainer';
+import Loader from '../../../../components/Loader';
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
     margin: 0,
   },
@@ -170,7 +171,7 @@ class RegionPopover extends Component {
                   />
                 );
               }
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
         </Drawer>

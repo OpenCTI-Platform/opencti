@@ -18,6 +18,7 @@ import MoreVert from '@material-ui/icons/MoreVert';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import TagEdition from './TagEdition';
+import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
   container: {
@@ -163,8 +164,7 @@ class TagPopover extends Component {
                   />
                 );
               }
-              // Loading
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
         </Drawer>
@@ -208,7 +208,4 @@ TagPopover.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(TagPopover);
+export default compose(inject18n, withStyles(styles))(TagPopover);

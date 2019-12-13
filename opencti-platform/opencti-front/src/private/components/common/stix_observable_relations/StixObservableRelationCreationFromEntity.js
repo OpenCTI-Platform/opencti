@@ -39,6 +39,7 @@ import StixObservableCreation from '../../stix_observables/StixObservableCreatio
 import SearchInput from '../../../../components/SearchInput';
 import { truncate } from '../../../../utils/String';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
+import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -579,7 +580,7 @@ class StixObservableRelationCreationFromEntity extends Component {
               />
             );
           }
-          return <div> &nbsp; </div>;
+          return <Loader variant="inElement" />;
         }}
       />
     );

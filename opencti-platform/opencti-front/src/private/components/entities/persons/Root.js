@@ -13,6 +13,7 @@ import PersonKnowledge from './PersonKnowledge';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import FileManager from '../../common/files/FileManager';
 import PersonPopover from './PersonPopover';
+import Loader from '../../../../components/Loader';
 
 const subscription = graphql`
   subscription RootPersonsSubscription($id: ID!) {
@@ -132,7 +133,7 @@ class RootPerson extends Component {
                 </div>
               );
             }
-            return <div> &nbsp; </div>;
+            return <Loader variant="inElement" />;
           }}
         />
       </div>

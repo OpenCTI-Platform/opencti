@@ -22,8 +22,9 @@ import {
   WS_ACTIVATED,
 } from '../../../../relay/environment';
 import GroupEdition from './GroupEdition';
+import Loader from '../../../../components/Loader';
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
     margin: 0,
   },
@@ -182,7 +183,7 @@ class GroupPopover extends Component {
                   />
                 );
               }
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
         </Drawer>
@@ -226,7 +227,4 @@ GroupPopover.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(GroupPopover);
+export default compose(inject18n, withStyles(styles))(GroupPopover);

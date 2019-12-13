@@ -14,8 +14,9 @@ import {
 import inject18n from '../../../../components/i18n';
 import CampaignEditionContainer from './CampaignEditionContainer';
 import { campaignEditionOverviewFocus } from './CampaignEditionOverview';
+import Loader from '../../../../components/Loader';
 
-const styles = theme => ({
+const styles = (theme) => ({
   editButton: {
     position: 'fixed',
     bottom: 30,
@@ -100,7 +101,7 @@ class CampaignEdition extends Component {
                   />
                 );
               }
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
         </Drawer>

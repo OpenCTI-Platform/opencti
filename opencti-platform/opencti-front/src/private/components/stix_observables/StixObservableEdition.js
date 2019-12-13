@@ -14,8 +14,9 @@ import {
 import inject18n from '../../../components/i18n';
 import StixObservableEditionContainer from './StixObservableEditionContainer';
 import { stixObservableEditionOverviewFocus } from './StixObservableEditionOverview';
+import Loader from '../../../components/Loader';
 
-const styles = theme => ({
+const styles = (theme) => ({
   editButton: {
     position: 'fixed',
     bottom: 30,
@@ -100,7 +101,7 @@ class StixObservableEdition extends Component {
                   />
                 );
               }
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
         </Drawer>

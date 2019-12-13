@@ -14,6 +14,7 @@ import { Description } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
 import { QueryRenderer } from '../../../relay/environment';
+import Loader from '../../../components/Loader';
 
 const styles = (theme) => ({
   paper: {
@@ -63,7 +64,7 @@ const entityLastReportsQuery = graphql`
       first: $first
       orderBy: $orderBy
       orderMode: $orderMode
-      filters: $filters  
+      filters: $filters
     ) {
       edges {
         node {
@@ -125,7 +126,8 @@ class EntityLastReports extends Component {
                           classes={{ root: classes.item }}
                           divider={true}
                           component={Link}
-                          to={`/dashboard/reports/all/${report.id}`}>
+                          to={`/dashboard/reports/all/${report.id}`}
+                        >
                           <ListItemIcon classes={{ root: classes.itemIcon }}>
                             <Description />
                           </ListItemIcon>
@@ -153,7 +155,7 @@ class EntityLastReports extends Component {
                   </List>
                 );
               }
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
         </Paper>
@@ -170,7 +172,4 @@ EntityLastReports.propTypes = {
   nsd: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(EntityLastReports);
+export default compose(inject18n, withStyles(styles))(EntityLastReports);

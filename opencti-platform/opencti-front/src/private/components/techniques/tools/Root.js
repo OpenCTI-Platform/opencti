@@ -13,6 +13,7 @@ import ToolKnowledge from './ToolKnowledge';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import FileManager from '../../common/files/FileManager';
 import ToolPopover from './ToolPopover';
+import Loader from '../../../../components/Loader';
 
 const subscription = graphql`
   subscription RootToolSubscription($id: ID!) {
@@ -131,7 +132,7 @@ class RootTool extends Component {
                 </div>
               );
             }
-            return <div> &nbsp; </div>;
+            return <Loader />;
           }}
         />
       </div>

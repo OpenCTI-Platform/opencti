@@ -48,6 +48,7 @@ import DatePickerField from '../../../../components/DatePickerField';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
 import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
 import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
+import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
   header: {
@@ -148,7 +149,7 @@ const stixRelationMutationRelationDelete = graphql`
   ) {
     stixRelationEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-          ...StixRelationEditionOverview_stixRelation
+        ...StixRelationEditionOverview_stixRelation
       }
     }
   }
@@ -562,7 +563,7 @@ class StixRelationEditionContainer extends Component {
                   />
                 );
               }
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
           {stixDomainEntity ? (

@@ -6,6 +6,7 @@ import inject18n from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import WorkersStatus, { workersStatusQuery } from './WorkersStatus';
 import ConnectorsStatus, { connectorsStatusQuery } from './ConnectorsStatus';
+import Loader from '../../../components/Loader';
 
 const styles = () => ({
   container: {
@@ -34,7 +35,7 @@ class Connectors extends Component {
             if (props) {
               return <ConnectorsStatus data={props} />;
             }
-            return <div> &nbsp; </div>;
+            return <Loader />;
           }}
         />
       </div>

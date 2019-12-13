@@ -14,8 +14,9 @@ import {
 import inject18n from '../../../../components/i18n';
 import SectorEditionContainer from './SectorEditionContainer';
 import { sectorEditionOverviewFocus } from './SectorEditionOverview';
+import Loader from '../../../../components/Loader';
 
-const styles = theme => ({
+const styles = (theme) => ({
   editButton: {
     position: 'fixed',
     bottom: 30,
@@ -101,8 +102,7 @@ class SectorEdition extends Component {
                   />
                 );
               }
-              // Loading
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
         </Drawer>

@@ -14,8 +14,9 @@ import {
 import inject18n from '../../../../components/i18n';
 import CourseOfActionEditionContainer from './CourseOfActionEditionContainer';
 import { courseOfActionEditionOverviewFocus } from './CourseOfActionEditionOverview';
+import Loader from '../../../../components/Loader';
 
-const styles = theme => ({
+const styles = (theme) => ({
   editButton: {
     position: 'fixed',
     bottom: 30,
@@ -100,7 +101,7 @@ class CourseOfActionEdition extends Component {
                   />
                 );
               }
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
         </Drawer>

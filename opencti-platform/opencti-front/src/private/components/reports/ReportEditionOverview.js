@@ -36,6 +36,7 @@ import IdentityCreation, {
 } from '../common/identities/IdentityCreation';
 import DatePickerField from '../../../components/DatePickerField';
 import { attributesQuery } from '../settings/attributes/AttributesLines';
+import Loader from '../../../components/Loader';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -536,7 +537,7 @@ class ReportEditionOverviewComponent extends Component {
                 />
               );
             }
-            return <div> &nbsp; </div>;
+            return <Loader variant="inElement" />;
           }}
         />
       </div>

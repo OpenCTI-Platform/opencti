@@ -14,6 +14,7 @@ import CityObservables from './CityObservables';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import FileManager from '../../common/files/FileManager';
 import CityPopover from './CityPopover';
+import Loader from "../../../../components/Loader";
 
 const subscription = graphql`
   subscription RootCitiesSubscription($id: ID!) {
@@ -139,7 +140,7 @@ class RootCity extends Component {
                 </div>
               );
             }
-            return <div> &nbsp; </div>;
+            return <Loader />;
           }}
         />
       </div>

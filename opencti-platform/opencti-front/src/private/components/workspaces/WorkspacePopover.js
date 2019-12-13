@@ -19,8 +19,9 @@ import inject18n from '../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../relay/environment';
 import { workspaceEditionQuery } from './WorkspaceEdition';
 import WorkspaceEditionContainer from './WorkspaceEditionContainer';
+import Loader from '../../../components/Loader';
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
     margin: 0,
   },
@@ -170,7 +171,7 @@ class WorkspacePopover extends Component {
                   />
                 );
               }
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
         </Drawer>

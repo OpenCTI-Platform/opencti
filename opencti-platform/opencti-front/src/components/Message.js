@@ -11,7 +11,7 @@ import { compose, head } from 'ramda';
 import { MESSAGING$ } from '../relay/environment';
 import inject18n from './i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   message: {
     display: 'flex',
     alignItems: 'center',
@@ -102,7 +102,4 @@ Message.propTypes = {
   message: PropTypes.string,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(Message);
+export default compose(inject18n, withStyles(styles))(Message);

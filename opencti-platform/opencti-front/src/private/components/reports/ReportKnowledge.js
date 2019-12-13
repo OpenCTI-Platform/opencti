@@ -20,6 +20,7 @@ import ReportHeader from './ReportHeader';
 import ReportKnowledgeGraph, {
   reportKnowledgeGraphQuery,
 } from './ReportKnowledgeGraph';
+import Loader from '../../../components/Loader';
 
 const styles = (theme) => ({
   container: {
@@ -80,7 +81,7 @@ class ReportKnowledgeComponent extends Component {
                 />
               );
             }
-            return <div> &nbsp; </div>;
+            return <Loader />;
           }}
         />
       </div>
@@ -113,7 +114,4 @@ const ReportKnowledge = createFragmentContainer(ReportKnowledgeComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(ReportKnowledge);
+export default compose(inject18n, withStyles(styles))(ReportKnowledge);

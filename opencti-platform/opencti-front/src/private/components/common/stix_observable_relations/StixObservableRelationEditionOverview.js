@@ -44,6 +44,7 @@ import Autocomplete from '../../../../components/Autocomplete';
 import DatePickerField from '../../../../components/DatePickerField';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
 import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
+import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
   header: {
@@ -449,7 +450,7 @@ class StixObservableRelationEditionContainer extends Component {
                   />
                 );
               }
-              return <div> &nbsp; </div>;
+              return <Loader variant="inElement" />;
             }}
           />
           {stixDomainEntity ? (
