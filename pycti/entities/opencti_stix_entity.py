@@ -1,8 +1,5 @@
 # coding: utf-8
 
-import json
-
-
 class StixEntity:
     def __init__(self, opencti):
         self.opencti = opencti
@@ -178,7 +175,7 @@ class StixEntity:
             result = self.opencti.query(query, {'id': id})
             return self.opencti.process_multiple_fields(result['data']['stixEntity'])
         else:
-            self.opencti.log('error', 'Missing parameters: id or filters')
+            self.opencti.log('error', 'Missing parameters: id')
             return None
 
     """

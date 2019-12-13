@@ -301,7 +301,7 @@ class OpenCTIStix2:
                         entity=report,
                         external_reference_id=external_reference_id
                     )
-                    reports[external_reference_id] = report['id']
+                    reports[external_reference_id] = report
 
         return {
             'created_by_ref': created_by_ref_id,
@@ -376,7 +376,8 @@ class OpenCTIStix2:
                 )
                 if external_reference_id in reports:
                     self.opencti.report.add_stix_entity(
-                        id=reports[external_reference_id],
+                        id=reports[external_reference_id]['id'],
+                        report=reports[external_reference_id],
                         entity_id=stix_object_result['id']
                     )
             # Add kill chain phases
@@ -405,87 +406,81 @@ class OpenCTIStix2:
         external_references_ids = embedded_relationships['external_references']
         reports = embedded_relationships['reports']
 
-        # Check relation
-        stix_relation_result = self.opencti.stix_relation.read(id=stix_relation['id'])
-        if stix_relation_result is not None:
-            source_id = stix_relation_result['from']['id']
-            target_id = stix_relation_result['to']['id']
+        # Create the relation
+        if stix_relation['source_ref'] in self.mapping_cache:
+            source_id = self.mapping_cache[stix_relation['source_ref']]['id']
+            source_type = self.mapping_cache[stix_relation['source_ref']]['type']
         else:
-            # Create the relation
-            if stix_relation['source_ref'] in self.mapping_cache:
-                source_id = self.mapping_cache[stix_relation['source_ref']]['id']
-                source_type = self.mapping_cache[stix_relation['source_ref']]['type']
+            if CustomProperties.SOURCE_REF in stix_relation:
+                stix_object_result = self.opencti.stix_entity.read(id=stix_relation[CustomProperties.SOURCE_REF])
             else:
-                if CustomProperties.SOURCE_REF in stix_relation:
-                    stix_object_result = self.opencti.stix_entity.read(id=stix_relation[CustomProperties.SOURCE_REF])
-                else:
-                    stix_object_result = self.opencti.stix_entity.read(id=stix_relation['source_ref'])
-                if stix_object_result is not None:
-                    source_id = stix_object_result['id']
-                    source_type = stix_object_result['entity_type']
-                else:
-                    self.opencti.log('error', 'Source ref of the relationship not found, doing nothing...')
-                    return None
-
-            if stix_relation['target_ref'] in self.mapping_cache:
-                target_id = self.mapping_cache[stix_relation['target_ref']]['id']
-                target_type = self.mapping_cache[stix_relation['target_ref']]['type']
+                stix_object_result = self.opencti.stix_entity.read(id=stix_relation['source_ref'])
+            if stix_object_result is not None:
+                source_id = stix_object_result['id']
+                source_type = stix_object_result['entity_type']
             else:
-                if CustomProperties.TARGET_REF in stix_relation:
-                    stix_object_result = self.opencti.stix_entity.read(id=stix_relation[CustomProperties.TARGET_REF])
-                else:
-                    stix_object_result = self.opencti.stix_entity.read(id=stix_relation['target_ref'])
-                if stix_object_result is not None:
-                    target_id = stix_object_result['id']
-                    target_type = stix_object_result['entity_type']
-                else:
-                    self.opencti.log('error', 'Target ref of the relationship not found, doing nothing...')
-                    return None
-
-            date = None
-            if 'external_references' in stix_relation:
-                for external_reference in stix_relation['external_references']:
-                    try:
-                        if 'description' in external_reference:
-                            matches = list(datefinder.find_dates(external_reference['description']))
-                        else:
-                            matches = list(datefinder.find_dates(external_reference['source_name']))
-                    except:
-                        matches = []
-                    if len(matches) > 0:
-                        date = matches[0].strftime('%Y-%m-%dT%H:%M:%SZ')
-                    else:
-                        date = datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ')
-            if date is None:
-                date = datetime.datetime.utcnow().replace(microsecond=0, tzinfo=datetime.timezone.utc).isoformat()
-
-            stix_relation_result = self.opencti.stix_relation.create(
-                fromId=source_id,
-                fromType=source_type,
-                toId=target_id,
-                toType=target_type,
-                relationship_type=stix_relation['relationship_type'],
-                description=self.convert_markdown(
-                    stix_relation['description']) if 'description' in stix_relation else None,
-                first_seen=stix_relation[
-                    CustomProperties.FIRST_SEEN] if CustomProperties.FIRST_SEEN in stix_relation else date,
-                last_seen=stix_relation[
-                    CustomProperties.LAST_SEEN] if CustomProperties.LAST_SEEN in stix_relation else date,
-                weight=stix_relation[CustomProperties.WEIGHT] if CustomProperties.WEIGHT in stix_relation else 1,
-                role_played=stix_relation[
-                    CustomProperties.ROLE_PLAYED] if CustomProperties.ROLE_PLAYED in stix_relation else None,
-                id=stix_relation[CustomProperties.ID] if CustomProperties.ID in stix_relation else None,
-                stix_id_key=stix_relation['id'] if 'id' in stix_relation else None,
-                created=stix_relation['created'] if 'created' in stix_relation else None,
-                modified=stix_relation['modified'] if 'modified' in stix_relation else None,
-                update=update,
-                ignore_dates=stix_relation[
-                    CustomProperties.IGNORE_DATES] if CustomProperties.IGNORE_DATES in stix_relation else None,
-            )
-            if stix_relation_result is not None:
-                self.mapping_cache[stix_relation['id']] = {'id': stix_relation_result['id']}
-            else:
+                self.opencti.log('error', 'Source ref of the relationship not found, doing nothing...')
                 return None
+
+        if stix_relation['target_ref'] in self.mapping_cache:
+            target_id = self.mapping_cache[stix_relation['target_ref']]['id']
+            target_type = self.mapping_cache[stix_relation['target_ref']]['type']
+        else:
+            if CustomProperties.TARGET_REF in stix_relation:
+                stix_object_result = self.opencti.stix_entity.read(id=stix_relation[CustomProperties.TARGET_REF])
+            else:
+                stix_object_result = self.opencti.stix_entity.read(id=stix_relation['target_ref'])
+            if stix_object_result is not None:
+                target_id = stix_object_result['id']
+                target_type = stix_object_result['entity_type']
+            else:
+                self.opencti.log('error', 'Target ref of the relationship not found, doing nothing...')
+                return None
+
+        date = None
+        if 'external_references' in stix_relation:
+            for external_reference in stix_relation['external_references']:
+                try:
+                    if 'description' in external_reference:
+                        matches = list(datefinder.find_dates(external_reference['description']))
+                    else:
+                        matches = list(datefinder.find_dates(external_reference['source_name']))
+                except:
+                    matches = []
+                if len(matches) > 0:
+                    date = matches[0].strftime('%Y-%m-%dT%H:%M:%SZ')
+                else:
+                    date = datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ')
+        if date is None:
+            date = datetime.datetime.utcnow().replace(microsecond=0, tzinfo=datetime.timezone.utc).isoformat()
+
+        stix_relation_result = self.opencti.stix_relation.create(
+            fromId=source_id,
+            fromType=source_type,
+            toId=target_id,
+            toType=target_type,
+            relationship_type=stix_relation['relationship_type'],
+            description=self.convert_markdown(
+                stix_relation['description']) if 'description' in stix_relation else None,
+            first_seen=stix_relation[
+                CustomProperties.FIRST_SEEN] if CustomProperties.FIRST_SEEN in stix_relation else date,
+            last_seen=stix_relation[
+                CustomProperties.LAST_SEEN] if CustomProperties.LAST_SEEN in stix_relation else date,
+            weight=stix_relation[CustomProperties.WEIGHT] if CustomProperties.WEIGHT in stix_relation else 1,
+            role_played=stix_relation[
+                CustomProperties.ROLE_PLAYED] if CustomProperties.ROLE_PLAYED in stix_relation else None,
+            id=stix_relation[CustomProperties.ID] if CustomProperties.ID in stix_relation else None,
+            stix_id_key=stix_relation['id'] if 'id' in stix_relation else None,
+            created=stix_relation['created'] if 'created' in stix_relation else None,
+            modified=stix_relation['modified'] if 'modified' in stix_relation else None,
+            update=update,
+            ignore_dates=stix_relation[
+                CustomProperties.IGNORE_DATES] if CustomProperties.IGNORE_DATES in stix_relation else None,
+        )
+        if stix_relation_result is not None:
+            self.mapping_cache[stix_relation['id']] = {'id': stix_relation_result['id']}
+        else:
+            return None
 
         # Update created by ref
         if created_by_ref_id is not None:
@@ -510,15 +505,18 @@ class OpenCTIStix2:
             )
             if external_reference_id in reports:
                 self.opencti.report.add_stix_entity(
-                    id=reports[external_reference_id],
+                    id=reports[external_reference_id]['id'],
+                    report=reports[external_reference_id],
                     entity_id=stix_relation_result['id']
                 )
                 self.opencti.report.add_stix_entity(
-                    id=reports[external_reference_id],
+                    id=reports[external_reference_id]['id'],
+                    report=reports[external_reference_id],
                     entity_id=source_id
                 )
                 self.opencti.report.add_stix_entity(
-                    id=reports[external_reference_id],
+                    id=reports[external_reference_id]['id'],
+                    report=reports[external_reference_id],
                     entity_id=target_id
                 )
         # Add kill chain phases
