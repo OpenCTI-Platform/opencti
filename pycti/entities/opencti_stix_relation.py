@@ -316,7 +316,9 @@ class StixRelation:
         ignore_dates = kwargs.get('ignore_dates', False)
 
         stix_relation_result = None
-        if stix_id_key is not None:
+        if id is not None:
+            stix_relation_result = self.read(id=id)
+        if stix_relation_result is None and stix_id_key is not None:
             stix_relation_result = self.read(id=stix_id_key)
         if stix_relation_result is None:
             if ignore_dates is False and first_seen is not None and last_seen is not None:
