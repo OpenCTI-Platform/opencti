@@ -133,6 +133,47 @@ class StixEntity:
                     }
                 }                
             }
+            ... on Report {
+                report_class
+                published
+                object_status
+                source_confidence_level
+                objectRefs {
+                    edges {
+                        node {
+                            id
+                            stix_id_key
+                            entity_type
+                        }
+                        relation {
+                            id
+                        }
+                    }
+                }
+                observableRefs {
+                    edges {
+                        node {
+                            id
+                            stix_id_key
+                            entity_type
+                        }
+                        relation {
+                            id
+                        }
+                    }
+                }
+                relationRefs {
+                    edges {
+                        node {
+                            id
+                            stix_id_key
+                        }
+                        relation {
+                            id
+                        }
+                    }
+                }
+            }            
             ... on StixRelation {
                 killChainPhases {
                     edges {
