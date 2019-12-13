@@ -530,7 +530,7 @@ class OpenCTIApiClient:
             {'key': 'definition', 'values': [definition]}]
         )
 
-    # TODO Move to MarkingDefinition
+    @deprecated(version='2.1.0', reason="Replaced by the MarkingDefinition class in pycti")
     def create_marking_definition(self,
                                   definition_type,
                                   definition,
@@ -541,39 +541,18 @@ class OpenCTIApiClient:
                                   created=None,
                                   modified=None
                                   ):
-        logging.info('Creating marking definition ' + definition + '...')
-        query = """
-            mutation MarkingDefinitionAdd($input: MarkingDefinitionAddInput) {
-                markingDefinitionAdd(input: $input) {
-                        id
-                        stix_id_key
-                        entity_type
-                        definition_type
-                        definition
-                        level
-                        color
-                        created
-                        modified
-                        created_at
-                        updated_at
-                }
-            }
-        """
-        result = self.query(query, {
-            'input': {
-                'definition_type': definition_type,
-                'definition': definition,
-                'internal_id_key': id,
-                'level': level,
-                'color': color,
-                'stix_id_key': stix_id_key,
-                'created': created,
-                'modified': modified
-            }
-        })
-        return self.process_multiple_fields(result['data']['markingDefinitionAdd'])
+        return self.marking_definition.create(
+            definition_type=definition_type,
+            definition=definition,
+            level=level,
+            color=color,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified
+        )
 
-    # TODO Move to MarkingDefinition
+    @deprecated(version='2.1.0', reason="Replaced by the MarkingDefinition class in pycti")
     def create_marking_definition_if_not_exists(self,
                                                 definition_type,
                                                 definition,
@@ -584,27 +563,16 @@ class OpenCTIApiClient:
                                                 created=None,
                                                 modified=None
                                                 ):
-        object_result = None
-        if stix_id_key is not None:
-            object_result = self.marking_definition.read(id=stix_id_key)
-            if object_result is None:
-                object_result = self.marking_definition.read(filters=[
-                    {'key': 'definition_type', 'values': [definition_type]},
-                    {'key': 'definition', 'values': [definition]}
-                ])
-        if object_result is not None:
-            return object_result
-        else:
-            return self.create_marking_definition(
-                definition_type,
-                definition,
-                level,
-                color,
-                id,
-                stix_id_key,
-                created,
-                modified
-            )
+        return self.marking_definition.create(
+            definition_type=definition_type,
+            definition=definition,
+            level=level,
+            color=color,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified
+        )
 
     @deprecated(version='2.1.0', reason="Replaced by the ExternalReference class in pycti")
     def get_external_reference_by_url(self, url):
@@ -622,7 +590,7 @@ class OpenCTIApiClient:
          """
         self.query(query, {'id': id})
 
-    # TODO Move to ExternalReference
+    @deprecated(version='2.1.0', reason="Replaced by the ExternalReference class in pycti")
     def create_external_reference(self,
                                   source_name,
                                   url,
@@ -633,40 +601,18 @@ class OpenCTIApiClient:
                                   created=None,
                                   modified=None
                                   ):
-        logging.info('Creating external reference ' + source_name + '...')
-        query = """
-            mutation ExternalReferenceAdd($input: ExternalReferenceAddInput) {
-                externalReferenceAdd(input: $input) {
-                    id
-                    entity_type
-                    stix_id_key
-                    source_name
-                    description
-                    url
-                    hash
-                    external_id
-                    created
-                    modified
-                    created_at
-                    updated_at
-                }
-            }
-        """
-        result = self.query(query, {
-            'input': {
-                'source_name': source_name,
-                'external_id': external_id,
-                'description': description,
-                'url': url,
-                'internal_id_key': id,
-                'stix_id_key': stix_id_key,
-                'created': created,
-                'modified': modified
-            }
-        })
-        return self.process_multiple_fields(result['data']['externalReferenceAdd'])
+        return self.external_reference.create(
+            source_name=source_name,
+            url=url,
+            external_id=external_id,
+            description=description,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified
+        )
 
-    # TODO Move to ExternalReference
+    @deprecated(version='2.1.0', reason="Replaced by the ExternalReference class in pycti")
     def create_external_reference_if_not_exists(self,
                                                 source_name,
                                                 url,
@@ -677,20 +623,16 @@ class OpenCTIApiClient:
                                                 created=None,
                                                 modified=None
                                                 ):
-        external_reference_result = self.external_reference.read(filters=[{'key': 'url', 'values': [url]}])
-        if external_reference_result is not None:
-            return external_reference_result
-        else:
-            return self.create_external_reference(
-                source_name,
-                url,
-                external_id,
-                description,
-                id,
-                stix_id_key,
-                created,
-                modified
-            )
+        return self.external_reference.create(
+            source_name=source_name,
+            url=url,
+            external_id=external_id,
+            description=description,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified
+        )
 
     @deprecated(version='2.1.0', reason="Replaced by the KillChainPhase class in pycti")
     def get_kill_chain_phase(self, phase_name):
@@ -1087,7 +1029,7 @@ class OpenCTIApiClient:
     def get_campaigns(self, limit=10000):
         return self.campaign.list(first=limit)
 
-    # TODO Move to Campaign
+    @deprecated(version='2.1.0', reason="Replaced by the Campaign class in pycti")
     def create_campaign(self,
                         name,
                         description,
@@ -1100,112 +1042,20 @@ class OpenCTIApiClient:
                         created=None,
                         modified=None
                         ):
-        logging.info('Creating campaign ' + name + '...')
-        query = """
-            mutation CampaignAdd($input: CampaignAddInput) {
-                campaignAdd(input: $input) {
-                    id
-                    stix_id_key
-                    stix_label
-                    entity_type
-                    parent_types
-                    name
-                    alias
-                    description
-                    graph_data
-                    objective
-                    first_seen
-                    last_seen
-                    created
-                    modified
-                    created_at
-                    updated_at
-                    createdByRef {
-                        node {
-                            id
-                            entity_type
-                            stix_id_key
-                            stix_label
-                            name
-                            alias
-                            description
-                            created
-                            modified
-                        }
-                        relation {
-                            id
-                        }
-                    }            
-                    markingDefinitions {
-                        edges {
-                            node {
-                                id
-                                entity_type
-                                stix_id_key
-                                definition_type
-                                definition
-                                level
-                                color
-                                created
-                                modified
-                            }
-                            relation {
-                                id
-                            }
-                        }
-                    }
-                    tags {
-                        edges {
-                            node {
-                                id
-                                tag_type
-                                value
-                                color
-                            }
-                            relation {
-                                id
-                            }
-                        }
-                    }
-                    externalReferences {
-                        edges {
-                            node {
-                                id
-                                entity_type
-                                stix_id_key
-                                source_name
-                                description
-                                url
-                                hash
-                                external_id
-                                created
-                                modified
-                            }
-                            relation {
-                                id
-                            }
-                        }
-                    }   
-                }
-            }
-        """
-        result = self.query(query, {
-            'input': {
-                'name': name,
-                'description': description,
-                'alias': alias,
-                'objective': objective,
-                'first_seen': first_seen,
-                'last_seen': last_seen,
-                'internal_id_key': id,
-                'stix_id_key': stix_id_key,
-                'created': created,
-                'modified': modified
-            }
-        })
-        return self.process_multiple_fields(result['data']['campaignAdd'])
+        return self.campaign.create(
+            name=name,
+            description=description,
+            alias=alias,
+            objective=objective,
+            first_seen=first_seen,
+            last_seen=last_seen,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified,
+        )
 
-    # TODO Move to Campaign
+    @deprecated(version='2.1.0', reason="Replaced by the Campaign class in pycti")
     def create_campaign_if_not_exists(self,
                                       name,
                                       description,
@@ -1219,44 +1069,18 @@ class OpenCTIApiClient:
                                       modified=None,
                                       update=False
                                       ):
-        object_result = self.stix_domain_entity.get_by_stix_id_or_name(types=['Campaign'], stix_id_key=stix_id_key,
-                                                                       name=name)
-        if object_result is not None:
-            if update:
-                self.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
-                object_result['name'] = name
-                self.stix_domain_entity.update_field(id=object_result['id'], key='description', value=description)
-                object_result['description'] = description
-                if alias is not None:
-                    if 'alias' in object_result:
-                        new_aliases = object_result['alias'] + list(set(alias) - set(object_result['alias']))
-                    else:
-                        new_aliases = alias
-                    self.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
-                    object_result['alias'] = new_aliases
-                if objective is not None:
-                    self.stix_domain_entity.update_field(id=object_result['id'], key='objective', value=objective)
-                object_result['objective'] = objective
-                if first_seen is not None:
-                    self.stix_domain_entity.update_field(id=object_result['id'], key='first_seen', value=first_seen)
-                object_result['first_seen'] = first_seen
-                if last_seen is not None:
-                    self.stix_domain_entity.update_field(id=object_result['id'], key='last_seen', value=last_seen)
-                    object_result['last_seen'] = last_seen
-            return object_result
-        else:
-            return self.create_campaign(
-                name,
-                description,
-                alias,
-                objective,
-                first_seen,
-                last_seen,
-                id,
-                stix_id_key,
-                created,
-                modified
-            )
+        return self.campaign.create(
+            name=name,
+            description=description,
+            alias=alias,
+            objective=objective,
+            first_seen=first_seen,
+            last_seen=last_seen,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified,
+        )
 
     @deprecated(version='2.1.0', reason="Replaced by the Incident class in pycti")
     def get_incident(self, id):
@@ -1822,138 +1646,47 @@ class OpenCTIApiClient:
     def get_course_of_actions(self, limit=10000):
         return self.course_of_action.list(first=limit)
 
-    # TODO Move to CourseOfAction
-    def create_course_of_action(self, name, description, alias=None, id=None, stix_id_key=None, created=None,
-                                modified=None):
-        logging.info('Creating course of action ' + name + '...')
-        query = """
-           mutation CourseOfActionAdd($input: CourseOfActionAddInput) {
-               courseOfActionAdd(input: $input) {
-                    id
-                    stix_id_key
-                    stix_label
-                    entity_type
-                    parent_types
-                    name
-                    alias
-                    description
-                    graph_data
-                    created
-                    modified            
-                    created_at
-                    updated_at
-                    createdByRef {
-                        node {
-                            id
-                            entity_type
-                            stix_id_key
-                            stix_label
-                            name
-                            alias
-                            description
-                            created
-                            modified
-                        }
-                        relation {
-                            id
-                        }
-                    }            
-                    markingDefinitions {
-                        edges {
-                            node {
-                                id
-                                entity_type
-                                stix_id_key
-                                definition_type
-                                definition
-                                level
-                                color
-                                created
-                                modified
-                            }
-                            relation {
-                                id
-                            }
-                        }
-                    }
-                    tags {
-                        edges {
-                            node {
-                                id
-                                tag_type
-                                value
-                                color
-                            }
-                            relation {
-                                id
-                            }
-                        }
-                    }
-                    externalReferences {
-                        edges {
-                            node {
-                                id
-                                entity_type
-                                stix_id_key
-                                source_name
-                                description
-                                url
-                                hash
-                                external_id
-                                created
-                                modified
-                            }
-                            relation {
-                                id
-                            }
-                        }
-                    }         
-               }
-           }
-        """
-        result = self.query(query, {
-            'input': {
-                'name': name,
-                'description': description,
-                'alias': alias,
-                'internal_id_key': id,
-                'stix_id_key': stix_id_key,
-                'created': created,
-                'modified': modified
-            }
-        })
-        return self.process_multiple_fields(result['data']['courseOfActionAdd'])
+    @deprecated(version='2.1.0', reason="Replaced by the CourseOfAction class in pycti")
+    def create_course_of_action(self,
+                                name,
+                                description,
+                                alias=None,
+                                id=None,
+                                stix_id_key=None,
+                                created=None,
+                                modified=None
+                                ):
+        return self.course_of_action.create(
+            name=name,
+            description=description,
+            alias=alias,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified
+        )
 
-    # TODO Move to CourseOfAction
-    def create_course_of_action_if_not_exists(self, name, description, alias=None, id=None, stix_id_key=None,
+    @deprecated(version='2.1.0', reason="Replaced by the CourseOfAction class in pycti")
+    def create_course_of_action_if_not_exists(self,
+                                              name,
+                                              description,
+                                              alias=None,
+                                              id=None,
+                                              stix_id_key=None,
                                               created=None,
-                                              modified=None, update=False):
-        object_result = self.stix_domain_entity.get_by_stix_id_or_name(types=['Course-Of-Action'],
-                                                                       stix_id_key=stix_id_key, name=name)
-        if object_result is not None:
-            if update:
-                self.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
-                object_result['name'] = name
-                self.stix_domain_entity.update_field(id=object_result['id'], key='description', value=description)
-                object_result['description'] = description
-                if alias is not None:
-                    if 'alias' in object_result:
-                        new_aliases = object_result['alias'] + list(set(alias) - set(object_result['alias']))
-                    else:
-                        new_aliases = alias
-                    self.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
-                    object_result['alias'] = new_aliases
-            return object_result
-        else:
-            return self.create_course_of_action(
-                name,
-                description,
-                alias,
-                id,
-                stix_id_key,
-                created,
-                modified
-            )
+                                              modified=None,
+                                              update=False
+                                              ):
+        return self.course_of_action.create(
+            name=name,
+            description=description,
+            alias=alias,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified,
+            update=update
+        )
 
     @deprecated(version='2.1.0', reason="Replaced by the Report class in pycti")
     def check_existing_report(self, stix_id_key=None, name=None, published=None):
