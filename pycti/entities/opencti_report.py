@@ -387,8 +387,6 @@ class Report:
         report = kwargs.get('report', None)
         entity_id = kwargs.get('entity_id', None)
         if id is not None and entity_id is not None:
-            self.opencti.log('info',
-                             'Adding Stix-Entity {' + entity_id + '} to Report {' + id + '}')
             if report is None:
                 report = self.read(id=id)
             if report is None:
@@ -404,6 +402,10 @@ class Report:
             if entity_id in refs_ids:
                 return True
             else:
+                self.opencti.log(
+                    'info',
+                    'Adding Stix-Entity {' + entity_id + '} to Report {' + id + '}'
+                )
                 query = """
                    mutation ReportEdit($id: ID!, $input: RelationAddInput) {
                        reportEdit(id: $id) {

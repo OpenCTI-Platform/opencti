@@ -230,15 +230,20 @@ class Identity:
         )
         if object_result is not None:
             if update:
-                self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
-                object_result['name'] = name
-                self.opencti.stix_domain_entity.update_field(
-                    id=object_result['id'],
-                    key='description',
-                    value=description
-                )
-                object_result['description'] = description
-                if alias is not None:
+                # name
+                if object_result['name'] != name:
+                    self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
+                    object_result['name'] = name
+                # description
+                if object_result['description'] != description:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='description',
+                        value=description
+                    )
+                    object_result['description'] = description
+                # alias
+                if alias is not None and object_result['alias'] != alias:
                     if 'alias' in object_result:
                         new_aliases = object_result['alias'] + list(set(alias) - set(object_result['alias']))
                     else:
