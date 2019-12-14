@@ -5,7 +5,7 @@ const removeAttributeForEntityType = async (entityType, role) => {
     index: INDEX_STIX_ENTITIES,
     body: {
       script: {
-        source: `ctx._source.remove('rel_${role}.internal_id_key')`
+        source: `if (ctx._source['rel_${role}.internal_id_key'] != null) ctx._source.remove('rel_${role}.internal_id_key')`
       },
       query: {
         bool: {
