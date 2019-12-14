@@ -36,7 +36,7 @@ class SectorKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/sectors/:sectorId/knowledge/relations/:relationId"
-          render={routeProps => (
+          render={(routeProps) => (
             <StixRelation
               entityId={sector.id}
               inversedRoles={inversedRoles}
@@ -47,7 +47,7 @@ class SectorKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/sectors/:sectorId/knowledge/overview"
-          render={routeProps => (
+          render={(routeProps) => (
             <StixDomainEntityKnowledge
               stixDomainEntityId={sector.id}
               stixDomainEntityType="sector"
@@ -58,7 +58,7 @@ class SectorKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/sectors/:sectorId/knowledge/organizations"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               entityId={sector.id}
               relationType="gathering"
@@ -72,27 +72,8 @@ class SectorKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/sectors/:sectorId/knowledge/intrusion_sets"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="gathering"
-              resolveRelationRole="gather"
-              resolveViaTypes={[
-                {
-                  entityType: 'Campaign',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-                {
-                  entityType: 'Incident',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-                {
-                  entityType: 'Malware',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-              ]}
               entityId={sector.id}
               relationType="targets"
               targetEntityTypes={['Intrusion-Set']}
@@ -105,22 +86,8 @@ class SectorKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/sectors/:sectorId/knowledge/campaigns"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="gathering"
-              resolveRelationRole="gather"
-              resolveViaTypes={[
-                {
-                  entityType: 'Incident',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-                {
-                  entityType: 'Malware',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-              ]}
               entityId={sector.id}
               relationType="targets"
               targetEntityTypes={['Campaign']}
@@ -133,7 +100,7 @@ class SectorKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/sectors/:sectorId/knowledge/incidents"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               entityId={sector.id}
               relationType="targets"
@@ -147,10 +114,8 @@ class SectorKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/sectors/:sectorId/knowledge/malwares"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="gathering"
-              resolveRelationRole="gather"
               entityId={sector.id}
               relationType="targets"
               targetEntityTypes={['Malware']}

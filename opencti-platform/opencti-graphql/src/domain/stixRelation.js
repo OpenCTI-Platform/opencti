@@ -1,9 +1,8 @@
-import { ascend, assoc, descend, head, join, map, prop, sortWith, take } from 'ramda';
+import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteRelationById,
-  distribution,
   escape,
   escapeString,
   executeWrite,
@@ -44,30 +43,6 @@ export const findById = stixRelationId => {
   return loadRelationById(stixRelationId);
 };
 
-// TODO @SAM  DELETE WITH GRAPHQL AND FRONT
-export const findAllWithInferences = async args => {};
-export const stixRelationsTimeSeriesWithInferences = async args => {};
-export const stixRelationsDistributionWithInferences = async args => {};
-// TODO @SAM  DELETE WITH GRAPHQL AND FRONT
-
-export const stixRelationsDistribution = args => {
-  const { limit = 10 } = args;
-  return distribution(
-    `match $rel($from, $x) isa ${args.relationType ? escape(args.relationType) : 'stix_relation'}; ${
-      args.toTypes && args.toTypes.length > 0
-        ? `${join(' ', map(toType => `{ $x isa ${escape(toType)}; } or`, args.toTypes))} { $x isa ${escape(
-            head(args.toTypes)
-          )}; };`
-        : ''
-    } ${args.fromId ? `$from has internal_id_key "${escapeString(args.fromId)}"` : '$from isa Stix-Domain-Entity'}`,
-    args
-  ).then(result => {
-    if (args.order === 'asc') {
-      return take(limit, sortWith([ascend(prop('value'))])(result));
-    }
-    return take(limit, sortWith([descend(prop('value'))])(result));
-  });
-};
 export const stixRelationsNumber = args => ({
   count: getSingleValueNumber(
     `match $x($y, $z) isa ${args.type ? escape(args.type) : 'stix_relation'};

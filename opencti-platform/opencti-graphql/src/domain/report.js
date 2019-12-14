@@ -1,7 +1,7 @@
-import { ascend, assoc, descend, prop, sortWith, take } from 'ramda';
+import { assoc } from 'ramda';
 import {
   createEntity,
-  distribution,
+  distributionEntities,
   escape,
   escapeString,
   findWithConnectedRelations,
@@ -118,19 +118,10 @@ export const reportsNumberByEntity = args => ({
     count;`
   )
 });
-export const reportsDistributionByEntity = args => {
-  const { limit = 10 } = args;
-  return distribution(
-    `match $x isa Report; 
-      $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
-      $so has internal_id_key "${escapeString(args.objectId)}"`,
-    args
-  ).then(result => {
-    if (args.order === 'asc') {
-      return take(limit, sortWith([ascend(prop('value'))])(result));
-    }
-    return take(limit, sortWith([descend(prop('value'))])(result));
-  });
+export const reportsDistributionByEntity = async args => {
+  const { objectId } = args;
+  const filters = [{ isRelation: true, from: 'knowledge_aggregation', to: 'so', type: 'object_refs', value: objectId }];
+  return distributionEntities('Report', filters, args);
 };
 // endregion
 

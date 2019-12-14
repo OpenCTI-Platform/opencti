@@ -3,20 +3,22 @@ import { Client } from '@elastic/elasticsearch';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import {
   append,
-  concat,
   assoc,
+  concat,
   dissoc,
   filter,
   find as Rfind,
   flatten,
   head,
+  includes,
   invertObj,
   join,
   last,
   map,
   mergeAll,
   pipe,
-  toPairs
+  toPairs,
+  uniq
 } from 'ramda';
 import { buildPagination } from './utils';
 import conf, { logger } from '../config/conf';
@@ -40,6 +42,7 @@ const dateFields = [
   'published_month'
 ];
 const numberFields = ['object_status', 'phase_order'];
+const virtualTypes = ['Identity', 'Email', 'File', 'Stix-Domain-Entity', 'Stix-Domain', 'Stix-Observable'];
 
 export const REL_INDEX_PREFIX = 'rel_';
 export const INDEX_STIX_OBSERVABLE = 'stix_observables';
@@ -253,6 +256,121 @@ export const elCount = (indexName, options) => {
   logger.debug(`[ELASTICSEARCH] countEntities > ${JSON.stringify(query)}`);
   return el.count(query).then(data => {
     return data.body.count;
+  });
+};
+export const elAggregationCount = (type, aggregationField, start, end, filters) => {
+  const haveRange = start && end;
+  const dateFilter = [];
+  if (haveRange) {
+    dateFilter.push({
+      range: {
+        created_at: {
+          gte: start,
+          lte: end
+        }
+      }
+    });
+  }
+  const histoFilters = map(f => {
+    const key = f.isRelation ? 'rel_*.internal_id_key.keyword' : `${f.type}.keyword`;
+    return {
+      multi_match: {
+        fields: [key],
+        type: 'phrase',
+        query: f.value
+      }
+    };
+  }, filters);
+  const query = {
+    index: PLATFORM_INDICES,
+    body: {
+      query: {
+        bool: {
+          must: concat(dateFilter, histoFilters),
+          should: [
+            { match_phrase: { 'entity_type.keyword': type } },
+            { match_phrase: { 'parent_types.keyword': type } }
+          ],
+          minimum_should_match: 1
+        }
+      },
+      aggs: {
+        genres: {
+          terms: {
+            field: `${aggregationField}.keyword`
+          }
+        }
+      }
+    }
+  };
+  return el
+    .search(query)
+    .then(data => {
+      const { buckets } = data.body.aggregations.genres;
+      return map(b => ({ label: b.key, value: b.doc_count }), buckets);
+    })
+    .catch(err => {
+      console.log(query);
+      throw err;
+    });
+};
+export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) => {
+  const haveRange = start && end;
+  const filters = [];
+  if (haveRange) {
+    filters.push({
+      range: {
+        first_seen: {
+          gte: start,
+          lte: end
+        }
+      }
+    });
+  }
+  filters.push({
+    match_phrase: { 'connections.internal_id_key': fromId }
+  });
+  for (let index = 0; index < toTypes.length; index += 1) {
+    filters.push({
+      match_phrase: { 'connections.types': toTypes[index] }
+    });
+  }
+  const query = {
+    index: INDEX_STIX_RELATIONS,
+    body: {
+      size: 500,
+      query: {
+        bool: {
+          must: filters,
+          should: [{ match_phrase: { relationship_type: type } }, { match_phrase: { parent_types: type } }],
+          minimum_should_match: 1
+        }
+      },
+      aggs: {
+        genres: {
+          terms: {
+            field: `connections.types.keyword`,
+            size: 100
+          }
+        }
+      }
+    }
+  };
+  return el.search(query).then(data => {
+    // First need to find all types relations to the fromId
+    const types = pipe(
+      map(h => h._source.connections),
+      flatten(),
+      filter(c => c.internal_id_key !== fromId && includes(head(toTypes), c.types)),
+      map(e => e.types),
+      flatten(),
+      uniq(),
+      filter(f => !includes(f, virtualTypes)),
+      map(u => u.toLowerCase())
+    )(data.body.hits.hits);
+    const { buckets } = data.body.aggregations.genres;
+    const filteredBuckets = filter(b => includes(b.key, types), buckets);
+    return map(b => ({ label: b.key, value: b.doc_count }), filteredBuckets);
   });
 };
 export const elHistogramCount = (type, field, interval, start, end, filters) => {

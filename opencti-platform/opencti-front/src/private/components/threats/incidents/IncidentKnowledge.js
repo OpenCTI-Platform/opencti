@@ -95,25 +95,6 @@ class IncidentKnowledgeComponent extends Component {
           path="/dashboard/threats/incidents/:incidentId/knowledge/victimology"
           render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
-              resolveViaTypes={[
-                {
-                  entityType: 'Organization',
-                  relationType: 'gathering',
-                  relationRole: 'part_of',
-                },
-                {
-                  entityType: 'Organization',
-                  relationType: 'localization',
-                  relationRole: 'localized',
-                },
-                {
-                  entityType: 'Country',
-                  relationType: 'localization',
-                  relationRole: 'localized',
-                },
-              ]}
               entityId={incident.id}
               relationType="targets"
               targetEntityTypes={[

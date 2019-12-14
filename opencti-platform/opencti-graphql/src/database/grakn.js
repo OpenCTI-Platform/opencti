@@ -2,9 +2,11 @@ import uuid from 'uuid/v4';
 import {
   __,
   append,
+  ascend,
   assoc,
   chain,
   concat,
+  descend,
   dissoc,
   equals,
   filter,
@@ -25,8 +27,11 @@ import {
   mergeRight,
   pipe,
   pluck,
+  prop,
+  sortWith,
   split,
   tail,
+  take,
   toPairs,
   uniq,
   uniqBy
@@ -39,6 +44,8 @@ import conf, { logger } from '../config/conf';
 import { buildPagination, fillTimeSeries, randomKey } from './utils';
 import { isInversed, rolesMap } from './graknRoles';
 import {
+  elAggregationCount,
+  elAggregationRelationsCount,
   elBulk,
   elDeleteInstanceIds,
   elHistogramCount,
@@ -972,16 +979,41 @@ export const reindexByAttribute = (type, value) => {
 // endregion
 
 // region Graphics
-const graknTimeSeries = (query, inferred) => {
+const buildAggregationQuery = (entityType, filters, options) => {
+  const { operation, field, interval } = options;
+  const baseQuery = `match $from isa ${entityType};`;
+  const filterQuery = pipe(
+    map(filterElement => {
+      const { isRelation, value, from, to, start, end, type } = filterElement;
+      const eValue = `${escapeString(value)}`;
+      if (isRelation) {
+        const fromRole = from ? `${from}:` : '';
+        const toRole = to ? `${to}:` : '';
+        const dateRange =
+          start && end
+            ? `$rel_${type} has first_seen $fs; $fs > ${prepareDate(start)}; $fs < ${prepareDate(end)};`
+            : '';
+        const relation = `$rel_${type}(${fromRole}$from, ${toRole}$${type}_to) isa ${type};`;
+        return `${relation} ${dateRange} $${type}_to has internal_id_key "${eValue}";`;
+      }
+      return `$from has ${type} "${eValue}";`;
+    }),
+    join('')
+  )(filters);
+  const groupField = interval ? `${field}_${interval}` : field;
+  const groupingQuery = `$from has ${groupField} $g; get; group $g; ${operation};`;
+  return `${baseQuery} ${filterQuery} ${groupingQuery}`;
+};
+const graknTimeSeries = (query, keyRef, valueRef, inferred) => {
   return executeRead(async rTx => {
     logger.debug(`[GRAKN - infer: ${inferred}] timeSeries > ${query}`);
     const iterator = await rTx.tx.query(query, { infer: inferred });
     const answer = await iterator.collect();
     return Promise.all(
       answer.map(async n => {
-        const date = await n.owner().value();
-        const number = await n.answers()[0].number();
-        return { date, value: number };
+        const owner = await n.owner().value();
+        const value = await n.answers()[0].number();
+        return { [keyRef]: owner, [valueRef]: value };
       })
     );
   });
@@ -996,24 +1028,8 @@ export const timeSeriesEntities = async (entityType, filters, options) => {
     histogramData = await elHistogramCount(entityType, field, interval, startDate, endDate, filters);
   } else {
     // If not compatible, do it with grakn
-    const baseQuery = `match $from isa ${entityType};`;
-    const filterQuery = pipe(
-      map(filterElement => {
-        const { isRelation, value, from, to, type } = filterElement;
-        const eValue = `${escapeString(value)}`;
-        if (isRelation) {
-          const fromRole = from ? `${from}:` : '';
-          const toRole = to ? `${to}:` : '';
-          const relation = `$rel_${type}(${fromRole}$from, ${toRole}$${type}_to) isa ${type};`;
-          return `${relation} $${type}_to has internal_id_key "${eValue}";`;
-        }
-        return `$from has ${type} "${eValue}";`;
-      }),
-      join('')
-    )(filters);
-    const groupingQuery = `$from has ${field}_${interval} $g; get; group $g; ${operation};`;
-    const finalQuery = `${baseQuery} ${filterQuery} ${groupingQuery}`;
-    histogramData = await graknTimeSeries(finalQuery, inferred);
+    const finalQuery = buildAggregationQuery(entityType, filters, options);
+    histogramData = await graknTimeSeries(finalQuery, 'date', 'value', inferred);
   }
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
@@ -1036,30 +1052,54 @@ export const timeSeriesRelations = async options => {
         : ''
     } ${fromId ? `$from has internal_id_key "${escapeString(fromId)}"` : '$from isa Stix-Domain-Entity'}`;
     const finalQuery = `${query}; $x has ${field}_${interval} $g; get; group $g; ${operation};`;
-    histogramData = await graknTimeSeries(finalQuery, inferred);
+    histogramData = await graknTimeSeries(finalQuery, 'date', 'value', inferred);
   }
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 
-export const distribution = async (query, options) => {
-  return executeRead(async rTx => {
-    const { startDate, endDate, operation, field, inferred = false } = options;
-    const finalQuery = `${query}; ${
+export const distributionEntities = async (entityType, filters, options) => {
+  // filters: [
+  //   { isRelation: true, type: stix_relation, start: date, end: date, from: 'role', to: 'role', value: uuid }
+  //   { isRelation: false, type: report_class, value: string }
+  // ]
+  const { order = 'asc', startDate, endDate, field, operation, inferred = false, limit = 10 } = options;
+  let distributionData;
+  if (operation === 'count' && inferred === false) {
+    distributionData = await elAggregationCount(entityType, field, startDate, endDate, filters);
+  } else {
+    const finalQuery = buildAggregationQuery(entityType, filters, options);
+    distributionData = await graknTimeSeries(finalQuery, 'label', 'value', options.inferred);
+  }
+  // Take a maximum amount of distribution depending on the ordering.
+  const orderingFunction = order === 'asc' ? ascend : descend;
+  return take(limit, sortWith([orderingFunction(prop('value'))])(distributionData));
+};
+export const distributionRelations = async options => {
+  const { limit = 10, order, inferred = false } = options;
+  const { startDate, endDate, relationType, toTypes, fromId, field, operation } = options;
+  let distributionData;
+  const entityType = relationType ? escape(relationType) : 'stix_relation';
+  if (operation === 'count' && inferred === false) {
+    distributionData = await elAggregationRelationsCount(entityType, startDate, endDate, toTypes, fromId);
+  } else {
+    const query = `match $rel($from, $to) isa ${entityType}; ${
+      toTypes && toTypes.length > 0
+        ? `${join(' ', map(toType => `{ $to isa ${escape(toType)}; } or`, toTypes))} { $to isa ${escape(
+            head(toTypes)
+          )}; };`
+        : ''
+    } ${fromId ? `$from has internal_id_key "${escapeString(fromId)}";` : '$from isa Stix-Domain-Entity;'} 
+    ${
       startDate && endDate
         ? `$rel has first_seen $fs; $fs > ${prepareDate(startDate)}; $fs < ${prepareDate(endDate)};`
         : ''
-    } $x has ${field} $g; get; group $g; ${operation};`;
-    logger.debug(`[GRAKN - infer: ${inferred}] distribution > ${finalQuery}`);
-    const iterator = await rTx.tx.query(finalQuery, { infer: inferred });
-    const answer = await iterator.collect();
-    return Promise.all(
-      answer.map(async n => {
-        const label = await n.owner().value();
-        const number = await n.answers()[0].number();
-        return { label, value: number };
-      })
-    );
-  });
+    }
+      $to has ${field} $g; get; group $g; ${operation};`;
+    distributionData = await graknTimeSeries(query, 'label', 'value', inferred);
+  }
+  // Take a maximum amount of distribution depending on the ordering.
+  const orderingFunction = order === 'asc' ? ascend : descend;
+  return take(limit, sortWith([orderingFunction(prop('value'))])(distributionData));
 };
 // endregion
 
