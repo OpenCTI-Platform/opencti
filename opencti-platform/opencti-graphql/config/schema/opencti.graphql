@@ -374,11 +374,6 @@ interface StixEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -509,11 +504,6 @@ type StixObservable implements GlobalObject & StixEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -602,11 +592,6 @@ type StixRelation implements GlobalObject & StixEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -699,11 +684,6 @@ type StixObservableRelation implements GlobalObject & StixEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -837,11 +817,6 @@ interface Identity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -934,11 +909,6 @@ type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -1047,11 +1017,6 @@ type Organization implements GlobalObject & StixEntity & StixDomainEntity & Iden
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -1142,11 +1107,6 @@ type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -1230,11 +1190,6 @@ type City implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -1318,11 +1273,6 @@ type Country implements GlobalObject & StixEntity & StixDomainEntity & Identity 
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -1406,11 +1356,6 @@ type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -1717,11 +1662,6 @@ type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -1814,11 +1754,6 @@ type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -1912,11 +1847,6 @@ type ThreatActor implements GlobalObject & StixEntity & StixDomainEntity & Ident
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -2017,11 +1947,6 @@ type IntrusionSet implements GlobalObject & StixEntity & StixDomainEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -2122,11 +2047,6 @@ type Campaign implements GlobalObject & StixEntity & StixDomainEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -2222,11 +2142,6 @@ type Incident implements GlobalObject & StixEntity & StixDomainEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -2318,11 +2233,6 @@ type Malware implements GlobalObject & StixEntity & StixDomainEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -2413,11 +2323,6 @@ type Tool implements GlobalObject & StixEntity & StixDomainEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -2507,11 +2412,6 @@ type Vulnerability implements GlobalObject & StixEntity & StixDomainEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -2616,11 +2516,6 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -2754,11 +2649,6 @@ type Query {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
@@ -2771,11 +2661,6 @@ type Query {
     fromId: String
     relationType: String
     inferred: Boolean
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     entityTypes: [String]
     toTypes: [String]
     field: String!
@@ -2788,11 +2673,6 @@ type Query {
     fromId: String
     relationType: String
     inferred: Boolean
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     entityTypes: [String]
     toTypes: [String]
     startDate: DateTime
@@ -2821,11 +2701,6 @@ type Query {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime

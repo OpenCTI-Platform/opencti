@@ -89,8 +89,6 @@ class CampaignKnowledgeComponent extends Component {
           path="/dashboard/threats/campaigns/:campaignId/knowledge/malwares"
           render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
               entityId={campaign.id}
               relationType="uses"
               targetEntityTypes={['Malware']}
@@ -105,25 +103,6 @@ class CampaignKnowledgeComponent extends Component {
           path="/dashboard/threats/campaigns/:campaignId/knowledge/victimology"
           render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
-              resolveViaTypes={[
-                {
-                  entityType: 'Organization',
-                  relationType: 'gathering',
-                  relationRole: 'part_of',
-                },
-                {
-                  entityType: 'Organization',
-                  relationType: 'localization',
-                  relationRole: 'localized',
-                },
-                {
-                  entityType: 'Country',
-                  relationType: 'localization',
-                  relationRole: 'localized',
-                },
-              ]}
               entityId={campaign.id}
               relationType="targets"
               targetEntityTypes={[
@@ -156,8 +135,6 @@ class CampaignKnowledgeComponent extends Component {
           path="/dashboard/threats/campaigns/:campaignId/knowledge/tools"
           render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
               entityId={campaign.id}
               relationType="uses"
               targetEntityTypes={['Tool']}
@@ -172,8 +149,6 @@ class CampaignKnowledgeComponent extends Component {
           path="/dashboard/threats/campaigns/:campaignId/knowledge/vulnerabilities"
           render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
               entityId={campaign.id}
               relationType="targets"
               targetEntityTypes={['Vulnerability']}

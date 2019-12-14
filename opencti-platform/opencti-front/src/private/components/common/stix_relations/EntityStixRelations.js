@@ -160,10 +160,6 @@ class EntityStixRelations extends Component {
       targetEntityTypes,
       entityId,
       relationType,
-      resolveRelationType,
-      resolveRelationRole,
-      resolveRelationToTypes,
-      resolveViaTypes,
       creationIsFrom,
     } = this.props;
     const {
@@ -179,19 +175,13 @@ class EntityStixRelations extends Component {
 
     // Display types selection when target types are multiple
     const displayTypes = targetEntityTypes.length > 1;
-    const displayInferences = !!resolveRelationType;
     // Display detail is resolveRelationType is set and selected Type not all or single
     const displayDetails = this.state.inferred
-      && resolveRelationType
       && (this.state.toType !== 'All' || targetEntityTypes.length === 1);
 
     // sort only when inferences are disabled or inferences are resolved
     const paginationOptions = {
       resolveInferences: this.state.resolveInferences,
-      resolveRelationType,
-      resolveRelationRole,
-      resolveRelationToTypes,
-      resolveViaTypes,
       inferred: inferred && sortBy === null ? inferred : false,
       toTypes: toType === 'All' ? targetEntityTypes : [toType],
       fromId: entityId,
@@ -203,7 +193,7 @@ class EntityStixRelations extends Component {
 
     return (
       <div className={classes.container}>
-        {displayTypes || displayInferences || displayDetails ? (
+        {displayTypes || resolveInferences || displayDetails ? (
           <Drawer
             anchor="bottom"
             variant="permanent"
@@ -323,7 +313,7 @@ class EntityStixRelations extends Component {
               ) : (
                 ''
               )}
-              {displayInferences ? (
+              {resolveInferences ? (
                 <Grid item={true} xs="auto">
                   <FormControlLabel
                     style={{ paddingTop: 5, marginRight: 15 }}
@@ -376,10 +366,6 @@ class EntityStixRelations extends Component {
 
 EntityStixRelations.propTypes = {
   entityId: PropTypes.string,
-  resolveRelationType: PropTypes.string,
-  resolveRelationRole: PropTypes.string,
-  resolveRelationToTypes: PropTypes.array,
-  resolveViaTypes: PropTypes.array,
   targetEntityTypes: PropTypes.array,
   entityLink: PropTypes.string,
   relationType: PropTypes.string,

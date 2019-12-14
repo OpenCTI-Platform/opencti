@@ -32,9 +32,6 @@ class AttackPatternsDistribution extends Component {
             entityType="Attack-Pattern"
             relationType="uses"
             field="name"
-            resolveInferences={inferred}
-            resolveRelationType="attributed-to"
-            resolveRelationRole="origin"
             inferred={inferred}
             startDate={startDate}
             endDate={endDate}
@@ -51,9 +48,6 @@ class AttackPatternsDistribution extends Component {
             entityType="Attack-Pattern"
             relationType="uses"
             field="name"
-            resolveInferences={inferred}
-            resolveRelationType="attributed-to"
-            resolveRelationRole="origin"
             inferred={inferred}
             startDate={startDate}
             endDate={endDate}

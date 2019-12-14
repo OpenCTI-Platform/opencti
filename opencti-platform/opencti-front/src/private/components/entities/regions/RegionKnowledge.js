@@ -74,8 +74,6 @@ class RegionKnowledgeComponent extends Component {
           path="/dashboard/entities/regions/:regionId/knowledge/threats"
           render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="localization"
-              resolveRelationRole="location"
               entityId={region.id}
               relationType="targets"
               targetEntityTypes={[
@@ -87,28 +85,6 @@ class RegionKnowledgeComponent extends Component {
                 'Malware',
               ]}
               entityLink={link}
-              resolveViaTypes={[
-                {
-                  entityType: 'Intrusion-Set',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-                {
-                  entityType: 'Campaign',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-                {
-                  entityType: 'Incident',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-                {
-                  entityType: 'Malware',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-              ]}
               creationIsFrom={false}
               {...routeProps}
             />

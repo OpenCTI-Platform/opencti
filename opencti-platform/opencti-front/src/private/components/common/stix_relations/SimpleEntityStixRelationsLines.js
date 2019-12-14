@@ -17,7 +17,7 @@ import inject18n from '../../../../components/i18n';
 import StixRelationPopover from './StixRelationPopover';
 import { resolveLink } from '../../../../utils/Entity';
 
-const styles = theme => ({
+const styles = (theme) => ({
   paper: {
     minHeight: 300,
     height: '100%',
@@ -120,11 +120,6 @@ export const simpleEntityStixRelationsLinesQuery = graphql`
     $toTypes: [String]
     $inferred: Boolean
     $relationType: String
-    $resolveInferences: Boolean
-    $resolveRelationType: String
-    $resolveRelationRole: String
-    $resolveRelationToTypes: [String]
-    $resolveViaTypes: [EntityRelation]
     $firstSeenStart: DateTime
     $firstSeenStop: DateTime
     $lastSeenStart: DateTime
@@ -139,11 +134,6 @@ export const simpleEntityStixRelationsLinesQuery = graphql`
         toTypes: $toTypes
         inferred: $inferred
         relationType: $relationType
-        resolveInferences: $resolveInferences
-        resolveRelationType: $resolveRelationType
-        resolveRelationRole: $resolveRelationRole
-        resolveRelationToTypes: $resolveRelationToTypes
-        resolveViaTypes: $resolveViaTypes
         firstSeenStart: $firstSeenStart
         firstSeenStop: $firstSeenStop
         lastSeenStart: $lastSeenStart
@@ -165,11 +155,6 @@ const SimpleEntityStixRelationsLines = createPaginationContainer(
           toTypes: { type: "[String]" }
           inferred: { type: "Boolean" }
           relationType: { type: "String" }
-          resolveInferences: { type: "Boolean" }
-          resolveRelationType: { type: "String" }
-          resolveRelationRole: { type: "String" }
-          resolveRelationToTypes: { type: "[String]" }
-          resolveViaTypes: { type: "[EntityRelation]" }
           firstSeenStart: { type: "DateTime" }
           firstSeenStop: { type: "DateTime" }
           lastSeenStart: { type: "DateTime" }
@@ -183,11 +168,6 @@ const SimpleEntityStixRelationsLines = createPaginationContainer(
           toTypes: $toTypes
           inferred: $inferred
           relationType: $relationType
-          resolveInferences: $resolveInferences
-          resolveRelationType: $resolveRelationType
-          resolveRelationRole: $resolveRelationRole
-          resolveRelationToTypes: $resolveRelationToTypes
-          resolveViaTypes: $resolveViaTypes
           firstSeenStart: $firstSeenStart
           firstSeenStop: $firstSeenStop
           lastSeenStart: $lastSeenStart
@@ -233,11 +213,6 @@ const SimpleEntityStixRelationsLines = createPaginationContainer(
         toTypes: fragmentVariables.toTypes,
         inferred: fragmentVariables.inferred,
         relationType: fragmentVariables.relationType,
-        resolveInferences: fragmentVariables.resolveInferences,
-        resolveRelationType: fragmentVariables.resolveRelationType,
-        resolveRelationRole: fragmentVariables.resolveRelationRole,
-        resolveRelationToTypes: fragmentVariables.resolveRelationToTypes,
-        resolveViaTypes: fragmentVariables.resolveViaTypes,
         firstSeenStart: fragmentVariables.firstSeenStart,
         firstSeenStop: fragmentVariables.firstSeenStop,
         lastSeenStart: fragmentVariables.lastSeenStart,

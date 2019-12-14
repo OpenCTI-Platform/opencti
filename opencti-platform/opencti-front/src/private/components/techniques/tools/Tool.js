@@ -12,7 +12,6 @@ import ToolPopover from './ToolPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityStixRelationsChart from '../../common/stix_relations/EntityStixRelationsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityStixRelationsRadar from '../../common/stix_relations/EntityStixRelationsRadar';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
@@ -51,27 +50,13 @@ class ToolComponent extends Component {
           classes={{ container: classes.gridContainer }}
           style={{ marginTop: 30 }}
         >
-          <Grid item={true} xs={4}>
+          <Grid item={true} xs={6}>
             <EntityStixRelationsChart
               entityId={tool.id}
               relationType="uses"
-              resolveInferences={true}
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
             />
           </Grid>
-          <Grid item={true} xs={4}>
-            <EntityStixRelationsRadar
-              entityId={tool.id}
-              entityType="Kill-Chain-Phase"
-              relationType="kill_chain_phases"
-              field="phase_name"
-              resolveInferences={true}
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
-            />
-          </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item={true} xs={6}>
             <EntityReportsChart entityId={tool.id} />
           </Grid>
         </Grid>

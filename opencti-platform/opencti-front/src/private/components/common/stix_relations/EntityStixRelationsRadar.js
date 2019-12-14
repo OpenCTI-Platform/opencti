@@ -46,11 +46,6 @@ const entityStixRelationsRadarStixRelationDistributionQuery = graphql`
     $inferred: Boolean
     $startDate: DateTime
     $endDate: DateTime
-    $resolveInferences: Boolean
-    $resolveRelationType: String
-    $resolveRelationRole: String
-    $resolveRelationToTypes: [String]
-    $resolveViaTypes: [EntityRelation]
     $field: String!
     $operation: StatsOperation!
   ) {
@@ -62,11 +57,6 @@ const entityStixRelationsRadarStixRelationDistributionQuery = graphql`
       inferred: $inferred
       startDate: $startDate
       endDate: $endDate
-      resolveInferences: $resolveInferences
-      resolveRelationType: $resolveRelationType
-      resolveRelationRole: $resolveRelationRole
-      resolveRelationToTypes: $resolveRelationToTypes
-      resolveViaTypes: $resolveViaTypes
       field: $field
       operation: $operation
     ) {
@@ -89,11 +79,6 @@ class EntityStixRelationsRadar extends Component {
       inferred,
       startDate,
       endDate,
-      resolveInferences,
-      resolveRelationType,
-      resolveRelationRole,
-      resolveRelationToTypes,
-      resolveViaTypes,
     } = this.props;
     const stixRelationsDistributionVariables = {
       fromId: entityId,
@@ -102,11 +87,6 @@ class EntityStixRelationsRadar extends Component {
       inferred: inferred !== null ? inferred : true,
       startDate: startDate || null,
       endDate: endDate || null,
-      resolveInferences,
-      resolveRelationType,
-      resolveRelationRole,
-      resolveRelationToTypes,
-      resolveViaTypes,
       relationType,
       field,
       operation: 'count',
@@ -232,11 +212,6 @@ EntityStixRelationsRadar.propTypes = {
   inferred: PropTypes.bool,
   startDate: PropTypes.string,
   endDate: PropTypes.string,
-  resolveInferences: PropTypes.bool,
-  resolveRelationType: PropTypes.string,
-  resolveRelationRole: PropTypes.string,
-  resolveRelationToTypes: PropTypes.array,
-  resolveViaTypes: PropTypes.array,
   entityTypes: PropTypes.array,
   field: PropTypes.string,
   classes: PropTypes.object,

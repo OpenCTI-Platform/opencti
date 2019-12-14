@@ -2,17 +2,15 @@ import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixObservableRelation,
-  stixObservableRelationDelete,
   findAll,
-  findByStixId,
   findById,
-  findAllWithInferences,
   search,
-  stixObservableRelationEditContext,
-  stixObservableRelationCleanContext,
-  stixObservableRelationEditField,
   stixObservableRelationAddRelation,
-  stixObservableRelationDeleteRelation
+  stixObservableRelationCleanContext,
+  stixObservableRelationDelete,
+  stixObservableRelationDeleteRelation,
+  stixObservableRelationEditContext,
+  stixObservableRelationEditField
 } from '../domain/stixObservableRelation';
 import { pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
@@ -26,10 +24,7 @@ const stixObservableRelationResolvers = {
         return search(args);
       }
       if (args.stix_id_key && args.stix_id_key.length > 0) {
-        return findByStixId(args);
-      }
-      if (args.resolveInferences && args.resolveRelationRole && args.resolveRelationType) {
-        return findAllWithInferences(args);
+        return findById(args.stix_id_key);
       }
       return findAll(args);
     }

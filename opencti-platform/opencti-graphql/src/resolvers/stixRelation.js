@@ -3,7 +3,6 @@ import { BUS_TOPICS } from '../config/conf';
 import {
   addStixRelation,
   findAll,
-  findAllWithInferences,
   findById,
   search,
   stixRelationAddRelation,
@@ -12,16 +11,12 @@ import {
   stixRelationDeleteRelation,
   stixRelationEditContext,
   stixRelationEditField,
-  stixRelationsDistribution,
-  stixRelationsDistributionWithInferences,
-  stixRelationsNumber,
-  stixRelationsTimeSeries,
-  stixRelationsTimeSeriesWithInferences
+  stixRelationsNumber
 } from '../domain/stixRelation';
 import { pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
 import { killChainPhases } from '../domain/stixEntity';
-import { loadByGraknId } from '../database/grakn';
+import { distributionRelations, loadByGraknId, timeSeriesRelations } from '../database/grakn';
 
 const stixRelationResolvers = {
   Query: {
@@ -30,23 +25,10 @@ const stixRelationResolvers = {
       if (args.search && args.search.length > 0) {
         return search(args);
       }
-      if (args.resolveInferences && args.resolveRelationRole && args.resolveRelationType) {
-        return findAllWithInferences(args);
-      }
       return findAll(args);
     },
-    stixRelationsTimeSeries: (_, args) => {
-      if (args.resolveInferences && args.resolveRelationRole && args.resolveRelationType) {
-        return stixRelationsTimeSeriesWithInferences(args);
-      }
-      return stixRelationsTimeSeries(args);
-    },
-    stixRelationsDistribution: (_, args) => {
-      if (args.resolveInferences && args.resolveRelationRole && args.resolveRelationType) {
-        return stixRelationsDistributionWithInferences(args);
-      }
-      return stixRelationsDistribution(args);
-    },
+    stixRelationsTimeSeries: (_, args) => timeSeriesRelations(args),
+    stixRelationsDistribution: async (_, args) => distributionRelations(args),
     stixRelationsNumber: (_, args) => stixRelationsNumber(args)
   },
   StixRelation: {
