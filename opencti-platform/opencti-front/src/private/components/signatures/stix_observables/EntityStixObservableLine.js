@@ -183,19 +183,19 @@ class EntityStixObservableLineDummyComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.first_seen.width }}
               >
-                <div className="fakeItem" style={{ width: 140 }} />
+                <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.last_seen.width }}
               >
-                <div className="fakeItem" style={{ width: 140 }} />
+                <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.weight.width }}
               >
-                <div className="fakeItem" style={{ width: 100 }} />
+                <div className="fakeItem" style={{ width: '70%' }} />
               </div>
             </div>
           }

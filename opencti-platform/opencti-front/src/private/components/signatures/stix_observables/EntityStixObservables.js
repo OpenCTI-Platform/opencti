@@ -119,7 +119,7 @@ class EntityStixObservables extends Component {
       lastSeenStop,
     } = this.state;
     const paginationOptions = {
-      inferred: true,
+      inferred: false,
       toTypes: targetEntityTypes,
       fromId: entityId,
       relationType,

@@ -119,13 +119,7 @@ class IntrusionSetKnowledgeComponent extends Component {
             <EntityStixRelations
               entityId={intrusionSet.id}
               relationType="targets"
-              targetEntityTypes={[
-                'Organization',
-                'Sector',
-                'City',
-                'Country',
-                'Region',
-              ]}
+              targetEntityTypes={['Identity']}
               entityLink={link}
               exploreLink={`/dashboard/explore/victimology/${intrusionSet.id}`}
               creationIsFrom={true}
