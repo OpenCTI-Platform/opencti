@@ -539,7 +539,7 @@ export const elRemoveRelationConnection = async relationId => {
   // Update the from entity
   await elUpdate(from._index, from.grakn_id, {
     script: {
-      source: `ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
+      source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
       params: {
         key: to.internal_id_key
       }
@@ -548,7 +548,7 @@ export const elRemoveRelationConnection = async relationId => {
   // Update to to entity
   await elUpdate(to._index, to.grakn_id, {
     script: {
-      source: `ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
+      source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
       params: {
         key: from.internal_id_key
       }

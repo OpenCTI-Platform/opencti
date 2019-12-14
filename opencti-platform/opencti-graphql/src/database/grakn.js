@@ -24,8 +24,8 @@ import {
   mergeAll,
   mergeRight,
   pipe,
-  split,
   pluck,
+  split,
   tail,
   toPairs,
   uniq,
@@ -54,7 +54,7 @@ import {
   REL_INDEX_PREFIX
 } from './elasticSearch';
 
-// region global variables
+// region variables
 const dateFormat = 'YYYY-MM-DDTHH:mm:ss';
 const GraknString = 'String';
 const GraknDate = 'Date';
@@ -67,6 +67,7 @@ export const TYPE_STIX_RELATION = 'stix_relation';
 export const TYPE_STIX_OBSERVABLE_RELATION = 'stix_observable_relation';
 export const TYPE_RELATION_EMBEDDED = 'relation_embedded';
 export const TYPE_STIX_RELATION_EMBEDDED = 'stix_relation_embedded';
+const UNIMPACTED_ENTITIES_ROLE = ['tagging', 'marking', 'kill_chain_phase'];
 export const inferIndexFromConceptTypes = (types, parentType = null) => {
   // Observable index
   if (includes(TYPE_STIX_OBSERVABLE, types) || parentType === TYPE_STIX_OBSERVABLE) return INDEX_STIX_OBSERVABLE;
@@ -133,7 +134,7 @@ const client = new Grakn(`${conf.get('grakn:hostname')}:${conf.get('grakn:port')
 let session = null;
 // endregion
 
-// region basic commands
+// region basic
 const closeTx = async gTx => {
   try {
     if (gTx.tx.isOpen()) {
@@ -342,7 +343,7 @@ export const extractQueryVars = query => {
 };
 // endregion
 
-// region stable functions
+// region api
 /**
  * Query and get attribute values
  * @param type
@@ -695,8 +696,14 @@ export const indexElements = async (elements, retry = 0) => {
   const impactedEntities = pipe(
     filter(e => e.relationship_type !== undefined),
     map(e => {
+      const { fromRole, toRole } = e;
       const relationshipType = e.relationship_type;
-      return [{ from: e.fromId, relationshipType, to: e.toId }, { from: e.toId, relationshipType, to: e.fromId }];
+      const impacts = [];
+      // We impact target entities of the relation only if not global entities like
+      // MarkingDefinition (marking) / KillChainPhase (kill_chain_phase) / Tag (tagging)
+      if (!includes(fromRole, UNIMPACTED_ENTITIES_ROLE)) impacts.push({ from: e.fromId, relationshipType, to: e.toId });
+      if (!includes(toRole, UNIMPACTED_ENTITIES_ROLE)) impacts.push({ from: e.toId, relationshipType, to: e.fromId });
+      return impacts;
     }),
     flatten,
     groupBy(i => i.from)
@@ -707,7 +714,7 @@ export const indexElements = async (elements, retry = 0) => {
       const entity = await elLoadByGraknId(entityGraknId);
       const targets = impactedEntities[entityGraknId];
       // Build document fields to update ( per relation type )
-      // membership: [{internal_id_key: xxxx, relation_id_key: xxxx}]
+      // rel_membership: [{ internal_id_key: ID, types: [] }]
       const targetsByRelation = groupBy(i => i.relationshipType, targets);
       const targetsElements = await Promise.all(
         map(async relType => {
@@ -1153,6 +1160,334 @@ export const listEntities = async (searchFields, args) => {
   });
 };
 
+const prepareAttribute = value => {
+  if (value instanceof Date) return prepareDate(value);
+  if (Date.parse(value) > 0 && new Date(value).toISOString() === value) return prepareDate(value);
+  if (typeof value === 'string') return `"${escapeString(value)}"`;
+  return escape(value);
+};
+const flatAttributesForObject = data => {
+  const elements = Object.entries(data);
+  return pipe(
+    map(elem => {
+      const key = head(elem);
+      const value = last(elem);
+      if (Array.isArray(value)) {
+        return map(iter => ({ key, value: iter }), value);
+      }
+      // Some dates needs to detailed for search
+      if (value && includes(key, statsDateAttributes)) {
+        return [
+          { key, value },
+          { key: `${key}_day`, value: dayFormat(value) },
+          { key: `${key}_month`, value: monthFormat(value) },
+          { key: `${key}_year`, value: yearFormat(value) }
+        ];
+      }
+      return { key, value };
+    }),
+    flatten,
+    filter(f => f.value !== undefined)
+  )(elements);
+};
+const createRelationRaw = async (fromInternalId, input, opts = {}) => {
+  const { indexable = true, reversedReturn = false, isStixObservableRelation = false } = opts;
+  const relationId = uuid();
+  // 01. First fix the direction of the relation
+  const isStixRelation = includes('stix_id_key', Object.keys(input)) || input.relationship_type;
+  const relationshipType = input.relationship_type || input.through;
+  if (fromInternalId === input.toId) {
+    throw new Error(
+      `[GRAKN] You cant create a relation with the same source and target (${fromInternalId} - ${relationshipType})`
+    );
+  }
+  // eslint-disable-next-line no-nested-ternary
+  const entityType = isStixRelation
+    ? isStixObservableRelation
+      ? TYPE_STIX_OBSERVABLE_RELATION
+      : TYPE_STIX_RELATION
+    : TYPE_RELATION_EMBEDDED;
+  const isInv = isInversed(relationshipType, input.fromRole);
+  if (isInv) {
+    const message = `{ from '${input.fromRole}' to '${input.toRole}' through ${relationshipType} }`;
+    throw new Error(`[GRAKN] You cant create a relation in incorrect order ${message}`);
+  }
+  // 02. Prepare the data to create or index
+  const today = now();
+  let relationAttributes = { internal_id_key: relationId };
+  if (isStixRelation) {
+    const currentDate = now();
+    const toCreate = input.stix_id_key === undefined || input.stix_id_key === null || input.stix_id_key === 'create';
+    relationAttributes.stix_id_key = toCreate ? `relationship--${uuid()}` : input.stix_id_key;
+    relationAttributes.revoked = false;
+    relationAttributes.name = input.name ? input.name : ''; // Force name of the relation
+    relationAttributes.description = input.description ? input.description : '';
+    relationAttributes.role_played = input.role_played ? input.role_played : 'Unknown';
+    relationAttributes.weight = input.weight ? input.weight : 1;
+    relationAttributes.entity_type = entityType;
+    relationAttributes.relationship_type = relationshipType;
+    relationAttributes.updated_at = currentDate;
+    relationAttributes.created = input.created ? input.created : today;
+    relationAttributes.modified = input.modified ? input.modified : today;
+    relationAttributes.created_at = currentDate;
+    relationAttributes.first_seen = input.first_seen ? input.first_seen : today;
+    relationAttributes.last_seen = input.last_seen ? input.last_seen : today;
+  }
+  // Add the additional fields for dates (day, month, year)
+  const dataKeys = Object.keys(relationAttributes);
+  for (let index = 0; index < dataKeys.length; index += 1) {
+    // Adding dates elements
+    if (includes(dataKeys[index], statsDateAttributes)) {
+      const dayValue = dayFormat(relationAttributes[dataKeys[index]]);
+      const monthValue = monthFormat(relationAttributes[dataKeys[index]]);
+      const yearValue = yearFormat(relationAttributes[dataKeys[index]]);
+      relationAttributes = pipe(
+        assoc(`${dataKeys[index]}_day`, dayValue),
+        assoc(`${dataKeys[index]}_month`, monthValue),
+        assoc(`${dataKeys[index]}_year`, yearValue)
+      )(relationAttributes);
+    }
+  }
+  // 02. Create the relation
+  const graknRelation = await executeWrite(async wTx => {
+    let query = `match $from has internal_id_key "${fromInternalId}";
+      $to has internal_id_key "${input.toId}";
+      insert $rel(${input.fromRole}: $from, ${input.toRole}: $to) isa ${relationshipType},`;
+    const queryElements = flatAttributesForObject(relationAttributes);
+    const nbElements = queryElements.length;
+    for (let index = 0; index < nbElements; index += 1) {
+      const { key, value } = queryElements[index];
+      const insert = prepareAttribute(value);
+      const separator = index + 1 === nbElements ? ';' : ',';
+      query += `has ${key} ${insert}${separator} `;
+    }
+    logger.debug(`[GRAKN - infer: false] createRelation > ${query}`);
+    const iterator = await wTx.tx.query(query);
+    const txRelation = await iterator.next();
+    const conceptRelation = txRelation.map().get('rel');
+    const relationTypes = await conceptTypes(conceptRelation);
+    const graknRelationId = conceptRelation.id;
+    const conceptFrom = txRelation.map().get('from');
+    const graknFromId = conceptFrom.id;
+    const fromTypes = await conceptTypes(conceptFrom);
+    const conceptTo = txRelation.map().get('to');
+    const graknToId = conceptTo.id;
+    const toTypes = await conceptTypes(conceptTo);
+    return { graknRelationId, graknFromId, graknToId, relationTypes, fromTypes, toTypes };
+  });
+  // 03. Prepare the final data with grakn IDS
+  const createdRel = pipe(
+    assoc('id', relationId),
+    // Grakn identifiers
+    assoc('grakn_id', graknRelation.graknRelationId),
+    assoc('fromId', graknRelation.graknFromId),
+    assoc('fromRole', input.fromRole),
+    assoc('fromTypes', graknRelation.fromTypes),
+    assoc('toId', graknRelation.graknToId),
+    assoc('toRole', input.toRole),
+    assoc('toTypes', graknRelation.toTypes),
+    // Relation specific
+    assoc('inferred', false),
+    // Types
+    assoc('entity_type', entityType),
+    assoc('relationship_type', relationshipType),
+    assoc('parent_types', graknRelation.relationTypes)
+  )(relationAttributes);
+  if (indexable) {
+    // 04. Index the relation and the modification in the base entity
+    await indexElements([createdRel]);
+  }
+  // 06. Return result
+  if (reversedReturn !== true) {
+    return createdRel;
+  }
+  // 07. Return result inversed if asked
+  return pipe(
+    assoc('fromId', createdRel.toId),
+    assoc('fromRole', createdRel.toRole),
+    assoc('fromTypes', createdRel.toTypes),
+    assoc('toId', createdRel.fromId),
+    assoc('toRole', createdRel.fromRole),
+    assoc('toTypes', createdRel.fromTypes)
+  )(createdRel);
+};
+const addOwner = async (fromInternalId, createdByOwnerId, opts = {}) => {
+  if (!createdByOwnerId) return undefined;
+  const input = { fromRole: 'so', toId: createdByOwnerId, toRole: 'owner', through: 'owned_by' };
+  return createRelationRaw(fromInternalId, input, opts);
+};
+const addCreatedByRef = async (fromInternalId, createdByRefId, opts = {}) => {
+  if (!createdByRefId) return undefined;
+  const input = { fromRole: 'so', toId: createdByRefId, toRole: 'creator', through: 'created_by_ref' };
+  return createRelationRaw(fromInternalId, input, opts);
+};
+const addMarkingDef = async (fromInternalId, markingDefId, opts = {}) => {
+  if (!markingDefId) return undefined;
+  const input = { fromRole: 'so', toId: markingDefId, toRole: 'marking', through: 'object_marking_refs' };
+  return createRelationRaw(fromInternalId, input, opts);
+};
+const addMarkingDefs = async (internalId, markingDefIds, opts = {}) => {
+  if (!markingDefIds || isEmpty(markingDefIds)) return undefined;
+  const markings = [];
+  // Relations cannot be created in parallel.
+  for (let i = 0; i < markingDefIds.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    const marking = await addMarkingDef(internalId, markingDefIds[i], opts);
+    markings.push(marking);
+  }
+  return markings;
+};
+const addTag = async (fromInternalId, tagId, opts = {}) => {
+  if (!tagId) return undefined;
+  const input = { fromRole: 'so', toId: tagId, toRole: 'tagging', through: 'tagged' };
+  return createRelationRaw(fromInternalId, input, opts);
+};
+const addTags = async (internalId, tagsIds, opts = {}) => {
+  if (!tagsIds || isEmpty(tagsIds)) return undefined;
+  const tags = [];
+  // Relations cannot be created in parallel.
+  for (let i = 0; i < tagsIds.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    const tag = await addTag(internalId, tagsIds[i], opts);
+    tags.push(tag);
+  }
+  return tags;
+};
+const addKillChain = async (fromInternalId, killChainId, opts = {}) => {
+  if (!killChainId) return undefined;
+  const input = {
+    fromRole: 'phase_belonging',
+    toId: killChainId,
+    toRole: 'kill_chain_phase',
+    through: 'kill_chain_phases'
+  };
+  return createRelationRaw(fromInternalId, input, opts);
+};
+const addKillChains = async (internalId, killChainIds, opts = {}) => {
+  if (!killChainIds || isEmpty(killChainIds)) return undefined;
+  const killChains = [];
+  // Relations cannot be created in parallel.
+  for (let i = 0; i < killChainIds.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    const killChain = await addKillChain(internalId, killChainIds[i], opts);
+    killChains.push(killChain);
+  }
+  return killChains;
+};
+export const createRelation = async (fromInternalId, input, opts = {}) => {
+  const created = await createRelationRaw(fromInternalId, input, opts);
+  // 05. Complete with eventual relations (will eventually update the index)
+  await addOwner(created.id, input.createdByOwner, opts);
+  await addCreatedByRef(created.id, input.createdByRef, opts);
+  await addMarkingDefs(created.id, input.markingDefinitions, opts);
+  await addKillChains(created.id, input.killChainPhases, opts);
+  return created;
+};
+export const createRelations = async (fromInternalId, inputs, opts = {}) => {
+  const createdRelations = [];
+  // Relations cannot be created in parallel. (Concurrent indexing on same key)
+  // Could be improve by grouping and indexing in one shot.
+  for (let i = 0; i < inputs.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    const relation = await createRelation(fromInternalId, inputs[i], opts);
+    createdRelations.push(relation);
+  }
+  return createdRelations;
+};
+export const createEntity = async (entity, type, opts = {}) => {
+  const { modelType = TYPE_STIX_DOMAIN_ENTITY, stixIdType, indexable = true } = opts;
+  const internalId = entity.internal_id_key ? entity.internal_id_key : uuid();
+  const stixType = stixIdType || type.toLowerCase();
+  const stixId = entity.stix_id_key ? entity.stix_id_key : `${stixType}--${uuid()}`;
+  // Complete with identifiers
+  const today = now();
+  let data = pipe(
+    assoc('internal_id_key', internalId),
+    assoc('entity_type', type.toLowerCase()),
+    assoc('created_at', today),
+    assoc('updated_at', today),
+    dissoc('createdByOwner'),
+    dissoc('createdByRef'),
+    dissoc('markingDefinitions'),
+    dissoc('tags'),
+    dissoc('killChainPhases')
+  )(entity);
+  // For stix domain entity, force the initialization of the alias list.
+  if (modelType === TYPE_STIX_DOMAIN_ENTITY) {
+    data = pipe(assoc('alias', data.alias ? data.alias : ['']))(data);
+  }
+  if (modelType === TYPE_STIX_OBSERVABLE) {
+    data = pipe(
+      assoc('stix_id_key', stixId),
+      assoc('name', data.name ? data.name : '')
+    )(data);
+  }
+  if (modelType === TYPE_STIX_DOMAIN || modelType === TYPE_STIX_DOMAIN_ENTITY) {
+    data = pipe(
+      assoc('stix_id_key', stixId),
+      assoc('created', entity.created ? entity.created : today),
+      assoc('modified', entity.modified ? entity.modified : today),
+      assoc('revoked', false)
+    )(data);
+  }
+  // Add the additional fields for dates (day, month, year)
+  const dataKeys = Object.keys(data);
+  for (let index = 0; index < dataKeys.length; index += 1) {
+    // Adding dates elements
+    if (includes(dataKeys[index], statsDateAttributes)) {
+      const dayValue = dayFormat(data[dataKeys[index]]);
+      const monthValue = monthFormat(data[dataKeys[index]]);
+      const yearValue = yearFormat(data[dataKeys[index]]);
+      data = pipe(
+        assoc(`${dataKeys[index]}_day`, dayValue),
+        assoc(`${dataKeys[index]}_month`, monthValue),
+        assoc(`${dataKeys[index]}_year`, yearValue)
+      )(data);
+    }
+  }
+  // Generate fields for query and build the query
+  const queryElements = flatAttributesForObject(data);
+  const nbElements = queryElements.length;
+  let query = `insert $entity isa ${type}, `;
+  for (let index = 0; index < nbElements; index += 1) {
+    const { key, value } = queryElements[index];
+    const insert = prepareAttribute(value);
+    const separator = index + 1 === nbElements ? ';' : ',';
+    if (insert !== null && insert !== undefined && insert.length !== 0) {
+      query += `has ${key} ${insert}${separator} `;
+    }
+  }
+  const entityCreated = await executeWrite(async wTx => {
+    logger.debug(`[GRAKN - infer: false] createEntity > ${query}`);
+    const iterator = await wTx.tx.query(query);
+    const txEntity = await iterator.next();
+    const concept = txEntity.map().get('entity');
+    const types = await conceptTypes(concept);
+    return { id: concept.id, types };
+  });
+  // Transaction succeed, complete the result to send it back
+  const completedData = pipe(
+    assoc('id', internalId),
+    // Grakn identifiers
+    assoc('grakn_id', entityCreated.id),
+    // Types (entity type directly saved)
+    assoc('parent_types', entityCreated.types)
+  )(data);
+  // Transaction succeed, index the result
+  if (indexable) {
+    await indexElements([completedData]);
+  }
+  // Complete with eventual relations (will eventually update the index)
+  await addOwner(internalId, entity.createdByOwner, opts);
+  await addCreatedByRef(internalId, entity.createdByRef, opts);
+  await addMarkingDefs(internalId, entity.markingDefinitions, opts);
+  await addTags(internalId, entity.tags, opts);
+  await addKillChains(internalId, entity.killChainPhases, opts);
+  // Else simply return the data
+  return completedData;
+};
+// endregion
+
 // TODO @Julien Create API around relations supported by elastic
 /*
 export const listRelations = async args => {
@@ -1182,7 +1517,6 @@ export const listRelations = async args => {
                       ${queryAttributesFields} ${queryAttributesFilters} get;`;
 };
 */
-// endregion
 
 // region please refactor to use stable commands
 /**
@@ -1434,334 +1768,3 @@ export const paginateRelationships = async (query, options, key = 'rel', extraRe
   }
 };
 // endregion
-
-const prepareAttribute = value => {
-  if (value instanceof Date) return prepareDate(value);
-  if (Date.parse(value) > 0 && new Date(value).toISOString() === value) return prepareDate(value);
-  if (typeof value === 'string') return `"${escapeString(value)}"`;
-  return escape(value);
-};
-const flatAttributesForObject = data => {
-  const elements = Object.entries(data);
-  return pipe(
-    map(elem => {
-      const key = head(elem);
-      const value = last(elem);
-      if (Array.isArray(value)) {
-        return map(iter => ({ key, value: iter }), value);
-      }
-      // Some dates needs to detailed for search
-      if (value && includes(key, statsDateAttributes)) {
-        return [
-          { key, value },
-          { key: `${key}_day`, value: dayFormat(value) },
-          { key: `${key}_month`, value: monthFormat(value) },
-          { key: `${key}_year`, value: yearFormat(value) }
-        ];
-      }
-      return { key, value };
-    }),
-    flatten,
-    filter(f => f.value !== undefined)
-  )(elements);
-};
-const createRelationRaw = async (fromInternalId, input, opts = {}) => {
-  const { indexable = true, reversedReturn = false, isStixObservableRelation = false } = opts;
-  const relationId = uuid();
-  // 01. First fix the direction of the relation
-  const isStixRelation = includes('stix_id_key', Object.keys(input)) || input.relationship_type;
-  const relationshipType = input.relationship_type || input.through;
-  if (fromInternalId === input.toId) {
-    throw new Error(
-      `[GRAKN] You cant create a relation with the same source and target (${fromInternalId} - ${relationshipType})`
-    );
-  }
-  // eslint-disable-next-line no-nested-ternary
-  const entityType = isStixRelation
-    ? isStixObservableRelation
-      ? TYPE_STIX_OBSERVABLE_RELATION
-      : TYPE_STIX_RELATION
-    : TYPE_RELATION_EMBEDDED;
-  const isInv = isInversed(relationshipType, input.fromRole);
-  if (isInv) {
-    const message = `{ from '${input.fromRole}' to '${input.toRole}' through ${relationshipType} }`;
-    throw new Error(`[GRAKN] You cant create a relation in incorrect order ${message}`);
-  }
-  // 02. Prepare the data to create or index
-  const today = now();
-  let relationAttributes = { internal_id_key: relationId };
-  if (isStixRelation) {
-    const currentDate = now();
-    const toCreate = input.stix_id_key === undefined || input.stix_id_key === null || input.stix_id_key === 'create';
-    relationAttributes.stix_id_key = toCreate ? `relationship--${uuid()}` : input.stix_id_key;
-    relationAttributes.revoked = false;
-    relationAttributes.name = input.name ? input.name : ''; // Force name of the relation
-    relationAttributes.description = input.description ? input.description : '';
-    relationAttributes.role_played = input.role_played ? input.role_played : 'Unknown';
-    relationAttributes.weight = input.weight ? input.weight : 1;
-    relationAttributes.entity_type = entityType;
-    relationAttributes.relationship_type = relationshipType;
-    relationAttributes.updated_at = currentDate;
-    relationAttributes.created = input.created ? input.created : today;
-    relationAttributes.modified = input.modified ? input.modified : today;
-    relationAttributes.created_at = currentDate;
-    relationAttributes.first_seen = input.first_seen ? input.first_seen : today;
-    relationAttributes.last_seen = input.last_seen ? input.last_seen : today;
-  }
-  // Add the additional fields for dates (day, month, year)
-  const dataKeys = Object.keys(relationAttributes);
-  for (let index = 0; index < dataKeys.length; index += 1) {
-    // Adding dates elements
-    if (includes(dataKeys[index], statsDateAttributes)) {
-      const dayValue = dayFormat(relationAttributes[dataKeys[index]]);
-      const monthValue = monthFormat(relationAttributes[dataKeys[index]]);
-      const yearValue = yearFormat(relationAttributes[dataKeys[index]]);
-      relationAttributes = pipe(
-        assoc(`${dataKeys[index]}_day`, dayValue),
-        assoc(`${dataKeys[index]}_month`, monthValue),
-        assoc(`${dataKeys[index]}_year`, yearValue)
-      )(relationAttributes);
-    }
-  }
-  // 02. Create the relation
-  const graknRelation = await executeWrite(async wTx => {
-    let query = `match $from has internal_id_key "${fromInternalId}";
-      $to has internal_id_key "${input.toId}";
-      insert $rel(${input.fromRole}: $from, ${input.toRole}: $to) isa ${relationshipType},`;
-    const queryElements = flatAttributesForObject(relationAttributes);
-    const nbElements = queryElements.length;
-    for (let index = 0; index < nbElements; index += 1) {
-      const { key, value } = queryElements[index];
-      const insert = prepareAttribute(value);
-      const separator = index + 1 === nbElements ? ';' : ',';
-      query += `has ${key} ${insert}${separator} `;
-    }
-    logger.debug(`[GRAKN - infer: false] createRelation > ${query}`);
-    const iterator = await wTx.tx.query(query);
-    const txRelation = await iterator.next();
-    const conceptRelation = txRelation.map().get('rel');
-    const relationTypes = await conceptTypes(conceptRelation);
-    const graknRelationId = conceptRelation.id;
-    const conceptFrom = txRelation.map().get('from');
-    const graknFromId = conceptFrom.id;
-    const fromTypes = await conceptTypes(conceptFrom);
-    const conceptTo = txRelation.map().get('to');
-    const graknToId = conceptTo.id;
-    const toTypes = await conceptTypes(conceptTo);
-    return { graknRelationId, graknFromId, graknToId, relationTypes, fromTypes, toTypes };
-  });
-  // 03. Prepare the final data with grakn IDS
-  const createdRel = pipe(
-    assoc('id', relationId),
-    // Grakn identifiers
-    assoc('grakn_id', graknRelation.graknRelationId),
-    assoc('fromId', graknRelation.graknFromId),
-    assoc('fromRole', input.fromRole),
-    assoc('fromTypes', graknRelation.fromTypes),
-    assoc('toId', graknRelation.graknToId),
-    assoc('toRole', input.toRole),
-    assoc('toTypes', graknRelation.toTypes),
-    // Relation specific
-    assoc('inferred', false),
-    // Types
-    assoc('entity_type', entityType),
-    assoc('relationship_type', relationshipType),
-    assoc('parent_types', graknRelation.relationTypes)
-  )(relationAttributes);
-  if (indexable) {
-    // 04. Index the relation and the modification in the base entity
-    await indexElements([createdRel]);
-  }
-  // 06. Return result
-  if (reversedReturn !== true) {
-    return createdRel;
-  }
-  // 07. Return result inversed if asked
-  return pipe(
-    assoc('fromId', createdRel.toId),
-    assoc('fromRole', createdRel.toRole),
-    assoc('fromTypes', createdRel.toTypes),
-    assoc('toId', createdRel.fromId),
-    assoc('toRole', createdRel.fromRole),
-    assoc('toTypes', createdRel.fromTypes)
-  )(createdRel);
-};
-
-// region business relations
-const addOwner = async (fromInternalId, createdByOwnerId, opts = {}) => {
-  if (!createdByOwnerId) return undefined;
-  const input = { fromRole: 'so', toId: createdByOwnerId, toRole: 'owner', through: 'owned_by' };
-  return createRelationRaw(fromInternalId, input, opts);
-};
-const addCreatedByRef = async (fromInternalId, createdByRefId, opts = {}) => {
-  if (!createdByRefId) return undefined;
-  const input = { fromRole: 'so', toId: createdByRefId, toRole: 'creator', through: 'created_by_ref' };
-  return createRelationRaw(fromInternalId, input, opts);
-};
-const addMarkingDef = async (fromInternalId, markingDefId, opts = {}) => {
-  if (!markingDefId) return undefined;
-  const input = { fromRole: 'so', toId: markingDefId, toRole: 'marking', through: 'object_marking_refs' };
-  return createRelationRaw(fromInternalId, input, opts);
-};
-const addMarkingDefs = async (internalId, markingDefIds, opts = {}) => {
-  if (!markingDefIds || isEmpty(markingDefIds)) return undefined;
-  const markings = [];
-  // Relations cannot be created in parallel.
-  for (let i = 0; i < markingDefIds.length; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
-    const marking = await addMarkingDef(internalId, markingDefIds[i], opts);
-    markings.push(marking);
-  }
-  return markings;
-};
-const addTag = async (fromInternalId, tagId, opts = {}) => {
-  if (!tagId) return undefined;
-  const input = { fromRole: 'so', toId: tagId, toRole: 'tagging', through: 'tagged' };
-  return createRelationRaw(fromInternalId, input, opts);
-};
-const addTags = async (internalId, tagsIds, opts = {}) => {
-  if (!tagsIds || isEmpty(tagsIds)) return undefined;
-  const tags = [];
-  // Relations cannot be created in parallel.
-  for (let i = 0; i < tagsIds.length; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
-    const tag = await addTag(internalId, tagsIds[i], opts);
-    tags.push(tag);
-  }
-  return tags;
-};
-const addKillChain = async (fromInternalId, killChainId, opts = {}) => {
-  if (!killChainId) return undefined;
-  const input = {
-    fromRole: 'phase_belonging',
-    toId: killChainId,
-    toRole: 'kill_chain_phase',
-    through: 'kill_chain_phases'
-  };
-  return createRelationRaw(fromInternalId, input, opts);
-};
-const addKillChains = async (internalId, killChainIds, opts = {}) => {
-  if (!killChainIds || isEmpty(killChainIds)) return undefined;
-  const killChains = [];
-  // Relations cannot be created in parallel.
-  for (let i = 0; i < killChainIds.length; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
-    const killChain = await addKillChain(internalId, killChainIds[i], opts);
-    killChains.push(killChain);
-  }
-  return killChains;
-};
-// endregion
-
-export const createRelation = async (fromInternalId, input, opts = {}) => {
-  const created = await createRelationRaw(fromInternalId, input, opts);
-  // 05. Complete with eventual relations (will eventually update the index)
-  await addOwner(created.id, input.createdByOwner, opts);
-  await addCreatedByRef(created.id, input.createdByRef, opts);
-  await addMarkingDefs(created.id, input.markingDefinitions, opts);
-  await addKillChains(created.id, input.killChainPhases, opts);
-  return created;
-};
-export const createRelations = async (fromInternalId, inputs, opts = {}) => {
-  const createdRelations = [];
-  // Relations cannot be created in parallel. (Concurrent indexing on same key)
-  // Could be improve by grouping and indexing in one shot.
-  for (let i = 0; i < inputs.length; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
-    const relation = await createRelation(fromInternalId, inputs[i], opts);
-    createdRelations.push(relation);
-  }
-  return createdRelations;
-};
-export const createEntity = async (entity, type, opts = {}) => {
-  const { modelType = TYPE_STIX_DOMAIN_ENTITY, stixIdType, indexable = true } = opts;
-  const internalId = entity.internal_id_key ? entity.internal_id_key : uuid();
-  const stixType = stixIdType || type.toLowerCase();
-  const stixId = entity.stix_id_key ? entity.stix_id_key : `${stixType}--${uuid()}`;
-  // Complete with identifiers
-  const today = now();
-  let data = pipe(
-    assoc('internal_id_key', internalId),
-    assoc('entity_type', type.toLowerCase()),
-    assoc('created_at', today),
-    assoc('updated_at', today),
-    dissoc('createdByOwner'),
-    dissoc('createdByRef'),
-    dissoc('markingDefinitions'),
-    dissoc('tags'),
-    dissoc('killChainPhases')
-  )(entity);
-  // For stix domain entity, force the initialization of the alias list.
-  if (modelType === TYPE_STIX_DOMAIN_ENTITY) {
-    data = pipe(assoc('alias', data.alias ? data.alias : ['']))(data);
-  }
-  if (modelType === TYPE_STIX_OBSERVABLE) {
-    data = pipe(
-      assoc('stix_id_key', stixId),
-      assoc('name', data.name ? data.name : '')
-    )(data);
-  }
-  if (modelType === TYPE_STIX_DOMAIN || modelType === TYPE_STIX_DOMAIN_ENTITY) {
-    data = pipe(
-      assoc('stix_id_key', stixId),
-      assoc('created', entity.created ? entity.created : today),
-      assoc('modified', entity.modified ? entity.modified : today),
-      assoc('revoked', false)
-    )(data);
-  }
-  // Add the additional fields for dates (day, month, year)
-  const dataKeys = Object.keys(data);
-  for (let index = 0; index < dataKeys.length; index += 1) {
-    // Adding dates elements
-    if (includes(dataKeys[index], statsDateAttributes)) {
-      const dayValue = dayFormat(data[dataKeys[index]]);
-      const monthValue = monthFormat(data[dataKeys[index]]);
-      const yearValue = yearFormat(data[dataKeys[index]]);
-      data = pipe(
-        assoc(`${dataKeys[index]}_day`, dayValue),
-        assoc(`${dataKeys[index]}_month`, monthValue),
-        assoc(`${dataKeys[index]}_year`, yearValue)
-      )(data);
-    }
-  }
-  // Generate fields for query and build the query
-  const queryElements = flatAttributesForObject(data);
-  const nbElements = queryElements.length;
-  let query = `insert $entity isa ${type}, `;
-  for (let index = 0; index < nbElements; index += 1) {
-    const { key, value } = queryElements[index];
-    const insert = prepareAttribute(value);
-    const separator = index + 1 === nbElements ? ';' : ',';
-    if (insert !== null && insert !== undefined && insert.length !== 0) {
-      query += `has ${key} ${insert}${separator} `;
-    }
-  }
-  const entityCreated = await executeWrite(async wTx => {
-    logger.debug(`[GRAKN - infer: false] createEntity > ${query}`);
-    const iterator = await wTx.tx.query(query);
-    const txEntity = await iterator.next();
-    const concept = txEntity.map().get('entity');
-    const types = await conceptTypes(concept);
-    return { id: concept.id, types };
-  });
-  // Transaction succeed, complete the result to send it back
-  const completedData = pipe(
-    assoc('id', internalId),
-    // Grakn identifiers
-    assoc('grakn_id', entityCreated.id),
-    // Types (entity type directly saved)
-    assoc('parent_types', entityCreated.types)
-  )(data);
-  // Transaction succeed, index the result
-  if (indexable) {
-    await indexElements([completedData]);
-  }
-  // Complete with eventual relations (will eventually update the index)
-  await addOwner(internalId, entity.createdByOwner, opts);
-  await addCreatedByRef(internalId, entity.createdByRef, opts);
-  await addMarkingDefs(internalId, entity.markingDefinitions, opts);
-  await addTags(internalId, entity.tags, opts);
-  await addKillChains(internalId, entity.killChainPhases, opts);
-  // Else simply return the data
-  return completedData;
-};
