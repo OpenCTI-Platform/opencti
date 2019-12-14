@@ -75,6 +75,7 @@ export const TYPE_STIX_RELATION = 'stix_relation';
 export const TYPE_STIX_OBSERVABLE_RELATION = 'stix_observable_relation';
 export const TYPE_RELATION_EMBEDDED = 'relation_embedded';
 export const TYPE_STIX_RELATION_EMBEDDED = 'stix_relation_embedded';
+const UNIMPACTED_ENTITIES_ROLE = ['tagging', 'marking', 'kill_chain_phase'];
 export const inferIndexFromConceptTypes = (types, parentType = null) => {
   // Observable index
   if (includes(TYPE_STIX_OBSERVABLE, types) || parentType === TYPE_STIX_OBSERVABLE) return INDEX_STIX_OBSERVABLE;
@@ -907,8 +908,14 @@ export const indexElements = async (elements, retry = 0) => {
   const impactedEntities = pipe(
     filter(e => e.relationship_type !== undefined),
     map(e => {
+      const { fromRole, toRole } = e;
       const relationshipType = e.relationship_type;
-      return [{ from: e.fromId, relationshipType, to: e.toId }, { from: e.toId, relationshipType, to: e.fromId }];
+      const impacts = [];
+      // We impact target entities of the relation only if not global entities like
+      // MarkingDefinition (marking) / KillChainPhase (kill_chain_phase) / Tag (tagging)
+      if (!includes(fromRole, UNIMPACTED_ENTITIES_ROLE)) impacts.push({ from: e.fromId, relationshipType, to: e.toId });
+      if (!includes(toRole, UNIMPACTED_ENTITIES_ROLE)) impacts.push({ from: e.toId, relationshipType, to: e.fromId });
+      return impacts;
     }),
     flatten,
     groupBy(i => i.from)
@@ -919,7 +926,7 @@ export const indexElements = async (elements, retry = 0) => {
       const entity = await elLoadByGraknId(entityGraknId);
       const targets = impactedEntities[entityGraknId];
       // Build document fields to update ( per relation type )
-      // membership: [{internal_id_key: xxxx, relation_id_key: xxxx}]
+      // rel_membership: [{ internal_id_key: ID, types: [] }]
       const targetsByRelation = groupBy(i => i.relationshipType, targets);
       const targetsElements = await Promise.all(
         map(async relType => {
