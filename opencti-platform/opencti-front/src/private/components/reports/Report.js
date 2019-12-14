@@ -13,7 +13,6 @@ import ReportEdition from './ReportEdition';
 import EntityExternalReferences from '../common/external_references/EntityExternalReferences';
 import EntityStixRelationsDonut from '../common/stix_relations/EntityStixRelationsDonut';
 import EntityStixRelationsPie from '../common/stix_relations/EntityStixRelationsPie';
-import EntityStixRelationsRadar from '../common/stix_relations/EntityStixRelationsRadar';
 
 const styles = () => ({
   container: {
@@ -33,7 +32,8 @@ class ReportComponent extends Component {
         <Grid
           container={true}
           spacing={3}
-          classes={{ container: classes.gridContainer }}>
+          classes={{ container: classes.gridContainer }}
+        >
           <Grid item={true} xs={4}>
             <ReportOverview report={report} />
           </Grid>
@@ -48,8 +48,9 @@ class ReportComponent extends Component {
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 30 }}>
-          <Grid item={true} xs={4}>
+          style={{ marginTop: 30 }}
+        >
+          <Grid item={true} xs={6}>
             <EntityStixRelationsDonut
               entityId={report.id}
               entityType="Stix-Observable"
@@ -57,15 +58,7 @@ class ReportComponent extends Component {
               field="entity_type"
             />
           </Grid>
-          <Grid item={true} xs={4}>
-            <EntityStixRelationsRadar
-              entityId={report.id}
-              entityType="Kill-Chain-Phase"
-              relationType="kill_chain_phases"
-              field="phase_name"
-            />
-          </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item={true} xs={6}>
             <EntityStixRelationsPie
               entityId={report.id}
               entityType="Stix-Domain-Entity"
@@ -97,7 +90,4 @@ const Report = createFragmentContainer(ReportComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(Report);
+export default compose(inject18n, withStyles(styles))(Report);

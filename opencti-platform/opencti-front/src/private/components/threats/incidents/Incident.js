@@ -12,7 +12,6 @@ import IncidentEdition from './IncidentEdition';
 import IncidentPopover from './IncidentPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityStixRelationsRadar from '../../common/stix_relations/EntityStixRelationsRadar';
 import EntityStixRelationsDonut from '../../common/stix_relations/EntityStixRelationsDonut';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
@@ -55,15 +54,7 @@ class IncidentComponent extends Component {
           classes={{ container: classes.gridContainer }}
           style={{ marginTop: 30 }}
         >
-          <Grid item={true} xs={4}>
-            <EntityStixRelationsRadar
-              entityId={incident.id}
-              entityType="Kill-Chain-Phase"
-              relationType="kill_chain_phases"
-              field="phase_name"
-            />
-          </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item={true} xs={6}>
             <EntityStixRelationsDonut
               entityId={incident.id}
               entityType="Stix-Observable"
@@ -71,7 +62,7 @@ class IncidentComponent extends Component {
               field="entity_type"
             />
           </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item={true} xs={6}>
             <EntityReportsChart entityId={incident.id} />
           </Grid>
         </Grid>
@@ -99,7 +90,4 @@ const Incident = createFragmentContainer(IncidentComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(Incident);
+export default compose(inject18n, withStyles(styles))(Incident);

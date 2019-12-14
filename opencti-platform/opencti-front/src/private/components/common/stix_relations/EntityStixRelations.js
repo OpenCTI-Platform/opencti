@@ -300,23 +300,19 @@ class EntityStixRelations extends Component {
               ) : (
                 ''
               )}
-              {displayInferences ? (
-                <Grid item={true} xs="auto">
-                  <FormControlLabel
-                    style={{ paddingTop: 5, marginRight: 15 }}
-                    control={
-                      <Switch
-                        checked={inferred}
-                        onChange={this.handleChangeInferred.bind(this)}
-                        color="primary"
-                      />
-                    }
-                    label={t('Inferences')}
-                  />
-                </Grid>
-              ) : (
-                ''
-              )}
+              <Grid item={true} xs="auto">
+                <FormControlLabel
+                  style={{ paddingTop: 5, marginRight: 15 }}
+                  control={
+                    <Switch
+                      checked={inferred}
+                      onChange={this.handleChangeInferred.bind(this)}
+                      color="primary"
+                    />
+                  }
+                  label={t('Inferences')}
+                />
+              </Grid>
             </Grid>
           </Drawer>
         ) : (

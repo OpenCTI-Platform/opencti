@@ -71,7 +71,6 @@ const entityStixRelationsPieStixRelationDistributionQuery = graphql`
     $inferred: Boolean
     $startDate: DateTime
     $endDate: DateTime
-    $resolveViaTypes: [EntityRelation]
     $field: String!
     $operation: StatsOperation!
   ) {

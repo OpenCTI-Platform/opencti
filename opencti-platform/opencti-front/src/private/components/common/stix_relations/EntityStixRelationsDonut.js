@@ -44,11 +44,6 @@ const entityStixRelationsDonutStixRelationDistributionQuery = graphql`
     $inferred: Boolean
     $startDate: DateTime
     $endDate: DateTime
-    $resolveInferences: Boolean
-    $resolveRelationType: String
-    $resolveRelationRole: String
-    $resolveRelationToTypes: [String]
-    $resolveViaTypes: [EntityRelation]
     $field: String!
     $operation: StatsOperation!
   ) {
@@ -60,11 +55,6 @@ const entityStixRelationsDonutStixRelationDistributionQuery = graphql`
       inferred: $inferred
       startDate: $startDate
       endDate: $endDate
-      resolveInferences: $resolveInferences
-      resolveRelationType: $resolveRelationType
-      resolveRelationRole: $resolveRelationRole
-      resolveRelationToTypes: $resolveRelationToTypes
-      resolveViaTypes: $resolveViaTypes
       field: $field
       operation: $operation
     ) {

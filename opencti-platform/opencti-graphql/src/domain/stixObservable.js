@@ -6,11 +6,10 @@ import {
   deleteEntityById,
   deleteRelationById,
   escape,
-  escapeString,
   executeWrite,
   listEntities,
   loadEntityById,
-  timeSeries,
+  timeSeriesEntities,
   TYPE_STIX_OBSERVABLE,
   updateAttribute
 } from '../database/grakn';
@@ -41,15 +40,13 @@ export const stixObservablesNumber = args => ({
 
 // region time series
 export const reportsTimeSeries = (stixObservableId, args) => {
-  return timeSeries(
-    `match $x isa Report; 
-    $rel(knowledge_aggregation:$x, so:$so) isa object_refs;
-    $so has internal_id_key "${escapeString(stixObservableId)}"`,
-    args
-  );
+  const filters = [
+    { isRelation: true, from: 'knowledge_aggregation', to: 'so', type: 'object_refs', value: stixObservableId }
+  ];
+  return timeSeriesEntities('Report', filters, args);
 };
 export const stixObservablesTimeSeries = args => {
-  return timeSeries(`match $x isa ${args.type ? escape(args.type) : 'Stix-Observable'}`, args);
+  return timeSeriesEntities(args.type ? escape(args.type) : 'Stix-Observable', [], args);
 };
 // endregion
 

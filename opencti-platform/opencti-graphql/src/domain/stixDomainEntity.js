@@ -8,12 +8,11 @@ import {
   deleteEntityById,
   deleteRelationById,
   escape,
-  escapeString,
   executeWrite,
   listEntities,
   loadEntityById,
   loadEntityByStixId,
-  timeSeries,
+  timeSeriesEntities,
   updateAttribute
 } from '../database/grakn';
 import { findById as findMarkingDefintionById } from './markingDefinition';
@@ -37,15 +36,13 @@ export const findById = stixDomainEntityId => {
 
 // region time series
 export const reportsTimeSeries = (stixDomainEntityId, args) => {
-  return timeSeries(
-    `match $x isa Report; 
-    $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
-    $so has internal_id_key "${escapeString(stixDomainEntityId)}"`,
-    args
-  );
+  const filters = [
+    { isRelation: true, from: 'knowledge_aggregation', to: 'so', type: 'object_refs', value: stixDomainEntityId }
+  ];
+  return timeSeriesEntities('Report', filters, args);
 };
 export const stixDomainEntitiesTimeSeries = args => {
-  return timeSeries(`match $x isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'}`, args);
+  return timeSeriesEntities(args.type ? escape(args.type) : 'Stix-Domain-Entity', [], args);
 };
 
 export const stixDomainEntitiesNumber = args => ({

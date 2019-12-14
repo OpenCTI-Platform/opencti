@@ -119,7 +119,7 @@ class EntityStixRelationsTable extends Component {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {props.stixRelationsDistribution.map(row => (
+                  {props.stixRelationsDistribution.map((row) => (
                     <TableRow key={row.label} hover={true}>
                       <TableCell
                         component="th"

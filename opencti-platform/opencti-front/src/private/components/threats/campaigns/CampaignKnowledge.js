@@ -89,8 +89,6 @@ class CampaignKnowledgeComponent extends Component {
           path="/dashboard/threats/campaigns/:campaignId/knowledge/malwares"
           render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
               entityId={campaign.id}
               relationType="uses"
               targetEntityTypes={['Malware']}

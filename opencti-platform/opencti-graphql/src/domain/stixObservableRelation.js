@@ -1,15 +1,14 @@
 import { assoc } from 'ramda';
 import {
   findAll as stixRelationFindAll,
-  search as searchStixRelations,
-  findAllWithInferences as findAllWithInferencesStixRelations,
   findById as findByIdStixRelation,
-  stixRelationDelete,
-  stixRelationCleanContext,
-  stixRelationEditContext,
-  stixRelationEditField,
+  search as searchStixRelations,
   stixRelationAddRelation,
-  stixRelationDeleteRelation
+  stixRelationCleanContext,
+  stixRelationDelete,
+  stixRelationDeleteRelation,
+  stixRelationEditContext,
+  stixRelationEditField
 } from './stixRelation';
 import { createRelation } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -20,11 +19,6 @@ export const findAll = args =>
 
 export const search = args =>
   searchStixRelations(args.relationType ? args : assoc('relationType', 'stix_observable_relation', args));
-
-export const findAllWithInferences = async args =>
-  findAllWithInferencesStixRelations(
-    args.relationType ? args : assoc('relationType', 'stix_observable_relation', args)
-  );
 
 export const findById = id => findByIdStixRelation(id);
 

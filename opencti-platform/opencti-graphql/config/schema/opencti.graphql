@@ -2738,11 +2738,6 @@ type Query {
     fromId: String
     relationType: String
     inferred: Boolean
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     entityTypes: [String]
     toTypes: [String]
     field: String!
@@ -2755,11 +2750,6 @@ type Query {
     fromId: String
     relationType: String
     inferred: Boolean
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     entityTypes: [String]
     toTypes: [String]
     startDate: DateTime
@@ -2788,11 +2778,6 @@ type Query {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
