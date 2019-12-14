@@ -26,8 +26,6 @@ const stixObservableRelationResolvers = {
       if (args.stix_id_key && args.stix_id_key.length > 0) {
         return findById(args.stix_id_key);
       }
-      if (args.resolveInferences && args.resolveRelationRole && args.resolveRelationType) {
-      }
       return findAll(args);
     }
   },

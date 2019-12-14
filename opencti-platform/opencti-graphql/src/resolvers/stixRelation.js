@@ -27,12 +27,8 @@ const stixRelationResolvers = {
       }
       return findAll(args);
     },
-    stixRelationsTimeSeries: (_, args) => {
-      return timeSeriesRelations(args);
-    },
-    stixRelationsDistribution: async (_, args) => {
-      return distributionRelations(args);
-    },
+    stixRelationsTimeSeries: (_, args) => timeSeriesRelations(args),
+    stixRelationsDistribution: async (_, args) => distributionRelations(args),
     stixRelationsNumber: (_, args) => stixRelationsNumber(args)
   },
   StixRelation: {
