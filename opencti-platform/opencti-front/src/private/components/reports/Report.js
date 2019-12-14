@@ -63,9 +63,6 @@ class ReportComponent extends Component {
               entityType="Kill-Chain-Phase"
               relationType="kill_chain_phases"
               field="phase_name"
-              resolveInferences={true}
-              resolveRelationType="object_refs"
-              resolveRelationRole="knowledge_aggregation"
             />
           </Grid>
           <Grid item={true} xs={4}>

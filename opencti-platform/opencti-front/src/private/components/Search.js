@@ -13,7 +13,7 @@ import StixDomainEntitiesLines, {
 } from './common/stix_domain_entities/StixDomainEntitiesLines';
 import StixObservableSearchLines, {
   stixObservablesSearchLinesQuery,
-} from './stix_observables/StixObservablesSearchLines';
+} from './signatures/stix_observables/StixObservablesSearchLines';
 
 const styles = () => ({
   linesContainer: {

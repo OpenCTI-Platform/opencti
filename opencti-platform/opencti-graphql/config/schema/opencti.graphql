@@ -374,18 +374,12 @@ interface StixEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-    infrastructure: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -509,18 +503,12 @@ type StixObservable implements GlobalObject & StixEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-    infrastructure: Boolean
   ): StixRelationConnection
   jobs(first: Int): [Work]
   connectors(onlyAlive: Boolean): [Connector]
@@ -602,18 +590,12 @@ type StixRelation implements GlobalObject & StixEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-    infrastructure: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -699,18 +681,12 @@ type StixObservableRelation implements GlobalObject & StixEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-    infrastructure: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -837,18 +813,12 @@ interface Identity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-    infrastructure: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -934,18 +904,12 @@ type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-    infrastructure: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1047,18 +1011,12 @@ type Organization implements GlobalObject & StixEntity & StixDomainEntity & Iden
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-    infrastructure: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1142,18 +1100,12 @@ type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-    infrastructure: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1230,18 +1182,12 @@ type City implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-    infrastructure: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1318,18 +1264,12 @@ type Country implements GlobalObject & StixEntity & StixDomainEntity & Identity 
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-    infrastructure: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1406,18 +1346,12 @@ type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-    infrastructure: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1717,18 +1651,12 @@ type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-    infrastructure: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1814,18 +1742,12 @@ type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-    infrastructure: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1912,18 +1834,12 @@ type ThreatActor implements GlobalObject & StixEntity & StixDomainEntity & Ident
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-    infrastructure: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2017,18 +1933,12 @@ type IntrusionSet implements GlobalObject & StixEntity & StixDomainEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-    infrastructure: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2122,18 +2032,12 @@ type Campaign implements GlobalObject & StixEntity & StixDomainEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-    infrastructure: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2222,18 +2126,12 @@ type Incident implements GlobalObject & StixEntity & StixDomainEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-    infrastructure: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2318,18 +2216,12 @@ type Malware implements GlobalObject & StixEntity & StixDomainEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-    infrastructure: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2413,18 +2305,12 @@ type Tool implements GlobalObject & StixEntity & StixDomainEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-    infrastructure: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2507,18 +2393,12 @@ type Vulnerability implements GlobalObject & StixEntity & StixDomainEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-    infrastructure: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2616,18 +2496,12 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-    infrastructure: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2642,6 +2516,105 @@ input ReportAddInput {
   graph_data: String
   object_status: Int
   source_confidence_level: Int
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### Indicators
+enum IndicatorsOrdering {
+  stix_id_key
+  indicator_pattern
+  valid_from
+  valid_until
+  score
+  created
+  modified
+  created_at
+  updated_at
+  tags
+  killChainPhases
+  markingDefinitions
+}
+enum IndicatorsFilter {
+  pattern
+  tags
+  observablesContains
+}
+input IndicatorsFiltering {
+  key: IndicatorsFilter!
+  values: [String]
+}
+type IndicatorConnection {
+  pageInfo: PageInfo!
+  edges: [IndicatorEdge]
+}
+type IndicatorEdge {
+  cursor: String!
+  node: Indicator!
+  relation: RelationEmbedded!
+}
+type Indicator implements GlobalObject & StixEntity & StixDomainEntity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  stix_label: [String]
+  alias: [String]
+  name: String!
+  description: String
+  indicator_pattern: String
+  valid_from: DateTime
+  valid_until: DateTime
+  score: Int
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  graph_data: String
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  observableRefs: StixObservableConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  tags: TagConnection
+  reports: ReportConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input IndicatorAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String!
+  description: String
+  indicator_pattern: String!
+  valid_from: DateTime
+  valid_until: DateTime
+  score: Int
   createdByRef: String
   markingDefinitions: [String]
   tags: [String]
@@ -2754,18 +2727,12 @@ type Query {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    resolveInferences: Boolean
-    resolveRelationType: String
-    resolveRelationRole: String
-    resolveRelationToTypes: [String]
-    resolveViaTypes: [EntityRelation]
     firstSeenStart: DateTime
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-    infrastructure: Boolean
   ): StixRelationConnection @auth
   stixRelationsTimeSeries(
     fromId: String
@@ -3116,6 +3083,17 @@ type Query {
     limit: Int
     order: String
   ): [Distribution] @auth
+  # Indicators
+  indicator(id: String!): Indicator @auth
+  indicators(
+    first: Int
+    after: ID
+    orderBy: IndicatorsOrdering
+    orderMode: OrderingMode
+    filters: [IndicatorsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): IndicatorConnection @auth
 }
 
 ### SUBSCRIPTIONS
@@ -3428,6 +3406,16 @@ type ReportEditMutations {
   relationDelete(relationId: ID!): Report
 }
 
+# Indicator
+type IndicatorEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): Indicator
+  contextPatch(input: EditContext): Indicator
+  contextClean: Indicator
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Indicator
+}
+
 # Mutations
 type Mutation {
   # Login
@@ -3539,4 +3527,7 @@ type Mutation {
   # Report
   reportAdd(input: ReportAddInput): Report @auth
   reportEdit(id: ID!): ReportEditMutations @auth
+  # Indicator
+  indicatorAdd(input: IndicatorAddInput): Indicator @auth
+  indicatorEdit(id: ID!): IndicatorEditMutations @auth
 }

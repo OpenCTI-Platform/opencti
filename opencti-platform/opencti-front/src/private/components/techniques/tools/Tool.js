@@ -56,8 +56,6 @@ class ToolComponent extends Component {
               entityId={tool.id}
               relationType="uses"
               resolveInferences={true}
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
             />
           </Grid>
           <Grid item={true} xs={4}>
@@ -66,9 +64,6 @@ class ToolComponent extends Component {
               entityType="Kill-Chain-Phase"
               relationType="kill_chain_phases"
               field="phase_name"
-              resolveInferences={true}
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
             />
           </Grid>
           <Grid item={true} xs={4}>

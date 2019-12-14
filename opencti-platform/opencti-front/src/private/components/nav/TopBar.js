@@ -35,7 +35,7 @@ import TopMenuCourseOfAction from './TopMenuCourseOfAction';
 import TopMenuTool from './TopMenuTool';
 import TopMenuVulnerability from './TopMenuVulnerability';
 import TopMenuRegion from './TopMenuRegion';
-import TopMenuObservables from './TopMenuObservables';
+import TopMenuSignatures from './TopMenuSignatures';
 import TopMenuObservable from './TopMenuObservable';
 import TopMenuReports from './TopMenuReports';
 import TopMenuReport from './TopMenuReport';
@@ -244,13 +244,13 @@ class TopBar extends Component {
               ) : (
                 ''
               )}
-            {location.pathname === '/dashboard/observables'
-            || location.pathname.match('/dashboard/observables/[a-z1-9_]+$') ? (
-              <TopMenuObservables />
+            {location.pathname === '/dashboard/signatures'
+            || location.pathname.match('/dashboard/signatures/[a-z1-9_]+$') ? (
+              <TopMenuSignatures />
               ) : (
                 ''
               )}
-            {location.pathname.includes('/dashboard/observables/all/') ? (
+            {location.pathname.includes('/dashboard/signatures/observables/') ? (
               <TopMenuObservable />
             ) : (
               ''

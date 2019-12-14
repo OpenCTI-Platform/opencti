@@ -36,7 +36,7 @@ class CityKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/cities/:cityId/knowledge/relations/:relationId"
-          render={routeProps => (
+          render={(routeProps) => (
             <StixRelation
               entityId={city.id}
               inversedRoles={inversedRoles}
@@ -47,7 +47,7 @@ class CityKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/cities/:cityId/knowledge/overview"
-          render={routeProps => (
+          render={(routeProps) => (
             <StixDomainEntityKnowledge
               stixDomainEntityId={city.id}
               stixDomainEntityType="city"
@@ -58,7 +58,7 @@ class CityKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/cities/:cityId/knowledge/countries"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               entityId={city.id}
               relationType="localization"
@@ -72,10 +72,8 @@ class CityKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/cities/:cityId/knowledge/threats"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="localization"
-              resolveRelationRole="location"
               entityId={city.id}
               relationType="targets"
               targetEntityTypes={[
@@ -87,28 +85,6 @@ class CityKnowledgeComponent extends Component {
                 'Malware',
               ]}
               entityLink={link}
-              resolveViaTypes={[
-                {
-                  entityType: 'Intrusion-Set',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-                {
-                  entityType: 'Campaign',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-                {
-                  entityType: 'Incident',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-                {
-                  entityType: 'Malware',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-              ]}
               creationIsFrom={false}
               {...routeProps}
             />

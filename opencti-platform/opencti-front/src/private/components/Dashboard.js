@@ -539,7 +539,7 @@ class Dashboard extends Component {
                               classes={{ root: classes.item }}
                               divider={true}
                               component={Link}
-                              to={`/dashboard/observables/all/${stixObservable.id}`}
+                              to={`/dashboard/signatures/observables/${stixObservable.id}`}
                             >
                               <ListItemIcon
                                 classes={{ root: classes.itemIcon }}

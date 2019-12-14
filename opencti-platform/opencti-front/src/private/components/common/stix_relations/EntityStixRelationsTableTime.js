@@ -58,11 +58,6 @@ const entityStixRelationsTableTimeStixRelationTimeSeriesQuery = graphql`
     $fromId: String
     $entityTypes: [String]
     $relationType: String
-    $resolveInferences: Boolean
-    $resolveRelationType: String
-    $resolveRelationRole: String
-    $resolveRelationToTypes: [String]
-    $resolveViaTypes: [EntityRelation]
     $toTypes: [String]
     $field: String!
     $operation: StatsOperation!
@@ -75,11 +70,6 @@ const entityStixRelationsTableTimeStixRelationTimeSeriesQuery = graphql`
       fromId: $fromId
       entityTypes: $entityTypes
       relationType: $relationType
-      resolveInferences: $resolveInferences
-      resolveRelationType: $resolveRelationType
-      resolveRelationRole: $resolveRelationRole
-      resolveRelationToTypes: $resolveRelationToTypes
-      resolveViaTypes: $resolveViaTypes
       toTypes: $toTypes
       field: $field
       operation: $operation
@@ -117,15 +107,10 @@ class EntityStixRelationsTableTime extends Component {
       inferred = true,
       toTypes,
       relationType,
-      resolveInferences,
       entityTypes,
-      resolveRelationType,
-      resolveRelationRole,
-      resolveRelationToTypes,
-      resolveViaTypes,
     } = this.props;
     const monthInterval = this.state.interval === 'month' ? monthsAgo(6) : monthsAgo(12 * 5);
-    const finalStartDate = (variant === 'explore' && startDate) ? startDate : monthInterval;
+    const finalStartDate = variant === 'explore' && startDate ? startDate : monthInterval;
     const stixRelationsTimeSeriesVariables = {
       fromId: entityId || null,
       entityTypes: entityTypes || null,
@@ -137,11 +122,6 @@ class EntityStixRelationsTableTime extends Component {
       endDate: variant === 'explore' && endDate ? endDate : now(),
       inferred,
       interval: this.state.interval,
-      resolveInferences,
-      resolveRelationType,
-      resolveRelationRole,
-      resolveRelationToTypes,
-      resolveViaTypes,
     };
     return (
       <QueryRenderer
@@ -336,11 +316,6 @@ EntityStixRelationsTableTime.propTypes = {
   endDate: PropTypes.string,
   inferred: PropTypes.bool,
   relationType: PropTypes.string,
-  resolveInferences: PropTypes.bool,
-  resolveRelationType: PropTypes.string,
-  resolveRelationRole: PropTypes.string,
-  resolveRelationToTypes: PropTypes.array,
-  resolveViaTypes: PropTypes.array,
   entityTypes: PropTypes.array,
   toTypes: PropTypes.array,
   classes: PropTypes.object,

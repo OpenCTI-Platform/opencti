@@ -73,7 +73,6 @@ class EntityStixRelations extends Component {
     const { value } = event.target;
     if (value === 'All' && this.props.targetEntityTypes.length > 1) {
       return this.setState({
-        resolveInferences: false,
         openToType: false,
         toType: 'All',
       });
@@ -84,19 +83,11 @@ class EntityStixRelations extends Component {
   handleChangeInferred() {
     this.setState({
       inferred: !this.state.inferred,
-      resolveInferences:
-        !this.state.inferred === false ? false : this.state.resolveInferences,
     });
   }
 
-  handleChangeResolveInferences() {
-    this.setState({ resolveInferences: !this.state.resolveInferences });
-  }
-
   renderLines(paginationOptions) {
-    const {
-      sortBy, orderAsc,
-    } = this.state;
+    const { sortBy, orderAsc } = this.state;
     const { entityLink } = this.props;
     // sort only when inferences are disabled or inferences are resolved
     const dataColumns = {
@@ -160,10 +151,6 @@ class EntityStixRelations extends Component {
       targetEntityTypes,
       entityId,
       relationType,
-      resolveRelationType,
-      resolveRelationRole,
-      resolveRelationToTypes,
-      resolveViaTypes,
       creationIsFrom,
     } = this.props;
     const {
@@ -174,24 +161,14 @@ class EntityStixRelations extends Component {
       sortBy,
       orderAsc,
       inferred,
-      resolveInferences,
     } = this.state;
 
     // Display types selection when target types are multiple
     const displayTypes = targetEntityTypes.length > 1;
-    const displayInferences = !!resolveRelationType;
-    // Display detail is resolveRelationType is set and selected Type not all or single
-    const displayDetails = this.state.inferred
-      && resolveRelationType
-      && (this.state.toType !== 'All' || targetEntityTypes.length === 1);
+    const displayInferences = true;
 
     // sort only when inferences are disabled or inferences are resolved
     const paginationOptions = {
-      resolveInferences: this.state.resolveInferences,
-      resolveRelationType,
-      resolveRelationRole,
-      resolveRelationToTypes,
-      resolveViaTypes,
       inferred: inferred && sortBy === null ? inferred : false,
       toTypes: toType === 'All' ? targetEntityTypes : [toType],
       fromId: entityId,
@@ -203,7 +180,7 @@ class EntityStixRelations extends Component {
 
     return (
       <div className={classes.container}>
-        {displayTypes || displayInferences || displayDetails ? (
+        {displayTypes || displayInferences ? (
           <Drawer
             anchor="bottom"
             variant="permanent"
@@ -340,23 +317,6 @@ class EntityStixRelations extends Component {
               ) : (
                 ''
               )}
-              {displayDetails ? (
-                <Grid item={true} xs="auto">
-                  <FormControlLabel
-                    style={{ paddingTop: 5, marginRight: 15 }}
-                    control={
-                      <Switch
-                        checked={resolveInferences}
-                        onChange={this.handleChangeResolveInferences.bind(this)}
-                        color="primary"
-                      />
-                    }
-                    label={t('Details')}
-                  />
-                </Grid>
-              ) : (
-                ''
-              )}
             </Grid>
           </Drawer>
         ) : (
@@ -376,10 +336,6 @@ class EntityStixRelations extends Component {
 
 EntityStixRelations.propTypes = {
   entityId: PropTypes.string,
-  resolveRelationType: PropTypes.string,
-  resolveRelationRole: PropTypes.string,
-  resolveRelationToTypes: PropTypes.array,
-  resolveViaTypes: PropTypes.array,
   targetEntityTypes: PropTypes.array,
   entityLink: PropTypes.string,
   relationType: PropTypes.string,
@@ -391,7 +347,4 @@ EntityStixRelations.propTypes = {
   creationIsFrom: PropTypes.bool,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(EntityStixRelations);
+export default compose(inject18n, withStyles(styles))(EntityStixRelations);

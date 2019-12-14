@@ -52,6 +52,10 @@ export const rolesMap = {
     so: 'from',
     external_reference: 'to'
   },
+  observable_refs: {
+    observables_aggregation: 'from',
+    soo: 'to'
+  },
   // endregion
   // region stix_relation
   targets: {

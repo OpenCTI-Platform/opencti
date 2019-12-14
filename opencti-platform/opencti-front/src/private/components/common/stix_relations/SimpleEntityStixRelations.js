@@ -15,7 +15,7 @@ import SimpleEntityStixRelationsLines, {
   simpleEntityStixRelationsLinesQuery,
 } from './SimpleEntityStixRelationsLines';
 
-const styles = theme => ({
+const styles = (theme) => ({
   paper: {
     minHeight: 300,
     height: '100%',
@@ -47,17 +47,8 @@ class SimpleEntityStixRelations extends Component {
       relationType,
       entityLink,
       targetEntityTypes,
-      resolveRelationType,
-      resolveRelationRole,
-      resolveRelationToTypes,
-      resolveViaTypes,
     } = this.props;
     const paginationOptions = {
-      resolveInferences: false,
-      resolveRelationType,
-      resolveRelationRole,
-      resolveRelationToTypes,
-      resolveViaTypes,
       inferred: true,
       toTypes: targetEntityTypes,
       fromId: entityId,
@@ -120,10 +111,6 @@ class SimpleEntityStixRelations extends Component {
 
 SimpleEntityStixRelations.propTypes = {
   entityId: PropTypes.string,
-  resolveRelationType: PropTypes.string,
-  resolveRelationRole: PropTypes.string,
-  resolveRelationToTypes: PropTypes.array,
-  resolveViaTypes: PropTypes.array,
   targetEntityTypes: PropTypes.array,
   entityLink: PropTypes.string,
   relationType: PropTypes.string,

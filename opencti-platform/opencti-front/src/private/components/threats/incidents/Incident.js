@@ -61,9 +61,6 @@ class IncidentComponent extends Component {
               entityType="Kill-Chain-Phase"
               relationType="kill_chain_phases"
               field="phase_name"
-              resolveInferences={true}
-              resolveRelationType="uses"
-              resolveRelationRole="user"
             />
           </Grid>
           <Grid item={true} xs={4}>

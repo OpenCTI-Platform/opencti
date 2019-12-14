@@ -38,24 +38,6 @@ class VictimologyDistribution extends Component {
             inferred={inferred}
             startDate={startDate}
             endDate={endDate}
-            resolveInferences={inferred}
-            resolveRelationType={
-              pathOr(null, ['entity', 'type'], configuration) === 'malware'
-                ? 'uses'
-                : 'attributed-to'
-            }
-            resolveRelationRole={
-              pathOr(null, ['entity', 'type'], configuration) === 'malware'
-                ? 'usage'
-                : 'origin'
-            }
-            resolveViaTypes={[
-              {
-                entityType: 'Organization',
-                relationType: 'gathering',
-                relationRole: 'part_of',
-              },
-            ]}
           />
         );
       case 'radar':
@@ -72,24 +54,6 @@ class VictimologyDistribution extends Component {
             inferred={inferred}
             startDate={startDate}
             endDate={endDate}
-            resolveInferences={inferred}
-            resolveRelationType={
-              pathOr(null, ['entity', 'type'], configuration) === 'malware'
-                ? 'uses'
-                : 'attributed-to'
-            }
-            resolveRelationRole={
-              pathOr(null, ['entity', 'type'], configuration) === 'malware'
-                ? 'usage'
-                : 'origin'
-            }
-            resolveViaTypes={[
-              {
-                entityType: 'Organization',
-                relationType: 'gathering',
-                relationRole: 'part_of',
-              },
-            ]}
           />
         );
       case 'donut':
@@ -106,24 +70,6 @@ class VictimologyDistribution extends Component {
             inferred={inferred}
             startDate={startDate}
             endDate={endDate}
-            resolveInferences={inferred}
-            resolveRelationType={
-              pathOr(null, ['entity', 'type'], configuration) === 'malware'
-                ? 'uses'
-                : 'attributed-to'
-            }
-            resolveRelationRole={
-              pathOr(null, ['entity', 'type'], configuration) === 'malware'
-                ? 'usage'
-                : 'origin'
-            }
-            resolveViaTypes={[
-              {
-                entityType: 'Organization',
-                relationType: 'gathering',
-                relationRole: 'part_of',
-              },
-            ]}
           />
         );
       default:
@@ -140,24 +86,6 @@ class VictimologyDistribution extends Component {
             inferred={inferred}
             startDate={startDate}
             endDate={endDate}
-            resolveInferences={inferred}
-            resolveRelationType={
-              pathOr(null, ['entity', 'type'], configuration) === 'malware'
-                ? 'uses'
-                : 'attributed-to'
-            }
-            resolveRelationRole={
-              pathOr(null, ['entity', 'type'], configuration) === 'malware'
-                ? 'usage'
-                : 'origin'
-            }
-            resolveViaTypes={[
-              {
-                entityType: 'Organization',
-                relationType: 'gathering',
-                relationRole: 'part_of',
-              },
-            ]}
           />
         );
     }
@@ -174,7 +102,4 @@ VictimologyDistribution.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(VictimologyDistribution);
+export default compose(inject18n, withStyles(styles))(VictimologyDistribution);

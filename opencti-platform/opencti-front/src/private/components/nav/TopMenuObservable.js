@@ -46,7 +46,7 @@ class TopMenuObservable extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/observables/all"
+          to="/dashboard/signatures"
           variant="contained"
           size="small"
           color="inherit"
@@ -58,15 +58,17 @@ class TopMenuObservable extends Component {
         <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
-          to={`/dashboard/observables/all/${observableId}`}
+          to={`/dashboard/signatures/observables/${observableId}`}
           variant={
-            location.pathname === `/dashboard/observables/all/${observableId}`
+            location.pathname
+            === `/dashboard/signatures/observables/${observableId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/observables/all/${observableId}`
+            location.pathname
+            === `/dashboard/signatures/observables/${observableId}`
               ? 'primary'
               : 'inherit'
           }
@@ -76,17 +78,17 @@ class TopMenuObservable extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/observables/all/${observableId}/links`}
+          to={`/dashboard/signatures/observables/${observableId}/links`}
           variant={
             location.pathname
-            === `/dashboard/observables/all/${observableId}/links`
+            === `/dashboard/signatures/observables/${observableId}/links`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/observables/all/${observableId}/links`
+            === `/dashboard/signatures/observables/${observableId}/links`
               ? 'primary'
               : 'inherit'
           }
@@ -96,17 +98,17 @@ class TopMenuObservable extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/observables/all/${observableId}/knowledge`}
+          to={`/dashboard/signatures/observables/${observableId}/knowledge`}
           variant={
             location.pathname
-            === `/dashboard/observables/all/${observableId}/knowledge`
+            === `/dashboard/signatures/observables/${observableId}/knowledge`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/observables/all/${observableId}/knowledge`
+            === `/dashboard/signatures/observables/${observableId}/knowledge`
               ? 'primary'
               : 'inherit'
           }

@@ -34,7 +34,13 @@ const dateFields = [
   'last_seen_month',
   'published',
   'published_day',
-  'published_month'
+  'published_month',
+  'valid_from',
+  'valid_from_day',
+  'valid_from_month',
+  'valid_until',
+  'valid_until_day',
+  'valid_until_month'
 ];
 const numberFields = ['object_status', 'phase_order'];
 

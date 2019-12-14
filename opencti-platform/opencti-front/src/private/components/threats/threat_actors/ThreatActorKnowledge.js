@@ -75,9 +75,6 @@ class ThreatActorKnowledgeComponent extends Component {
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/campaigns"
           render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
-              resolveRelationToTypes={['Intrusion-Set']}
               entityId={threatActor.id}
               relationType="attributed-to"
               targetEntityTypes={['Campaign']}
@@ -92,8 +89,6 @@ class ThreatActorKnowledgeComponent extends Component {
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/incidents"
           render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
               entityId={threatActor.id}
               relationType="attributed-to"
               targetEntityTypes={['Incident']}
@@ -108,30 +103,6 @@ class ThreatActorKnowledgeComponent extends Component {
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/victimology"
           render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
-              resolveViaTypes={[
-                {
-                  entityType: 'User',
-                  relationType: 'gathering',
-                  relationRole: 'part_of',
-                },
-                {
-                  entityType: 'Organization',
-                  relationType: 'gathering',
-                  relationRole: 'part_of',
-                },
-                {
-                  entityType: 'Organization',
-                  relationType: 'localization',
-                  relationRole: 'localized',
-                },
-                {
-                  entityType: 'Country',
-                  relationType: 'localization',
-                  relationRole: 'localized',
-                },
-              ]}
               entityId={threatActor.id}
               relationType="targets"
               targetEntityTypes={[
@@ -154,8 +125,6 @@ class ThreatActorKnowledgeComponent extends Component {
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/malwares"
           render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
               entityId={threatActor.id}
               relationType="uses"
               targetEntityTypes={['Malware']}
@@ -181,8 +150,6 @@ class ThreatActorKnowledgeComponent extends Component {
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/tools"
           render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
               entityId={threatActor.id}
               relationType="uses"
               targetEntityTypes={['Tool']}
@@ -197,8 +164,6 @@ class ThreatActorKnowledgeComponent extends Component {
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/vulnerabilities"
           render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
               entityId={threatActor.id}
               relationType="targets"
               targetEntityTypes={['Vulnerability']}

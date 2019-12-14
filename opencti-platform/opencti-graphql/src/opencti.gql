@@ -52,10 +52,6 @@ define
   last_seen_day sub attribute, datatype string;
   last_seen_month sub attribute, datatype string;
   last_seen_year sub attribute, datatype string;
-  expiration sub attribute, datatype date;
-  expiration_day sub attribute, datatype string;
-  expiration_month sub attribute, datatype string;
-  expiration_year sub attribute, datatype string;
   name sub attribute, datatype string;
   description sub attribute, datatype string;
   connector_type sub attribute, datatype string;
@@ -91,25 +87,27 @@ define
   published_year sub attribute, datatype string;
   organization_class sub attribute, datatype string;
   report_class sub attribute, datatype string;
-  pattern sub attribute, datatype string;
+  indicator_pattern sub attribute, datatype string;
   valid_from sub attribute, datatype date;
+  valid_from_day sub attribute, datatype string;
+  valid_from_month sub attribute, datatype string;
+  valid_from_year sub attribute, datatype string;
   valid_until sub attribute, datatype date;
+  valid_until_day sub attribute, datatype string;
+  valid_until_month sub attribute, datatype string;
+  valid_until_year sub attribute, datatype string;
   platform sub attribute, datatype string;
   required_permission sub attribute, datatype string;
   source_confidence_level sub attribute, datatype long;
+  value sub attribute, datatype string;
 
   # STIX SRO
   relationship_type sub attribute, datatype string;
   role_played sub attribute, datatype string;
-  infrastructure sub attribute, datatype boolean;
   weight sub attribute, datatype long;
 
   # STIX SOO
-  number sub attribute, datatype long;
-  rir sub attribute, datatype string;
   observable_value sub attribute, datatype string;
-  value sub attribute, datatype string;
-  hash_type sub attribute, datatype string;
 
   ## ROLES
 
@@ -139,6 +137,7 @@ define
   knowledge_aggregation sub role;
 
   # STIX observables roles
+  soo sub role;
   link_from sub role;
   link_to sub role;
   resolving sub role;
@@ -275,6 +274,10 @@ define
     relates phase_belonging,
     relates kill_chain_phase;
 
+  observable_refs sub stix_relation_embedded,
+    relates observables_aggregation,
+    relates soo;
+
   # STIX SRO relationships
   stix_sighting sub relation,
     key internal_id_key,
@@ -317,7 +320,6 @@ define
     has name,
     has description,
     has role_played,
-    has infrastructure,
     has created_at,
     has created_at_day,
     has created_at_month,
@@ -592,13 +594,6 @@ define
     plays marking,
     plays allow;
 
-  Indicator sub Stix-Domain,
-    has pattern,
-    has valid_from,
-    has valid_until,
-    plays phase_belonging,
-    plays indicator;
-
   Attack-Pattern sub Stix-Domain-Entity,
     has platform,
     has required_permission,
@@ -762,6 +757,21 @@ define
     plays problem,
     plays characterize;
 
+  Indicator sub Stix-Domain-Entity,
+    key indicator_pattern,
+    has score,
+    has valid_from,
+    has valid_from_day,
+    has valid_from_month,
+    has valid_from_year,
+    has valid_until,
+    has valid_until_day,
+    has valid_until_month,
+    has valid_until_year,
+    plays observables_aggregation,
+    plays phase_belonging,
+    plays indicator;
+
   Stix-Observable sub entity,
     abstract,
     key internal_id_key,
@@ -776,6 +786,7 @@ define
     has created_at_year,
     has updated_at,
     plays so,
+    plays soo,
     plays indicator,
     plays part_of,
     plays link_from,
