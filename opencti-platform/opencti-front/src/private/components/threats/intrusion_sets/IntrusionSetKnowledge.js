@@ -61,8 +61,6 @@ class IntrusionSetKnowledgeComponent extends Component {
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/attribution"
           render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
               entityId={intrusionSet.id}
               relationType="attributed-to"
               targetEntityTypes={['Threat-Actor', 'Organization', 'User']}
@@ -91,8 +89,6 @@ class IntrusionSetKnowledgeComponent extends Component {
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/incidents"
           render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
               entityId={intrusionSet.id}
               relationType="attributed-to"
               targetEntityTypes={['Incident']}
@@ -107,8 +103,6 @@ class IntrusionSetKnowledgeComponent extends Component {
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/malwares"
           render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
               entityId={intrusionSet.id}
               relationType="uses"
               targetEntityTypes={['Malware']}
@@ -123,25 +117,6 @@ class IntrusionSetKnowledgeComponent extends Component {
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/victimology"
           render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
-              resolveViaTypes={[
-                {
-                  entityType: 'Organization',
-                  relationType: 'gathering',
-                  relationRole: 'part_of',
-                },
-                {
-                  entityType: 'Organization',
-                  relationType: 'localization',
-                  relationRole: 'localized',
-                },
-                {
-                  entityType: 'Country',
-                  relationType: 'localization',
-                  relationRole: 'localized',
-                },
-              ]}
               entityId={intrusionSet.id}
               relationType="targets"
               targetEntityTypes={[
@@ -174,8 +149,6 @@ class IntrusionSetKnowledgeComponent extends Component {
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/tools"
           render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
               entityId={intrusionSet.id}
               relationType="uses"
               targetEntityTypes={['Tool']}
@@ -190,8 +163,6 @@ class IntrusionSetKnowledgeComponent extends Component {
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/vulnerabilities"
           render={(routeProps) => (
             <EntityStixRelations
-              resolveRelationType="attributed-to"
-              resolveRelationRole="origin"
               entityId={intrusionSet.id}
               relationType="targets"
               targetEntityTypes={['Vulnerability']}

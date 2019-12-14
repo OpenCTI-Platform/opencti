@@ -36,7 +36,7 @@ class OrganizationKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/relations/:relationId"
-          render={routeProps => (
+          render={(routeProps) => (
             <StixRelation
               entityId={organization.id}
               inversedRoles={inversedRoles}
@@ -47,7 +47,7 @@ class OrganizationKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/overview"
-          render={routeProps => (
+          render={(routeProps) => (
             <StixDomainEntityKnowledge
               stixDomainEntityId={organization.id}
               stixDomainEntityType="organization"
@@ -58,7 +58,7 @@ class OrganizationKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/sectors"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               entityId={organization.id}
               relationType="gathering"
@@ -72,7 +72,7 @@ class OrganizationKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/locations"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               entityId={organization.id}
               relationType="localization"
@@ -86,7 +86,7 @@ class OrganizationKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/persons"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               entityId={organization.id}
               relationType="gathering"
@@ -100,33 +100,9 @@ class OrganizationKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/threats"
-          render={routeProps => (
+          render={(routeProps) => (
             <EntityStixRelations
               entityId={organization.id}
-              resolveRelationType="targets"
-              resolveRelationRole="target"
-              resolveViaTypes={[
-                {
-                  entityType: 'Intrusion-Set',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-                {
-                  entityType: 'Campaign',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-                {
-                  entityType: 'Incident',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-                {
-                  entityType: 'Malware',
-                  relationType: 'attributed-to',
-                  relationRole: 'attribution',
-                },
-              ]}
               relationType="targets"
               targetEntityTypes={[
                 'Country',

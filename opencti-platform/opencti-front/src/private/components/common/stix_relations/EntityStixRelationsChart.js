@@ -49,11 +49,6 @@ const entityStixRelationsChartStixRelationTimeSeriesQuery = graphql`
     $fromId: String
     $entityTypes: [String]
     $relationType: String
-    $resolveInferences: Boolean
-    $resolveRelationType: String
-    $resolveRelationRole: String
-    $resolveRelationToTypes: [String]
-    $resolveViaTypes: [EntityRelation]
     $toTypes: [String]
     $field: String!
     $operation: StatsOperation!
@@ -65,11 +60,6 @@ const entityStixRelationsChartStixRelationTimeSeriesQuery = graphql`
       fromId: $fromId
       entityTypes: $entityTypes
       relationType: $relationType
-      resolveInferences: $resolveInferences
-      resolveRelationType: $resolveRelationType
-      resolveRelationRole: $resolveRelationRole
-      resolveRelationToTypes: $resolveRelationToTypes
-      resolveViaTypes: $resolveViaTypes
       toTypes: $toTypes
       field: $field
       operation: $operation
@@ -119,12 +109,7 @@ class EntityStixRelationsChart extends Component {
       inferred,
       startDate,
       endDate,
-      resolveInferences,
       entityTypes,
-      resolveRelationType,
-      resolveRelationRole,
-      resolveRelationToTypes,
-      resolveViaTypes,
     } = this.props;
     const stixRelationsTimeSeriesVariables = {
       fromId: entityId || null,
@@ -140,11 +125,6 @@ class EntityStixRelationsChart extends Component {
       endDate: variant === 'explore' && endDate ? endDate : now(),
       interval: 'month',
       inferred,
-      resolveInferences,
-      resolveRelationType,
-      resolveRelationRole,
-      resolveRelationToTypes,
-      resolveViaTypes,
     };
     return (
       <QueryRenderer
@@ -303,11 +283,6 @@ EntityStixRelationsChart.propTypes = {
   inferred: PropTypes.bool,
   startDate: PropTypes.string,
   endDate: PropTypes.string,
-  resolveInferences: PropTypes.bool,
-  resolveRelationType: PropTypes.string,
-  resolveRelationRole: PropTypes.string,
-  resolveRelationToTypes: PropTypes.array,
-  resolveViaTypes: PropTypes.array,
   entityTypes: PropTypes.array,
   toTypes: PropTypes.array,
   classes: PropTypes.object,

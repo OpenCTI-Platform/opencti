@@ -1,7 +1,7 @@
-import { ascend, assoc, descend, prop, sortWith, take } from 'ramda';
+import { assoc } from 'ramda';
 import {
   createEntity,
-  distribution,
+  distributionEntities,
   escape,
   escapeString,
   findWithConnectedRelations,
@@ -11,7 +11,7 @@ import {
   loadEntityByStixId,
   paginateRelationships,
   prepareDate,
-  timeSeries
+  timeSeriesEntities
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
@@ -63,10 +63,9 @@ export const relationRefs = async (reportId, args) => {
 
 // region series
 export const reportsTimeSeries = args => {
-  return timeSeries(
-    `match $x isa Report${args.reportClass ? `; $x has report_class "${escapeString(args.reportClass)}"` : ''}`,
-    args
-  );
+  const { reportClass } = args;
+  const filters = reportClass ? [{ isRelation: false, type: 'report_class', value: args.reportClass }] : [];
+  return timeSeriesEntities('Incident', filters, args);
 };
 export const reportsNumber = args => ({
   count: getSingleValueNumber(`match $x isa Report;
@@ -78,30 +77,14 @@ export const reportsNumber = args => ({
     get; count;`)
 });
 export const reportsTimeSeriesByEntity = args => {
-  return timeSeries(
-    `match $x isa Report;
-    $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
-    $so has internal_id_key "${escapeString(args.objectId)}" ${
-      args.reportClass
-        ? `; 
-    $x has report_class "${escapeString(args.reportClass)}"`
-        : ''
-    }`,
-    args
-  );
+  const filters = [{ isRelation: true, type: 'object_refs', value: args.objectId }];
+  return timeSeriesEntities('Report', filters, args);
 };
-export const reportsTimeSeriesByAuthor = args => {
-  return timeSeries(
-    `match $x isa Report;
-    $rel(so:$x, creator:$so) isa created_by_ref; 
-    $so has internal_id_key "${escapeString(args.authorId)}" ${
-      args.reportClass
-        ? `; 
-    $x has report_class "${escapeString(args.reportClass)}"`
-        : ''
-    }`,
-    args
-  );
+export const reportsTimeSeriesByAuthor = async args => {
+  const { authorId, reportClass } = args;
+  const filters = [{ isRelation: true, from: 'so', to: 'creator', type: 'created_by_ref', value: authorId }];
+  if (reportClass) filters.push({ isRelation: false, type: 'report_class', value: reportClass });
+  return timeSeriesEntities('Report', filters, args);
 };
 export const reportsNumberByEntity = args => ({
   count: getSingleValueNumber(
@@ -135,19 +118,10 @@ export const reportsNumberByEntity = args => ({
     count;`
   )
 });
-export const reportsDistributionByEntity = args => {
-  const { limit = 10 } = args;
-  return distribution(
-    `match $x isa Report; 
-      $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
-      $so has internal_id_key "${escapeString(args.objectId)}"`,
-    args
-  ).then(result => {
-    if (args.order === 'asc') {
-      return take(limit, sortWith([ascend(prop('value'))])(result));
-    }
-    return take(limit, sortWith([descend(prop('value'))])(result));
-  });
+export const reportsDistributionByEntity = async args => {
+  const { objectId } = args;
+  const filters = [{ isRelation: true, from: 'knowledge_aggregation', to: 'so', type: 'object_refs', value: objectId }];
+  return distributionEntities('Report', filters, args);
 };
 // endregion
 

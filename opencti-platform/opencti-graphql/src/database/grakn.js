@@ -2,9 +2,11 @@ import uuid from 'uuid/v4';
 import {
   __,
   append,
+  ascend,
   assoc,
   chain,
   concat,
+  descend,
   dissoc,
   equals,
   filter,
@@ -24,9 +26,12 @@ import {
   mergeAll,
   mergeRight,
   pipe,
-  split,
   pluck,
+  prop,
+  sortWith,
+  split,
   tail,
+  take,
   toPairs,
   uniq,
   uniqBy
@@ -39,8 +44,11 @@ import conf, { logger } from '../config/conf';
 import { buildPagination, fillTimeSeries, randomKey } from './utils';
 import { isInversed, rolesMap } from './graknRoles';
 import {
+  elAggregationCount,
+  elAggregationRelationsCount,
   elBulk,
   elDeleteInstanceIds,
+  elHistogramCount,
   elLoadByGraknId,
   elLoadById,
   elLoadByStixId,
@@ -559,16 +567,19 @@ const loadConcept = async (query, concept, args = {}) => {
     });
 };
 
+// region Loader list
+export const getSingleValue = async (query, infer = false) => {
+  return executeRead(async rTx => {
+    logger.debug(`[GRAKN - infer: ${infer}] getSingleValue > ${query}`);
+    logger.debug(`[GRAKN - infer: false] getById > ${query}`);
+    const iterator = await rTx.tx.query(query, { infer });
+    return iterator.next();
+  });
+};
+export const getSingleValueNumber = async (query, infer = false) => {
+  return getSingleValue(query, infer).then(data => data.number());
+};
 const findOpts = { infer: false, noCache: false };
-/**
- * Query and get entities or relations
- * @param query
- * @param entities
- * @param infer if the query add inferences
- * @param noCache force to not use elastic
- * @param uniqueKey the result element to test for unicity (grakn_id)
- * @returns {Promise}
- */
 export const find = async (query, entities, { uniqueKey, infer, noCache } = findOpts) => {
   // Remove empty values from entities
   const plainEntities = filter(e => !isEmpty(e) && !isNil(e), entities);
@@ -626,21 +637,222 @@ export const find = async (query, entities, { uniqueKey, infer, noCache } = find
     return uniqBy(u => u[uniqFilter].grakn_id, result);
   });
 };
+// TODO Start - Refactor UI to be able to remove these 2 API
+export const findWithConnectedRelations = async (query, key, extraRelKey = null, infer = false) => {
+  const dataFind = await find(query, [key, extraRelKey], { infer });
+  return map(t => ({ node: t[key], relation: t[extraRelKey] }), dataFind);
+};
+export const loadWithConnectedRelations = (query, key, relationKey = null, infer = false) => {
+  return findWithConnectedRelations(query, key, relationKey, infer).then(result => head(result));
+};
+// TODO End - Refactor UI to be able to remove these 2 API
+export const listEntities = async (searchFields, args) => {
+  // filters contains potential relations like, mitigates, tagged ...
+  const {
+    first = 200,
+    after,
+    withCache = true,
+    types,
+    parentType = null,
+    search,
+    filters,
+    orderBy,
+    orderMode = 'asc'
+  } = args;
+  const validFilters = filter(f => f && f.values.filter(n => n).length > 0, filters || []);
+  const offset = after ? cursorToOffset(after) : 0;
+  const isRelationOrderBy = orderBy !== undefined && orderBy !== null && includes('.', orderBy);
+  // Define if Elastic can support this query.
+  // 01-2 Check the filters
+  const unSupportedRelations =
+    filter(k => {
+      // If the relation must be forced in a specific direction, ES cant support it.
+      if (k.fromRole || k.toRole) return true;
+      const isRelationFilter = includes('.', k.key);
+      if (isRelationFilter) {
+        // ES only support internal_id reference
+        const [, field] = k.key.split('.');
+        if (field !== 'internal_id_key') return true;
+      }
+      return false;
+    }, validFilters).length > 0;
+  // 01-3 Check the ordering
+  const unsupportedOrdering = isRelationOrderBy && last(orderBy.split('.')) !== 'internal_id_key';
+  const supportedByCache = !unsupportedOrdering && !unSupportedRelations && !forceNoCache();
+  if (supportedByCache && withCache) {
+    const index = inferIndexFromConceptTypes(types, parentType);
+    return elPaginate(index, args);
+  }
+  logger.debug(`[GRAKN] ListEntities on Grakn, supportedByCache: ${supportedByCache} - withCache: ${withCache}`);
+  // 02. If not go with standard Grakn
+  const relationsFields = [];
+  const attributesFields = [];
+  const attributesFilters = [];
+  // Handle order by field
+  if (isRelationOrderBy) {
+    const [relation, field] = orderBy.split('.');
+    const curatedRelation = relation.replace(REL_INDEX_PREFIX, '');
+    relationsFields.push(
+      `($elem, $${curatedRelation}) isa ${curatedRelation}; $${curatedRelation} has ${field} $order;`
+    );
+  } else if (orderBy) {
+    attributesFields.push(`$elem has ${orderBy} $order;`);
+  }
+  // Handle filters
+  if (validFilters && validFilters.length > 0) {
+    for (let index = 0; index < validFilters.length; index += 1) {
+      const filterKey = validFilters[index].key;
+      const filterValues = validFilters[index].values;
+      const isRelationFilter = includes('.', filterKey);
+      if (isRelationFilter) {
+        const [relation, field] = filterKey.split('.');
+        const curatedRelation = relation.replace(REL_INDEX_PREFIX, '');
+        const sourceRole = validFilters[index].fromRole ? `${validFilters[index].fromRole}:` : '';
+        const toRole = validFilters[index].toRole ? `${validFilters[index].toRole}:` : '';
+        const relId = `rel_${curatedRelation}`;
+        relationsFields.push(`$${relId} (${sourceRole}$elem, ${toRole}$${curatedRelation}) isa ${curatedRelation};`);
+        for (let valueIndex = 0; valueIndex < filterValues.length; valueIndex += 1) {
+          const val = filterValues[valueIndex];
+          // Apply filter on target.
+          // TODO @Julien Support more than only string filters
+          attributesFields.push(`$${curatedRelation} has ${field} "${val}";`);
+        }
+      } else {
+        for (let valueIndex = 0; valueIndex < filterValues.length; valueIndex += 1) {
+          const val = filterValues[valueIndex];
+          attributesFields.push(`$elem has ${filterKey} "${escapeString(val)}";`);
+        }
+      }
+    }
+  }
+  // Handle special case of search
+  if (search) {
+    for (let searchIndex = 0; searchIndex < searchFields.length; searchIndex += 1) {
+      const searchFieldName = searchFields[searchIndex];
+      attributesFields.push(`$elem has ${searchFieldName} $${searchFieldName};`);
+    }
+    const searchFilter = pipe(
+      map(e => `{ $${e} contains "${escapeString(search)}"; }`),
+      join(' or ')
+    )(searchFields);
+    attributesFilters.push(`${searchFilter};`);
+  }
+  // build the final query
+  const queryAttributesFields = join(' ', attributesFields);
+  const queryAttributesFilters = join(' ', attributesFilters);
+  const queryRelationsFields = join(' ', relationsFields);
+  const headType = types.length === 1 ? head(types) : 'entity';
+  const extraTypes =
+    types.length > 1
+      ? pipe(
+          map(e => `{ $elem isa ${e}; }`),
+          join(' or '),
+          concat(__, ';')
+        )(types)
+      : '';
+  const baseQuery = `match $elem isa ${headType}; ${extraTypes} ${queryRelationsFields} 
+                      ${queryAttributesFields} ${queryAttributesFilters} get;`;
+  const countQuery = `${baseQuery} count;`;
+  const paginateQuery = `offset ${offset}; limit ${first};`;
+  const orderQuery = orderBy ? `sort $order ${orderMode};` : '';
+  const query = `${baseQuery} ${orderQuery} ${paginateQuery}`;
+  const countPromise = getSingleValueNumber(countQuery);
+  const instancesPromise = await findWithConnectedRelations(query, 'elem');
+  return Promise.all([instancesPromise, countPromise]).then(([instances, globalCount]) => {
+    return buildPagination(first, offset, instances, globalCount);
+  });
+};
+// endregion
 
-/**
- * Query and get entities of the first row
- * @param query
- * @param entities
- * @param infer
- * @param noCache
- * @returns {Promise<any[] | never>}
- */
+// region Loader element
 export const load = async (query, entities, { infer, noCache } = findOpts) => {
   const data = await find(query, entities, { infer, noCache });
   return head(data);
 };
+export const loadEntityById = async (id, args = {}) => {
+  const { noCache = false } = args;
+  if (!noCache && !forceNoCache()) {
+    // [ELASTIC] From cache
+    const fromCache = await elLoadById(id);
+    if (fromCache) return fromCache;
+  }
+  const query = `match $x isa entity; $x has internal_id_key "${escapeString(id)}"; get;`;
+  const element = await load(query, ['x'], { noCache });
+  return element ? element.x : null;
+};
+export const loadEntityByStixId = async id => {
+  if (!forceNoCache()) {
+    // [ELASTIC] From cache
+    const fromCache = await elLoadByStixId(id);
+    if (fromCache) return fromCache;
+  }
+  const query = `match $x isa entity; $x has stix_id_key "${escapeString(id)}"; get;`;
+  const element = await load(query, ['x']);
+  return element ? element.x : null;
+};
+export const loadEntityByGraknId = async (graknId, args = {}) => {
+  const { noCache = false } = args;
+  if (!noCache && !forceNoCache()) {
+    // [ELASTIC] From cache
+    const fromCache = await elLoadByGraknId(graknId);
+    if (fromCache) return fromCache;
+  }
+  const query = `match $x isa entity; $x id ${escapeString(graknId)}; get;`;
+  const element = await load(query, ['x']);
+  return element.x;
+};
+export const loadRelationById = async (id, args = {}) => {
+  const { noCache = false } = args;
+  if (!noCache && !forceNoCache()) {
+    // [ELASTIC] From cache
+    const fromCache = await elLoadById(id);
+    if (fromCache) return fromCache;
+  }
+  const eid = escapeString(id);
+  const query = `match $rel($from, $to) isa relation; $rel has internal_id_key "${eid}"; get;`;
+  const element = await load(query, ['rel']);
+  return element ? element.rel : null;
+};
+export const loadRelationByStixId = async id => {
+  if (!forceNoCache()) {
+    // [ELASTIC] From cache
+    const fromCache = await elLoadByStixId(id);
+    if (fromCache) return fromCache;
+  }
+  const eid = escapeString(id);
+  const query = `match $rel($from, $to) isa relation; $rel has stix_id_key "${eid}"; get;`;
+  const element = await load(query, ['rel']);
+  return element ? element.rel : null;
+};
+export const loadRelationByGraknId = async (graknId, args = {}) => {
+  const { noCache = false } = args;
+  if (!noCache && !forceNoCache()) {
+    // [ELASTIC] From cache
+    const fromCache = await elLoadByGraknId(graknId);
+    if (fromCache) return fromCache;
+  }
+  const eid = escapeString(graknId);
+  const query = `match $rel($from, $to) isa relation; $rel id ${eid}; get;`;
+  const element = await load(query, ['rel']);
+  return element ? element.rel : null;
+};
+export const loadByGraknId = async (graknId, args = {}) => {
+  // Could be entity or relation.
+  const { noCache = false } = args;
+  if (!noCache && !forceNoCache()) {
+    // [ELASTIC] From cache - Already support the diff between entity and relation.
+    const fromCache = await elLoadByGraknId(graknId);
+    if (fromCache) return fromCache;
+  }
+  const entity = await loadEntityByGraknId(graknId, { noCache: true });
+  if (entity.base_type === 'relation') {
+    return loadRelationByGraknId(graknId, { noCache: true });
+  }
+  return entity;
+};
+// endregion
 
-// Reindex functions
+// region Indexer
 const prepareIndexing = async elements => {
   return Promise.all(
     map(async thing => {
@@ -764,394 +976,132 @@ export const reindexByAttribute = (type, value) => {
   logger.debug(`[GRAKN - infer: false] attributeUpdate > ${readQuery}`);
   return reindexByQuery(readQuery, ['x']);
 };
+// endregion
 
-/**
- * Load any grakn instance with OpenCTI internal ID.
- * @param id element id to get
- * @param args
- * @returns {Promise}
- */
-// ENTITIES
-export const loadEntityById = async (id, args = {}) => {
-  const { noCache = false } = args;
-  if (!noCache && !forceNoCache()) {
-    // [ELASTIC] From cache
-    const fromCache = await elLoadById(id);
-    if (fromCache) return fromCache;
-  }
-  const query = `match $x isa entity; $x has internal_id_key "${escapeString(id)}"; get;`;
-  const element = await load(query, ['x'], { noCache });
-  return element ? element.x : null;
+// region Graphics
+const buildAggregationQuery = (entityType, filters, options) => {
+  const { operation, field, interval } = options;
+  const baseQuery = `match $from isa ${entityType};`;
+  const filterQuery = pipe(
+    map(filterElement => {
+      const { isRelation, value, from, to, start, end, type } = filterElement;
+      const eValue = `${escapeString(value)}`;
+      if (isRelation) {
+        const fromRole = from ? `${from}:` : '';
+        const toRole = to ? `${to}:` : '';
+        const dateRange =
+          start && end
+            ? `$rel_${type} has first_seen $fs; $fs > ${prepareDate(start)}; $fs < ${prepareDate(end)};`
+            : '';
+        const relation = `$rel_${type}(${fromRole}$from, ${toRole}$${type}_to) isa ${type};`;
+        return `${relation} ${dateRange} $${type}_to has internal_id_key "${eValue}";`;
+      }
+      return `$from has ${type} "${eValue}";`;
+    }),
+    join('')
+  )(filters);
+  const groupField = interval ? `${field}_${interval}` : field;
+  const groupingQuery = `$from has ${groupField} $g; get; group $g; ${operation};`;
+  return `${baseQuery} ${filterQuery} ${groupingQuery}`;
 };
-export const loadEntityByStixId = async id => {
-  if (!forceNoCache()) {
-    // [ELASTIC] From cache
-    const fromCache = await elLoadByStixId(id);
-    if (fromCache) return fromCache;
-  }
-  const query = `match $x isa entity; $x has stix_id_key "${escapeString(id)}"; get;`;
-  const element = await load(query, ['x']);
-  return element ? element.x : null;
-};
-export const loadEntityByGraknId = async (graknId, args = {}) => {
-  const { noCache = false } = args;
-  if (!noCache && !forceNoCache()) {
-    // [ELASTIC] From cache
-    const fromCache = await elLoadByGraknId(graknId);
-    if (fromCache) return fromCache;
-  }
-  const query = `match $x isa entity; $x id ${escapeString(graknId)}; get;`;
-  const element = await load(query, ['x']);
-  return element.x;
-};
-// RELATIONS
-export const loadRelationById = async (id, args = {}) => {
-  const { noCache = false } = args;
-  if (!noCache && !forceNoCache()) {
-    // [ELASTIC] From cache
-    const fromCache = await elLoadById(id);
-    if (fromCache) return fromCache;
-  }
-  const eid = escapeString(id);
-  const query = `match $rel($from, $to) isa relation; $rel has internal_id_key "${eid}"; get;`;
-  const element = await load(query, ['rel']);
-  return element ? element.rel : null;
-};
-export const loadRelationByStixId = async id => {
-  if (!forceNoCache()) {
-    // [ELASTIC] From cache
-    const fromCache = await elLoadByStixId(id);
-    if (fromCache) return fromCache;
-  }
-  const eid = escapeString(id);
-  const query = `match $rel($from, $to) isa relation; $rel has stix_id_key "${eid}"; get;`;
-  const element = await load(query, ['rel']);
-  return element ? element.rel : null;
-};
-export const loadRelationByGraknId = async (graknId, args = {}) => {
-  const { noCache = false } = args;
-  if (!noCache && !forceNoCache()) {
-    // [ELASTIC] From cache
-    const fromCache = await elLoadByGraknId(graknId);
-    if (fromCache) return fromCache;
-  }
-  const eid = escapeString(graknId);
-  const query = `match $rel($from, $to) isa relation; $rel id ${eid}; get;`;
-  const element = await load(query, ['rel']);
-  return element ? element.rel : null;
-};
-// GENERIC
-export const loadByGraknId = async (graknId, args = {}) => {
-  // Could be entity or relation.
-  const { noCache = false } = args;
-  if (!noCache && !forceNoCache()) {
-    // [ELASTIC] From cache - Already support the diff between entity and relation.
-    const fromCache = await elLoadByGraknId(graknId);
-    if (fromCache) return fromCache;
-  }
-  const entity = await loadEntityByGraknId(graknId, { noCache: true });
-  if (entity.base_type === 'relation') {
-    return loadRelationByGraknId(graknId, { noCache: true });
-  }
-  return entity;
-};
-
-/**
- * Get a single value from a Grakn query
- * @param query
- * @param infer
- * @returns {Promise<any[] | never>}
- */
-export const getSingleValue = async (query, infer = false) => {
+const graknTimeSeries = (query, keyRef, valueRef, inferred) => {
   return executeRead(async rTx => {
-    logger.debug(`[GRAKN - infer: ${infer}] getSingleValue > ${query}`);
-    logger.debug(`[GRAKN - infer: false] getById > ${query}`);
-    const iterator = await rTx.tx.query(query, { infer });
-    return iterator.next();
-  });
-};
-export const getSingleValueNumber = async (query, infer = false) => {
-  return getSingleValue(query, infer).then(data => data.number());
-};
-
-/**
- * Edit an attribute value.
- * @param id
- * @param input
- * @param wTx
- * @returns the complete instance
- */
-export const updateAttribute = async (id, input, wTx) => {
-  const { key, value } = input; // value can be multi valued
-  // --- 00 Need update?
-  const val = includes(key, multipleAttributes) ? value : head(value);
-  const currentInstanceData = await loadEntityById(id);
-  if (equals(currentInstanceData[key], val)) {
-    return id;
-  }
-  // --- 01 Get the current attribute types
-  const escapedKey = escape(key);
-  const labelTypeQuery = `match $x type ${escapedKey}; get;`;
-  const labelIterator = await wTx.tx.query(labelTypeQuery);
-  const labelAnswer = await labelIterator.next();
-  // eslint-disable-next-line prettier/prettier
-  const attrType = await labelAnswer
-    .map()
-    .get('x')
-    .dataType();
-  const typedValues = map(v => {
-    if (attrType === GraknString) return `"${escapeString(v)}"`;
-    if (attrType === GraknDate) return prepareDate(v);
-    return escape(v);
-  }, value);
-  // --- Delete the old attribute
-  const entityId = `${escapeString(id)}`;
-  const deleteQuery = `match $x has internal_id_key "${entityId}", has ${escapedKey} $del via $d; delete $d;`;
-  // eslint-disable-next-line prettier/prettier
-  logger.debug(`[GRAKN - infer: false] updateAttribute - delete > ${deleteQuery}`);
-  await wTx.tx.query(deleteQuery);
-  if (typedValues.length > 0) {
-    let graknValues;
-    if (typedValues.length === 1) {
-      graknValues = `has ${escapedKey} ${head(typedValues)}`;
-    } else {
-      graknValues = `${join(
-        ' ',
-        map(gVal => `has ${escapedKey} ${gVal},`, tail(typedValues))
-      )} has ${escapedKey} ${head(typedValues)}`;
-    }
-    const createQuery = `match $m has internal_id_key "${escapeString(id)}"; insert $m ${graknValues};`;
-    logger.debug(`[GRAKN - infer: false] updateAttribute - insert > ${createQuery}`);
-    await wTx.tx.query(createQuery);
-  }
-  // Adding dates elements
-  if (includes(key, statsDateAttributes)) {
-    const dayValue = dayFormat(head(value));
-    const monthValue = monthFormat(head(value));
-    const yearValue = yearFormat(head(value));
-    const dayInput = { key: `${key}_day`, value: [dayValue] };
-    await updateAttribute(id, dayInput, wTx);
-    const monthInput = { key: `${key}_month`, value: [monthValue] };
-    await updateAttribute(id, monthInput, wTx);
-    const yearInput = { key: `${key}_year`, value: [yearValue] };
-    await updateAttribute(id, yearInput, wTx);
-  }
-  // Update modified / updated_at
-  if (currentInstanceData.parent_types.includes(TYPE_STIX_DOMAIN) && key !== 'modified' && key !== 'updated_at') {
-    const today = now();
-    await updateAttribute(id, { key: 'updated_at', value: [today] }, wTx);
-    await updateAttribute(id, { key: 'modified', value: [today] }, wTx);
-  }
-
-  // Update elasticsearch
-  const currentIndex = inferIndexFromConceptTypes(currentInstanceData.parent_types);
-  // eslint-disable-next-line no-nested-ternary
-  const typedVal = val === 'true' ? true : val === 'false' ? false : val;
-  const updateValueField = { [key]: typedVal };
-  await elUpdate(currentIndex, currentInstanceData.grakn_id, { doc: updateValueField });
-  return id;
-};
-
-export const deleteEntityById = async id => {
-  const eid = escapeString(id);
-  // 00. Load everything we need to remove in elastic
-  const read = `match $from has internal_id_key "${eid}"; $rel($from, $to) isa relation; get;`;
-  const relationsToDeIndex = await find(read, ['rel']);
-  const answers = map(r => r.rel.id, relationsToDeIndex);
-  const relationsIds = filter(r => r, answers); // Because of relation to attributes
-  // 01. Execute the delete in grakn and elastic
-  return executeWrite(async wTx => {
-    const query = `match $x has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
-    logger.debug(`[GRAKN - infer: false] deleteEntityById > ${query}`);
-    await wTx.tx.query(query, { infer: false });
-  }).then(async () => {
-    // [ELASTIC] Delete entity and relations connected to
-    await elDeleteInstanceIds(append(eid, relationsIds));
-    return id;
-  });
-};
-export const deleteRelationById = async relationId => {
-  const eid = escapeString(relationId);
-  // 00. Load everything we need to remove in elastic
-  const read = `match $from has internal_id_key "${eid}"; $rel($from, $to) isa relation; get;`;
-  const relationsToDeIndex = await find(read, ['rel']);
-  const answers = map(r => r.rel.id, relationsToDeIndex);
-  const relationsIds = filter(r => r, answers); // Because of relation to attributes
-  // 01. Execute the delete in grakn and elastic
-  await executeWrite(async wTx => {
-    const query = `match $x has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
-    logger.debug(`[GRAKN - infer: false] deleteRelationById > ${query}`);
-    await wTx.tx.query(query, { infer: false });
-  }).then(async () => {
-    // [ELASTIC] Update - Delete the inner indexed relations in entities
-    await elRemoveRelationConnection(eid);
-    await elDeleteInstanceIds(append(eid, relationsIds));
-    return relationId;
-  });
-};
-
-export const timeSeries = async (query, options) => {
-  return executeRead(async rTx => {
-    const { startDate, endDate, operation, field, interval, inferred = true } = options;
-    const finalQuery = `${query}; $x has ${field}_${interval} $g; get; group $g; ${operation};`;
-    logger.debug(`[GRAKN - infer: ${inferred}] timeSeries > ${finalQuery}`);
-    const iterator = await rTx.tx.query(finalQuery, { infer: inferred });
+    logger.debug(`[GRAKN - infer: ${inferred}] timeSeries > ${query}`);
+    const iterator = await rTx.tx.query(query, { infer: inferred });
     const answer = await iterator.collect();
     return Promise.all(
       answer.map(async n => {
-        const date = await n.owner().value();
-        const number = await n.answers()[0].number();
-        return { date, value: number };
+        const owner = await n.owner().value();
+        const value = await n.answers()[0].number();
+        return { [keyRef]: owner, [valueRef]: value };
       })
-    ).then(data => fillTimeSeries(startDate, endDate, interval, data));
+    );
   });
 };
-export const distribution = async (query, options) => {
-  return executeRead(async rTx => {
-    const { startDate, endDate, operation, field, inferred = false } = options;
-    const finalQuery = `${query}; ${
+export const timeSeriesEntities = async (entityType, filters, options) => {
+  // filters: [ { isRelation: true, type: stix_relation, from: 'role', to: 'role', value: uuid } ]
+  //            { isRelation: false, type: report_class, value: string } ]
+  const { startDate, endDate, operation, field, interval, inferred = false } = options;
+  // Check if can be supported by ES
+  let histogramData;
+  if (operation === 'count' && inferred === false) {
+    histogramData = await elHistogramCount(entityType, field, interval, startDate, endDate, filters);
+  } else {
+    // If not compatible, do it with grakn
+    const finalQuery = buildAggregationQuery(entityType, filters, options);
+    histogramData = await graknTimeSeries(finalQuery, 'date', 'value', inferred);
+  }
+  return fillTimeSeries(startDate, endDate, interval, histogramData);
+};
+export const timeSeriesRelations = async options => {
+  // filters: [ { isRelation: true, type: stix_relation, from: 'role', to: 'role', value: uuid } ]
+  //            { isRelation: false, type: report_class, value: string } ]
+  const { startDate, endDate, operation, relationType, field, interval, toTypes, fromId, inferred = false } = options;
+  // Check if can be supported by ES
+  let histogramData;
+  const entityType = relationType ? escape(relationType) : 'stix_relation';
+  if (operation === 'count' && inferred === false) {
+    const filters = [{ isRelation: false, type: 'connections.internal_id_key', value: fromId }];
+    histogramData = await elHistogramCount(entityType, field, interval, startDate, endDate, filters);
+  } else {
+    const query = `match $x($from, $to) isa ${entityType}; ${
+      toTypes && toTypes.length > 0
+        ? `${join(' ', map(toType => `{ $to isa ${escape(toType)}; } or`, toTypes))} { $to isa ${escape(
+            head(toTypes)
+          )}; };`
+        : ''
+    } ${fromId ? `$from has internal_id_key "${escapeString(fromId)}"` : '$from isa Stix-Domain-Entity'}`;
+    const finalQuery = `${query}; $x has ${field}_${interval} $g; get; group $g; ${operation};`;
+    histogramData = await graknTimeSeries(finalQuery, 'date', 'value', inferred);
+  }
+  return fillTimeSeries(startDate, endDate, interval, histogramData);
+};
+
+export const distributionEntities = async (entityType, filters, options) => {
+  // filters: [
+  //   { isRelation: true, type: stix_relation, start: date, end: date, from: 'role', to: 'role', value: uuid }
+  //   { isRelation: false, type: report_class, value: string }
+  // ]
+  const { order = 'asc', startDate, endDate, field, operation, inferred = false, limit = 10 } = options;
+  let distributionData;
+  if (operation === 'count' && inferred === false) {
+    distributionData = await elAggregationCount(entityType, field, startDate, endDate, filters);
+  } else {
+    const finalQuery = buildAggregationQuery(entityType, filters, options);
+    distributionData = await graknTimeSeries(finalQuery, 'label', 'value', options.inferred);
+  }
+  // Take a maximum amount of distribution depending on the ordering.
+  const orderingFunction = order === 'asc' ? ascend : descend;
+  return take(limit, sortWith([orderingFunction(prop('value'))])(distributionData));
+};
+export const distributionRelations = async options => {
+  const { limit = 10, order, inferred = false } = options;
+  const { startDate, endDate, relationType, toTypes, fromId, field, operation } = options;
+  let distributionData;
+  const entityType = relationType ? escape(relationType) : 'stix_relation';
+  if (operation === 'count' && inferred === false) {
+    distributionData = await elAggregationRelationsCount(entityType, startDate, endDate, toTypes, fromId);
+  } else {
+    const query = `match $rel($from, $to) isa ${entityType}; ${
+      toTypes && toTypes.length > 0
+        ? `${join(' ', map(toType => `{ $to isa ${escape(toType)}; } or`, toTypes))} { $to isa ${escape(
+            head(toTypes)
+          )}; };`
+        : ''
+    } ${fromId ? `$from has internal_id_key "${escapeString(fromId)}";` : '$from isa Stix-Domain-Entity;'} 
+    ${
       startDate && endDate
         ? `$rel has first_seen $fs; $fs > ${prepareDate(startDate)}; $fs < ${prepareDate(endDate)};`
         : ''
-    } $x has ${field} $g; get; group $g; ${operation};`;
-    logger.debug(`[GRAKN - infer: ${inferred}] distribution > ${finalQuery}`);
-    const iterator = await rTx.tx.query(finalQuery, { infer: inferred });
-    const answer = await iterator.collect();
-    return Promise.all(
-      answer.map(async n => {
-        const label = await n.owner().value();
-        const number = await n.answers()[0].number();
-        return { label, value: number };
-      })
-    );
-  });
-};
-
-export const findWithConnectedRelations = async (query, key, extraRelKey = null, infer = false) => {
-  const dataFind = await find(query, [key, extraRelKey], { infer });
-  return map(t => ({ node: t[key], relation: t[extraRelKey] }), dataFind);
-};
-export const loadWithConnectedRelations = (query, key, relationKey = null, infer = false) => {
-  return findWithConnectedRelations(query, key, relationKey, infer).then(result => head(result));
-};
-
-// If first specified in args, the result will be paginated
-export const listEntities = async (searchFields, args) => {
-  // filters contains potential relations like, mitigates, tagged ...
-  const {
-    first = 200,
-    after,
-    withCache = true,
-    types,
-    parentType = null,
-    search,
-    filters,
-    orderBy,
-    orderMode = 'asc'
-  } = args;
-  const validFilters = filter(f => f && f.values.filter(n => n).length > 0, filters || []);
-  const offset = after ? cursorToOffset(after) : 0;
-  const isRelationOrderBy = orderBy !== undefined && orderBy !== null && includes('.', orderBy);
-  // Define if Elastic can support this query.
-  // 01-2 Check the filters
-  const unSupportedRelations =
-    filter(k => {
-      // If the relation must be forced in a specific direction, ES cant support it.
-      if (k.fromRole || k.toRole) return true;
-      const isRelationFilter = includes('.', k.key);
-      if (isRelationFilter) {
-        // ES only support internal_id reference
-        const [, field] = k.key.split('.');
-        if (field !== 'internal_id_key') return true;
-      }
-      return false;
-    }, validFilters).length > 0;
-  // 01-3 Check the ordering
-  const unsupportedOrdering = isRelationOrderBy && last(orderBy.split('.')) !== 'internal_id_key';
-  const supportedByCache = !unsupportedOrdering && !unSupportedRelations && !forceNoCache();
-  if (supportedByCache && withCache) {
-    const index = inferIndexFromConceptTypes(types, parentType);
-    return elPaginate(index, args);
-  }
-  logger.debug(`[GRAKN] ListEntities on Grakn, supportedByCache: ${supportedByCache} - withCache: ${withCache}`);
-  // 02. If not go with standard Grakn
-  const relationsFields = [];
-  const attributesFields = [];
-  const attributesFilters = [];
-  // Handle order by field
-  if (isRelationOrderBy) {
-    const [relation, field] = orderBy.split('.');
-    const curatedRelation = relation.replace(REL_INDEX_PREFIX, '');
-    relationsFields.push(
-      `($elem, $${curatedRelation}) isa ${curatedRelation}; $${curatedRelation} has ${field} $order;`
-    );
-  } else if (orderBy) {
-    attributesFields.push(`$elem has ${orderBy} $order;`);
-  }
-  // Handle filters
-  if (validFilters && validFilters.length > 0) {
-    for (let index = 0; index < validFilters.length; index += 1) {
-      const filterKey = validFilters[index].key;
-      const filterValues = validFilters[index].values;
-      const isRelationFilter = includes('.', filterKey);
-      if (isRelationFilter) {
-        const [relation, field] = filterKey.split('.');
-        const curatedRelation = relation.replace(REL_INDEX_PREFIX, '');
-        const sourceRole = validFilters[index].fromRole ? `${validFilters[index].fromRole}:` : '';
-        const toRole = validFilters[index].toRole ? `${validFilters[index].toRole}:` : '';
-        const relId = `rel_${curatedRelation}`;
-        relationsFields.push(`$${relId} (${sourceRole}$elem, ${toRole}$${curatedRelation}) isa ${curatedRelation};`);
-        for (let valueIndex = 0; valueIndex < filterValues.length; valueIndex += 1) {
-          const val = filterValues[valueIndex];
-          // Apply filter on target.
-          // TODO @Julien Support more than only string filters
-          attributesFields.push(`$${curatedRelation} has ${field} "${val}";`);
-        }
-      } else {
-        for (let valueIndex = 0; valueIndex < filterValues.length; valueIndex += 1) {
-          const val = filterValues[valueIndex];
-          attributesFields.push(`$elem has ${filterKey} "${escapeString(val)}";`);
-        }
-      }
     }
+      $to has ${field} $g; get; group $g; ${operation};`;
+    distributionData = await graknTimeSeries(query, 'label', 'value', inferred);
   }
-  // Handle special case of search
-  if (search) {
-    for (let searchIndex = 0; searchIndex < searchFields.length; searchIndex += 1) {
-      const searchFieldName = searchFields[searchIndex];
-      attributesFields.push(`$elem has ${searchFieldName} $${searchFieldName};`);
-    }
-    const searchFilter = pipe(
-      map(e => `{ $${e} contains "${escapeString(search)}"; }`),
-      join(' or ')
-    )(searchFields);
-    attributesFilters.push(`${searchFilter};`);
-  }
-  // build the final query
-  const queryAttributesFields = join(' ', attributesFields);
-  const queryAttributesFilters = join(' ', attributesFilters);
-  const queryRelationsFields = join(' ', relationsFields);
-  const headType = types.length === 1 ? head(types) : 'entity';
-  const extraTypes =
-    types.length > 1
-      ? pipe(
-          map(e => `{ $elem isa ${e}; }`),
-          join(' or '),
-          concat(__, ';')
-        )(types)
-      : '';
-  const baseQuery = `match $elem isa ${headType}; ${extraTypes} ${queryRelationsFields} 
-                      ${queryAttributesFields} ${queryAttributesFilters} get;`;
-  const countQuery = `${baseQuery} count;`;
-  const paginateQuery = `offset ${offset}; limit ${first};`;
-  const orderQuery = orderBy ? `sort $order ${orderMode};` : '';
-  const query = `${baseQuery} ${orderQuery} ${paginateQuery}`;
-  const countPromise = getSingleValueNumber(countQuery);
-  const instancesPromise = await findWithConnectedRelations(query, 'elem');
-  return Promise.all([instancesPromise, countPromise]).then(([instances, globalCount]) => {
-    return buildPagination(first, offset, instances, globalCount);
-  });
+  // Take a maximum amount of distribution depending on the ordering.
+  const orderingFunction = order === 'asc' ? ascend : descend;
+  return take(limit, sortWith([orderingFunction(prop('value'))])(distributionData));
 };
+// endregion
 
 // TODO @Julien Create API around relations supported by elastic
 /*
@@ -1182,9 +1132,8 @@ export const listRelations = async args => {
                       ${queryAttributesFields} ${queryAttributesFilters} get;`;
 };
 */
-// endregion
 
-// region please refactor to use stable commands
+// region TO REFACTOR
 /**
  * Load any grakn relation with base64 id containing the query pattern.
  * @param id
@@ -1349,7 +1298,6 @@ export const getRelationInferredById = async id => {
     });
   });
 };
-
 /**
  * Grakn generic pagination query
  * @param query
@@ -1435,6 +1383,7 @@ export const paginateRelationships = async (query, options, key = 'rel', extraRe
 };
 // endregion
 
+// region mutation
 const prepareAttribute = value => {
   if (value instanceof Date) return prepareDate(value);
   if (Date.parse(value) > 0 && new Date(value).toISOString() === value) return prepareDate(value);
@@ -1587,7 +1536,6 @@ const createRelationRaw = async (fromInternalId, input, opts = {}) => {
   )(createdRel);
 };
 
-// region business relations
 const addOwner = async (fromInternalId, createdByOwnerId, opts = {}) => {
   if (!createdByOwnerId) return undefined;
   const input = { fromRole: 'so', toId: createdByOwnerId, toRole: 'owner', through: 'owned_by' };
@@ -1651,7 +1599,6 @@ const addKillChains = async (internalId, killChainIds, opts = {}) => {
   }
   return killChains;
 };
-// endregion
 
 export const createRelation = async (fromInternalId, input, opts = {}) => {
   const created = await createRelationRaw(fromInternalId, input, opts);
@@ -1765,3 +1712,111 @@ export const createEntity = async (entity, type, opts = {}) => {
   // Else simply return the data
   return completedData;
 };
+export const updateAttribute = async (id, input, wTx) => {
+  const { key, value } = input; // value can be multi valued
+  // --- 00 Need update?
+  const val = includes(key, multipleAttributes) ? value : head(value);
+  const currentInstanceData = await loadEntityById(id);
+  if (equals(currentInstanceData[key], val)) {
+    return id;
+  }
+  // --- 01 Get the current attribute types
+  const escapedKey = escape(key);
+  const labelTypeQuery = `match $x type ${escapedKey}; get;`;
+  const labelIterator = await wTx.tx.query(labelTypeQuery);
+  const labelAnswer = await labelIterator.next();
+  // eslint-disable-next-line prettier/prettier
+  const attrType = await labelAnswer
+    .map()
+    .get('x')
+    .dataType();
+  const typedValues = map(v => {
+    if (attrType === GraknString) return `"${escapeString(v)}"`;
+    if (attrType === GraknDate) return prepareDate(v);
+    return escape(v);
+  }, value);
+  // --- Delete the old attribute
+  const entityId = `${escapeString(id)}`;
+  const deleteQuery = `match $x has internal_id_key "${entityId}", has ${escapedKey} $del via $d; delete $d;`;
+  // eslint-disable-next-line prettier/prettier
+  logger.debug(`[GRAKN - infer: false] updateAttribute - delete > ${deleteQuery}`);
+  await wTx.tx.query(deleteQuery);
+  if (typedValues.length > 0) {
+    let graknValues;
+    if (typedValues.length === 1) {
+      graknValues = `has ${escapedKey} ${head(typedValues)}`;
+    } else {
+      graknValues = `${join(
+        ' ',
+        map(gVal => `has ${escapedKey} ${gVal},`, tail(typedValues))
+      )} has ${escapedKey} ${head(typedValues)}`;
+    }
+    const createQuery = `match $m has internal_id_key "${escapeString(id)}"; insert $m ${graknValues};`;
+    logger.debug(`[GRAKN - infer: false] updateAttribute - insert > ${createQuery}`);
+    await wTx.tx.query(createQuery);
+  }
+  // Adding dates elements
+  if (includes(key, statsDateAttributes)) {
+    const dayValue = dayFormat(head(value));
+    const monthValue = monthFormat(head(value));
+    const yearValue = yearFormat(head(value));
+    const dayInput = { key: `${key}_day`, value: [dayValue] };
+    await updateAttribute(id, dayInput, wTx);
+    const monthInput = { key: `${key}_month`, value: [monthValue] };
+    await updateAttribute(id, monthInput, wTx);
+    const yearInput = { key: `${key}_year`, value: [yearValue] };
+    await updateAttribute(id, yearInput, wTx);
+  }
+  // Update modified / updated_at
+  if (currentInstanceData.parent_types.includes(TYPE_STIX_DOMAIN) && key !== 'modified' && key !== 'updated_at') {
+    const today = now();
+    await updateAttribute(id, { key: 'updated_at', value: [today] }, wTx);
+    await updateAttribute(id, { key: 'modified', value: [today] }, wTx);
+  }
+
+  // Update elasticsearch
+  const currentIndex = inferIndexFromConceptTypes(currentInstanceData.parent_types);
+  // eslint-disable-next-line no-nested-ternary
+  const typedVal = val === 'true' ? true : val === 'false' ? false : val;
+  const updateValueField = { [key]: typedVal };
+  await elUpdate(currentIndex, currentInstanceData.grakn_id, { doc: updateValueField });
+  return id;
+};
+export const deleteEntityById = async id => {
+  const eid = escapeString(id);
+  // 00. Load everything we need to remove in elastic
+  const read = `match $from has internal_id_key "${eid}"; $rel($from, $to) isa relation; get;`;
+  const relationsToDeIndex = await find(read, ['rel']);
+  const answers = map(r => r.rel.id, relationsToDeIndex);
+  const relationsIds = filter(r => r, answers); // Because of relation to attributes
+  // 01. Execute the delete in grakn and elastic
+  return executeWrite(async wTx => {
+    const query = `match $x has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
+    logger.debug(`[GRAKN - infer: false] deleteEntityById > ${query}`);
+    await wTx.tx.query(query, { infer: false });
+  }).then(async () => {
+    // [ELASTIC] Delete entity and relations connected to
+    await elDeleteInstanceIds(append(eid, relationsIds));
+    return id;
+  });
+};
+export const deleteRelationById = async relationId => {
+  const eid = escapeString(relationId);
+  // 00. Load everything we need to remove in elastic
+  const read = `match $from has internal_id_key "${eid}"; $rel($from, $to) isa relation; get;`;
+  const relationsToDeIndex = await find(read, ['rel']);
+  const answers = map(r => r.rel.id, relationsToDeIndex);
+  const relationsIds = filter(r => r, answers); // Because of relation to attributes
+  // 01. Execute the delete in grakn and elastic
+  await executeWrite(async wTx => {
+    const query = `match $x has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
+    logger.debug(`[GRAKN - infer: false] deleteRelationById > ${query}`);
+    await wTx.tx.query(query, { infer: false });
+  }).then(async () => {
+    // [ELASTIC] Update - Delete the inner indexed relations in entities
+    await elRemoveRelationConnection(eid);
+    await elDeleteInstanceIds(append(eid, relationsIds));
+    return relationId;
+  });
+};
+// endregion
