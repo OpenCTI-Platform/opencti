@@ -42,12 +42,12 @@ class EntityStixRelations extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      sortBy: null,
-      orderAsc: false,
+      sortBy: 'first_seen',
+      orderAsc: true,
       searchTerm: '',
       openToType: false,
       toType: 'All',
-      inferred: true,
+      inferred: false,
       resolveInferences: false,
       view: 'lines',
     };
