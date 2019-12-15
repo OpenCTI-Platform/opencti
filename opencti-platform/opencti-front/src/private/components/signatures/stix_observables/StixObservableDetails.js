@@ -30,7 +30,7 @@ class StixObservableDetailsComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Observable value')}
           </Typography>
-          {stixObservable.observable_value}
+          <pre>{stixObservable.observable_value}</pre>
           <div style={{ marginTop: 20 }}>
             <StixDomainEntityTags
               tags={stixObservable.tags}

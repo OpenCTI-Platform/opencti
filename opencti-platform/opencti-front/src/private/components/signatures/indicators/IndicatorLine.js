@@ -9,8 +9,9 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight } from '@material-ui/icons';
 import { ShieldSearch } from 'mdi-material-ui';
-import { compose } from 'ramda';
+import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../../components/i18n';
+import ItemMarking from '../../../../components/ItemMarking';
 
 const styles = (theme) => ({
   item: {
@@ -64,9 +65,9 @@ class IndicatorLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.indicator_pattern.width }}
+                style={{ width: dataColumns.name.width }}
               >
-                {node.pattern}
+                {node.name}
               </div>
               <div
                 className={classes.bodyItem}
@@ -85,6 +86,20 @@ class IndicatorLineComponent extends Component {
                 style={{ width: dataColumns.score.width }}
               >
                 {node.score}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.markingDefinitions.width }}
+              >
+                {take(1, pathOr([], ['markingDefinitions', 'edges'], node)).map(
+                  (markingDefinition) => (
+                    <ItemMarking
+                      key={markingDefinition.node.id}
+                      variant="inList"
+                      label={markingDefinition.node.definition}
+                    />
+                  ),
+                )}
               </div>
             </div>
           }
@@ -108,10 +123,18 @@ const IndicatorLineFragment = createFragmentContainer(IndicatorLineComponent, {
   node: graphql`
     fragment IndicatorLine_node on Indicator {
       id
-      indicator_pattern
+      name
       valid_from
       valid_until
       score
+      markingDefinitions {
+        edges {
+          node {
+            id
+            definition
+          }
+        }
+      }
     }
   `,
 });
@@ -134,7 +157,7 @@ class IndicatorLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.indicator_pattern.width }}
+                style={{ width: dataColumns.name.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
@@ -142,19 +165,25 @@ class IndicatorLineDummyComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.valid_from.width }}
               >
-                <div className="fakeItem" style={{ width: 140 }} />
+                <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.valid_until.width }}
               >
-                <div className="fakeItem" style={{ width: 140 }} />
+                <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.score.width }}
               >
-                <div className="fakeItem" style={{ width: 50 }} />
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.markingDefinitions.width }}
+              >
+                <div className="fakeItem" style={{ width: 100 }} />
               </div>
             </div>
           }

@@ -6,18 +6,23 @@ import {
   deleteEntityById,
   deleteRelationById,
   escape,
+  escapeString,
   executeWrite,
+  findWithConnectedRelations,
   listEntities,
   loadEntityById,
+  now,
   timeSeriesEntities,
   TYPE_STIX_OBSERVABLE,
   updateAttribute
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { elCount } from '../database/elasticSearch';
+import { buildPagination, createStixPattern } from '../database/utils';
 import { connectorsForEnrichment } from './connector';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
+import { addIndicator } from './indicator';
 
 export const findById = stixObservableId => {
   return loadEntityById(stixObservableId);
@@ -90,7 +95,7 @@ export const stixObservableAskEnrichment = async (id, connectorId) => {
   await pushToConnector(connector, message);
   return work;
 };
-export const addStixObservable = async (user, stixObservable) => {
+export const addStixObservable = async (user, stixObservable, createIndicator = true) => {
   const innerType = stixObservable.type;
   const observableToCreate = dissoc('type', stixObservable);
   const created = await createEntity(observableToCreate, innerType, {
@@ -98,6 +103,27 @@ export const addStixObservable = async (user, stixObservable) => {
     stixIdType: 'observable'
   });
   await askEnrich(created.id, innerType);
+  // create the linked indicator
+  if (createIndicator) {
+    const pattern = await createStixPattern(created.entity_type, created.observable_value);
+    if (pattern) {
+      const today = now();
+      const indicatorToCreate = pipe(
+        dissoc('observable_value'),
+        assoc('name', stixObservable.observable_value),
+        assoc(
+          'description',
+          stixObservable.description
+            ? stixObservable.description
+            : `Simple indicator of observable {${stixObservable.observable_value}}`
+        ),
+        assoc('indicator_pattern', pattern),
+        assoc('valid_from', today),
+        assoc('observableRefs', [created.id])
+      )(observableToCreate);
+      await addIndicator(user, indicatorToCreate, false);
+    }
+  }
   return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user);
 };
 export const stixObservableDelete = async stixObservableId => {
@@ -138,3 +164,13 @@ export const stixObservableEditContext = (user, stixObservableId, input) => {
   );
 };
 // endregion
+
+export const indicators = observableId => {
+  return findWithConnectedRelations(
+    `match $from isa Stix-Observable; $rel(soo:$from, observables_aggregation:$to) isa observable_refs;
+    $to isa Indicator;
+    $from has internal_id_key "${escapeString(observableId)}"; get;`,
+    'to',
+    'rel'
+  ).then(data => buildPagination(0, 0, data, data.length));
+};

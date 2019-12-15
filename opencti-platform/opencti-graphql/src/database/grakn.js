@@ -90,9 +90,6 @@ export const inferIndexFromConceptTypes = (types, parentType = null) => {
   return INDEX_STIX_ENTITIES;
 };
 
-export const sleep = ms => {
-  return new Promise(resolve => setTimeout(resolve, ms));
-};
 export const now = () => {
   // eslint-disable-next-line prettier/prettier
   return moment()
@@ -135,6 +132,7 @@ export const escapeString = s => (s ? s.replace(/\\/g, '\\\\').replace(/"/g, '\\
 // Attributes key that can contains multiple values.
 export const multipleAttributes = ['stix_label', 'alias', 'grant', 'platform', 'required_permission'];
 export const statsDateAttributes = ['created_at', 'first_seen', 'last_seen', 'published', 'valid_from', 'valid_until'];
+export const readOnlyAttributes = ['observable_value'];
 // endregion
 
 // region client
@@ -1606,6 +1604,27 @@ const addKillChains = async (internalId, killChainIds, opts = {}) => {
   }
   return killChains;
 };
+const addObservableRef = async (fromInternalId, observableId, opts = {}) => {
+  if (!observableId) return undefined;
+  const input = {
+    fromRole: 'observables_aggregation',
+    toId: observableId,
+    toRole: 'soo',
+    through: 'observable_refs'
+  };
+  return createRelationRaw(fromInternalId, input, opts);
+};
+const addObservableRefs = async (internalId, observableIds, opts = {}) => {
+  if (!observableIds || isEmpty(observableIds)) return undefined;
+  const observableRefs = [];
+  // Relations cannot be created in parallel.
+  for (let i = 0; i < observableIds.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    const observableRef = await addObservableRef(internalId, observableIds[i], opts);
+    observableRefs.push(observableRef);
+  }
+  return observableRefs;
+};
 
 export const createRelation = async (fromInternalId, input, opts = {}) => {
   const created = await createRelationRaw(fromInternalId, input, opts);
@@ -1643,7 +1662,8 @@ export const createEntity = async (entity, type, opts = {}) => {
     dissoc('createdByRef'),
     dissoc('markingDefinitions'),
     dissoc('tags'),
-    dissoc('killChainPhases')
+    dissoc('killChainPhases'),
+    dissoc('observableRefs')
   )(entity);
   // For stix domain entity, force the initialization of the alias list.
   if (modelType === TYPE_STIX_DOMAIN_ENTITY) {
@@ -1716,11 +1736,15 @@ export const createEntity = async (entity, type, opts = {}) => {
   await addMarkingDefs(internalId, entity.markingDefinitions, opts);
   await addTags(internalId, entity.tags, opts);
   await addKillChains(internalId, entity.killChainPhases, opts);
+  await addObservableRefs(internalId, entity.observableRefs, opts);
   // Else simply return the data
   return completedData;
 };
 export const updateAttribute = async (id, input, wTx) => {
   const { key, value } = input; // value can be multi valued
+  if (includes(key, readOnlyAttributes)) {
+    throw new DatabaseError({ data: { details: `The field ${key} cannot be modified` } });
+  }
   // --- 00 Need update?
   const val = includes(key, multipleAttributes) ? value : head(value);
   const currentInstanceData = await loadEntityById(id);

@@ -47,7 +47,7 @@ const dateFields = [
   'valid_until_day',
   'valid_until_month'
 ];
-const numberFields = ['object_status', 'phase_order'];
+const numberFields = ['object_status', 'phase_order', 'level'];
 const virtualTypes = ['Identity', 'Email', 'File', 'Stix-Domain-Entity', 'Stix-Domain', 'Stix-Observable'];
 
 export const REL_INDEX_PREFIX = 'rel_';

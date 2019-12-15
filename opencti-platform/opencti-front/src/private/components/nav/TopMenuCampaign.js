@@ -118,10 +118,10 @@ class TopMenuCampaign extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/threats/campaigns/${campaignId}/observables`}
+          to={`/dashboard/threats/campaigns/${campaignId}/indicators`}
           variant={
             location.pathname.includes(
-              `/dashboard/threats/campaigns/${campaignId}/observables`,
+              `/dashboard/threats/campaigns/${campaignId}/indicators`,
             )
               ? 'contained'
               : 'text'
@@ -129,14 +129,14 @@ class TopMenuCampaign extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/threats/campaigns/${campaignId}/observables`,
+              `/dashboard/threats/campaigns/${campaignId}/indicators`,
             )
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Observables')}
+          {t('Indicators')}
         </Button>
         <Button
           component={Link}

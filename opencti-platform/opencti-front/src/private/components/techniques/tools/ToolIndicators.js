@@ -7,15 +7,14 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
-import MalwarePopover from './MalwarePopover';
+import ToolPopover from './ToolPopover';
 import StixRelation from '../../common/stix_relations/StixRelation';
-import EntityStixObservables from '../../signatures/stix_observables/EntityStixObservables';
+import EntityIndicators from '../../signatures/indicators/EntityIndicators';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
     margin: 0,
-    padding: '0 260px 0 0',
   },
   containerWithoutPadding: {
     margin: 0,
@@ -29,43 +28,41 @@ const styles = () => ({
   },
 });
 
-class MalwareObservablesComponent extends Component {
+class ToolIndicatorsComponent extends Component {
   render() {
-    const { classes, malware, location } = this.props;
-    const link = `/dashboard/threats/malwares/${malware.id}/observables`;
+    const { classes, tool, location } = this.props;
+    const link = `/dashboard/techniques/tools/${tool.id}/indicators`;
     return (
       <div
         className={
           location.pathname.includes(
-            `/dashboard/threats/malwares/${malware.id}/observables/relations/`,
+            `/dashboard/techniques/tools/${tool.id}/indicators/relations/`,
           )
             ? classes.containerWithoutPadding
             : classes.container
         }
       >
         <StixDomainEntityHeader
-          stixDomainEntity={malware}
-          PopoverComponent={<MalwarePopover />}
+          stixDomainEntity={tool}
+          PopoverComponent={<ToolPopover />}
         />
         <Route
           exact
-          path="/dashboard/threats/malwares/:malwareId/observables/relations/:relationId"
+          path="/dashboard/techniques/tools/:toolId/indicators/relations/:relationId"
           render={(routeProps) => (
             <StixRelation
-              entityId={malware.id}
-              inversedRoles={[]}
-              observable={true}
+              entityId={tool.id}
               {...routeProps}
             />
           )}
         />
         <Route
           exact
-          path="/dashboard/threats/malwares/:malwareId/observables"
+          path="/dashboard/techniques/tools/:toolId/indicators"
           render={(routeProps) => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
-              <EntityStixObservables
-                entityId={malware.id}
+              <EntityIndicators
+                entityId={tool.id}
                 relationType="indicates"
                 entityLink={link}
                 {...routeProps}
@@ -78,18 +75,18 @@ class MalwareObservablesComponent extends Component {
   }
 }
 
-MalwareObservablesComponent.propTypes = {
-  malware: PropTypes.object,
+ToolIndicatorsComponent.propTypes = {
+  tool: PropTypes.object,
   location: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-const MalwareObservables = createFragmentContainer(
-  MalwareObservablesComponent,
+const ToolIndicators = createFragmentContainer(
+  ToolIndicatorsComponent,
   {
-    malware: graphql`
-      fragment MalwareObservables_malware on Malware {
+    tool: graphql`
+      fragment ToolIndicators_tool on Tool {
         id
         name
         alias
@@ -102,4 +99,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(MalwareObservables);
+)(ToolIndicators);

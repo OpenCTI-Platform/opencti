@@ -71,6 +71,7 @@
     "passport-github": "^1.1.0",
     "passport-google-oauth": "^2.0.0",
     "passport-local": "^1.0.0",
+    "python-shell": "^1.0.8",
     "ramda": "^0.26.1",
     "rxjs": "^6.5.3",
     "uuid": "^3.3.3",

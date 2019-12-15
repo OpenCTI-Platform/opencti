@@ -53,8 +53,6 @@ class OrganizationObservablesComponent extends Component {
           render={(routeProps) => (
             <StixRelation
               entityId={organization.id}
-              inversedRoles={[]}
-              observable={true}
               {...routeProps}
             />
           )}

@@ -8,7 +8,7 @@ import { ArrowForwardIos } from '@material-ui/icons';
 import { Application } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
     padding: '2px 5px 2px 5px',
@@ -116,6 +116,46 @@ class TopMenuTool extends Component {
         >
           {t('Knowledge')}
         </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/techniques/tools/${toolId}/indicators`}
+          variant={
+            location.pathname.includes(
+              `/dashboard/techniques/tools/${toolId}/indicators`,
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              `/dashboard/techniques/tools/${toolId}/indicators`,
+            )
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Indicators')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/techniques/tools/${toolId}/files`}
+          variant={
+            location.pathname === `/dashboard/techniques/tools/${toolId}/files`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === `/dashboard/techniques/tools/${toolId}/files`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Files')}
+        </Button>
       </div>
     );
   }
@@ -129,8 +169,4 @@ TopMenuTool.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(TopMenuTool);
+export default compose(inject18n, withRouter, withStyles(styles))(TopMenuTool);

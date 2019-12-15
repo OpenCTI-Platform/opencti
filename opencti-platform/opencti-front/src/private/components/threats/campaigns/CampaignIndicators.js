@@ -9,13 +9,12 @@ import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import CampaignPopover from './CampaignPopover';
 import StixRelation from '../../common/stix_relations/StixRelation';
-import EntityStixObservables from '../../signatures/stix_observables/EntityStixObservables';
+import EntityIndicators from '../../signatures/indicators/EntityIndicators';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
     margin: 0,
-    padding: '0 260px 0 0',
   },
   containerWithoutPadding: {
     margin: 0,
@@ -29,15 +28,15 @@ const styles = () => ({
   },
 });
 
-class CampaignObservablesComponent extends Component {
+class CampaignIndicatorsComponent extends Component {
   render() {
     const { classes, campaign, location } = this.props;
-    const link = `/dashboard/threats/campaigns/${campaign.id}/observables`;
+    const link = `/dashboard/threats/campaigns/${campaign.id}/indicators`;
     return (
       <div
         className={
           location.pathname.includes(
-            `/dashboard/threats/campaigns/${campaign.id}/observables/relations/`,
+            `/dashboard/threats/campaigns/${campaign.id}/indicators/relations/`,
           )
             ? classes.containerWithoutPadding
             : classes.container
@@ -49,22 +48,20 @@ class CampaignObservablesComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/threats/campaigns/:campaignId/observables/relations/:relationId"
-          render={routeProps => (
+          path="/dashboard/threats/campaigns/:campaignId/indicators/relations/:relationId"
+          render={(routeProps) => (
             <StixRelation
               entityId={campaign.id}
-              inversedRoles={[]}
-              observable={true}
               {...routeProps}
             />
           )}
         />
         <Route
           exact
-          path="/dashboard/threats/campaigns/:campaignId/observables"
-          render={routeProps => (
+          path="/dashboard/threats/campaigns/:campaignId/indicators"
+          render={(routeProps) => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
-              <EntityStixObservables
+              <EntityIndicators
                 entityId={campaign.id}
                 relationType="indicates"
                 entityLink={link}
@@ -78,18 +75,18 @@ class CampaignObservablesComponent extends Component {
   }
 }
 
-CampaignObservablesComponent.propTypes = {
+CampaignIndicatorsComponent.propTypes = {
   campaign: PropTypes.object,
   location: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-const CampaignObservables = createFragmentContainer(
-  CampaignObservablesComponent,
+const CampaignIndicators = createFragmentContainer(
+  CampaignIndicatorsComponent,
   {
     campaign: graphql`
-      fragment CampaignObservables_campaign on Campaign {
+      fragment CampaignIndicators_campaign on Campaign {
         id
         name
         alias
@@ -102,4 +99,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(CampaignObservables);
+)(CampaignIndicators);

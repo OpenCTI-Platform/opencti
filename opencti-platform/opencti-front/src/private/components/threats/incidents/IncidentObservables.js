@@ -50,11 +50,9 @@ class IncidentObservablesComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/incidents/:incidentId/observables/relations/:relationId"
-          render={routeProps => (
+          render={(routeProps) => (
             <StixRelation
               entityId={incident.id}
-              inversedRoles={[]}
-              observable={true}
               {...routeProps}
             />
           )}
@@ -62,11 +60,11 @@ class IncidentObservablesComponent extends Component {
         <Route
           exact
           path="/dashboard/threats/incidents/:incidentId/observables"
-          render={routeProps => (
+          render={(routeProps) => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityStixObservables
                 entityId={incident.id}
-                relationType="indicates"
+                relationType="related-to"
                 entityLink={link}
                 {...routeProps}
               />

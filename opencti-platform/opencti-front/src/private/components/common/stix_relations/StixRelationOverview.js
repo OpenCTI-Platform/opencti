@@ -39,12 +39,12 @@ const styles = () => ({
   editButton: {
     position: 'fixed',
     bottom: 30,
-    right: 300,
+    right: 30,
   },
-  editButtonObservable: {
+  editButtonWithPadding: {
     position: 'fixed',
     bottom: 30,
-    right: 30,
+    right: 300,
   },
   item: {
     position: 'absolute',
@@ -164,17 +164,11 @@ class StixRelationContainer extends Component {
       t,
       fld,
       classes,
-      entityId,
       stixRelation,
-      inversedRoles,
-      observable,
+      paddingRight,
     } = this.props;
-    const linkedEntity = stixRelation.to;
-    const from = linkedEntity.id === entityId ? stixRelation.to : stixRelation.from;
-    const fromRole = linkedEntity.id === entityId
-      ? stixRelation.toRole
-      : stixRelation.fromRole;
-    const to = linkedEntity.id === entityId ? stixRelation.from : stixRelation.to;
+    const { from } = stixRelation;
+    const { to } = stixRelation;
     const linkFrom = from.entity_type === 'stix-relation'
       || from.entity_type === 'stix_relation'
       ? `${resolveLink(from.from.entity_type)}/${
@@ -231,7 +225,9 @@ class StixRelationContainer extends Component {
                     ? from.observable_value
                     : from.entity_type === 'stix_relation'
                       || from.entity_type === 'stix-relation'
-                      ? `${from.from.name} ${String.fromCharCode(8594)} ${from.to.name}`
+                      ? `${from.from.name} ${String.fromCharCode(8594)} ${
+                        from.to.name
+                      }`
                       : from.name,
                   50,
                 )}
@@ -240,15 +236,7 @@ class StixRelationContainer extends Component {
           </div>
         </Link>
         <div className={classes.middle}>
-          {includes(fromRole, inversedRoles)
-          || includes('Stix-Observable', to.parent_types) ? (
-            <ArrowRightAlt
-              fontSize="large"
-              style={{ transform: 'rotate(180deg)' }}
-            />
-            ) : (
-            <ArrowRightAlt fontSize="large" />
-            )}
+          <ArrowRightAlt fontSize="large" />
           <br />
           <div
             style={{
@@ -316,7 +304,9 @@ class StixRelationContainer extends Component {
                     ? to.observable_value
                     : to.entity_type === 'stix_relation'
                       || to.entity_type === 'stix-relation'
-                      ? `${to.from.name} ${String.fromCharCode(8594)} ${to.to.name}`
+                      ? `${to.from.name} ${String.fromCharCode(8594)} ${
+                        to.to.name
+                      }`
                       : to.name,
                   50,
                 )}
@@ -448,7 +438,7 @@ class StixRelationContainer extends Component {
               color="secondary"
               aria-label="Edit"
               className={
-                observable ? classes.editButtonObservable : classes.editButton
+                paddingRight ? classes.editButtonWithPadding : classes.editButton
               }
             >
               <Edit />
@@ -469,8 +459,7 @@ class StixRelationContainer extends Component {
 StixRelationContainer.propTypes = {
   entityId: PropTypes.string,
   stixRelation: PropTypes.object,
-  inversedRoles: PropTypes.array,
-  observable: PropTypes.bool,
+  paddingRight: PropTypes.bool,
   classes: PropTypes.object,
   t: PropTypes.func,
   nsd: PropTypes.func,

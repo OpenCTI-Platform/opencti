@@ -23,6 +23,7 @@ import {
   ProgressWrench,
   HexagonOutline,
   VectorRadius,
+  ShieldSearch,
 } from 'mdi-material-ui';
 
 const iconSelector = (type, variant, fontSize, color) => {
@@ -76,6 +77,8 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <BugReport style={style} fontSize={fontSize} />;
     case 'report':
       return <Description style={style} fontSize={fontSize} />;
+    case 'indicator':
+      return <ShieldSearch style={style} fontSize={fontSize} />;
     case 'tag':
       return <Tag style={style} fontSize={fontSize} />;
     case 'autonomous-system':

@@ -5,6 +5,7 @@ import { BoundaryRoute } from '../Error';
 import StixObservables from './StixObservables';
 import RootStixObservable from './stix_observables/Root';
 import Indicators from './Indicators';
+import RootIndicator from './indicators/Root';
 
 class Root extends Component {
   render() {
@@ -32,7 +33,7 @@ class Root extends Component {
         />
         <BoundaryRoute
           path="/dashboard/signatures/indicators/:indicatorId"
-          render={(routeProps) => <RootStixObservable {...routeProps} me={me} />}
+          render={(routeProps) => <RootIndicator {...routeProps} me={me} />}
         />
       </Switch>
     );

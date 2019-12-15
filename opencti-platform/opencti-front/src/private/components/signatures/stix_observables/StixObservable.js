@@ -11,7 +11,7 @@ import StixObservableOverview from './StixObservableOverview';
 import StixObservableDetails from './StixObservableDetails';
 import StixObservableEdition from './StixObservableEdition';
 import EntityLastReports from '../../reports/EntityLastReports';
-import StixObservableEntities from './StixObservableEntities';
+import StixObservableIndicators from './StixObservableIndicators';
 
 const styles = () => ({
   container: {
@@ -43,10 +43,7 @@ class StixObservableComponent extends Component {
             <EntityLastReports entityId={stixObservable.id} />
           </Grid>
         </Grid>
-        <StixObservableEntities
-          entityId={stixObservable.id}
-          relationType="indicates"
-        />
+        <StixObservableIndicators stixObservable={stixObservable} />
         <StixObservableEdition stixObservableId={stixObservable.id} />
       </div>
     );
@@ -66,11 +63,9 @@ const StixObservable = createFragmentContainer(StixObservableComponent, {
       ...StixObservableHeader_stixObservable
       ...StixObservableOverview_stixObservable
       ...StixObservableDetails_stixObservable
+      ...StixObservableIndicators_stixObservable
     }
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixObservable);
+export default compose(inject18n, withStyles(styles))(StixObservable);

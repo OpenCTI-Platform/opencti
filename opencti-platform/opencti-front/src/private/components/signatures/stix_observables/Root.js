@@ -28,6 +28,7 @@ const stixObservableQuery = graphql`
       ...StixObservableHeader_stixObservable
       ...StixObservableOverview_stixObservable
       ...StixObservableDetails_stixObservable
+      ...StixObservableIndicators_stixObservable
       ...StixObservableKnowledge_stixObservable
       ...StixObservableLinks_stixObservable
     }
@@ -59,7 +60,6 @@ class RootStixObservable extends Component {
         params: { observableId },
       },
     } = this.props;
-    const inversedRoles = ['location'];
     return (
       <div>
         <TopBar me={me || null} />
@@ -105,9 +105,7 @@ class RootStixObservable extends Component {
                     path="/dashboard/signatures/observables/:observableId/knowledge/relations/:relationId"
                     render={(routeProps) => (
                       <StixRelation
-                        observable={true}
                         entityId={observableId}
-                        inversedRoles={inversedRoles}
                         {...routeProps}
                       />
                     )}

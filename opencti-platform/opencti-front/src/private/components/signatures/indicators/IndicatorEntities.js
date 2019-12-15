@@ -7,9 +7,9 @@ import Paper from '@material-ui/core/Paper';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ListLines from '../../../../components/list_lines/ListLines';
-import StixObservableEntitiesLines, {
-  stixObservableEntitiesLinesQuery,
-} from './StixObservableEntitiesLines';
+import IndicatorEntitiesLines, {
+  indicatorEntitiesLinesQuery,
+} from './IndicatorEntitiesLines';
 import StixRelationCreationFromEntity from '../../common/stix_relations/StixRelationCreationFromEntity';
 
 const styles = () => ({
@@ -21,7 +21,7 @@ const styles = () => ({
   },
 });
 
-class StixObservableEntities extends Component {
+class IndicatorEntities extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -86,10 +86,10 @@ class StixObservableEntities extends Component {
         secondaryAction={true}
       >
         <QueryRenderer
-          query={stixObservableEntitiesLinesQuery}
+          query={indicatorEntitiesLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
-            <StixObservableEntitiesLines
+            <IndicatorEntitiesLines
               data={props}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
@@ -145,7 +145,7 @@ class StixObservableEntities extends Component {
   }
 }
 
-StixObservableEntities.propTypes = {
+IndicatorEntities.propTypes = {
   entityId: PropTypes.string,
   relationType: PropTypes.string,
   classes: PropTypes.object,
@@ -156,4 +156,4 @@ StixObservableEntities.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixObservableEntities);
+)(IndicatorEntities);

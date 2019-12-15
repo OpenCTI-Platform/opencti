@@ -90,7 +90,7 @@ class StixObservablePopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/observables/all');
+        this.props.history.push('/dashboard/signatures/observables');
       },
     });
   }

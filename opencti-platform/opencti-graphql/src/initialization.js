@@ -5,6 +5,7 @@ import { graknIsAlive, write } from './database/grakn';
 import applyMigration from './database/migration';
 import { initializeAdminUser } from './config/security';
 import { isStorageAlive } from './database/minio';
+import { checkPythonStix2 } from './database/utils';
 
 const fs = require('fs');
 
@@ -19,6 +20,9 @@ export const checkSystemDependencies = async () => {
   // Check if minio is here
   await isStorageAlive();
   logger.info(`[PRE-CHECK] > Minio is alive`);
+  // Check if Python is available
+  await checkPythonStix2();
+  logger.info(`[PRE-CHECK] > Python3 is available`);
 };
 
 // Initialize

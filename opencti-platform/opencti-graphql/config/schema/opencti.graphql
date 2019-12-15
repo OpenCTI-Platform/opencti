@@ -491,6 +491,7 @@ type StixObservable implements GlobalObject & StixEntity {
   externalReferences(first: Int): ExternalReferenceConnection
   tags: TagConnection
   reports: ReportConnection
+  indicators: IndicatorConnection
   stixRelations(
     first: Int
     after: ID
@@ -2583,6 +2584,7 @@ type Indicator implements GlobalObject & StixEntity & StixDomainEntity {
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   tags: TagConnection
+  killChainPhases: KillChainPhaseConnection
   reports: ReportConnection
   stixRelations(
     first: Int
@@ -2617,6 +2619,7 @@ input IndicatorAddInput {
   score: Int
   createdByRef: String
   markingDefinitions: [String]
+  killChainPhases: [String]
   tags: [String]
   clientMutationId: String
   created: DateTime

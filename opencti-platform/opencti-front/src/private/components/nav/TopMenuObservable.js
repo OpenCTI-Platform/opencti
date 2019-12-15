@@ -46,7 +46,7 @@ class TopMenuObservable extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/signatures"
+          to="/dashboard/signatures/observables"
           variant="contained"
           size="small"
           color="inherit"

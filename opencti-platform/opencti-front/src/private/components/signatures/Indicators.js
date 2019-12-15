@@ -48,9 +48,9 @@ class Indicators extends Component {
   renderLines(paginationOptions) {
     const { sortBy, orderAsc, searchTerm } = this.state;
     const dataColumns = {
-      indicator_pattern: {
-        label: 'Pattern',
-        width: '50%',
+      name: {
+        label: 'Name',
+        width: '40%',
         isSortable: true,
       },
       valid_from: {
@@ -66,6 +66,10 @@ class Indicators extends Component {
       score: {
         label: 'Score',
         width: '10%',
+        isSortable: true,
+      },
+      markingDefinitions: {
+        label: 'Marking',
         isSortable: true,
       },
     };

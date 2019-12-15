@@ -8,13 +8,12 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import IntrusionSetPopover from './IntrusionSetPopover';
 import StixRelation from '../../common/stix_relations/StixRelation';
-import EntityStixObservables from '../../signatures/stix_observables/EntityStixObservables';
+import EntityIndicators from '../../signatures/indicators/EntityIndicators';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
 const styles = () => ({
   container: {
     margin: 0,
-    padding: '0 260px 0 0',
   },
   containerWithoutPadding: {
     margin: 0,
@@ -28,15 +27,15 @@ const styles = () => ({
   },
 });
 
-class IntrusionSetObservablesComponent extends Component {
+class IntrusionSetIndicatorsComponent extends Component {
   render() {
     const { classes, intrusionSet, location } = this.props;
-    const link = `/dashboard/threats/intrusion_sets/${intrusionSet.id}/observables`;
+    const link = `/dashboard/threats/intrusion_sets/${intrusionSet.id}/indicators`;
     return (
       <div
         className={
           location.pathname.includes(
-            `/dashboard/threats/intrusion_sets/${intrusionSet.id}/observables/relations/`,
+            `/dashboard/threats/intrusion_sets/${intrusionSet.id}/indicators/relations/`,
           )
             ? classes.containerWithoutPadding
             : classes.container
@@ -48,22 +47,20 @@ class IntrusionSetObservablesComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/threats/intrusion_sets/:intrusionSetId/observables/relations/:relationId"
+          path="/dashboard/threats/intrusion_sets/:intrusionSetId/indicators/relations/:relationId"
           render={(routeProps) => (
             <StixRelation
               entityId={intrusionSet.id}
-              inversedRoles={[]}
-              observable={true}
               {...routeProps}
             />
           )}
         />
         <Route
           exact
-          path="/dashboard/threats/intrusion_sets/:intrusionSetId/observables"
+          path="/dashboard/threats/intrusion_sets/:intrusionSetId/indicators"
           render={(routeProps) => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
-              <EntityStixObservables
+              <EntityIndicators
                 entityId={intrusionSet.id}
                 relationType="indicates"
                 entityLink={link}
@@ -77,17 +74,17 @@ class IntrusionSetObservablesComponent extends Component {
   }
 }
 
-IntrusionSetObservablesComponent.propTypes = {
+IntrusionSetIndicatorsComponent.propTypes = {
   intrusionSet: PropTypes.object,
   location: PropTypes.object,
   classes: PropTypes.object,
 };
 
-const IntrusionSetObservables = createFragmentContainer(
-  IntrusionSetObservablesComponent,
+const IntrusionSetIndicators = createFragmentContainer(
+  IntrusionSetIndicatorsComponent,
   {
     intrusionSet: graphql`
-      fragment IntrusionSetObservables_intrusionSet on IntrusionSet {
+      fragment IntrusionSetIndicators_intrusionSet on IntrusionSet {
         id
         name
         alias
@@ -96,7 +93,4 @@ const IntrusionSetObservables = createFragmentContainer(
   },
 );
 
-export default compose(
-  withRouter,
-  withStyles(styles),
-)(IntrusionSetObservables);
+export default compose(withRouter, withStyles(styles))(IntrusionSetIndicators);

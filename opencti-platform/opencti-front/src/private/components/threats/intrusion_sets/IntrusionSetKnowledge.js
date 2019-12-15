@@ -21,8 +21,6 @@ const styles = () => ({
   },
 });
 
-const inversedRoles = ['origin'];
-
 class IntrusionSetKnowledgeComponent extends Component {
   render() {
     const { classes, intrusionSet } = this.props;
@@ -40,7 +38,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           render={(routeProps) => (
             <StixRelation
               entityId={intrusionSet.id}
-              inversedRoles={inversedRoles}
+              paddingRight={true}
               {...routeProps}
             />
           )}

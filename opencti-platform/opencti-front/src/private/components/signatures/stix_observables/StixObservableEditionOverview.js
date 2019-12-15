@@ -111,8 +111,6 @@ const stixObservableMutationRelationDelete = graphql`
 `;
 
 const stixObservableValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  observable_value: Yup.string().required(t('This field is required')),
   description: Yup.string()
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
@@ -208,10 +206,10 @@ class StixObservableEditionOverviewComponent extends Component {
       commitMutation({
         mutation: stixObservableMutationRelationAdd,
         variables: {
-          id: value.value,
+          id: this.props.stixObservable.id,
           input: {
             fromRole: 'so',
-            toId: this.props.stixObservable.id,
+            toId: value.value,
             toRole: 'creator',
             through: 'created_by_ref',
           },
@@ -311,7 +309,6 @@ class StixObservableEditionOverviewComponent extends Component {
       assoc('createdByRef', createdByRef),
       assoc('markingDefinitions', markingDefinitions),
       pick([
-        'observable_value',
         'description',
         'createdByRef',
         'killChainPhases',
@@ -328,23 +325,6 @@ class StixObservableEditionOverviewComponent extends Component {
           render={({ setFieldValue }) => (
             <div>
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  name="observable_value"
-                  component={TextField}
-                  label={t('Observable value')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows="4"
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="observable_value"
-                    />
-                  }
-                />
                 <Field
                   name="description"
                   component={TextField}
@@ -438,7 +418,6 @@ const StixObservableEditionOverview = createFragmentContainer(
     stixObservable: graphql`
       fragment StixObservableEditionOverview_stixObservable on StixObservable {
         id
-        observable_value
         description
         createdByRef {
           node {

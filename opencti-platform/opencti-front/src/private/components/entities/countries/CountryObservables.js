@@ -53,8 +53,6 @@ class CountryObservablesComponent extends Component {
           render={(routeProps) => (
             <StixRelation
               entityId={country.id}
-              inversedRoles={[]}
-              observable={true}
               {...routeProps}
             />
           )}

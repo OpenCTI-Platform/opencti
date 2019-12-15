@@ -61,6 +61,8 @@ const i18n = {
         'Souhaitez-vous supprimer cet outil ?',
       'Do you want to delete this vulnerability?':
         'Souhaitez-vous supprimer cette vulnérabilité ?',
+      'Do you want to delete this indicator?':
+        'Souhaitez-vous supprimer cet indicateur ?',
       'Do you want to delete this observable?':
         'Souhaitez-vous supprimer cet observable ?',
       'Do you want to remove the entity from this report?':
@@ -266,6 +268,7 @@ const i18n = {
       Report: 'Report',
       Indicator: 'Indicateur',
       Indicators: 'Indicateurs',
+      'Indicators composed with this observable': 'Indicateurs composés avec cet observable',
       Overview: 'Aperçu',
       Relationships: 'Relations',
       Entities: 'Entités',
@@ -478,7 +481,8 @@ const i18n = {
       Locations: 'Localisations',
       Signatures: 'Signatures',
       Person: 'Personne',
-      Pattern: 'Pattern',
+      Pattern: 'Motif',
+      'Indicator pattern': "Motif de l'indicateur",
       'Valid from': 'Valide depuis',
       'Valid until': "Valide jusqu'à",
       Score: 'Score',
@@ -640,6 +644,7 @@ const i18n = {
       entity_user: 'Personne',
       entity_report: 'Rapport',
       entity_vulnerability: 'Vulnérabilité',
+      entity_indicator: 'Indicateur',
       entity_all: 'Toutes les entités',
       'entity_course-of-action': 'Mesure de mitigation',
       'entity_Kill-Chain-Phase': 'phases de kill chain',
@@ -767,6 +772,7 @@ const i18n = {
       entity_user: 'Person',
       entity_report: 'Report',
       entity_vulnerability: 'Vulnerability',
+      entity_indicator: 'Indicator',
       entity_all: 'All entities',
       'entity_course-of-action': 'Course of action',
       'entity_Kill-Chain-Phase': 'kill chain phases',

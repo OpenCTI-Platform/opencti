@@ -739,7 +739,8 @@ define
     has published_year,
     has published_month,
     has source_confidence_level,
-    plays knowledge_aggregation;
+    plays knowledge_aggregation,
+    plays observables_aggregation;
 
   Tool sub Stix-Domain-Entity,
     has tool_version,
@@ -787,7 +788,6 @@ define
     has updated_at,
     plays so,
     plays soo,
-    plays indicator,
     plays part_of,
     plays link_from,
     plays link_to;
