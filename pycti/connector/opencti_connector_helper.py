@@ -14,6 +14,27 @@ from pycti.api.opencti_api_client import OpenCTIApiClient
 from pycti.connector.opencti_connector import OpenCTIConnector
 
 
+def get_config_variable(envvar, yaml_path, config={}, isNumber=False):
+    if os.getenv(envvar) is not None:
+        result = os.getenv(envvar)
+    elif yaml_path is not None:
+        if yaml_path[0] in config and yaml_path[1] in config[yaml_path[0]]:
+            result = config[yaml_path[0]][yaml_path[1]]
+        else:
+            return None
+    else:
+        return None
+
+    if result == 'yes' or result == 'true' or result == 'True':
+        return True
+    elif result == 'no' or result == 'false' or result == 'False':
+        return False
+    elif isNumber:
+        return int(result)
+    else:
+        return result
+
+
 class ListenQueue(threading.Thread):
     def __init__(self, helper, config, callback):
         threading.Thread.__init__(self)
@@ -104,18 +125,22 @@ class OpenCTIConnectorHelper:
 
     def __init__(self, config: dict):
         # Load API config
-        self.opencti_url = os.getenv('OPENCTI_URL') or config['opencti']['url']
-        self.opencti_token = os.getenv('OPENCTI_TOKEN') or config['opencti']['token']
+        self.opencti_url = get_config_variable('OPENCTI_URL', ['opencti', 'url'], config)
+        self.opencti_token = get_config_variable('OPENCTI_TOKEN', ['opencti', 'token'], config)
         # Load connector config
-        self.connect_id = os.getenv('CONNECTOR_ID') or config['connector']['id']
-        self.connect_type = os.getenv('CONNECTOR_TYPE') or config['connector']['type']
-        self.connect_name = os.getenv('CONNECTOR_NAME') or config['connector']['name']
-        self.connect_confidence_level = int(
-            os.getenv('CONNECTOR_CONFIDENCE_LEVEL') or config['connector']['confidence_level'] or 2)
-        self.connect_scope = os.getenv('CONNECTOR_SCOPE') or config['connector']['scope']
-        self.log_level = os.getenv('CONNECTOR_LOG_LEVEL') or config['connector']['log_level'] or 'info'
+        self.connect_id = get_config_variable('CONNECTOR_ID', ['connector', 'id'], config)
+        self.connect_type = get_config_variable('CONNECTOR_TYPE', ['connector', 'type'], config)
+        self.connect_name = get_config_variable('CONNECTOR_NAME', ['connector', 'name'], config)
+        self.connect_confidence_level = get_config_variable(
+            'CONNECTOR_CONFIDENCE_LEVEL',
+            ['connector', 'confidence_level'],
+            config,
+            True
+        )
+        self.connect_scope = get_config_variable('CONNECTOR_SCOPE', ['connector', 'scope'], config)
+        self.log_level = get_config_variable('CONNECTOR_LOG_LEVEL', ['connector', 'log_level'], config)
 
-        # Configure logger²
+        # Configure logger
         numeric_level = getattr(logging, self.log_level.upper(), None)
         if not isinstance(numeric_level, int):
             raise ValueError('Invalid log level: ' + self.log_level)

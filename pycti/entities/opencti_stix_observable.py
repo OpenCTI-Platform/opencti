@@ -68,21 +68,22 @@ class StixObservable:
                     }
                 }
             }            
-            stixRelations {
+            indicators {
                 edges {
                     node {
                         id
-                        stix_id_key
                         entity_type
-                        relationship_type
-                        description
-                        first_seen
-                        last_seen
-                        role_played
-                        to {
-                            id
-                            name
-                        }
+                        stix_id_key
+                        valid_from
+                        valid_until
+                        score
+                        pattern_type
+                        indicator_pattern
+                        created
+                        modified
+                    }
+                    relation {
+                        id
                     }
                 }
             }

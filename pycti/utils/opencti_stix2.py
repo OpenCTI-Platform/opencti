@@ -19,22 +19,6 @@ from pycti.utils.constants import ObservableTypes, CustomProperties
 datefinder.ValueError = ValueError, OverflowError
 utc = pytz.UTC
 
-# TODO: update this mapping with all the known OpenCTI types
-#       the ones below were taken from the misp connector
-STIX2OPENCTI = {
-    'file:hashes.md5': ObservableTypes.FILE_HASH_MD5.value,
-    'file:hashes.sha1': ObservableTypes.FILE_HASH_SHA1.value,
-    'file:hashes.sha256': ObservableTypes.FILE_HASH_SHA256.value,
-    'ipv4-addr:value': ObservableTypes.IPV4_ADDR.value,
-    'ipv6-addr:value': ObservableTypes.IPV6_ADDR.value,
-    'domain:value': ObservableTypes.DOMAIN.value,
-    'url:value': ObservableTypes.URL.value,
-    'directory:value': ObservableTypes.DIRECTORY.value,
-    'domain-name:value': ObservableTypes.DOMAIN.value,
-    'email-addr:value': ObservableTypes.EMAIL_ADDR.value,
-    'email-message:subject': ObservableTypes.EMAIL_SUBJECT.value,
-}
-
 # Identity
 IDENTITY_TYPES = ['user', 'city', 'country', 'region', 'organization', 'sector']
 
@@ -338,17 +322,24 @@ class OpenCTIStix2:
             stix_object['type'],
             lambda stix_object, update: self.unknown_type(stix_object)
         )
-        stix_object_result = do_import(stix_object, update)
+        stix_object_results = do_import(stix_object, update)
 
-        # Add embedded relationships
-        if stix_object_result is not None:
+        if stix_object_results is None:
+            return stix_object_results
+
+        if not isinstance(stix_object_results, list):
+            stix_object_results = [stix_object_results]
+
+        for stix_object_result in stix_object_results:
+            # Add embedded relationships
             self.mapping_cache[stix_object['id']] = {
                 'id': stix_object_result['id'],
                 'type': stix_object_result['entity_type']
             }
 
             # Update created by ref
-            if update and created_by_ref_id is not None and stix_object['type'] != 'marking-definition':
+            if (update or stix_object_result['createdByRef'] is None) and created_by_ref_id is not None and stix_object[
+                'type'] != 'marking-definition':
                 self.opencti.stix_entity.update_created_by_ref(
                     id=stix_object_result['id'],
                     entity=stix_object_result,
@@ -389,7 +380,7 @@ class OpenCTIStix2:
                     entity_id=object_refs_id
                 )
 
-        return stix_object_result
+        return stix_object_results
 
     def import_relationship(self, stix_relation, update=False, types=None):
         # Extract
@@ -401,14 +392,15 @@ class OpenCTIStix2:
         reports = embedded_relationships['reports']
 
         # Create the relation
-        if stix_relation['source_ref'] in self.mapping_cache:
+        if CustomProperties.SOURCE_REF in stix_relation:
+            source_ref = stix_relation[CustomProperties.SOURCE_REF]
+        else:
+            source_ref = stix_relation['source_ref']
+        if source_ref in self.mapping_cache:
             source_id = self.mapping_cache[stix_relation['source_ref']]['id']
             source_type = self.mapping_cache[stix_relation['source_ref']]['type']
         else:
-            if CustomProperties.SOURCE_REF in stix_relation:
-                stix_object_result = self.opencti.stix_entity.read(id=stix_relation[CustomProperties.SOURCE_REF])
-            else:
-                stix_object_result = self.opencti.stix_entity.read(id=stix_relation['source_ref'])
+            stix_object_result = self.opencti.stix_entity.read(id=source_ref)
             if stix_object_result is not None:
                 source_id = stix_object_result['id']
                 source_type = stix_object_result['entity_type']
@@ -416,14 +408,15 @@ class OpenCTIStix2:
                 self.opencti.log('error', 'Source ref of the relationship not found, doing nothing...')
                 return None
 
-        if stix_relation['target_ref'] in self.mapping_cache:
+        if CustomProperties.TARGET_REF in stix_relation:
+            target_ref = stix_relation[CustomProperties.TARGET_REF]
+        else:
+            target_ref = stix_relation['target_ref']
+        if target_ref in self.mapping_cache:
             target_id = self.mapping_cache[stix_relation['target_ref']]['id']
             target_type = self.mapping_cache[stix_relation['target_ref']]['type']
         else:
-            if CustomProperties.TARGET_REF in stix_relation:
-                stix_object_result = self.opencti.stix_entity.read(id=stix_relation[CustomProperties.TARGET_REF])
-            else:
-                stix_object_result = self.opencti.stix_entity.read(id=stix_relation['target_ref'])
+            stix_object_result = self.opencti.stix_entity.read(id=target_ref)
             if stix_object_result is not None:
                 target_id = stix_object_result['id']
                 target_type = stix_object_result['entity_type']
@@ -531,28 +524,35 @@ class OpenCTIStix2:
         relations_to_create = []
         for key, observable_item in stix_object['objects'].items():
             # TODO artifact
-            if observable_item['type'] == 'autonomous-system':
+            if CustomProperties.OBSERVABLE_TYPE in observable_item and CustomProperties.OBSERVABLE_VALUE in observable_item:
+                observables_to_create[key] = [{
+                    'id': str(uuid.uuid4()),
+                    'stix_id': 'observable--' + str(uuid.uuid4()),
+                    'type': observable_item[CustomProperties.OBSERVABLE_TYPE],
+                    'value': observable_item[CustomProperties.OBSERVABLE_VALUE]
+                }]
+            elif observable_item['type'] == 'autonomous-system':
                 observables_to_create[key] = [{
                     'id': str(uuid.uuid4()),
                     'stix_id': 'observable--' + str(uuid.uuid4()),
                     'type': ObservableTypes.AUTONOMOUS_SYSTEM.value,
                     'value': 'AS' + observable_item['number']
                 }]
-            if observable_item['type'] == 'directory':
+            elif observable_item['type'] == 'directory':
                 observables_to_create[key] = [{
                     'id': str(uuid.uuid4()),
                     'stix_id': 'observable--' + str(uuid.uuid4()),
                     'type': ObservableTypes.DIRECTORY.value,
                     'value': observable_item['path']
                 }]
-            if observable_item['type'] == 'domain-name':
+            elif observable_item['type'] == 'domain-name':
                 observables_to_create[key] = [{
                     'id': str(uuid.uuid4()),
                     'stix_id': 'observable--' + str(uuid.uuid4()),
                     'type': ObservableTypes.DOMAIN.value,
                     'value': observable_item['value']
                 }]
-            if observable_item['type'] == 'email-addr':
+            elif observable_item['type'] == 'email-addr':
                 observables_to_create[key] = [{
                     'id': str(uuid.uuid4()),
                     'stix_id': 'observable--' + str(uuid.uuid4()),
@@ -562,7 +562,7 @@ class OpenCTIStix2:
                 # TODO Belongs to ref
             # TODO email-message
             # TODO mime-part-type
-            if observable_item['type'] == 'file':
+            elif observable_item['type'] == 'file':
                 observables_to_create[key] = []
                 if 'name' in observable_item:
                     observables_to_create[key].append({
@@ -590,25 +590,25 @@ class OpenCTIStix2:
                                 'type': ObservableTypes.FILE_HASH_SHA256.value,
                                 'value': value
                             })
-            if observable_item['type'] == 'ipv4-addr':
+            elif observable_item['type'] == 'ipv4-addr':
                 observables_to_create[key] = [{
                     'id': str(uuid.uuid4()),
                     'type': ObservableTypes.IPV4_ADDR.value,
                     'value': observable_item['value']
                 }]
-            if observable_item['type'] == 'ipv6-addr':
+            elif observable_item['type'] == 'ipv6-addr':
                 observables_to_create[key] = [{
                     'id': str(uuid.uuid4()),
                     'type': ObservableTypes.IPV6_ADDR.value,
                     'value': observable_item['value']
                 }]
-            if observable_item['type'] == 'mac-addr':
+            elif observable_item['type'] == 'mac-addr':
                 observables_to_create[key] = [{
                     'id': str(uuid.uuid4()),
                     'type': ObservableTypes.MAC_ADDR.value,
                     'value': observable_item['value']
                 }]
-            if observable_item['type'] == 'windows-registry-key':
+            elif observable_item['type'] == 'windows-registry-key':
                 observables_to_create[key] = [{
                     'id': str(uuid.uuid4()),
                     'type': ObservableTypes.REGISTRY_KEY.value,
@@ -743,7 +743,8 @@ class OpenCTIStix2:
             'vulnerability': self.opencti.vulnerability.to_stix2,
             'attack-pattern': self.opencti.attack_pattern.to_stix2,
             'course-of-action': self.opencti.course_of_action.to_stix2,
-            'report': self.opencti.report.to_stix2
+            'report': self.opencti.report.to_stix2,
+            'indicator': self.opencti.indicator.to_stix2
         }
         do_export = exporter.get(
             entity_type,
@@ -1275,47 +1276,20 @@ class OpenCTIStix2:
             return None
 
     def create_indicator(self, stix_object, update=False):
-        indicator_type = None
-        indicator_value = None
-
-        # check the custom stix2 fields
-        if CustomProperties.OBSERVABLE_TYPE in stix_object and CustomProperties.OBSERVABLE_VALUE in stix_object:
-            indicator_type = stix_object[CustomProperties.OBSERVABLE_TYPE]
-            indicator_value = stix_object[CustomProperties.OBSERVABLE_VALUE]
-        else:
-            # check if the indicator is a 'simple' type (i.e it only has exactly one "Comparison Expression")
-            # there is no good way of checking this, so this is this is done by using the stix pattern parser, and
-            # checking that the pattern's operator is '='
-            # The following pattern will be used for reference:
-            #   [file:hashes.md5 = 'd41d8cd98f00b204e9800998ecf8427e']
-            pattern = create_pattern_object(stix_object['pattern'])
-            if pattern.operand.operator == '=':
-
-                # get the object type (here 'file') and check that it is a standard observable type
-                object_type = pattern.operand.lhs.object_type_name
-                if object_type in stix2.OBJ_MAP_OBSERVABLE:
-
-                    # get the left hand side as string and use it for looking up the correct OpenCTI name
-                    lhs = str(pattern.operand.lhs)  # this is "file:hashes.md5" from the reference pattern
-                    if lhs in STIX2OPENCTI:
-                        # the type and value can now be set
-                        indicator_type = STIX2OPENCTI[lhs]
-                        indicator_value = pattern.operand.rhs.value
-
-        # check that the indicator type and value have been set before creating the indicator
-        if indicator_type and indicator_value:
-            return self.opencti.stix_observable.create(
-                type=indicator_type,
-                observable_value=indicator_value,
-                description=self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
-                id=stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
-                update=update
-            )
-        else:
-            # log that the indicator could not be parsed
-            self.opencti.log('info', "Cannot handle indicator: {id}".format(id=stix_object['stix_id_key']))
-
-        return None
+        return self.opencti.indicator.create(
+            name=stix_object['name'],
+            description=self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
+            indicator_pattern=stix_object['pattern'],
+            pattern_type=stix_object[
+                CustomProperties.PATTERN_TYPE] if CustomProperties.PATTERN_TYPE in stix_object else 'stix2',
+            valid_from=stix_object['valid_from'] if 'valid_from' in stix_object else None,
+            valid_until=stix_object['valid_until'] if 'valid_until' in stix_object else None,
+            id=stix_object[CustomProperties.ID] if CustomProperties.ID in stix_object else None,
+            stix_id_key=stix_object['id'] if 'id' in stix_object else None,
+            created=stix_object['created'] if 'created' in stix_object else None,
+            modified=stix_object['modified'] if 'modified' in stix_object else None,
+            update=update
+        )
 
     def resolve_author(self, title):
         if 'fireeye' in title.lower() or 'mandiant' in title.lower():

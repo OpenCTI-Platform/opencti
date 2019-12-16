@@ -29,8 +29,6 @@ relation = opencti_api_client.stix_relation.create(
     toId=sector['id'],
     relationship_type='gathering',
     description='BNP Paribas is part of the sector Banking institutions.',
-    first_seen=datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ'),
-    last_seen=datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ'),
     ignore_dates=True
 )
 

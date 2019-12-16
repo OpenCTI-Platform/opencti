@@ -4,7 +4,7 @@ from pycti.api.opencti_api_job import OpenCTIApiJob
 
 from pycti.connector.opencti_connector import ConnectorType
 from pycti.connector.opencti_connector import OpenCTIConnector
-from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
+from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper, get_config_variable
 
 from pycti.entities.opencti_marking_definition import MarkingDefinition
 from pycti.entities.opencti_external_reference import ExternalReference
@@ -25,6 +25,7 @@ from pycti.entities.opencti_vulnerability import Vulnerability
 from pycti.entities.opencti_attack_pattern import AttackPattern
 from pycti.entities.opencti_course_of_action import CourseOfAction
 from pycti.entities.opencti_report import Report
+from pycti.entities.opencti_indicator import Indicator
 
 from pycti.utils.opencti_stix2 import OpenCTIStix2
 from pycti.utils.constants import ObservableTypes

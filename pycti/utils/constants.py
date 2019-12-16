@@ -64,8 +64,8 @@ class CustomProperties:
     #  "internal"
     REPORT_CLASS = 'x_opencti_report_class'
 
-    # These values should be set on all stix Indicator objects as custom properties.
-    # See constants.ObservableTypes for possible types
+    # use with observed_data and indicators
+    PATTERN_TYPE = 'x_opencti_pattern_type'
     OBSERVABLE_TYPE = 'x_opencti_observable_type'
     OBSERVABLE_VALUE = 'x_opencti_observable_value'
 
@@ -73,6 +73,9 @@ class CustomProperties:
     # use with STIX "kill chain" and "external reference" objects
     CREATED = 'x_opencti_created'
     MODIFIED = 'x_opencti_modified'
+
+    # use with attack pattern
+    EXTERNAL_ID = 'x_opencti_external_id'
 
     # use with intrusion-set, campaign, relation
     FIRST_SEEN = 'x_opencti_first_seen'
