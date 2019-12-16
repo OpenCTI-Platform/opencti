@@ -137,13 +137,6 @@ export const addStixObservable = async (user, stixObservable, createIndicator = 
   return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user);
 };
 export const stixObservableDelete = async stixObservableId => {
-  // delete every indicators with this observable
-  const indicatorsUsingObservable = await indicators(stixObservableId);
-  await Promise.all(
-    indicatorsUsingObservable.map(indicatorEdge => {
-      return deleteEntityById(indicatorEdge.node.id);
-    })
-  );
   return deleteEntityById(stixObservableId);
 };
 export const stixObservableAddRelation = (user, stixObservableId, input) => {

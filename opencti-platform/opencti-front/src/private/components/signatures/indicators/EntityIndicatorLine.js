@@ -10,7 +10,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
-import { HexagonOutline } from 'mdi-material-ui';
+import { ShieldSearch } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import ItemConfidenceLevel from '../../../../components/ItemConfidenceLevel';
 import StixRelationPopover from '../../common/stix_relations/StixRelationPopover';
@@ -61,7 +61,7 @@ class EntityIndicatorLineComponent extends Component {
         to={link}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <HexagonOutline />
+          <ShieldSearch />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -168,7 +168,7 @@ class EntityIndicatorLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <HexagonOutline />
+          <ShieldSearch />
         </ListItemIcon>
         <ListItemText
           primary={

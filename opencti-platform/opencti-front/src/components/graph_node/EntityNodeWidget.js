@@ -30,7 +30,7 @@ const styles = () => ({
     marginTop: 15,
     textAlign: 'center',
     overflow: 'hidden',
-
+    textOverflow: 'ellipsis',
   },
   port: {
     position: 'absolute',

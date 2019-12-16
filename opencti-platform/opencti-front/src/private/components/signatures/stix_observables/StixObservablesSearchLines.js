@@ -121,7 +121,7 @@ class StixObservablesContainer extends Component {
                     divider={true}
                     button={true}
                     component={Link}
-                    to={`/dashboard/observables/all/${stixObservable.id}`}
+                    to={`/dashboard/signatures/observables/${stixObservable.id}`}
                   >
                     <ListItemIcon classes={{ root: classes.itemIcon }}>
                       <ItemIcon type={type} />
