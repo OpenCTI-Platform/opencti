@@ -18,6 +18,7 @@ const interval$ = interval(TEN_SECONDS);
 
 const styles = () => ({
   paper: {
+    height: '100%',
     minHeight: '100%',
     padding: '10px 15px 10px 15px',
     borderRadius: 6,

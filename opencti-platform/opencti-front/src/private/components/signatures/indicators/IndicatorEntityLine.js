@@ -55,7 +55,7 @@ class IndicatorEntityLineComponent extends Component {
       entityId,
     } = this.props;
     const link = node.to.parent_types.includes('stix_relation')
-      ? `/dashboard/indicators/all/${entityId}/knowledge/relations/${node.id}`
+      ? `/dashboard/signatures/indicators/${entityId}/knowledge/relations/${node.id}`
       : `${resolveLink(node.to.entity_type)}/${
         node.to.id
       }/indicators/relations/${node.id}`;

@@ -8,6 +8,11 @@ const styles = () => ({
     width: '100vh',
     height: 'calc(100vh-180px)',
   },
+  containerInElement: {
+    width: '100%',
+    height: '100%',
+    display: 'table',
+  },
   loader: {
     width: '100%',
     margin: 0,
@@ -18,6 +23,14 @@ const styles = () => ({
     textAlign: 'center',
     zIndex: 20,
   },
+  loaderInElement: {
+    width: '100%',
+    margin: 0,
+    padding: 0,
+    display: 'table-cell',
+    verticalAlign: 'middle',
+    textAlign: 'center',
+  },
   loaderCircle: {
     display: 'inline-block',
   },
@@ -25,27 +38,23 @@ const styles = () => ({
 
 class Loader extends Component {
   render() {
-    const { classes, variant } = this.props;
-    if (variant === 'inElement') {
-      return (
-        <div style={{ display: 'table', height: '100%', width: '100%' }}>
-          <span
-            style={{
-              display: 'table-cell',
-              verticalAlign: 'middle',
-              textAlign: 'center',
-            }}
-          >
-            <CircularProgress size={80} thickness={2} />
-          </span>
-        </div>
-      );
-    }
+    const { classes, variant, withRightPadding } = this.props;
     return (
-      <div className={classes.container}>
-        <div className={classes.loader} style={{ paddingRight: variant === 'withRightPadding' ? 240 : 0 }}>
+      <div
+        className={
+          variant === 'inElement'
+            ? classes.containerInElement
+            : classes.container
+        }
+        style={{ paddingRight: withRightPadding ? 240 : 0 }}
+      >
+        <div
+          className={
+            variant === 'inElement' ? classes.loaderInElement : classes.loader
+          }
+        >
           <CircularProgress
-            size={80}
+            size={variant === 'inElement' ? 40 : 80}
             thickness={1}
             className={this.props.classes.loaderCircle}
           />
@@ -58,6 +67,7 @@ class Loader extends Component {
 Loader.propTypes = {
   classes: PropTypes.object.isRequired,
   variant: PropTypes.string,
+  withRightPadding: PropTypes.bool,
 };
 
 export default withStyles(styles)(Loader);

@@ -2439,6 +2439,7 @@ enum ReportsFilter {
   report_class
   createdBy
   knowledgeContains
+  observablesContains
 }
 input ReportsFiltering {
   key: ReportsFilter!
@@ -2541,7 +2542,7 @@ enum IndicatorsOrdering {
   markingDefinitions
 }
 enum IndicatorsFilter {
-  pattern
+  indicator_pattern
   tags
   observablesContains
 }
@@ -2568,7 +2569,8 @@ type Indicator implements GlobalObject & StixEntity & StixDomainEntity {
   alias: [String]
   name: String!
   description: String
-  indicator_pattern: String
+  indicator_pattern: String!
+  pattern_type: String!
   valid_from: DateTime
   valid_until: DateTime
   score: Int
@@ -2614,6 +2616,7 @@ input IndicatorAddInput {
   name: String!
   description: String
   indicator_pattern: String!
+  pattern_type: String
   valid_from: DateTime
   valid_until: DateTime
   score: Int
@@ -3518,4 +3521,5 @@ type Mutation {
   # Indicator
   indicatorAdd(input: IndicatorAddInput): Indicator @auth
   indicatorEdit(id: ID!): IndicatorEditMutations @auth
+  indicatorsClear: Boolean @auth(for: ROLE_ADMIN)
 }

@@ -23,7 +23,9 @@ import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
-import DatePickerField from "../../../../components/DatePickerField";
+import DatePickerField from '../../../../components/DatePickerField';
+import Select from "../../../../components/Select";
+import MenuItem from "@material-ui/core/MenuItem";
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -79,6 +81,7 @@ const indicatorMutation = graphql`
 const indicatorValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   indicator_pattern: Yup.string().required(t('This field is required')),
+  pattern_type: Yup.string().required(t('This field is required')),
   valid_from: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
@@ -223,6 +226,7 @@ class IndicatorCreation extends Component {
               initialValues={{
                 name: '',
                 indicator_pattern: '',
+                pattern_type: '',
                 valid_from: null,
                 valid_until: null,
                 description: '',
@@ -246,6 +250,24 @@ class IndicatorCreation extends Component {
                       label={t('Name')}
                       fullWidth={true}
                     />
+                    <Field
+                      name="pattern_type"
+                      component={Select}
+                      label={t('Pattern type')}
+                      fullWidth={true}
+                      inputProps={{
+                        name: 'pattern_type',
+                        id: 'pattern_type',
+                      }}
+                      containerstyle={{ marginTop: 20, width: '100%' }}
+                    >
+                      <MenuItem value="stix">stix</MenuItem>
+                      <MenuItem value="pcre">pcre</MenuItem>
+                      <MenuItem value="sigma">sigma</MenuItem>
+                      <MenuItem value="snort">snort</MenuItem>
+                      <MenuItem value="suricata">suricata</MenuItem>
+                      <MenuItem value="yara">yara</MenuItem>
+                    </Field>
                     <Field
                       name="indicator_pattern"
                       component={TextField}

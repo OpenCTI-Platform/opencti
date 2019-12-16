@@ -43,7 +43,7 @@ class StixDomainEntityKillChain extends Component {
                 />
               );
             }
-            return <Loader variant="withRightPadding" />;
+            return <Loader withRightPadding={true} />;
           }}
         />
       </div>

@@ -40,7 +40,7 @@ class StixObservableComponent extends Component {
             <StixObservableDetails stixObservable={stixObservable} />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityLastReports entityId={stixObservable.id} />
+            <EntityLastReports stixObservableId={stixObservable.id} />
           </Grid>
         </Grid>
         <StixObservableIndicators stixObservable={stixObservable} />

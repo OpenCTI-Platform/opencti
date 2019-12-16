@@ -54,7 +54,7 @@ class ReportComponent extends Component {
             <EntityStixRelationsDonut
               entityId={report.id}
               entityType="Stix-Observable"
-              relationType="object_refs"
+              relationType="observable_refs"
               field="entity_type"
             />
           </Grid>

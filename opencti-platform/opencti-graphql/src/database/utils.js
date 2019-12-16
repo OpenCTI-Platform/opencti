@@ -80,7 +80,7 @@ export const buildPagination = (first, offset, instances, globalCount) => {
 };
 
 export const execPython3 = async (scriptPath, scriptName, args) => {
-  return new Promise(async resolve => {
+  return new Promise(async (resolve, reject) => {
     const options = {
       mode: 'text',
       pythonPath: 'python3',
@@ -89,7 +89,7 @@ export const execPython3 = async (scriptPath, scriptName, args) => {
     };
     await PythonShell.run(scriptName, options, (err, results) => {
       if (err) {
-        throw new Error(`Python3 is missing: ${err}`);
+        reject(new Error(`Python3 is missing or script not found: ${err}`));
       }
       resolve(JSON.parse(results[0]));
     });
@@ -116,6 +116,19 @@ export const createStixPattern = async (observableType, observableValue) => {
     return null;
   } catch (err) {
     logger.error('[Python3] createStixPattern error > ', err);
+    return null;
+  }
+};
+
+export const extractObservables = async pattern => {
+  try {
+    const result = await execPython3('./src/utils/stix2', 'stix2_extract_observables.py', [pattern]);
+    if (result.status === 'success') {
+      return result.data;
+    }
+    return null;
+  } catch (err) {
+    logger.error('[Python3] extractObservables error > ', err);
     return null;
   }
 };

@@ -63,6 +63,7 @@ const styles = (theme) => ({
     marginBottom: 20,
   },
   paper: {
+    height: '100%',
     minHeight: '100%',
     margin: '13px 0 0 0',
     padding: '10px 15px 10px 15px',

@@ -20,6 +20,7 @@ module.exports.up = async next => {
   await removeAttributeForEntityType('tag', 'tagged');
   await removeAttributeForEntityType('kill-chain-phase', 'kill_chain_phases');
   await removeAttributeForEntityType('marking-definition', 'object_marking_refs');
+  await removeAttributeForEntityType('organization', 'created_by_ref');
   next();
 };
 

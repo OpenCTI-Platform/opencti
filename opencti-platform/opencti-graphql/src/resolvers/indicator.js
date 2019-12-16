@@ -1,4 +1,4 @@
-import { addIndicator, findAll, findById, observableRefs } from '../domain/indicator';
+import { addIndicator, findAll, findById, observableRefs, clear } from '../domain/indicator';
 import {
   stixDomainEntityAddRelation,
   stixDomainEntityCleanContext,
@@ -25,6 +25,7 @@ const indicatorResolvers = {
     observableRefs: report => observableRefs(report.id)
   },
   Mutation: {
+    indicatorsClear: () => clear(),
     indicatorEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainEntityDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),

@@ -18,6 +18,7 @@ import Loader from '../../../components/Loader';
 
 const styles = (theme) => ({
   paper: {
+    height: '100%',
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: 0,
@@ -88,11 +89,12 @@ const entityLastReportsQuery = graphql`
 class EntityLastReports extends Component {
   render() {
     const {
-      t, nsd, classes, entityId, authorId,
+      t, nsd, classes, entityId, stixObservableId, authorId,
     } = this.props;
     const filters = [];
     if (authorId) filters.push({ key: 'createdBy', values: [authorId] });
     if (entityId) filters.push({ key: 'knowledgeContains', values: [entityId] });
+    if (stixObservableId) filters.push({ key: 'observablesContains', values: [stixObservableId] });
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -166,6 +168,7 @@ class EntityLastReports extends Component {
 
 EntityLastReports.propTypes = {
   entityId: PropTypes.string,
+  stixObservableId: PropTypes.string,
   authorId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,

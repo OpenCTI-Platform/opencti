@@ -100,6 +100,7 @@ define
   required_permission sub attribute, datatype string;
   source_confidence_level sub attribute, datatype long;
   value sub attribute, datatype string;
+  pattern_type sub attribute, datatype string;
 
   # STIX SRO
   relationship_type sub attribute, datatype string;
@@ -760,6 +761,7 @@ define
 
   Indicator sub Stix-Domain-Entity,
     key indicator_pattern,
+    has pattern_type,
     has score,
     has valid_from,
     has valid_from_day,

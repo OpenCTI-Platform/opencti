@@ -1,7 +1,9 @@
 import moment from 'moment';
-import { assoc, dissoc, pipe, sortWith, descend, prop, head, map, includes } from 'ramda';
+import { assoc, dissoc, pipe, sortWith, descend, prop, head, map, includes, last } from 'ramda';
+import { Promise } from 'bluebird';
 import {
   createEntity,
+  deleteEntityById,
   escapeString,
   findWithConnectedRelations,
   listEntities,
@@ -11,9 +13,10 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { buildPagination } from '../database/utils';
+import { buildPagination, extractObservables } from '../database/utils';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { findById as findKillChainPhaseById } from './killChainPhase';
+import { addStixObservable } from './stixObservable';
 
 const OpenCTITimeToLive = {
   file: {
@@ -98,6 +101,28 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
     assoc('valid_until', indicator.valid_until ? indicator.valid_until : await computeValidUntil(indicator))
   )(indicator);
   const created = await createEntity(indicatorToCreate, 'Indicator', TYPE_STIX_DOMAIN_ENTITY);
+  // create the linked observables
+  if (createObservables) {
+    const observables = await extractObservables(created.indicator_pattern);
+    if (observables && observables.length > 0) {
+      await Promise.all(
+        observables.map(observable => {
+          const observableToCreate = pipe(
+            dissoc('score'),
+            dissoc('valid_from'),
+            dissoc('valid_until'),
+            dissoc('pattern_type'),
+            dissoc('indicator_pattern'),
+            dissoc('created'),
+            dissoc('modified'),
+            assoc('type', observable.type),
+            assoc('observable_value', observable.value)
+          )(indicatorToCreate);
+          return addStixObservable(null, observableToCreate, false);
+        })
+      );
+    }
+  }
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 
@@ -109,4 +134,25 @@ export const observableRefs = indicatorId => {
     'to',
     'rel'
   ).then(data => buildPagination(0, 0, data, data.length));
+};
+
+export const clear = async () => {
+  let hasMore = true;
+  let currentCursor = null;
+  while (hasMore) {
+    const indicators = await findAll({
+      first: 200,
+      after: currentCursor,
+      orderAsc: true,
+      orderBy: 'created_at'
+    });
+    await Promise.all(
+      indicators.edges.map(indicatorEdge => {
+        return deleteEntityById(indicatorEdge.node.id);
+      })
+    );
+    currentCursor = last(indicators.edges).cursor;
+    hasMore = indicators.pageInfo.hasNextPage;
+  }
+  return true;
 };

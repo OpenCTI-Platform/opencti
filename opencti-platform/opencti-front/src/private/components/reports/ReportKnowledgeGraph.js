@@ -287,10 +287,7 @@ class ReportKnowledgeGraphComponent extends Component {
     // add relations
     const createdRelations = [];
     forEach((l) => {
-      if (
-        !includes(l.relation.id, createdRelations)
-        && l.node.relationship_type !== 'indicates'
-      ) {
+      if (!includes(l.relation.id, createdRelations)) {
         const newNode = new RelationNodeModel({
           id: l.node.id,
           relationId: l.relation.id,
@@ -324,10 +321,7 @@ class ReportKnowledgeGraphComponent extends Component {
     // add links
     const createdLinks = [];
     forEach((l) => {
-      if (
-        !includes(l.relation.id, createdLinks)
-        && l.node.relationship_type !== 'indicates'
-      ) {
+      if (!includes(l.relation.id, createdLinks)) {
         const sourceFromPort = finalNodesObject[l.node.from.id]
           ? finalNodesObject[l.node.from.id].node.getPort('main')
           : null;

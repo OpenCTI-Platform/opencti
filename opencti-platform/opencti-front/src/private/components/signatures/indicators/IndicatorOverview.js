@@ -12,6 +12,7 @@ import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
   paper: {
+    height: '100%',
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',
@@ -31,6 +32,16 @@ class IndicatorOverviewComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Typography variant="h3" gutterBottom={true}>
+            {t('Pattern type')}
+          </Typography>
+          <strong>
+            {indicator.pattern_type ? indicator.pattern_type : 'stix'}
+          </strong>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
             {t('Creation date')}
           </Typography>
           {fld(indicator.created_at)}
@@ -81,6 +92,7 @@ const IndicatorOverview = createFragmentContainer(IndicatorOverviewComponent, {
       description
       created_at
       updated_at
+      pattern_type
       createdByRef {
         node {
           id

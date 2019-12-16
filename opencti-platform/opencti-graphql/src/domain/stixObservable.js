@@ -95,6 +95,15 @@ export const stixObservableAskEnrichment = async (id, connectorId) => {
   await pushToConnector(connector, message);
   return work;
 };
+export const indicators = stixObservableId => {
+  return findWithConnectedRelations(
+    `match $from isa Stix-Observable; $rel(soo:$from, observables_aggregation:$to) isa observable_refs;
+    $to isa Indicator;
+    $from has internal_id_key "${escapeString(stixObservableId)}"; get;`,
+    'to',
+    'rel'
+  ).then(data => buildPagination(0, 0, data, data.length));
+};
 export const addStixObservable = async (user, stixObservable, createIndicator = true) => {
   const innerType = stixObservable.type;
   const observableToCreate = dissoc('type', stixObservable);
@@ -118,6 +127,7 @@ export const addStixObservable = async (user, stixObservable, createIndicator = 
             : `Simple indicator of observable {${stixObservable.observable_value}}`
         ),
         assoc('indicator_pattern', pattern),
+        assoc('pattern_type', 'stix'),
         assoc('valid_from', today),
         assoc('observableRefs', [created.id])
       )(observableToCreate);
@@ -127,6 +137,13 @@ export const addStixObservable = async (user, stixObservable, createIndicator = 
   return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user);
 };
 export const stixObservableDelete = async stixObservableId => {
+  // delete every indicators with this observable
+  const indicatorsUsingObservable = await indicators(stixObservableId);
+  await Promise.all(
+    indicatorsUsingObservable.map(indicatorEdge => {
+      return deleteEntityById(indicatorEdge.node.id);
+    })
+  );
   return deleteEntityById(stixObservableId);
 };
 export const stixObservableAddRelation = (user, stixObservableId, input) => {
@@ -164,13 +181,3 @@ export const stixObservableEditContext = (user, stixObservableId, input) => {
   );
 };
 // endregion
-
-export const indicators = observableId => {
-  return findWithConnectedRelations(
-    `match $from isa Stix-Observable; $rel(soo:$from, observables_aggregation:$to) isa observable_refs;
-    $to isa Indicator;
-    $from has internal_id_key "${escapeString(observableId)}"; get;`,
-    'to',
-    'rel'
-  ).then(data => buildPagination(0, 0, data, data.length));
-};

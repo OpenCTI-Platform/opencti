@@ -203,7 +203,7 @@ export const elDeleteInstanceIds = async ids => {
     });
 };
 
-export const elCount = (indexName, options) => {
+export const elCount = (indexName, options = {}) => {
   const { endDate = null, type = null, types = null } = options;
   let must = [];
   if (endDate !== null) {
@@ -595,6 +595,7 @@ export const elPaginate = async (indexName, options) => {
   const query = {
     index: indexName,
     _source_excludes: `${REL_INDEX_PREFIX}*`,
+    track_total_hits: true,
     body: {
       from: offset,
       size: first,
@@ -704,6 +705,7 @@ export const elIndex = async (indexName, documentBody, refresh = true) => {
       index: indexName,
       id: documentBody.grakn_id,
       refresh,
+      timeout: '60m',
       body: dissoc('_index', documentBody)
     })
     .catch(err => {
@@ -711,11 +713,12 @@ export const elIndex = async (indexName, documentBody, refresh = true) => {
     });
   return documentBody;
 };
-export const elUpdate = (indexName, documentId, documentBody, retry = 0) => {
+export const elUpdate = (indexName, documentId, documentBody, retry = 2) => {
   return el.update({
     id: documentId,
     index: indexName,
     retry_on_conflict: retry,
+    timeout: '60m',
     refresh: true,
     body: documentBody
   });

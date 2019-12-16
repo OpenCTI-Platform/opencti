@@ -197,7 +197,7 @@ class ReportObservablesLinesComponent extends Component {
                 divider={true}
                 button={true}
                 component={Link}
-                to={`/dashboard/observables/all/${observableRef.id}`}
+                to={`/dashboard/signatures/observables/${observableRef.id}`}
               >
                 <ListItemIcon classes={{ root: classes.itemIcon }}>
                   <HexagonOutline />

@@ -45,7 +45,6 @@ class EntityIndicatorLineComponent extends Component {
   render() {
     const {
       nsd,
-      t,
       classes,
       dataColumns,
       node,

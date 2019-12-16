@@ -17,6 +17,7 @@ import EntityExternalReferencesLines, {
 
 const styles = (theme) => ({
   paper: {
+    height: '100%',
     minHeight: '100%',
     margin: '3px 0 0 0',
     padding: 0,
