@@ -304,6 +304,13 @@ class Report:
         if object_result is None and name is not None:
             object_result = self.get_by_stix_id_or_name(stix_id_key=stix_id_key, name=name, published=published)
         if object_result is not None:
+            if report_class is not None and object_result['report_class'] != report_class:
+                self.opencti.stix_domain_entity.update_field(
+                    id=object_result['id'],
+                    key='report_class',
+                    value=report_class
+                )
+                object_result['report_class'] = report_class
             if update:
                 if object_result['name'] != name:
                     self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
@@ -315,13 +322,6 @@ class Report:
                         value=description
                     )
                     object_result['description'] = description
-                if report_class is not None and object_result['report_class'] != report_class:
-                    self.opencti.stix_domain_entity.update_field(
-                        id=object_result['id'],
-                        key='report_class',
-                        value=report_class
-                    )
-                    object_result['report_class'] = report_class
                 if object_status is not None and object_result['object_status'] != object_status:
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result['id'],
@@ -427,6 +427,54 @@ class Report:
                 return True
         else:
             self.opencti.log('error', '[opencti_report] Missing parameters: id and entity_id')
+            return False
+
+    """
+        Add a Stix-Observable object to Report object (observable_refs)
+
+        :param id: the id of the Report
+        :param entity_id: the id of the Stix-Observable
+        :return Boolean
+    """
+
+    def add_stix_observable(self, **kwargs):
+        id = kwargs.get('id', None)
+        report = kwargs.get('report', None)
+        stix_observable_id = kwargs.get('stix_observable_id', None)
+        if id is not None and stix_observable_id is not None:
+            if report is None:
+                report = self.read(id=id)
+            if report is None:
+                self.opencti.log('error', '[opencti_report] Cannot add Object Ref, report not found')
+                return False
+            if stix_observable_id in report['observableRefsIds']:
+                return True
+            else:
+                self.opencti.log(
+                    'info',
+                    'Adding Stix-Observable {' + stix_observable_id + '} to Report {' + id + '}'
+                )
+                query = """
+                   mutation ReportEdit($id: ID!, $input: RelationAddInput) {
+                       reportEdit(id: $id) {
+                            relationAdd(input: $input) {
+                                id
+                            }
+                       }
+                   }
+                """
+                self.opencti.query(query, {
+                    'id': id,
+                    'input': {
+                        'fromRole': 'observables_aggregation',
+                        'toId': stix_observable_id,
+                        'toRole': 'soo',
+                        'through': 'observable_refs'
+                    }
+                })
+                return True
+        else:
+            self.opencti.log('error', '[opencti_report] Missing parameters: id and stix_observable_id')
             return False
 
     """

@@ -35,6 +35,7 @@ from pycti.entities.opencti_vulnerability import Vulnerability
 from pycti.entities.opencti_attack_pattern import AttackPattern
 from pycti.entities.opencti_course_of_action import CourseOfAction
 from pycti.entities.opencti_report import Report
+from pycti.entities.opencti_indicator import Indicator
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -96,6 +97,7 @@ class OpenCTIApiClient:
         self.attack_pattern = AttackPattern(self)
         self.course_of_action = CourseOfAction(self)
         self.report = Report(self)
+        self.indicator = Indicator(self)
 
         # Check if openCTI is available
         if not self.health_check():
@@ -275,6 +277,9 @@ class OpenCTIApiClient:
         if 'stixRelations' in data:
             data['stixRelations'] = self.process_multiple(data['stixRelations'])
             data['stixRelationsIds'] = self.process_multiple_ids(data['stixRelations'])
+        if 'indicators' in data:
+            data['indicators'] = self.process_multiple(data['indicators'])
+            data['indicatorsIds'] = self.process_multiple_ids(data['indicators'])
         return data
 
     @deprecated(version='2.1.0', reason="Replaced by the StixDomainEntity class in pycti")
@@ -1754,11 +1759,9 @@ class OpenCTIApiClient:
 
         relation_type = relation_type.lower()
         from_type = from_type.lower()
-        from_type = 'observable' if (
-                (ObservableTypes.has_value(from_type) and (
-                        relation_type == 'indicates' or relation_type == 'localization' or relation_type == 'gathering')
-                 ) or from_type == 'stix-observable'
-        ) else from_type
+        from_type = 'observable' if ((ObservableTypes.has_value(from_type) and (
+                    relation_type == 'localization' or relation_type == 'gathering')) or from_type == 'stix-observable'
+                                     ) else from_type
         to_type = to_type.lower()
         mapping = {
             'uses': {
@@ -1903,11 +1906,10 @@ class OpenCTIApiClient:
                 },
             },
             'indicates': {
-                'observable': {
+                'indicator': {
                     'threat-actor': {'from_role': 'indicator', 'to_role': 'characterize'},
                     'intrusion-set': {'from_role': 'indicator', 'to_role': 'characterize'},
                     'campaign': {'from_role': 'indicator', 'to_role': 'characterize'},
-                    'incident': {'from_role': 'indicator', 'to_role': 'characterize'},
                     'malware': {'from_role': 'indicator', 'to_role': 'characterize'},
                     'tool': {'from_role': 'indicator', 'to_role': 'characterize'},
                     'stix_relation': {'from_role': 'indicator', 'to_role': 'characterize'},

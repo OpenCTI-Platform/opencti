@@ -255,6 +255,8 @@ class AttackPattern:
             stix_id_key=stix_id_key,
             name=name
         )
+        if object_result is None and external_id is not None:
+            object_result = self.read(filters=[{'key': 'external_id', 'values': [external_id]}])
         if object_result is not None:
             if update:
                 # name
@@ -326,6 +328,8 @@ class AttackPattern:
         if stix_object is not None:
             # Extract external ID
             external_id = None
+            if CustomProperties.EXTERNAL_ID in stix_object:
+                external_id = stix_object[CustomProperties.EXTERNAL_ID]
             if 'external_references' in stix_object:
                 for external_reference in stix_object['external_references']:
                     if external_reference['source_name'] == 'mitre-attack' or external_reference[
@@ -368,6 +372,7 @@ class AttackPattern:
             attack_pattern = dict()
             attack_pattern['id'] = entity['stix_id_key']
             attack_pattern['type'] = 'attack-pattern'
+            if self.opencti.not_empty(entity['external_id']): attack_pattern[CustomProperties.EXTERNAL_ID] = entity['external_id']
             attack_pattern['name'] = entity['name']
             if self.opencti.not_empty(entity['stix_label']):
                 attack_pattern['labels'] = entity['stix_label']

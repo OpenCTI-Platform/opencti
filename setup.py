@@ -13,7 +13,7 @@ except ImportError:
     print("warning: pypandoc module not found, could not convert Markdown to RST")
     read_md = lambda f: open(f, 'r').read()
 
-VERSION = "2.1.4"
+VERSION = "2.1.5"
 
 
 class VerifyVersionCommand(install):
@@ -37,14 +37,14 @@ setup(
     author_email='contact@opencti.io',
     maintainer='OpenCTI',
     url='https://github.com/OpenCTI-Platform/client-python',
-    license='AGPL-V3',
+    license='Apache',
     packages=['pycti', 'pycti.api', 'pycti.connector', 'pycti.entities', 'pycti.utils'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Intended Audience :: Information Technology',
         'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
+        'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
         'Natural Language :: French',
         'Operating System :: OS Independent',
