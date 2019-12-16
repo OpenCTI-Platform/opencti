@@ -2530,6 +2530,7 @@ input ReportAddInput {
 enum IndicatorsOrdering {
   stix_id_key
   indicator_pattern
+  pattern_type
   valid_from
   valid_until
   score
@@ -2616,7 +2617,7 @@ input IndicatorAddInput {
   name: String!
   description: String
   indicator_pattern: String!
-  pattern_type: String
+  pattern_type: String!
   valid_from: DateTime
   valid_until: DateTime
   score: Int

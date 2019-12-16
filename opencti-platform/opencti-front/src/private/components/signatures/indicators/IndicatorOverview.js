@@ -9,6 +9,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
 import ItemCreator from '../../../../components/ItemCreator';
+import ItemPatternType from '../../../../components/ItemPatternType';
 
 const styles = () => ({
   paper: {
@@ -34,9 +35,7 @@ class IndicatorOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Pattern type')}
           </Typography>
-          <strong>
-            {indicator.pattern_type ? indicator.pattern_type : 'stix'}
-          </strong>
+          <ItemPatternType label={indicator.pattern_type} />
           <Typography
             variant="h3"
             gutterBottom={true}

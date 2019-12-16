@@ -50,7 +50,7 @@ class Indicators extends Component {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '40%',
+        width: '35%',
         isSortable: true,
       },
       valid_from: {
@@ -63,9 +63,9 @@ class Indicators extends Component {
         width: '15%',
         isSortable: true,
       },
-      score: {
-        label: 'Score',
-        width: '10%',
+      pattern_type: {
+        label: 'Pattern type',
+        width: '15%',
         isSortable: true,
       },
       markingDefinitions: {

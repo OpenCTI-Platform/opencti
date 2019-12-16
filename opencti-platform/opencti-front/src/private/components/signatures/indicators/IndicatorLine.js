@@ -12,6 +12,7 @@ import { ShieldSearch } from 'mdi-material-ui';
 import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
+import ItemPatternType from '../../../../components/ItemPatternType';
 
 const styles = (theme) => ({
   item: {
@@ -83,9 +84,9 @@ class IndicatorLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.score.width }}
+                style={{ width: dataColumns.pattern_type.width }}
               >
-                {node.score}
+                <ItemPatternType variant="inList" label={node.pattern_type} />
               </div>
               <div
                 className={classes.bodyItem}
@@ -127,6 +128,7 @@ const IndicatorLineFragment = createFragmentContainer(IndicatorLineComponent, {
       valid_from
       valid_until
       score
+      pattern_type
       markingDefinitions {
         edges {
           node {
@@ -175,7 +177,7 @@ class IndicatorLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.score.width }}
+                style={{ width: dataColumns.pattern_type.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
