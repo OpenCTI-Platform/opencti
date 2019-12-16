@@ -10,6 +10,7 @@ import TopBar from '../../nav/TopBar';
 import Tool from './Tool';
 import ToolReports from './ToolReports';
 import ToolKnowledge from './ToolKnowledge';
+import ToolIndicators from './ToolIndicators';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import FileManager from '../../common/files/FileManager';
 import ToolPopover from './ToolPopover';
@@ -38,6 +39,7 @@ const toolQuery = graphql`
       ...ToolOverview_tool
       ...ToolReports_tool
       ...ToolKnowledge_tool
+      ...ToolIndicators_tool
       ...FileImportViewer_entity
       ...FileExportViewer_entity
     }
@@ -109,6 +111,15 @@ class RootTool extends Component {
                     path="/dashboard/techniques/tools/:toolId/knowledge"
                     render={(routeProps) => (
                       <ToolKnowledge {...routeProps} tool={props.tool} />
+                    )}
+                  />
+                  <Route
+                    path="/dashboard/techniques/tools/:toolId/indicators"
+                    render={(routeProps) => (
+                      <ToolIndicators
+                        {...routeProps}
+                        tool={props.tool}
+                      />
                     )}
                   />
                   <Route

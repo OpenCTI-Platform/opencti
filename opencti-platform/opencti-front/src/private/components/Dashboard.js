@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { compose, head, pathOr } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import Card from '@material-ui/core/Card';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
@@ -31,6 +30,7 @@ import Theme from '../../components/Theme';
 import inject18n from '../../components/i18n';
 import ItemNumberDifference from '../../components/ItemNumberDifference';
 import ItemMarking from '../../components/ItemMarking';
+import Loader from '../../components/Loader';
 
 const styles = (theme) => ({
   root: {
@@ -43,6 +43,7 @@ const styles = (theme) => ({
     position: 'relative',
   },
   paper: {
+    height: '100%',
     minHeight: '100%',
     margin: '10px 0 20px 0',
     padding: 0,
@@ -240,11 +241,7 @@ class Dashboard extends Component {
                       </CardContent>
                     );
                   }
-                  return (
-                    <div style={{ textAlign: 'center', paddingTop: 35 }}>
-                      <CircularProgress size={40} thickness={2} />
-                    </div>
-                  );
+                  return <Loader variant='inElement'/>;
                 }}
               />
             </Card>
@@ -277,11 +274,7 @@ class Dashboard extends Component {
                       </CardContent>
                     );
                   }
-                  return (
-                    <div style={{ textAlign: 'center', paddingTop: 35 }}>
-                      <CircularProgress size={40} thickness={2} />
-                    </div>
-                  );
+                  return <Loader variant='inElement'/>;
                 }}
               />
             </Card>
@@ -316,11 +309,7 @@ class Dashboard extends Component {
                       </CardContent>
                     );
                   }
-                  return (
-                    <div style={{ textAlign: 'center', paddingTop: 35 }}>
-                      <CircularProgress size={40} thickness={2} />
-                    </div>
-                  );
+                  return <Loader variant='inElement'/>;
                 }}
               />
             </Card>
@@ -353,11 +342,7 @@ class Dashboard extends Component {
                       </CardContent>
                     );
                   }
-                  return (
-                    <div style={{ textAlign: 'center', paddingTop: 35 }}>
-                      <CircularProgress size={40} thickness={2} />
-                    </div>
-                  );
+                  return <Loader variant='inElement'/>;
                 }}
               />
             </Card>
@@ -422,11 +407,7 @@ class Dashboard extends Component {
                           </ResponsiveContainer>
                         );
                       }
-                      return (
-                        <div style={{ textAlign: 'center', paddingTop: 60 }}>
-                          <CircularProgress size={40} thickness={2} />
-                        </div>
-                      );
+                      return <Loader variant='inElement'/>;
                     }}
                   />
                 </div>
@@ -495,13 +476,7 @@ class Dashboard extends Component {
                       </List>
                     );
                   }
-                  return (
-                    <div
-                      style={{ textAlign: 'center', padding: '60px 0 30px 0' }}
-                    >
-                      <CircularProgress size={40} thickness={2} />
-                    </div>
-                  );
+                  return <Loader variant='inElement'/>;
                 }}
               />
             </Paper>
@@ -539,7 +514,7 @@ class Dashboard extends Component {
                               classes={{ root: classes.item }}
                               divider={true}
                               component={Link}
-                              to={`/dashboard/observables/all/${stixObservable.id}`}
+                              to={`/dashboard/signatures/observables/${stixObservable.id}`}
                             >
                               <ListItemIcon
                                 classes={{ root: classes.itemIcon }}
@@ -572,13 +547,7 @@ class Dashboard extends Component {
                       </List>
                     );
                   }
-                  return (
-                    <div
-                      style={{ textAlign: 'center', padding: '60px 0 30px 0' }}
-                    >
-                      <CircularProgress size={40} thickness={2} />
-                    </div>
-                  );
+                  return <Loader variant='inElement'/>;
                 }}
               />
             </Paper>

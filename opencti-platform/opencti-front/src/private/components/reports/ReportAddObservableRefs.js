@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import { QueryRenderer } from '../../../relay/environment';
 import Drawer from '@material-ui/core/Drawer';
 import IconButton from '@material-ui/core/IconButton';
 import List from '@material-ui/core/List';
@@ -13,12 +12,13 @@ import Typography from '@material-ui/core/Typography';
 import Avatar from '@material-ui/core/Avatar';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
+import { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import ReportAddObservableRefsLines, {
   reportAddObservableRefsLinesQuery,
 } from './ReportAddObservableRefsLines';
-import StixObservableCreation from '../stix_observables/StixObservableCreation';
+import StixObservableCreation from '../signatures/stix_observables/StixObservableCreation';
 
 const styles = (theme) => ({
   drawerPaper: {

@@ -4,6 +4,7 @@ import {
   addStixObservable,
   findAll,
   findById,
+  indicators,
   stixObservableAddRelation,
   stixObservableAskEnrichment,
   stixObservableCleanContext,
@@ -35,6 +36,7 @@ const stixObservableResolvers = {
     indicates: `${REL_INDEX_PREFIX}indicates.internal_id_key`
   },
   StixObservable: {
+    indicators: stixObservable => indicators(stixObservable.id),
     jobs: (stixObservable, args) => workForEntity(stixObservable.id, args),
     connectors: (stixObservable, { onlyAlive = false }) =>
       connectorsForEnrichment(stixObservable.entity_type, onlyAlive)

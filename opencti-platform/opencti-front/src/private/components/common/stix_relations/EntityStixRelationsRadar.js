@@ -221,7 +221,4 @@ EntityStixRelationsRadar.propTypes = {
   handleOpenConfig: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(EntityStixRelationsRadar);
+export default compose(inject18n, withStyles(styles))(EntityStixRelationsRadar);

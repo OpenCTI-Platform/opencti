@@ -32,7 +32,8 @@ class ReportComponent extends Component {
         <Grid
           container={true}
           spacing={3}
-          classes={{ container: classes.gridContainer }}>
+          classes={{ container: classes.gridContainer }}
+        >
           <Grid item={true} xs={4}>
             <ReportOverview report={report} />
           </Grid>
@@ -47,12 +48,13 @@ class ReportComponent extends Component {
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 30 }}>
+          style={{ marginTop: 30 }}
+        >
           <Grid item={true} xs={6}>
             <EntityStixRelationsDonut
               entityId={report.id}
               entityType="Stix-Observable"
-              relationType="object_refs"
+              relationType="observable_refs"
               field="entity_type"
             />
           </Grid>
@@ -88,7 +90,4 @@ const Report = createFragmentContainer(ReportComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(Report);
+export default compose(inject18n, withStyles(styles))(Report);

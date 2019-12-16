@@ -20,8 +20,6 @@ const styles = () => ({
   },
 });
 
-const inversedRoles = ['target'];
-
 class OrganizationKnowledgeComponent extends Component {
   render() {
     const { classes, organization } = this.props;
@@ -39,7 +37,7 @@ class OrganizationKnowledgeComponent extends Component {
           render={(routeProps) => (
             <StixRelation
               entityId={organization.id}
-              inversedRoles={inversedRoles}
+              paddingRight={true}
               {...routeProps}
             />
           )}

@@ -102,7 +102,4 @@ VictimologyDistribution.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(VictimologyDistribution);
+export default compose(inject18n, withStyles(styles))(VictimologyDistribution);

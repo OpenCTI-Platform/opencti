@@ -36,6 +36,7 @@ import malwareResolvers from '../resolvers/malware';
 import toolResolvers from '../resolvers/tool';
 import vulnerabilityResolvers from '../resolvers/vulnerability';
 import reportResolvers from '../resolvers/report';
+import indicatorResolvers from '../resolvers/indicator';
 import AuthDirectives, { AUTH_DIRECTIVE } from './authDirective';
 import connectorResolvers from '../resolvers/connector';
 import fileResolvers from '../resolvers/File';
@@ -82,7 +83,8 @@ const resolvers = mergeResolvers([
   malwareResolvers,
   toolResolvers,
   vulnerabilityResolvers,
-  reportResolvers
+  reportResolvers,
+  indicatorResolvers
 ]);
 
 const schema = makeExecutableSchema({

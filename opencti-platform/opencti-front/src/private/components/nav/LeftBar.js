@@ -114,8 +114,8 @@ class LeftBar extends Component {
             </MenuItem>
             <MenuItem
               component={Link}
-              to="/dashboard/observables"
-              selected={location.pathname.includes('/dashboard/observables')}
+              to="/dashboard/signatures"
+              selected={location.pathname.includes('/dashboard/signatures')}
               dense={false}
               classes={{ root: classes.menuItem }}
             >
@@ -287,16 +287,16 @@ class LeftBar extends Component {
             </MenuItem>
             <MenuItem
               component={Link}
-              to="/dashboard/observables"
+              to="/dashboard/signatures"
               onClick={this.toggle.bind(this)}
-              selected={location.pathname.includes('/dashboard/observables')}
+              selected={location.pathname.includes('/dashboard/signatures')}
               dense={false}
               classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
                 <Binoculars />
               </ListItemIcon>
-              <ListItemText primary={t('Observables')} />
+              <ListItemText primary={t('Signatures')} />
             </MenuItem>
             <MenuItem
               component={Link}

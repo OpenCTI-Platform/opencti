@@ -33,6 +33,8 @@ export const resolveLink = (type) => {
       return '/dashboard/threats/malwares';
     case 'report':
       return '/dashboard/reports/all';
+    case 'indicator':
+      return '/dashboard/signatures/indicators';
     case 'observable':
     case 'autonomous-system':
     case 'domain':
@@ -56,7 +58,7 @@ export const resolveLink = (type) => {
     case 'windows-scheduled-task':
     case 'x509-certificate-issuer':
     case 'x509-certificate-serial-number':
-      return '/dashboard/observables/all';
+      return '/dashboard/signatures/observables';
     default:
       return null;
   }

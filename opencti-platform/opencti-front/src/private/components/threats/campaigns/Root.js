@@ -10,7 +10,7 @@ import TopBar from '../../nav/TopBar';
 import Campaign from './Campaign';
 import CampaignReports from './CampaignReports';
 import CampaignKnowledge from './CampaignKnowledge';
-import CampaignObservables from './CampaignObservables';
+import CampaignIndicators from './CampaignIndicators';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import FileManager from '../../common/files/FileManager';
 import CampaignPopover from './CampaignPopover';
@@ -40,7 +40,7 @@ const campaignQuery = graphql`
       ...CampaignDetails_campaign
       ...CampaignReports_campaign
       ...CampaignKnowledge_campaign
-      ...CampaignObservables_campaign
+      ...CampaignIndicators_campaign
       ...FileImportViewer_entity
       ...FileExportViewer_entity
     }
@@ -121,9 +121,9 @@ class RootCampaign extends Component {
                     )}
                   />
                   <Route
-                    path="/dashboard/threats/campaigns/:campaignId/observables"
+                    path="/dashboard/threats/campaigns/:campaignId/indicators"
                     render={(routeProps) => (
-                      <CampaignObservables
+                      <CampaignIndicators
                         {...routeProps}
                         campaign={props.campaign}
                       />

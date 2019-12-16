@@ -10,11 +10,11 @@ import TopBar from '../../nav/TopBar';
 import IntrusionSet from './IntrusionSet';
 import IntrusionSetReports from './IntrusionSetReports';
 import IntrusionSetKnowledge from './IntrusionSetKnowledge';
-import IntrusionSetObservables from './IntrusionSetObservables';
+import IntrusionSetIndicators from './IntrusionSetIndicators';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import FileManager from '../../common/files/FileManager';
 import IntrusionSetPopover from './IntrusionSetPopover';
-import Loader from "../../../../components/Loader";
+import Loader from '../../../../components/Loader';
 
 const subscription = graphql`
   subscription RootIntrusionSetSubscription($id: ID!) {
@@ -40,7 +40,7 @@ const intrusionSetQuery = graphql`
       ...IntrusionSetDetails_intrusionSet
       ...IntrusionSetReports_intrusionSet
       ...IntrusionSetKnowledge_intrusionSet
-      ...IntrusionSetObservables_intrusionSet
+      ...IntrusionSetIndicators_intrusionSet
       ...FileImportViewer_entity
       ...FileExportViewer_entity
     }
@@ -124,9 +124,9 @@ class RootIntrusionSet extends Component {
                     )}
                   />
                   <Route
-                    path="/dashboard/threats/intrusion_sets/:intrusionSetId/observables"
+                    path="/dashboard/threats/intrusion_sets/:intrusionSetId/indicators"
                     render={(routeProps) => (
-                      <IntrusionSetObservables
+                      <IntrusionSetIndicators
                         {...routeProps}
                         intrusionSet={props.intrusionSet}
                       />

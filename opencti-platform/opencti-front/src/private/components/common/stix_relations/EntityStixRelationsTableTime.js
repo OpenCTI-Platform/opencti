@@ -110,7 +110,7 @@ class EntityStixRelationsTableTime extends Component {
       entityTypes,
     } = this.props;
     const monthInterval = this.state.interval === 'month' ? monthsAgo(6) : monthsAgo(12 * 5);
-    const finalStartDate = (variant === 'explore' && startDate) ? startDate : monthInterval;
+    const finalStartDate = variant === 'explore' && startDate ? startDate : monthInterval;
     const stixRelationsTimeSeriesVariables = {
       fromId: entityId || null,
       entityTypes: entityTypes || null,

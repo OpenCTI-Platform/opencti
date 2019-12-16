@@ -292,7 +292,4 @@ EntityStixRelationsChart.propTypes = {
   handleOpenConfig: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(EntityStixRelationsChart);
+export default compose(inject18n, withStyles(styles))(EntityStixRelationsChart);

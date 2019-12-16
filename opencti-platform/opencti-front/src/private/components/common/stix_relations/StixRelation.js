@@ -28,8 +28,7 @@ class StixRelation extends Component {
     const {
       classes,
       entityId,
-      inversedRoles,
-      observable,
+      paddingRight,
       match: {
         params: { relationId },
       },
@@ -45,8 +44,7 @@ class StixRelation extends Component {
                 <StixRelationOverview
                   entityId={entityId}
                   stixRelation={props.stixRelation}
-                  inversedRoles={inversedRoles}
-                  observable={observable}
+                  paddingRight={paddingRight}
                 />
               );
             }
@@ -60,8 +58,7 @@ class StixRelation extends Component {
 
 StixRelation.propTypes = {
   entityId: PropTypes.string,
-  inversedRoles: PropTypes.array,
-  observable: PropTypes.bool,
+  paddingRight: PropTypes.bool,
   classes: PropTypes.object,
   t: PropTypes.func,
   match: PropTypes.object,

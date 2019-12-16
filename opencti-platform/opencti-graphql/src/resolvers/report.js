@@ -55,7 +55,8 @@ const reportResolvers = {
   },
   ReportsFilter: {
     createdBy: `${REL_INDEX_PREFIX}created_by_ref.internal_id_key`,
-    knowledgeContains: `${REL_INDEX_PREFIX}object_refs.internal_id_key`
+    knowledgeContains: `${REL_INDEX_PREFIX}object_refs.internal_id_key`,
+    observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`
   },
   Report: {
     objectRefs: (report, args) => objectRefs(report.id, args),

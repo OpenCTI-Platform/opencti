@@ -1,6 +1,7 @@
 import { assoc } from 'ramda';
 import {
-  createRelation, deleteRelationById,
+  createRelation,
+  deleteRelationById,
   escapeString,
   findWithConnectedRelations,
   loadEntityById,

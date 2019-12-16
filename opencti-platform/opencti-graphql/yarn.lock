@@ -6080,6 +6080,11 @@ punycode@^2.1.0, punycode@^2.1.1:
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
 
+python-shell@^1.0.8:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/python-shell/-/python-shell-1.0.8.tgz#067bc93d790913efaa4b2a3c9d0e85e02adab510"
+  integrity sha512-jMKagerg3alm6j+Prq5t/M3dTgEppy5vC6ns+LqAjfuHiT8olfK3PMokpqpeEcWEqvDnUcAOhp6SQzaLBtTzRw==
+
 qs@6.7.0:
   version "6.7.0"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.7.0.tgz#41dc1a015e3d581f1621776be31afb2876a9b1bc"

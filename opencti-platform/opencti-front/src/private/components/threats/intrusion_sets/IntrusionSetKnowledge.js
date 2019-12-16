@@ -21,8 +21,6 @@ const styles = () => ({
   },
 });
 
-const inversedRoles = ['origin'];
-
 class IntrusionSetKnowledgeComponent extends Component {
   render() {
     const { classes, intrusionSet } = this.props;
@@ -40,7 +38,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           render={(routeProps) => (
             <StixRelation
               entityId={intrusionSet.id}
-              inversedRoles={inversedRoles}
+              paddingRight={true}
               {...routeProps}
             />
           )}
@@ -119,13 +117,7 @@ class IntrusionSetKnowledgeComponent extends Component {
             <EntityStixRelations
               entityId={intrusionSet.id}
               relationType="targets"
-              targetEntityTypes={[
-                'Organization',
-                'Sector',
-                'City',
-                'Country',
-                'Region',
-              ]}
+              targetEntityTypes={['Identity']}
               entityLink={link}
               exploreLink={`/dashboard/explore/victimology/${intrusionSet.id}`}
               creationIsFrom={true}

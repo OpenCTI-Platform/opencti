@@ -90,7 +90,4 @@ const Incident = createFragmentContainer(IncidentComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(Incident);
+export default compose(inject18n, withStyles(styles))(Incident);

@@ -13,11 +13,10 @@ import Search from './components/Search';
 import RootImport from './components/import/Root';
 import RootThreats from './components/threats/Root';
 import RootTechniques from './components/techniques/Root';
+import RootSignatures from './components/signatures/Root';
 import RootEntities from './components/entities/Root';
 import Workspaces from './components/workspaces/Workspaces';
 import RootSettings from './components/settings/Root';
-import StixObservables from './components/stix_observables/StixObservables';
-import RootStixObservable from './components/stix_observables/Root';
 import RootWorkspace from './components/workspaces/Root';
 import Reports from './components/reports/Reports';
 import RootReport from './components/reports/Root';
@@ -102,22 +101,8 @@ class Root extends Component {
                         component={RootTechniques}
                       />
                       <BoundaryRoute
-                        exact
-                        path="/dashboard/observables"
-                        render={() => (
-                          <Redirect to="/dashboard/observables/all" />
-                        )}
-                      />
-                      <BoundaryRoute
-                        exact
-                        path="/dashboard/observables/all"
-                        component={StixObservables}
-                      />
-                      <BoundaryRoute
-                        path="/dashboard/observables/all/:observableId"
-                        render={(routeProps) => (
-                          <RootStixObservable {...routeProps} me={props.me} />
-                        )}
+                        path="/dashboard/signatures"
+                        component={RootSignatures}
                       />
                       <BoundaryRoute
                         exact

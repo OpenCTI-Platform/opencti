@@ -51,10 +51,7 @@ class ToolComponent extends Component {
           style={{ marginTop: 30 }}
         >
           <Grid item={true} xs={6}>
-            <EntityStixRelationsChart
-              entityId={tool.id}
-              relationType="uses"
-            />
+            <EntityStixRelationsChart entityId={tool.id} relationType="uses" />
           </Grid>
           <Grid item={true} xs={6}>
             <EntityReportsChart entityId={tool.id} />
@@ -83,7 +80,4 @@ const Tool = createFragmentContainer(ToolComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(Tool);
+export default compose(inject18n, withStyles(styles))(Tool);

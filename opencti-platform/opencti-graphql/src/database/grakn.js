@@ -75,7 +75,7 @@ export const TYPE_STIX_RELATION = 'stix_relation';
 export const TYPE_STIX_OBSERVABLE_RELATION = 'stix_observable_relation';
 export const TYPE_RELATION_EMBEDDED = 'relation_embedded';
 export const TYPE_STIX_RELATION_EMBEDDED = 'stix_relation_embedded';
-const UNIMPACTED_ENTITIES_ROLE = ['tagging', 'marking', 'kill_chain_phase'];
+const UNIMPACTED_ENTITIES_ROLE = ['tagging', 'marking', 'kill_chain_phase', 'created_by_ref'];
 export const inferIndexFromConceptTypes = (types, parentType = null) => {
   // Observable index
   if (includes(TYPE_STIX_OBSERVABLE, types) || parentType === TYPE_STIX_OBSERVABLE) return INDEX_STIX_OBSERVABLE;
@@ -90,9 +90,6 @@ export const inferIndexFromConceptTypes = (types, parentType = null) => {
   return INDEX_STIX_ENTITIES;
 };
 
-export const sleep = ms => {
-  return new Promise(resolve => setTimeout(resolve, ms));
-};
 export const now = () => {
   // eslint-disable-next-line prettier/prettier
   return moment()
@@ -134,7 +131,8 @@ export const escapeString = s => (s ? s.replace(/\\/g, '\\\\').replace(/"/g, '\\
 
 // Attributes key that can contains multiple values.
 export const multipleAttributes = ['stix_label', 'alias', 'grant', 'platform', 'required_permission'];
-export const statsDateAttributes = ['created_at', 'first_seen', 'last_seen', 'published', 'expiration'];
+export const statsDateAttributes = ['created_at', 'first_seen', 'last_seen', 'published', 'valid_from', 'valid_until'];
+export const readOnlyAttributes = ['observable_value'];
 // endregion
 
 // region client
@@ -572,7 +570,6 @@ const loadConcept = async (query, concept, args = {}) => {
 export const getSingleValue = async (query, infer = false) => {
   return executeRead(async rTx => {
     logger.debug(`[GRAKN - infer: ${infer}] getSingleValue > ${query}`);
-    logger.debug(`[GRAKN - infer: false] getById > ${query}`);
     const iterator = await rTx.tx.query(query, { infer });
     return iterator.next();
   });
@@ -895,7 +892,7 @@ const prepareIndexing = async elements => {
     }, elements)
   );
 };
-export const indexElements = async (elements, retry = 0) => {
+export const indexElements = async (elements, retry = 2) => {
   // 00. Relations must be transformed before indexing.
   const transformedElements = await prepareIndexing(elements);
   // 01. Bulk the indexing of row elements
@@ -963,7 +960,7 @@ export const indexElements = async (elements, retry = 0) => {
     doc.data
   ]);
   if (bodyUpdate.length > 0) {
-    await elBulk({ refresh: true, body: bodyUpdate });
+    await elBulk({ refresh: true, timeout: '60m', body: bodyUpdate });
   }
   return transformedElements.length;
 };
@@ -1606,14 +1603,37 @@ const addKillChains = async (internalId, killChainIds, opts = {}) => {
   }
   return killChains;
 };
+const addObservableRef = async (fromInternalId, observableId, opts = {}) => {
+  if (!observableId) return undefined;
+  const input = {
+    fromRole: 'observables_aggregation',
+    toId: observableId,
+    toRole: 'soo',
+    through: 'observable_refs'
+  };
+  return createRelationRaw(fromInternalId, input, opts);
+};
+const addObservableRefs = async (internalId, observableIds, opts = {}) => {
+  if (!observableIds || isEmpty(observableIds)) return undefined;
+  const observableRefs = [];
+  // Relations cannot be created in parallel.
+  for (let i = 0; i < observableIds.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    const observableRef = await addObservableRef(internalId, observableIds[i], opts);
+    observableRefs.push(observableRef);
+  }
+  return observableRefs;
+};
 
 export const createRelation = async (fromInternalId, input, opts = {}) => {
   const created = await createRelationRaw(fromInternalId, input, opts);
-  // 05. Complete with eventual relations (will eventually update the index)
-  await addOwner(created.id, input.createdByOwner, opts);
-  await addCreatedByRef(created.id, input.createdByRef, opts);
-  await addMarkingDefs(created.id, input.markingDefinitions, opts);
-  await addKillChains(created.id, input.killChainPhases, opts);
+  if (created) {
+    // 05. Complete with eventual relations (will eventually update the index)
+    await addOwner(created.id, input.createdByOwner, opts);
+    await addCreatedByRef(created.id, input.createdByRef, opts);
+    await addMarkingDefs(created.id, input.markingDefinitions, opts);
+    await addKillChains(created.id, input.killChainPhases, opts);
+  }
   return created;
 };
 export const createRelations = async (fromInternalId, inputs, opts = {}) => {
@@ -1643,7 +1663,8 @@ export const createEntity = async (entity, type, opts = {}) => {
     dissoc('createdByRef'),
     dissoc('markingDefinitions'),
     dissoc('tags'),
-    dissoc('killChainPhases')
+    dissoc('killChainPhases'),
+    dissoc('observableRefs')
   )(entity);
   // For stix domain entity, force the initialization of the alias list.
   if (modelType === TYPE_STIX_DOMAIN_ENTITY) {
@@ -1698,29 +1719,36 @@ export const createEntity = async (entity, type, opts = {}) => {
     const types = await conceptTypes(concept);
     return { id: concept.id, types };
   });
-  // Transaction succeed, complete the result to send it back
-  const completedData = pipe(
-    assoc('id', internalId),
-    // Grakn identifiers
-    assoc('grakn_id', entityCreated.id),
-    // Types (entity type directly saved)
-    assoc('parent_types', entityCreated.types)
-  )(data);
-  // Transaction succeed, index the result
-  if (indexable) {
-    await indexElements([completedData]);
+  if (entityCreated) {
+    // Transaction succeed, complete the result to send it back
+    const completedData = pipe(
+      assoc('id', internalId),
+      // Grakn identifiers
+      assoc('grakn_id', entityCreated.id),
+      // Types (entity type directly saved)
+      assoc('parent_types', entityCreated.types)
+    )(data);
+    // Transaction succeed, index the result
+    if (indexable) {
+      await indexElements([completedData]);
+    }
+    // Complete with eventual relations (will eventually update the index)
+    await addOwner(internalId, entity.createdByOwner, opts);
+    await addCreatedByRef(internalId, entity.createdByRef, opts);
+    await addMarkingDefs(internalId, entity.markingDefinitions, opts);
+    await addTags(internalId, entity.tags, opts);
+    await addKillChains(internalId, entity.killChainPhases, opts);
+    await addObservableRefs(internalId, entity.observableRefs, opts);
+    // Else simply return the data
+    return completedData;
   }
-  // Complete with eventual relations (will eventually update the index)
-  await addOwner(internalId, entity.createdByOwner, opts);
-  await addCreatedByRef(internalId, entity.createdByRef, opts);
-  await addMarkingDefs(internalId, entity.markingDefinitions, opts);
-  await addTags(internalId, entity.tags, opts);
-  await addKillChains(internalId, entity.killChainPhases, opts);
-  // Else simply return the data
-  return completedData;
+  return null;
 };
 export const updateAttribute = async (id, input, wTx) => {
   const { key, value } = input; // value can be multi valued
+  if (includes(key, readOnlyAttributes)) {
+    throw new DatabaseError({ data: { details: `The field ${key} cannot be modified` } });
+  }
   // --- 00 Need update?
   const val = includes(key, multipleAttributes) ? value : head(value);
   const currentInstanceData = await loadEntityById(id);

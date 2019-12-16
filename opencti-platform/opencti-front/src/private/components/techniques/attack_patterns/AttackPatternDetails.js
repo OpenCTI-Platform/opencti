@@ -17,6 +17,7 @@ import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEn
 
 const styles = () => ({
   paper: {
+    height: '100%',
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '15px',

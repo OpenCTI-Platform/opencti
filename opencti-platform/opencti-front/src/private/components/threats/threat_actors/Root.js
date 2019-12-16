@@ -10,7 +10,7 @@ import TopBar from '../../nav/TopBar';
 import ThreatActor from './ThreatActor';
 import ThreatActorReports from './ThreatActorReports';
 import ThreatActorKnowledge from './ThreatActorKnowledge';
-import ThreatActorObservables from './ThreatActorObservables';
+import ThreatActorIndicators from './ThreatActorIndicators';
 import Loader from '../../../../components/Loader';
 import FileManager from '../../common/files/FileManager';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
@@ -40,12 +40,12 @@ const threatActorQuery = graphql`
       ...ThreatActorDetails_threatActor
       ...ThreatActorReports_threatActor
       ...ThreatActorKnowledge_threatActor
-      ...ThreatActorObservables_threatActor
+      ...ThreatActorIndicators_threatActor
       ...FileImportViewer_entity
       ...FileExportViewer_entity
     }
     connectorsForExport {
-        ...FileManager_connectorsExport
+      ...FileManager_connectorsExport
     }
   }
 `;
@@ -124,9 +124,9 @@ class RootThreatActor extends Component {
                     )}
                   />
                   <Route
-                    path="/dashboard/threats/threat_actors/:threatActorId/observables"
+                    path="/dashboard/threats/threat_actors/:threatActorId/indicators"
                     render={(routeProps) => (
-                      <ThreatActorObservables
+                      <ThreatActorIndicators
                         {...routeProps}
                         threatActor={props.threatActor}
                       />

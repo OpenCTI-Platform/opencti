@@ -35,7 +35,7 @@ import DatePickerField from '../../../../components/DatePickerField';
 import StixObservableRelationCreationFromEntityLines, {
   stixObservableRelationCreationFromEntityLinesQuery,
 } from './StixObservableRelationCreationFromEntityLines';
-import StixObservableCreation from '../../stix_observables/StixObservableCreation';
+import StixObservableCreation from '../../signatures/stix_observables/StixObservableCreation';
 import SearchInput from '../../../../components/SearchInput';
 import { truncate } from '../../../../utils/String';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';

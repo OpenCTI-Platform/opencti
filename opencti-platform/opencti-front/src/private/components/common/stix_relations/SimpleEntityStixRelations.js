@@ -49,7 +49,6 @@ class SimpleEntityStixRelations extends Component {
       targetEntityTypes,
     } = this.props;
     const paginationOptions = {
-      resolveInferences: false,
       inferred: true,
       toTypes: targetEntityTypes,
       fromId: entityId,

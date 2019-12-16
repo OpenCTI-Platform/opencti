@@ -38,18 +38,7 @@ export const objectRefs = (reportId, args) => {
     'rel'
   ).then(data => buildPagination(0, 0, data, data.length));
 };
-
-export const observableRefs = reportId => {
-  return findWithConnectedRelations(
-    `match $from isa Report; $rel(knowledge_aggregation:$from, so:$to) isa object_refs;
-    $to isa Stix-Observable;
-    $from has internal_id_key "${escapeString(reportId)}"; get;`,
-    'to',
-    'rel'
-  ).then(data => buildPagination(0, 0, data, data.length));
-};
-
-// Observables, relations type indicates.
+// Relation refs
 export const relationRefs = async (reportId, args) => {
   return paginateRelationships(
     `match $rel($from, $to) isa ${args.relationType ? args.relationType : 'stix_relation'};
@@ -59,6 +48,16 @@ export const relationRefs = async (reportId, args) => {
     'rel',
     'extraRel'
   );
+};
+// Observable refs
+export const observableRefs = reportId => {
+  return findWithConnectedRelations(
+    `match $from isa Report; $rel(observables_aggregation:$from, soo:$to) isa observable_refs;
+    $to isa Stix-Observable;
+    $from has internal_id_key "${escapeString(reportId)}"; get;`,
+    'to',
+    'rel'
+  ).then(data => buildPagination(0, 0, data, data.length));
 };
 
 // region series
