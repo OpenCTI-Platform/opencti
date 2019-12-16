@@ -19,7 +19,7 @@ module.exports.up = async next => {
   logger.info(`[MIGRATION] split_observables_indicators > Starting the migration of all observables...`);
   const nbOfObservables = await stixObservablesNumber();
   const count = await nbOfObservables.total;
-  if (count > 0) {
+  if (count === 0) {
     next();
     return;
   }
