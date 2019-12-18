@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { assoc, dissoc, pipe, sortWith, descend, prop, head, map, includes, last } from 'ramda';
+import { assoc, descend, dissoc, head, includes, last, map, pipe, prop, sortWith } from 'ramda';
 import { Promise } from 'bluebird';
 import {
   createEntity,
@@ -89,8 +89,7 @@ export const findById = indicatorId => {
   return loadEntityById(indicatorId);
 };
 export const findAll = args => {
-  const typedArgs = assoc('types', ['Indicator'], args);
-  return listEntities(['name', 'alias'], typedArgs);
+  return listEntities(['Indicator'], ['name', 'alias'], args);
 };
 
 export const addIndicator = async (user, indicator, createObservables = true) => {

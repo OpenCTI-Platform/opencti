@@ -17,8 +17,7 @@ export const findById = campaignId => {
   return loadEntityById(campaignId);
 };
 export const findAll = args => {
-  const typedArgs = assoc('types', ['Campaign'], args);
-  return listEntities(['name', 'alias'], typedArgs);
+  return listEntities(['Campaign'], ['name', 'alias'], args);
 };
 
 // region time series

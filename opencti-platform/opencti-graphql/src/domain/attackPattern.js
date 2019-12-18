@@ -1,4 +1,3 @@
-import { assoc } from 'ramda';
 import {
   createEntity,
   escapeString,
@@ -18,8 +17,7 @@ export const findById = attackPatternId => {
   return loadEntityById(attackPatternId);
 };
 export const findAll = args => {
-  const typedArgs = assoc('types', ['Attack-Pattern'], args);
-  return listEntities(['name', 'alias'], typedArgs);
+  return listEntities(['Attack-Pattern'], ['name', 'alias'], args);
 };
 
 export const addAttackPattern = async (user, attackPattern) => {

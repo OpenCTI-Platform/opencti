@@ -1,4 +1,3 @@
-import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
@@ -17,8 +16,7 @@ export const findById = externalReferenceId => {
   return loadEntityById(externalReferenceId);
 };
 export const findAll = args => {
-  const typedArgs = assoc('types', ['External-Reference'], args);
-  return listEntities(['source_name', 'description'], typedArgs);
+  return listEntities(['External-Reference'], ['source_name', 'description'], args);
 };
 
 export const addExternalReference = async (user, externalReference) => {

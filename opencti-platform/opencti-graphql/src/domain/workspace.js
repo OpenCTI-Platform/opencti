@@ -24,8 +24,7 @@ export const findById = workspaceId => {
   return loadEntityById(workspaceId);
 };
 export const findAll = args => {
-  const typedArgs = assoc('types', ['Workspace'], args);
-  return listEntities(['name', 'description'], typedArgs);
+  return listEntities(['Workspace'], ['name', 'description'], args);
 };
 export const ownedBy = workspaceId => {
   return loadWithConnectedRelations(

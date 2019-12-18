@@ -449,6 +449,7 @@ const elBuildRelation = (type, connection) => {
   return {
     [type]: null,
     [`${type}Id`]: connection.grakn_id,
+    [`${type}InternalId`]: connection.internal_id_key,
     [`${type}Role`]: connection.role,
     [`${type}Types`]: connection.types
   };
@@ -468,7 +469,7 @@ const elReconstructRelation = (concept, relationsMap = null) => {
   // Need to rebuild the from and the to.
   let toConnection;
   let fromConnection;
-  if (relationsMap === null) {
+  if (relationsMap === null || relationsMap.size === 0) {
     // We dont know anything, force from and to from roles map
     fromConnection = Rfind(connection => connection.role === bindingByAlias.from, connections);
     toConnection = Rfind(connection => connection.role === bindingByAlias.to, connections);
@@ -571,18 +572,21 @@ export const elPaginate = async (indexName, options) => {
   const validFilters = filter(f => f && f.values.length > 0, filters || []);
   if (validFilters.length > 0) {
     for (let index = 0; index < validFilters.length; index += 1) {
+      const valuesFiltering = [];
       const { key, values, operator = 'eq' } = validFilters[index];
-      for (let i = 0; i < values.length; i += 1) {
-        if (values[i] === null) {
-          mustnot = append({ exists: { field: key } }, mustnot);
-        } else if (operator === 'eq') {
-          must = append(
-            { match_phrase: { [`${dateFields.includes(key) ? key : `${key}.keyword`}`]: values[i] } },
-            must
-          );
-        } else {
-          must = append({ range: { [key]: { [operator]: values[i] } } }, must);
+      if (values === null) {
+        mustnot = append({ exists: { field: key } }, mustnot);
+      } else {
+        for (let i = 0; i < values.length; i += 1) {
+          if (operator === 'eq') {
+            valuesFiltering.push({
+              match_phrase: { [`${dateFields.includes(key) ? key : `${key}.keyword`}`]: values[i] }
+            });
+          } else {
+            valuesFiltering.push({ range: { [key]: { [operator]: values[i] } } });
+          }
         }
+        must = append({ bool: { should: valuesFiltering, minimum_should_match: 1 } }, must);
       }
     }
   }

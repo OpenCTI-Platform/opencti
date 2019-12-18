@@ -1,4 +1,3 @@
-import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createRelation,
@@ -8,6 +7,7 @@ import {
   executeWrite,
   getRelationInferredById,
   getSingleValueNumber,
+  listRelations,
   loadRelationById,
   loadRelationByStixId,
   paginateRelationships,
@@ -17,14 +17,15 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = async args => {
-  const cacheArgs = assoc('canUseCache', true, args);
-  return paginateRelationships(
+  const test = await paginateRelationships(
     `match $rel($from, $to) isa ${args.relationType ? escape(args.relationType) : 'stix_relation'}`,
-    cacheArgs
+    args
   );
+  const compare = await listRelations(args.relationType, null, args);
+  return test;
 };
-export const search = args => {
-  return paginateRelationships(
+export const search = async args => {
+  const test = await paginateRelationships(
     `match $rel($from, $to) isa relation;
    $to has name $name;
    $to has description $desc;
@@ -32,6 +33,8 @@ export const search = args => {
    { $desc contains "${escapeString(args.search)}"; }`,
     args
   );
+  const compare = await listRelations('stix_relation', null, args);
+  return test;
 };
 export const findById = stixRelationId => {
   if (stixRelationId.match(/[a-z-]+--[\w-]{36}/g)) {

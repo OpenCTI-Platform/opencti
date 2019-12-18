@@ -61,8 +61,7 @@ export const findById = (userId, args) => {
   return loadEntityById(userId, args);
 };
 export const findAll = args => {
-  const typedArgs = assoc('types', ['User'], args);
-  return listEntities(['email', 'firstname', 'lastname'], typedArgs);
+  return listEntities(['User'], ['email', 'firstname', 'lastname'], args);
 };
 export const token = (userId, args, context) => {
   if (userId !== context.user.id) {

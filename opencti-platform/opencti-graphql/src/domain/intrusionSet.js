@@ -10,8 +10,7 @@ export const findById = intrusionSetId => {
   return loadEntityById(intrusionSetId);
 };
 export const findAll = args => {
-  const typedArgs = assoc('types', ['Intrusion-Set'], args);
-  return listEntities(['name', 'alias'], typedArgs);
+  return listEntities(['Intrusion-Set'], ['name', 'alias'], args);
 };
 
 export const addIntrusionSet = async (user, intrusionSet) => {

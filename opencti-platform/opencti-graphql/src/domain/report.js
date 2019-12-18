@@ -1,4 +1,3 @@
-import { assoc } from 'ramda';
 import {
   createEntity,
   distributionEntities,
@@ -7,6 +6,7 @@ import {
   findWithConnectedRelations,
   getSingleValueNumber,
   listEntities,
+  listRelations,
   loadEntityById,
   loadEntityByStixId,
   paginateRelationships,
@@ -24,8 +24,7 @@ export const findById = reportId => {
   return loadEntityById(reportId);
 };
 export const findAll = async args => {
-  const typedArgs = assoc('types', ['Report'], args);
-  return listEntities(['name', 'description'], typedArgs);
+  return listEntities(['Report'], ['name', 'description'], args);
 };
 
 // Entities tab
@@ -40,7 +39,7 @@ export const objectRefs = (reportId, args) => {
 };
 // Relation refs
 export const relationRefs = async (reportId, args) => {
-  return paginateRelationships(
+  const test = await paginateRelationships(
     `match $rel($from, $to) isa ${args.relationType ? args.relationType : 'stix_relation'};
     $extraRel(so:$rel, knowledge_aggregation:$r) isa object_refs;
     $r has internal_id_key "${escapeString(reportId)}"`,
@@ -48,6 +47,9 @@ export const relationRefs = async (reportId, args) => {
     'rel',
     'extraRel'
   );
+  const pointingFilter = { relation: 'object_refs', fromRole: 'so', toRole: 'knowledge_aggregation', id: reportId };
+  const compare = await listRelations(args.relationType, pointingFilter, args);
+  return test;
 };
 // Observable refs
 export const observableRefs = reportId => {

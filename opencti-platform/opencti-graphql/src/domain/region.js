@@ -1,4 +1,3 @@
-import { assoc } from 'ramda';
 import {
   createEntity,
   listEntities,
@@ -16,8 +15,7 @@ export const findById = regionId => {
   return loadEntityById(regionId);
 };
 export const findAll = args => {
-  const typedArgs = assoc('types', ['Region'], args);
-  return listEntities(['name', 'alias'], typedArgs);
+  return listEntities(['Region'], ['name', 'alias'], args);
 };
 
 export const addRegion = async (user, region) => {
