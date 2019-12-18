@@ -9,7 +9,6 @@ import {
   listRelations,
   loadEntityById,
   loadEntityByStixId,
-  paginateRelationships,
   prepareDate,
   timeSeriesEntities
 } from '../database/grakn';
@@ -38,18 +37,9 @@ export const objectRefs = (reportId, args) => {
   ).then(data => buildPagination(0, 0, data, data.length));
 };
 // Relation refs
-export const relationRefs = async (reportId, args) => {
-  const test = await paginateRelationships(
-    `match $rel($from, $to) isa ${args.relationType ? args.relationType : 'stix_relation'};
-    $extraRel(so:$rel, knowledge_aggregation:$r) isa object_refs;
-    $r has internal_id_key "${escapeString(reportId)}"`,
-    args,
-    'rel',
-    'extraRel'
-  );
+export const relationRefs = (reportId, args) => {
   const pointingFilter = { relation: 'object_refs', fromRole: 'so', toRole: 'knowledge_aggregation', id: reportId };
-  const compare = await listRelations(args.relationType, pointingFilter, args);
-  return test;
+  return listRelations(args.relationType, pointingFilter, args);
 };
 // Observable refs
 export const observableRefs = reportId => {

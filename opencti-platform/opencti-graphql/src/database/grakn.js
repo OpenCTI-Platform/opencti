@@ -742,9 +742,8 @@ export const listRelations = async (relationType, relationFilter, args) => {
   const relationToGet = relationType || 'stix_relation';
   // 0 - Check if we can support the query by Elastic
   const unsupportedOrdering = isRelationOrderBy && last(orderBy.split('.')) !== 'internal_id_key';
-  const supportedByCache = !unsupportedOrdering && !relationFilter;
+  const supportedByCache = !unsupportedOrdering && !relationFilter && !inferred;
   const useCache = !forceNoCache() && withCache && supportedByCache;
-  let compare;
   if (useCache) {
     const filters = [];
     const relationsMap = new Map();
@@ -769,19 +768,7 @@ export const listRelations = async (relationType, relationFilter, args) => {
       assoc('filters', filters),
       assoc('relationsMap', relationsMap)
     )(args);
-    const start = new Date().getTime();
-    compare = await elPaginate(INDEX_STIX_RELATIONS, paginateArgs);
-    console.log(`Paginate ES done in ${new Date().getTime() - start} ms`);
-    // We need post filters because relations in elastic are not directional.
-    // const postFilteredResult = filter(r => {
-    //   const { fromInternalId, toInternalId } = r.node;
-    //   if (fromId && fromId !== fromInternalId) return false;
-    //   if (toId && toId !== toInternalId) return false;
-    //   if (fromTypes.length > 0 && !r.node.fromTypes.some(f => fromTypes.indexOf(f) >= 0)) return false;
-    //   // noinspection RedundantIfStatementJS
-    //   if (toTypes.length > 0 && !r.node.toTypes.some(f => toTypes.indexOf(f) >= 0)) return false;
-    //   return true;
-    // }, compare.edges);
+    return elPaginate(INDEX_STIX_RELATIONS, paginateArgs);
   }
   // 1- If not, use Grakn
   // eslint-disable-next-line prettier/prettier
@@ -850,13 +837,7 @@ export const listRelations = async (relationType, relationFilter, args) => {
   const baseQuery = `match $rel(${relFrom}$from, ${relTo}$to) isa ${relationToGet};
                       ${queryFromTypes} ${queryToTypes} 
                       ${queryRelationsFields} ${queryAttributesFields} ${queryAttributesFilters} get;`;
-  const start = new Date().getTime();
-  const grakn = await listElements(baseQuery, first, offset, orderBy, orderMode, relationRef, inferred);
-  console.log(`Paginate GRAKN done in ${new Date().getTime() - start} ms`);
-  if (useCache && grakn.edges.length !== compare.edges.length) {
-    throw new Error('Seems to have a diff between the ES query and the Grakn one');
-  }
-  return grakn;
+  return listElements(baseQuery, first, offset, orderBy, orderMode, relationRef, inferred);
 };
 // endregion
 
@@ -1856,88 +1837,5 @@ export const getRelationInferredById = async id => {
       )(relation);
     });
   });
-};
-/**
- * Grakn generic pagination query
- * @param query
- * @param options
- * @param key
- * @param extraRel
- * @param pagination
- * @returns Promise
- */
-export const paginateRelationships = async (query, options, key = 'rel', extraRel = null, pagination = true) => {
-  try {
-    const {
-      first = 200,
-      after,
-      inferred,
-      fromId,
-      fromTypes = [],
-      toId,
-      toTypes = [],
-      orderBy,
-      orderMode = 'asc',
-      firstSeenStart,
-      firstSeenStop,
-      lastSeenStart,
-      lastSeenStop,
-      weights
-    } = options;
-    const offset = after ? cursorToOffset(after) : 0;
-    const finalQuery = `
-      ${query};
-      ${fromId ? `$from has internal_id_key "${escapeString(fromId)}";` : ''}
-      ${toId ? `$to has internal_id_key "${escapeString(toId)}";` : ''} 
-      ${
-        fromTypes && fromTypes.length > 0
-          ? `${join(' ', map(fromType => `{ $from isa ${fromType}; } or`, tail(fromTypes)))} { $from isa ${head(
-              fromTypes
-            )}; };`
-          : ''
-      } 
-    ${
-      toTypes && toTypes.length > 0
-        ? `${join(' ', map(toType => `{ $to isa ${toType}; } or`, tail(toTypes)))} { $to isa ${head(toTypes)}; };`
-        : ''
-    } 
-      ${firstSeenStart || firstSeenStop ? `$rel has first_seen $fs; ` : ''} 
-      ${firstSeenStart ? `$fs > ${prepareDate(firstSeenStart)}; ` : ''} 
-      ${firstSeenStop ? `$fs < ${prepareDate(firstSeenStop)}; ` : ''} 
-      ${lastSeenStart || lastSeenStop ? `$rel has last_seen $ls; ` : ''} 
-      ${lastSeenStart ? `$ls > ${prepareDate(lastSeenStart)}; ` : ''} 
-      ${lastSeenStop ? `$ls < ${prepareDate(lastSeenStop)}; ` : ''} 
-      ${
-        weights && weights.length > 0
-          ? `$rel has weight $weight; ${join(
-              ' ',
-              map(weight => `{ $weight == ${weight}; } or`, tail(weights))
-            )} { $weight == ${head(weights)}; };`
-          : ''
-      }`;
-    const orderingKey = orderBy ? `$rel has ${orderBy} $o;` : '';
-    const count = getSingleValueNumber(`${finalQuery} ${orderingKey} get; count;`, inferred);
-    const elements = findWithConnectedRelations(
-      `${finalQuery} ${orderingKey} get; ${orderBy ? `sort $o ${orderMode};` : ''} offset ${offset}; limit ${first};`,
-      key,
-      extraRel,
-      inferred
-    );
-    if (pagination) {
-      return Promise.all([count, elements]).then(data => {
-        const globalCount = data ? head(data) : 0;
-        const instances = data ? last(data) : [];
-        return buildPagination(first, offset, instances, globalCount);
-      });
-    }
-    return Promise.all([count, elements]).then(data => {
-      const globalCount = data ? head(data) : 0;
-      const instances = data ? last(data) : [];
-      return { globalCount, instances };
-    });
-  } catch (err) {
-    logger.error('[GRAKN] paginateRelationships error > ', err);
-    return null;
-  }
 };
 // endregion

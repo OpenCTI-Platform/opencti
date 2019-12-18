@@ -10,31 +10,16 @@ import {
   listRelations,
   loadRelationById,
   loadRelationByStixId,
-  paginateRelationships,
   prepareDate,
   updateAttribute
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = async args => {
-  const test = await paginateRelationships(
-    `match $rel($from, $to) isa ${args.relationType ? escape(args.relationType) : 'stix_relation'}`,
-    args
-  );
-  const compare = await listRelations(args.relationType, null, args);
-  return test;
+  return listRelations(args.relationType, null, args);
 };
 export const search = async args => {
-  const test = await paginateRelationships(
-    `match $rel($from, $to) isa relation;
-   $to has name $name;
-   $to has description $desc;
-   { $name contains "${escapeString(args.search)}"; } or
-   { $desc contains "${escapeString(args.search)}"; }`,
-    args
-  );
-  const compare = await listRelations('stix_relation', null, args);
-  return test;
+  return listRelations('stix_relation', null, args);
 };
 export const findById = stixRelationId => {
   if (stixRelationId.match(/[a-z-]+--[\w-]{36}/g)) {
