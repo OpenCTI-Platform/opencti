@@ -501,8 +501,8 @@ class StixRelation:
             if self.opencti.not_empty(entity['description']): stix_relation['description'] = entity['description']
             stix_relation['source_ref'] = entity['from']['stix_id_key']
             stix_relation['target_ref'] = entity['to']['stix_id_key']
-            stix_relation[CustomProperties.SOURCE_REF] = entity['from']['id']
-            stix_relation[CustomProperties.TARGET_REF] = entity['to']['id']
+            stix_relation[CustomProperties.SOURCE_REF] = entity['from']['stix_id_key']
+            stix_relation[CustomProperties.TARGET_REF] = entity['to']['stix_id_key']
             stix_relation['created'] = self.opencti.stix2.format_date(entity['created'])
             stix_relation['modified'] = self.opencti.stix2.format_date(entity['modified'])
             if self.opencti.not_empty(entity['first_seen']): stix_relation[
