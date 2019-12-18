@@ -206,6 +206,7 @@ class Indicator:
         name = kwargs.get('name', None)
         description = kwargs.get('description', None)
         indicator_pattern = kwargs.get('indicator_pattern', None)
+        main_observable_type = kwargs.get('main_observable_type', None)
         pattern_type = kwargs.get('pattern_type', None)
         valid_from = kwargs.get('valid_from', None)
         valid_until = kwargs.get('valid_until', None)
@@ -216,7 +217,7 @@ class Indicator:
         modified = kwargs.get('modified', None)
         created_by_ref = kwargs.get('createdByRef', None)
 
-        if name is not None and indicator_pattern is not None:
+        if name is not None and indicator_pattern is not None and main_observable_type is not None:
             self.opencti.log('info', 'Creating Indicator {' + name + '}.')
             query = """
                 mutation IndicatorAdd($input: IndicatorAddInput) {
@@ -230,6 +231,7 @@ class Indicator:
                     'name': name,
                     'description': description,
                     'indicator_pattern': indicator_pattern,
+                    'main_observable_type': main_observable_type,
                     'pattern_type': pattern_type,
                     'valid_from': valid_from,
                     'valid_until': valid_until,
@@ -243,7 +245,10 @@ class Indicator:
             })
             return self.opencti.process_multiple_fields(result['data']['indicatorAdd'])
         else:
-            self.opencti.log('error', '[opencti_indicator] Missing parameters: name and indicator_pattern')
+            self.opencti.log(
+                'error',
+                '[opencti_indicator] Missing parameters: name and indicator_pattern and main_observable_type'
+            )
 
     """
         Create a Indicator object only if it not exists, update it on request
@@ -256,6 +261,7 @@ class Indicator:
         name = kwargs.get('name', None)
         description = kwargs.get('description', None)
         indicator_pattern = kwargs.get('indicator_pattern', None)
+        main_observable_type = kwargs.get('main_observable_type', None)
         pattern_type = kwargs.get('pattern_type', None)
         valid_from = kwargs.get('valid_from', None)
         valid_until = kwargs.get('valid_until', None)
@@ -287,6 +293,7 @@ class Indicator:
                 name=name,
                 description=description,
                 indicator_pattern=indicator_pattern,
+                main_observable_type=main_observable_type,
                 pattern_type=pattern_type,
                 valid_from=valid_from,
                 valid_until=valid_until,
@@ -296,6 +303,54 @@ class Indicator:
                 modified=modified,
                 createdByRef=created_by_ref
             )
+
+    """
+        Add a Stix-Observable object to Indicator object (observable_refs)
+
+        :param id: the id of the Indicator
+        :param entity_id: the id of the Stix-Observable
+        :return Boolean
+    """
+
+    def add_stix_observable(self, **kwargs):
+        id = kwargs.get('id', None)
+        indicator = kwargs.get('indicator', None)
+        stix_observable_id = kwargs.get('stix_observable_id', None)
+        if id is not None and stix_observable_id is not None:
+            if indicator is None:
+                indicator = self.read(id=id)
+            if indicator is None:
+                self.opencti.log('error', '[opencti_indicator] Cannot add Object Ref, indicator not found')
+                return False
+            if stix_observable_id in indicator['observableRefsIds']:
+                return True
+            else:
+                self.opencti.log(
+                    'info',
+                    'Adding Stix-Observable {' + stix_observable_id + '} to Indicator {' + id + '}'
+                )
+                query = """
+                   mutation IndicatorEdit($id: ID!, $input: RelationAddInput) {
+                       indicatorEdit(id: $id) {
+                            relationAdd(input: $input) {
+                                id
+                            }
+                       }
+                   }
+                """
+                self.opencti.query(query, {
+                    'id': id,
+                    'input': {
+                        'fromRole': 'observables_aggregation',
+                        'toId': stix_observable_id,
+                        'toRole': 'soo',
+                        'through': 'observable_refs'
+                    }
+                })
+                return True
+        else:
+            self.opencti.log('error', '[opencti_indicator] Missing parameters: id and stix_observable_id')
+            return False
 
     """
         Export an Indicator object in STIX2

@@ -755,14 +755,14 @@ class OpenCTIStix2:
             mode=mode,
             max_marking_definition_entity=max_marking_definition_entity
         )
-        for object in objects:
-            object['id'] = object['id'].replace('observable', 'indicator')
-            if 'source_ref' in object:
-                object['source_ref'] = object['source_ref'].replace('observable', 'indicator')
-            if 'target_ref' in object:
-                object['target_ref'] = object['target_ref'].replace('observable', 'indicator')
-            bundle['objects'].append(object)
-
+        if objects is not None:
+            for object in objects:
+                object['id'] = object['id'].replace('observable', 'indicator')
+                if 'source_ref' in object:
+                    object['source_ref'] = object['source_ref'].replace('observable', 'indicator')
+                if 'target_ref' in object:
+                    object['target_ref'] = object['target_ref'].replace('observable', 'indicator')
+                bundle['objects'].append(object)
         return bundle
 
     def export_bundle(self, types=[]):
@@ -1280,6 +1280,8 @@ class OpenCTIStix2:
             name=stix_object['name'],
             description=self.convert_markdown(stix_object['description']) if 'description' in stix_object else '',
             indicator_pattern=stix_object['pattern'],
+            main_observable_type=stix_object[
+                CustomProperties.OBSERVABLE_TYPE] if CustomProperties.OBSERVABLE_TYPE in stix_object else 'Unknown',
             pattern_type=stix_object[
                 CustomProperties.PATTERN_TYPE] if CustomProperties.PATTERN_TYPE in stix_object else 'stix2',
             valid_from=stix_object['valid_from'] if 'valid_from' in stix_object else None,
@@ -1420,10 +1422,24 @@ class OpenCTIStix2:
         start_time = time.time()
         for item in stix_bundle['objects']:
             if item['type'] == 'relationship':
-                self.import_relationship(item, update, types)
-                imported_elements.append({'id': item['id'], 'type': item['type']})
+                # Import only relationships between entities
+                if 'relationship' not in item[CustomProperties.SOURCE_REF] and \
+                        'relationship' not in item[CustomProperties.TARGET_REF]:
+                    self.import_relationship(item, update, types)
+                    imported_elements.append({'id': item['id'], 'type': item['type']})
         end_time = time.time()
         self.opencti.log('info', "Relationships imported in: %ssecs" % round(end_time - start_time))
+
+        # StixRelationObjects (with relationships)
+        start_time = time.time()
+        for item in stix_bundle['objects']:
+            if item['type'] == 'relationship':
+                if 'relationship' in item[CustomProperties.SOURCE_REF] or \
+                        'relationship' in item[CustomProperties.TARGET_REF]:
+                    self.import_relationship(item, update, types)
+                    imported_elements.append({'id': item['id'], 'type': item['type']})
+        end_time = time.time()
+        self.opencti.log('info', "Relationships to relationships imported in: %ssecs" % round(end_time - start_time))
 
         # StixCyberObservables
         start_time = time.time()
