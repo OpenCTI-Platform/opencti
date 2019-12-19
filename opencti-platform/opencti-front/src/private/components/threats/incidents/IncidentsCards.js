@@ -50,7 +50,7 @@ export const incidentsCardsQuery = graphql`
     $cursor: ID
     $orderBy: IncidentsOrdering
     $orderMode: OrderingMode
-    $filters: IncidentsFiltering
+    $filters: [IncidentsFiltering]
   ) {
     ...IncidentsCards_data
       @arguments(

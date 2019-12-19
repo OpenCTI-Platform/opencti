@@ -48,7 +48,7 @@ const styles = (theme) => ({
 class IndicatorLineComponent extends Component {
   render() {
     const {
-      fd, classes, dataColumns, node,
+      t, fd, classes, dataColumns, node,
     } = this.props;
     return (
       <ListItem
@@ -64,6 +64,12 @@ class IndicatorLineComponent extends Component {
         <ListItemText
           primary={
             <div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.main_observable_type.width }}
+              >
+                {t(`observable_${node.main_observable_type}`)}
+              </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
@@ -125,6 +131,7 @@ const IndicatorLineFragment = createFragmentContainer(IndicatorLineComponent, {
     fragment IndicatorLine_node on Indicator {
       id
       name
+      main_observable_type
       valid_from
       valid_until
       score
@@ -157,6 +164,12 @@ class IndicatorLineDummyComponent extends Component {
         <ListItemText
           primary={
             <div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.main_observable_type.width }}
+              >
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}

@@ -202,7 +202,7 @@ class Dashboard extends Component {
       t, n, nsd, classes,
     } = this.props;
     const stixDomainEntitiesTimeSeriesVariables = {
-      field: 'created_at',
+      field: 'created',
       operation: 'count',
       startDate: yearsAgo(1),
       endDate: now(),

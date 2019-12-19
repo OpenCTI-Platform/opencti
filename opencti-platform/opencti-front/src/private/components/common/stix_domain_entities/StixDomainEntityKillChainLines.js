@@ -185,6 +185,7 @@ class StixDomainEntityKillChainLinesComponent extends Component {
         <StixRelationCreationFromEntity
           entityId={stixDomainEntityId}
           isFrom={true}
+          paddingRight={true}
           onCreate={this.props.relay.refetch.bind(this)}
           targetEntityTypes={['Attack-Pattern']}
           paginationOptions={paginationOptions}

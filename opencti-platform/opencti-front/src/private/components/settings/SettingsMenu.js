@@ -44,6 +44,16 @@ class SettingsMenu extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
+            to={'/dashboard/settings/inferences'}
+            selected={
+              location.pathname === '/dashboard/settings/inferences'
+            }
+            dense={false}
+          >
+            <ListItemText primary={t('Inferences')} />
+          </MenuItem>
+          <MenuItem
+            component={Link}
             to={'/dashboard/settings/about'}
             selected={
               location.pathname

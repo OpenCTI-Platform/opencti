@@ -1,8 +1,11 @@
 import moment from 'moment/moment';
-import { head, last, mapObjIndexed, pipe, values } from 'ramda';
+import { head, last, map, mapObjIndexed, pipe, values } from 'ramda';
 import { offsetToCursor } from 'graphql-relay';
 import { PythonShell } from 'python-shell';
 import { logger } from '../config/conf';
+import { connectorsForEnrichment } from '../domain/connector';
+import { createWork } from '../domain/work';
+import { pushToConnector } from './rabbitmq';
 
 export const fillTimeSeries = (startDate, endDate, interval, data) => {
   const startDateParsed = moment(startDate);
@@ -131,4 +134,33 @@ export const extractObservables = async pattern => {
     logger.error('[Python3] extractObservables error > ', err);
     return null;
   }
+};
+
+export const askEnrich = async (observableId, scope) => {
+  const targetConnectors = await connectorsForEnrichment(scope, true);
+  // Create job for
+  const workList = await Promise.all(
+    map(
+      connector =>
+        createWork(connector, observableId).then(({ job, work }) => ({
+          connector,
+          job,
+          work
+        })),
+      targetConnectors
+    )
+  );
+  // Send message to all correct connectors queues
+  await Promise.all(
+    map(data => {
+      const { connector, work, job } = data;
+      const message = {
+        work_id: work.internal_id_key,
+        job_id: job.internal_id_key,
+        entity_id: observableId
+      };
+      return pushToConnector(connector, message);
+    }, workList)
+  );
+  return workList;
 };

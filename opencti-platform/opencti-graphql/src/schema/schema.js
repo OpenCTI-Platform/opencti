@@ -5,6 +5,7 @@ import { makeExecutableSchema } from 'graphql-tools';
 import ConstraintDirective from 'graphql-constraint-directive';
 import path from 'path';
 import settingsResolvers from '../resolvers/settings';
+import inferenceResolvers from '../resolvers/inference';
 import attributeResolvers from '../resolvers/attribute';
 import tagResolvers from '../resolvers/tag';
 import rabbitmqMetricsResolvers from '../resolvers/rabbitmqMetrics';
@@ -51,6 +52,7 @@ const typeDefs = importSchema(schemaPath);
 const resolvers = mergeResolvers([
   globalResolvers,
   settingsResolvers,
+  inferenceResolvers,
   attributeResolvers,
   tagResolvers,
   rabbitmqMetricsResolvers,

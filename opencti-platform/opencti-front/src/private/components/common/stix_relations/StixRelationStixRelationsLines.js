@@ -58,6 +58,7 @@ class StixRelationStixRelationsLinesContainer extends Component {
         <StixRelationCreationFromEntity
           entityId={entityId}
           isFromRelation={true}
+          paddingRight={true}
           variant="inLine"
           paginationOptions={paginationOptions}
         />

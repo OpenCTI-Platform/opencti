@@ -15,6 +15,8 @@ import {
   pluck,
   sortWith,
   union,
+  filter,
+  isNil,
 } from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
@@ -76,6 +78,12 @@ const styles = (theme) => ({
     padding: 0,
   },
   createButton: {
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
+    zIndex: 1001,
+  },
+  createButtonWithPadding: {
     position: 'fixed',
     bottom: 30,
     right: 290,
@@ -465,7 +473,11 @@ class StixRelationCreationFromEntity extends Component {
 
   renderForm(sourceEntity) {
     const {
-      t, classes, isFrom, isFromRelation,
+      t,
+      classes,
+      isFrom,
+      isFromRelation,
+      allowedRelationshipTypes,
     } = this.props;
     const { targetEntity } = this.state;
     let fromEntity = sourceEntity;
@@ -477,15 +489,23 @@ class StixRelationCreationFromEntity extends Component {
       fromEntity = targetEntity;
       toEntity = sourceEntity;
     }
-    const relationshipTypes = resolveRelationsTypes(
-      includes('Stix-Observable', fromEntity.parent_types)
-        ? 'observable'
-        : fromEntity.entity_type,
-      toEntity.entity_type,
+    const relationshipTypes = filter(
+      (n) => isNil(allowedRelationshipTypes)
+        || allowedRelationshipTypes.length === 0
+        || allowedRelationshipTypes.includes(n),
+      resolveRelationsTypes(
+        includes('Stix-Observable', fromEntity.parent_types)
+          ? 'observable'
+          : fromEntity.entity_type,
+        toEntity.entity_type,
+      ),
     );
+    // eslint-disable-next-line no-nested-ternary
     const defaultRelationshipType = head(relationshipTypes)
       ? head(relationshipTypes)
-      : 'related-to';
+      : relationshipTypes.includes('related-to')
+        ? 'related-to'
+        : '';
     const initialValues = {
       relationship_type: defaultRelationshipType,
       weight: 1,
@@ -683,9 +703,6 @@ class StixRelationCreationFromEntity extends Component {
                           ),
                           relationshipTypes,
                         )}
-                        <MenuItem value="related-to">
-                          {t('relation_related-to')}
-                        </MenuItem>
                       </Field>
                       <Field
                         name="weight"
@@ -824,7 +841,9 @@ class StixRelationCreationFromEntity extends Component {
   }
 
   render() {
-    const { classes, entityId, variant } = this.props;
+    const {
+      classes, entityId, variant, paddingRight,
+    } = this.props;
     const { open, step } = this.state;
     return (
       <div>
@@ -842,7 +861,11 @@ class StixRelationCreationFromEntity extends Component {
             onClick={this.handleOpen.bind(this)}
             color="secondary"
             aria-label="Add"
-            className={classes.createButton}
+            className={
+              paddingRight
+                ? classes.createButtonWithPadding
+                : classes.createButton
+            }
           >
             <Add />
           </Fab>
@@ -879,12 +902,14 @@ StixRelationCreationFromEntity.propTypes = {
   isFrom: PropTypes.bool,
   isFromRelation: PropTypes.bool,
   targetEntityTypes: PropTypes.array,
+  allowedRelationshipTypes: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   nsd: PropTypes.func,
   variant: PropTypes.string,
   onCreate: PropTypes.func,
+  paddingRight: PropTypes.bool,
 };
 
 export default compose(

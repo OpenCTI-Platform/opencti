@@ -9,17 +9,18 @@ import {
   listEntities,
   loadEntityById,
   loadEntityByStixId,
-  TYPE_STIX_DOMAIN_ENTITY
+  TYPE_STIX_DOMAIN_ENTITY,
+  TYPE_STIX_OBSERVABLE
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { buildPagination, extractObservables } from '../database/utils';
+import { askEnrich, buildPagination, extractObservables } from '../database/utils';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { findById as findKillChainPhaseById } from './killChainPhase';
-import { addStixObservable } from './stixObservable';
 
 const OpenCTITimeToLive = {
-  file: {
+  // Formatted as "[Marking-Definition]-[KillChainPhaseIsDelivery]"
+  File: {
     'TLP:WHITE-no': 365,
     'TLP:WHITE-yes': 365,
     'TLP:GREEN-no': 365,
@@ -28,6 +29,26 @@ const OpenCTITimeToLive = {
     'TLP:AMBER-no': 365,
     'TLP:RED-yes': 365,
     'TLP:RED-no': 365
+  },
+  'IPv4-Addr': {
+    'TLP:WHITE-no': 30,
+    'TLP:WHITE-yes': 7,
+    'TLP:GREEN-no': 30,
+    'TLP:GREEN-yes': 7,
+    'TLP:AMBER-yes': 15,
+    'TLP:AMBER-no': 60,
+    'TLP:RED-yes': 120,
+    'TLP:RED-no': 120
+  },
+  URL: {
+    'TLP:WHITE-no': 60,
+    'TLP:WHITE-yes': 15,
+    'TLP:GREEN-no': 60,
+    'TLP:GREEN-yes': 15,
+    'TLP:AMBER-yes': 30,
+    'TLP:AMBER-no': 180,
+    'TLP:RED-yes': 180,
+    'TLP:RED-no': 180
   },
   default: {
     'TLP:WHITE-no': 30,
@@ -75,7 +96,11 @@ export const computeValidUntil = async indicator => {
   // compute with delivery and marking definition
   const ttlPattern = `${markingDefinition}-${isKillChainPhaseDelivery}`;
   let ttl = OpenCTITimeToLive.default[ttlPattern];
-  if (indicator.main_observable_type && includes(indicator.main_observable_type, OpenCTITimeToLive)) {
+  const mainObservableType =
+    indicator.main_observable_type && indicator.main_observable_type.includes('File')
+      ? 'File'
+      : indicator.main_observable_type;
+  if (mainObservableType && includes(indicator.main_observable_type, OpenCTITimeToLive)) {
     ttl = OpenCTITimeToLive[indicator.main_observable_type][ttlPattern];
   }
   const validUntil = validFrom.add(ttl, 'days');
@@ -95,7 +120,6 @@ export const findAll = args => {
 
 export const addIndicator = async (user, indicator, createObservables = true) => {
   const indicatorToCreate = pipe(
-    dissoc('main_observable_type'),
     assoc('score', indicator.score ? indicator.score : 50),
     assoc('valid_from', indicator.valid_from ? indicator.valid_from : Date.now()),
     assoc('valid_until', indicator.valid_until ? indicator.valid_until : await computeValidUntil(indicator))
@@ -106,19 +130,34 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
     const observables = await extractObservables(created.indicator_pattern);
     if (observables && observables.length > 0) {
       await Promise.all(
-        observables.map(observable => {
-          const observableToCreate = pipe(
-            dissoc('score'),
-            dissoc('valid_from'),
-            dissoc('valid_until'),
-            dissoc('pattern_type'),
-            dissoc('indicator_pattern'),
-            dissoc('created'),
-            dissoc('modified'),
-            assoc('type', observable.type),
-            assoc('observable_value', observable.value)
-          )(indicatorToCreate);
-          return addStixObservable(null, observableToCreate, false);
+        observables.map(async observable => {
+          const args = {
+            types: ['Stix-Observable'],
+            parentType: 'Stix-Observable',
+            filters: [{ key: 'observable_value', values: [observable.value] }]
+          };
+          const existingObservables = listEntities(['name', 'description', 'observable_value'], args);
+          if (existingObservables.edges.length === 0) {
+            const stixObservable = pipe(
+              dissoc('score'),
+              dissoc('valid_from'),
+              dissoc('valid_until'),
+              dissoc('pattern_type'),
+              dissoc('indicator_pattern'),
+              dissoc('created'),
+              dissoc('modified'),
+              assoc('type', observable.type),
+              assoc('observable_value', observable.value)
+            )(indicatorToCreate);
+            const innerType = stixObservable.type;
+            const stixObservableToCreate = dissoc('type', stixObservable);
+            const createdStixObservable = await createEntity(stixObservableToCreate, innerType, {
+              modelType: TYPE_STIX_OBSERVABLE,
+              stixIdType: 'observable'
+            });
+            return askEnrich(createdStixObservable.id, innerType);
+          }
+          return null;
         })
       );
     }
@@ -151,8 +190,12 @@ export const clear = async () => {
         return deleteEntityById(indicatorEdge.node.id);
       })
     );
-    currentCursor = last(indicators.edges).cursor;
-    hasMore = indicators.pageInfo.hasNextPage;
+    if (last(indicators.edges)) {
+      currentCursor = last(indicators.edges).cursor;
+      hasMore = indicators.pageInfo.hasNextPage;
+    } else {
+      hasMore = false;
+    }
   }
   return true;
 };

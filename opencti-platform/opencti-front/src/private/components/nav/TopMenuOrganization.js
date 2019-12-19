@@ -20,6 +20,7 @@ const styles = (theme) => ({
     marginRight: theme.spacing(2),
     padding: '2px 5px 2px 5px',
     minHeight: 20,
+    minWidth: 20,
     textTransform: 'none',
   },
   icon: {
