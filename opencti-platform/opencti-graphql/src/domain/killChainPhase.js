@@ -18,8 +18,7 @@ export const findById = killChainPhaseId => {
 };
 
 export const findAll = args => {
-  const typedArgs = assoc('types', ['Kill-Chain-Phase'], args);
-  return listEntities(['kill_chain_name', 'phase_name'], typedArgs);
+  return listEntities(['Kill-Chain-Phase'], ['kill_chain_name', 'phase_name'], args);
 };
 
 export const addKillChainPhase = async (user, killChainPhase) => {

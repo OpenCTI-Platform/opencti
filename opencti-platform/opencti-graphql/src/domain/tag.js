@@ -1,4 +1,3 @@
-import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
@@ -17,8 +16,7 @@ export const findById = tagId => {
   return loadEntityById(tagId);
 };
 export const findAll = args => {
-  const typedArgs = assoc('types', ['Tag'], args);
-  return listEntities(['value', 'tag_type'], typedArgs);
+  return listEntities(['Tag'], ['value', 'tag_type'], args);
 };
 
 export const addTag = async (user, tag) => {

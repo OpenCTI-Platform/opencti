@@ -1,5 +1,10 @@
-import { assoc } from 'ramda';
-import { createEntity, listEntities, loadEntityById, loadEntityByStixId, TYPE_STIX_DOMAIN_ENTITY } from '../database/grakn';
+import {
+  createEntity,
+  listEntities,
+  loadEntityById,
+  loadEntityByStixId,
+  TYPE_STIX_DOMAIN_ENTITY
+} from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 
@@ -10,8 +15,7 @@ export const findById = threatActorId => {
   return loadEntityById(threatActorId);
 };
 export const findAll = args => {
-  const typedArgs = assoc('types', ['Threat-Actor'], args);
-  return listEntities(['name', 'alias'], typedArgs);
+  return listEntities(['Threat-Actor'], ['name', 'alias'], args);
 };
 
 export const addThreatActor = async (user, threatActor) => {

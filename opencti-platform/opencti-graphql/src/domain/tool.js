@@ -1,4 +1,3 @@
-import { assoc } from 'ramda';
 import {
   createEntity,
   listEntities,
@@ -16,8 +15,7 @@ export const findById = toolId => {
   return loadEntityById(toolId);
 };
 export const findAll = args => {
-  const typedArgs = assoc('types', ['Tool'], args);
-  return listEntities(['name', 'alias'], typedArgs);
+  return listEntities(['Tool'], ['name', 'alias'], args);
 };
 
 export const addTool = async (user, tool) => {

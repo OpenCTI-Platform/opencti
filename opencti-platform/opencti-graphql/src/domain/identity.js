@@ -1,4 +1,4 @@
-import { assoc, dissoc } from 'ramda';
+import { dissoc } from 'ramda';
 import { createEntity, listEntities, loadEntityById, loadEntityByStixId } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
@@ -10,8 +10,7 @@ export const findById = identityId => {
   return loadEntityById(identityId);
 };
 export const findAll = args => {
-  const typedArgs = assoc('types', ['Identity'], args);
-  return listEntities(['name', 'alias'], typedArgs);
+  return listEntities(['Identity'], ['name', 'alias'], args);
 };
 
 export const addIdentity = async (user, identity) => {

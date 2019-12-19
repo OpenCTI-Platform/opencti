@@ -1,4 +1,3 @@
-import { assoc } from 'ramda';
 import {
   createEntity,
   escapeString,
@@ -20,8 +19,7 @@ export const findById = sectorId => {
   return loadEntityById(sectorId);
 };
 export const findAll = args => {
-  const typedArgs = assoc('types', ['Sector'], args);
-  return listEntities(['name', 'alias'], typedArgs);
+  return listEntities(['Sector'], ['name', 'alias'], args);
 };
 export const subsectors = sectorId => {
   return findWithConnectedRelations(

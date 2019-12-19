@@ -1,4 +1,4 @@
-import { assoc, head } from 'ramda';
+import { head } from 'ramda';
 import {
   createEntity,
   deleteEntityById,
@@ -28,8 +28,8 @@ export const getApplicationInfo = () => ({
 });
 
 export const getSettings = async () => {
-  const typedArgs = assoc('types', ['Settings'], {});
-  return listEntities(['platform_title'], typedArgs).then(data => head(data.edges).node);
+  const data = await listEntities(['Settings'], ['platform_title'], {});
+  return head(data.edges).node;
 };
 
 export const addSettings = async (user, settings) => {

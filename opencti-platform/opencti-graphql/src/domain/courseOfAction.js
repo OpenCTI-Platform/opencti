@@ -1,4 +1,3 @@
-import { assoc } from 'ramda';
 import {
   createEntity,
   escapeString,
@@ -18,8 +17,7 @@ export const findById = courseOfActionId => {
   return loadEntityById(courseOfActionId);
 };
 export const findAll = args => {
-  const typedArgs = assoc('types', ['Course-Of-Action'], args);
-  return listEntities(['name', 'alias'], typedArgs);
+  return listEntities(['Course-Of-Action'], ['name', 'alias'], args);
 };
 
 export const addCourseOfAction = async (user, courseOfAction) => {

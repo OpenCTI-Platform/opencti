@@ -1,4 +1,3 @@
-import { assoc } from 'ramda';
 import {
   createEntity,
   deleteEntityById,
@@ -16,8 +15,7 @@ export const findById = groupId => {
   return loadEntityById(groupId);
 };
 export const findAll = args => {
-  const typedArgs = assoc('types', ['Group'], args);
-  return listEntities(['name'], typedArgs);
+  return listEntities(['Group'], ['name'], args);
 };
 
 export const members = async groupId => {

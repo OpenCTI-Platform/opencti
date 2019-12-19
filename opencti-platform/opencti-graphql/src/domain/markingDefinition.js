@@ -1,4 +1,3 @@
-import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
@@ -22,8 +21,7 @@ export const findById = markingDefinitionId => {
 };
 
 export const findAll = args => {
-  const typedArgs = assoc('types', ['Marking-Definition'], args);
-  return listEntities(['definition_type', 'definition'], typedArgs);
+  return listEntities(['Marking-Definition'], ['definition_type', 'definition'], args);
 };
 
 export const addMarkingDefinition = async (user, markingDefinition) => {

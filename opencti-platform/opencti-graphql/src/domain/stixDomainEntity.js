@@ -24,8 +24,9 @@ import { pushToConnector } from '../database/rabbitmq';
 
 export const findAll = args => {
   const noTypes = !args.types || args.types.length === 0;
-  const finalArgs = assoc('types', noTypes ? ['Stix-Domain-Entity'] : args.types, args);
-  return listEntities(['name', 'alias'], finalArgs);
+  const entityTypes = noTypes ? ['Stix-Domain-Entity'] : args.types;
+  const finalArgs = assoc('parentType', 'Stix-Domain-Entity', args);
+  return listEntities(entityTypes, ['name', 'alias'], finalArgs);
 };
 export const findById = stixDomainEntityId => {
   if (stixDomainEntityId.match(/[a-z-]+--[\w-]{36}/g)) {
