@@ -243,6 +243,12 @@ class StixDomainEntityCreation extends Component {
             ''
           )}
         {targetEntityTypes === undefined
+        || targetEntityTypes.includes('Indicator') ? (
+          <MenuItem value="Indicator">{t('Indicator')}</MenuItem>
+          ) : (
+            ''
+          )}
+        {targetEntityTypes === undefined
         || targetEntityTypes.includes('City') ? (
           <MenuItem value="City">{t('City')}</MenuItem>
           ) : (

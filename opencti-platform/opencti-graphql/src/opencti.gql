@@ -88,6 +88,7 @@ define
   organization_class sub attribute, datatype string;
   report_class sub attribute, datatype string;
   indicator_pattern sub attribute, datatype string;
+  main_observable_type sub attribute, datatype string;
   valid_from sub attribute, datatype date;
   valid_from_day sub attribute, datatype string;
   valid_from_month sub attribute, datatype string;
@@ -109,6 +110,7 @@ define
 
   # STIX SOO
   observable_value sub attribute, datatype string;
+  observable_date sub attribute, datatype date;
 
   ## ROLES
 
@@ -761,6 +763,7 @@ define
 
   Indicator sub Stix-Domain-Entity,
     key indicator_pattern,
+    has main_observable_type,
     has pattern_type,
     has score,
     has valid_from,
@@ -783,6 +786,7 @@ define
     has name,
     has description,
     key observable_value,
+    has observable_date,
     has created_at,
     has created_at_day,
     has created_at_month,
@@ -790,6 +794,8 @@ define
     has updated_at,
     plays so,
     plays soo,
+    plays relate_from,
+    plays relate_to,
     plays part_of,
     plays link_from,
     plays link_to;
@@ -847,102 +853,3 @@ define
   X509-Certificate sub Stix-Observable;
   X509-Certificate-Issuer sub X509-Certificate;
   X509-Certificate-Serial-Number sub X509-Certificate;
-
-  ## ACCESS RULES
-  #PermissionRule sub rule
-  #when {
-  #  (member: $user, grouping: $group) isa membership;
-  #  (allowed: $group, allow: $marking) isa permission;
-  #  $marking isa Marking-Definition has level $markingLevel has definition_type $markingType;
-  #  $markingDefinition isa Marking-Definition has level $markingDefinitionLevel has definition_type $markingDefinitionType;
-  #  $markingDefinitionType == $markingType;
-  #  $markingDefinitionLevel <= $markingLevel;
-  #} then {
-  #  (allowed: $user, allow: $markingDefinition) isa user_permission;
-  #};
-
-    ## USES RULES
-    AttributionUsesRule sub rule,
-    when {
-      (origin: $origin, attribution: $entity) isa attributed-to;
-      (user: $entity, usage: $object) isa uses;
-    }, then {
-      (user: $origin, usage: $object) isa uses;
-    };
-
-    ## INDICATES RULES
-    AttributionIndicatesRule sub rule,
-    when {
-      (origin: $origin, attribution: $entity) isa attributed-to;
-      (characterize: $entity, indicator: $object) isa indicates;
-    }, then {
-      (characterize: $origin, indicator: $object) isa indicates;
-    };
-
-    IndicatationOfUsesRule sub rule,
-    when {
-      $rel(user: $user, usage: $entity) isa uses;
-      (characterize: $rel, indicator: $object) isa indicates;
-    }, then {
-      (characterize: $user, indicator: $object) isa indicates;
-    };
-
-    ## TARGETS RULES
-    AttributionTargetsRule sub rule,
-    when {
-      (origin: $origin, attribution: $entity) isa attributed-to;
-      (source: $entity, target: $target) isa targets;
-    }, then {
-      (source: $origin, target: $target) isa targets;
-    };
-
-    IncidentUsageTargetsRule sub rule,
-    when {
-      $user isa Incident;
-      (user: $user, usage: $entity) isa uses;
-      (source: $user, target: $target) isa targets;
-    }, then {
-      (source: $entity, target: $target) isa targets;
-    };
-
-    GatheringTargetsRule sub rule,
-    when {
-      (gather: $parent, part_of: $entity) isa gathering;
-      (source: $source, target: $entity) isa targets;
-    }, then {
-      (source: $source, target: $parent) isa targets;
-    };
-
-    LocalizationTargetsRule sub rule,
-    when {
-      (location: $location, localized: $target) isa localization;
-      (source: $entity, target: $target) isa targets;
-    }, then {
-      (source: $entity, target: $location) isa targets;
-    };
-
-    LocalizationOfTargetsRule sub rule,
-    when {
-      $rel(source: $entity, target: $target) isa targets;
-      (location: $location, localized: $rel) isa localization;
-    }, then {
-      (source: $entity, target: $location) isa targets;
-    };
-
-    ## ATTRIBUTED-TO RULES
-    AttributionAttributionRule sub rule,
-    when {
-      (origin: $origin, attribution: $entity) isa attributed-to;
-      (origin: $entity, attribution: $subentity) isa attributed-to;
-    }, then {
-      (origin: $origin, attribution: $subentity) isa attributed-to;
-    };
-
-    ## LOCALIZATION RULES
-    LocalizationLocalizationRule sub rule,
-    when {
-      (location: $location, localized: $entity) isa localization;
-      (location: $entity, localized: $subentity) isa localization;
-    }, then {
-      (location: $location, localized: $subentity) isa localization;
-    };

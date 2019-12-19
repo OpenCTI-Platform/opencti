@@ -44,6 +44,7 @@ const styles = (theme) => ({
 class EntityIndicatorLineComponent extends Component {
   render() {
     const {
+      t,
       nsd,
       classes,
       dataColumns,
@@ -68,21 +69,21 @@ class EntityIndicatorLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.main_observable_type.width }}
+              >
+                {t(`observable_${node.to.main_observable_type.toLowerCase()}`)}
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
                 {node.to.name}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.valid_from.width }}
+                style={{ width: dataColumns.role_played.width }}
               >
-                {nsd(node.to.valid_from)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.valid_until.width }}
-              >
-                {nsd(node.to.valid_until)}
+                {node.inferred ? '-' : node.role_played}
               </div>
               <div
                 className={classes.bodyItem}
@@ -141,10 +142,12 @@ const EntityIndicatorLineFragment = createFragmentContainer(
         last_seen
         description
         inferred
+        role_played
         to {
           ... on Indicator {
             id
             name
+            main_observable_type
             description
             valid_from
             valid_until
@@ -175,21 +178,21 @@ class EntityIndicatorLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.main_observable_type.width }}
+              >
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.valid_from.width }}
+                style={{ width: dataColumns.role_played.width }}
               >
-                <div className="fakeItem" style={{ width: '70%' }} />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.valid_until.width }}
-              >
-                <div className="fakeItem" style={{ width: '70%' }} />
+                <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}

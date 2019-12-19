@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import {
+  append, compose, filter, propOr,
+} from 'ramda';
 import { withRouter } from 'react-router-dom';
+import { withStyles } from '@material-ui/core';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -9,8 +12,18 @@ import {
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
-import IndicatorsLines, { indicatorsLinesQuery } from './indicators/IndicatorsLines';
+import IndicatorsLines, {
+  indicatorsLinesQuery,
+} from './indicators/IndicatorsLines';
 import IndicatorCreation from './indicators/IndicatorCreation';
+import IndicatorsRightBar from './indicators/IndicatorsRightBar';
+
+const styles = () => ({
+  container: {
+    margin: 0,
+    padding: '0 260px 0 0',
+  },
+});
 
 class Indicators extends Component {
   constructor(props) {
@@ -25,6 +38,7 @@ class Indicators extends Component {
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
+      types: [],
     };
   }
 
@@ -45,12 +59,25 @@ class Indicators extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
+  handleToggle(type) {
+    if (this.state.types.includes(type)) {
+      this.setState({ types: filter((t) => t !== type, this.state.types) });
+    } else {
+      this.setState({ types: append(type, this.state.types) });
+    }
+  }
+
   renderLines(paginationOptions) {
     const { sortBy, orderAsc, searchTerm } = this.state;
     const dataColumns = {
+      main_observable_type: {
+        label: 'Type',
+        width: '10%',
+        isSortable: true,
+      },
       name: {
         label: 'Name',
-        width: '35%',
+        width: '25%',
         isSortable: true,
       },
       valid_from: {
@@ -100,30 +127,37 @@ class Indicators extends Component {
   }
 
   render() {
+    const { classes } = this.props;
     const {
-      view, sortBy, orderAsc, searchTerm,
+      view, sortBy, orderAsc, searchTerm, types,
     } = this.state;
     const paginationOptions = {
+      filters:
+        this.state.types.length > 0
+          ? [{ key: 'main_observable_type', values: types, operator: 'match' }]
+          : null,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div>
+      <div className={classes.container}>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <IndicatorCreation paginationOptions={paginationOptions} />
+        <IndicatorsRightBar
+          types={types}
+          handleToggle={this.handleToggle.bind(this)}
+        />
       </div>
     );
   }
 }
 
 Indicators.propTypes = {
+  classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-)(Indicators);
+export default compose(inject18n, withRouter, withStyles(styles))(Indicators);

@@ -1,24 +1,47 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
-import ListLines from '../../../../components/list_lines/ListLines';
+import Drawer from '@material-ui/core/Drawer';
+import Grid from '@material-ui/core/Grid';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
+import { withStyles } from '@material-ui/core';
 import EntityIndicatorsLines, {
   entityIndicatorsLinesQuery,
 } from './EntityIndicatorsLines';
+import ListLines from '../../../../components/list_lines/ListLines';
+import inject18n from '../../../../components/i18n';
+import { QueryRenderer } from '../../../../relay/environment';
+import StixRelationCreationFromEntity from '../../common/stix_relations/StixRelationCreationFromEntity';
+
+const styles = (theme) => ({
+  bottomNav: {
+    zIndex: 1000,
+    padding: '10px 274px 10px 84px',
+    backgroundColor: theme.palette.navBottom.background,
+    display: 'flex',
+  },
+});
 
 class EntityIndicators extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      sortBy: null,
+      sortBy: 'first_seen',
       orderAsc: false,
       lastSeenStart: null,
       lastSeenStop: null,
       targetEntityTypes: ['Indicator'],
       view: 'lines',
+      inferred: false,
     };
+  }
+
+  handleChangeInferred() {
+    this.setState({
+      inferred: !this.state.inferred,
+      sortBy: !this.state.inferred ? null : this.state.sortBy,
+    });
   }
 
   handleSort(field, orderAsc) {
@@ -29,18 +52,18 @@ class EntityIndicators extends Component {
     const { sortBy, orderAsc } = this.state;
     const { entityLink } = this.props;
     const dataColumns = {
+      main_observable_type: {
+        label: 'Type',
+        width: '10%',
+        isSortable: false,
+      },
       name: {
         label: 'Name',
         width: '30%',
         isSortable: false,
       },
-      valid_from: {
-        label: 'Valid from',
-        width: '15%',
-        isSortable: false,
-      },
-      valid_until: {
-        label: 'Valid until',
+      role_played: {
+        label: 'Played role',
         width: '15%',
         isSortable: false,
       },
@@ -86,7 +109,9 @@ class EntityIndicators extends Component {
   }
 
   render() {
-    const { entityId, relationType } = this.props;
+    const {
+      t, entityId, relationType, classes,
+    } = this.props;
     const {
       view,
       targetEntityTypes,
@@ -94,9 +119,10 @@ class EntityIndicators extends Component {
       orderAsc,
       lastSeenStart,
       lastSeenStop,
+      inferred,
     } = this.state;
     const paginationOptions = {
-      inferred: false,
+      inferred,
       toTypes: targetEntityTypes,
       fromId: entityId,
       relationType,
@@ -107,7 +133,34 @@ class EntityIndicators extends Component {
     };
     return (
       <div>
+        <Drawer
+          anchor="bottom"
+          variant="permanent"
+          classes={{ paper: classes.bottomNav }}
+        >
+          <Grid container={true} spacing={1}>
+            <Grid item={true} xs="auto">
+              <FormControlLabel
+                style={{ paddingTop: 5, marginRight: 15 }}
+                control={
+                  <Switch
+                    checked={inferred}
+                    onChange={this.handleChangeInferred.bind(this)}
+                    color="primary"
+                  />
+                }
+                label={t('Inferences')}
+              />
+            </Grid>
+          </Grid>
+        </Drawer>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+        <StixRelationCreationFromEntity
+          entityId={entityId}
+          isFrom={false}
+          targetEntityTypes={['Indicator']}
+          paginationOptions={paginationOptions}
+        />
       </div>
     );
   }
@@ -121,4 +174,4 @@ EntityIndicators.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(inject18n)(EntityIndicators);
+export default compose(inject18n, withStyles(styles))(EntityIndicators);

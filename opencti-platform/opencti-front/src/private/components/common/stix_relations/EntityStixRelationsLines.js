@@ -60,11 +60,6 @@ export const entityStixRelationsLinesQuery = graphql`
     $toTypes: [String]
     $inferred: Boolean
     $relationType: String
-    $firstSeenStart: DateTime
-    $firstSeenStop: DateTime
-    $lastSeenStart: DateTime
-    $lastSeenStop: DateTime
-    $weights: [Int]
     $search: String
     $count: Int!
     $cursor: ID
@@ -77,11 +72,6 @@ export const entityStixRelationsLinesQuery = graphql`
         toTypes: $toTypes
         inferred: $inferred
         relationType: $relationType
-        firstSeenStart: $firstSeenStart
-        firstSeenStop: $firstSeenStop
-        lastSeenStart: $lastSeenStart
-        lastSeenStop: $lastSeenStop
-        weights: $weights
         search: $search
         count: $count
         cursor: $cursor
@@ -101,11 +91,6 @@ export default createPaginationContainer(
           toTypes: { type: "[String]" }
           inferred: { type: "Boolean" }
           relationType: { type: "String" }
-          firstSeenStart: { type: "DateTime" }
-          firstSeenStop: { type: "DateTime" }
-          lastSeenStart: { type: "DateTime" }
-          lastSeenStop: { type: "DateTime" }
-          weights: { type: "[Int]" }
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
@@ -117,11 +102,6 @@ export default createPaginationContainer(
           toTypes: $toTypes
           inferred: $inferred
           relationType: $relationType
-          firstSeenStart: $firstSeenStart
-          firstSeenStop: $firstSeenStop
-          lastSeenStart: $lastSeenStart
-          lastSeenStop: $lastSeenStop
-          weights: $weights
           search: $search
           first: $count
           after: $cursor
@@ -159,11 +139,6 @@ export default createPaginationContainer(
         toTypes: fragmentVariables.toTypes,
         inferred: fragmentVariables.inferred,
         relationType: fragmentVariables.relationType,
-        firstSeenStart: fragmentVariables.firstSeenStart,
-        firstSeenStop: fragmentVariables.firstSeenStop,
-        lastSeenStart: fragmentVariables.lastSeenStart,
-        lastSeenStop: fragmentVariables.lastSeenStop,
-        weights: fragmentVariables.weights,
         search: fragmentVariables.search,
         count,
         cursor,

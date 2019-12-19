@@ -22,7 +22,7 @@ const styles = () => ({
   paper: {
     height: '100%',
     minHeight: '100%',
-    margin: '5px 0 0 0',
+    margin: '5px 0 40px 0',
     padding: '15px',
     borderRadius: 6,
   },

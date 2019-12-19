@@ -15,6 +15,8 @@ import {
   pluck,
   sortWith,
   union,
+  filter,
+  isNil,
 } from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
@@ -76,6 +78,12 @@ const styles = (theme) => ({
     padding: 0,
   },
   createButton: {
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
+    zIndex: 1001,
+  },
+  createButtonWithPadding: {
     position: 'fixed',
     bottom: 30,
     right: 290,
@@ -366,11 +374,31 @@ class StixRelationCreationFromEntity extends Component {
     this.setState({ step: 1, targetEntity: stixDomainEntity });
   }
 
+  renderFakeList() {
+    return (
+      <List>
+        {Array.from(Array(20), (e, i) => (
+          <ListItem key={i} divider={true} button={false}>
+            <ListItemIcon>
+              <Avatar classes={{ root: this.props.classes.avatar }}>{i}</Avatar>
+            </ListItemIcon>
+            <ListItemText
+              primary={<span className="fakeItem" style={{ width: '80%' }} />}
+              secondary={<span className="fakeItem" style={{ width: '90%' }} />}
+            />
+          </ListItem>
+        ))}
+      </List>
+    );
+  }
+
   renderSelectEntity() {
-    const { classes, t, targetEntityTypes } = this.props;
-    const paginationOptions = {
+    const {
+      classes, t, targetEntityTypes, onlyObservables,
+    } = this.props;
+    const stixDomainEntitiesPaginationOptions = {
       search: this.state.search,
-      types: targetEntityTypes,
+      types: filter((n) => n !== 'Stix-Observable', targetEntityTypes),
       orderBy: 'created_at',
       orderMode: 'desc',
     };
@@ -397,39 +425,25 @@ class StixRelationCreationFromEntity extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.containerList}>
-          <QueryRenderer
-            query={stixRelationCreationFromEntityStixDomainEntitiesLinesQuery}
-            variables={{ count: 25, ...paginationOptions }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <StixRelationCreationFromEntityStixDomainEntitiesLines
-                    handleSelect={this.handleSelectEntity.bind(this)}
-                    data={props}
-                  />
-                );
-              }
-              return (
-                <List>
-                  {Array.from(Array(20), (e, i) => (
-                    <ListItem key={i} divider={true} button={false}>
-                      <ListItemIcon>
-                        <Avatar classes={{ root: classes.avatar }}>{i}</Avatar>
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={
-                          <span className="fakeItem" style={{ width: '80%' }} />
-                        }
-                        secondary={
-                          <span className="fakeItem" style={{ width: '90%' }} />
-                        }
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              );
-            }}
-          />
+          {!onlyObservables ? (
+            <QueryRenderer
+              query={stixRelationCreationFromEntityStixDomainEntitiesLinesQuery}
+              variables={{ count: 25, ...stixDomainEntitiesPaginationOptions }}
+              render={({ props }) => {
+                if (props) {
+                  return (
+                    <StixRelationCreationFromEntityStixDomainEntitiesLines
+                      handleSelect={this.handleSelectEntity.bind(this)}
+                      data={props}
+                    />
+                  );
+                }
+                return this.renderFakeList();
+              }}
+            />
+          ) : (
+            ''
+          )}
           <QueryRenderer
             query={stixRelationCreationFromEntityStixObservablesLinesQuery}
             variables={{
@@ -448,14 +462,18 @@ class StixRelationCreationFromEntity extends Component {
                   />
                 );
               }
-              return <div> &nbsp; </div>;
+              return onlyObservables ? (
+                this.renderFakeList()
+              ) : (
+                <div> &nbsp; </div>
+              );
             }}
           />
           <StixDomainEntityCreation
             display={this.state.open}
             contextual={true}
             inputValue={this.state.search}
-            paginationOptions={paginationOptions}
+            paginationOptions={stixDomainEntitiesPaginationOptions}
             targetEntityTypes={targetEntityTypes}
           />
         </div>
@@ -465,7 +483,11 @@ class StixRelationCreationFromEntity extends Component {
 
   renderForm(sourceEntity) {
     const {
-      t, classes, isFrom, isFromRelation,
+      t,
+      classes,
+      isFrom,
+      isFromRelation,
+      allowedRelationshipTypes,
     } = this.props;
     const { targetEntity } = this.state;
     let fromEntity = sourceEntity;
@@ -477,15 +499,23 @@ class StixRelationCreationFromEntity extends Component {
       fromEntity = targetEntity;
       toEntity = sourceEntity;
     }
-    const relationshipTypes = resolveRelationsTypes(
-      includes('Stix-Observable', fromEntity.parent_types)
-        ? 'observable'
-        : fromEntity.entity_type,
-      toEntity.entity_type,
+    const relationshipTypes = filter(
+      (n) => isNil(allowedRelationshipTypes)
+        || allowedRelationshipTypes.length === 0
+        || allowedRelationshipTypes.includes(n),
+      resolveRelationsTypes(
+        includes('Stix-Observable', fromEntity.parent_types)
+          ? 'observable'
+          : fromEntity.entity_type,
+        toEntity.entity_type,
+      ),
     );
+    // eslint-disable-next-line no-nested-ternary
     const defaultRelationshipType = head(relationshipTypes)
       ? head(relationshipTypes)
-      : 'related-to';
+      : relationshipTypes.includes('related-to')
+        ? 'related-to'
+        : '';
     const initialValues = {
       relationship_type: defaultRelationshipType,
       weight: 1,
@@ -683,9 +713,6 @@ class StixRelationCreationFromEntity extends Component {
                           ),
                           relationshipTypes,
                         )}
-                        <MenuItem value="related-to">
-                          {t('relation_related-to')}
-                        </MenuItem>
                       </Field>
                       <Field
                         name="weight"
@@ -824,7 +851,9 @@ class StixRelationCreationFromEntity extends Component {
   }
 
   render() {
-    const { classes, entityId, variant } = this.props;
+    const {
+      classes, entityId, variant, paddingRight,
+    } = this.props;
     const { open, step } = this.state;
     return (
       <div>
@@ -842,7 +871,11 @@ class StixRelationCreationFromEntity extends Component {
             onClick={this.handleOpen.bind(this)}
             color="secondary"
             aria-label="Add"
-            className={classes.createButton}
+            className={
+              paddingRight
+                ? classes.createButtonWithPadding
+                : classes.createButton
+            }
           >
             <Add />
           </Fab>
@@ -878,13 +911,16 @@ StixRelationCreationFromEntity.propTypes = {
   entityId: PropTypes.string,
   isFrom: PropTypes.bool,
   isFromRelation: PropTypes.bool,
+  onlyObservables: PropTypes.bool,
   targetEntityTypes: PropTypes.array,
+  allowedRelationshipTypes: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   nsd: PropTypes.func,
   variant: PropTypes.string,
   onCreate: PropTypes.func,
+  paddingRight: PropTypes.bool,
 };
 
 export default compose(

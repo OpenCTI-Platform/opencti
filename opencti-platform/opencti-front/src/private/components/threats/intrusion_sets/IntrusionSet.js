@@ -61,9 +61,9 @@ class IntrusionSetComponent extends Component {
           <Grid item={true} xs={4}>
             <EntityStixRelationsDonut
               entityId={intrusionSet.id}
-              entityType="Stix-Observable"
+              entityType="Indicator"
               relationType="indicates"
-              field="entity_type"
+              field="main_observable_type"
             />
           </Grid>
           <Grid item={true} xs={4}>

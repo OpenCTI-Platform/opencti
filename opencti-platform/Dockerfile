@@ -25,8 +25,7 @@ RUN BUILD_OPENCTI=noninteractive \
 	  yarn build && \
 	  yarn cache clean && \
 	  mv /opt/opencti-build/opencti-graphql /opt/opencti && \
-	  rm -rf /opt/opencti-build && \
-          pip install -r src/utils/stix2/requirements.txt
+	  rm -rf /opt/opencti-build
 
 # Expose and entrypoint
 RUN chmod +x /entrypoint.sh

@@ -181,6 +181,15 @@ input SettingsAddInput {
   platform_demo: Boolean
 }
 
+### Inferences
+type Inference {
+  id: ID!
+  name: String!
+  description: String!
+  rule: String!
+  enabled: Boolean
+}
+
 ### Attribute
 enum AttributesOrdering {
   value
@@ -482,6 +491,7 @@ type StixObservable implements GlobalObject & StixEntity {
   parent_types: [String]!
   name: String!
   observable_value: String!
+  observable_date: DateTime
   first_seen: DateTime
   last_seen: DateTime
   description: String
@@ -521,6 +531,7 @@ input StixObservableAddInput {
   stix_id_key: String
   type: String!
   observable_value: String!
+  observable_date: DateTime
   description: String
   createdByRef: String
   markingDefinitions: [String]
@@ -1759,6 +1770,7 @@ input CourseOfActionAddInput {
   name: String!
   description: String!
   alias: [String]
+  createdByRef: String
   markingDefinitions: [String]
   tags: [String]
   clientMutationId: String
@@ -2544,12 +2556,14 @@ enum IndicatorsOrdering {
 }
 enum IndicatorsFilter {
   indicator_pattern
+  main_observable_type
   tags
   observablesContains
 }
 input IndicatorsFiltering {
   key: IndicatorsFilter!
   values: [String]
+  operator: String
 }
 type IndicatorConnection {
   pageInfo: PageInfo!
@@ -2571,6 +2585,7 @@ type Indicator implements GlobalObject & StixEntity & StixDomainEntity {
   name: String!
   description: String
   indicator_pattern: String!
+  main_observable_type: String!
   pattern_type: String!
   valid_from: DateTime
   valid_until: DateTime
@@ -2618,6 +2633,7 @@ input IndicatorAddInput {
   description: String
   indicator_pattern: String!
   pattern_type: String!
+  main_observable_type: String!
   valid_from: DateTime
   valid_until: DateTime
   score: Int
@@ -2655,6 +2671,7 @@ type Query {
   # Technical
   about: AppInfo @auth
   settings: Settings
+  inferences: [Inference] @auth
   attribute(id: String): Attribute @auth
   attributes(
     first: Int
@@ -2674,9 +2691,6 @@ type Query {
     filters: [TagsFiltering]
     filterMode: FilterMode
     search: String
-    tag_type: String
-    value: String
-    objectId: String
   ): TagConnection @auth
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: ROLE_ADMIN)
   connectors: [Connector] @auth
@@ -3414,6 +3428,9 @@ type Mutation {
   token(input: UserLoginInput): String
   # Settings
   settingsEdit(id: ID!): SettingsEditMutations @auth(for: ROLE_ADMIN)
+  # Inferences
+  inferenceEnable(id: ID!): Inference
+  inferenceDisable(id: ID!): Inference
   # Attribute
   attributeAdd(input: AttributeAddInput): Attribute @auth(for: ROLE_ADMIN)
   attributeEdit(id: ID!): AttributeEditMutations @auth(for: ROLE_ADMIN)
@@ -3522,5 +3539,4 @@ type Mutation {
   # Indicator
   indicatorAdd(input: IndicatorAddInput): Indicator @auth
   indicatorEdit(id: ID!): IndicatorEditMutations @auth
-  indicatorsClear: Boolean @auth(for: ROLE_ADMIN)
 }

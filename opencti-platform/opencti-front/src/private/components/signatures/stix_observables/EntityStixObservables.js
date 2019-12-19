@@ -8,6 +8,7 @@ import EntityStixObservablesLines, {
   entityStixObservablesLinesQuery,
 } from './EntityStixObservablesLines';
 import StixObservablesRightBar from './StixObservablesRightBar';
+import StixRelationCreationFromEntity from '../../common/stix_relations/StixRelationCreationFromEntity';
 
 class EntityStixObservables extends Component {
   constructor(props) {
@@ -15,8 +16,6 @@ class EntityStixObservables extends Component {
     this.state = {
       sortBy: null,
       orderAsc: false,
-      lastSeenStart: null,
-      lastSeenStop: null,
       targetEntityTypes: ['Stix-Observable'],
       view: 'lines',
     };
@@ -42,14 +41,6 @@ class EntityStixObservables extends Component {
         ),
       });
     }
-  }
-
-  handleChangeLastSeenStart(lastSeenStart) {
-    this.setState({ lastSeenStart });
-  }
-
-  handleChangeLastSeenStop(lastSeenStop) {
-    this.setState({ lastSeenStop });
   }
 
   renderLines(paginationOptions) {
@@ -78,7 +69,6 @@ class EntityStixObservables extends Component {
       },
       weight: {
         label: 'Confidence level',
-        width: '20%',
         isSortable: true,
       },
     };
@@ -111,33 +101,31 @@ class EntityStixObservables extends Component {
   render() {
     const { entityId, relationType } = this.props;
     const {
-      view,
-      targetEntityTypes,
-      sortBy,
-      orderAsc,
-      lastSeenStart,
-      lastSeenStop,
+      view, targetEntityTypes, sortBy, orderAsc,
     } = this.state;
     const paginationOptions = {
       inferred: false,
       toTypes: targetEntityTypes,
       fromId: entityId,
       relationType,
-      lastSeenStart: lastSeenStart || null,
-      lastSeenStop: lastSeenStop || null,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+        <StixRelationCreationFromEntity
+          entityId={entityId}
+          targetEntityTypes={['Stix-Observable']}
+          allowedRelationshipTypes={[relationType]}
+          onlyObservables={true}
+          isFrom={false}
+          paddingRight={true}
+          paginationOptions={paginationOptions}
+        />
         <StixObservablesRightBar
           types={targetEntityTypes}
           handleToggle={this.handleToggle.bind(this)}
-          lastSeenStart={lastSeenStart}
-          lastSeenStop={lastSeenStop}
-          handleChangeLastSeenStart={this.handleChangeLastSeenStart.bind(this)}
-          handleChangeLastSeenStop={this.handleChangeLastSeenStop.bind(this)}
         />
       </div>
     );
@@ -146,6 +134,7 @@ class EntityStixObservables extends Component {
 
 EntityStixObservables.propTypes = {
   entityId: PropTypes.string,
+  relationType: PropTypes.string,
   entityLink: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,

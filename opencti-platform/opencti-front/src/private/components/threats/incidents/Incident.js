@@ -58,7 +58,7 @@ class IncidentComponent extends Component {
             <EntityStixRelationsDonut
               entityId={incident.id}
               entityType="Stix-Observable"
-              relationType="indicates"
+              relationType="related-to"
               field="entity_type"
             />
           </Grid>

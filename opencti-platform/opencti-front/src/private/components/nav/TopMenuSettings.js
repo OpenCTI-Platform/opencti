@@ -11,6 +11,7 @@ const styles = (theme) => ({
     marginRight: theme.spacing(2),
     padding: '2px 5px 2px 5px',
     minHeight: 20,
+    minWidth: 20,
     textTransform: 'none',
   },
   icon: {
@@ -29,6 +30,7 @@ class TopMenuSettings extends Component {
           variant={
             location.pathname === '/dashboard/settings'
             || location.pathname === '/dashboard/settings/about'
+            || location.pathname === '/dashboard/settings/inferences'
               ? 'contained'
               : 'text'
           }
@@ -36,6 +38,7 @@ class TopMenuSettings extends Component {
           color={
             location.pathname === '/dashboard/settings'
             || location.pathname === '/dashboard/settings/about'
+            || location.pathname === '/dashboard/settings/inferences'
               ? 'primary'
               : 'inherit'
           }

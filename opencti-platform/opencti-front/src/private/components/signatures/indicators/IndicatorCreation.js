@@ -14,6 +14,7 @@ import {
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
+import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import Autocomplete from '../../../../components/Autocomplete';
@@ -24,8 +25,7 @@ import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
 import DatePickerField from '../../../../components/DatePickerField';
-import Select from "../../../../components/Select";
-import MenuItem from "@material-ui/core/MenuItem";
+import Select from '../../../../components/Select';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -42,7 +42,7 @@ const styles = (theme) => ({
   createButton: {
     position: 'fixed',
     bottom: 30,
-    right: 30,
+    right: 280,
   },
   buttons: {
     marginTop: 20,
@@ -82,6 +82,7 @@ const indicatorValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   indicator_pattern: Yup.string().required(t('This field is required')),
   pattern_type: Yup.string().required(t('This field is required')),
+  main_observable_type: Yup.string().required(t('This field is required')),
   valid_from: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
@@ -227,6 +228,7 @@ class IndicatorCreation extends Component {
                 name: '',
                 indicator_pattern: '',
                 pattern_type: '',
+                main_observable_type: '',
                 valid_from: null,
                 valid_until: null,
                 description: '',
@@ -277,6 +279,61 @@ class IndicatorCreation extends Component {
                       rows="4"
                       style={{ marginTop: 20 }}
                     />
+                    <Field
+                      name="main_observable_type"
+                      component={Select}
+                      label={t('Main observable type')}
+                      fullWidth={true}
+                      inputProps={{
+                        name: 'main_observable_type',
+                        id: 'main_observable_type',
+                      }}
+                      containerstyle={{ marginTop: 20, width: '100%' }}
+                    >
+                      <MenuItem value="Autonomous-System">{t('Autonomous system')}</MenuItem>
+                      <MenuItem value="Domain">{t('Domain')}</MenuItem>
+                      <MenuItem value="Email-Address">
+                        {t('Email address')}
+                      </MenuItem>
+                      <MenuItem value="Email-Subject">
+                        {t('Email subject')}
+                      </MenuItem>
+                      <MenuItem value="File-Name">{t('File name')}</MenuItem>
+                      <MenuItem value="File-Path">{t('File path')}</MenuItem>
+                      <MenuItem value="File-MD5">{t('File MD5 hash')}</MenuItem>
+                      <MenuItem value="File-SHA1">
+                        {t('File SHA1 hash')}
+                      </MenuItem>
+                      <MenuItem value="File-SHA256">
+                        {t('File SHA256 hash')}
+                      </MenuItem>
+                      <MenuItem value="IPv4-Addr">{t('IPv4 address')}</MenuItem>
+                      <MenuItem value="IPv6-Addr">{t('IPv6 address')}</MenuItem>
+                      <MenuItem value="PDB-Path">{t('PDB Path')}</MenuItem>
+                      <MenuItem value="Registry-Key">
+                        {t('Registry key')}
+                      </MenuItem>
+                      <MenuItem value="Registry-Key-Value">
+                        {t('Registry key value')}
+                      </MenuItem>
+                      <MenuItem value="Mutex">{t('Mutex')}</MenuItem>
+                      <MenuItem value="URL">{t('URL')}</MenuItem>
+                      <MenuItem value="Windows-Service-Name">
+                        {t('Windows Service Name')}
+                      </MenuItem>
+                      <MenuItem value="Windows-Service-Display-Name">
+                        {t('Windows Service Display Name')}
+                      </MenuItem>
+                      <MenuItem value="Windows-Scheduled-Task">
+                        {t('Windows Scheduled Task')}
+                      </MenuItem>
+                      <MenuItem value="X509-Certificate-Issuer">
+                        {t('X509 Certificate Issuer')}
+                      </MenuItem>
+                      <MenuItem value="X509-Certificate-Serial-Number">
+                        {t('X509 Certificate Serial number')}
+                      </MenuItem>
+                    </Field>
                     <Field
                       name="valid_from"
                       component={DatePickerField}

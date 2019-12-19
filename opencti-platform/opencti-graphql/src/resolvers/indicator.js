@@ -25,7 +25,6 @@ const indicatorResolvers = {
     observableRefs: report => observableRefs(report.id)
   },
   Mutation: {
-    indicatorsClear: () => clear(),
     indicatorEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainEntityDelete(id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),

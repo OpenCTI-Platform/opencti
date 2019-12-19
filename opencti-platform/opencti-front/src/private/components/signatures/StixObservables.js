@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, append, filter } from 'ramda';
+import {
+  compose, append, filter, propOr,
+} from 'ramda';
+import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
@@ -10,51 +13,50 @@ import StixObservablesLines, {
 import inject18n from '../../../components/i18n';
 import StixObservableCreation from './stix_observables/StixObservableCreation';
 import StixObservablesRightBar from './stix_observables/StixObservablesRightBar';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../utils/ListParameters';
 
 const styles = () => ({
   container: {
     margin: 0,
     padding: '0 260px 0 0',
   },
-  header: {
-    margin: '0 0 10px 0',
-  },
-  linesContainer: {
-    marginTop: 0,
-    paddingTop: 0,
-  },
-  item: {
-    paddingLeft: 10,
-    textTransform: 'uppercase',
-    cursor: 'pointer',
-  },
-  inputLabel: {
-    float: 'left',
-  },
-  sortIcon: {
-    float: 'left',
-    margin: '-5px 0 0 15px',
-  },
 });
 
 class StixObservables extends Component {
   constructor(props) {
     super(props);
+    const params = buildViewParamsFromUrlAndStorage(
+      props.history,
+      props.location,
+      'StixObservables-view',
+    );
     this.state = {
-      sortBy: 'created_at',
-      orderAsc: false,
-      searchTerm: '',
-      view: 'lines',
+      sortBy: propOr('created_at', 'sortBy', params),
+      orderAsc: propOr(false, 'orderAsc', params),
+      searchTerm: propOr('', 'searchTerm', params),
+      view: propOr('lines', 'view', params),
       types: [],
     };
   }
 
+  saveView() {
+    saveViewParameters(
+      this.props.history,
+      this.props.location,
+      'StixObservables-view',
+      this.state,
+    );
+  }
+
   handleSearch(value) {
-    this.setState({ searchTerm: value });
+    this.setState({ searchTerm: value }, () => this.saveView());
   }
 
   handleSort(field, orderAsc) {
-    this.setState({ sortBy: field, orderAsc });
+    this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
   handleToggle(type) {
@@ -140,9 +142,11 @@ StixObservables.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  location: PropTypes.object,
 };
 
 export default compose(
   inject18n,
+  withRouter,
   withStyles(styles),
 )(StixObservables);

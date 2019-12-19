@@ -1,4 +1,4 @@
-import { assoc, dissoc, map, pipe } from 'ramda';
+import { assoc, dissoc, pipe } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
@@ -18,8 +18,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { elCount } from '../database/elasticSearch';
-import { buildPagination, createStixPattern } from '../database/utils';
-import { connectorsForEnrichment } from './connector';
+import { buildPagination, createStixPattern, askEnrich } from '../database/utils';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { addIndicator } from './indicator';
@@ -54,34 +53,6 @@ export const stixObservablesTimeSeries = args => {
 // endregion
 
 // region mutations
-const askEnrich = async (observableId, scope) => {
-  const targetConnectors = await connectorsForEnrichment(scope, true);
-  // Create job for
-  const workList = await Promise.all(
-    map(
-      connector =>
-        createWork(connector, observableId).then(({ job, work }) => ({
-          connector,
-          job,
-          work
-        })),
-      targetConnectors
-    )
-  );
-  // Send message to all correct connectors queues
-  await Promise.all(
-    map(data => {
-      const { connector, work, job } = data;
-      const message = {
-        work_id: work.internal_id_key,
-        job_id: job.internal_id_key,
-        entity_id: observableId
-      };
-      return pushToConnector(connector, message);
-    }, workList)
-  );
-  return workList;
-};
 export const stixObservableAskEnrichment = async (id, connectorId) => {
   const connector = await loadEntityById(connectorId);
   const { job, work } = await createWork(connector, id);
@@ -114,7 +85,6 @@ export const addStixObservable = async (user, stixObservable, createIndicator = 
   if (createIndicator) {
     const pattern = await createStixPattern(created.entity_type, created.observable_value);
     if (pattern) {
-      const today = now();
       const indicatorToCreate = pipe(
         dissoc('observable_value'),
         assoc('name', stixObservable.observable_value),
@@ -126,7 +96,8 @@ export const addStixObservable = async (user, stixObservable, createIndicator = 
         ),
         assoc('indicator_pattern', pattern),
         assoc('pattern_type', 'stix'),
-        assoc('valid_from', today),
+        assoc('main_observable_type', innerType),
+        assoc('valid_from', stixObservable.observable_date ? stixObservable.observable_date : now()),
         assoc('observableRefs', [created.id])
       )(observableToCreate);
       await addIndicator(user, indicatorToCreate, false);
@@ -135,13 +106,6 @@ export const addStixObservable = async (user, stixObservable, createIndicator = 
   return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user);
 };
 export const stixObservableDelete = async stixObservableId => {
-  // delete every indicators with this observable
-  const indicatorsUsingObservable = await indicators(stixObservableId);
-  await Promise.all(
-    indicatorsUsingObservable.map(indicatorEdge => {
-      return deleteEntityById(indicatorEdge.node.id);
-    })
-  );
   return deleteEntityById(stixObservableId);
 };
 export const stixObservableAddRelation = (user, stixObservableId, input) => {
