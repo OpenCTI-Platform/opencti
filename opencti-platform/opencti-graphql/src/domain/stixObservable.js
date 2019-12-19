@@ -1,4 +1,4 @@
-import { assoc, dissoc, map, pipe } from 'ramda';
+import { assoc, dissoc, pipe } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
