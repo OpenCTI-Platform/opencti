@@ -3,7 +3,7 @@
   "version": "2.1.1",
   "main": "src/server.js",
   "author": "Luatix",
-  "license": "AGPL-3.0-or-later",
+  "license": "Apache-2.0",
   "scripts": {
     "start": "babel-node --max_old_space_size=8192 -r node_modules/dotenv/config ./src/server.js --e development",
     "index": "babel-node -r node_modules/dotenv/config ./src/indexer.js",

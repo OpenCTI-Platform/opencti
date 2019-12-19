@@ -273,7 +273,7 @@ class StixRelationCreation extends Component {
     if (
       this.props.from !== prevProps.from
       && this.props.to !== prevProps.to
-      && (this.props.from !== null && this.props.to !== null)
+      && this.props.from !== null && this.props.to !== null
     ) {
       fetchQuery(stixRelationCreationQuery, {
         fromId: this.props.from.id,
@@ -309,9 +309,12 @@ class StixRelationCreation extends Component {
       t, classes, from, to, weight, firstSeen, lastSeen,
     } = this.props;
     const relationshipTypes = resolveRelationsTypes(from.type, to.type);
+    // eslint-disable-next-line no-nested-ternary
     const defaultRelationshipType = head(relationshipTypes)
       ? head(relationshipTypes)
-      : 'related-to';
+      : relationshipTypes.includes('related-to')
+        ? 'related-to'
+        : '';
     const defaultWeight = weight || 3;
     const defaultFirstSeen = firstSeen || null;
     const defaultLastSeen = lastSeen || null;
@@ -425,9 +428,6 @@ class StixRelationCreation extends Component {
                   ),
                   relationshipTypes,
                 )}
-                <MenuItem value="related-to">
-                  {t('relation_related-to')}
-                </MenuItem>
               </Field>
               <Field
                 name="weight"
@@ -741,7 +741,4 @@ StixRelationCreation.propTypes = {
   weight: PropTypes.number,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixRelationCreation);
+export default compose(inject18n, withStyles(styles))(StixRelationCreation);

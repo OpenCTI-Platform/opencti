@@ -1,3 +1,5 @@
+import { append } from 'ramda';
+
 const relationsTypesMapping = {
   'threat-actor_attack-pattern': ['uses'],
   'threat-actor_region': ['targets', 'localization'],
@@ -109,8 +111,8 @@ const relationsTypesMapping = {
 };
 
 export const resolveRelationsTypes = (fromType, toType) => (relationsTypesMapping[`${fromType}_${toType}`]
-  ? relationsTypesMapping[`${fromType}_${toType}`]
-  : []);
+  ? append('related-to', relationsTypesMapping[`${fromType}_${toType}`])
+  : ['related-to']);
 
 export const resolveRoles = (type) => {
   switch (type) {

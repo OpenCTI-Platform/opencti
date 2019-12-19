@@ -26,12 +26,11 @@ module.exports.up = async next => {
   logger.info(`[MIGRATION] split_observables_indicators > Migrating ${count} Stix-Observable in batchs of 200`);
   let hasMore = true;
   let currentCursor = null;
-  let stixObservables = null;
   while (hasMore) {
     logger.info(
       `[MIGRATION] split_observables_indicators > Migrating ${count} Stix-Observable batch at cursor ${currentCursor}`
     );
-    stixObservables = await findAll({
+    const stixObservables = await findAll({
       first: 200,
       after: currentCursor,
       orderAsc: true,
@@ -72,6 +71,7 @@ module.exports.up = async next => {
               description: stixObservable.description
                 ? stixObservable.description
                 : `Simple indicator of observable {${stixObservable.observable_value}}`,
+              main_observable_type: stixObservable.entity_type,
               indicator_pattern: pattern,
               pattern_type: 'stix',
               valid_from: stixObservable.created_at,
@@ -166,8 +166,12 @@ module.exports.up = async next => {
         return Promise.resolve(true);
       })
     );
-    currentCursor = last(stixObservables.edges).cursor;
-    hasMore = stixObservables.pageInfo.hasNextPage;
+    if (last(stixObservables.edges)) {
+      currentCursor = last(stixObservables.edges).cursor;
+      hasMore = stixObservables.pageInfo.hasNextPage;
+    } else {
+      hasMore = false;
+    }
   }
   logger.info(`[MIGRATION] split_observables_indicators > Migration complete`);
   next();

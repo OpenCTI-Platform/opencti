@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, append, filter } from 'ramda';
+import {
+  compose, append, filter, propOr,
+} from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
@@ -10,6 +12,7 @@ import StixObservablesLines, {
 import inject18n from '../../../components/i18n';
 import StixObservableCreation from './stix_observables/StixObservableCreation';
 import StixObservablesRightBar from './stix_observables/StixObservablesRightBar';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
 
 const styles = () => ({
   container: {
@@ -40,28 +43,42 @@ const styles = () => ({
 class StixObservables extends Component {
   constructor(props) {
     super(props);
+    const params = buildViewParamsFromUrlAndStorage(
+      props.history,
+      props.location,
+      'Indicators-view',
+    );
     this.state = {
-      sortBy: 'created_at',
-      orderAsc: false,
-      searchTerm: '',
-      view: 'lines',
-      types: [],
+      sortBy: propOr('created_at', 'sortBy', params),
+      orderAsc: propOr(false, 'orderAsc', params),
+      searchTerm: propOr('', 'searchTerm', params),
+      view: propOr('lines', 'view', params),
+      types: propOr([], 'types', params),
     };
   }
 
+  saveView() {
+    saveViewParameters(
+      this.props.history,
+      this.props.location,
+      'StixObservables-view',
+      this.state,
+    );
+  }
+
   handleSearch(value) {
-    this.setState({ searchTerm: value });
+    this.setState({ searchTerm: value }, () => this.saveView());
   }
 
   handleSort(field, orderAsc) {
-    this.setState({ sortBy: field, orderAsc });
+    this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
   handleToggle(type) {
     if (this.state.types.includes(type)) {
-      this.setState({ types: filter((t) => t !== type, this.state.types) });
+      this.setState({ types: filter((t) => t !== type, this.state.types) }, () => this.saveView());
     } else {
-      this.setState({ types: append(type, this.state.types) });
+      this.setState({ types: append(type, this.state.types) }, () => this.saveView());
     }
   }
 

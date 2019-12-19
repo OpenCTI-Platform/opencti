@@ -110,7 +110,7 @@ class StixObservableKnowledgeEntities extends Component {
       classes, t, entityId, relationType,
     } = this.props;
     const paginationOptions = {
-      inferred: true,
+      inferred: false,
       fromId: entityId,
       relationType,
       search: searchTerm,
@@ -127,6 +127,7 @@ class StixObservableKnowledgeEntities extends Component {
           entityId={entityId}
           variant="inLine"
           isFrom={true}
+          paddingRight={true}
           targetEntityTypes={[
             'Region',
             'Country',

@@ -113,7 +113,7 @@ const inlineStyles = {
 class ReportObservablesLinesComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { sortBy: 'type', orderAsc: false };
+    this.state = { sortBy: 'entity_type', orderAsc: false };
   }
 
   reverseBy(field) {

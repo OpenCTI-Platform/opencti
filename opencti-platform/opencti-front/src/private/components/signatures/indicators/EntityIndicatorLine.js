@@ -44,6 +44,7 @@ const styles = (theme) => ({
 class EntityIndicatorLineComponent extends Component {
   render() {
     const {
+      t,
       nsd,
       classes,
       dataColumns,
@@ -68,21 +69,15 @@ class EntityIndicatorLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.main_observable_type.width }}
+              >
+                {t(`observable_${node.to.main_observable_type}`)}
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
                 {node.to.name}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.valid_from.width }}
-              >
-                {nsd(node.to.valid_from)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.valid_until.width }}
-              >
-                {nsd(node.to.valid_until)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -145,6 +140,7 @@ const EntityIndicatorLineFragment = createFragmentContainer(
           ... on Indicator {
             id
             name
+            main_observable_type
             description
             valid_from
             valid_until
@@ -175,21 +171,15 @@ class EntityIndicatorLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
+                style={{ width: dataColumns.main_observable_type.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.valid_from.width }}
+                style={{ width: dataColumns.name.width }}
               >
-                <div className="fakeItem" style={{ width: '70%' }} />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.valid_until.width }}
-              >
-                <div className="fakeItem" style={{ width: '70%' }} />
+                <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}

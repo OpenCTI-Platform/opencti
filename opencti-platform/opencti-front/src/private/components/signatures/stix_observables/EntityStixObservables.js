@@ -78,7 +78,6 @@ class EntityStixObservables extends Component {
       },
       weight: {
         label: 'Confidence level',
-        width: '20%',
         isSortable: true,
       },
     };
@@ -134,10 +133,6 @@ class EntityStixObservables extends Component {
         <StixObservablesRightBar
           types={targetEntityTypes}
           handleToggle={this.handleToggle.bind(this)}
-          lastSeenStart={lastSeenStart}
-          lastSeenStop={lastSeenStop}
-          handleChangeLastSeenStart={this.handleChangeLastSeenStart.bind(this)}
-          handleChangeLastSeenStop={this.handleChangeLastSeenStop.bind(this)}
         />
       </div>
     );
