@@ -64,7 +64,7 @@ By default OpenCTI use Websockets so dont forget to configure your proxy for thi
 
 ## Data persistence
 
-If you wish your OpenCTI data to be persistent in production, you should be aware of the  `volumes` section for both `Grakn` and `ElasticSearch` services in the `docker-compose.yml`.
+If you wish your OpenCTI data to be persistent in production, you should be aware of the  `volumes` section for `Grakn`, `ElasticSearch` and `MinIO` services in the `docker-compose.yml`.
 
 Here is an example of volumes configuration:
 

@@ -7,6 +7,7 @@ sidebar_label: Manual deployment
 ## Prerequisites
 
 - Node.JS (>= 12.* < 13.0.0)
+- Python (>= 3.6)
 - Grakn (== 1.5.9)
 - Redis (>= 3.0)
 - ElasticSearch (>= 7.5)
@@ -20,7 +21,7 @@ sidebar_label: Manual deployment
 You have to install all the needed dependencies for the main application and the workers. The example below if for Ubuntu:
 
 ```bash
-$ sudo apt-get install nodejs npm python3 python3-pip
+$ sudo apt-get install nodejs npm python3 python3-pip 
 ```
 
 ### Download the application files
@@ -37,7 +38,7 @@ $ tar xvfz opencti-release-{RELEASE_VERSION}.tar.gz
 
 ### Configure the application
 
-The main application has just one JSON configuration file to change.
+The main application has just one JSON configuration file to change and a few Python modules to install
 
 ```bash
 $ cd opencti
@@ -45,6 +46,13 @@ $ cp config/default.json config/production.json
 ```
 
 Change the *config/production.json* file according to your configuration of Grakn, Redis, ElasticSearch, RabbitMQ and default credentials (the `ADMIN_TOKEN` must be a [valid UUID](https://www.uuidgenerator.net/)).
+
+### Install the Python modules
+```bash
+$ cd src/utils/stix2
+$ pip3 install -r requirements.txt
+$ cd ../../..
+```
 
 ### Start the application
 

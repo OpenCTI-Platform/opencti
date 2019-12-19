@@ -36,9 +36,9 @@ ElasticSearch is also a JAVA process that needs a minimal amount of memory and C
 
 > In order to setup the JAVA memory allocation, you can use the environment variable `ES_JAVA_OPTS`. You can find more information in the [official ElasticSearch documenation](ttps://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html).
 
-### Minio
+### MinIO
 
-Minio has a very small footprint but depending on what you intend to store on OpenCTI, it could require disk space:
+MinIO has a very small footprint but depending on what you intend to store on OpenCTI, it could require disk space:
 
 | CPU           | RAM           | Disk type                  | Disk space                        |
 | ------------- |---------------| ---------------------------|-----------------------------------|

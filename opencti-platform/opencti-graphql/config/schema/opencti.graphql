@@ -448,6 +448,7 @@ input StixDomainEntityAddInput {
   description: String
   alias: [String]
   type: String!
+  createdByRef: String
   markingDefinitions: [String]
   clientMutationId: String
   created: DateTime
@@ -842,6 +843,7 @@ input IdentityAddInput {
   description: String
   alias: [String]
   type: String!
+  createdByRef: String
   markingDefinitions: [String]
   tags: [String]
   clientMutationId: String

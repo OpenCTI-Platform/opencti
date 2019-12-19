@@ -10,15 +10,29 @@ Connectors are standalone processes that are independant of the rest of the plat
 
 ## Connector configurations
 
-All connectors have to be able to access to the OpenCTI API. To allow this connection, they have 2 mandatory configuration parameters, the `OPENCTI_URL` and the `OPENCTI_TOKEN`. In addition of these 2 parameters, connectors have 5 other mandatory parameters that need to be set in order to get them work. 
+All connectors have to be able to access to the OpenCTI API. To allow this connection, they have 2 mandatory configuration parameters, the `OPENCTI_URL` and the `OPENCTI_TOKEN`. In addition of these 2 parameters, connectors have  other mandatory parameters that need to be set in order to get them work. 
 
-```
+Example in a `docker-compose.yml` file:
+```yaml
 - CONNECTOR_ID=ChangeMe
-- CONNECTOR_TYPE=INTERNAL_EXPORT_FILE
-- CONNECTOR_NAME=ExportFileStix2
-- CONNECTOR_SCOPE=application/json
+- CONNECTOR_TYPE=EXTERNAL_IMPORT
+- CONNECTOR_NAME=MITRE ATT&CK
+- CONNECTOR_SCOPE=identity,attack-pattern,course-of-action,intrusion-set,malware,tool,report
 - CONNECTOR_CONFIDENCE_LEVEL=3
+- CONNECTOR_UPDATE_EXISTING_DATA=true
 - CONNECTOR_LOG_LEVEL=info
+```
+
+Example in a `config.yml` file:
+```yaml
+connector:
+  id: 'ChangeMe'
+  type: 'EXTERNAL_IMPORT'
+  name: 'MITRE ATT&CK'
+  scope: 'identity,attack-pattern,course-of-action,intrusion-set,malware,tool,report'
+  confidence_level: 3
+  update_existing_data: True
+  log_level: 'info'
 ```
 
 > The `CONNECTOR_ID` must be a valid UUIDv4
