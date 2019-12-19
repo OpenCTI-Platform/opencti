@@ -6,7 +6,7 @@ from dateutil.parser import parse
 from pycti import OpenCTIApiClient
 
 # Variables
-api_url = 'https://demo.opencti.io'
+api_url = 'http://localhost:4000'
 api_token = 'fa63eb1f-bf14-4777-9190-43b4571cbc8b'
 
 # OpenCTI initialization
@@ -166,4 +166,4 @@ object_refs.extend([ttp3['id'], ttp3_relation['id']])
 for object_ref in object_refs:
     opencti_api_client.report.add_stix_entity(id=report['id'], report=report, entity_id=object_ref)
 for observable_ref in observable_refs:
-    opencti_api_client.report.add_stix_observable(id=report['id'], report=report, entity_id=observable_ref)
+    opencti_api_client.report.add_stix_observable(id=report['id'], report=report, stix_observable_id=observable_ref)
