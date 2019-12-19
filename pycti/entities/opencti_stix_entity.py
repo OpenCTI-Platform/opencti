@@ -46,6 +46,19 @@ class StixEntity:
                     }
                 }
             }
+            tags {
+                edges {
+                    node {
+                        id
+                        tag_type
+                        value
+                        color
+                    }
+                    relation {
+                        id
+                    }
+                }
+            }
             externalReferences {
                 edges {
                     node {
@@ -337,6 +350,54 @@ class StixEntity:
                 return True
         else:
             self.opencti.log('error', 'Missing parameters: id and marking_definition_id')
+            return False
+
+    """
+        Add a Tag object to Stix-Entity object (tagging)
+
+        :param id: the id of the Stix-Entity
+        :param tag_id: the id of the Tag
+        :return Boolean
+    """
+
+    def add_tag(self, **kwargs):
+        id = kwargs.get('id', None)
+        stix_entity = kwargs.get('entity', None)
+        tag_id = kwargs.get('tag_id', None)
+        if id is not None and tag_id is not None:
+            if stix_entity is None:
+                stix_entity = self.read(id=id)
+            if stix_entity is None:
+                self.opencti.log('error', 'Cannot add Tag, entity not found')
+                return False
+            if tag_id in stix_entity['tagsIds']:
+                return True
+            else:
+                self.opencti.log(
+                    'info',
+                    'Adding Tag {' + tag_id + '} to Stix-Entity {' + id + '}'
+                )
+                query = """
+                   mutation StixEntityAddRelation($id: ID!, $input: RelationAddInput) {
+                       stixEntityEdit(id: $id) {
+                            relationAdd(input: $input) {
+                                id
+                            }
+                       }
+                   }
+                """
+                self.opencti.query(query, {
+                    'id': id,
+                    'input': {
+                        'fromRole': 'so',
+                        'toId': tag_id,
+                        'toRole': 'tagging',
+                        'through': 'tagged'
+                    }
+                })
+                return True
+        else:
+            self.opencti.log('error', 'Missing parameters: id and tag_id')
             return False
 
     """
