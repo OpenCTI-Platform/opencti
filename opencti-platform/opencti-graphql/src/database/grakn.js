@@ -755,8 +755,8 @@ export const listRelations = async (relationType, relationFilter, args) => {
       filters.push({ key: 'connections.internal_id_key', values: [toId] });
       relationsMap.set(toId, { alias: 'to', internalIdKey: toId });
     }
-    if (fromTypes.length > 0) filters.push({ key: 'connections.types', values: fromTypes });
-    if (toTypes.length > 0) filters.push({ key: 'connections.types', values: toTypes });
+    if (fromTypes && fromTypes.length > 0) filters.push({ key: 'connections.types', values: fromTypes });
+    if (toTypes && toTypes.length > 0) filters.push({ key: 'connections.types', values: toTypes });
     if (firstSeenStart) filters.push({ key: 'first_seen', values: [firstSeenStart], operator: 'gt' });
     if (firstSeenStop) filters.push({ key: 'first_seen', values: [firstSeenStop], operator: 'lt' });
     if (lastSeenStart) filters.push({ key: 'last_seen', values: [lastSeenStart], operator: 'gt' });
@@ -772,10 +772,10 @@ export const listRelations = async (relationType, relationFilter, args) => {
   }
   // 1- If not, use Grakn
   // eslint-disable-next-line prettier/prettier
-  const queryFromTypes = fromTypes.length > 0 ?
+  const queryFromTypes = fromTypes && fromTypes.length > 0 ?
     pipe(map(e => `{ $from isa ${e}; }`), join(' or '), concat(__, ';'))(fromTypes) : '';
   // eslint-disable-next-line prettier/prettier
-  const queryToTypes = toTypes.length > 0 ?
+  const queryToTypes = toTypes && toTypes.length > 0 ?
     pipe(map(e => `{ $to isa ${e}; }`), join(' or '), concat(__, ';'))(toTypes) : '';
   // Search
   const relationsFields = [];

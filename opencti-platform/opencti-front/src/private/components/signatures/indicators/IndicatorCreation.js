@@ -86,9 +86,6 @@ const indicatorValidation = (t) => Yup.object().shape({
   valid_from: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  valid_until: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
-    .required(t('This field is required')),
   description: Yup.string(),
 });
 
@@ -290,7 +287,9 @@ class IndicatorCreation extends Component {
                       }}
                       containerstyle={{ marginTop: 20, width: '100%' }}
                     >
-                      <MenuItem value="Autonomous-System">{t('Autonomous system')}</MenuItem>
+                      <MenuItem value="Autonomous-System">
+                        {t('Autonomous system')}
+                      </MenuItem>
                       <MenuItem value="Domain">{t('Domain')}</MenuItem>
                       <MenuItem value="Email-Address">
                         {t('Email address')}
