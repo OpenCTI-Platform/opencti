@@ -1843,7 +1843,7 @@ export const deleteRelationById = async relationId => {
   const answers = map(r => r.rel.id, relationsToDeIndex);
   const relationsIds = filter(r => r, answers); // Because of relation to attributes
   // 01. Execute the delete in grakn and elastic
-  await executeWrite(async wTx => {
+  return executeWrite(async wTx => {
     const query = `match $x has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
     logger.debug(`[GRAKN - infer: false] deleteRelationById > ${query}`);
     await wTx.tx.query(query, { infer: false });

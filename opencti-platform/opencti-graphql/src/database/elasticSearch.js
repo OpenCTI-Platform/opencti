@@ -310,6 +310,7 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
       }
     }
   };
+  logger.debug(`[ELASTICSEARCH] aggregationCount > ${JSON.stringify(query)}`);
   return el
     .search(query)
     .then(data => {
@@ -317,7 +318,6 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
       return map(b => ({ label: b.key, value: b.doc_count }), buckets);
     })
     .catch(err => {
-      console.log(query);
       throw err;
     });
 };
@@ -363,6 +363,7 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) =
       }
     }
   };
+  logger.debug(`[ELASTICSEARCH] aggregationRelationsCount > ${JSON.stringify(query)}`);
   return el.search(query).then(data => {
     // First need to find all types relations to the fromId
     const types = pipe(
@@ -437,6 +438,7 @@ export const elHistogramCount = (type, field, interval, start, end, filters) => 
       }
     }
   };
+  logger.debug(`[ELASTICSEARCH] histogramCount > ${JSON.stringify(query)}`);
   return el.search(query).then(data => {
     const { buckets } = data.body.aggregations.count_over_time;
     const dataToPairs = toPairs(buckets);
@@ -581,6 +583,8 @@ export const elPaginate = async (indexName, options) => {
             { match_phrase: { [`${dateFields.includes(key) ? key : `${key}.keyword`}`]: values[i] } },
             must
           );
+        } else if (operator === 'match') {
+          must = append({ match_phrase: { [`${dateFields.includes(key) ? key : `${key}`}`]: values[i] } }, must);
         } else {
           must = append({ range: { [key]: { [operator]: values[i] } } }, must);
         }

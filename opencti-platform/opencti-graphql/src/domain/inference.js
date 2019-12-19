@@ -2,6 +2,20 @@ import { assoc, map, values } from 'ramda';
 import { executeRead, executeWrite } from '../database/grakn';
 
 const inferences = {
+  'b5c30c61-beb9-4d45-b742-701963ca1f9a': {
+    id: 'b5c30c61-beb9-4d45-b742-701963ca1f9a',
+    name: 'AttributionAttributionRule',
+    rule:
+      'AttributionAttributionRule sub rule,\n' +
+      '    when {\n' +
+      '      (origin: $origin, attribution: $entity) isa attributed-to;\n' +
+      '      (origin: $entity, attribution: $subentity) isa attributed-to;\n' +
+      '    }, then {\n' +
+      '      (origin: $origin, attribution: $subentity) isa attributed-to;\n' +
+      '    };',
+    description:
+      'This rule can be used to infer the following fact: if an entity A is attributed to an entity B and the entity B is attributed to an entity C, the entity A is also attributed to the entity C.'
+  },
   '2da36fdf-775f-48ad-a148-814c0cfec032': {
     id: '2da36fdf-775f-48ad-a148-814c0cfec032',
     name: 'AttributionUsesRule',

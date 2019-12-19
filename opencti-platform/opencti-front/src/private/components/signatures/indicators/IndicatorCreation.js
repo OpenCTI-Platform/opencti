@@ -42,7 +42,7 @@ const styles = (theme) => ({
   createButton: {
     position: 'fixed',
     bottom: 30,
-    right: 30,
+    right: 280,
   },
   buttons: {
     marginTop: 20,
@@ -288,7 +288,7 @@ class IndicatorCreation extends Component {
                         name: 'main_observable_type',
                         id: 'main_observable_type',
                       }}
-                      containerstyle={{ width: '100%' }}
+                      containerstyle={{ marginTop: 20, width: '100%' }}
                     >
                       <MenuItem value="Autonomous-System">{t('Autonomous system')}</MenuItem>
                       <MenuItem value="Domain">{t('Domain')}</MenuItem>

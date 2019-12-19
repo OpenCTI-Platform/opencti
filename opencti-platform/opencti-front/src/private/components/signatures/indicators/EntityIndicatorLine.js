@@ -71,13 +71,19 @@ class EntityIndicatorLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.main_observable_type.width }}
               >
-                {t(`observable_${node.to.main_observable_type}`)}
+                {t(`observable_${node.to.main_observable_type.toLowerCase()}`)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
                 {node.to.name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.role_played.width }}
+              >
+                {node.inferred ? '-' : node.role_played}
               </div>
               <div
                 className={classes.bodyItem}
@@ -136,6 +142,7 @@ const EntityIndicatorLineFragment = createFragmentContainer(
         last_seen
         description
         inferred
+        role_played
         to {
           ... on Indicator {
             id
@@ -178,6 +185,12 @@ class EntityIndicatorLineDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
+              >
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.role_played.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>

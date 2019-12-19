@@ -51,14 +51,14 @@ const OpenCTITimeToLive = {
     'TLP:RED-no': 180
   },
   default: {
-    'TLP:WHITE-no': 30,
-    'TLP:WHITE-yes': 7,
-    'TLP:GREEN-no': 30,
-    'TLP:GREEN-yes': 7,
-    'TLP:AMBER-yes': 15,
-    'TLP:AMBER-no': 60,
-    'TLP:RED-yes': 120,
-    'TLP:RED-no': 120
+    'TLP:WHITE-no': 365,
+    'TLP:WHITE-yes': 365,
+    'TLP:GREEN-no': 365,
+    'TLP:GREEN-yes': 365,
+    'TLP:AMBER-yes': 365,
+    'TLP:AMBER-no': 365,
+    'TLP:RED-yes': 365,
+    'TLP:RED-no': 365
   }
 };
 
@@ -120,6 +120,7 @@ export const findAll = args => {
 
 export const addIndicator = async (user, indicator, createObservables = true) => {
   const indicatorToCreate = pipe(
+    assoc('main_observable_type', indicator.main_observable_type.toLowerCase()),
     assoc('score', indicator.score ? indicator.score : 50),
     assoc('valid_from', indicator.valid_from ? indicator.valid_from : Date.now()),
     assoc('valid_until', indicator.valid_until ? indicator.valid_until : await computeValidUntil(indicator))
@@ -173,29 +174,4 @@ export const observableRefs = indicatorId => {
     'to',
     'rel'
   ).then(data => buildPagination(0, 0, data, data.length));
-};
-
-export const clear = async () => {
-  let hasMore = true;
-  let currentCursor = null;
-  while (hasMore) {
-    const indicators = await findAll({
-      first: 200,
-      after: currentCursor,
-      orderAsc: true,
-      orderBy: 'created_at'
-    });
-    await Promise.all(
-      indicators.edges.map(indicatorEdge => {
-        return deleteEntityById(indicatorEdge.node.id);
-      })
-    );
-    if (last(indicators.edges)) {
-      currentCursor = last(indicators.edges).cursor;
-      hasMore = indicators.pageInfo.hasNextPage;
-    } else {
-      hasMore = false;
-    }
-  }
-  return true;
 };

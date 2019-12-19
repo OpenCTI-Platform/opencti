@@ -62,6 +62,11 @@ class EntityIndicators extends Component {
         width: '30%',
         isSortable: false,
       },
+      role_played: {
+        label: 'Played role',
+        width: '15%',
+        isSortable: false,
+      },
       first_seen: {
         label: 'First obs.',
         width: '15%',

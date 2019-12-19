@@ -1770,6 +1770,7 @@ input CourseOfActionAddInput {
   name: String!
   description: String!
   alias: [String]
+  createdByRef: String
   markingDefinitions: [String]
   tags: [String]
   clientMutationId: String
@@ -2562,6 +2563,7 @@ enum IndicatorsFilter {
 input IndicatorsFiltering {
   key: IndicatorsFilter!
   values: [String]
+  operator: String
 }
 type IndicatorConnection {
   pageInfo: PageInfo!
@@ -2689,9 +2691,6 @@ type Query {
     filters: [TagsFiltering]
     filterMode: FilterMode
     search: String
-    tag_type: String
-    value: String
-    objectId: String
   ): TagConnection @auth
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: ROLE_ADMIN)
   connectors: [Connector] @auth
@@ -3540,5 +3539,4 @@ type Mutation {
   # Indicator
   indicatorAdd(input: IndicatorAddInput): Indicator @auth
   indicatorEdit(id: ID!): IndicatorEditMutations @auth
-  indicatorsClear: Boolean @auth(for: ROLE_ADMIN)
 }

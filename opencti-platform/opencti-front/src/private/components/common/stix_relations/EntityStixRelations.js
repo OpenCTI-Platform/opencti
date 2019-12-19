@@ -168,9 +168,9 @@ class EntityStixRelations extends Component {
 
     // sort only when inferences are disabled or inferences are resolved
     const paginationOptions = {
-      inferred: inferred && sortBy === null ? inferred : false,
-      toTypes: toType === 'All' ? targetEntityTypes : [toType],
       fromId: entityId,
+      toTypes: toType === 'All' ? targetEntityTypes : [toType],
+      inferred: inferred && sortBy === null ? inferred : false,
       relationType,
       search: searchTerm,
       orderBy: sortBy,
@@ -289,6 +289,13 @@ class EntityStixRelations extends Component {
                   {includes('Attack-Pattern', targetEntityTypes) ? (
                     <MenuItem value="Attack-Pattern">
                       {t('Attack pattern')}
+                    </MenuItem>
+                  ) : (
+                    ''
+                  )}
+                  {includes('Indicator', targetEntityTypes) ? (
+                    <MenuItem value="Indicator">
+                      {t('Indicator')}
                     </MenuItem>
                   ) : (
                     ''

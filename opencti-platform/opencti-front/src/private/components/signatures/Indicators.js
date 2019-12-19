@@ -4,6 +4,7 @@ import {
   append, compose, filter, propOr,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
+import { withStyles } from '@material-ui/core';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -16,6 +17,13 @@ import IndicatorsLines, {
 } from './indicators/IndicatorsLines';
 import IndicatorCreation from './indicators/IndicatorCreation';
 import IndicatorsRightBar from './indicators/IndicatorsRightBar';
+
+const styles = () => ({
+  container: {
+    margin: 0,
+    padding: '0 260px 0 0',
+  },
+});
 
 class Indicators extends Component {
   constructor(props) {
@@ -30,7 +38,7 @@ class Indicators extends Component {
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
-      mainObservableTypes: propOr([], 'mainObservableTypes', params),
+      types: [],
     };
   }
 
@@ -51,22 +59,11 @@ class Indicators extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
-  handleToggle(mainObservableType) {
-    if (this.state.mainObservableTypes.includes(mainObservableType)) {
-      this.setState(
-        {
-          mainObservableTypes: filter(
-            (t) => t !== mainObservableType,
-            this.state.mainObservableTypes,
-          ),
-        },
-        () => this.saveView(),
-      );
+  handleToggle(type) {
+    if (this.state.types.includes(type)) {
+      this.setState({ types: filter((t) => t !== type, this.state.types) });
     } else {
-      this.setState(
-        { mainObservableTypes: append(mainObservableType, this.state.mainObservableTypes) },
-        () => this.saveView(),
-      );
+      this.setState({ types: append(type, this.state.types) });
     }
   }
 
@@ -130,27 +127,25 @@ class Indicators extends Component {
   }
 
   render() {
+    const { classes } = this.props;
     const {
-      view,
-      sortBy,
-      orderAsc,
-      searchTerm,
-      mainObservableTypes,
+      view, sortBy, orderAsc, searchTerm, types,
     } = this.state;
     const paginationOptions = {
-      filters: mainObservableTypes
-        ? [{ key: 'main_observable_type', values: mainObservableTypes }]
-        : null,
+      filters:
+        this.state.types.length > 0
+          ? [{ key: 'main_observable_type', values: types, operator: 'match' }]
+          : null,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div>
+      <div className={classes.container}>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <IndicatorCreation paginationOptions={paginationOptions} />
         <IndicatorsRightBar
-          types={mainObservableTypes}
+          types={types}
           handleToggle={this.handleToggle.bind(this)}
         />
       </div>
@@ -159,9 +154,10 @@ class Indicators extends Component {
 }
 
 Indicators.propTypes = {
+  classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter)(Indicators);
+export default compose(inject18n, withRouter, withStyles(styles))(Indicators);

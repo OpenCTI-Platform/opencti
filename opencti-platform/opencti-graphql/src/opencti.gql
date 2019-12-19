@@ -794,6 +794,8 @@ define
     has updated_at,
     plays so,
     plays soo,
+    plays relate_from,
+    plays relate_to,
     plays part_of,
     plays link_from,
     plays link_to;

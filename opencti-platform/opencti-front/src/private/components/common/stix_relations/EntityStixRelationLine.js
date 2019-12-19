@@ -139,6 +139,7 @@ const EntityStixRelationLineFragment = createFragmentContainer(
         last_seen
         description
         inferred
+        role_played
         to {
           ... on StixDomainEntity {
             id
@@ -166,6 +167,16 @@ const EntityStixRelationLineFragment = createFragmentContainer(
             entity_type
             parent_types
             observable_value
+          }
+          ... on Indicator {
+            id
+            name
+            main_observable_type
+            description
+            valid_from
+            valid_until
+            score
+            created
           }
         }
         killChainPhases {

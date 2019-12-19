@@ -374,11 +374,31 @@ class StixRelationCreationFromEntity extends Component {
     this.setState({ step: 1, targetEntity: stixDomainEntity });
   }
 
+  renderFakeList() {
+    return (
+      <List>
+        {Array.from(Array(20), (e, i) => (
+          <ListItem key={i} divider={true} button={false}>
+            <ListItemIcon>
+              <Avatar classes={{ root: this.props.classes.avatar }}>{i}</Avatar>
+            </ListItemIcon>
+            <ListItemText
+              primary={<span className="fakeItem" style={{ width: '80%' }} />}
+              secondary={<span className="fakeItem" style={{ width: '90%' }} />}
+            />
+          </ListItem>
+        ))}
+      </List>
+    );
+  }
+
   renderSelectEntity() {
-    const { classes, t, targetEntityTypes } = this.props;
-    const paginationOptions = {
+    const {
+      classes, t, targetEntityTypes, onlyObservables,
+    } = this.props;
+    const stixDomainEntitiesPaginationOptions = {
       search: this.state.search,
-      types: targetEntityTypes,
+      types: filter((n) => n !== 'Stix-Observable', targetEntityTypes),
       orderBy: 'created_at',
       orderMode: 'desc',
     };
@@ -405,39 +425,25 @@ class StixRelationCreationFromEntity extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.containerList}>
-          <QueryRenderer
-            query={stixRelationCreationFromEntityStixDomainEntitiesLinesQuery}
-            variables={{ count: 25, ...paginationOptions }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <StixRelationCreationFromEntityStixDomainEntitiesLines
-                    handleSelect={this.handleSelectEntity.bind(this)}
-                    data={props}
-                  />
-                );
-              }
-              return (
-                <List>
-                  {Array.from(Array(20), (e, i) => (
-                    <ListItem key={i} divider={true} button={false}>
-                      <ListItemIcon>
-                        <Avatar classes={{ root: classes.avatar }}>{i}</Avatar>
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={
-                          <span className="fakeItem" style={{ width: '80%' }} />
-                        }
-                        secondary={
-                          <span className="fakeItem" style={{ width: '90%' }} />
-                        }
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              );
-            }}
-          />
+          {!onlyObservables ? (
+            <QueryRenderer
+              query={stixRelationCreationFromEntityStixDomainEntitiesLinesQuery}
+              variables={{ count: 25, ...stixDomainEntitiesPaginationOptions }}
+              render={({ props }) => {
+                if (props) {
+                  return (
+                    <StixRelationCreationFromEntityStixDomainEntitiesLines
+                      handleSelect={this.handleSelectEntity.bind(this)}
+                      data={props}
+                    />
+                  );
+                }
+                return this.renderFakeList();
+              }}
+            />
+          ) : (
+            ''
+          )}
           <QueryRenderer
             query={stixRelationCreationFromEntityStixObservablesLinesQuery}
             variables={{
@@ -456,14 +462,18 @@ class StixRelationCreationFromEntity extends Component {
                   />
                 );
               }
-              return <div> &nbsp; </div>;
+              return onlyObservables ? (
+                this.renderFakeList()
+              ) : (
+                <div> &nbsp; </div>
+              );
             }}
           />
           <StixDomainEntityCreation
             display={this.state.open}
             contextual={true}
             inputValue={this.state.search}
-            paginationOptions={paginationOptions}
+            paginationOptions={stixDomainEntitiesPaginationOptions}
             targetEntityTypes={targetEntityTypes}
           />
         </div>
@@ -901,6 +911,7 @@ StixRelationCreationFromEntity.propTypes = {
   entityId: PropTypes.string,
   isFrom: PropTypes.bool,
   isFromRelation: PropTypes.bool,
+  onlyObservables: PropTypes.bool,
   targetEntityTypes: PropTypes.array,
   allowedRelationshipTypes: PropTypes.array,
   paginationOptions: PropTypes.object,

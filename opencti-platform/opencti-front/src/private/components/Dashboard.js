@@ -16,7 +16,7 @@ import CardContent from '@material-ui/core/CardContent';
 import {
   Assignment, Layers, Work, Description,
 } from '@material-ui/icons';
-import { Database, Tag } from 'mdi-material-ui';
+import { Database, HexagonOutline } from 'mdi-material-ui';
 import BarChart from 'recharts/lib/chart/BarChart';
 import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
 import Bar from 'recharts/lib/cartesian/Bar';
@@ -202,7 +202,7 @@ class Dashboard extends Component {
       t, n, nsd, classes,
     } = this.props;
     const stixDomainEntitiesTimeSeriesVariables = {
-      field: 'created',
+      field: 'created_at',
       operation: 'count',
       startDate: yearsAgo(1),
       endDate: now(),
@@ -519,7 +519,7 @@ class Dashboard extends Component {
                               <ListItemIcon
                                 classes={{ root: classes.itemIcon }}
                               >
-                                <Tag />
+                                <HexagonOutline />
                               </ListItemIcon>
                               <ListItemText
                                 classes={{ root: classes.itemText }}

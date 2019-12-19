@@ -53,6 +53,7 @@ export const indicatorsLinesQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
+    $filters: [IndicatorsFiltering]
     $orderBy: IndicatorsOrdering
     $orderMode: OrderingMode
   ) {
@@ -61,6 +62,7 @@ export const indicatorsLinesQuery = graphql`
         search: $search
         count: $count
         cursor: $cursor
+        filters: $filters
         orderBy: $orderBy
         orderMode: $orderMode
       )
@@ -76,6 +78,7 @@ export default createPaginationContainer(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
+          filters: { type: "[IndicatorsFiltering]" }
           orderBy: { type: "IndicatorsOrdering", defaultValue: "valid_from" }
           orderMode: { type: "OrderingMode", defaultValue: "desc" }
         ) {
@@ -83,6 +86,7 @@ export default createPaginationContainer(
           search: $search
           first: $count
           after: $cursor
+          filters: $filters
           orderBy: $orderBy
           orderMode: $orderMode
         ) @connection(key: "Pagination_indicators") {
@@ -117,6 +121,7 @@ export default createPaginationContainer(
         search: fragmentVariables.search,
         count,
         cursor,
+        filters: fragmentVariables.filters,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
       };

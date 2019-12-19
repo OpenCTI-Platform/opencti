@@ -68,7 +68,7 @@ class IndicatorLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.main_observable_type.width }}
               >
-                {t(`observable_${node.main_observable_type}`)}
+                {t(`observable_${node.main_observable_type.toLowerCase()}`)}
               </div>
               <div
                 className={classes.bodyItem}
