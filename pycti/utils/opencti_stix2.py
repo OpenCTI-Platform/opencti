@@ -254,7 +254,7 @@ class OpenCTIStix2:
                         published=published,
                         report_class='Threat Report',
                         object_status=2,
-                        createdByRef=author,
+                        createdByRef=author['id'] if author is not None else None,
                         update=True
                     )
                     # Add marking
@@ -1423,8 +1423,10 @@ class OpenCTIStix2:
         for item in stix_bundle['objects']:
             if item['type'] == 'relationship':
                 # Import only relationships between entities
-                if 'relationship' not in item[CustomProperties.SOURCE_REF] and \
-                        'relationship' not in item[CustomProperties.TARGET_REF]:
+                if (CustomProperties.SOURCE_REF not in item or 'relationship' not in item[
+                    CustomProperties.SOURCE_REF]) and (
+                        CustomProperties.TARGET_REF not in item or 'relationship' not in item[
+                    CustomProperties.TARGET_REF]):
                     self.import_relationship(item, update, types)
                     imported_elements.append({'id': item['id'], 'type': item['type']})
         end_time = time.time()
@@ -1434,8 +1436,8 @@ class OpenCTIStix2:
         start_time = time.time()
         for item in stix_bundle['objects']:
             if item['type'] == 'relationship':
-                if 'relationship' in item[CustomProperties.SOURCE_REF] or \
-                        'relationship' in item[CustomProperties.TARGET_REF]:
+                if (CustomProperties.SOURCE_REF in item and 'relationship' in item[CustomProperties.SOURCE_REF]) or (
+                        CustomProperties.TARGET_REF in item and 'relationship' in item[CustomProperties.TARGET_REF]):
                     self.import_relationship(item, update, types)
                     imported_elements.append({'id': item['id'], 'type': item['type']})
         end_time = time.time()
