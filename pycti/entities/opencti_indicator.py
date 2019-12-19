@@ -17,7 +17,8 @@ class Indicator:
             alias
             description
             graph_data
-            pattern
+            indicator_pattern
+            pattern_type
             valid_from
             valid_until
             score
@@ -376,7 +377,7 @@ class Indicator:
             else:
                 indicator['labels'] = ['indicator']
             if self.opencti.not_empty(entity['description']): indicator['description'] = entity['description']
-            indicator['pattern'] = entity['pattern']
+            indicator['pattern'] = entity['indicator_pattern']
             if self.opencti.not_empty(entity['pattern_type']):
                 indicator[CustomProperties.PATTERN_TYPE] = entity['pattern_type']
             else:
