@@ -124,21 +124,25 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
     assoc('valid_from', indicator.valid_from ? indicator.valid_from : Date.now()),
     assoc('valid_until', indicator.valid_until ? indicator.valid_until : await computeValidUntil(indicator))
   )(indicator);
-  const created = await createEntity(indicatorToCreate, 'Indicator', TYPE_STIX_DOMAIN_ENTITY);
   // create the linked observables
+  let observablesToLink = null;
   if (createObservables) {
-    const observables = await extractObservables(created.indicator_pattern);
+    const observables = await extractObservables(indicator.indicator_pattern);
     if (observables && observables.length > 0) {
-      await Promise.all(
+      observablesToLink = await Promise.all(
         observables.map(async observable => {
           const args = {
-            types: ['Stix-Observable'],
             parentType: 'Stix-Observable',
             filters: [{ key: 'observable_value', values: [observable.value] }]
           };
-          const existingObservables = listEntities(['name', 'description', 'observable_value'], args);
+          const existingObservables = await listEntities(
+            ['Stix-Observable'],
+            ['name', 'description', 'observable_value'],
+            args
+          );
           if (existingObservables.edges.length === 0) {
             const stixObservable = pipe(
+              dissoc('main_observable_type'),
               dissoc('score'),
               dissoc('valid_from'),
               dissoc('valid_until'),
@@ -155,13 +159,19 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
               modelType: TYPE_STIX_OBSERVABLE,
               stixIdType: 'observable'
             });
-            return askEnrich(createdStixObservable.id, innerType);
+            await askEnrich(createdStixObservable.id, innerType);
+            return createdStixObservable.id;
           }
-          return null;
+          return existingObservables.edges[0].node.id;
         })
       );
     }
   }
+  const created = await createEntity(
+    assoc('observableRefs', observablesToLink, indicatorToCreate),
+    'Indicator',
+    TYPE_STIX_DOMAIN_ENTITY
+  );
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 
