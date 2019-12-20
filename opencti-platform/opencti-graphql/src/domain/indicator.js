@@ -13,9 +13,12 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { askEnrich, buildPagination, extractObservables } from '../database/utils';
+import { buildPagination, extractObservables } from '../database/utils';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { findById as findKillChainPhaseById } from './killChainPhase';
+import { connectorsForEnrichment } from './connector';
+import { createWork } from './work';
+import { pushToConnector } from '../database/rabbitmq';
 
 const OpenCTITimeToLive = {
   // Formatted as "[Marking-Definition]-[KillChainPhaseIsDelivery]"
@@ -104,6 +107,35 @@ export const computeValidUntil = async indicator => {
   }
   const validUntil = validFrom.add(ttl, 'days');
   return validUntil.toDate();
+};
+
+export const askEnrich = async (observableId, scope) => {
+  const targetConnectors = await connectorsForEnrichment(scope, true);
+  // Create job for
+  const workList = await Promise.all(
+    map(
+      connector =>
+        createWork(connector, observableId).then(({ job, work }) => ({
+          connector,
+          job,
+          work
+        })),
+      targetConnectors
+    )
+  );
+  // Send message to all correct connectors queues
+  await Promise.all(
+    map(data => {
+      const { connector, work, job } = data;
+      const message = {
+        work_id: work.internal_id_key,
+        job_id: job.internal_id_key,
+        entity_id: observableId
+      };
+      return pushToConnector(connector, message);
+    }, workList)
+  );
+  return workList;
 };
 
 export const findById = indicatorId => {

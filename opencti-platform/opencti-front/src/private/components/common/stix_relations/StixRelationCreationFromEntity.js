@@ -398,7 +398,7 @@ class StixRelationCreationFromEntity extends Component {
     } = this.props;
     const stixDomainEntitiesPaginationOptions = {
       search: this.state.search,
-      types: filter((n) => n !== 'Stix-Observable', targetEntityTypes),
+      types: targetEntityTypes ? filter((n) => n !== 'Stix-Observable', targetEntityTypes) : null,
       orderBy: 'created_at',
       orderMode: 'desc',
     };

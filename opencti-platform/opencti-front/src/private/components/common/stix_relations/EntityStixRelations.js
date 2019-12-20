@@ -164,7 +164,7 @@ class EntityStixRelations extends Component {
     } = this.state;
 
     // Display types selection when target types are multiple
-    const displayTypes = targetEntityTypes.length > 1;
+    const displayTypes = targetEntityTypes.length > 1 || targetEntityTypes.includes('Identity');
 
     // sort only when inferences are disabled or inferences are resolved
     const paginationOptions = {
@@ -294,9 +294,7 @@ class EntityStixRelations extends Component {
                     ''
                   )}
                   {includes('Indicator', targetEntityTypes) ? (
-                    <MenuItem value="Indicator">
-                      {t('Indicator')}
-                    </MenuItem>
+                    <MenuItem value="Indicator">{t('Indicator')}</MenuItem>
                   ) : (
                     ''
                   )}
