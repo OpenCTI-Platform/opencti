@@ -151,7 +151,7 @@ class OpenCTIStix2:
         if 'kill_chain_phases' in stix_object:
             for kill_chain_phase in stix_object['kill_chain_phases']:
                 if kill_chain_phase['phase_name'] in self.mapping_cache:
-                    kill_chain_phase = self.mapping_cache[kill_chain_phase['phase_name']]['id']
+                    kill_chain_phase = self.mapping_cache[kill_chain_phase['phase_name']]
                 else:
                     kill_chain_phase = self.opencti.kill_chain_phase.create(
                         kill_chain_name=kill_chain_phase['kill_chain_name'],
@@ -165,7 +165,7 @@ class OpenCTIStix2:
                         modified=kill_chain_phase[
                             CustomProperties.MODIFIED] if CustomProperties.MODIFIED in kill_chain_phase else None,
                     )
-                self.mapping_cache[kill_chain_phase['phase_name']] = {'id': kill_chain_phase['id'], 'type': kill_chain_phase['entity_type']}
+                    self.mapping_cache[kill_chain_phase['phase_name']] = {'id': kill_chain_phase['id'], 'type': kill_chain_phase['entity_type']}
                 kill_chain_phases_ids.append(kill_chain_phase['id'])
 
         # Object refs
