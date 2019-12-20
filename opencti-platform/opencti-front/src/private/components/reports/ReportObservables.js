@@ -7,10 +7,10 @@ import ReportObservablesLines from './ReportObservablesLines';
 import Loader from '../../../components/Loader';
 
 const reportObservablesQuery = graphql`
-  query ReportObservablesQuery($id: String!, $relationType: String) {
+  query ReportObservablesQuery($id: String!) {
     report(id: $id) {
       ...ReportHeader_report
-      ...ReportObservablesLines_report @arguments(relationType: $relationType)
+      ...ReportObservablesLines_report
     }
   }
 `;
@@ -22,7 +22,7 @@ class ReportObservables extends Component {
       <div>
         <QueryRenderer
           query={reportObservablesQuery}
-          variables={{ id: reportId, relationType: 'indicates' }}
+          variables={{ id: reportId }}
           render={({ props }) => {
             if (props && props.report) {
               return (

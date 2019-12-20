@@ -258,8 +258,7 @@ const ReportObservablesLines = createFragmentContainer(
   ReportObservablesLinesComponent,
   {
     report: graphql`
-      fragment ReportObservablesLines_report on Report
-        @argumentDefinitions(relationType: { type: "String" }) {
+      fragment ReportObservablesLines_report on Report {
         id
         published
         source_confidence_level

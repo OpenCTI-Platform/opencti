@@ -2,33 +2,78 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import Grid from '@material-ui/core/Grid';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
+import Drawer from '@material-ui/core/Drawer';
+import Loader from '../../../../components/Loader';
 import StixDomainEntityKillChainLines, {
   stixDomainEntityKillChainLinesStixRelationsQuery,
 } from './StixDomainEntityKillChainLines';
-import Loader from '../../../../components/Loader';
+import inject18n from '../../../../components/i18n';
+import { QueryRenderer } from '../../../../relay/environment';
 
 const styles = (theme) => ({
-  itemIcon: {
-    color: theme.palette.primary.main,
+  container: {
+    marginTop: 15,
+    paddingBottom: 70,
   },
-  nested: {
-    paddingLeft: theme.spacing(4),
+  bottomNav: {
+    zIndex: 1000,
+    padding: '10px 274px 10px 84px',
+    backgroundColor: theme.palette.navBottom.background,
+    display: 'flex',
   },
 });
 
 class StixDomainEntityKillChain extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      inferred: false,
+    };
+  }
+
+  handleChangeInferred() {
+    this.setState({
+      inferred: !this.state.inferred,
+    });
+  }
+
   render() {
-    const { stixDomainEntityId, entityLink } = this.props;
+    const { inferred } = this.state;
+    const {
+      classes, stixDomainEntityId, entityLink, t,
+    } = this.props;
     const paginationOptions = {
       fromId: stixDomainEntityId,
       toTypes: ['Attack-Pattern'],
       relationType: 'uses',
-      inferred: false,
+      inferred,
     };
     return (
-      <div>
+      <div className={classes.container}>
+        <Drawer
+          anchor="bottom"
+          variant="permanent"
+          classes={{ paper: classes.bottomNav }}
+        >
+          <Grid container={true} spacing={1}>
+            <Grid item={true} xs="auto">
+              <FormControlLabel
+                style={{ paddingTop: 5, marginRight: 15 }}
+                control={
+                  <Switch
+                    checked={inferred}
+                    onChange={this.handleChangeInferred.bind(this)}
+                    color="primary"
+                  />
+                }
+                label={t('Inferences')}
+              />
+            </Grid>
+          </Grid>
+        </Drawer>
         <QueryRenderer
           query={stixDomainEntityKillChainLinesStixRelationsQuery}
           variables={{ first: 500, ...paginationOptions }}

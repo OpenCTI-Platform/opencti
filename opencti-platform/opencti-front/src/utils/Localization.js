@@ -71,6 +71,8 @@ const i18n = {
         'Souhaitez-vous supprimer cet attribut ?',
       'Do you want to remove this external reference?':
         'Souhaitez-vous supprimer cette référence externe ?',
+      'Do you want to remove the observable from this indicator?':
+        'Souhaitez-vous supprimer cet observable de cet indicateur ?',
       'Confirmation required': 'Confirmation requise',
       Information: 'Informations',
       'Last reports': 'Derniers rapports',
@@ -197,6 +199,7 @@ const i18n = {
       'Add courses of action': 'Ajouter des conduites à suivre',
       'Add attack patterns': 'Ajouter des TTPs',
       'Add entities': 'Ajouter des entités',
+      'Add observables': 'Ajouter des observables',
       'Add observable': 'Ajouter un observable',
       'The password has been updated': 'Le mot de passe a été modifié',
       'The alias has been added': "L'alias a bien été ajouté",
@@ -268,7 +271,8 @@ const i18n = {
       Report: 'Report',
       Indicator: 'Indicateur',
       Indicators: 'Indicateurs',
-      'Indicators composed with this observable': 'Indicateurs composés avec cet observable',
+      'Indicators composed with this observable':
+        'Indicateurs composés avec cet observable',
       Overview: 'Aperçu',
       Relationships: 'Relations',
       Entities: 'Entités',
@@ -519,6 +523,7 @@ const i18n = {
       'Observable value': "Valeur de l'observable",
       'Observable type': "Type d'observable",
       'Observable types': "Types d'observable",
+      'Indicator type': "Type d'indicateur",
       'Indicator types': "Types d'indicateur",
       'Main observable type': "Type d'observable principal",
       'Played role': 'Rôle joué',

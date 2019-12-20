@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose, map, sortWith, ascend, descend, prop,
+  compose, map, sortWith, ascend, descend, prop, assoc,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
@@ -11,14 +11,13 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import {
-  ArrowDropDown,
-  ArrowDropUp,
-  KeyboardArrowRight,
-} from '@material-ui/icons';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import IndicatorHeader from './IndicatorHeader';
+import IndicatorAddObservableRefs from './IndicatorAddObservableRefs';
+import IndicatorRefPopover from './IndicatorRefPopover';
 
 const styles = (theme) => ({
   linesContainer: {
@@ -145,7 +144,10 @@ class IndicatorObservablesComponent extends Component {
     const {
       t, fd, classes, indicator,
     } = this.props;
-    const observableRefs = map((n) => n.node, indicator.observableRefs.edges);
+    const observableRefs = map(
+      (n) => assoc('relation', n.relation, n.node),
+      indicator.observableRefs.edges,
+    );
     const sort = sortWith(
       this.state.orderAsc
         ? [ascend(prop(this.state.sortBy))]
@@ -181,6 +183,7 @@ class IndicatorObservablesComponent extends Component {
                 </div>
               }
             />
+            <ListItemSecondaryAction>&nbsp;</ListItemSecondaryAction>
           </ListItem>
           {sortedObservableRefs.map((observableRef) => (
             <ListItem
@@ -218,12 +221,20 @@ class IndicatorObservablesComponent extends Component {
                   </div>
                 }
               />
-              <ListItemIcon classes={{ root: classes.goIcon }}>
-                <KeyboardArrowRight />
-              </ListItemIcon>
+              <ListItemSecondaryAction>
+                <IndicatorRefPopover
+                  indicatorId={indicator.id}
+                  entityId={observableRef.id}
+                  relationId={observableRef.relation.id}
+                />
+              </ListItemSecondaryAction>
             </ListItem>
           ))}
         </List>
+        <IndicatorAddObservableRefs
+          indicatorId={indicator.id}
+          indicatorObservableRefs={indicator.observableRefs.edges}
+        />
       </div>
     );
   }
@@ -251,6 +262,9 @@ const IndicatorObservables = createFragmentContainer(
               observable_value
               created_at
               updated_at
+            }
+            relation {
+              id
             }
           }
         }

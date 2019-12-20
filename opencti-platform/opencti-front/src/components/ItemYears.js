@@ -18,10 +18,16 @@ const styles = () => ({
 
 class ItemYears extends Component {
   render() {
-    const { years, classes, variant } = this.props;
+    const {
+      years, classes, variant, disabled,
+    } = this.props;
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
     return (
-      <Chip classes={{ root: style }} color="secondary" label={years} />
+      <Chip
+        classes={{ root: style }}
+        color={disabled ? 'default' : 'secondary'}
+        label={years}
+      />
     );
   }
 }
@@ -30,6 +36,7 @@ ItemYears.propTypes = {
   classes: PropTypes.object.isRequired,
   variant: PropTypes.string,
   years: PropTypes.string,
+  disabled: PropTypes.bool,
 };
 
 export default withStyles(styles)(ItemYears);

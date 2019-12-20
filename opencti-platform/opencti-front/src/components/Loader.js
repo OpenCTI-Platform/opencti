@@ -46,7 +46,7 @@ class Loader extends Component {
             ? classes.containerInElement
             : classes.container
         }
-        style={{ paddingRight: withRightPadding ? 240 : 0 }}
+        style={{ paddingRight: withRightPadding ? 260 : 0 }}
       >
         <div
           className={

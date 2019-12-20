@@ -13,9 +13,8 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
-import inject18n from '../../../components/i18n';
-import { commitMutation, fetchQuery } from '../../../relay/environment';
-import { stixRelationEditionDeleteMutation } from '../common/stix_relations/StixRelationEdition';
+import inject18n from '../../../../components/i18n';
+import { commitMutation } from '../../../../relay/environment';
 
 const styles = (theme) => ({
   container: {
@@ -40,33 +39,17 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const reportRefPopoverDeletionMutation = graphql`
-  mutation ReportRefPopoverDeletionMutation($id: ID!, $relationId: ID!) {
-    reportEdit(id: $id) {
+const indicatorRefPopoverDeletionMutation = graphql`
+  mutation IndicatorRefPopoverDeletionMutation($id: ID!, $relationId: ID!) {
+    indicatorEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        ...ReportEntities_report
-        ...ReportObservablesLines_report
+        ...IndicatorObservables_indicator
       }
     }
   }
 `;
 
-const reportRefPopoverCheckRelationQuery = graphql`
-  query ReportRefPopoverCheckRelationQuery($id: String!) {
-    stixRelation(id: $id) {
-      id
-      reports {
-        edges {
-          node {
-            id
-          }
-        }
-      }
-    }
-  }
-`;
-
-class ReportRefPopover extends Component {
+class IndicatorRefPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -96,31 +79,10 @@ class ReportRefPopover extends Component {
 
   submitDelete() {
     this.setState({ deleting: true });
-    if (this.props.isRelation) {
-      fetchQuery(reportRefPopoverCheckRelationQuery, {
-        id: this.props.entityId,
-      }).then((data) => {
-        if (data.stixRelation.reports.edges.length === 1) {
-          commitMutation({
-            mutation: stixRelationEditionDeleteMutation,
-            variables: {
-              id: this.props.entityId,
-            },
-          });
-        }
-        commitMutation({
-          mutation: reportRefPopoverDeletionMutation,
-          variables: {
-            id: this.props.reportId,
-            relationId: this.props.secondaryRelationId,
-          },
-        });
-      });
-    }
     commitMutation({
-      mutation: reportRefPopoverDeletionMutation,
+      mutation: indicatorRefPopoverDeletionMutation,
       variables: {
-        id: this.props.reportId,
+        id: this.props.indicatorId,
         relationId: this.props.relationId,
       },
       onCompleted: () => {
@@ -154,7 +116,7 @@ class ReportRefPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to remove the entity from this report?')}
+              {t('Do you want to remove the observable from this indicator?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -179,8 +141,8 @@ class ReportRefPopover extends Component {
   }
 }
 
-ReportRefPopover.propTypes = {
-  reportId: PropTypes.string,
+IndicatorRefPopover.propTypes = {
+  indicatorId: PropTypes.string,
   entityId: PropTypes.string,
   relationId: PropTypes.string,
   secondaryRelationId: PropTypes.string,
@@ -190,4 +152,4 @@ ReportRefPopover.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(ReportRefPopover);
+export default compose(inject18n, withStyles(styles))(IndicatorRefPopover);

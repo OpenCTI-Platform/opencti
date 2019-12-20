@@ -1,7 +1,8 @@
 ---
-id: connectors
+id: version-2.1.2-connectors
 title: Connectors activation
 sidebar_label: Enable connectors
+original_id: connectors
 ---
 
 ## Introduction

@@ -38,7 +38,8 @@ class Indicators extends Component {
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
-      types: [],
+      indicatorTypes: [],
+      observableTypes: [],
     };
   }
 
@@ -59,11 +60,19 @@ class Indicators extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
-  handleToggle(type) {
-    if (this.state.types.includes(type)) {
-      this.setState({ types: filter((t) => t !== type, this.state.types) });
+  handleToggleIndicatorType(type) {
+    if (this.state.indicatorTypes.includes(type)) {
+      this.setState({ indicatorTypes: filter((t) => t !== type, this.state.indicatorTypes) });
     } else {
-      this.setState({ types: append(type, this.state.types) });
+      this.setState({ indicatorTypes: append(type, this.state.indicatorTypes) });
+    }
+  }
+
+  handleToggleObservableType(type) {
+    if (this.state.observableTypes.includes(type)) {
+      this.setState({ observableTypes: filter((t) => t !== type, this.state.observableTypes) });
+    } else {
+      this.setState({ observableTypes: append(type, this.state.observableTypes) });
     }
   }
 
@@ -129,13 +138,32 @@ class Indicators extends Component {
   render() {
     const { classes } = this.props;
     const {
-      view, sortBy, orderAsc, searchTerm, types,
+      view,
+      sortBy,
+      orderAsc,
+      searchTerm,
+      indicatorTypes,
+      observableTypes,
     } = this.state;
+    let filters = [];
+    if (indicatorTypes.length > 0) {
+      filters = append(
+        { key: 'pattern_type', values: indicatorTypes, operator: 'match' },
+        filters,
+      );
+    }
+    if (observableTypes.length > 0) {
+      filters = append(
+        {
+          key: 'main_observable_type',
+          values: observableTypes,
+          operator: 'match',
+        },
+        filters,
+      );
+    }
     const paginationOptions = {
-      filters:
-        this.state.types.length > 0
-          ? [{ key: 'main_observable_type', values: types, operator: 'match' }]
-          : null,
+      filters,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
@@ -145,8 +173,12 @@ class Indicators extends Component {
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <IndicatorCreation paginationOptions={paginationOptions} />
         <IndicatorsRightBar
-          types={types}
-          handleToggle={this.handleToggle.bind(this)}
+          indicatorTypes={indicatorTypes}
+          observableTypes={observableTypes}
+          handleToggleIndicatorType={this.handleToggleIndicatorType.bind(this)}
+          handleToggleObservableType={this.handleToggleObservableType.bind(
+            this,
+          )}
         />
       </div>
     );

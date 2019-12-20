@@ -10,6 +10,8 @@ export const saveViewParameters = (
   const urlParams = pipe(
     dissoc('view'),
     dissoc('types'),
+    dissoc('indicatorTypes'),
+    dissoc('observableTypes'),
   )(params);
   history.replace(
     `${location.pathname}?${new URLSearchParams(urlParams).toString()}`,

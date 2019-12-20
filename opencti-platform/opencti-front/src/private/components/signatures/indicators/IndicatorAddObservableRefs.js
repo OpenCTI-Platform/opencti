@@ -12,13 +12,13 @@ import Typography from '@material-ui/core/Typography';
 import Avatar from '@material-ui/core/Avatar';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { QueryRenderer } from '../../../relay/environment';
-import inject18n from '../../../components/i18n';
-import SearchInput from '../../../components/SearchInput';
-import ReportAddObservableRefsLines, {
-  reportAddObservableRefsLinesQuery,
-} from './ReportAddObservableRefsLines';
-import StixObservableCreation from '../signatures/stix_observables/StixObservableCreation';
+import { QueryRenderer } from '../../../../relay/environment';
+import inject18n from '../../../../components/i18n';
+import SearchInput from '../../../../components/SearchInput';
+import IndicatorAddObservableRefsLines, {
+  indicatorAddObservableRefsLinesQuery,
+} from './IndicatorAddObservableRefsLines';
+import StixObservableCreation from '../stix_observables/StixObservableCreation';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -67,7 +67,7 @@ const styles = (theme) => ({
   },
 });
 
-class ReportAddObservableRefs extends Component {
+class IndicatorAddObservableRefs extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false, search: '' };
@@ -87,7 +87,7 @@ class ReportAddObservableRefs extends Component {
 
   render() {
     const {
-      t, classes, reportId, reportObservableRefs,
+      t, classes, indicatorId, indicatorObservableRefs,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
@@ -132,7 +132,7 @@ class ReportAddObservableRefs extends Component {
           </div>
           <div className={classes.container}>
             <QueryRenderer
-              query={reportAddObservableRefsLinesQuery}
+              query={indicatorAddObservableRefsLinesQuery}
               variables={{
                 search: this.state.search,
                 orderBy: 'created_at',
@@ -142,9 +142,9 @@ class ReportAddObservableRefs extends Component {
               render={({ props }) => {
                 if (props) {
                   return (
-                    <ReportAddObservableRefsLines
-                      reportId={reportId}
-                      reportObservableRefs={reportObservableRefs}
+                    <IndicatorAddObservableRefsLines
+                      indicatorId={indicatorId}
+                      indicatorObservableRefs={indicatorObservableRefs}
                       data={props}
                     />
                   );
@@ -191,9 +191,9 @@ class ReportAddObservableRefs extends Component {
   }
 }
 
-ReportAddObservableRefs.propTypes = {
-  reportId: PropTypes.string,
-  reportObservableRefs: PropTypes.array,
+IndicatorAddObservableRefs.propTypes = {
+  indicatorId: PropTypes.string,
+  indicatorObservableRefs: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
@@ -202,4 +202,4 @@ ReportAddObservableRefs.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(ReportAddObservableRefs);
+)(IndicatorAddObservableRefs);

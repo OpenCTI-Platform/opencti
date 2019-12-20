@@ -15,9 +15,9 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { ExpandMore, CheckCircle } from '@material-ui/icons';
-import { commitMutation } from '../../../relay/environment';
-import ItemIcon from '../../../components/ItemIcon';
-import inject18n from '../../../components/i18n';
+import { commitMutation } from '../../../../relay/environment';
+import ItemIcon from '../../../../components/ItemIcon';
+import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
   container: {
@@ -49,54 +49,57 @@ const styles = (theme) => ({
   },
 });
 
-export const reportMutationRelationAdd = graphql`
-  mutation ReportAddObservableRefsLinesRelationAddMutation(
+export const indicatorMutationRelationAdd = graphql`
+  mutation IndicatorAddObservableRefsLinesRelationAddMutation(
     $id: ID!
     $input: RelationAddInput!
   ) {
-    reportEdit(id: $id) {
+    indicatorEdit(id: $id) {
       relationAdd(input: $input) {
         id
         from {
-          ...ReportObservablesLines_report
+          ...IndicatorObservables_indicator
         }
       }
     }
   }
 `;
 
-export const reportMutationRelationDelete = graphql`
-  mutation ReportAddObservableRefsLinesRelationDeleteMutation(
+export const indicatorMutationRelationDelete = graphql`
+  mutation IndicatorAddObservableRefsLinesRelationDeleteMutation(
     $id: ID!
     $relationId: ID!
   ) {
-    reportEdit(id: $id) {
+    indicatorEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        ...ReportObservablesLines_report
+        ...IndicatorObservables_indicator
       }
     }
   }
 `;
 
-class ReportAddObservableRefsLinesContainer extends Component {
+class IndicatorAddObservableRefsLinesContainer extends Component {
   constructor(props) {
     super(props);
     this.state = { expandedPanels: {} };
   }
 
   toggleStixObservable(stixObservable) {
-    const { reportId, reportObservableRefs } = this.props;
-    const reportObservableRefsIds = map((n) => n.node.id, reportObservableRefs);
-    const alreadyAdded = reportObservableRefsIds.includes(stixObservable.id);
+    const { indicatorId, indicatorObservableRefs } = this.props;
+    const indicatorObservableRefsIds = map(
+      (n) => n.node.id,
+      indicatorObservableRefs,
+    );
+    const alreadyAdded = indicatorObservableRefsIds.includes(stixObservable.id);
 
     if (alreadyAdded) {
       const existingStixObservable = head(
-        filter((n) => n.node.id === stixObservable.id, reportObservableRefs),
+        filter((n) => n.node.id === stixObservable.id, indicatorObservableRefs),
       );
       commitMutation({
-        mutation: reportMutationRelationDelete,
+        mutation: indicatorMutationRelationDelete,
         variables: {
-          id: reportId,
+          id: indicatorId,
           relationId: existingStixObservable.relation.id,
         },
       });
@@ -108,9 +111,9 @@ class ReportAddObservableRefsLinesContainer extends Component {
         through: 'observable_refs',
       };
       commitMutation({
-        mutation: reportMutationRelationAdd,
+        mutation: indicatorMutationRelationAdd,
         variables: {
-          id: reportId,
+          id: indicatorId,
           input,
         },
       });
@@ -135,9 +138,12 @@ class ReportAddObservableRefsLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, data, reportObservableRefs,
+      t, classes, data, indicatorObservableRefs,
     } = this.props;
-    const reportObservableRefsIds = map((n) => n.node.id, reportObservableRefs);
+    const indicatorObservableRefsIds = map(
+      (n) => n.node.id,
+      indicatorObservableRefs,
+    );
     const stixObservablesNodes = map((n) => n.node, data.stixObservables.edges);
     const byType = groupBy((stixObservable) => stixObservable.entity_type);
     const stixObservables = byType(stixObservablesNodes);
@@ -170,7 +176,7 @@ class ReportAddObservableRefsLinesContainer extends Component {
               >
                 <List classes={{ root: classes.list }}>
                   {stixObservables[type].map((stixObservable) => {
-                    const alreadyAdded = reportObservableRefsIds.includes(
+                    const alreadyAdded = indicatorObservableRefsIds.includes(
                       stixObservable.id,
                     );
                     return (
@@ -191,7 +197,9 @@ class ReportAddObservableRefsLinesContainer extends Component {
                             <ItemIcon type={type} />
                           )}
                         </ListItemIcon>
-                        <ListItemText primary={stixObservable.observable_value} />
+                        <ListItemText
+                          primary={stixObservable.observable_value}
+                        />
                       </ListItem>
                     );
                   })}
@@ -209,9 +217,9 @@ class ReportAddObservableRefsLinesContainer extends Component {
   }
 }
 
-ReportAddObservableRefsLinesContainer.propTypes = {
-  reportId: PropTypes.string,
-  reportObservableRefs: PropTypes.array,
+IndicatorAddObservableRefsLinesContainer.propTypes = {
+  indicatorId: PropTypes.string,
+  indicatorObservableRefs: PropTypes.array,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
@@ -219,15 +227,15 @@ ReportAddObservableRefsLinesContainer.propTypes = {
   fld: PropTypes.func,
 };
 
-export const reportAddObservableRefsLinesQuery = graphql`
-  query ReportAddObservableRefsLinesQuery(
+export const indicatorAddObservableRefsLinesQuery = graphql`
+  query IndicatorAddObservableRefsLinesQuery(
     $search: String
     $count: Int!
     $cursor: ID
     $orderBy: StixObservablesOrdering
     $orderMode: OrderingMode
   ) {
-    ...ReportAddObservableRefsLines_data
+    ...IndicatorAddObservableRefsLines_data
       @arguments(
         search: $search
         count: $count
@@ -238,13 +246,14 @@ export const reportAddObservableRefsLinesQuery = graphql`
   }
 `;
 
-const ReportAddObservableRefsLines = createPaginationContainer(
-  ReportAddObservableRefsLinesContainer,
+const IndicatorAddObservableRefsLines = createPaginationContainer(
+  IndicatorAddObservableRefsLinesContainer,
   {
     data: graphql`
-      fragment ReportAddObservableRefsLines_data on Query
+      fragment IndicatorAddObservableRefsLines_data on Query
         @argumentDefinitions(
           search: { type: "String" }
+
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
           orderBy: { type: "StixObservablesOrdering", defaultValue: "name" }
@@ -287,11 +296,11 @@ const ReportAddObservableRefsLines = createPaginationContainer(
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: reportAddObservableRefsLinesQuery,
+    query: indicatorAddObservableRefsLinesQuery,
   },
 );
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(ReportAddObservableRefsLines);
+)(IndicatorAddObservableRefsLines);

@@ -2559,6 +2559,7 @@ enum IndicatorsOrdering {
 enum IndicatorsFilter {
   indicator_pattern
   main_observable_type
+  pattern_type
   tags
   observablesContains
 }

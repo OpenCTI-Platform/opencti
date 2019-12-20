@@ -155,17 +155,25 @@ class StixDomainEntityKillChainLinesComponent extends Component {
                             <Markdown
                               className="markdown"
                               source={
+                                // eslint-disable-next-line no-nested-ternary
                                 attackPattern.description
                                 && attackPattern.description.length > 0
                                   ? attackPattern.description
-                                  : t('No description of this usage')
+                                  : stixRelation.inferred
+                                    ? t('This relation is inferred')
+                                    : t('No description of this usage')
                               }
                             />
                           }
                         />
                         <ItemYears
                           variant="inList"
-                          years={attackPattern.years}
+                          years={
+                            stixRelation.inferred
+                              ? t('Inferred')
+                              : attackPattern.years
+                          }
+                          disabled={stixRelation.inferred}
                         />
                         <ListItemSecondaryAction>
                           <StixRelationPopover
@@ -234,6 +242,7 @@ const StixDomainEntityKillChainLines = createRefetchContainer(
               description
               first_seen
               last_seen
+              inferred
               to {
                 id
                 name
