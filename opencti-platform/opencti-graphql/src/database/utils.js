@@ -83,25 +83,29 @@ export const buildPagination = (first, offset, instances, globalCount) => {
 };
 
 export const execPython3 = async (scriptPath, scriptName, args) => {
-  return new Promise(async (resolve, reject) => {
-    const options = {
-      mode: 'text',
-      pythonPath: 'python3',
-      scriptPath,
-      args
-    };
-    await PythonShell.run(scriptName, options, (err, results) => {
-      if (err) {
-        reject(new Error(`Python3 is missing or script not found: ${err}`));
-      }
-      try {
-        const result = JSON.parse(results[0]);
-        resolve(result);
-      } catch (err) {
-        reject(new Error(`No valid JSON from Python script: ${err}`));
-      }
+  try {
+    return new Promise(async (resolve, reject) => {
+      const options = {
+        mode: 'text',
+        pythonPath: 'python3',
+        scriptPath,
+        args
+      };
+      await PythonShell.run(scriptName, options, (err, results) => {
+        if (err) {
+          reject(new Error(`Python3 is missing or script not found: ${err}`));
+        }
+        try {
+          const result = JSON.parse(results[0]);
+          resolve(result);
+        } catch (err2) {
+          reject(new Error(`No valid JSON from Python script: ${err2}`));
+        }
+      });
     });
-  });
+  } catch (err) {
+    throw new Error(`Python3 is missing or script not found: ${err}`);
+  }
 };
 
 export const checkPythonStix2 = async () => {
