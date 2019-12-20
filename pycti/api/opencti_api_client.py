@@ -1762,7 +1762,7 @@ class OpenCTIApiClient:
         relation_type = relation_type.lower()
         from_type = from_type.lower()
         from_type = 'observable' if ((ObservableTypes.has_value(from_type) and (
-                    relation_type == 'localization' or relation_type == 'gathering')) or from_type == 'stix-observable'
+                relation_type == 'localization' or relation_type == 'gathering')) or from_type == 'stix-observable'
                                      ) else from_type
         to_type = to_type.lower()
         mapping = {
@@ -1887,7 +1887,7 @@ class OpenCTIApiClient:
                     'country': {'from_role': 'localized', 'to_role': 'location'},
                     'city': {'from_role': 'localized', 'to_role': 'location'}
                 },
-                'relation': {
+                'stix_relation': {
                     'region': {'from_role': 'localized', 'to_role': 'location'},
                     'country': {'from_role': 'localized', 'to_role': 'location'},
                     'city': {'from_role': 'localized', 'to_role': 'location'}
