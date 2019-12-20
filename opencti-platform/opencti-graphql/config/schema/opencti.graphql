@@ -2543,6 +2543,7 @@ input ReportAddInput {
 ### Indicators
 enum IndicatorsOrdering {
   stix_id_key
+  name
   indicator_pattern
   pattern_type
   valid_from

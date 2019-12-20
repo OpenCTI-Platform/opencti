@@ -21,6 +21,7 @@ import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import ItemScore from '../../../../components/ItemScore';
+import ItemPatternType from '../../../../components/ItemPatternType';
 
 const styles = (theme) => ({
   paper: {
@@ -67,9 +68,15 @@ const inlineStylesHeaders = {
     padding: 0,
     top: '0px',
   },
+  pattern_type: {
+    float: 'left',
+    width: '10%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
   name: {
     float: 'left',
-    width: '50%',
+    width: '40%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -93,9 +100,17 @@ const inlineStylesHeaders = {
 };
 
 const inlineStyles = {
+  pattern_type: {
+    float: 'left',
+    width: '10%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
   name: {
     float: 'left',
-    width: '50%',
+    width: '40%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -199,6 +214,7 @@ class StixObservableIndicatorsComponent extends Component {
               <ListItemText
                 primary={
                   <div>
+                    {this.SortHeader('pattern_type', 'Pattern type', true)}
                     {this.SortHeader('name', 'Name', true)}
                     {this.SortHeader('valid_from', 'Valid from', true)}
                     {this.SortHeader('valid_until', 'Valid until', true)}
@@ -222,6 +238,12 @@ class StixObservableIndicatorsComponent extends Component {
                 <ListItemText
                   primary={
                     <div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.pattern_type}
+                      >
+                        <ItemPatternType variant="inList" label={indicator.pattern_type} />
+                      </div>
                       <div
                         className={classes.bodyItem}
                         style={inlineStyles.name}
@@ -280,6 +302,7 @@ const StixObservableIndicators = createFragmentContainer(
             node {
               id
               name
+              pattern_type
               valid_from
               valid_until
               score

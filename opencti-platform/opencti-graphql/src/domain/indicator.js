@@ -1,9 +1,8 @@
 import moment from 'moment';
-import { assoc, descend, dissoc, head, includes, last, map, pipe, prop, sortWith } from 'ramda';
+import { assoc, descend, dissoc, head, includes, map, pipe, concat, prop, sortWith } from 'ramda';
 import { Promise } from 'bluebird';
 import {
   createEntity,
-  deleteEntityById,
   escapeString,
   findWithConnectedRelations,
   listEntities,
@@ -125,7 +124,7 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
     assoc('valid_until', indicator.valid_until ? indicator.valid_until : await computeValidUntil(indicator))
   )(indicator);
   // create the linked observables
-  let observablesToLink = null;
+  let observablesToLink = [];
   if (createObservables && indicator.pattern_type === 'stix') {
     const observables = await extractObservables(indicator.indicator_pattern);
     if (observables && observables.length > 0) {
@@ -168,8 +167,14 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
       );
     }
   }
+  let observableRefs = [];
+  if (indicatorToCreate.observableRefs) {
+    observableRefs = concat(indicatorToCreate.observableRefs, observablesToLink);
+  } else {
+    observableRefs = observablesToLink;
+  }
   const created = await createEntity(
-    assoc('observableRefs', observablesToLink, indicatorToCreate),
+    assoc('observableRefs', observableRefs, indicatorToCreate),
     'Indicator',
     TYPE_STIX_DOMAIN_ENTITY
   );

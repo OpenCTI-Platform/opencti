@@ -66,6 +66,12 @@ class IndicatorLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.pattern_type.width }}
+              >
+                <ItemPatternType variant="inList" label={node.pattern_type} />
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
                 {node.name}
@@ -81,12 +87,6 @@ class IndicatorLineComponent extends Component {
                 style={{ width: dataColumns.valid_until.width }}
               >
                 {fd(node.valid_until)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.pattern_type.width }}
-              >
-                <ItemPatternType variant="inList" label={node.pattern_type} />
               </div>
               <div
                 className={classes.bodyItem}
@@ -160,6 +160,12 @@ class IndicatorLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.pattern_type.width }}
+              >
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
@@ -173,12 +179,6 @@ class IndicatorLineDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.valid_until.width }}
-              >
-                <div className="fakeItem" style={{ width: '80%' }} />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.pattern_type.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>

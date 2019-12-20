@@ -79,6 +79,11 @@ class Indicators extends Component {
   renderLines(paginationOptions) {
     const { sortBy, orderAsc, searchTerm } = this.state;
     const dataColumns = {
+      pattern_type: {
+        label: 'Pattern type',
+        width: '15%',
+        isSortable: true,
+      },
       name: {
         label: 'Name',
         width: '35%',
@@ -94,14 +99,9 @@ class Indicators extends Component {
         width: '15%',
         isSortable: true,
       },
-      pattern_type: {
-        label: 'Pattern type',
-        width: '15%',
-        isSortable: true,
-      },
       markingDefinitions: {
         label: 'Marking',
-        isSortable: true,
+        isSortable: false,
       },
     };
     return (
