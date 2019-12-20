@@ -115,8 +115,9 @@ class OpenCTIStix2:
                 created_by_ref_result = self.mapping_cache[created_by_ref]
             else:
                 created_by_ref_result = self.opencti.stix_domain_entity.read(id=created_by_ref)
+                if created_by_ref_result is not None:
+                    self.mapping_cache[created_by_ref] = {'id': created_by_ref_result['id'], 'type': created_by_ref_result['entity_type']}
             if created_by_ref_result is not None:
-                self.mapping_cache[created_by_ref] = {'id': created_by_ref_result['id']}
                 created_by_ref_id = created_by_ref_result['id']
 
         # Object Marking Refs
@@ -127,31 +128,32 @@ class OpenCTIStix2:
                     object_marking_ref_result = self.mapping_cache[object_marking_ref]
                 else:
                     object_marking_ref_result = self.opencti.marking_definition.read(id=object_marking_ref)
+                    if object_marking_ref_result is not None:
+                        self.mapping_cache[object_marking_ref] = {'id': object_marking_ref_result['id'], 'type': object_marking_ref_result['entity_type']}
                 if object_marking_ref_result is not None:
-                    self.mapping_cache[object_marking_ref] = {'id': object_marking_ref_result['id']}
                     marking_definitions_ids.append(object_marking_ref_result['id'])
 
-        # TODO Import tags
         # Object Tags
         tags_ids = []
-        # if CustomProperties.TAG_TYPE in stix_object:
-        #    for tag in stix_object[CustomProperties.TAG_TYPE]:
-        #        if tag['id'] in self.mapping_cache:
-        #            tag_result = self.mapping_cache[tag['id']]
-        #        else:
-        #            object_marking_ref_result = self.opencti.tag.read(id=object_marking_ref)
-        #        if object_marking_ref_result is not None:
-        #           self.mapping_cache[object_marking_ref] = {'id': object_marking_ref_result['id']}
-        #           marking_definitions_ids.append(object_marking_ref_result['id'])
+        if CustomProperties.TAG_TYPE in stix_object:
+            for tag in stix_object[CustomProperties.TAG_TYPE]:
+                if tag['id'] in self.mapping_cache:
+                    tag_result = self.mapping_cache[tag['id']]
+                else:
+                    tag_result = self.opencti.tag.read(id=tag['id'])
+                    if tag_result is not None:
+                        self.mapping_cache[tag['id']] = {'id': tag_result['id']}
+                if tag_result is not None:
+                    tags_ids.append(tag_result['id'])
 
         # Kill Chain Phases
         kill_chain_phases_ids = []
         if 'kill_chain_phases' in stix_object:
             for kill_chain_phase in stix_object['kill_chain_phases']:
                 if kill_chain_phase['phase_name'] in self.mapping_cache:
-                    kill_chain_phase_id = self.mapping_cache[kill_chain_phase['phase_name']]['id']
+                    kill_chain_phase = self.mapping_cache[kill_chain_phase['phase_name']]['id']
                 else:
-                    kill_chain_phase_id = self.opencti.kill_chain_phase.create(
+                    kill_chain_phase = self.opencti.kill_chain_phase.create(
                         kill_chain_name=kill_chain_phase['kill_chain_name'],
                         phase_name=kill_chain_phase['phase_name'],
                         phase_order=kill_chain_phase[
@@ -162,9 +164,9 @@ class OpenCTIStix2:
                             CustomProperties.CREATED] if CustomProperties.CREATED in kill_chain_phase else None,
                         modified=kill_chain_phase[
                             CustomProperties.MODIFIED] if CustomProperties.MODIFIED in kill_chain_phase else None,
-                    )['id']
-                self.mapping_cache[kill_chain_phase['phase_name']] = {'id': kill_chain_phase_id}
-                kill_chain_phases_ids.append(kill_chain_phase_id)
+                    )
+                self.mapping_cache[kill_chain_phase['phase_name']] = {'id': kill_chain_phase['id'], 'type': kill_chain_phase['entity_type']}
+                kill_chain_phases_ids.append(kill_chain_phase['id'])
 
         # Object refs
         object_refs_ids = []
@@ -174,11 +176,13 @@ class OpenCTIStix2:
                     object_ref_result = self.mapping_cache[object_ref]
                 elif 'relationship' in object_ref:
                     object_ref_result = self.opencti.stix_relation.read(id=object_ref)
+                    if object_ref_result is not None:
+                        self.mapping_cache[object_ref] = {'id': object_ref_result['id'], 'type': object_ref_result['entity_type']}
                 else:
                     object_ref_result = self.opencti.stix_entity.read(id=object_ref)
-
+                    if object_ref_result is not None:
+                        self.mapping_cache[object_ref] = {'id': object_ref_result['id'], 'type': object_ref_result['entity_type']}
                 if object_ref_result is not None:
-                    self.mapping_cache[object_ref] = {'id': object_ref_result['id']}
                     object_refs_ids.append(object_ref_result['id'])
 
         # External References
@@ -284,6 +288,7 @@ class OpenCTIStix2:
         return {
             'created_by_ref': created_by_ref_id,
             'marking_definitions': marking_definitions_ids,
+            'tags': tags_ids,
             'kill_chain_phases': kill_chain_phases_ids,
             'object_refs': object_refs_ids,
             'external_references': external_references_ids,
@@ -397,8 +402,8 @@ class OpenCTIStix2:
         else:
             source_ref = stix_relation['source_ref']
         if source_ref in self.mapping_cache:
-            source_id = self.mapping_cache[stix_relation['source_ref']]['id']
-            source_type = self.mapping_cache[stix_relation['source_ref']]['type']
+            source_id = self.mapping_cache[source_ref]['id']
+            source_type = self.mapping_cache[source_ref]['type']
         else:
             stix_object_result = self.opencti.stix_entity.read(id=source_ref)
             if stix_object_result is not None:
@@ -413,8 +418,8 @@ class OpenCTIStix2:
         else:
             target_ref = stix_relation['target_ref']
         if target_ref in self.mapping_cache:
-            target_id = self.mapping_cache[stix_relation['target_ref']]['id']
-            target_type = self.mapping_cache[stix_relation['target_ref']]['type']
+            target_id = self.mapping_cache[target_ref]['id']
+            target_type = self.mapping_cache[target_ref]['type']
         else:
             stix_object_result = self.opencti.stix_entity.read(id=target_ref)
             if stix_object_result is not None:
@@ -465,7 +470,7 @@ class OpenCTIStix2:
                 CustomProperties.IGNORE_DATES] if CustomProperties.IGNORE_DATES in stix_relation else None,
         )
         if stix_relation_result is not None:
-            self.mapping_cache[stix_relation['id']] = {'id': stix_relation_result['id']}
+            self.mapping_cache[stix_relation['id']] = {'id': stix_relation_result['id'], 'type': stix_relation_result['entity_type']}
         else:
             return None
 
