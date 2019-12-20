@@ -309,6 +309,7 @@ class StixObservableEditionOverviewComponent extends Component {
       assoc('createdByRef', createdByRef),
       assoc('markingDefinitions', markingDefinitions),
       pick([
+        'observable_value',
         'description',
         'createdByRef',
         'killChainPhases',
@@ -325,6 +326,24 @@ class StixObservableEditionOverviewComponent extends Component {
           render={({ setFieldValue }) => (
             <div>
               <Form style={{ margin: '20px 0 20px 0' }}>
+                <Field
+                  name="observable_value"
+                  component={TextField}
+                  label={t('Observable value')}
+                  fullWidth={true}
+                  multiline={true}
+                  rows="4"
+                  style={{ marginTop: 10 }}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="observable_value"
+                    />
+                  }
+                />
                 <Field
                   name="description"
                   component={TextField}
@@ -418,6 +437,7 @@ const StixObservableEditionOverview = createFragmentContainer(
     stixObservable: graphql`
       fragment StixObservableEditionOverview_stixObservable on StixObservable {
         id
+        observable_value
         description
         createdByRef {
           node {

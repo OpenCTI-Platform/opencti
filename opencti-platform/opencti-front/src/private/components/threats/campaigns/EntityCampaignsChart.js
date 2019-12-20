@@ -53,6 +53,7 @@ const entityCampaignsChartCampaignsTimeSeriesQuery = graphql`
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
+    $inferred: Boolean
   ) {
     campaignsTimeSeries(
       objectId: $objectId
@@ -61,6 +62,7 @@ const entityCampaignsChartCampaignsTimeSeriesQuery = graphql`
       startDate: $startDate
       endDate: $endDate
       interval: $interval
+      inferred: $inferred
     ) {
       date
       value
@@ -94,7 +96,7 @@ class EntityCampaignsChart extends Component {
 
   renderContent() {
     const {
-      t, md, entityId, variant,
+      t, md, entityId, variant, inferred,
     } = this.props;
     const campaignsTimeSeriesVariables = {
       objectId: entityId,
@@ -103,6 +105,7 @@ class EntityCampaignsChart extends Component {
       startDate: monthsAgo(this.state.period),
       endDate: now(),
       interval: 'month',
+      inferred,
     };
     return (
       <QueryRenderer
@@ -261,6 +264,7 @@ EntityCampaignsChart.propTypes = {
   md: PropTypes.func,
   configuration: PropTypes.object,
   handleOpenConfig: PropTypes.func,
+  inferred: PropTypes.bool,
 };
 
 export default compose(

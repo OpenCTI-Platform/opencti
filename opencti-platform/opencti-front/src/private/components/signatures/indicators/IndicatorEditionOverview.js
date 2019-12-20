@@ -316,6 +316,7 @@ class IndicatorEditionOverviewComponent extends Component {
       assoc('markingDefinitions', markingDefinitions),
       pick([
         'name',
+        'indicator_pattern',
         'description',
         'valid_from',
         'valid_until',
@@ -347,6 +348,24 @@ class IndicatorEditionOverviewComponent extends Component {
                       me={me}
                       users={editUsers}
                       fieldName="name"
+                    />
+                  }
+                />
+                <Field
+                  name="indicator_pattern"
+                  component={TextField}
+                  label={t('Indicator pattern')}
+                  fullWidth={true}
+                  multiline={true}
+                  rows="4"
+                  style={{ marginTop: 10 }}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="indicator_pattern"
                     />
                   }
                 />
@@ -491,6 +510,7 @@ const IndicatorEditionOverview = createFragmentContainer(
       fragment IndicatorEditionOverview_indicator on Indicator {
         id
         name
+        indicator_pattern
         valid_from
         valid_until
         score

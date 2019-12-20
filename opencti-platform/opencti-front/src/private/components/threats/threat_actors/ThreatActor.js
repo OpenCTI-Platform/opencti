@@ -56,10 +56,10 @@ class ThreatActorComponent extends Component {
           style={{ marginTop: 30 }}
         >
           <Grid item={true} xs={4}>
-            <EntityCampaignsChart entityId={threatActor.id} />
+            <EntityCampaignsChart entityId={threatActor.id} inferred={true} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityIncidentsChart entityId={threatActor.id} />
+            <EntityIncidentsChart entityId={threatActor.id} inferred={true} />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={threatActor.id} />

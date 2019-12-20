@@ -3007,6 +3007,7 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
+    inferred: Boolean
   ): [TimeSeries] @auth
   # Incidents
   incident(id: String!): Incident @auth
@@ -3026,6 +3027,7 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
+    inferred: Boolean
   ): [TimeSeries] @auth
   # Malwares
   malware(id: String!): Malware @auth
