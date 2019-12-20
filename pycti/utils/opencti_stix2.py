@@ -302,6 +302,7 @@ class OpenCTIStix2:
         embedded_relationships = self.extract_embedded_relationships(stix_object, types)
         created_by_ref_id = embedded_relationships['created_by_ref']
         marking_definitions_ids = embedded_relationships['marking_definitions']
+        tags_ids = embedded_relationships['tags']
         kill_chain_phases_ids = embedded_relationships['kill_chain_phases']
         object_refs_ids = embedded_relationships['object_refs']
         external_references_ids = embedded_relationships['external_references']
@@ -356,6 +357,13 @@ class OpenCTIStix2:
                     id=stix_object_result['id'],
                     entity=stix_object_result,
                     marking_definition_id=marking_definition_id
+                )
+            # Add tags
+            for tag_id in tags_ids:
+                self.opencti.stix_entity.add_tag(
+                    id=stix_object_result['id'],
+                    entity=stix_object_result,
+                    marking_definition_id=tag_id
                 )
             # Add external references
             for external_reference_id in external_references_ids:
