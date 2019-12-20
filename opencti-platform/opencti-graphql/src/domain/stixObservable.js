@@ -86,6 +86,7 @@ export const addStixObservable = async (user, stixObservable, createIndicator = 
     const pattern = await createStixPattern(created.entity_type, created.observable_value);
     if (pattern) {
       const indicatorToCreate = pipe(
+        dissoc('stix_id_key'),
         dissoc('observable_value'),
         assoc('name', stixObservable.observable_value),
         assoc(
