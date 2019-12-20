@@ -79,14 +79,9 @@ class Indicators extends Component {
   renderLines(paginationOptions) {
     const { sortBy, orderAsc, searchTerm } = this.state;
     const dataColumns = {
-      main_observable_type: {
-        label: 'Type',
-        width: '10%',
-        isSortable: true,
-      },
       name: {
         label: 'Name',
-        width: '25%',
+        width: '35%',
         isSortable: true,
       },
       valid_from: {

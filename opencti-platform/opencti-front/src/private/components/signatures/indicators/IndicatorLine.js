@@ -48,7 +48,7 @@ const styles = (theme) => ({
 class IndicatorLineComponent extends Component {
   render() {
     const {
-      t, fd, classes, dataColumns, node,
+      fd, classes, dataColumns, node,
     } = this.props;
     return (
       <ListItem
@@ -64,12 +64,6 @@ class IndicatorLineComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.main_observable_type.width }}
-              >
-                {t(`observable_${node.main_observable_type.toLowerCase()}`)}
-              </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
@@ -164,12 +158,6 @@ class IndicatorLineDummyComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.main_observable_type.width }}
-              >
-                <div className="fakeItem" style={{ width: '80%' }} />
-              </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}

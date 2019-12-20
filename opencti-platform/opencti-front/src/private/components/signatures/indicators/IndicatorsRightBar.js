@@ -66,55 +66,67 @@ class IndicatorsRightBar extends Component {
               checked={indicatorTypes.includes('stix')}
               disableRipple={true}
             />
-            <ListItemText primary="stix" />
+            <ListItemText primary="STIX" />
           </ListItem>
           <ListItem
             dense={true}
             button={true}
-            onClick={handleToggleIndicatorType.bind(this, 'stix')}
+            onClick={handleToggleIndicatorType.bind(this, 'pcre')}
             classes={{ root: classes.item }}
           >
             <Checkbox
-              checked={indicatorTypes.includes('stix')}
+              checked={indicatorTypes.includes('pcre')}
               disableRipple={true}
             />
-            <ListItemText primary="stix" />
+            <ListItemText primary="PCRE" />
           </ListItem>
           <ListItem
             dense={true}
             button={true}
-            onClick={handleToggleIndicatorType.bind(this, 'stix')}
+            onClick={handleToggleIndicatorType.bind(this, 'sigma')}
             classes={{ root: classes.item }}
           >
             <Checkbox
-              checked={indicatorTypes.includes('stix')}
+              checked={indicatorTypes.includes('sigma')}
               disableRipple={true}
             />
-            <ListItemText primary="stix" />
+            <ListItemText primary="SIGMA" />
           </ListItem>
           <ListItem
             dense={true}
             button={true}
-            onClick={handleToggleIndicatorType.bind(this, 'stix')}
+            onClick={handleToggleIndicatorType.bind(this, 'snort')}
             classes={{ root: classes.item }}
           >
             <Checkbox
-              checked={indicatorTypes.includes('stix')}
+              checked={indicatorTypes.includes('snort')}
               disableRipple={true}
             />
-            <ListItemText primary="stix" />
+            <ListItemText primary="SNORT" />
           </ListItem>
           <ListItem
             dense={true}
             button={true}
-            onClick={handleToggleIndicatorType.bind(this, 'stix')}
+            onClick={handleToggleIndicatorType.bind(this, 'suricata')}
             classes={{ root: classes.item }}
           >
             <Checkbox
-              checked={indicatorTypes.includes('stix')}
+              checked={indicatorTypes.includes('suricata')}
               disableRipple={true}
             />
-            <ListItemText primary="stix" />
+            <ListItemText primary="Suricata" />
+          </ListItem>
+          <ListItem
+            dense={true}
+            button={true}
+            onClick={handleToggleIndicatorType.bind(this, 'yara')}
+            classes={{ root: classes.item }}
+          >
+            <Checkbox
+              checked={indicatorTypes.includes('yara')}
+              disableRipple={true}
+            />
+            <ListItemText primary="YARA" />
           </ListItem>
         </List>
         <List

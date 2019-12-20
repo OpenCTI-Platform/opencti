@@ -8,8 +8,8 @@ sidebar_label: Manual deployment
 
 | Component     | Version               | Link                                                      |
 | ------------- |-----------------------| ----------------------------------------------------------|
-| NodeJS        | `>= 12.* && < 13.0.0` | https://nodejs.org/en/download/                           |
-| Python        | `>= 3.6`              | https://www.python.org/downloads/                         |
+| NodeJS        | `>= 12.* && < 13.0.0` | https://nodejs.org/en/download                            |
+| Python        | `>= 3.6`              | https://www.python.org/downloads                          |
 | Grakn Core    | `=== 1.5.9`           | https://grakn.ai/download#core                            |
 | ElasticSearch | `>= 7.5`              | https://www.elastic.co/downloads/elasticsearch            |
 | MinIO         | `>= 20191012`         | https://min.io/download                                   |

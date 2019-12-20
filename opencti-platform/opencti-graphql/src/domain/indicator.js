@@ -126,7 +126,7 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
   )(indicator);
   // create the linked observables
   let observablesToLink = null;
-  if (createObservables) {
+  if (createObservables && indicator.pattern_type === 'stix') {
     const observables = await extractObservables(indicator.indicator_pattern);
     if (observables && observables.length > 0) {
       observablesToLink = await Promise.all(
