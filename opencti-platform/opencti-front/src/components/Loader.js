@@ -46,11 +46,20 @@ class Loader extends Component {
             ? classes.containerInElement
             : classes.container
         }
-        style={{ paddingRight: withRightPadding ? 260 : 0 }}
+        style={
+          variant === 'inElement'
+            ? { paddingRight: withRightPadding ? 220 : 0 }
+            : {}
+        }
       >
         <div
           className={
             variant === 'inElement' ? classes.loaderInElement : classes.loader
+          }
+          style={
+            variant !== 'inElement'
+              ? { paddingRight: withRightPadding ? 100 : 0 }
+              : {}
           }
         >
           <CircularProgress

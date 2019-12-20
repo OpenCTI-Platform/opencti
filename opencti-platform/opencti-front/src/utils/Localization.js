@@ -118,6 +118,7 @@ const i18n = {
       'Turn to user': 'Transformer en utilisateur',
       'This person is now a user':
         'Cette personne est maintenant un utilisateur',
+      'This relation is inferred': 'Cette relation est inférée',
       'This field is required': 'Ce champ est requis',
       'This field must only contain alphanumeric chars, dashes and space':
         'Ce champ ne peut contenir que des caractères alphanumériques, des tirets et des espaces',

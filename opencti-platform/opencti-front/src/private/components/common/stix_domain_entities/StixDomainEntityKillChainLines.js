@@ -152,28 +152,28 @@ class StixDomainEntityKillChainLinesComponent extends Component {
                         <ListItemText
                           primary={`${attackPattern.to.external_id} - ${attackPattern.to.name}`}
                           secondary={
-                            <Markdown
-                              className="markdown"
-                              source={
-                                // eslint-disable-next-line no-nested-ternary
-                                attackPattern.description
-                                && attackPattern.description.length > 0
-                                  ? attackPattern.description
-                                  : stixRelation.inferred
-                                    ? t('This relation is inferred')
-                                    : t('No description of this usage')
-                              }
-                            />
+                            // eslint-disable-next-line no-nested-ternary
+                            attackPattern.description
+                            && attackPattern.description.length > 0 ? (
+                              <Markdown
+                                className="markdown"
+                                source={attackPattern.description}
+                              />
+                              ) : attackPattern.inferred ? (
+                              <i>{t('This relation is inferred')}</i>
+                              ) : (
+                                t('No description of this usage')
+                              )
                           }
                         />
                         <ItemYears
                           variant="inList"
                           years={
-                            stixRelation.inferred
+                            attackPattern.inferred
                               ? t('Inferred')
                               : attackPattern.years
                           }
-                          disabled={stixRelation.inferred}
+                          disabled={attackPattern.inferred}
                         />
                         <ListItemSecondaryAction>
                           <StixRelationPopover
