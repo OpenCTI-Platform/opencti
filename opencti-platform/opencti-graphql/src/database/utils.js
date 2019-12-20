@@ -81,14 +81,14 @@ export const buildPagination = (first, offset, instances, globalCount) => {
 
 export const execPython3 = async (scriptPath, scriptName, args) => {
   try {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       const options = {
         mode: 'text',
         pythonPath: 'python3',
         scriptPath,
         args
       };
-      await PythonShell.run(scriptName, options, (err, results) => {
+      return PythonShell.run(scriptName, options, (err, results) => {
         if (err) {
           reject(new Error(`Python3 is missing or script not found: ${err}`));
         }

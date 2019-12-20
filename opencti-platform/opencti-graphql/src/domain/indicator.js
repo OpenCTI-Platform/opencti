@@ -64,7 +64,7 @@ const OpenCTITimeToLive = {
   }
 };
 
-export const computeValidUntil = async indicator => {
+const computeValidUntil = async indicator => {
   let validFrom = moment().utc();
   if (indicator.valid_from) {
     validFrom = moment(indicator.valid_from).utc();
@@ -109,7 +109,7 @@ export const computeValidUntil = async indicator => {
   return validUntil.toDate();
 };
 
-export const askEnrich = async (observableId, scope) => {
+const askEnrich = async (observableId, scope) => {
   const targetConnectors = await connectorsForEnrichment(scope, true);
   // Create job for
   const workList = await Promise.all(

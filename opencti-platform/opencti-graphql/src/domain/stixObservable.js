@@ -24,7 +24,7 @@ import { pushToConnector } from '../database/rabbitmq';
 import { addIndicator } from './indicator';
 import { connectorsForEnrichment } from './connector';
 
-export const askEnrich = async (observableId, scope) => {
+const askEnrich = async (observableId, scope) => {
   const targetConnectors = await connectorsForEnrichment(scope, true);
   // Create job for
   const workList = await Promise.all(
