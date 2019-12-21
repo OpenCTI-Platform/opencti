@@ -52,7 +52,7 @@ class EntityIndicators extends Component {
     const { sortBy, orderAsc } = this.state;
     const { entityLink } = this.props;
     const dataColumns = {
-      main_observable_type: {
+      pattern_type: {
         label: 'Type',
         width: '10%',
         isSortable: false,

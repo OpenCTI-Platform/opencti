@@ -126,10 +126,10 @@ const IndicatorLineFragment = createFragmentContainer(IndicatorLineComponent, {
       id
       name
       main_observable_type
+      pattern_type
       valid_from
       valid_until
       score
-      pattern_type
       markingDefinitions {
         edges {
           node {

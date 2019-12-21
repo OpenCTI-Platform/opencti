@@ -14,6 +14,7 @@ import { ShieldSearch } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import ItemConfidenceLevel from '../../../../components/ItemConfidenceLevel';
 import StixRelationPopover from '../../common/stix_relations/StixRelationPopover';
+import ItemPatternType from '../../../../components/ItemPatternType';
 
 const styles = (theme) => ({
   item: {
@@ -44,7 +45,6 @@ const styles = (theme) => ({
 class EntityIndicatorLineComponent extends Component {
   render() {
     const {
-      t,
       nsd,
       classes,
       dataColumns,
@@ -69,9 +69,12 @@ class EntityIndicatorLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.main_observable_type.width }}
+                style={{ width: dataColumns.pattern_type.width }}
               >
-                {t(`observable_${node.to.main_observable_type.toLowerCase()}`)}
+                <ItemPatternType
+                  variant="inList"
+                  label={node.to.pattern_type}
+                />
               </div>
               <div
                 className={classes.bodyItem}
@@ -148,6 +151,7 @@ const EntityIndicatorLineFragment = createFragmentContainer(
             id
             name
             main_observable_type
+            pattern_type
             description
             valid_from
             valid_until
@@ -178,7 +182,7 @@ class EntityIndicatorLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.main_observable_type.width }}
+                style={{ width: dataColumns.pattern_type.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
