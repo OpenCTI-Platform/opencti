@@ -350,13 +350,13 @@ class OpenCTIStix2:
                 'id': stix_object_result['id'],
                 'type': stix_object_result['entity_type'],
                 'observableRefs': stix_object_result[
-                    'observableRefs'] if 'observableRefs' in stix_object_result else None
+                    'observableRefs'] if 'observableRefs' in stix_object_result else []
             }
             self.mapping_cache[stix_object_result['id']] = {
                 'id': stix_object_result['id'],
                 'type': stix_object_result['entity_type'],
                 'observableRefs': stix_object_result[
-                    'observableRefs'] if 'observableRefs' in stix_object_result else None
+                    'observableRefs'] if 'observableRefs' in stix_object_result else []
             }
 
             # Update created by ref
@@ -369,6 +369,7 @@ class OpenCTIStix2:
                 )
             if created_by_ref_id is not None and \
                     'observableRefs' in stix_object_result and \
+                    stix_object_result['observableRefs'] is not None and \
                     len(stix_object_result['observableRefs']) > 0:
                 for observable_ref in stix_object_result['observableRefs']:
                     self.opencti.stix_entity.update_created_by_ref(
@@ -383,8 +384,9 @@ class OpenCTIStix2:
                     entity=stix_object_result,
                     marking_definition_id=marking_definition_id
                 )
-                if 'observableRefs' in stix_object_result \
-                        and len(stix_object_result['observableRefs']) > 0:
+                if 'observableRefs' in stix_object_result and \
+                        stix_object_result['observableRefs'] is not None and \
+                        len(stix_object_result['observableRefs']) > 0:
                     for observable_ref in stix_object_result['observableRefs']:
                         self.opencti.stix_entity.add_marking_definition(
                             id=observable_ref['id'],
@@ -427,6 +429,7 @@ class OpenCTIStix2:
                 if object_refs_id in self.mapping_cache and \
                         'observableRefs' in self.mapping_cache[object_refs_id] and \
                         self.mapping_cache[object_refs_id] is not None and \
+                        self.mapping_cache[object_refs_id]['observableRefs'] is not None and \
                         len(self.mapping_cache[object_refs_id]['observableRefs']) > 0:
                     for observable_ref in self.mapping_cache[object_refs_id]['observableRefs']:
                         self.opencti.report.add_stix_observable(
@@ -456,6 +459,7 @@ class OpenCTIStix2:
         if source_ref in self.mapping_cache:
             if stix_relation['relationship_type'] in OBSERVABLE_RELATIONS and \
                     'observableRefs' in self.mapping_cache[source_ref] and \
+                    self.mapping_cache[source_ref]['observableRefs'] is not None and \
                     len(self.mapping_cache[source_ref]['observableRefs']) > 0:
                 source_id = self.mapping_cache[source_ref]['observableRefs'][0]['id']
                 source_type = self.mapping_cache[source_ref]['observableRefs'][0]['entity_type']
@@ -479,6 +483,7 @@ class OpenCTIStix2:
         if target_ref in self.mapping_cache:
             if stix_relation['relationship_type'] in OBSERVABLE_RELATIONS and \
                     'observableRefs' in self.mapping_cache[target_ref] and \
+                    self.mapping_cache[target_ref]['observableRefs'] is not None and \
                     len(self.mapping_cache[target_ref]['observableRefs']) > 0:
                 target_id = self.mapping_cache[target_ref]['observableRefs'][0]['id']
                 target_type = self.mapping_cache[target_ref]['observableRefs'][0]['entity_type']
