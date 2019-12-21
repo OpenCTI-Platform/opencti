@@ -383,7 +383,8 @@ class OpenCTIStix2:
                     entity=stix_object_result,
                     marking_definition_id=marking_definition_id
                 )
-                if 'observableRefs' in stix_object_result and len(stix_object_result['observableRefs']) > 0:
+                if 'observableRefs' in stix_object_result \
+                        and len(stix_object_result['observableRefs']) > 0:
                     for observable_ref in stix_object_result['observableRefs']:
                         self.opencti.stix_entity.add_marking_definition(
                             id=observable_ref['id'],
@@ -423,8 +424,10 @@ class OpenCTIStix2:
                     report=stix_object_result,
                     entity_id=object_refs_id
                 )
-                if object_refs_id in self.mapping_cache and 'observableRefs' in self.mapping_cache[
-                    object_refs_id] and len(self.mapping_cache[object_refs_id]['observableRefs']) > 0:
+                if object_refs_id in self.mapping_cache and \
+                        'observableRefs' in self.mapping_cache[object_refs_id] and \
+                        self.mapping_cache[object_refs_id] is not None and \
+                        len(self.mapping_cache[object_refs_id]['observableRefs']) > 0:
                     for observable_ref in self.mapping_cache[object_refs_id]['observableRefs']:
                         self.opencti.report.add_stix_observable(
                             id=stix_object_result['id'],
