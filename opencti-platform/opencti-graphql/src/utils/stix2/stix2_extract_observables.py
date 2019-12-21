@@ -9,6 +9,7 @@ STIX2OPENCTI = {
     'file:hashes.md5': 'File-MD5',
     'file:hashes.sha1': 'File-SHA1',
     'file:hashes.sha256': 'File-SHA256',
+    'file:name': 'File-Name',
     'ipv4-addr:value': 'IPv4-Addr',
     'ipv6-addr:value': 'IPv6-Addr',
     'domain:value': 'Domain',
