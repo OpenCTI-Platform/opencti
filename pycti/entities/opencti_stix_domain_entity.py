@@ -137,6 +137,22 @@ class StixDomainEntity:
             ... on Tool {
                 tool_version
             }
+            ... on Indicator {
+                indicator_pattern
+                pattern_type
+                observableRefs {
+                    edges {
+                        node {
+                            id
+                            stix_id_key
+                            entity_type
+                        }
+                        relation {
+                            id
+                        }
+                    }
+                }
+            }
             ... on Report {
                 report_class
                 published
