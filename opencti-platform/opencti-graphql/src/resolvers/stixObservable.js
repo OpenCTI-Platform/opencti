@@ -18,8 +18,8 @@ import {
 import { pubsub } from '../database/redis';
 import withCancel from '../schema/subscriptionWrapper';
 import { workForEntity } from '../domain/work';
-import { connectorsForEnrichment } from '../domain/connector';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
+import { connectorsForEnrichment } from '../domain/enrichment';
 
 const stixObservableResolvers = {
   Query: {
