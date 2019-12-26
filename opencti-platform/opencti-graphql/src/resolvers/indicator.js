@@ -1,4 +1,4 @@
-import { addIndicator, findAll, findById, observableRefs, clear } from '../domain/indicator';
+import { addIndicator, findAll, findById, observableRefs } from '../domain/indicator';
 import {
   stixDomainEntityAddRelation,
   stixDomainEntityCleanContext,
@@ -16,7 +16,7 @@ const indicatorResolvers = {
   },
   IndicatorsOrdering: {
     markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
-    tags: `${REL_INDEX_PREFIX}tagged.value`,
+    tags: `${REL_INDEX_PREFIX}tagged.value`
   },
   IndicatorsFilter: {
     observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`

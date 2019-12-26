@@ -9,13 +9,13 @@
     "build": "webpack --mode production",
     "serv": "node build/index.js",
     "lint": "eslint --max-warnings 0 .",
-    "index": "babel-node -r node_modules/dotenv/config ./src/indexer.js",
-    "migrate:add": "migrate create --migrations-dir=./src/migrations",
+    "migrate:add": "migrate create --template-file src/utils/migration-template.js --migrations-dir=./src/migrations",
     "test": "yarn build && jest --coverage --e test",
+    "index": "babel-node -r node_modules/dotenv/config ./src/indexer.js",
     "clean": "babel-node ./src/database/clean.js"
   },
   "bin": {
-    "opencti-graphql": "./dist/server.js"
+    "opencti-graphql": "./build/index.js"
   },
   "pkg": {
     "scripts": "dist/**/*.js",
@@ -105,9 +105,6 @@
     "webpack-node-externals": "^1.7.2",
     "clean-webpack-plugin": "^3.0.0",
     "ora": "^4.0.2"
-  },
-  "jest": {
-    "testRegex": "/tests/.*/.*-test.js$"
   },
   "directories": {
     "test": "tests"

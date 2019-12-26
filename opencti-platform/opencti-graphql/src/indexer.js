@@ -1,9 +1,10 @@
 import moment from 'moment';
-import { index } from './database/indexing';
+import index from './database/indexing';
+import { logger } from './config/conf';
 
 const start = moment();
-console.log(`> ---------------------------------------------------------------------`);
+logger.info(`> ---------------------------------------------------------------------`);
 index().then(() => {
   const execDuration = moment.duration(moment().diff(start));
-  console.log(`Indexing done in ${execDuration.asSeconds()} seconds (${execDuration.humanize()})`);
+  logger.info(`Indexing done in ${execDuration.asSeconds()} seconds (${execDuration.humanize()})`);
 });

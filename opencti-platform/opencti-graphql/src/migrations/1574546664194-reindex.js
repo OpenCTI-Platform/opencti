@@ -1,5 +1,5 @@
 import { executeWrite, write } from '../database/grakn';
-import { index } from '../database/indexing';
+import index from '../database/indexing';
 import { logger } from '../config/conf';
 
 export const up = async next => {

@@ -20,8 +20,7 @@ const regionResolvers = {
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) =>
-        stixDomainEntityDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
     }),
     regionAdd: (_, { input }, { user }) => addRegion(user, input)
   }

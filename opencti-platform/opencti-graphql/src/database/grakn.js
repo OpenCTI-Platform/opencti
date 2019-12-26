@@ -771,12 +771,22 @@ export const listRelations = async (relationType, relationFilter, args) => {
     return elPaginate(INDEX_STIX_RELATIONS, paginateArgs);
   }
   // 1- If not, use Grakn
-  // eslint-disable-next-line prettier/prettier
-  const queryFromTypes = fromTypes && fromTypes.length > 0 ?
-    pipe(map(e => `{ $from isa ${e}; }`), join(' or '), concat(__, ';'))(fromTypes) : '';
-  // eslint-disable-next-line prettier/prettier
-  const queryToTypes = toTypes && toTypes.length > 0 ?
-    pipe(map(e => `{ $to isa ${e}; }`), join(' or '), concat(__, ';'))(toTypes) : '';
+  const queryFromTypes =
+    fromTypes && fromTypes.length > 0
+      ? pipe(
+          map(e => `{ $from isa ${e}; }`),
+          join(' or '),
+          concat(__, ';')
+        )(fromTypes)
+      : '';
+  const queryToTypes =
+    toTypes && toTypes.length > 0
+      ? pipe(
+          map(e => `{ $to isa ${e}; }`),
+          join(' or '),
+          concat(__, ';')
+        )(toTypes)
+      : '';
   // Search
   const relationsFields = [];
   const attributesFields = [];
