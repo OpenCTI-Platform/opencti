@@ -92,6 +92,7 @@ class StixObservable:
     """
         List StixObservable objects
 
+        :param types: the array of types
         :param filters: the filters to apply
         :param search: the search keyword
         :param first: return the first n rows from the after ID (or the beginning if not set)
@@ -100,6 +101,7 @@ class StixObservable:
     """
 
     def list(self, **kwargs):
+        types = kwargs.get('types', None)
         filters = kwargs.get('filters', None)
         search = kwargs.get('search', None)
         first = kwargs.get('first', 500)
@@ -108,8 +110,8 @@ class StixObservable:
         order_mode = kwargs.get('orderMode', None)
         self.opencti.log('info', 'Listing StixObservables with filters ' + json.dumps(filters) + '.')
         query = """
-            query StixObservables($filters: [StixObservablesFiltering], $search: String, $first: Int, $after: ID, $orderBy: StixObservablesOrdering, $orderMode: OrderingMode) {
-                stixObservables(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+            query StixObservables($types: [String], $filters: [StixObservablesFiltering], $search: String, $first: Int, $after: ID, $orderBy: StixObservablesOrdering, $orderMode: OrderingMode) {
+                stixObservables(types: $types, filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
                             """ + self.properties + """
@@ -125,7 +127,7 @@ class StixObservable:
                 }
             }
         """
-        result = self.opencti.query(query, {'filters': filters, 'search': search, 'first': first, 'after': after,
+        result = self.opencti.query(query, {'types': types, 'filters': filters, 'search': search, 'first': first, 'after': after,
                                             'orderBy': order_by, 'orderMode': order_mode})
         return self.opencti.process_multiple(result['data']['stixObservables'])
 
