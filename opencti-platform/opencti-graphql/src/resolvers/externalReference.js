@@ -12,7 +12,7 @@ import {
   findById
 } from '../domain/externalReference';
 import { fetchEditContext, pubsub } from '../database/redis';
-import withCancel from '../schema/subscriptionWrapper';
+import withCancel from '../graphql/subscriptionWrapper';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const externalReferenceResolvers = {

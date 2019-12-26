@@ -1,6 +1,6 @@
 import { addMarkingDefinition } from '../domain/markingDefinition';
 
-module.exports.up = async next => {
+export const up = async next => {
   await addMarkingDefinition(
     {},
     {
@@ -44,6 +44,6 @@ module.exports.up = async next => {
   next();
 };
 
-module.exports.down = async next => {
+export const down = async next => {
   next();
 };

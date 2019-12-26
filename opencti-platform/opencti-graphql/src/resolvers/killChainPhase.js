@@ -13,7 +13,7 @@ import {
 } from '../domain/killChainPhase';
 import { markingDefinitions } from '../domain/stixEntity';
 import { fetchEditContext, pubsub } from '../database/redis';
-import withCancel from '../schema/subscriptionWrapper';
+import withCancel from '../graphql/subscriptionWrapper';
 
 const killChainPhaseResolvers = {
   Query: {

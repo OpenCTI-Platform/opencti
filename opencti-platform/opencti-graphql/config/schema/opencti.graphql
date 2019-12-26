@@ -869,6 +869,7 @@ input UsersFiltering {
 enum UserRole {
   ROLE_ROOT
   ROLE_ADMIN
+  ROLE_USER
 }
 type UserConnection {
   pageInfo: PageInfo!

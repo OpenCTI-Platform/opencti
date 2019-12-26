@@ -16,7 +16,7 @@ const removeAttributeForEntityType = async (entityType, role) => {
   });
 };
 
-module.exports.up = async next => {
+export const up = async next => {
   await removeAttributeForEntityType('tag', 'tagged');
   await removeAttributeForEntityType('kill-chain-phase', 'kill_chain_phases');
   await removeAttributeForEntityType('marking-definition', 'object_marking_refs');
@@ -24,6 +24,6 @@ module.exports.up = async next => {
   next();
 };
 
-module.exports.down = async next => {
+export const down = async next => {
   next();
 };

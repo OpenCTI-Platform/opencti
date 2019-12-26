@@ -1,7 +1,7 @@
 import { write } from '../database/grakn';
 import { logger } from '../config/conf';
 
-module.exports.up = async next => {
+export const up = async next => {
   // Delete the default
   try {
     await write('undefine UserTargetsRule sub rule;');
@@ -11,6 +11,6 @@ module.exports.up = async next => {
   next();
 };
 
-module.exports.down = async next => {
+export const down = async next => {
   next();
 };

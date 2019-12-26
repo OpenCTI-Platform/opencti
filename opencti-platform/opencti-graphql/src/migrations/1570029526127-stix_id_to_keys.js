@@ -10,7 +10,7 @@ import {
 import { logger } from '../config/conf';
 import { elIndex } from '../database/elasticSearch';
 
-module.exports.up = async next => {
+export const up = async next => {
   logger.info(
     `[MIGRATION] stix_id_to_keys > Starting the migration of all STIX_ID to keys... /!\\ This migration could take some time!`
   );
@@ -85,6 +85,6 @@ module.exports.up = async next => {
   next();
 };
 
-module.exports.down = async next => {
+export const down = async next => {
   next();
 };

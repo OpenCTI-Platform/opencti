@@ -9,7 +9,7 @@ import {
   getApplicationInfo
 } from '../domain/settings';
 import { fetchEditContext, pubsub } from '../database/redis';
-import withCancel from '../schema/subscriptionWrapper';
+import withCancel from '../graphql/subscriptionWrapper';
 
 const settingsResolvers = {
   Query: {

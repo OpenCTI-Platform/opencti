@@ -1,19 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { addLocaleData, IntlProvider } from 'react-intl';
+import { IntlProvider } from 'react-intl';
 import MomentUtils from '@date-io/moment';
 import 'moment/locale/fr';
 import moment from 'moment';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
-import enLocaleData from 'react-intl/locale-data/en';
-import frLocaleData from 'react-intl/locale-data/fr';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { pathOr } from 'ramda';
 import locale from '../utils/BrowserLanguage';
 import i18n from '../utils/Localization';
-
-addLocaleData([...enLocaleData, ...frLocaleData]);
 
 class AppIntlProvider extends Component {
   render() {
@@ -24,7 +20,6 @@ class AppIntlProvider extends Component {
       this.props,
     );
     const userLanguage = pathOr(null, ['me', 'language'], this.props);
-
     const platformLang = platformLanguage !== null && platformLanguage !== 'auto'
       ? this.props.settings.platform_language
       : locale;
@@ -36,8 +31,7 @@ class AppIntlProvider extends Component {
         <MuiPickersUtilsProvider
           utils={MomentUtils}
           locale={lang}
-          moment={moment}
-        >
+          moment={moment}>
           {children}
         </MuiPickersUtilsProvider>
       </IntlProvider>

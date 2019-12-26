@@ -1,9 +1,8 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Redirect, Switch } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import { compose } from 'ramda';
+import { makeStyles } from '@material-ui/core/styles';
 import { QueryRenderer } from '../relay/environment';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import TopBar from './components/nav/TopBar';
@@ -27,7 +26,7 @@ import Message from '../components/Message';
 import { NoMatch, BoundaryRoute } from './components/Error';
 import Loader from '../components/Loader';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     height: '100%',
   },
@@ -46,7 +45,7 @@ const styles = (theme) => ({
     marginRight: theme.spacing(1),
   },
   toolbar: theme.mixins.toolbar,
-});
+}));
 
 const rootQuery = graphql`
   query RootQuery {
@@ -61,11 +60,10 @@ const rootQuery = graphql`
   }
 `;
 
-class Root extends Component {
-  render() {
-    const { classes } = this.props;
-    const paddingRight = 24;
-    return (
+const Root = () => {
+  const paddingRight = 24;
+  const classes = useStyles();
+  return (
       <QueryRenderer
         query={rootQuery}
         variables={{}}
@@ -80,67 +78,38 @@ class Root extends Component {
                   <main className={classes.content} style={{ paddingRight }}>
                     <div className={classes.toolbar} />
                     <Switch>
-                      <BoundaryRoute
-                        exact
-                        path="/dashboard"
-                        component={Dashboard}
-                      />
-                      <BoundaryRoute
-                        exact
-                        path="/dashboard/search/:keyword"
+                      <BoundaryRoute exact path="/dashboard" component={Dashboard}/>
+                      <BoundaryRoute exact path="/dashboard/search/:keyword"
                         render={(routeProps) => (
                           <Search {...routeProps} me={props.me} />
                         )}
                       />
-                      <BoundaryRoute
-                        path="/dashboard/threats"
-                        component={RootThreats}
-                      />
-                      <BoundaryRoute
-                        path="/dashboard/techniques"
-                        component={RootTechniques}
-                      />
-                      <BoundaryRoute
-                        path="/dashboard/signatures"
-                        component={RootSignatures}
-                      />
-                      <BoundaryRoute
-                        exact
-                        path="/dashboard/reports"
+                      <BoundaryRoute path="/dashboard/threats" component={RootThreats}/>
+                      <BoundaryRoute path="/dashboard/techniques" component={RootTechniques}/>
+                      <BoundaryRoute path="/dashboard/signatures" component={RootSignatures}/>
+                      <BoundaryRoute exact path="/dashboard/reports"
                         render={() => <Redirect to="/dashboard/reports/all" />}
                       />
-                      <BoundaryRoute
-                        exact
-                        path="/dashboard/reports/references"
+                      <BoundaryRoute exact path="/dashboard/reports/references"
                         component={ExternalReferences}
                       />
-                      <BoundaryRoute
-                        exact
-                        path="/dashboard/reports/:reportClass"
+                      <BoundaryRoute exact path="/dashboard/reports/:reportClass"
                         render={(routeProps) => (
                           <Reports displayCreate={true} {...routeProps} />
                         )}
                       />
-                      <BoundaryRoute
-                        path="/dashboard/reports/all/:reportId"
+                      <BoundaryRoute path="/dashboard/reports/all/:reportId"
                         render={(routeProps) => (
                           <RootReport {...routeProps} me={props.me} />
                         )}
                       />
-                      <BoundaryRoute
-                        path="/dashboard/entities"
-                        component={RootEntities}
-                      />
-                      <BoundaryRoute
-                        exact
-                        path="/dashboard/explore"
+                      <BoundaryRoute path="/dashboard/entities" component={RootEntities}/>
+                      <BoundaryRoute exact path="/dashboard/explore"
                         render={(routeProps) => (
                           <Workspaces {...routeProps} workspaceType="explore" />
                         )}
                       />
-                      <BoundaryRoute
-                        exact
-                        path="/dashboard/explore/:workspaceId"
+                      <BoundaryRoute exact path="/dashboard/explore/:workspaceId"
                         render={(routeProps) => (
                           <RootWorkspace
                             {...routeProps}
@@ -148,14 +117,7 @@ class Root extends Component {
                           />
                         )}
                       />
-                      {/* <BoundaryRoute
-                          exact
-                          path="/dashboard/investigate"
-                          component={Workspaces}
-                        /> */}
-                      <BoundaryRoute
-                        exact
-                        path="/dashboard/investigate/:workspaceId"
+                      <BoundaryRoute exact path="/dashboard/investigate/:workspaceId"
                         render={(routeProps) => (
                           <RootWorkspace
                             {...routeProps}
@@ -163,27 +125,16 @@ class Root extends Component {
                           />
                         )}
                       />
-                      <BoundaryRoute
-                        exact
-                        path="/dashboard/connectors"
+                      <BoundaryRoute exact path="/dashboard/connectors"
                         render={(routeProps) => <Connectors {...routeProps} />}
                       />
-                      <BoundaryRoute
-                        path="/dashboard/settings"
-                        component={RootSettings}
-                      />
-                      <BoundaryRoute
-                        exact
-                        path="/dashboard/profile"
+                      <BoundaryRoute path="/dashboard/settings" component={RootSettings}/>
+                      <BoundaryRoute exact path="/dashboard/profile"
                         render={(routeProps) => (
                           <Profile {...routeProps} me={props.me} />
                         )}
                       />
-                      <BoundaryRoute
-                        path="/dashboard/import"
-                        component={RootImport}
-                        me={props.me}
-                      />
+                      <BoundaryRoute path="/dashboard/import" component={RootImport} me={props.me}/>
                       <Route component={NoMatch} />
                     </Switch>
                   </main>
@@ -194,13 +145,12 @@ class Root extends Component {
           return <Loader />;
         }}
       />
-    );
-  }
-}
+  );
+};
 
 Root.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default compose(withStyles(styles))(Root);
+export default Root;

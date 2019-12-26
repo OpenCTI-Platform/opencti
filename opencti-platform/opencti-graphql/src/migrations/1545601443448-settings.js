@@ -1,6 +1,6 @@
 import { addSettings } from '../domain/settings';
 
-module.exports.up = async next => {
+export const up = async next => {
   await addSettings(
     {},
     {
@@ -16,6 +16,6 @@ module.exports.up = async next => {
   next();
 };
 
-module.exports.down = async next => {
+export const down = async next => {
   next();
 };

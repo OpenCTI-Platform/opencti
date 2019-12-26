@@ -3,13 +3,13 @@ import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
 
+const DEFAULT_ENV = 'production';
 export const ROLE_ADMIN = 'ROLE_ADMIN';
 export const ROLE_USER = 'ROLE_USER';
 export const OPENCTI_TOKEN = 'opencti_token';
 export const OPENCTI_WEB_TOKEN = 'Default';
 export const OPENCTI_ISSUER = 'OpenCTI';
 export const OPENCTI_DEFAULT_DURATION = 'P99Y';
-
 export const BUS_TOPICS = {
   Settings: {
     EDIT_TOPIC: 'SETTINGS_EDIT_TOPIC',
@@ -76,20 +76,21 @@ nconf.add('argv', {
 });
 
 // Priority to command line parameter and fallback to DEFAULT_ENV
-const DEFAULT_ENV = 'production';
-const DEFAULT_CONF_PATH = path.join(__dirname, '../../config/');
+const currentPath = process.env.INIT_CWD || process.cwd();
+const resolvePath = relativePath => path.join(currentPath, relativePath);
 const environment = nconf.get('env') || nconf.get('node_env') || DEFAULT_ENV;
+const resolveEnvFile = env => path.join(resolvePath('config'), `${env.toLowerCase()}.json`);
 export const DEV_MODE = environment !== 'production';
 const externalConfigurationFile = nconf.get('conf');
 let configurationFile;
 if (externalConfigurationFile) {
   configurationFile = externalConfigurationFile;
 } else {
-  configurationFile = `${DEFAULT_CONF_PATH}${environment.toLowerCase()}.json`;
+  configurationFile = resolveEnvFile(environment);
 }
 
 nconf.file(environment, configurationFile);
-nconf.file('default', `${DEFAULT_CONF_PATH}/default.json`);
+nconf.file('default', resolveEnvFile('default'));
 
 // Setup logger
 export const logger = winston.createLogger({
@@ -120,6 +121,5 @@ logger.add(
 
 // eslint-disable-next-line
 logger.info(`🚀 OpenCTI started in ${environment} mode with ${externalConfigurationFile ? 'external' : 'embedded'} file`);
-export const isAppRealTime =
-  nconf.get('app:reactive') && JSON.parse(nconf.get('app:reactive'));
+export const isAppRealTime = nconf.get('app:reactive') && JSON.parse(nconf.get('app:reactive'));
 export default nconf;

@@ -1,7 +1,7 @@
 import { executeWrite } from '../database/grakn';
 import { logger } from '../config/conf';
 
-module.exports.up = async next => {
+export const up = async next => {
   try {
     await executeWrite(async wTx => {
       await wTx.tx.query('match $x isa Connector; delete $x;');
@@ -17,6 +17,6 @@ module.exports.up = async next => {
   next();
 };
 
-module.exports.down = async next => {
+export const down = async next => {
   next();
 };
