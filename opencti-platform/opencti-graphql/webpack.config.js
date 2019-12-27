@@ -27,9 +27,8 @@ module.exports = (env, argv) => {
     output: {
       path: resolvePath('build'),
       libraryTarget: 'commonjs2'
-      // devtoolModuleFilenameTemplate: isDev ? '[absolute-resource-path]' : '[resource-path]'
     },
-    devtool: isDev ? 'eval-source-map' : 'inline-source-map-nosources',
+    devtool: isDev ? 'eval-source-map' : '',
     optimization: { noEmitOnErrors: true },
     stats: !isDev && {
       children: false,
@@ -57,9 +56,7 @@ module.exports = (env, argv) => {
       new CleanWebpackPlugin(),
       ...addIf(isDev, [
         new HotModuleReplacementPlugin(),
-        new StartServerPlugin({
-          // nodeArgs: ['--inspect'],
-        }),
+        new StartServerPlugin(),
         {
           apply: compiler => {
             const interactive = process.stdout.isTTY;
