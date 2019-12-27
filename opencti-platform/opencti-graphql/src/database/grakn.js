@@ -1139,9 +1139,10 @@ export const timeSeriesRelations = async options => {
   } else {
     const query = `match $x($from, $to) isa ${entityType}; ${
       toTypes && toTypes.length > 0
-        ? `${join(' ', map(toType => `{ $to isa ${escape(toType)}; } or`, toTypes))} { $to isa ${escape(
-            head(toTypes)
-          )}; };`
+        ? `${join(
+            ' ',
+            map(toType => `{ $to isa ${escape(toType)}; } or`, toTypes)
+          )} { $to isa ${escape(head(toTypes))}; };`
         : ''
     } ${fromId ? `$from has internal_id_key "${escapeString(fromId)}"` : '$from isa Stix-Domain-Entity'}`;
     const finalQuery = `${query}; $x has ${field}_${interval} $g; get; group $g; ${operation};`;
@@ -1177,9 +1178,10 @@ export const distributionRelations = async options => {
   } else {
     const query = `match $rel($from, $to) isa ${entityType}; ${
       toTypes && toTypes.length > 0
-        ? `${join(' ', map(toType => `{ $to isa ${escape(toType)}; } or`, toTypes))} { $to isa ${escape(
-            head(toTypes)
-          )}; };`
+        ? `${join(
+            ' ',
+            map(toType => `{ $to isa ${escape(toType)}; } or`, toTypes)
+          )} { $to isa ${escape(head(toTypes))}; };`
         : ''
     } ${fromId ? `$from has internal_id_key "${escapeString(fromId)}";` : '$from isa Stix-Domain-Entity;'} 
     ${
@@ -1484,10 +1486,7 @@ export const createEntity = async (entity, type, opts = {}) => {
     data = pipe(assoc('alias', data.alias ? data.alias : ['']))(data);
   }
   if (modelType === TYPE_STIX_OBSERVABLE) {
-    data = pipe(
-      assoc('stix_id_key', stixId),
-      assoc('name', data.name ? data.name : '')
-    )(data);
+    data = pipe(assoc('stix_id_key', stixId), assoc('name', data.name ? data.name : ''))(data);
   }
   if (modelType === TYPE_STIX_DOMAIN || modelType === TYPE_STIX_DOMAIN_ENTITY) {
     data = pipe(

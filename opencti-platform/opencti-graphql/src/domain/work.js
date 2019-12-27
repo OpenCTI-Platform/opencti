@@ -126,11 +126,7 @@ export const createWork = async (connector, entityId = null, fileId = null) => {
 
 export const updateJob = async (jobId, status, messages) => {
   const job = await elLoadById(jobId, null, INDEX_WORK_JOBS);
-  const updatedJob = pipe(
-    assoc('job_status', status),
-    assoc('messages', messages),
-    assoc('updated_at', now())
-  )(job);
+  const updatedJob = pipe(assoc('job_status', status), assoc('messages', messages), assoc('updated_at', now()))(job);
   await elIndex(INDEX_WORK_JOBS, updatedJob);
   return updatedJob;
 };

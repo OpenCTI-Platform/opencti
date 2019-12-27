@@ -77,11 +77,7 @@ const computeValidUntil = async indicator => {
         return findMarkingDefinitionById(markingDefinitionId);
       })
     );
-    markingDefinition = pipe(
-      sortWith([descend(prop('level'))]),
-      head,
-      prop('definition')
-    )(markingDefinitions);
+    markingDefinition = pipe(sortWith([descend(prop('level'))]), head, prop('definition'))(markingDefinitions);
   }
   // check if kill chain phase is delivery
   let isKillChainPhaseDelivery = 'no';

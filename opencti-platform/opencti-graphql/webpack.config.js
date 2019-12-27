@@ -1,7 +1,6 @@
 const path = require('path');
 const { DefinePlugin, HotModuleReplacementPlugin } = require('webpack');
 const nodeExternals = require('webpack-node-externals');
-const TerserPlugin = require('terser-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const StartServerPlugin = require('start-server-webpack-plugin');
 const ora = require('ora');
@@ -27,22 +26,11 @@ module.exports = (env, argv) => {
     target: 'node',
     output: {
       path: resolvePath('build'),
-      libraryTarget: 'commonjs2',
-      devtoolModuleFilenameTemplate: isDev ? '[absolute-resource-path]' : '[resource-path]'
+      libraryTarget: 'commonjs2'
+      // devtoolModuleFilenameTemplate: isDev ? '[absolute-resource-path]' : '[resource-path]'
     },
-    devtool: 'inline-source-map-nosources',
-    optimization: {
-      noEmitOnErrors: true,
-      minimizer: [
-        new TerserPlugin({
-          extractComments: false,
-          sourceMap: true,
-          terserOptions: {
-            mangle: false
-          }
-        })
-      ]
-    },
+    devtool: isDev ? 'eval-source-map' : 'inline-source-map-nosources',
+    optimization: { noEmitOnErrors: true },
     stats: !isDev && {
       children: false,
       entrypoints: false,
@@ -70,7 +58,7 @@ module.exports = (env, argv) => {
       ...addIf(isDev, [
         new HotModuleReplacementPlugin(),
         new StartServerPlugin({
-          nodeArgs: ['--inspect']
+          // nodeArgs: ['--inspect'],
         }),
         {
           apply: compiler => {

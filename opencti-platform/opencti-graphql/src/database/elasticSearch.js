@@ -622,10 +622,7 @@ export const elPaginate = async (indexName, options) => {
     .search(query)
     .then(data => {
       const dataWithIds = map(n => {
-        const loadedElement = pipe(
-          assoc('id', n._source.internal_id_key),
-          assoc('_index', n._index)
-        )(n._source);
+        const loadedElement = pipe(assoc('id', n._source.internal_id_key), assoc('_index', n._index))(n._source);
         if (loadedElement.relationship_type) {
           return elReconstructRelation(loadedElement, relationsMap);
         }
