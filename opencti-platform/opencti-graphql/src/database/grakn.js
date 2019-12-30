@@ -729,7 +729,7 @@ export const listEntities = async (entityTypes, searchFields, args) => {
       : '';
   const baseQuery = `match $elem isa ${headType}; ${extraTypes} ${queryRelationsFields} 
                       ${queryAttributesFields} ${queryAttributesFilters} get;`;
-  return listElements(baseQuery, first, offset, orderBy, orderMode, 'elem',null, false);
+  return listElements(baseQuery, first, offset, orderBy, orderMode, 'elem', null, false);
 };
 export const listRelations = async (relationType, relationFilter, args) => {
   const searchFields = ['name', 'description'];
@@ -1688,7 +1688,7 @@ export const deleteAttributeById = async id => {
  * @param id
  * @returns {Promise}
  */
-export const getRelationInferredById = async id => {
+/* export const getRelationInferredById = async id => {
   const currentDate = now();
   return executeRead(async rTx => {
     const decodedQuery = Buffer.from(id, 'base64').toString('ascii');
@@ -1846,5 +1846,7 @@ export const getRelationInferredById = async id => {
       )(relation);
     });
   });
+}; */
+export const getRelationInferredById = async id => {
+  return id;
 };
-// endregion

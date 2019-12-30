@@ -747,7 +747,7 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@elastic/elasticsearch@^7.4.0":
+"@elastic/elasticsearch@^7.5.0":
   version "7.5.0"
   resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-7.5.0.tgz#a54b07001e1a3912792bf9f34e6ec6a4fe0aef0c"
   integrity sha512-ahzu451ppXepQMb3Zr8eFfWn8QR7yCcUWQjU1dS4X63Ctin0GNwwSPertt4WwDkm6MnZ25o932wAEgyMFLwzdA==
@@ -4276,7 +4276,7 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.3.tgz#4a12ff1b60376ef09862c2093edd908328be8423"
   integrity sha512-a30VEBm4PEdx1dRB7MFK7BejejvCvBronbLjht+sHuGYj8PHs7M/5Z+rt5lw551vZ7yfTCj4Vuyy3mSJytDWRQ==
 
-grakn-client@^1.5.6:
+grakn-client@^1.6.0:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/grakn-client/-/grakn-client-1.6.0.tgz#9ea3b8665fd1fd58e7eff69f2b67a53860ba6c96"
   integrity sha512-y2jPssRjyT8KcGZmlFNf17KDDmljb+hHy+ZPq/Pah5557F6DMiuzsPNQdzzoWbhWlXowciNc+8VQilN9bY2Ufw==
