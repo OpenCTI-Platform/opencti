@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { assoc, descend, dissoc, head, includes, map, pipe, concat, prop, sortWith } from 'ramda';
+import { assoc, concat, descend, dissoc, head, includes, map, pipe, prop, sortWith } from 'ramda';
 import { Promise } from 'bluebird';
 import {
   createEntity,
@@ -16,9 +16,7 @@ import { notify } from '../database/redis';
 import { buildPagination, extractObservables } from '../database/utils';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { findById as findKillChainPhaseById } from './killChainPhase';
-import { connectorsForEnrichment } from './connector';
-import { createWork } from './work';
-import { pushToConnector } from '../database/rabbitmq';
+import { askEnrich } from './enrichment';
 
 const OpenCTITimeToLive = {
   // Formatted as "[Marking-Definition]-[KillChainPhaseIsDelivery]"
@@ -107,35 +105,6 @@ const computeValidUntil = async indicator => {
   }
   const validUntil = validFrom.add(ttl, 'days');
   return validUntil.toDate();
-};
-
-const askEnrich = async (observableId, scope) => {
-  const targetConnectors = await connectorsForEnrichment(scope, true);
-  // Create job for
-  const workList = await Promise.all(
-    map(
-      connector =>
-        createWork(connector, observableId).then(({ job, work }) => ({
-          connector,
-          job,
-          work
-        })),
-      targetConnectors
-    )
-  );
-  // Send message to all correct connectors queues
-  await Promise.all(
-    map(data => {
-      const { connector, work, job } = data;
-      const message = {
-        work_id: work.internal_id_key,
-        job_id: job.internal_id_key,
-        entity_id: observableId
-      };
-      return pushToConnector(connector, message);
-    }, workList)
-  );
-  return workList;
 };
 
 export const findById = indicatorId => {

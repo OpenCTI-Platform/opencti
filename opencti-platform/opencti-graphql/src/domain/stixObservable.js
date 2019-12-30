@@ -1,4 +1,4 @@
-import { assoc, dissoc, map, pipe } from 'ramda';
+import { assoc, dissoc, pipe } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
@@ -22,36 +22,7 @@ import { buildPagination, createStixPattern } from '../database/utils';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { addIndicator } from './indicator';
-import { connectorsForEnrichment } from './connector';
-
-const askEnrich = async (observableId, scope) => {
-  const targetConnectors = await connectorsForEnrichment(scope, true);
-  // Create job for
-  const workList = await Promise.all(
-    map(
-      connector =>
-        createWork(connector, observableId).then(({ job, work }) => ({
-          connector,
-          job,
-          work
-        })),
-      targetConnectors
-    )
-  );
-  // Send message to all correct connectors queues
-  await Promise.all(
-    map(data => {
-      const { connector, work, job } = data;
-      const message = {
-        work_id: work.internal_id_key,
-        job_id: job.internal_id_key,
-        entity_id: observableId
-      };
-      return pushToConnector(connector, message);
-    }, workList)
-  );
-  return workList;
-};
+import { askEnrich } from './enrichment';
 
 export const findById = stixObservableId => {
   return loadEntityById(stixObservableId);

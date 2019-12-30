@@ -12,7 +12,6 @@ import {
 import { connectorConfig, registerConnectorQueues } from '../database/rabbitmq';
 
 export const CONNECTOR_INTERNAL_IMPORT_FILE = 'INTERNAL_IMPORT_FILE'; // Files mime types to support (application/json, ...) -> import-
-export const CONNECTOR_INTERNAL_ENRICHMENT = 'INTERNAL_ENRICHMENT'; // Entity types to support (Report, Hash, ...) -> enrich-
 export const CONNECTOR_INTERNAL_EXPORT_FILE = 'INTERNAL_EXPORT_FILE'; // Files mime types to generate (application/pdf, ...) -> export-
 
 // region utils
@@ -40,8 +39,6 @@ export const connectorsFor = async (type, scope, onlyAlive = false) => {
     filter(c => (scope ? includes(scope.toLowerCase(), map(s => s.toLowerCase(), c.connector_scope)) : true))
   )(connects);
 };
-export const connectorsForEnrichment = async (scope, onlyAlive = false) =>
-  connectorsFor(CONNECTOR_INTERNAL_ENRICHMENT, scope, onlyAlive);
 export const connectorsForExport = async (scope, onlyAlive = false) =>
   connectorsFor(CONNECTOR_INTERNAL_EXPORT_FILE, scope, onlyAlive);
 export const connectorsForImport = async (scope, onlyAlive = false) =>
