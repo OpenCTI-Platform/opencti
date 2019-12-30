@@ -106,10 +106,10 @@ jobs:
           command: git remote add ci ~/opencti && git pull --no-edit -s recursive -X theirs ci master
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/public/ ./opencti-platform/opencti-graphql/public/
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/public ./opencti-platform/opencti-graphql/
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/dist/ ./opencti-platform/opencti-graphql/dist/
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/build ./opencti-platform/opencti-graphql/
       - run:
           working_directory: ~/opencti/deploy
           command: rsync -av ./opencti-connectors/ ./opencti-connectors-enabled/
@@ -143,13 +143,13 @@ jobs:
           command: git remote add ci ~/opencti && git pull --no-edit -s recursive -X theirs ci master          
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/public/ ./opencti-platform/opencti-graphql/public/
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/public ./opencti-platform/opencti-graphql/
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/dist/ ./opencti-platform/opencti-graphql/dist/  
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/build ./opencti-platform/opencti-graphql/
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av ./opencti-connectors/ ./opencti-connectors-enabled/                
+          command: rsync -av ./opencti-connectors/ ./opencti-connectors-enabled/
       - run:
           working_directory: ~/opencti/deploy
           command: git add -A
@@ -180,10 +180,10 @@ jobs:
           command: git remote add ci ~/opencti && git pull --no-edit -s recursive -X theirs ci master          
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/public/ ./opencti-platform/opencti-graphql/public/
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/public ./opencti-platform/opencti-graphql/
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/dist/ ./opencti-platform/opencti-graphql/dist/  
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/build ./opencti-platform/opencti-graphql/
       - run:
           working_directory: ~/opencti/deploy
           command: rsync -av ./opencti-connectors/ ./opencti-connectors-enabled/                

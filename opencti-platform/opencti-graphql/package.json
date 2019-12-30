@@ -7,7 +7,7 @@
   "scripts": {
     "start": "webpack --mode development",
     "build": "webpack --mode production",
-    "serv": "node build/index.js",
+    "serv": "node --max_old_space_size=8192 build/index.js",
     "lint": "eslint --max-warnings 0 .",
     "migrate:add": "migrate create --template-file src/utils/migration-template.js --migrations-dir=./src/migrations",
     "test": "yarn build && jest --coverage --e test",
