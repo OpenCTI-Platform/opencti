@@ -14,7 +14,7 @@ import {
   stixRelationsNumber
 } from '../domain/stixRelation';
 import { pubsub } from '../database/redis';
-import withCancel from '../schema/subscriptionWrapper';
+import withCancel from '../graphql/subscriptionWrapper';
 import { killChainPhases } from '../domain/stixEntity';
 import { distributionRelations, loadByGraknId, timeSeriesRelations } from '../database/grakn';
 

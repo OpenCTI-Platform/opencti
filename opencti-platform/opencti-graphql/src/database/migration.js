@@ -1,11 +1,29 @@
 import uuid from 'uuid/v4';
 import { filter, head, isEmpty, map } from 'ramda';
-import migrate from 'migrate';
-import path from 'path';
+import { MigrationSet } from 'migrate';
+import Migration from 'migrate/lib/migration';
 import { executeWrite, find, write } from './grakn';
 import { logger } from '../config/conf';
 
-// noinspection JSUnusedGlobalSymbols
+const normalizeMigrationName = rawName => {
+  if (rawName.startsWith('./')) {
+    return rawName.substring(2);
+  }
+  return rawName;
+};
+
+const retrieveMigrations = () => {
+  const webpackMigrationsContext = require.context('../migrations', false, /.js$/);
+  return webpackMigrationsContext
+    .keys()
+    .sort()
+    .map(name => {
+      const title = normalizeMigrationName(name);
+      const migration = webpackMigrationsContext(name);
+      return { title, up: migration.up, down: migration.down };
+    });
+};
+
 const graknStateStorage = {
   async load(fn) {
     // Get current status of migrations in Grakn
@@ -73,16 +91,33 @@ const graknStateStorage = {
 
 const applyMigration = () => {
   logger.info('[MIGRATION] > Starting migration process');
-  return new Promise((resolve, reject) => {
-    const migrationsDirectory = path.join(__dirname, '../migrations');
-    return migrate.load({ stateStore: graknStateStorage, migrationsDirectory }, async (err, set) => {
-      if (err) reject(err);
-      logger.info('[MIGRATION] > Migration state successfully updated, starting migrations');
-      return set.up(err2 => {
-        if (err2) reject(err2);
-        logger.info('[MIGRATION] > Migrations successfully ran');
-        resolve(true);
-      });
+  const set = new MigrationSet(graknStateStorage);
+  return graknStateStorage.load((err, state) => {
+    if (err) throw new Error(err);
+    // Set last run date on the set
+    set.lastRun = state.lastRun || null;
+    // Read migrations from webpack
+    const migrationSet = retrieveMigrations();
+    const stateMigrations = new Map(state.migrations ? state.migrations.map(i => [i.title, i]) : null);
+    for (let index = 0; index < migrationSet.length; index += 1) {
+      const migSet = migrationSet[index];
+      const migration = new Migration(migSet.title, migSet.up, migSet.down);
+      // Add timestamp if already done in remote state
+      const stateMigration = stateMigrations.get(migration.title);
+      if (stateMigration) {
+        migration.timestamp = stateMigration.timestamp;
+      } else {
+        logger.info(`[MIGRATION] > ${migSet.title} will be executed`);
+      }
+      set.addMigration(migration);
+    }
+    // Start the set migration
+    return set.up(migrationError => {
+      if (migrationError) {
+        logger.error('[GRAKN] Error during migration');
+        throw new Error(migrationError);
+      }
+      logger.info('[MIGRATION] > Migrations completed');
     });
   });
 };

@@ -3,6 +3,7 @@ import { Promise } from 'bluebird';
 import moment from 'moment';
 import { find, getSingleValueNumber, indexElements } from './grakn';
 import { elCreateIndexes, elDeleteIndexes } from './elasticSearch';
+import { logger } from '../config/conf';
 
 const GROUP_NUMBER = 200; // Pagination size for query
 const GROUP_CONCURRENCY = 10; // Number of query in //
@@ -57,19 +58,19 @@ const indexElement = async (type, isRelation = false) => {
   );
   const execDuration = moment.duration(moment().diff(start));
   const avg = (execDuration.asSeconds() / count).toFixed(2);
-  console.log(
+  logger.info(
     `Indexing of ${type} done in ${execDuration.asSeconds()} secs (${execDuration.humanize()}) - Element Avg: ${avg} secs`
   );
-  console.log(`> ---------------------------------------------------------------------`);
+  logger.info(`> ---------------------------------------------------------------------`);
 };
 
-export const index = async () => {
+const index = async () => {
   // 01. Delete current indexes
   await elDeleteIndexes();
-  console.log(`Indexing > Old indices deleted`);
+  logger.info(`Indexing > Old indices deleted`);
   // 02. Create new ones
   await elCreateIndexes();
-  console.log(`Indexing > New indices created`);
+  logger.info(`Indexing > New indices created`);
   // 03. Handle every entity subbing entity
   // MigrationsStatus  - Not needed, migration related.
   // MigrationReference  - Not needed, migration related.
@@ -94,3 +95,5 @@ export const index = async () => {
   await indexElement('stix_relation_embedded', true);
   await indexElement('stix_sighting', true);
 };
+
+export default index;

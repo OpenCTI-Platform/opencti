@@ -1,8 +1,8 @@
 import { executeWrite, write } from '../database/grakn';
-import { index } from '../database/indexing';
+import index from '../database/indexing';
 import { logger } from '../config/conf';
 
-module.exports.up = async next => {
+export const up = async next => {
   logger.info(`[MIGRATION] reindex > Deleting potential orphan relations, this operation could take some time...`);
   logger.info(`[MIGRATION] reindex > Delete related-to same origin/target`);
   try {
@@ -33,6 +33,6 @@ module.exports.up = async next => {
   next();
 };
 
-module.exports.down = async next => {
+export const down = async next => {
   next();
 };

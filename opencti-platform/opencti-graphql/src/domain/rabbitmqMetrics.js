@@ -10,7 +10,11 @@ export const getMetrics = async args => {
     stats.queues
   );
   if (args.prefix) {
-    return assoc('queues', filter(n => n.name.includes(args.prefix), finalQueues), stats);
+    return assoc(
+      'queues',
+      filter(n => n.name.includes(args.prefix), finalQueues),
+      stats
+    );
   }
   return assoc('queues', finalQueues, stats);
 };

@@ -15,7 +15,7 @@ import { createStixPattern } from '../database/utils';
 import { addIndicator, findAll as findAllIndicators } from '../domain/indicator';
 import { objectRefs, observableRefs } from '../domain/report';
 
-module.exports.up = async next => {
+export const up = async next => {
   logger.info(`[MIGRATION] split_observables_indicators > Starting the migration of all observables...`);
   const nbOfObservables = stixObservablesNumber();
   const count = await nbOfObservables.total;
@@ -177,6 +177,6 @@ module.exports.up = async next => {
   next();
 };
 
-module.exports.down = async next => {
+export const down = async next => {
   next();
 };

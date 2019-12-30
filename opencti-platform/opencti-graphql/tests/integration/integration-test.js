@@ -1,11 +1,13 @@
+import registerRequireContextHook from 'babel-plugin-require-context-hook/register';
 import { createTestClient } from 'apollo-server-testing';
 import { ApolloServer } from 'apollo-server-express';
-import schema from '../../src/schema/schema';
+import createSchema from '../../src/graphql/schema';
 import { initializeSchema } from '../../src/initialization';
 import applyMigration from '../../src/database/migration';
 
 // Initialize schema before tests
 beforeAll(async () => {
+  registerRequireContextHook();
   await initializeSchema();
   return applyMigration();
 }, 120000);
@@ -13,7 +15,7 @@ beforeAll(async () => {
 // Setup the configuration
 export const USER_ID = 'V1234';
 const server = new ApolloServer({
-  schema,
+  schema: createSchema(),
   context: () => ({
     user: {
       id: USER_ID,

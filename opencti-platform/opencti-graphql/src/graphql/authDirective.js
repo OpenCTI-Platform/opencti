@@ -24,8 +24,7 @@ class AuthDirective extends SchemaDirectiveVisitor {
   authenticationControl(func, args, objectType, field) {
     // Get the required Role from the field first, falling back
     // to the objectType if no Role is required by the field:
-    const requiredRole =
-      field._requiredAuthRole || objectType._requiredAuthRole || ROLE_USER;
+    const requiredRole = field._requiredAuthRole || objectType._requiredAuthRole || ROLE_USER;
     // If a role is required
     const context = args[2];
     const { user } = context;
@@ -50,8 +49,7 @@ class AuthDirective extends SchemaDirectiveVisitor {
           ? $this.authenticationControl(resolve, args, objectType, field)
           : resolve.apply($this, args);
       if (subscribe) {
-        field.subscribe = (...args) =>
-          $this.authenticationControl(subscribe, args, objectType, field);
+        field.subscribe = (...args) => $this.authenticationControl(subscribe, args, objectType, field);
       }
     });
   }

@@ -56,9 +56,9 @@ export const send = (exchangeName, routingKey, message) => {
 };
 
 export const metrics = async () => {
-  const baseURL = `http${
-    conf.get('rabbitmq:management_ssl') === true ? 's' : ''
-  }://${conf.get('rabbitmq:hostname')}:${conf.get('rabbitmq:port_management')}`;
+  const baseURL = `http${conf.get('rabbitmq:management_ssl') === true ? 's' : ''}://${conf.get(
+    'rabbitmq:hostname'
+  )}:${conf.get('rabbitmq:port_management')}`;
   const overview = await axios
     .get('/api/overview', {
       baseURL,
@@ -158,19 +158,13 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
   );
 
   // 05. Bind push queue to direct default exchange
-  await amqpExecute(channel =>
-    channel.bindQueue(pushQueue, WORKER_EXCHANGE, pushRouting(id))
-  );
+  await amqpExecute(channel => channel.bindQueue(pushQueue, WORKER_EXCHANGE, pushRouting(id)));
 
   return connectorConfig(id);
 };
 
 export const pushToConnector = (connector, message) => {
-  return send(
-    CONNECTOR_EXCHANGE,
-    listenRouting(connector.internal_id_key),
-    JSON.stringify(message)
-  );
+  return send(CONNECTOR_EXCHANGE, listenRouting(connector.internal_id_key), JSON.stringify(message));
 };
 
 export const getRabbitMQVersion = () => {

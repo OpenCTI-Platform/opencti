@@ -15,7 +15,7 @@ import {
   workspaceCleanContext
 } from '../domain/workspace';
 import { fetchEditContext, pubsub } from '../database/redis';
-import withCancel from '../schema/subscriptionWrapper';
+import withCancel from '../graphql/subscriptionWrapper';
 import { BUS_TOPICS } from '../config/conf';
 import { markingDefinitions, tags } from '../domain/stixEntity';
 

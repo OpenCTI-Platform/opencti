@@ -1,6 +1,6 @@
 import { executeWrite } from '../database/grakn';
 
-module.exports.up = async next => {
+export const up = async next => {
   const query = `match $r sub rule; get;`;
   await executeWrite(async wTx => {
     const iterator = await wTx.tx.query(query);
@@ -16,6 +16,6 @@ module.exports.up = async next => {
   next();
 };
 
-module.exports.down = async next => {
+export const down = async next => {
   next();
 };

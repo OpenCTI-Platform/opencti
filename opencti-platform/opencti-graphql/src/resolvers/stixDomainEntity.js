@@ -18,7 +18,7 @@ import {
   stixDomainEntityImportPush
 } from '../domain/stixDomainEntity';
 import { pubsub } from '../database/redis';
-import withCancel from '../schema/subscriptionWrapper';
+import withCancel from '../graphql/subscriptionWrapper';
 import { filesListing } from '../database/minio';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 

@@ -1,7 +1,7 @@
 import { executeWrite, find, updateAttribute } from '../database/grakn';
 import { logger } from '../config/conf';
 
-module.exports.up = async next => {
+export const up = async next => {
   await Promise.all(
     ['observable'].map(async entityType => {
       const query = `match $x isa entity; $x has stix_id_key $sid; $sid contains "${entityType}"; get;`;
@@ -29,6 +29,6 @@ module.exports.up = async next => {
   next();
 };
 
-module.exports.down = async next => {
+export const down = async next => {
   next();
 };

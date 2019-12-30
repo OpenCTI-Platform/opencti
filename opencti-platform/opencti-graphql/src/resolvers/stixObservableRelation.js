@@ -13,7 +13,7 @@ import {
   stixObservableRelationEditField
 } from '../domain/stixObservableRelation';
 import { pubsub } from '../database/redis';
-import withCancel from '../schema/subscriptionWrapper';
+import withCancel from '../graphql/subscriptionWrapper';
 import { loadByGraknId } from '../database/grakn';
 
 const stixObservableRelationResolvers = {

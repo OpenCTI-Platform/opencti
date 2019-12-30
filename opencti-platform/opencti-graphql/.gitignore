@@ -9,5 +9,6 @@ config/production.json
 config/test.json
 config/local.json
 coverage
+test-results
 logs
 yarn-error.log

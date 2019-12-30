@@ -1,9 +1,7 @@
 import { GraphQLDateTime } from 'graphql-iso-date';
-import { importSchema } from 'graphql-import';
 import { mergeResolvers } from 'merge-graphql-schemas';
 import { makeExecutableSchema } from 'graphql-tools';
 import ConstraintDirective from 'graphql-constraint-directive';
-import path from 'path';
 import settingsResolvers from '../resolvers/settings';
 import inferenceResolvers from '../resolvers/inference';
 import attributeResolvers from '../resolvers/attribute';
@@ -41,62 +39,62 @@ import indicatorResolvers from '../resolvers/indicator';
 import AuthDirectives, { AUTH_DIRECTIVE } from './authDirective';
 import connectorResolvers from '../resolvers/connector';
 import fileResolvers from '../resolvers/File';
+import typeDefs from '../../config/schema/opencti.graphql';
 
-const globalResolvers = {
-  DateTime: GraphQLDateTime
+const createSchema = () => {
+  const globalResolvers = {
+    DateTime: GraphQLDateTime
+  };
+
+  const resolvers = mergeResolvers([
+    globalResolvers,
+    settingsResolvers,
+    inferenceResolvers,
+    attributeResolvers,
+    tagResolvers,
+    rabbitmqMetricsResolvers,
+    connectorResolvers,
+    fileResolvers,
+    globalObjectResolvers,
+    stixEntityResolvers,
+    stixDomainEntityResolvers,
+    stixObservableResolvers,
+    stixRelationResolvers,
+    stixObservableRelationResolvers,
+    workspaceResolvers,
+    identityResolvers,
+    userResolvers,
+    organizationResolvers,
+    sectorResolvers,
+    cityResolvers,
+    countryResolvers,
+    regionResolvers,
+    groupResolvers,
+    markingDefinitionResolvers,
+    externalReferenceResolvers,
+    killChainPhaseResolvers,
+    attackPatternResolvers,
+    courseOfActionResolvers,
+    threatActorResolvers,
+    intrusionSetResolvers,
+    campaignResolvers,
+    incidentResolvers,
+    malwareResolvers,
+    toolResolvers,
+    vulnerabilityResolvers,
+    reportResolvers,
+    indicatorResolvers
+  ]);
+
+  return makeExecutableSchema({
+    typeDefs,
+    resolvers,
+    schemaDirectives: {
+      [AUTH_DIRECTIVE]: AuthDirectives,
+      constraint: ConstraintDirective
+    },
+    inheritResolversFromInterfaces: true
+  });
 };
 
-const schemaPath = path.join(__dirname, '../../config/schema/opencti.graphql');
-const typeDefs = importSchema(schemaPath);
-
-const resolvers = mergeResolvers([
-  globalResolvers,
-  settingsResolvers,
-  inferenceResolvers,
-  attributeResolvers,
-  tagResolvers,
-  rabbitmqMetricsResolvers,
-  connectorResolvers,
-  fileResolvers,
-  globalObjectResolvers,
-  stixEntityResolvers,
-  stixDomainEntityResolvers,
-  stixObservableResolvers,
-  stixRelationResolvers,
-  stixObservableRelationResolvers,
-  workspaceResolvers,
-  identityResolvers,
-  userResolvers,
-  organizationResolvers,
-  sectorResolvers,
-  cityResolvers,
-  countryResolvers,
-  regionResolvers,
-  groupResolvers,
-  markingDefinitionResolvers,
-  externalReferenceResolvers,
-  killChainPhaseResolvers,
-  attackPatternResolvers,
-  courseOfActionResolvers,
-  threatActorResolvers,
-  intrusionSetResolvers,
-  campaignResolvers,
-  incidentResolvers,
-  malwareResolvers,
-  toolResolvers,
-  vulnerabilityResolvers,
-  reportResolvers,
-  indicatorResolvers
-]);
-
-const schema = makeExecutableSchema({
-  typeDefs,
-  resolvers,
-  schemaDirectives: {
-    [AUTH_DIRECTIVE]: AuthDirectives,
-    constraint: ConstraintDirective
-  },
-  inheritResolversFromInterfaces: true
-});
-
-export default schema;
+export default createSchema;

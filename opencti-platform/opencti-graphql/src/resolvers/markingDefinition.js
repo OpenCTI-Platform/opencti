@@ -12,7 +12,7 @@ import {
   markingDefinitionEditField
 } from '../domain/markingDefinition';
 import { fetchEditContext, pubsub } from '../database/redis';
-import withCancel from '../schema/subscriptionWrapper';
+import withCancel from '../graphql/subscriptionWrapper';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const markingDefinitionResolvers = {

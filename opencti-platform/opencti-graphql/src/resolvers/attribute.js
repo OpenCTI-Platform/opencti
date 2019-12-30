@@ -1,10 +1,4 @@
-import {
-  findById,
-  findAll,
-  attributeUpdate,
-  attributeDelete,
-  addAttribute
-} from '../domain/attribute';
+import { findById, findAll, attributeUpdate, attributeDelete, addAttribute } from '../domain/attribute';
 
 const attributeResolvers = {
   Query: {

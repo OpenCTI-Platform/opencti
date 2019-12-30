@@ -619,13 +619,13 @@ export const loadWithConnectedRelations = (query, key, relationKey = null, infer
   return findWithConnectedRelations(query, key, relationKey, infer).then(result => head(result));
 };
 
-const listElements = async (baseQuery, first, offset, orderBy, orderMode, connectedReference, inferred) => {
+const listElements = async (baseQuery, first, offset, orderBy, orderMode, queryKey, connectedReference, inferred) => {
   const countQuery = `${baseQuery} count;`;
   const paginateQuery = `offset ${offset}; limit ${first};`;
   const orderQuery = orderBy ? `sort $order ${orderMode};` : '';
   const query = `${baseQuery} ${orderQuery} ${paginateQuery}`;
   const countPromise = getSingleValueNumber(countQuery);
-  const instancesPromise = await findWithConnectedRelations(query, 'rel', connectedReference, inferred);
+  const instancesPromise = await findWithConnectedRelations(query, queryKey, connectedReference, inferred);
   return Promise.all([instancesPromise, countPromise]).then(([instances, globalCount]) => {
     return buildPagination(first, offset, instances, globalCount);
   });
@@ -729,7 +729,7 @@ export const listEntities = async (entityTypes, searchFields, args) => {
       : '';
   const baseQuery = `match $elem isa ${headType}; ${extraTypes} ${queryRelationsFields} 
                       ${queryAttributesFields} ${queryAttributesFilters} get;`;
-  return listElements(baseQuery, first, offset, orderBy, orderMode, null, false);
+  return listElements(baseQuery, first, offset, orderBy, orderMode, 'elem',null, false);
 };
 export const listRelations = async (relationType, relationFilter, args) => {
   const searchFields = ['name', 'description'];
@@ -771,12 +771,22 @@ export const listRelations = async (relationType, relationFilter, args) => {
     return elPaginate(INDEX_STIX_RELATIONS, paginateArgs);
   }
   // 1- If not, use Grakn
-  // eslint-disable-next-line prettier/prettier
-  const queryFromTypes = fromTypes && fromTypes.length > 0 ?
-    pipe(map(e => `{ $from isa ${e}; }`), join(' or '), concat(__, ';'))(fromTypes) : '';
-  // eslint-disable-next-line prettier/prettier
-  const queryToTypes = toTypes && toTypes.length > 0 ?
-    pipe(map(e => `{ $to isa ${e}; }`), join(' or '), concat(__, ';'))(toTypes) : '';
+  const queryFromTypes =
+    fromTypes && fromTypes.length > 0
+      ? pipe(
+          map(e => `{ $from isa ${e}; }`),
+          join(' or '),
+          concat(__, ';')
+        )(fromTypes)
+      : '';
+  const queryToTypes =
+    toTypes && toTypes.length > 0
+      ? pipe(
+          map(e => `{ $to isa ${e}; }`),
+          join(' or '),
+          concat(__, ';')
+        )(toTypes)
+      : '';
   // Search
   const relationsFields = [];
   const attributesFields = [];
@@ -837,7 +847,7 @@ export const listRelations = async (relationType, relationFilter, args) => {
   const baseQuery = `match $rel(${relFrom}$from, ${relTo}$to) isa ${relationToGet};
                       ${queryFromTypes} ${queryToTypes} 
                       ${queryRelationsFields} ${queryAttributesFields} ${queryAttributesFilters} get;`;
-  return listElements(baseQuery, first, offset, orderBy, orderMode, relationRef, inferred);
+  return listElements(baseQuery, first, offset, orderBy, orderMode, 'rel', relationRef, inferred);
 };
 // endregion
 
@@ -1129,9 +1139,10 @@ export const timeSeriesRelations = async options => {
   } else {
     const query = `match $x($from, $to) isa ${entityType}; ${
       toTypes && toTypes.length > 0
-        ? `${join(' ', map(toType => `{ $to isa ${escape(toType)}; } or`, toTypes))} { $to isa ${escape(
-            head(toTypes)
-          )}; };`
+        ? `${join(
+            ' ',
+            map(toType => `{ $to isa ${escape(toType)}; } or`, toTypes)
+          )} { $to isa ${escape(head(toTypes))}; };`
         : ''
     } ${fromId ? `$from has internal_id_key "${escapeString(fromId)}"` : '$from isa Stix-Domain-Entity'}`;
     const finalQuery = `${query}; $x has ${field}_${interval} $g; get; group $g; ${operation};`;
@@ -1167,9 +1178,10 @@ export const distributionRelations = async options => {
   } else {
     const query = `match $rel($from, $to) isa ${entityType}; ${
       toTypes && toTypes.length > 0
-        ? `${join(' ', map(toType => `{ $to isa ${escape(toType)}; } or`, toTypes))} { $to isa ${escape(
-            head(toTypes)
-          )}; };`
+        ? `${join(
+            ' ',
+            map(toType => `{ $to isa ${escape(toType)}; } or`, toTypes)
+          )} { $to isa ${escape(head(toTypes))}; };`
         : ''
     } ${fromId ? `$from has internal_id_key "${escapeString(fromId)}";` : '$from isa Stix-Domain-Entity;'} 
     ${
@@ -1474,10 +1486,7 @@ export const createEntity = async (entity, type, opts = {}) => {
     data = pipe(assoc('alias', data.alias ? data.alias : ['']))(data);
   }
   if (modelType === TYPE_STIX_OBSERVABLE) {
-    data = pipe(
-      assoc('stix_id_key', stixId),
-      assoc('name', data.name ? data.name : '')
-    )(data);
+    data = pipe(assoc('stix_id_key', stixId), assoc('name', data.name ? data.name : ''))(data);
   }
   if (modelType === TYPE_STIX_DOMAIN || modelType === TYPE_STIX_DOMAIN_ENTITY) {
     data = pipe(

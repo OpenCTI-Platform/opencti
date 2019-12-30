@@ -1,6 +1,6 @@
 import { addMarkingDefinition } from '../domain/markingDefinition';
 
-module.exports.up = async next => {
+export const up = async next => {
   await addMarkingDefinition(
     {},
     {
@@ -28,7 +28,7 @@ module.exports.up = async next => {
       definition: 'TLP:AMBER',
       color: '#d84315',
       level: 3,
-      stix_id_key: '"marking-definition--f88d31f6-486f-44da-b317-01333bde0b82'
+      stix_id_key: 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82'
     }
   );
   await addMarkingDefinition(
@@ -44,6 +44,6 @@ module.exports.up = async next => {
   next();
 };
 
-module.exports.down = async next => {
+export const down = async next => {
   next();
 };

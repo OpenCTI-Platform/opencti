@@ -1,4 +1,11 @@
-import { addIncident, findAll, findById, incidentsTimeSeries, incidentsTimeSeriesByEntity } from '../domain/incident';
+import {
+  addIncident,
+  findAll,
+  findById,
+  incidentsTimeSeries,
+  incidentsTimeSeriesByEntity,
+  observableRefs
+} from '../domain/incident';
 import {
   stixDomainEntityAddRelation,
   stixDomainEntityCleanContext,
@@ -26,6 +33,9 @@ const incidentResolvers = {
   },
   IncidentsFilter: {
     tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`
+  },
+  Incident: {
+    observableRefs: incident => observableRefs(incident.id)
   },
   Mutation: {
     incidentEdit: (_, { id }, { user }) => ({

@@ -1,6 +1,6 @@
 import { addAttribute } from '../domain/attribute';
 
-module.exports.up = async next => {
+export const up = async next => {
   await addAttribute({
     type: 'report_class',
     value: 'Threat Report'
@@ -20,6 +20,6 @@ module.exports.up = async next => {
   next();
 };
 
-module.exports.down = async next => {
+export const down = async next => {
   next();
 };
