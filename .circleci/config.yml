@@ -143,10 +143,10 @@ jobs:
           command: git remote add ci ~/opencti && git pull --no-edit -s recursive -X theirs ci master          
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -auv --delete ~/opencti/opencti-platform/opencti-graphql/public ./opencti-platform/opencti-graphql/
+          command: rsync -auv --delete ~/opencti/opencti-platform/opencti-graphql/public/ ./opencti-platform/opencti-graphql/public/
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -auv --delete ~/opencti/opencti-platform/opencti-graphql/build ./opencti-platform/opencti-graphql/
+          command: rsync -auv --delete ~/opencti/opencti-platform/opencti-graphql/build/ ./opencti-platform/opencti-graphql/build/
       - run:  
           working_directory: ~/opencti/deploy 
           command: rsync -auv ./opencti-connectors/ ./opencti-connectors-enabled/          
