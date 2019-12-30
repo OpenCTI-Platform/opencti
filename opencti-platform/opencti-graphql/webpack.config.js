@@ -35,6 +35,9 @@ module.exports = (env, argv) => {
       entrypoints: false,
       modules: false
     },
+    node: {
+      __dirname: true
+    },
     module: {
       rules: [
         {

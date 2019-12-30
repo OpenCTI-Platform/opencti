@@ -61,7 +61,7 @@ $ cd ../../..
 The application is just a NodeJS process, the creation of the database schema and the migration will be done at starting.
 
 ```bash
-$ node dist/server.js &
+$ yarn serv
 ```
 
 The default username and password are those you put in the `config/production.json` file.
@@ -91,5 +91,5 @@ $ python3 worker.py &
 When upgrading the platform, you have to replace all files and restart the platform, the schema migrations will be done automatically:
 
 ```bash
-$ node dist/server.js &
+$ yarn serv
 ```
