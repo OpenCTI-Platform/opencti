@@ -1,6 +1,6 @@
 import { assoc, pipe } from 'ramda';
 import {
-  createEntity,
+  createEntity, escapeString, findWithConnectedRelations,
   listEntities,
   loadEntityById,
   loadEntityByStixId,
@@ -10,6 +10,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
+import { buildPagination } from '../database/utils';
 
 export const findById = incidentId => {
   if (incidentId.match(/[a-z-]+--[\w-]{36}/g)) {
@@ -30,6 +31,17 @@ export const incidentsTimeSeries = args => {
   return timeSeriesEntities('Incident', [], args);
 };
 // endregion
+
+// Observable refs
+export const observableRefs = reportId => {
+  return findWithConnectedRelations(
+    `match $to isa Incident; $rel(relate_from:$from, relate_to:$to) isa related-to;
+    $from isa Stix-Observable;
+    $to has internal_id_key "${escapeString(reportId)}"; get;`,
+    'from',
+    'rel'
+  ).then(data => buildPagination(0, 0, data, data.length));
+};
 
 export const addIncident = async (user, incident) => {
   const currentDate = now();

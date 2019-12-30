@@ -28,7 +28,7 @@ export const up = async next => {
       definition: 'TLP:AMBER',
       color: '#d84315',
       level: 3,
-      stix_id_key: '"marking-definition--f88d31f6-486f-44da-b317-01333bde0b82'
+      stix_id_key: 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82'
     }
   );
   await addMarkingDefinition(

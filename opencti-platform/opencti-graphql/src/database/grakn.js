@@ -619,13 +619,13 @@ export const loadWithConnectedRelations = (query, key, relationKey = null, infer
   return findWithConnectedRelations(query, key, relationKey, infer).then(result => head(result));
 };
 
-const listElements = async (baseQuery, first, offset, orderBy, orderMode, connectedReference, inferred) => {
+const listElements = async (baseQuery, first, offset, orderBy, orderMode, queryKey, connectedReference, inferred) => {
   const countQuery = `${baseQuery} count;`;
   const paginateQuery = `offset ${offset}; limit ${first};`;
   const orderQuery = orderBy ? `sort $order ${orderMode};` : '';
   const query = `${baseQuery} ${orderQuery} ${paginateQuery}`;
   const countPromise = getSingleValueNumber(countQuery);
-  const instancesPromise = await findWithConnectedRelations(query, 'rel', connectedReference, inferred);
+  const instancesPromise = await findWithConnectedRelations(query, queryKey, connectedReference, inferred);
   return Promise.all([instancesPromise, countPromise]).then(([instances, globalCount]) => {
     return buildPagination(first, offset, instances, globalCount);
   });
@@ -729,7 +729,7 @@ export const listEntities = async (entityTypes, searchFields, args) => {
       : '';
   const baseQuery = `match $elem isa ${headType}; ${extraTypes} ${queryRelationsFields} 
                       ${queryAttributesFields} ${queryAttributesFilters} get;`;
-  return listElements(baseQuery, first, offset, orderBy, orderMode, null, false);
+  return listElements(baseQuery, first, offset, orderBy, orderMode, 'elem',null, false);
 };
 export const listRelations = async (relationType, relationFilter, args) => {
   const searchFields = ['name', 'description'];
@@ -847,7 +847,7 @@ export const listRelations = async (relationType, relationFilter, args) => {
   const baseQuery = `match $rel(${relFrom}$from, ${relTo}$to) isa ${relationToGet};
                       ${queryFromTypes} ${queryToTypes} 
                       ${queryRelationsFields} ${queryAttributesFields} ${queryAttributesFilters} get;`;
-  return listElements(baseQuery, first, offset, orderBy, orderMode, relationRef, inferred);
+  return listElements(baseQuery, first, offset, orderBy, orderMode, 'rel', relationRef, inferred);
 };
 // endregion
 

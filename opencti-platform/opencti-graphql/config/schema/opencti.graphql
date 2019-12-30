@@ -2126,6 +2126,7 @@ type Incident implements GlobalObject & StixEntity & StixDomainEntity {
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   externalReferences(first: Int): ExternalReferenceConnection
+  observableRefs(first: Int): StixObservableConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   tags: TagConnection
