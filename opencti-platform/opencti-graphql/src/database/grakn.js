@@ -828,7 +828,13 @@ export const listRelations = async (relationType, relationFilter, args) => {
   if (weights && weights.length > 0) {
     attributesFields.push(`$rel has weight $weight;`);
     // eslint-disable-next-line prettier/prettier
-    attributesFilters.push(pipe(map(e => `{ $weight == ${e}; }`), join(' or '), concat(__, ';'))(weights));
+    attributesFilters.push(
+      pipe(
+        map(e => `{ $weight == ${e}; }`),
+        join(' or '),
+        concat(__, ';')
+      )(weights)
+    );
   }
   const relationRef = relationFilter ? 'relationRef' : null;
   if (relationFilter) {
@@ -1688,7 +1694,7 @@ export const deleteAttributeById = async id => {
  * @param id
  * @returns {Promise}
  */
-/* export const getRelationInferredById = async id => {
+export const getRelationInferredById = async id => {
   const currentDate = now();
   return executeRead(async rTx => {
     const decodedQuery = Buffer.from(id, 'base64').toString('ascii');
@@ -1846,7 +1852,4 @@ export const deleteAttributeById = async id => {
       )(relation);
     });
   });
-}; */
-export const getRelationInferredById = async id => {
-  return id;
 };
