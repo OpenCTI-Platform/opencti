@@ -41,7 +41,7 @@ import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import Grakn from 'grakn-client';
 import { DatabaseError } from '../config/errors';
 import conf, { logger } from '../config/conf';
-import { buildPagination, fillTimeSeries, randomKey } from './utils';
+import { buildPagination, fillTimeSeries } from './utils';
 import { isInversed, rolesMap } from './graknRoles';
 import {
   elAggregationCount,
@@ -76,6 +76,7 @@ export const TYPE_STIX_OBSERVABLE_RELATION = 'stix_observable_relation';
 export const TYPE_RELATION_EMBEDDED = 'relation_embedded';
 export const TYPE_STIX_RELATION_EMBEDDED = 'stix_relation_embedded';
 const UNIMPACTED_ENTITIES_ROLE = ['tagging', 'marking', 'kill_chain_phase', 'creator'];
+const INFERRED_RELATION_KEY = 'rel';
 export const inferIndexFromConceptTypes = (types, parentType = null) => {
   // Observable index
   if (includes(TYPE_STIX_OBSERVABLE, types) || parentType === TYPE_STIX_OBSERVABLE) return INDEX_STIX_OBSERVABLE;
@@ -403,14 +404,13 @@ export const queryAttributeValueById = async id => {
 };
 /**
  * Load any grakn instance with internal grakn ID.
- * @param query initial query
  * @param concept the concept to get attributes from
  * @param args
  * @returns {Promise}
  */
-const loadConcept = async (query, concept, args = {}) => {
+const loadConcept = async (concept, args = {}) => {
   const { id } = concept;
-  const { relationsMap = new Map(), noCache = false, infer = false } = args;
+  const { relationsMap = new Map(), noCache = false, infer = false, directedAlias = new Map() } = args;
   const conceptType = concept.baseType;
   const types = await conceptTypes(concept);
   const index = inferIndexFromConceptTypes(types);
@@ -491,18 +491,18 @@ const loadConcept = async (query, concept, args = {}) => {
               .label()
               .then(async roleLabel => {
                 // Alias when role are not specified need to be force the opencti natural direction.
-                let useAlias = alias;
+                let useAlias = directedAlias.get(roleLabel) || alias;
                 // If role specified in the query, just use the grakn binding.
                 // If alias is filtering by an internal_id_key, just use the grakn binding.
                 // If not, retrieve the alias (from or to) inside the roles map.
                 if (forceNatural) {
                   const directedRole = rolesMap[head(types)];
                   if (directedRole === undefined) {
-                    throw new Error(`Undefined directed roles for ${head(types)}, query: ${query}`);
+                    throw new Error(`Undefined directed roles for ${head(types)}`);
                   }
                   useAlias = directedRole[roleLabel];
                   if (useAlias === undefined) {
-                    throw new Error(`Cannot find directed role for ${roleLabel} in ${head(types)}, query: ${query}`);
+                    throw new Error(`Cannot find directed role for ${roleLabel} in ${head(types)}`);
                   }
                 }
                 return {
@@ -532,8 +532,12 @@ const loadConcept = async (query, concept, args = {}) => {
       if (relationData.inferred) {
         const { fromId, fromRole, toId, toRole } = relationData;
         const type = relationData.relationship_type;
-        const pattern = `{ $rel(${fromRole}: $from, ${toRole}: $to) isa ${type}; $from id ${fromId}; $to id ${toId}; };`;
-        return assoc('id', Buffer.from(pattern).toString('base64'), relationData);
+        const pattern = `{ $${INFERRED_RELATION_KEY}(${fromRole}: $from, ${toRole}: $to) isa ${type}; $from id ${fromId}; $to id ${toId}; };`;
+        return pipe(
+          assoc('id', Buffer.from(pattern).toString('base64')),
+          assoc('created_at', now()),
+          assoc('updated_at', now())
+        )(relationData);
       }
       return relationData;
     });
@@ -551,62 +555,71 @@ export const getSingleValue = async (query, infer = false) => {
 export const getSingleValueNumber = async (query, infer = false) => {
   return getSingleValue(query, infer).then(data => data.number());
 };
-const findOpts = { infer: false, noCache: false };
-export const find = async (query, entities, { uniqueKey, infer, noCache } = findOpts) => {
-  // Remove empty values from entities
+
+const findOpts = { infer: false, noCache: false, directedAlias: new Map() };
+const getConcepts = async (
+  answers,
+  conceptQueryVars,
+  entities,
+  { uniqueKey, infer, noCache, directedAlias } = findOpts
+) => {
   const plainEntities = filter(e => !isEmpty(e) && !isNil(e), entities);
+  if (answers.length === 0) return [];
+  // 02. Query concepts and rebind the data
+  const queryConcepts = await Promise.all(
+    map(async answer => {
+      // Create a map useful for relation roles binding
+      const queryVarsToConcepts = await Promise.all(
+        conceptQueryVars.map(async ({ alias, role, internalIdKey }) => {
+          const concept = answer.map().get(alias);
+          if (concept.baseType === 'ATTRIBUTE') return undefined; // If specific attributes are used for filtering, ordering, ...
+          const types = await conceptTypes(concept);
+          return { id: concept.id, data: { concept, alias, role, internalIdKey, types } };
+        })
+      );
+      const conceptsIndex = filter(e => e, queryVarsToConcepts);
+      const fetchingConceptsPairs = map(x => [x.id, x.data], conceptsIndex);
+      const relationsMap = new Map(fetchingConceptsPairs);
+      // Fetch every concepts of the answer
+      const requestedConcepts = filter(r => includes(r.data.alias, entities), conceptsIndex);
+      return map(t => {
+        const { concept } = t.data;
+        return { id: concept.id, concept, relationsMap };
+      }, requestedConcepts);
+    }, answers)
+  );
+  // 03. Fetch every unique concepts
+  const uniqConceptsLoading = pipe(
+    flatten,
+    uniqBy(e => e.id),
+    map(l => loadConcept(l.concept, { relationsMap: l.relationsMap, noCache, infer, directedAlias }))
+  )(queryConcepts);
+  const resolvedConcepts = await Promise.all(uniqConceptsLoading);
+  // 04. Create map from concepts
+  const conceptCache = new Map(map(c => [c.grakn_id, c], resolvedConcepts));
+  // 05. Bind all row to data entities
+  const result = answers.map(answer => {
+    const dataPerEntities = plainEntities.map(entity => {
+      const concept = answer.map().get(entity);
+      const conceptData = conceptCache.get(concept.id);
+      return [entity, conceptData];
+    });
+    return fromPairs(dataPerEntities);
+  });
+  // 06. Filter every relation in double
+  // Grakn can respond with twice the relations (browse in 2 directions)
+  const uniqFilter = uniqueKey || head(entities);
+  return uniqBy(u => u[uniqFilter].grakn_id, result);
+};
+export const find = async (query, entities, { infer } = findOpts) => {
+  // Remove empty values from entities
   return executeRead(async rTx => {
     const conceptQueryVars = extractQueryVars(query);
     logger.debug(`[GRAKN - infer: ${infer}] Find > ${query}`);
     const iterator = await rTx.tx.query(query, { infer });
     // 01. Get every concepts to fetch (unique)
     const answers = await iterator.collect();
-    if (answers.length === 0) return [];
-    // 02. Query concepts and rebind the data
-    const queryConcepts = await Promise.all(
-      map(async answer => {
-        // Create a map useful for relation roles binding
-        const queryVarsToConcepts = await Promise.all(
-          conceptQueryVars.map(async ({ alias, role, internalIdKey }) => {
-            const concept = answer.map().get(alias);
-            if (concept.baseType === 'ATTRIBUTE') return undefined; // If specific attributes are used for filtering, ordering, ...
-            const types = await conceptTypes(concept);
-            return { id: concept.id, data: { concept, alias, role, internalIdKey, types } };
-          })
-        );
-        const conceptsIndex = filter(e => e, queryVarsToConcepts);
-        const fetchingConceptsPairs = map(x => [x.id, x.data], conceptsIndex);
-        const relationsMap = new Map(fetchingConceptsPairs);
-        // Fetch every concepts of the answer
-        const requestedConcepts = filter(r => includes(r.data.alias, entities), conceptsIndex);
-        return map(t => {
-          const { concept } = t.data;
-          return { id: concept.id, concept, relationsMap };
-        }, requestedConcepts);
-      }, answers)
-    );
-    // 03. Fetch every unique concepts
-    const uniqConceptsLoading = pipe(
-      flatten,
-      uniqBy(e => e.id),
-      map(l => loadConcept(query, l.concept, { relationsMap: l.relationsMap, noCache, infer }))
-    )(queryConcepts);
-    const resolvedConcepts = await Promise.all(uniqConceptsLoading);
-    // 04. Create map from concepts
-    const conceptCache = new Map(map(c => [c.grakn_id, c], resolvedConcepts));
-    // 05. Bind all row to data entities
-    const result = answers.map(answer => {
-      const dataPerEntities = plainEntities.map(entity => {
-        const concept = answer.map().get(entity);
-        const conceptData = conceptCache.get(concept.id);
-        return [entity, conceptData];
-      });
-      return fromPairs(dataPerEntities);
-    });
-    // 06. Filter every relation in double
-    // Grakn can respond with twice the relations (browse in 2 directions)
-    const uniqFilter = uniqueKey || head(entities);
-    return uniqBy(u => u[uniqFilter].grakn_id, result);
+    return getConcepts(answers, conceptQueryVars, entities, findOpts);
   });
 };
 
@@ -1688,168 +1701,42 @@ export const deleteAttributeById = async id => {
 };
 // endregion
 
-// region TO REFACTOR
+// region inferences
 /**
  * Load any grakn relation with base64 id containing the query pattern.
  * @param id
  * @returns {Promise}
  */
 export const getRelationInferredById = async id => {
-  const currentDate = now();
   return executeRead(async rTx => {
     const decodedQuery = Buffer.from(id, 'base64').toString('ascii');
     const query = `match ${decodedQuery} get;`;
-    const queryRegex = /\$([a-z_\d]+)\s?[([a-z_]+:\s\$(\w+),\s[a-z_]+:\s\$(\w+)\)\s[a-z_]+\s([\w-]+);/i.exec(query);
-    if (queryRegex === null) return {};
-    const relKey = queryRegex[1];
     logger.debug(`[GRAKN - infer: true] getRelationInferredById > ${query}`);
     const answerIterator = await rTx.tx.query(query);
-    const answer = await answerIterator.next();
-    const rel = answer.map().get(relKey);
-    const relationType = await rel.type();
-    const relationTypeValue = await relationType.label();
-    const rolePlayersMap = await rel.rolePlayersMap();
-    const roles = rolePlayersMap.keys();
-    const fromRole = roles.next().value;
-    // eslint-disable-next-line prettier/prettier
-    const fromObject = rolePlayersMap
-      .get(fromRole)
-      .values()
-      .next().value;
-    const fromRoleLabel = await fromRole.label();
-    const toRole = roles.next().value;
-    // eslint-disable-next-line prettier/prettier
-    const toObject = rolePlayersMap
-      .get(toRole)
-      .values()
-      .next().value;
-    const toRoleLabel = await toRole.label();
-    const relation = {
-      id,
-      entity_type: TYPE_STIX_RELATION,
-      relationship_type: relationTypeValue,
-      inferred: true,
-      created_at: currentDate,
-      updated_at: currentDate
-    };
-    // const fromPromise = loadConcept(fromObject);
-    // const toPromise = loadConcept(toObject);
-    const explanation = answer.explanation();
-    const explanationAnswers = explanation.answers();
-    const inferences = explanationAnswers.map(explanationAnswer => {
-      const explanationAnswerExplanation = explanationAnswer.explanation();
-      let inferenceQuery = explanationAnswerExplanation.queryPattern();
-      const inferenceQueryRegex = /(\$(\d+|rel)\s)?\([a-z_]+:\s\$(\w+),\s[a-z_]+:\s\$(\w+)\)\sisa\s([\w-]+);/i.exec(
-        inferenceQuery
-      );
-      let relationKey;
-      const [, , inferReferenceRelationKey] = inferenceQueryRegex;
-      if (inferReferenceRelationKey !== undefined) {
-        relationKey = inferReferenceRelationKey;
-      } else {
-        relationKey = randomKey(5);
-        inferenceQuery = inferenceQuery.replace('(', `$${relationKey} (`);
-      }
-      return {
-        inferenceQuery,
-        relationKey,
-        fromKey: inferenceQueryRegex[3],
-        toKey: inferenceQueryRegex[4],
-        relationType: inferenceQueryRegex[5]
-      };
-    });
-    const inferencesQueries = pluck('inferenceQuery', inferences);
-    const inferencesQuery = `match {${join(' ', inferencesQueries)} }; get;`;
-    logger.debug(`[GRAKN - infer: true] getRelationInferredById - getInferences > ${inferencesQuery}`);
-    const inferencesAnswerIterator = await rTx.tx.query(inferencesQuery);
-    const inferencesAnswer = await inferencesAnswerIterator.next();
-    const inferencesPromises = Promise.all(
-      inferences.map(async inference => {
-        const inferred = await inferencesAnswer
-          .map()
-          .get(inference.relationKey)
-          .isInferred();
-        const inferenceFrom = inferencesAnswer.map().get(inference.fromKey);
-        const inferenceTo = inferencesAnswer.map().get(inference.toKey);
-        let inferenceId;
-        if (inferred) {
-          const inferenceQueryRegex = /\$([a-z_\d]+)\s\([a-z_:]+\s\$([a-z_]+),\s[a-z_:]+\s\$([a-z_]+)\)/i.exec(
-            inference.inferenceQuery
-          );
-          const entityFromKey = inferenceQueryRegex[2];
-          const entityToKey = inferenceQueryRegex[3];
-          const regexFromString = `\\$${entityFromKey}\\sid\\s(V\\d+);`;
-          const regexFrom = new RegExp(regexFromString, 'i');
-          const inferenceQueryRegexFrom = inference.inferenceQuery.match(regexFrom);
-          const regexToString = `\\$${entityToKey}\\sid\\s(V\\d+);`;
-          const regexTo = new RegExp(regexToString, 'i');
-          const inferenceQueryRegexTo = inference.inferenceQuery.match(regexTo);
-
-          const regexFromTypeString = `\\$${entityFromKey}\\sisa\\s[\\w-_]+;`;
-          const regexFromType = new RegExp(regexFromTypeString, 'ig');
-          const regexToTypeString = `\\$${entityToKey}\\sisa\\s[\\w-_]+;`;
-          const regexToType = new RegExp(regexToTypeString, 'ig');
-
-          let extractedInferenceQuery;
-          if (inferenceQueryRegexFrom && inferenceQueryRegexTo) {
-            extractedInferenceQuery = inference.inferenceQuery;
-          } else if (inferenceQueryRegexFrom) {
-            const existingId = inferenceQueryRegexFrom[1];
-            extractedInferenceQuery = inference.inferenceQuery.replace(
-              `$${entityFromKey} id ${existingId};`,
-              `$${entityFromKey} id ${existingId}; $${entityToKey} id ${
-                existingId === inferenceFrom.id ? inferenceTo.id : inferenceFrom.id
-              };`
-            );
-          } else if (inferenceQueryRegexTo) {
-            const existingId = inferenceQueryRegexTo[1];
-            extractedInferenceQuery = inference.inferenceQuery.replace(
-              `$${entityToKey} id ${existingId};`,
-              `$${entityToKey} id ${existingId}; $${entityFromKey} id ${
-                existingId === inferenceFrom.id ? inferenceTo.id : inferenceFrom.id
-              };`
-            );
-          } else {
-            extractedInferenceQuery = inference.inferenceQuery;
-          }
-          const finalInferenceQuery = extractedInferenceQuery.replace(regexFromType, '').replace(regexToType, '');
-          inferenceId = Buffer.from(finalInferenceQuery).toString('base64');
-        } else {
-          const inferenceAttributes = await loadConcept(query, inferencesAnswer.map().get(inference.relationKey));
-          inferenceId = inferenceAttributes.internal_id_key;
-        }
-        // const fromAttributes = await loadConcept(inferenceFrom);
-        // const toAttributes = await loadConcept(inferenceTo);
-        return {
-          node: {
-            id: inferenceId,
-            inferred,
-            relationship_type: inference.relationType,
-            fromId: inferenceFrom.id,
-            toId: inferenceTo.id,
-            created_at: currentDate,
-            updated_at: currentDate
-          }
-        };
-      })
-    );
-    return Promise.resolve(inferencesPromises).then(relationInferences => {
-      if (isInversed(relation.relationship_type, fromRoleLabel)) {
-        return pipe(
-          assoc('fromId', toObject.id),
-          assoc('fromRole', toRoleLabel),
-          assoc('toId', fromObject.id),
-          assoc('toRole', fromRoleLabel),
-          assoc('inferences', { edges: relationInferences })
-        )(relation);
-      }
-      return pipe(
-        assoc('fromId', fromObject.id),
-        assoc('fromRole', fromRoleLabel),
-        assoc('toId', toObject.id),
-        assoc('toRole', toRoleLabel),
-        assoc('inferences', { edges: relationInferences })
-      )(relation);
-    });
+    const answerConceptMap = await answerIterator.next();
+    const concepts = await getConcepts([answerConceptMap], extractQueryVars(query), [INFERRED_RELATION_KEY]);
+    const relation = head(concepts).rel;
+    const explanation = await answerConceptMap.explanation();
+    const explanationAnswers = explanation.getAnswers();
+    const inferences = [];
+    // eslint-disable-next-line no-restricted-syntax
+    for (const explanationAnswer of explanationAnswers) {
+      const explanationMap = explanationAnswer.map();
+      const explanationKeys = Array.from(explanationMap.keys());
+      const queryVars = map(v => ({ alias: v }), explanationKeys);
+      const explanationRelationKey = last(filter(n => n.includes(INFERRED_RELATION_KEY), explanationKeys));
+      const [, from, to] = explanationRelationKey.split('_');
+      const directedAlias = new Map([
+        [from, 'from'],
+        [to, 'to']
+      ]);
+      // eslint-disable-next-line no-await-in-loop
+      const explanationConcepts = await getConcepts([explanationAnswer], queryVars, [explanationRelationKey], {
+        directedAlias
+      });
+      inferences.push({ node: head(explanationConcepts)[explanationRelationKey] });
+    }
+    return pipe(assoc('inferences', { edges: inferences }))(relation);
   });
 };
+// endregion

@@ -8,8 +8,8 @@ const inferences = {
     rule:
       'AttributionAttributionRule sub rule,\n' +
       '    when {\n' +
-      '      (origin: $origin, attribution: $entity) isa attributed-to;\n' +
-      '      (origin: $entity, attribution: $subentity) isa attributed-to;\n' +
+      '      $rel1_attribution_origin(origin: $origin, attribution: $entity) isa attributed-to;\n' +
+      '      $rel2_attribution_origin(origin: $entity, attribution: $subentity) isa attributed-to;\n' +
       '    }, then {\n' +
       '      (origin: $origin, attribution: $subentity) isa attributed-to;\n' +
       '    };',
@@ -22,13 +22,13 @@ const inferences = {
     rule:
       'AttributionUsesRule sub rule,\n' +
       '    when {\n' +
-      '      (origin: $origin, attribution: $entity) isa attributed-to;\n' +
-      '      (user: $entity, usage: $object) isa uses;\n' +
+      '      $rel1_attribution_origin(origin: $origin, attribution: $entity) isa attributed-to;\n' +
+      '      $rel2_user_usage(user: $entity, usage: $object) isa uses;\n' +
       '    }, then {\n' +
       '      (user: $origin, usage: $object) isa uses;\n' +
       '    };',
     description:
-      'This rule can be used to infer the following fact: if an entity A uses an object B and the entity A is attributed to an entity C, the entity A is also using the object B.'
+      'This rule can be used to infer the following fact: if an entity A uses an object B and the entity A is attributed to an entity C, the entity C is also using the object B.'
   },
   '3e5e7540-6eea-4e5f-b59d-d0c1b341c030': {
     id: '3e5e7540-6eea-4e5f-b59d-d0c1b341c030',
@@ -36,8 +36,8 @@ const inferences = {
     rule:
       'AttributionTargetsRule sub rule,\n' +
       '    when {\n' +
-      '      (origin: $origin, attribution: $entity) isa attributed-to;\n' +
-      '      (source: $entity, target: $target) isa targets;\n' +
+      '      $rel1_attribution_origin(origin: $origin, attribution: $entity) isa attributed-to;\n' +
+      '      $rel2_source_target(source: $entity, target: $target) isa targets;\n' +
       '    }, then {\n' +
       '      (source: $origin, target: $target) isa targets;\n' +
       '    };\n',
@@ -50,14 +50,28 @@ const inferences = {
     rule:
       'LocalizationLocalizationRule sub rule,\n' +
       '    when {\n' +
-      '      (location: $location, localized: $entity) isa localization;\n' +
-      '      (location: $entity, localized: $subentity) isa localization;\n' +
+      '      $rel1_localized_location(location: $location, localized: $entity) isa localization;\n' +
+      '      $rel2_localized_location(location: $entity, localized: $subentity) isa localization;\n' +
       '    }, then {\n' +
       '      (location: $location, localized: $subentity) isa localization;\n' +
       '    };',
     description:
       'This rule can be used to infer the following fact: if an entity A is localized in an entity B and the entity B is localized in an entity C, then the entity A is also localized in the entity C.'
-  }
+  },
+  'e6a6989b-7992-4f7e-9f07-741145423181': {
+    id: 'e6a6989b-7992-4f7e-9f07-741145423181',
+    name: 'LocalizationOfTargetsRule',
+    rule:
+      '    LocalizationOfTargetsRule sub rule,\n' +
+      '    when {\n' +
+      '      $rel1_source_target(source: $entity, target: $target) isa targets;\n' +
+      '      $rel2_localized_location(location: $location, localized: $rel1_source_target) isa localization;\n' +
+      '    }, then {\n' +
+      '      (source: $entity, target: $location) isa targets;\n' +
+      '    };',
+    description:
+      'This rule can be used to infer the following fact: if an entity A targets an entity B through a relation X, and the relation X is localized in an entity C, then the entity A also targets the entity C.'
+  },
 };
 
 export const findAll = async () => {
