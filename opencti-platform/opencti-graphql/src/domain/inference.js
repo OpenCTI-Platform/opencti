@@ -70,7 +70,7 @@ const inferences = {
       '      (source: $entity, target: $location) isa targets;\n' +
       '    };',
     description:
-      'This rule can be used to infer the following fact: if an entity A is localized in an entity B and the entity B is localized in an entity C, then the entity A is also localized in the entity C.'
+      'This rule can be used to infer the following fact: if an entity A targets an entity B through a relation X, and the relation X is localized in an entity C, then the entity A also targets the entity C.'
   },
 };
 
