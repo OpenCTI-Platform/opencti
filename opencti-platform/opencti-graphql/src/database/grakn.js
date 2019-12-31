@@ -35,6 +35,7 @@ import {
   toPairs,
   uniq,
   uniqBy,
+  values
 } from 'ramda';
 import moment from 'moment';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
@@ -490,7 +491,7 @@ const loadConcept = async (concept, args = {}) => {
               .label()
               .then(async roleLabel => {
                 // Alias when role are not specified need to be force the opencti natural direction.
-                let useAlias = directedAlias.get(alias) || alias;
+                let useAlias = directedAlias.get(roleLabel) || alias;
                 // If role specified in the query, just use the grakn binding.
                 // If alias is filtering by an internal_id_key, just use the grakn binding.
                 // If not, retrieve the alias (from or to) inside the roles map.
@@ -1722,27 +1723,12 @@ export const getRelationInferredById = async id => {
       const explanationMap = explanationAnswer.map();
       const explanationKeys = Array.from(explanationMap.keys());
       const queryVars = map(v => ({ alias: v }), explanationKeys);
-      const explanationRelationsKeys = filter(n => n.includes('rel_'), explanationKeys);
-      let explanationRelationKey = null;
-      let directedAlias;
-      if (explanationRelationsKeys.length === 1) {
-        explanationRelationKey = head(explanationRelationsKeys);
-        const [_, from, to] = explanationRelationKey.split('_');
-        directedAlias = new Map([
-          [from, 'from'],
-          [to, 'to']
-        ]);
-      } else {
-        explanationRelationKey = head(filter(n => n.includes('rel_rel'), explanationRelationsKeys));
-        const explanationRelationsKeySplit = explanationRelationKey.split('_');
-        directedAlias = new Map([
-          [
-            `${explanationRelationsKeySplit[1]}_${explanationRelationsKeySplit[2]}_${explanationRelationsKeySplit[3]}`,
-            'from'
-          ],
-          [explanationRelationsKeySplit[4], 'to']
-        ]);
-      }
+      const explanationRelationKey = last(filter(n => n.includes('rel'), explanationKeys));
+      const [_, from, to] = explanationRelationKey.split('_');
+      const directedAlias = new Map([
+        [from, 'from'],
+        [to, 'to']
+      ]);
       const explanationConcepts = await getConcepts([explanationAnswer], queryVars, [explanationRelationKey], {
         directedAlias
       });
