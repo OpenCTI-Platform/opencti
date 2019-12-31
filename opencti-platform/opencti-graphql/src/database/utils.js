@@ -39,14 +39,6 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
   return newData;
 };
 
-export const randomKey = number => {
-  let key = '';
-  for (let i = 0; i < number; i += 1) {
-    key += Math.floor(Math.random() * 10).toString();
-  }
-  return key;
-};
-
 /**
  * Pure building of pagination expected format.
  * @param first
