@@ -35,7 +35,6 @@ import {
   toPairs,
   uniq,
   uniqBy,
-  values
 } from 'ramda';
 import moment from 'moment';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
@@ -1724,8 +1723,8 @@ export const getRelationInferredById = async id => {
       const explanationKeys = Array.from(explanationMap.keys());
       const queryVars = map(v => ({ alias: v }), explanationKeys);
       const explanationRelationsKeys = filter(n => n.includes('rel_'), explanationKeys);
-      let directedAlias = new Map();
       let explanationRelationKey = null;
+      let directedAlias;
       if (explanationRelationsKeys.length === 1) {
         explanationRelationKey = head(explanationRelationsKeys);
         const [_, from, to] = explanationRelationKey.split('_');
