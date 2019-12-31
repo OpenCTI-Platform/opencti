@@ -34,8 +34,7 @@ import {
   take,
   toPairs,
   uniq,
-  uniqBy,
-  values
+  uniqBy
 } from 'ramda';
 import moment from 'moment';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
@@ -77,6 +76,7 @@ export const TYPE_STIX_OBSERVABLE_RELATION = 'stix_observable_relation';
 export const TYPE_RELATION_EMBEDDED = 'relation_embedded';
 export const TYPE_STIX_RELATION_EMBEDDED = 'stix_relation_embedded';
 const UNIMPACTED_ENTITIES_ROLE = ['tagging', 'marking', 'kill_chain_phase', 'creator'];
+const INFERRED_RELATION_KEY = 'rel';
 export const inferIndexFromConceptTypes = (types, parentType = null) => {
   // Observable index
   if (includes(TYPE_STIX_OBSERVABLE, types) || parentType === TYPE_STIX_OBSERVABLE) return INDEX_STIX_OBSERVABLE;
@@ -532,7 +532,7 @@ const loadConcept = async (concept, args = {}) => {
       if (relationData.inferred) {
         const { fromId, fromRole, toId, toRole } = relationData;
         const type = relationData.relationship_type;
-        const pattern = `{ $rel(${fromRole}: $from, ${toRole}: $to) isa ${type}; $from id ${fromId}; $to id ${toId}; };`;
+        const pattern = `{ $${INFERRED_RELATION_KEY}(${fromRole}: $from, ${toRole}: $to) isa ${type}; $from id ${fromId}; $to id ${toId}; };`;
         return pipe(
           assoc('id', Buffer.from(pattern).toString('base64')),
           assoc('created_at', now()),
@@ -1714,21 +1714,23 @@ export const getRelationInferredById = async id => {
     logger.debug(`[GRAKN - infer: true] getRelationInferredById > ${query}`);
     const answerIterator = await rTx.tx.query(query);
     const answerConceptMap = await answerIterator.next();
-    const concepts = await getConcepts([answerConceptMap], extractQueryVars(query), ['rel']);
+    const concepts = await getConcepts([answerConceptMap], extractQueryVars(query), [INFERRED_RELATION_KEY]);
     const relation = head(concepts).rel;
     const explanation = await answerConceptMap.explanation();
     const explanationAnswers = explanation.getAnswers();
     const inferences = [];
+    // eslint-disable-next-line no-restricted-syntax
     for (const explanationAnswer of explanationAnswers) {
       const explanationMap = explanationAnswer.map();
       const explanationKeys = Array.from(explanationMap.keys());
       const queryVars = map(v => ({ alias: v }), explanationKeys);
-      const explanationRelationKey = last(filter(n => n.includes('rel'), explanationKeys));
-      const [_, from, to] = explanationRelationKey.split('_');
+      const explanationRelationKey = last(filter(n => n.includes(INFERRED_RELATION_KEY), explanationKeys));
+      const [, from, to] = explanationRelationKey.split('_');
       const directedAlias = new Map([
         [from, 'from'],
         [to, 'to']
       ]);
+      // eslint-disable-next-line no-await-in-loop
       const explanationConcepts = await getConcepts([explanationAnswer], queryVars, [explanationRelationKey], {
         directedAlias
       });
@@ -1737,3 +1739,4 @@ export const getRelationInferredById = async id => {
     return pipe(assoc('inferences', { edges: inferences }))(relation);
   });
 };
+// endregion
