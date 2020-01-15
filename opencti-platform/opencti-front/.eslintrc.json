@@ -1,0 +1,19 @@
+{
+  "extends": ["airbnb-base", "plugin:react/recommended"],
+  "parserOptions": {
+    "ecmaVersion": 2019
+  },
+  "env": {
+    "browser": true,
+    "jest": true
+  },
+  "rules": {
+    "react/no-unused-prop-types": 0,
+    "react/prop-types": 0
+  },
+  "settings": {
+    "react": {
+      "version": "15.0"
+    }
+  }
+}

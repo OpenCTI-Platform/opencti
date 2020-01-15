@@ -1,0 +1,3550 @@
+### Directives
+directive @auth(for: UserRole = ROLE_USER) on OBJECT | FIELD_DEFINITION
+directive @constraint(
+  # String constraints
+  minLength: Int
+  maxLength: Int
+  startsWith: String
+  endsWith: String
+  notContains: String
+  pattern: String
+  format: String
+
+  # Number constraints
+  min: Int
+  max: Int
+  exclusiveMin: Int
+  exclusiveMax: Int
+  multipleOf: Int
+) on INPUT_FIELD_DEFINITION
+
+### Scalar
+scalar DateTime
+scalar ConstraintString
+scalar ConstraintNumber
+scalar Upload
+enum Status {
+  wait
+  progress
+  partial
+  complete
+  error
+}
+
+### Relations
+type RelationEmbedded {
+  id: ID!
+  entity_type: String!
+  from: GlobalObject
+  fromRole: String
+  fromTypes: [String]
+  to: GlobalObject
+  toRole: String
+  toTypes: [String]
+}
+type createdByRef {
+  node: Identity
+  relation: RelationEmbedded
+}
+type ownedBy {
+  node: User
+  relation: RelationEmbedded
+}
+
+### Relay
+type PageInfo {
+  startCursor: String!
+  endCursor: String!
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  globalCount: Int!
+}
+enum OrderingMode {
+  asc
+  desc
+}
+enum FilterMode {
+  and
+  or
+}
+
+### Edit
+input EntityRelation {
+  entityType: String
+  relationType: String
+  relationRole: String
+}
+input EditInput {
+  id: ID # ID of the instance in edition
+  key: String! # Field name to change
+  value: [String]! # Values to apply
+}
+input EditContext {
+  focusOn: String # Field name
+}
+type EditUserContext {
+  name: String!
+  focusOn: String # Field name
+}
+
+### Info
+type DependencyVersion {
+  name: String!
+  version: String!
+}
+type AppInfo {
+  version: String!,
+  dependencies: [DependencyVersion!]!
+}
+
+### Stats
+type AckDetails {
+  rate: Float
+}
+type MessagesStats {
+  ack: Int
+  ack_details: AckDetails
+}
+type QueueArguments {
+  config: String
+}
+type QueueMetrics {
+  name: String
+  arguments: QueueArguments
+  messages: Int
+  messages_ready: Int
+  messages_unacknowledged: Int
+  consumers: Int
+  idle_since: DateTime
+  message_stats: MessagesStats
+}
+type QueueTotals {
+  messages: Int
+  messages_ready: Int
+  messages_unacknowledged: Int
+}
+type ObjectTotals {
+  channels: Int
+  consumers: Int
+  queues: Int
+}
+type OverviewMetrics {
+  node: String
+  object_totals: ObjectTotals
+  queue_totals: QueueTotals
+  message_stats: MessagesStats
+}
+type RabbitMQMetrics {
+  consumers: Int
+  queues: [QueueMetrics]
+  overview: OverviewMetrics
+}
+
+enum StatsOperation {
+  count
+  sum
+}
+type TimeSeries {
+  date: DateTime!
+  value: Int!
+}
+type Distribution {
+  label: String!
+  value: Int!
+}
+type Number {
+  total: Int!
+  count: Int!
+}
+
+### Settings
+type Settings {
+  id: ID!
+  platform_title: String
+  platform_email: String
+  platform_url: String
+  platform_language: String
+  platform_external_auth: Boolean
+  platform_registration: Boolean
+  platform_demo: Boolean
+  editContext: [EditUserContext]
+  created_at: DateTime
+  updated_at: DateTime
+}
+input SettingsAddInput {
+  platform_title: String
+  platform_email: String
+  platform_url: String
+  platform_language: String
+  platform_external_auth: Boolean
+  platform_registration: Boolean
+  platform_demo: Boolean
+}
+
+### Inferences
+type Inference {
+  id: ID!
+  name: String!
+  description: String!
+  rule: String!
+  enabled: Boolean
+}
+
+### Attribute
+enum AttributesOrdering {
+  value
+}
+type AttributeConnection {
+  pageInfo: PageInfo!
+  edges: [AttributeEdge]
+}
+type AttributeEdge {
+  cursor: String!
+  node: Attribute!
+}
+type Attribute {
+  id: ID!
+  type: String!
+  value: String!
+}
+input AttributeAddInput {
+  type: String!
+  value: String!
+  clientMutationId: String
+}
+input AttributeEditInput {
+  type: String!
+  value: String!
+  newValue: String!
+}
+
+### Tags
+enum TagsOrdering {
+  value
+  tag_type
+  color
+  created_at
+  updated_at
+}
+enum TagsFilter {
+  value
+  tag_type
+  tagsFor
+}
+type TagConnection {
+  pageInfo: PageInfo!
+  edges: [TagEdge]
+}
+input TagsFiltering {
+  key: TagsFilter!
+  values: [String]
+}
+type TagEdge {
+  cursor: String!
+  node: Tag!
+  relation: RelationEmbedded!
+}
+type Tag {
+  id: ID!
+  internal_id_key: String!
+  tag_type: String!
+  value: String!
+  color: String!
+  editContext: [EditUserContext]
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input TagAddInput {
+  internal_id_key: String
+  tag_type: String!
+  value: String!
+  color: String!
+  clientMutationId: String
+}
+
+### Connectors
+enum ConnectorType {
+  EXTERNAL_IMPORT
+  INTERNAL_IMPORT_FILE
+  INTERNAL_ENRICHMENT
+  INTERNAL_EXPORT_FILE
+}
+input RegisterConnectorInput {
+  id: ID!
+  name: String!
+  type: ConnectorType!
+  scope: [String!]
+}
+type ConnectorConfig {
+  uri: String!
+  listen: String!
+  listen_exchange: String!
+  push: String!
+  push_exchange: String!
+}
+type Connector {
+  id: ID!
+  internal_id_key: ID!
+  name: String!
+  active: Boolean
+  connector_type: String
+  connector_state: String
+  connector_scope: [String!]
+  updated_at: DateTime
+  created_at: DateTime
+  config: ConnectorConfig
+}
+
+### Files
+type Job {
+  id: ID!
+  internal_id_key: ID!
+  messages: [String]
+  job_status: Status!
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+type Work {
+  id: ID!
+  internal_id_key: ID!
+  jobs: [Job]
+  status: Status!
+  connector: Connector!
+  work_type: String!
+  created_at: DateTime!
+}
+type WorkEdge {
+  cursor: String!
+  node: Work!
+}
+type WorkConnection {
+  pageInfo: PageInfo!
+  edges: [WorkEdge]
+}
+enum FileCategory {
+  import
+  export
+}
+type FileMetadata {
+  category: FileCategory!
+  encoding: String
+  mimetype: String
+}
+type File {
+  id: ID!
+  name: String
+  size: Int
+  lastModified: DateTime
+  lastModifiedSinceMin: Int
+  metaData: FileMetadata
+  uploadStatus: Status!
+  works: [Work]
+}
+type FileEdge {
+  cursor: String!
+  node: File!
+}
+type FileConnection {
+  pageInfo: PageInfo!
+  edges: [FileEdge]
+}
+
+### Global objects
+interface GlobalObject {
+  id: ID!
+  internal_id_key: String!
+  entity_type: String!
+}
+
+### STIX objects
+interface StixEntity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  description: String
+  tags: TagConnection
+  reports: ReportConnection
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+
+enum StixDomainEntitiesOrdering {
+  name
+  entity_type
+  created_at
+  updated_at
+  tags
+  markingDefinitions
+}
+enum StixDomainEntitiesFilter {
+  name
+  alias
+  stix_id_key
+  hasExternalReference
+}
+input StixDomainEntitiesFiltering {
+  key: StixDomainEntitiesFilter!
+  values: [String]
+}
+type StixDomainEntityConnection {
+  pageInfo: PageInfo!
+  edges: [StixDomainEntityEdge]
+}
+type StixDomainEntityEdge {
+  cursor: String!
+  node: StixDomainEntity!
+  relation: RelationEmbedded!
+}
+interface StixDomainEntity {
+  id: ID!
+  name: String!
+  alias: [String]
+  stix_id_key: String!
+  internal_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  description: String
+  graph_data: String
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  tags: TagConnection
+  reports: ReportConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input StixDomainEntityAddInput {
+  internal_id_key: String
+  name: String!
+  description: String
+  alias: [String]
+  type: String!
+  createdByRef: String
+  markingDefinitions: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### STIX obseravables
+enum StixObservablesOrdering {
+  name
+  entity_type
+  observable_value
+  value
+  created_at
+  updated_at
+  tags
+  markingDefinitions
+}
+enum StixObservablesFilter {
+  stix_id_key
+  observable_value
+  indicates
+}
+input StixObservablesFiltering {
+  key: StixObservablesFilter!
+  values: [String]
+}
+type StixObservableConnection {
+  pageInfo: PageInfo!
+  edges: [StixObservableEdge]
+}
+type StixObservableEdge {
+  cursor: String!
+  node: StixObservable!
+  relation: RelationEmbedded!
+}
+type StixObservable implements GlobalObject & StixEntity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  observable_value: String!
+  observable_date: DateTime
+  first_seen: DateTime
+  last_seen: DateTime
+  description: String
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  tags: TagConnection
+  reports: ReportConnection
+  indicators: IndicatorConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  jobs(first: Int): [Work]
+  connectors(onlyAlive: Boolean): [Connector]
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input StixObservableAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  type: String!
+  observable_value: String!
+  observable_date: DateTime
+  description: String
+  createdByRef: String
+  markingDefinitions: [String]
+  clientMutationId: String
+}
+
+### STIX relations
+enum StixRelationsOrdering {
+  stix_id_key
+  relationship_type
+  weight
+  first_seen
+  last_seen
+  created
+  modified
+  created_at
+  updated_at
+}
+type StixRelationConnection {
+  pageInfo: PageInfo!
+  edges: [StixRelationEdge]
+}
+type StixRelationEdge {
+  cursor: String!
+  node: StixRelation!
+  relation: RelationEmbedded
+}
+type StixRelation implements GlobalObject & StixEntity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  relationship_type: String
+  inferred: Boolean
+  weight: Int
+  description: String
+  first_seen: DateTime
+  last_seen: DateTime
+  created: DateTime!
+  modified: DateTime!
+  graph_data: String
+  role_played: String
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  killChainPhases: KillChainPhaseConnection
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  tags: TagConnection
+  reports: ReportConnection
+  from: StixEntity
+  fromRole: String
+  fromTypes: [String]
+  to: StixEntity
+  toRole: String
+  toTypes: [String]
+  inferences: StixRelationConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input StixRelationAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  fromId: String!
+  fromRole: String!
+  toId: String!
+  toRole: String!
+  relationship_type: String!
+  role_played: String
+  weight: Int
+  description: String
+  first_seen: DateTime
+  last_seen: DateTime
+  createdByRef: String
+  markingDefinitions: [String]
+  killChainPhases: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### STIX relations
+enum StixObservableRelationsOrdering {
+  relationship_type
+  weight
+  first_seen
+  last_seen
+  created
+  modified
+  created_at
+  updated_at
+}
+type StixObservableRelationConnection {
+  pageInfo: PageInfo!
+  edges: [StixObservableRelationEdge]
+}
+type StixObservableRelationEdge {
+  cursor: String!
+  node: StixObservableRelation!
+  relation: RelationEmbedded
+}
+type StixObservableRelation implements GlobalObject & StixEntity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  relationship_type: String
+  inferred: Boolean
+  weight: Int
+  description: String
+  first_seen: DateTime
+  last_seen: DateTime
+  created: DateTime!
+  modified: DateTime!
+  graph_data: String
+  role_played: String
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  tags: TagConnection
+  reports: ReportConnection
+  from: StixObservable
+  fromRole: String
+  to: StixObservable
+  toRole: String
+  inferences: StixObservableRelationConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input StixObservableRelationAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  fromId: String!
+  fromRole: String!
+  toId: String!
+  toRole: String!
+  relationship_type: String!
+  role_played: String
+  weight: Int
+  description: String
+  first_seen: DateTime
+  last_seen: DateTime
+  createdByRef: String
+  markingDefinitions: [String]
+  killChainPhases: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### Workspace
+enum WorkspacesOrdering {
+  name
+  created_at
+  updated_at
+}
+enum WorkspacesFilter {
+  workspace_type
+}
+input WorkspacesFiltering {
+  key: WorkspacesFilter!
+  values: [String]
+}
+type WorkspaceConnection {
+  pageInfo: PageInfo!
+  edges: [WorkspaceEdge]
+}
+type WorkspaceEdge {
+  cursor: String!
+  node: Workspace!
+  relation: RelationEmbedded!
+}
+type Workspace implements GlobalObject {
+  id: ID!
+  internal_id_key: String!
+  entity_type: String!
+  workspace_type: String!
+  name: String!
+  description: String
+  graph_data: String
+  workspace_data: String
+  editContext: [EditUserContext]
+  ownedBy: ownedBy
+  markingDefinitions: MarkingDefinitionConnection
+  tags: TagConnection
+  objectRefs: StixDomainEntityConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input WorkspaceAddInput {
+  name: String!
+  workspace_type: String!
+  internal_id_key: String
+  description: String
+  markingDefinitions: [String]
+  clientMutationId: String
+}
+
+### Identities
+enum IdentitiesOrdering {
+  stix_id_key
+  name
+  created_at
+  updated_at
+}
+enum IdentitiesFilter {
+  name
+  alias
+}
+input IdentitiesFiltering {
+  key: IdentitiesFilter!
+  values: [String]
+}
+type IdentityConnection {
+  pageInfo: PageInfo!
+  edges: [IdentityEdge]
+}
+type IdentityEdge {
+  cursor: String!
+  node: Identity!
+  relation: RelationEmbedded!
+}
+interface Identity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  stix_label: [String]
+  alias: [String]
+  description: String
+  created: DateTime
+  modified: DateTime
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  tags: TagConnection
+  reports: ReportConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input IdentityAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String!
+  description: String
+  alias: [String]
+  type: String!
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### User
+enum UsersOrdering {
+  name
+  email
+  firstname
+  lastname
+  created
+  modified
+  tags
+  markingDefinitions
+}
+input UsersFiltering {
+  key: String!
+  values: [String]
+}
+enum UserRole {
+  ROLE_ROOT
+  ROLE_ADMIN
+  ROLE_USER
+}
+type UserConnection {
+  pageInfo: PageInfo!
+  edges: [UserEdge]
+}
+type UserEdge {
+  cursor: String!
+  node: User!
+}
+type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  stix_label: [String]
+  alias: [String]
+  description: String
+  firstname: String
+  lastname: String
+  email: String
+  language: String
+  grant: [String]
+  created: DateTime
+  modified: DateTime
+  graph_data: String
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  tags: TagConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  token: String
+  groups: GroupConnection
+  reports: ReportConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input UserAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  email: String @constraint(minLength: 5, format: "email")
+  name: String! @constraint(minLength: 3)
+  description: String
+  password: String
+  firstname: String
+  lastname: String
+  language: String
+  grant: [UserRole]
+  alias: [String]
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+  created: DateTime
+  modified: DateTime
+}
+input PersonAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String! @constraint(minLength: 3)
+  description: String
+  firstname: String
+  lastname: String
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+}
+input UserLoginInput {
+  email: String!
+  password: String!
+}
+
+### Organizations
+enum OrganizationsOrdering {
+  stix_id_key
+  name
+  description
+  organization_class
+  created
+  modified
+  created_at
+  updated_at
+  tags
+  markingDefinitions
+}
+enum OrganizationsFilter {
+  tags
+}
+input OrganizationsFiltering {
+  key: OrganizationsFilter!
+  values: [String]
+}
+type OrganizationConnection {
+  pageInfo: PageInfo!
+  edges: [OrganizationEdge]
+}
+type OrganizationEdge {
+  cursor: String!
+  node: Organization!
+}
+type Organization implements GlobalObject & StixEntity & StixDomainEntity & Identity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  stix_label: [String]
+  alias: [String]
+  description: String
+  organization_class: String
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  graph_data: String
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  tags: TagConnection
+  reports: ReportConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input OrganizationAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String!
+  description: String
+  organization_class: String
+  alias: [String]
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### Sectors
+enum SectorsOrdering {
+  stix_id_key
+  name
+  description
+  created
+  modified
+  created_at
+  updated_at
+  tags
+  markingDefinitions
+}
+enum SectorsFilter {
+  gatheredBy
+}
+input SectorsFiltering {
+  key: SectorsFilter!
+  values: [String]
+}
+type SectorConnection {
+  pageInfo: PageInfo!
+  edges: [SectorEdge]
+}
+type SectorEdge {
+  cursor: String!
+  node: Sector!
+  relation: RelationEmbedded!
+}
+type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  stix_label: [String]
+  alias: [String]
+  description: String
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  graph_data: String
+  subsectors: SectorConnection
+  isSubsector: Boolean
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  tags: TagConnection
+  reports: ReportConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input SectorAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String!
+  description: String
+  alias: [String]
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### Cities
+enum CitiesOrdering {
+  stix_id_key
+  name
+  description
+  created
+  modified
+  created_at
+  updated_at
+  tags
+  markingDefinitions
+}
+input CitiesFiltering {
+  key: String!
+  values: [String]
+}
+type CityConnection {
+  pageInfo: PageInfo!
+  edges: [CityEdge]
+}
+type CityEdge {
+  cursor: String!
+  node: City!
+}
+type City implements GlobalObject & StixEntity & StixDomainEntity & Identity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  stix_label: [String]
+  alias: [String]
+  description: String
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  graph_data: String
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  tags: TagConnection
+  reports: ReportConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input CityAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String!
+  description: String
+  alias: [String]
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### Countries
+enum CountriesOrdering {
+  stix_id_key
+  name
+  description
+  created
+  modified
+  created_at
+  updated_at
+  tags
+  markingDefinitions
+}
+input CountriesFiltering {
+  key: String!
+  values: [String]
+}
+type CountryConnection {
+  pageInfo: PageInfo!
+  edges: [CountryEdge]
+}
+type CountryEdge {
+  cursor: String!
+  node: Country!
+}
+type Country implements GlobalObject & StixEntity & StixDomainEntity & Identity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  stix_label: [String]
+  alias: [String]
+  description: String
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  graph_data: String
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  tags: TagConnection
+  reports: ReportConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input CountryAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String!
+  description: String
+  alias: [String]
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### Regions
+enum RegionsOrdering {
+  stix_id_key
+  name
+  description
+  created
+  modified
+  created_at
+  updated_at
+  tags
+  markingDefinitions
+}
+input RegionsFiltering {
+  key: String!
+  values: [String]
+}
+type RegionConnection {
+  pageInfo: PageInfo!
+  edges: [RegionEdge]
+}
+type RegionEdge {
+  cursor: String!
+  node: Region!
+}
+type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  stix_label: [String]
+  alias: [String]
+  description: String
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  graph_data: String
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  tags: TagConnection
+  reports: ReportConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input RegionAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String!
+  description: String
+  alias: [String]
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### Group
+enum GroupsOrdering {
+  name
+  created_at
+  updated_at
+}
+type GroupConnection {
+  pageInfo: PageInfo!
+  edges: [GroupEdge]
+}
+type GroupEdge {
+  cursor: String!
+  node: Group!
+  relation: RelationEmbedded!
+}
+type Group implements GlobalObject {
+  id: ID!
+  internal_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  description: String
+  editContext: [EditUserContext]
+  members: UserConnection
+  permissions: MarkingDefinitionConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input GroupAddInput {
+  internal_id_key: String
+  name: String!
+  description: String
+  markingDefinitions: [String]
+  clientMutationId: String
+}
+
+### Marking definitions
+enum MarkingDefinitionsOrdering {
+  stix_id_key
+  definition_type
+  definition
+  level
+  color
+  created
+  modified
+  created_at
+  updated_at
+}
+enum MarkingDefinitionsFilter {
+  definition
+  definition_type
+  stix_id_key
+  markedBy
+}
+input MarkingDefinitionsFiltering {
+  key: MarkingDefinitionsFilter!
+  values: [String]
+}
+type MarkingDefinitionConnection {
+  pageInfo: PageInfo!
+  edges: [MarkingDefinitionEdge]
+}
+type MarkingDefinitionEdge {
+  cursor: String!
+  node: MarkingDefinition!
+  relation: RelationEmbedded!
+}
+type MarkingDefinition implements GlobalObject {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  definition_type: String!
+  definition: String!
+  level: Int
+  color: String
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  editContext: [EditUserContext]
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input MarkingDefinitionAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  definition_type: String!
+  definition: String!
+  level: Int!
+  color: String
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### ExternalReferences
+enum ExternalReferencesOrdering {
+  stix_id_key
+  source_name
+  url
+  hash
+  external_id
+  created
+  modified
+  created_at
+  updated_at
+}
+enum ExternalReferencesFilter {
+  stix_id_key
+  url
+  usedBy
+}
+input ExternalReferencesFiltering {
+  key: ExternalReferencesFilter!
+  values: [String]
+}
+type ExternalReferenceConnection {
+  pageInfo: PageInfo!
+  edges: [ExternalReferenceEdge]
+}
+type ExternalReferenceEdge {
+  cursor: String!
+  node: ExternalReference!
+  relation: RelationEmbedded!
+}
+type ExternalReference implements GlobalObject {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  source_name: String!
+  description: String
+  url: String
+  hash: String
+  external_id: String
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  editContext: [EditUserContext]
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input ExternalReferenceAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  source_name: String!
+  description: String
+  url: String
+  hash: String
+  external_id: String
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### KillChain Phases
+enum KillChainPhasesOrdering {
+  stix_id_key
+  phase_order
+  kill_chain_name
+  phase_name
+  created_at
+  updated_at
+}
+enum KillChainPhasesFilter {
+  stix_id_key
+  kill_chain_name
+  phase_name
+}
+input KillChainPhasesFiltering {
+  key: KillChainPhasesFilter!
+  values: [String]
+}
+type KillChainPhaseConnection {
+  pageInfo: PageInfo!
+  edges: [KillChainPhaseEdge]
+}
+type KillChainPhaseEdge {
+  cursor: String!
+  node: KillChainPhase!
+  relation: RelationEmbedded!
+}
+type KillChainPhase implements GlobalObject {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  kill_chain_name: String!
+  phase_name: String!
+  phase_order: Int
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  editContext: [EditUserContext]
+  markingDefinitions: MarkingDefinitionConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input KillChainPhaseAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  kill_chain_name: String!
+  phase_name: String!
+  phase_order: Int!
+  markingDefinitions: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### AttackPattern
+enum AttackPatternsOrdering {
+  stix_id_key
+  external_id
+  name
+  created
+  modified
+  created_at
+  updated_at
+  tags
+  killChainPhases
+  markingDefinitions
+}
+enum AttackPatternsFilter {
+  external_id
+  name
+  tags
+  mitigateBy
+}
+input AttackPatternsFiltering {
+  key: AttackPatternsFilter!
+  values: [String]
+}
+type AttackPatternConnection {
+  pageInfo: PageInfo!
+  edges: [AttackPatternEdge]
+}
+type AttackPatternEdge {
+  cursor: String!
+  node: AttackPattern!
+  relation: RelationEmbedded!
+}
+type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  stix_label: [String]
+  alias: [String]
+  description: String
+  platform: [String]
+  required_permission: [String]
+  external_id: String
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  graph_data: String
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  tags: TagConnection
+  killChainPhases: KillChainPhaseConnection
+  reports: ReportConnection
+  coursesOfAction: CourseOfActionConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input AttackPatternAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String!
+  description: String!
+  platform: [String]
+  required_permission: [String]
+  external_id: String
+  alias: [String]
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+  killChainPhases: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### CourseOfAction
+enum CoursesOfActionOrdering {
+  stix_id_key
+  name
+  created
+  modified
+  created_at
+  updated_at
+  tags
+  markingDefinitions
+}
+enum CoursesOfActionFilter {
+  tags
+  mitigateBy
+}
+input CoursesOfActionFiltering {
+  key: CoursesOfActionFilter!
+  values: [String]
+}
+type CourseOfActionConnection {
+  pageInfo: PageInfo!
+  edges: [CourseOfActionEdge]
+}
+type CourseOfActionEdge {
+  cursor: String!
+  node: CourseOfAction!
+  relation: RelationEmbedded!
+}
+type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  stix_label: [String]
+  alias: [String]
+  description: String
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  graph_data: String
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  tags: TagConnection
+  reports: ReportConnection
+  attackPatterns: AttackPatternConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input CourseOfActionAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String!
+  description: String!
+  alias: [String]
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### Threat Actors
+enum ThreatActorsOrdering {
+  stix_id_key
+  name
+  created
+  modified
+  created_at
+  updated_at
+  tags
+  markingDefinitions
+}
+enum ThreatActorsFilter {
+  name
+  alias
+  tags
+}
+input ThreatActorsFiltering {
+  key: ThreatActorsFilter!
+  values: [String]
+}
+type ThreatActorConnection {
+  pageInfo: PageInfo!
+  edges: [ThreatActorEdge]
+}
+type ThreatActorEdge {
+  cursor: String!
+  node: ThreatActor!
+}
+type ThreatActor implements GlobalObject & StixEntity & StixDomainEntity & Identity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  stix_label: [String]
+  alias: [String]
+  stix_role: String
+  goal: String
+  sophistication: String
+  resource_level: String
+  primary_motivation: String
+  secondary_motivation: String
+  personal_motivation: String
+  description: String
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  graph_data: String
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  tags: TagConnection
+  reports: ReportConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input ThreatActorAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String!
+  description: String!
+  goal: String
+  sophistication: String
+  resource_level: String
+  primary_motivation: String
+  secondary_motivation: String
+  personal_motivation: String
+  alias: [String]
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### IntrusionSets
+enum IntrusionSetsOrdering {
+  stix_id_key
+  name
+  created
+  modified
+  created_at
+  updated_at
+  tags
+  markingDefinitions
+}
+enum IntrusionSetsFilter {
+  name
+  alias
+  tags
+}
+input IntrusionSetsFiltering {
+  key: IntrusionSetsFilter!
+  values: [String]
+}
+type IntrusionSetConnection {
+  pageInfo: PageInfo!
+  edges: [IntrusionSetEdge]
+}
+type IntrusionSetEdge {
+  cursor: String!
+  node: IntrusionSet!
+}
+type IntrusionSet implements GlobalObject & StixEntity & StixDomainEntity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  stix_label: [String]
+  alias: [String]
+  description: String
+  first_seen: DateTime
+  last_seen: DateTime
+  goal: String
+  sophistication: String
+  resource_level: String
+  primary_motivation: String
+  secondary_motivation: String
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  graph_data: String
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  tags: TagConnection
+  reports: ReportConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input IntrusionSetAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String!
+  description: String!
+  first_seen: DateTime
+  last_seen: DateTime
+  goal: String
+  sophistication: String
+  resource_level: String
+  primary_motivation: String
+  secondary_motivation: String
+  personal_motivation: String
+  alias: [String]
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### Campaign
+enum CampaignsOrdering {
+  stix_id_key
+  name
+  first_seen
+  last_seen
+  created
+  modified
+  created_at
+  updated_at
+  tags
+  markingDefinitions
+}
+enum CampaignsFilter {
+  name
+  alias
+  tags
+}
+input CampaignsFiltering {
+  key: CampaignsFilter!
+  values: [String]
+}
+type CampaignConnection {
+  pageInfo: PageInfo!
+  edges: [CampaignEdge]
+}
+type CampaignEdge {
+  cursor: String!
+  node: Campaign!
+}
+type Campaign implements GlobalObject & StixEntity & StixDomainEntity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  stix_label: [String]
+  alias: [String]
+  description: String
+  first_seen: DateTime
+  last_seen: DateTime
+  objective: String
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  graph_data: String
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  tags: TagConnection
+  reports: ReportConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input CampaignAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String!
+  description: String!
+  first_seen: DateTime
+  last_seen: DateTime
+  objective: String
+  alias: [String]
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### Incident
+enum IncidentsOrdering {
+  stix_id_key
+  name
+  first_seen
+  last_seen
+  created
+  modified
+  created_at
+  updated_at
+  tags
+  markingDefinitions
+}
+enum IncidentsFilter {
+  name
+  alias
+  tags
+}
+input IncidentsFiltering {
+  key: IncidentsFilter!
+  values: [String]
+}
+type IncidentConnection {
+  pageInfo: PageInfo!
+  edges: [IncidentEdge]
+}
+type IncidentEdge {
+  cursor: String!
+  node: Incident!
+}
+type Incident implements GlobalObject & StixEntity & StixDomainEntity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  stix_label: [String]
+  alias: [String]
+  description: String
+  first_seen: DateTime
+  last_seen: DateTime
+  objective: String
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  graph_data: String
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  observableRefs(first: Int): StixObservableConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  tags: TagConnection
+  reports: ReportConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input IncidentAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String!
+  description: String!
+  objective: String
+  first_seen: DateTime
+  last_seen: DateTime
+  alias: [String]
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### Malware
+enum MalwaresOrdering {
+  stix_id_key
+  name
+  created
+  modified
+  created_at
+  updated_at
+  tags
+  markingDefinitions
+}
+enum MalwaresFilter {
+  name
+  alias
+  tags
+}
+input MalwaresFiltering {
+  key: MalwaresFilter!
+  values: [String]
+}
+type MalwareConnection {
+  pageInfo: PageInfo!
+  edges: [MalwareEdge]
+}
+type MalwareEdge {
+  cursor: String!
+  node: Malware!
+}
+type Malware implements GlobalObject & StixEntity & StixDomainEntity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  stix_label: [String]
+  alias: [String]
+  description: String
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  graph_data: String
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  tags: TagConnection
+  killChainPhases: KillChainPhaseConnection
+  reports: ReportConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input MalwareAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String!
+  description: String!
+  alias: [String]
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+  killChainPhases: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### Tool
+enum ToolsOrdering {
+  stix_id_key
+  name
+  created
+  modified
+  created_at
+  updated_at
+  tags
+  markingDefinitions
+}
+enum ToolsFilter {
+  name
+  alias
+  tags
+}
+input ToolsFiltering {
+  key: ToolsFilter!
+  values: [String]
+}
+type ToolConnection {
+  pageInfo: PageInfo!
+  edges: [ToolEdge]
+}
+type ToolEdge {
+  cursor: String!
+  node: Tool!
+}
+type Tool implements GlobalObject & StixEntity & StixDomainEntity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  stix_label: [String]
+  alias: [String]
+  description: String
+  tool_version: String
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  graph_data: String
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  tags: TagConnection
+  killChainPhases: KillChainPhaseConnection
+  reports: ReportConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input ToolAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String!
+  description: String!
+  tool_version: String
+  alias: [String]
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+  killChainPhases: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### Vulnerability
+enum VulnerabilitiesOrdering {
+  stix_id_key
+  name
+  created
+  modified
+  created_at
+  updated_at
+  tags
+  markingDefinitions
+}
+enum VulnerabilitiesFilter {
+  name
+  alias
+  tags
+}
+input VulnerabilitiesFiltering {
+  key: VulnerabilitiesFilter!
+  values: [String]
+}
+type VulnerabilityConnection {
+  pageInfo: PageInfo!
+  edges: [VulnerabilityEdge]
+}
+type VulnerabilityEdge {
+  cursor: String!
+  node: Vulnerability!
+}
+type Vulnerability implements GlobalObject & StixEntity & StixDomainEntity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  stix_label: [String]
+  alias: [String]
+  description: String
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  graph_data: String
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  tags: TagConnection
+  reports: ReportConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input VulnerabilityAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String!
+  description: String!
+  alias: [String]
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### Reports
+enum ReportsOrdering {
+  stix_id_key
+  name
+  created
+  modified
+  published
+  object_status
+  createdByRef
+  created_at
+  updated_at
+  tags
+  markingDefinitions
+}
+enum ReportsFilter {
+  name
+  published
+  published_day
+  report_class
+  createdBy
+  knowledgeContains
+  observablesContains
+}
+input ReportsFiltering {
+  key: ReportsFilter!
+  values: [String]!
+}
+type ReportConnection {
+  pageInfo: PageInfo!
+  edges: [ReportEdge]
+}
+type ReportEdge {
+  cursor: String!
+  node: Report!
+  relation: RelationEmbedded!
+}
+type ReportPayload {
+  reportEdge: ReportEdge
+}
+type Report implements GlobalObject & StixEntity & StixDomainEntity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  stix_label: [String]
+  description: String
+  report_class: String
+  alias: [String]
+  graph_data: String
+  created: DateTime
+  modified: DateTime
+  published: DateTime
+  revoked: Boolean
+  object_status: Int
+  source_confidence_level: Int
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  reports: ReportConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  tags: TagConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  objectRefs: StixDomainEntityConnection
+  observableRefs: StixObservableConnection
+  relationRefs(relationType: String, knowledgeLevels: [String]): StixRelationConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input ReportAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String!
+  description: String
+  published: DateTime
+  report_class: String
+  graph_data: String
+  object_status: Int
+  source_confidence_level: Int
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### Indicators
+enum IndicatorsOrdering {
+  stix_id_key
+  name
+  indicator_pattern
+  pattern_type
+  valid_from
+  valid_until
+  score
+  created
+  modified
+  created_at
+  updated_at
+  tags
+  killChainPhases
+  markingDefinitions
+}
+enum IndicatorsFilter {
+  indicator_pattern
+  main_observable_type
+  pattern_type
+  tags
+  observablesContains
+}
+input IndicatorsFiltering {
+  key: IndicatorsFilter!
+  values: [String]
+  operator: String
+}
+type IndicatorConnection {
+  pageInfo: PageInfo!
+  edges: [IndicatorEdge]
+}
+type IndicatorEdge {
+  cursor: String!
+  node: Indicator!
+  relation: RelationEmbedded!
+}
+type Indicator implements GlobalObject & StixEntity & StixDomainEntity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  stix_label: [String]
+  alias: [String]
+  name: String!
+  description: String
+  indicator_pattern: String!
+  main_observable_type: String!
+  pattern_type: String!
+  valid_from: DateTime
+  valid_until: DateTime
+  score: Int
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  graph_data: String
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  observableRefs: StixObservableConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  tags: TagConnection
+  killChainPhases: KillChainPhaseConnection
+  reports: ReportConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input IndicatorAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String!
+  description: String
+  indicator_pattern: String!
+  pattern_type: String!
+  main_observable_type: String!
+  valid_from: DateTime
+  valid_until: DateTime
+  score: Int
+  createdByRef: String
+  markingDefinitions: [String]
+  killChainPhases: [String]
+  tags: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### Relations
+input RelationAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  fromRole: String!
+  toId: ID!
+  toRole: String!
+  through: String!
+  first_seen: DateTime
+  last_seen: DateTime
+  description: String
+  weight: Int
+}
+input RelationsAddInput {
+  fromRole: String!
+  toIds: [ID]!
+  toRole: String!
+  through: String!
+}
+
+### QUERIES
+type Query {
+  # Technical
+  about: AppInfo @auth
+  settings: Settings
+  inferences: [Inference] @auth
+  attribute(id: String): Attribute @auth
+  attributes(
+    first: Int
+    after: ID
+    orderBy: AttributesOrdering
+    orderMode: OrderingMode
+    type: String
+    search: String
+  ): AttributeConnection @auth
+  # Tags
+  tag(id: String!): Tag @auth
+  tags(
+    first: Int
+    after: ID
+    orderBy: TagsOrdering
+    orderMode: OrderingMode
+    filters: [TagsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): TagConnection @auth
+  rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: ROLE_ADMIN)
+  connectors: [Connector] @auth
+  connectorsForExport: [Connector] @auth
+  connectorsForImport: [Connector] @auth
+  importFiles(first: Int): FileConnection @auth
+  # StixEntities
+  stixEntity(id: String): StixEntity @auth
+  # StixDomainEntities
+  stixDomainEntity(id: String): StixDomainEntity @auth
+  stixDomainEntities(
+    first: Int
+    after: ID
+    types: [String]
+    orderBy: StixDomainEntitiesOrdering
+    orderMode: OrderingMode
+    filters: [StixDomainEntitiesFiltering]
+    filterMode: FilterMode
+    search: String
+  ): StixDomainEntityConnection @auth
+  stixDomainEntitiesTimeSeries(
+    type: String
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime!
+    endDate: DateTime!
+    interval: String!
+  ): [TimeSeries] @auth
+  stixDomainEntitiesNumber(type: String, endDate: DateTime): Number @auth
+  # StixObservables
+  stixObservable(id: String): StixObservable @auth
+  stixObservables(
+    first: Int
+    after: ID
+    orderBy: StixObservablesOrdering
+    orderMode: OrderingMode
+    filters: [StixObservablesFiltering]
+    filterMode: FilterMode
+    search: String
+    types: [String]
+  ): StixObservableConnection @auth
+  stixObservablesNumber(type: String, endDate: DateTime): Number @auth
+  stixObservablesTimeSeries(type: String): [TimeSeries] @auth
+  stixObservablesDistribution(type: String): [Distribution] @auth
+  # StixRelations
+  stixRelation(id: String!): StixRelation @auth
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+  ): StixRelationConnection @auth
+  stixRelationsTimeSeries(
+    fromId: String
+    relationType: String
+    inferred: Boolean
+    entityTypes: [String]
+    toTypes: [String]
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime!
+    endDate: DateTime!
+    interval: String!
+  ): [TimeSeries] @auth
+  stixRelationsDistribution(
+    fromId: String
+    relationType: String
+    inferred: Boolean
+    entityTypes: [String]
+    toTypes: [String]
+    startDate: DateTime
+    endDate: DateTime
+    field: String!
+    operation: StatsOperation!
+    limit: Int
+    order: String
+  ): [Distribution] @auth
+  stixRelationsNumber(
+    type: String
+    fromId: String
+    endDate: DateTime
+    inferred: Boolean
+  ): Number @auth
+  # StixObservableRelations
+  stixObservableRelation(id: String!): StixObservableRelation @auth
+  stixObservableRelations(
+    first: Int
+    after: ID
+    orderBy: StixObservableRelationsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+    infrastructure: Boolean
+  ): StixObservableRelationConnection @auth
+  # Workspaces
+  workspace(id: String!): Workspace @auth
+  workspaces(
+    first: Int
+    after: ID
+    orderBy: WorkspacesOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: [WorkspacesFiltering]
+    filterMode: FilterMode
+  ): WorkspaceConnection @auth
+  workspacesNumber(endDate: DateTime): Number @auth
+  # Identities
+  identity(id: String!): Identity @auth
+  identities(
+    first: Int
+    after: ID
+    orderBy: IdentitiesOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: [IdentitiesFiltering]
+    filterMode: FilterMode
+  ): IdentityConnection @auth
+  # Users
+  me: User @auth
+  user(id: String!): User @auth
+  users(
+    first: Int
+    after: ID
+    orderBy: UsersOrdering
+    orderMode: OrderingMode
+    filters: [UsersFiltering]
+    filterMode: FilterMode
+    search: String
+    isUser: Boolean
+  ): UserConnection @auth
+  # Organizations
+  organization(id: String!): Organization @auth
+  organizations(
+    organizationClass: String
+    first: Int
+    after: ID
+    orderBy: OrganizationsOrdering
+    orderMode: OrderingMode
+    filters: [OrganizationsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): OrganizationConnection @auth
+  # Sectors
+  sector(id: String!): Sector @auth
+  sectors(
+    first: Int
+    after: ID
+    orderBy: SectorsOrdering
+    orderMode: OrderingMode
+    filters: [SectorsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): SectorConnection @auth
+  # Cities
+  city(id: String!): City @auth
+  cities(
+    first: Int
+    after: ID
+    orderBy: CitiesOrdering
+    orderMode: OrderingMode
+    filters: [CitiesFiltering]
+    filterMode: FilterMode
+    search: String
+  ): CityConnection @auth
+  # Countries
+  country(id: String!): Country @auth
+  countries(
+    first: Int
+    after: ID
+    orderBy: CountriesOrdering
+    orderMode: OrderingMode
+    filters: [CountriesFiltering]
+    filterMode: FilterMode
+    search: String
+  ): CountryConnection @auth
+  # Regions
+  region(id: String!): Region @auth
+  regions(
+    first: Int
+    after: ID
+    orderBy: RegionsOrdering
+    orderMode: OrderingMode
+    filters: [RegionsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): RegionConnection @auth
+  # Groups
+  group(id: String!): Group @auth
+  groups(
+    first: Int
+    after: ID
+    orderBy: GroupsOrdering
+    orderMode: OrderingMode
+    search: String
+  ): GroupConnection @auth
+  # MarkingDefinitions
+  markingDefinition(id: String!): MarkingDefinition @auth
+  markingDefinitions(
+    first: Int
+    after: ID
+    orderBy: MarkingDefinitionsOrdering
+    orderMode: OrderingMode
+    filters: [MarkingDefinitionsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): MarkingDefinitionConnection @auth
+  # ExternalReferences
+  externalReference(id: String!): ExternalReference @auth
+  externalReferences(
+    first: Int
+    after: ID
+    orderBy: ExternalReferencesOrdering
+    orderMode: OrderingMode
+    filters: [ExternalReferencesFiltering]
+    filterMode: FilterMode
+    search: String
+  ): ExternalReferenceConnection @auth
+  # KillChainPhases
+  killChainPhase(id: String!): KillChainPhase @auth
+  killChainPhases(
+    first: Int
+    after: ID
+    orderBy: KillChainPhasesOrdering
+    orderMode: OrderingMode
+    filters: [KillChainPhasesFiltering]
+    filterMode: FilterMode
+    search: String
+  ): KillChainPhaseConnection @auth
+  # AttackPatterns
+  attackPattern(id: String!): AttackPattern @auth
+  attackPatterns(
+    first: Int
+    after: ID
+    orderBy: AttackPatternsOrdering
+    orderMode: OrderingMode
+    filters: [AttackPatternsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): AttackPatternConnection @auth
+  # CoursesOfAction
+  courseOfAction(id: String!): CourseOfAction @auth
+  coursesOfAction(
+    first: Int
+    after: ID
+    orderBy: CoursesOfActionOrdering
+    orderMode: OrderingMode
+    filters: [CoursesOfActionFiltering]
+    filterMode: FilterMode
+    search: String
+  ): CourseOfActionConnection @auth
+  # ThreatActors
+  threatActor(id: String!): ThreatActor @auth
+  threatActors(
+    first: Int
+    after: ID
+    orderBy: ThreatActorsOrdering
+    orderMode: OrderingMode
+    filters: [ThreatActorsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): ThreatActorConnection @auth
+  # IntursionSets
+  intrusionSet(id: String!): IntrusionSet @auth
+  intrusionSets(
+    first: Int
+    after: ID
+    orderBy: IntrusionSetsOrdering
+    orderMode: OrderingMode
+    filters: [IntrusionSetsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): IntrusionSetConnection @auth
+  # Campaigns
+  campaign(id: String!): Campaign @auth
+  campaigns(
+    first: Int
+    after: ID
+    orderBy: CampaignsOrdering
+    orderMode: OrderingMode
+    filters: [CampaignsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): CampaignConnection @auth
+  campaignsTimeSeries(
+    objectId: String
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime!
+    endDate: DateTime!
+    interval: String!
+    inferred: Boolean
+  ): [TimeSeries] @auth
+  # Incidents
+  incident(id: String!): Incident @auth
+  incidents(
+    first: Int
+    after: ID
+    orderBy: IncidentsOrdering
+    orderMode: OrderingMode
+    filters: [IncidentsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): IncidentConnection @auth
+  incidentsTimeSeries(
+    objectId: String
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime!
+    endDate: DateTime!
+    interval: String!
+    inferred: Boolean
+  ): [TimeSeries] @auth
+  # Malwares
+  malware(id: String!): Malware @auth
+  malwares(
+    first: Int
+    after: ID
+    orderBy: MalwaresOrdering
+    orderMode: OrderingMode
+    filters: [MalwaresFiltering]
+    filterMode: FilterMode
+    search: String
+  ): MalwareConnection @auth
+  # Tools
+  tool(id: String!): Tool @auth
+  tools(
+    first: Int
+    after: ID
+    orderBy: ToolsOrdering
+    orderMode: OrderingMode
+    filters: [ToolsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): ToolConnection @auth
+  # Vulnerabilities
+  vulnerability(id: String!): Vulnerability @auth
+  vulnerabilities(
+    first: Int
+    after: ID
+    orderBy: VulnerabilitiesOrdering
+    orderMode: OrderingMode
+    filters: [VulnerabilitiesFiltering]
+    filterMode: FilterMode
+    search: String
+  ): VulnerabilityConnection @auth
+  # Reports
+  report(id: String!): Report @auth
+  reports(
+    first: Int
+    after: ID
+    orderBy: ReportsOrdering
+    orderMode: OrderingMode
+    filters: [ReportsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): ReportConnection @auth
+  reportsTimeSeries(
+    objectId: String
+    authorId: String
+    reportClass: String
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime!
+    endDate: DateTime!
+    interval: String!
+  ): [TimeSeries] @auth
+  reportsNumber(
+    reportClass: String
+    objectId: String
+    endDate: DateTime
+  ): Number @auth
+  reportsDistribution(
+    objectId: String
+    field: String!
+    operation: StatsOperation!
+    limit: Int
+    order: String
+  ): [Distribution] @auth
+  # Indicators
+  indicator(id: String!): Indicator @auth
+  indicators(
+    first: Int
+    after: ID
+    orderBy: IndicatorsOrdering
+    orderMode: OrderingMode
+    filters: [IndicatorsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): IndicatorConnection @auth
+}
+
+### SUBSCRIPTIONS
+type Subscription {
+  settings(id: ID!): Settings @auth(for: ROLE_ADMIN)
+  tag(id: ID!): Tag @auth(for: ROLE_ADMIN)
+  markingDefinition(id: ID!): MarkingDefinition @auth(for: ROLE_ADMIN)
+  killChainPhase(id: ID!): KillChainPhase @auth(for: ROLE_ADMIN)
+  stixDomainEntity(id: ID!): StixDomainEntity @auth
+  stixObservable(id: ID!): StixObservable @auth
+  stixRelation(id: ID!): StixRelation @auth
+  stixObservableRelation(id: ID!): StixObservableRelation @auth
+  workspace(id: ID!): Workspace @auth
+  externalReference(id: ID!): ExternalReference @auth
+}
+
+### MUTATIONS
+# Settings
+type SettingsEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): Settings
+  contextPatch(input: EditContext): Settings
+  contextClean: Settings
+}
+# Attribute
+type AttributeEditMutations {
+  delete: ID
+  update(input: AttributeEditInput): Attribute
+}
+# Tag
+type TagEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): Tag
+  contextPatch(input: EditContext): Tag
+  contextClean: Tag
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Tag
+}
+
+# StixEntity
+type StixEntityEditMutations {
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): StixEntity
+}
+
+# StixDomainEntity
+type StixDomainEntityEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): StixDomainEntity
+  contextPatch(input: EditContext): StixDomainEntity
+  contextClean: StixDomainEntity
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationsAdd(input: RelationsAddInput): StixEntity
+  relationDelete(relationId: ID!): StixEntity
+  importPush(file: Upload!): File @auth
+  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
+  exportPush(file: Upload!): Boolean @auth(for: ROLE_ADMIN)
+}
+
+# StixObservable
+type StixObservableEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): StixObservable
+  contextPatch(input: EditContext): StixObservable
+  contextClean: StixObservable
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): StixObservable
+  askEnrichment(connectorId: ID!): Work
+}
+
+# StixRelation
+type StixRelationEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): StixRelation
+  contextPatch(input: EditContext): StixRelation
+  contextClean: StixRelation
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): StixRelation
+}
+
+# StixObservableRelation
+type StixObservableRelationEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): StixObservableRelation
+  contextPatch(input: EditContext): StixObservableRelation
+  contextClean: StixObservableRelation
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): StixObservableRelation
+}
+
+# Workspace
+type WorkspaceEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): Workspace
+  contextPatch(input: EditContext): Workspace
+  contextClean: Workspace
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationsAdd(input: RelationsAddInput): Workspace
+  relationDelete(relationId: ID!): Workspace
+}
+
+# Identity
+type IdentityEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): Identity
+  contextPatch(input: EditContext): Identity
+  contextClean: Identity
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Identity
+}
+
+# User
+type UserEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): User
+  contextPatch(input: EditContext): User
+  contextClean: User
+  tokenRenew: User
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): User
+}
+
+# Organization
+type OrganizationEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): Organization
+  contextPatch(input: EditContext): Organization
+  contextClean: Organization
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Organization
+}
+
+# Sector
+type SectorEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): Sector
+  contextPatch(input: EditContext): Sector
+  contextClean: Sector
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Sector
+}
+
+# City
+type CityEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): City
+  contextPatch(input: EditContext): City
+  contextClean: City
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): City
+}
+
+# Country
+type CountryEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): Country
+  contextPatch(input: EditContext): Country
+  contextClean: Country
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Country
+}
+
+# Region
+type RegionEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): Region
+  contextPatch(input: EditContext): Region
+  contextClean: Region
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Region
+}
+
+# Group
+type GroupEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): Group
+  contextPatch(input: EditContext): Group
+  contextClean: Group
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Group
+}
+
+# MarkingDefinition
+type MarkingDefinitionEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): MarkingDefinition
+  contextPatch(input: EditContext): MarkingDefinition
+  contextClean: MarkingDefinition
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): MarkingDefinition
+}
+
+# ExternalReference
+type ExternalReferenceEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): ExternalReference
+  contextPatch(input: EditContext): ExternalReference
+  contextClean: ExternalReference
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): ExternalReference
+}
+
+# KillChainPhase
+type KillChainPhaseEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): KillChainPhase
+  contextPatch(input: EditContext): KillChainPhase
+  contextClean: KillChainPhase
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): KillChainPhase
+}
+
+# AttackPattern
+type AttackPatternEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): AttackPattern
+  contextPatch(input: EditContext): AttackPattern
+  contextClean: AttackPattern
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): AttackPattern
+}
+
+# CourseOfAction
+type CourseOfActionEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): CourseOfAction
+  contextPatch(input: EditContext): CourseOfAction
+  contextClean: CourseOfAction
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): CourseOfAction
+}
+
+# ThreatActor
+type ThreatActorEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): ThreatActor
+  contextPatch(input: EditContext): ThreatActor
+  contextClean: ThreatActor
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): ThreatActor
+}
+
+# IntrusionSet
+type IntrusionSetEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): IntrusionSet
+  contextPatch(input: EditContext): IntrusionSet
+  contextClean: IntrusionSet
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): IntrusionSet
+}
+
+# Campaign
+type CampaignEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): Campaign
+  contextPatch(input: EditContext): Campaign
+  contextClean: Campaign
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Campaign
+}
+
+# Incident
+type IncidentEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): Incident
+  contextPatch(input: EditContext): Incident
+  contextClean: Incident
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Incident
+}
+
+# Malware
+type MalwareEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): Malware
+  contextPatch(input: EditContext): Malware
+  contextClean: Malware
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Malware
+}
+
+# Tool
+type ToolEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): Tool
+  contextPatch(input: EditContext): Tool
+  contextClean: Tool
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Tool
+}
+
+# Vulnerability
+type VulnerabilityEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): Vulnerability
+  contextPatch(input: EditContext): Vulnerability
+  contextClean: Vulnerability
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Vulnerability
+}
+
+# Report
+type ReportEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): Report
+  contextPatch(input: EditContext): Report
+  contextClean: Report
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Report
+}
+
+# Indicator
+type IndicatorEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): Indicator
+  contextPatch(input: EditContext): Indicator
+  contextClean: Indicator
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  relationDelete(relationId: ID!): Indicator
+}
+
+# Mutations
+type Mutation {
+  # Login
+  token(input: UserLoginInput): String
+  # Settings
+  settingsEdit(id: ID!): SettingsEditMutations @auth(for: ROLE_ADMIN)
+  # Inferences
+  inferenceEnable(id: ID!): Inference
+  inferenceDisable(id: ID!): Inference
+  # Attribute
+  attributeAdd(input: AttributeAddInput): Attribute @auth(for: ROLE_ADMIN)
+  attributeEdit(id: ID!): AttributeEditMutations @auth(for: ROLE_ADMIN)
+  # Connector
+  pingConnector(id: ID!, state: String): Connector @auth(for: ROLE_ADMIN)
+  registerConnector(input: RegisterConnectorInput): Connector @auth(for: ROLE_ADMIN)
+  resetStateConnector(id: ID!): Connector @auth(for: ROLE_ADMIN)
+  deleteWork(id: ID!): ID! @auth
+  initiateJob(workId: ID!): Job @auth
+  updateJob(jobId: ID!, status: Status!, messages: [String]): Job @auth
+  # File management
+  deleteImport(fileName: String): Boolean @auth
+  uploadImport(file: Upload!): File @auth
+  askJobImport(fileName: ID!): File @auth
+  # Tag
+  tagAdd(input: TagAddInput): Tag
+  tagEdit(id: ID!): TagEditMutations @auth(for: ROLE_ADMIN)
+  # StixEntity
+  stixEntityEdit(id: ID!): StixEntityEditMutations @auth
+  # StixDomainEntity
+  stixDomainEntityAdd(input: StixDomainEntityAddInput): StixDomainEntity @auth
+  stixDomainEntityEdit(id: ID!): StixDomainEntityEditMutations @auth
+  # StixObservable
+  stixObservableAdd(input: StixObservableAddInput): StixObservable @auth
+  stixObservableEdit(id: ID!): StixObservableEditMutations @auth
+  # StixRelation
+  stixRelationAdd(input: StixRelationAddInput, reversedReturn: Boolean): StixRelation @auth
+  stixRelationEdit(id: ID!): StixRelationEditMutations @auth
+  # StixObservableRelation
+  stixObservableRelationAdd(input: StixObservableRelationAddInput): StixObservableRelation @auth
+  stixObservableRelationEdit(id: ID!): StixObservableRelationEditMutations @auth
+  # Workspace
+  workspaceAdd(input: WorkspaceAddInput): Workspace @auth
+  workspaceEdit(id: ID!): WorkspaceEditMutations @auth
+  # Identity
+  identityAdd(input: IdentityAddInput): Identity @auth
+  identityEdit(id: ID!): IdentityEditMutations @auth
+  # User
+  userAdd(input: UserAddInput): User @auth(for: ROLE_ADMIN)
+  personAdd(input: PersonAddInput): User @auth
+  userEdit(id: ID!): UserEditMutations @auth(for: ROLE_ADMIN)
+  meEdit(input: EditInput): User @auth
+  logout: ID @auth
+  # Organization
+  organizationAdd(input: OrganizationAddInput): Organization @auth
+  organizationEdit(id: ID!): OrganizationEditMutations @auth
+  # Sector
+  sectorAdd(input: SectorAddInput): Sector @auth
+  sectorEdit(id: ID!): SectorEditMutations @auth
+  # City
+  cityAdd(input: CityAddInput): City @auth
+  cityEdit(id: ID!): CityEditMutations @auth
+  # Country
+  countryAdd(input: CountryAddInput): Country @auth
+  countryEdit(id: ID!): CountryEditMutations @auth
+  # Region
+  regionAdd(input: RegionAddInput): Region @auth
+  regionEdit(id: ID!): RegionEditMutations @auth
+  # Group
+  groupAdd(input: GroupAddInput): Group @auth(for: ROLE_ADMIN)
+  groupEdit(id: ID!): GroupEditMutations @auth(for: ROLE_ADMIN)
+  # MarkingDefinition
+  markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition
+    @auth(for: ROLE_ADMIN)
+  markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations
+    @auth(for: ROLE_ADMIN)
+  # ExternalReference
+  externalReferenceAdd(input: ExternalReferenceAddInput): ExternalReference
+    @auth
+  externalReferenceEdit(id: ID!): ExternalReferenceEditMutations @auth
+  # KillChainPhase
+  killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase
+    @auth(for: ROLE_ADMIN)
+  killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations
+    @auth(for: ROLE_ADMIN)
+  # AttackPattern
+  attackPatternAdd(input: AttackPatternAddInput): AttackPattern @auth
+  attackPatternEdit(id: ID!): AttackPatternEditMutations @auth
+  # CourseOfAction
+  courseOfActionAdd(input: CourseOfActionAddInput): CourseOfAction @auth
+  courseOfActionEdit(id: ID!): CourseOfActionEditMutations @auth
+  # ThreatActor
+  threatActorAdd(input: ThreatActorAddInput): ThreatActor @auth
+  threatActorEdit(id: ID!): ThreatActorEditMutations @auth
+  # IntrusionSet
+  intrusionSetAdd(input: IntrusionSetAddInput): IntrusionSet @auth
+  intrusionSetEdit(id: ID!): IntrusionSetEditMutations @auth
+  # Campaign
+  campaignAdd(input: CampaignAddInput): Campaign @auth
+  campaignEdit(id: ID!): CampaignEditMutations @auth
+  # Incident
+  incidentAdd(input: IncidentAddInput): Incident @auth
+  incidentEdit(id: ID!): IncidentEditMutations @auth
+  # Malware
+  malwareAdd(input: MalwareAddInput): Malware @auth
+  malwareEdit(id: ID!): MalwareEditMutations @auth
+  # Tool
+  toolAdd(input: ToolAddInput): Tool @auth
+  toolEdit(id: ID!): ToolEditMutations @auth
+  # Vulnerability
+  vulnerabilityAdd(input: VulnerabilityAddInput): Vulnerability @auth
+  vulnerabilityEdit(id: ID!): VulnerabilityEditMutations @auth
+  # Report
+  reportAdd(input: ReportAddInput): Report @auth
+  reportEdit(id: ID!): ReportEditMutations @auth
+  # Indicator
+  indicatorAdd(input: IndicatorAddInput): Indicator @auth
+  indicatorEdit(id: ID!): IndicatorEditMutations @auth
+}

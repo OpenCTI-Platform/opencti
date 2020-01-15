@@ -1,11 +1,14 @@
 <h1 align="center">
-  <a href="https://www.opencti.io"><img src="https://opencti-platform.github.io/docs/assets/introduction/logo.png" alt="OpenCTI"></a>
+  <a href="https://www.opencti.io"><img src="https://opencti-platform.github.io/docs/assets/getting-started/logo.png" alt="OpenCTI"></a>
 </h1>
 <p align="center">
   <a href="https://www.opencti.io" alt="Website"><img src="https://img.shields.io/badge/website-opencti.io-blue.svg" /></a>
+  <a href="https://opencti-platform.github.io/docs" alt="Documentation"><img src="https://img.shields.io/badge/Documentation-RTFM-orange.svg" /></a>
+  <a href="https://slack.luatix.org" alt="Slack"><img src="https://slack.luatix.org/badge.svg" /></a>
   <a href="https://circleci.com/gh/OpenCTI-Platform/opencti" alt="CICD"><img src="https://circleci.com/gh/OpenCTI-Platform/opencti.svg?style=shield" /></a>
+  <a href="https://deepscan.io/dashboard#view=project&tid=4926&pid=6716&bid=57311"><img src="https://deepscan.io/api/teams/4926/projects/6716/branches/57311/badge/grade.svg" alt="DeepScan grade"></a>
   <a href="https://github.com/OpenCTI-Platform/opencti/releases/latest" alt="Releases"><img src="https://img.shields.io/github/release/OpenCTI-Platform/opencti.svg" /></a>
-  <a href="https://slack.luatix.org" alt="Releases"><img src="https://slack.luatix.org/badge.svg" /></a>
+  <a href="https://hub.docker.com/u/opencti" alt="Docker pulls"><img src="https://img.shields.io/docker/pulls/opencti/platform" /></a>
 </p>
 
 
@@ -15,15 +18,15 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
 
 The structuration of the data is performed using a knowledge schema based on the [STIX2 standards](https://oasis-open.github.io/cti-documentation/). It has been designed as a modern web application including a [GraphQL API](https://graphql.org) and an UX oriented frontend. Also, OpenCTI can be integrated with other tools and applications such as [MISP](https://github.com/MISP/MISP), [TheHive](https://github.com/TheHive-Project/TheHive), [MITRE ATT&CK](https://github.com/mitre/cti), etc.
 
-![Screenshot](https://opencti-platform.github.io/docs/assets/introduction/screenshot.png "Screenshot")
+![Screenshot](https://opencti-platform.github.io/docs/assets/getting-started/screenshot.png "Screenshot")
 
 ## Objective
 
 The goal is to create a comprehensive tool allowing users to capitalize technical (such as TTPs and observables) and non-technical information (such as suggested attribution, victimlogy etc.) while linking each piece of information to its primary source (a report, a MISP event, etc.), with features such as links between each information, first and last seen dates, levels of confidence etc. The tool is able to use the [MITRE ATT&CK framework](https://attack.mitre.org) (through a [dedicated connector](https://github.com/OpenCTI-Platform/connectors)) to help structure the data. The user can also chose to implement its own datasets.
 
-Once data has been capitalized and processed by the analysts within OpenCTI, new relations [may be inferred](https://opencti-platform.github.io/docs/guides/inferences) from existing ones to facilitate the understanding and the representation of this information. This allow the user to extract and leverage meaningful knowledge from the raw data.
+Once data has been capitalized and processed by the analysts within OpenCTI, new relations [may be inferred](https://opencti-platform.github.io/docs/reference/inferences) from existing ones to facilitate the understanding and the representation of this information. This allow the user to extract and leverage meaningful knowledge from the raw data.
 
-OpenCTI not only allows [imports]((https://opencti-platform.github.io/docs/guides/import-data)) but also [exports of data]((https://opencti-platform.github.io/docs/guides/export-data)) under different formats (CSV, STIX2 bundles, etc.). [Connectors](https://github.com/OpenCTI-Platform/connectors) are currently developped to accelerate interactions between the tool and other platforms.
+OpenCTI not only allows [imports](https://opencti-platform.github.io/docs/usage/import) but also [exports of data](https://opencti-platform.github.io/docs/usage/export) under different formats (CSV, STIX2 bundles, etc.). [Connectors](https://github.com/OpenCTI-Platform/connectors) are currently developped to accelerate interactions between the tool and other platforms.
 
 ## Documentation and demonstration
 
@@ -35,10 +38,10 @@ The releases are available on the [Github releases page](https://github.com/Open
 
 ## Installation
 
-All you need to install the OpenCTI platform can be found in the [official documentation](https://opencti-platform.github.io/docs/introduction). For installation, you can:
+All you need to install the OpenCTI platform can be found in the [official documentation](https://opencti-platform.github.io/docs). For installation, you can:
 
-* [Use Docker](https://opencti-platform.github.io/docs/installation/docker-installation) (recommanded)
-* [Install manually](https://opencti-platform.github.io/docs/installation/docker-installation) 
+* [Use Docker](https://opencti-platform.github.io/docs/installation/docker) (recommended)
+* [Install manually](https://opencti-platform.github.io/docs/installation/manual) 
 
 ## Contributing
 
@@ -56,7 +59,7 @@ To help you get you familiar with our contribution process, we have a list of [b
 
 ### Development
 
-If you want to actively help OpenCTI, we created a [dedicated documentation](https://opencti-platform.github.io/docs/development/development-docker) about the deployment of a development environement and how to start the source code modification.
+If you want to actively help OpenCTI, we created a [dedicated documentation](https://opencti-platform.github.io/docs/development/installation) about the deployment of a development environement and how to start the source code modification.
 
 ## Community
 

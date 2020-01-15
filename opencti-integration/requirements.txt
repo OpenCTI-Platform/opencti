@@ -1,5 +1,0 @@
-requests
-pycti
-schedule
-python-dateutil
-PyYAML

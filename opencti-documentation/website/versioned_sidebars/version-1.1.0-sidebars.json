@@ -1,0 +1,28 @@
+{
+  "version-1.1.0-docs": {
+    "Getting Started": [
+      "version-1.1.0-getting-started/introduction",
+      "version-1.1.0-getting-started/architecture",
+      "version-1.1.0-getting-started/requirements"
+    ],
+    "Installation": [
+      "version-1.1.0-installation/docker",
+      "version-1.1.0-installation/manual",
+      "version-1.1.0-installation/connectors",
+      "version-1.1.0-development/installation"
+    ],
+    "Usage": [
+      "version-1.1.0-usage/overview",
+      "version-1.1.0-usage/model",
+      "version-1.1.0-usage/reports-create",
+      "version-1.1.0-usage/report-knowledge"
+    ],
+    "Reference": [
+      "version-1.1.0-reference/relations",
+      "version-1.1.0-reference/inferences"
+    ],
+    "Development": [
+      "version-1.1.0-development/connectors"
+    ]
+  }
+}

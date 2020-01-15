@@ -1,0 +1,23 @@
+{
+  "version-1.0.2-docs": {
+    "Getting Started": [
+      "version-1.0.2-getting-started/introduction",
+      "version-1.0.2-getting-started/architecture"
+    ],
+    "Installation": [
+      "version-1.0.2-installation/docker",
+      "version-1.0.2-installation/manual",
+      "version-1.0.2-development/installation"
+    ],
+    "Usage": [
+      "version-1.0.2-usage/overview",
+      "version-1.0.2-usage/model",
+      "version-1.0.2-usage/reports-create",
+      "version-1.0.2-usage/report-knowledge"
+    ],
+    "Reference": [
+      "version-1.0.2-reference/relations",
+      "version-1.0.2-reference/inferences"
+    ]
+  }
+}

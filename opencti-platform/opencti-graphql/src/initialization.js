@@ -1,0 +1,46 @@
+// Admin user initialization
+import { logger } from './config/conf';
+import { elCreateIndexes, elIsAlive } from './database/elasticSearch';
+import { graknIsAlive, write } from './database/grakn';
+import applyMigration from './database/migration';
+import { initializeAdminUser } from './config/security';
+import { isStorageAlive } from './database/minio';
+import { checkPythonStix2 } from './database/utils';
+
+const fs = require('fs');
+
+// Check every dependencies
+export const checkSystemDependencies = async () => {
+  // Check if Grakn is available
+  await graknIsAlive();
+  logger.info(`[PRE-CHECK] > Grakn is alive`);
+  // Check if elasticsearch is available
+  await elIsAlive();
+  logger.info(`[PRE-CHECK] > Elasticsearch is alive`);
+  // Check if minio is here
+  await isStorageAlive();
+  logger.info(`[PRE-CHECK] > Minio is alive`);
+  // Check if Python is available
+  await checkPythonStix2();
+  logger.info(`[PRE-CHECK] > Python3 is available`);
+};
+
+// Initialize
+export const initializeSchema = async () => {
+  // Inject grakn schema
+  const schema = fs.readFileSync('./src/opencti.gql', 'utf8');
+  await write(schema);
+  logger.info(`[INIT] > Grakn schema loaded`);
+  // Create default indexes
+  await elCreateIndexes();
+  logger.info(`[INIT] > Elasticsearch indexes loaded`);
+};
+
+const init = async () => {
+  await checkSystemDependencies();
+  await initializeSchema();
+  await applyMigration();
+  await initializeAdminUser();
+};
+
+export default init;

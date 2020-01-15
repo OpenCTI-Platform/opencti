@@ -1,14 +1,41 @@
 {
   "docs": {
     "Getting Started": [
-      "introduction"
+      "getting-started/introduction",
+      "getting-started/architecture",
+      "getting-started/requirements"
     ],
     "Installation": [
-      "installation/docker-installation",
-      "installation/manual-installation"
+      "installation/docker",
+      "installation/manual",
+      "installation/connectors",
+      "development/installation"
+    ],
+    "Usage": [
+      "usage/overview",
+      "usage/model",
+      "usage/knowledge-create",
+      "usage/reports-create",
+      "usage/report-knowledge"
+    ],
+   "Reference": [
+      "reference/relations",
+      "reference/inferences"
     ],
     "Development": [
-      "development/development-docker"
+      "development/connectors"
+    ],
+    "Client libraries": [
+      "python",
+      {
+        "type": "subcategory",
+        "label": "Python",
+        "ids": [
+          "clients/python/overview",
+          "clients/python/guide",
+          "clients/python/reference"
+        ]
+      }
     ]
   }
 }

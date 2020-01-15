@@ -1,5 +1,5 @@
 module.exports = {
-    "prefix": "v",
+    "prefix": "Version ",
     "ignoreIssuesWith": [
         "duplicate",
         "wontfix",
@@ -10,7 +10,7 @@ module.exports = {
         "issue": "- [{{text}}]({{url}}) {{name}}"
     },
     "groupBy": {
-        "Enhancements:": ["feature", "internal"],
+        "Enhancements:": ["feature", "internal", "build", "documentation"],
         "Bug Fixes:": ["bug"]
     }
 };

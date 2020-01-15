@@ -4,25 +4,20 @@ jobs:
   build:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:11-stretch
+      - image: circleci/node:12.13.1-stretch
     steps:
       - checkout
-      - run:
-          name: "Pull Submodules"
-          command: |
-            git submodule init
-            git submodule update --remote
       - run: 
-          working_directory: ~/opencti/opencti-front
+          working_directory: ~/opencti/opencti-platform/opencti-front
           command: yarn install
       - run:
-          working_directory: ~/opencti/opencti-front
+          working_directory: ~/opencti/opencti-platform/opencti-front
           command: yarn build
       - run:
-          working_directory: ~/opencti/opencti-graphql
+          working_directory: ~/opencti/opencti-platform/opencti-graphql
           command: yarn install
       - run:
-          working_directory: ~/opencti/opencti-graphql
+          working_directory: ~/opencti/opencti-platform/opencti-graphql
           command: yarn build
       - persist_to_workspace:
           root: ~/
@@ -31,15 +26,16 @@ jobs:
   test:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:11-stretch
+      - image: circleci/node:12.13.1-stretch
         environment:
           APP__REACTIVE: false
           GRAKN__HOSTNAME: 127.0.0.1
           ELASTICSEARCH__HOSTNAME: 127.0.0.1
-      - image: graknlabs/grakn:1.5.6
-      - image: docker.elastic.co/elasticsearch/elasticsearch:6.7.1
+      - image: graknlabs/grakn:1.5.9
+      - image: docker.elastic.co/elasticsearch/elasticsearch:7.5.0
         environment:
-          - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+          - "discovery.type=single-node"
+          - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
     steps:
       - attach_workspace:
           at: ~/
@@ -54,26 +50,33 @@ jobs:
       - run:
           name: Wait for ElasticSearch
           command: dockerize -wait tcp://localhost:9200 -timeout 1m        
+      - run: 
+          name: Setup custom environment variables
+          command: |
+            echo 'export APP__ADMIN__PASSWORD="admin"' >> $BASH_ENV
+            echo 'export APP__ADMIN__TOKEN="bfa014e0-e02e-4aa6-a42b-603b19dcf159"' >> $BASH_ENV
+            source $BASH_ENV
       - run:
-          working_directory: ~/opencti/opencti-graphql
+          working_directory: ~/opencti/opencti-platform/opencti-graphql
           command: yarn test
 
   package_rolling:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:11-stretch
+      - image: circleci/node:12.13.1-stretch
     steps:
       - attach_workspace:
           at: ~/
       - add_ssh_keys
       - run: ssh-keyscan -H opencti.io >> ~/.ssh/known_hosts
       - run: git config --global user.email "ci@opencti.io" && git config --global user.name "OpenCTI CircleCI"
-      - run: git remote add opencti ssh://git-OLOszi5F@opencti.io:/~/git-OLOszi5F.git && git push opencti master
+      - run: git remote add opencti ssh://git-OLOszi5F@opencti.io:/~/git-OLOszi5F.git && git push --force opencti master
       - run: mkdir release
-      - run: cp -a opencti-graphql release/opencti
-      - run: cp -a opencti-integration release/opencti/integration
-      - run: cp -a opencti-worker release/opencti/worker
-      - run: 
+      - run: cp -a ./opencti-platform/opencti-graphql release/opencti
+      - run: cp -a ./opencti-worker/src release/opencti/worker
+      - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/docker
+      - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/connectors
+      - run:
           working_directory: ~/opencti/release
           command: tar -zcvf "opencti-$(date '+%Y%m%d').tar.gz" opencti
       - run: 
@@ -83,7 +86,7 @@ jobs:
   deploy_demo:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:11-stretch
+      - image: circleci/node:12.13.1-stretch
     steps:
       - attach_workspace:
           at: ~/
@@ -97,13 +100,19 @@ jobs:
           command: git clone ssh://opencti-fiqid45E@opencti.io:/~/opencti-fiqid45E.git .
       - run:
           working_directory: ~/opencti/deploy
+          command: git submodule init && git submodule update --remote          
+      - run:
+          working_directory: ~/opencti/deploy
           command: git remote add ci ~/opencti && git pull --no-edit -s recursive -X theirs ci master
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-graphql/public/ ./opencti-graphql/public/
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/public/ ./opencti-platform/opencti-graphql/public/
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-graphql/dist/ ./opencti-graphql/dist/
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/build/ ./opencti-platform/opencti-graphql/build/
+      - run:  
+          working_directory: ~/opencti/deploy 
+          command: rsync -av ./opencti-connectors/ ./opencti-connectors-enabled/          
       - run:
           working_directory: ~/opencti/deploy
           command: git add -A
@@ -114,7 +123,7 @@ jobs:
   deploy_reference:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:11-stretch
+      - image: circleci/node:12.13.1-stretch
     steps:
       - attach_workspace:
           at: ~/
@@ -128,13 +137,19 @@ jobs:
           command: git clone ssh://opencti-b0gY5UHe@opencti.io:/~/opencti-b0gY5UHe.git .
       - run:
           working_directory: ~/opencti/deploy
+          command: git submodule init && git submodule update --remote          
+      - run:
+          working_directory: ~/opencti/deploy
           command: git remote add ci ~/opencti && git pull --no-edit -s recursive -X theirs ci master          
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-graphql/public/ ./opencti-graphql/public/
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/public/ ./opencti-platform/opencti-graphql/public/
       - run:
           working_directory: ~/opencti/deploy
-          command: rsync -av --delete ~/opencti/opencti-graphql/dist/ ./opencti-graphql/dist/
+          command: rsync -av --delete ~/opencti/opencti-platform/opencti-graphql/build/ ./opencti-platform/opencti-graphql/build/
+      - run:  
+          working_directory: ~/opencti/deploy 
+          command: rsync -av ./opencti-connectors/ ./opencti-connectors-enabled/          
       - run:
           working_directory: ~/opencti/deploy
           command: git add -A
@@ -145,7 +160,7 @@ jobs:
   deploy_documentation:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:11-stretch
+      - image: circleci/node:12.13.1-stretch
     steps:
       - checkout
       - run:
@@ -157,13 +172,65 @@ jobs:
             echo "machine github.com login SamuelHassine password $GITHUB_TOKEN" > ~/.netrc
             cd website && yarn install && ORGANIZATION_NAME=OpenCTI-Platform PROJECT_NAME=docs GIT_USER=SamuelHassine yarn run publish-gh-pages
 
+  docker_build:
+    working_directory: ~/opencti
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          working_directory: ~/opencti/opencti-platform
+          name: Build Docker image opencti/platform
+          command: docker build -t opencti/platform:latest . && docker tag opencti/platform:latest opencti/platform:${CIRCLE_TAG}
+      - run:
+          working_directory: ~/opencti/opencti-worker
+          name: Build Docker image opencti/worker
+          command: docker build -t opencti/worker:latest . && docker tag opencti/worker:latest opencti/worker:${CIRCLE_TAG}
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            docker push opencti/platform:latest
+            docker push opencti/platform:${CIRCLE_TAG}
+            docker push opencti/worker:latest
+            docker push opencti/worker:${CIRCLE_TAG}
+
+  docker_build_rolling:
+    working_directory: ~/opencti
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          working_directory: ~/opencti/opencti-platform
+          name: Build Docker image opencti/platform
+          command: docker build -t opencti/platform:rolling .
+      - run:
+          working_directory: ~/opencti/opencti-worker
+          name: Build Docker image opencti/worker
+          command: docker build -t opencti/worker:rolling .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            docker push opencti/platform:rolling
+            docker push opencti/worker:rolling
+
 workflows:
   opencti:
     jobs:
-      - build
+      - build:
+          filters:
+            tags:
+              only: /.*/
       - test:
           requires:
             - build
+          filters:
+            tags:
+              only: /.*/
       - package_rolling:
           requires:
             - build
@@ -172,6 +239,8 @@ workflows:
             branches:
               only:
                 - master
+            tags:
+              only: /.*/
       - deploy_demo:
           requires:
             - build
@@ -187,9 +256,26 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - master             
       - deploy_documentation:
           filters:
             branches:
               only:
-                - master                
+                - master
+      - docker_build_rolling:
+          requires:
+            - build
+            - test        
+          filters:
+            branches:
+              only:
+                - master
+      - docker_build:
+          requires:
+            - build
+            - test        
+          filters:
+            tags:
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/

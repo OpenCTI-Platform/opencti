@@ -1,0 +1,6 @@
+opencti:
+  url: 'http://localhost:8080'
+  token: 'ChangeMe'
+
+worker:
+  log_level: 'info'
