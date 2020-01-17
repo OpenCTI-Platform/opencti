@@ -48,7 +48,7 @@ $ cd opencti
 ### Install the API dependencies
 
 ```bash
-$ cd opencti-platform/sopencti-graphql
+$ cd opencti-platform/opencti-graphql
 $ yarn install
 ```
 
@@ -61,7 +61,7 @@ $ yarn install
 ### Install the worker dependencies
 
 ```bash
-$ cd ../../opencti-worker
+$ cd ../../opencti-worker/src
 $ pip3 install -r requirements.txt
 ```
 
@@ -72,6 +72,7 @@ $ pip3 install -r requirements.txt
 #### Configure
 
 ```bash
+$ cd ../../opencti-platform/opencti-graphql
 $ cp config/default.json config/development.json
 ```
 By default the configuration match the docker stack configuration.
