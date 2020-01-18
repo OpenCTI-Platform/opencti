@@ -37,6 +37,19 @@ indicator = opencti_api_client.indicator.create(
 )
 print(indicator)
 
+# Create the relation
+relation = opencti_api_client.stix_relation.create(
+    fromType='Indicator',
+    fromId=indicator['id'],
+    toType='Campaign',
+    toId=campaign['id'],
+    relationship_type='indicates',
+    first_seen=date,
+    last_seen=date,
+    description='This is the C2 server of the campaign.'
+)
+print(relation)
+
 # Create the observables (optional)
 observable_1 = opencti_api_client.stix_observable.create(
     type='Domain',
@@ -55,16 +68,3 @@ opencti_api_client.indicator.add_stix_observable(
     id=indicator['id'],
     stix_observable_id=observable_2['id']
 )
-
-# Create the relation
-relation = opencti_api_client.stix_relation.create(
-    fromType='Indicator',
-    fromId=indicator['id'],
-    toType='Campaign',
-    toId=campaign['id'],
-    relationship_type='indicates',
-    first_seen=date,
-    last_seen=date,
-    description='This is the C2 server of the campaign.'
-)
-print(relation)

@@ -131,7 +131,14 @@ class ThreatActor:
                 }
             }
         """
-        result = self.opencti.query(query, {'filters': filters, 'search': search, 'first': first, 'after': after, 'orderBy': order_by, 'orderMode': order_mode})
+        result = self.opencti.query(query, {
+            'filters': filters,
+            'search': search,
+            'first': first,
+            'after': after,
+            'orderBy': order_by,
+            'orderMode': order_mode
+        })
         return self.opencti.process_multiple(result['data']['threatActors'])
 
     """
@@ -167,6 +174,182 @@ class ThreatActor:
             return None
 
     """
+        Create a Threat-Actor object
+
+        :param name: the name of the Threat-Actor
+        :return Threat-Actor object
+    """
+
+    def create_raw(self, **kwargs):
+        name = kwargs.get('name', None)
+        description = kwargs.get('description', None)
+        alias = kwargs.get('alias', None)
+        goal = kwargs.get('goal', None)
+        sophistication = kwargs.get('sophistication', None)
+        resource_level = kwargs.get('resource_level', None)
+        primary_motivation = kwargs.get('primary_motivation', None)
+        secondary_motivation = kwargs.get('secondary_motivation', None)
+        personal_motivation = kwargs.get('personal_motivation', None)
+        id = kwargs.get('id', None)
+        stix_id_key = kwargs.get('stix_id_key', None)
+        created = kwargs.get('created', None)
+        modified = kwargs.get('modified', None)
+        created_by_ref = kwargs.get('createdByRef', None)
+        marking_definitions = kwargs.get('markingDefinitions', None)
+
+        if name is not None and description is not None:
+            self.opencti.log('info', 'Creating Threat-Actor {' + name + '}.')
+            query = """
+                mutation ThreatActorAdd($input: ThreatActorAddInput) {
+                    threatActorAdd(input: $input) {
+                        """ + self.properties + """
+                    }
+                }
+            """
+            result = self.opencti.query(query, {
+                'input': {
+                    'name': name,
+                    'description': description,
+                    'alias': alias,
+                    'goal': goal,
+                    'sophistication': sophistication,
+                    'resource_level': resource_level,
+                    'primary_motivation': primary_motivation,
+                    'secondary_motivation': secondary_motivation,
+                    'personal_motivation': personal_motivation,
+                    'internal_id_key': id,
+                    'stix_id_key': stix_id_key,
+                    'created': created,
+                    'modified': modified,
+                    'createdByRef': created_by_ref,
+                    'markingDefinitions': marking_definitions,
+                }
+            })
+            return self.opencti.process_multiple_fields(result['data']['threatActorAdd'])
+        else:
+            self.opencti.log('error', '[opencti_threat_actor] Missing parameters: name and description')
+
+    """
+        Create a Threat-Actor object only if it not exists, update it on request
+
+        :param name: the name of the Threat-Actor
+        :return Threat-Actor object
+    """
+
+    def create(self, **kwargs):
+        name = kwargs.get('name', None)
+        description = kwargs.get('description', None)
+        alias = kwargs.get('alias', None)
+        goal = kwargs.get('goal', None)
+        sophistication = kwargs.get('sophistication', None)
+        resource_level = kwargs.get('resource_level', None)
+        primary_motivation = kwargs.get('primary_motivation', None)
+        secondary_motivation = kwargs.get('secondary_motivation', None)
+        personal_motivation = kwargs.get('personal_motivation', None)
+        id = kwargs.get('id', None)
+        stix_id_key = kwargs.get('stix_id_key', None)
+        created = kwargs.get('created', None)
+        modified = kwargs.get('modified', None)
+        created_by_ref = kwargs.get('createdByRef', None)
+        marking_definitions = kwargs.get('markingDefinitions', None)
+        update = kwargs.get('update', False)
+
+        object_result = self.opencti.stix_domain_entity.get_by_stix_id_or_name(
+            types=['Threat-Actor'],
+            stix_id_key=stix_id_key,
+            name=name
+        )
+        if object_result is not None:
+            if update:
+                # name
+                if object_result['name'] != name:
+                    self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
+                    object_result['name'] = name
+                # description
+                if object_result['description'] != description:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='description',
+                        value=description
+                    )
+                    object_result['description'] = description
+                # alias
+                if alias is not None and object_result['alias'] != alias:
+                    if 'alias' in object_result:
+                        new_aliases = object_result['alias'] + list(set(alias) - set(object_result['alias']))
+                    else:
+                        new_aliases = alias
+                    self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
+                    object_result['alias'] = new_aliases
+                # goal
+                if goal is not None and object_result['goal'] != goal:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='goal',
+                        value=goal
+                    )
+                    object_result['goal'] = goal
+                # sophistication
+                if sophistication is not None and object_result['sophistication'] != sophistication:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='sophistication',
+                        value=sophistication
+                    )
+                    object_result['sophistication'] = sophistication
+                # resource_level
+                if resource_level is not None and object_result['resource_level'] != resource_level:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='resource_level',
+                        value=resource_level
+                    )
+                    object_result['resource_level'] = resource_level
+                # primary_motivation
+                if primary_motivation is not None and object_result['primary_motivation'] != primary_motivation:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='primary_motivation',
+                        value=primary_motivation
+                    )
+                    object_result['primary_motivation'] = primary_motivation
+                # secondary_motivation
+                if secondary_motivation is not None and object_result['secondary_motivation'] != secondary_motivation:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='secondary_motivation',
+                        value=secondary_motivation
+                    )
+                    object_result['secondary_motivation'] = secondary_motivation
+                # personal_motivation
+                if personal_motivation is not None and object_result['personal_motivation'] != personal_motivation:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='personal_motivation',
+                        value=personal_motivation
+                    )
+                    object_result['personal_motivation'] = personal_motivation
+            return object_result
+        else:
+            return self.create_raw(
+                name=name,
+                description=description,
+                alias=alias,
+                goal=goal,
+                sophistication=sophistication,
+                resource_level=resource_level,
+                primary_motivation=primary_motivation,
+                secondary_motivation=secondary_motivation,
+                personal_motivation=personal_motivation,
+                id=id,
+                stix_id_key=stix_id_key,
+                created=created,
+                modified=modified,
+                createdByRef=created_by_ref,
+                markingDefinitions=marking_definitions,
+            )
+
+    """
         Export an Threat-Actor object in STIX2
     
         :param id: the id of the Threat-Actor
@@ -192,8 +375,10 @@ class ThreatActor:
             if self.opencti.not_empty(entity['alias']): threat_actor['aliases'] = entity['alias']
             if self.opencti.not_empty(entity['description']): threat_actor['description'] = entity['description']
             if self.opencti.not_empty(entity['goal']): threat_actor['goals'] = entity['goal']
-            if self.opencti.not_empty(entity['sophistication']): threat_actor['sophistication'] = entity['sophistication']
-            if self.opencti.not_empty(entity['resource_level']): threat_actor['resource_level'] = entity['resource_level']
+            if self.opencti.not_empty(entity['sophistication']): threat_actor['sophistication'] = entity[
+                'sophistication']
+            if self.opencti.not_empty(entity['resource_level']): threat_actor['resource_level'] = entity[
+                'resource_level']
             if self.opencti.not_empty(entity['primary_motivation']): threat_actor['primary_motivation'] = entity[
                 'primary_motivation']
             if self.opencti.not_empty(entity['secondary_motivation']): threat_actor['secondary_motivations'] = entity[
