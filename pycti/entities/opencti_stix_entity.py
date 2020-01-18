@@ -155,6 +155,7 @@ class StixEntity:
                             id
                             stix_id_key
                             entity_type
+                            observable_value
                         }
                         relation {
                             id
@@ -185,6 +186,7 @@ class StixEntity:
                             id
                             stix_id_key
                             entity_type
+                            observable_value
                         }
                         relation {
                             id
@@ -636,6 +638,7 @@ class StixEntity:
                                                 id
                                                 stix_id_key
                                                 entity_type
+                                                observable_value
                                             }
                                             relation {
                                                 id

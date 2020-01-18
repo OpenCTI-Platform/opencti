@@ -217,6 +217,7 @@ class Indicator:
         created = kwargs.get('created', None)
         modified = kwargs.get('modified', None)
         created_by_ref = kwargs.get('createdByRef', None)
+        marking_definitions = kwargs.get('markingDefinitions', None)
 
         if name is not None and indicator_pattern is not None and main_observable_type is not None:
             self.opencti.log('info', 'Creating Indicator {' + name + '}.')
@@ -241,7 +242,8 @@ class Indicator:
                     'stix_id_key': stix_id_key,
                     'created': created,
                     'modified': modified,
-                    'createdByRef': created_by_ref
+                    'createdByRef': created_by_ref,
+                    'markingDefinitions': marking_definitions,
                 }
             })
             return self.opencti.process_multiple_fields(result['data']['indicatorAdd'])
@@ -271,6 +273,7 @@ class Indicator:
         created = kwargs.get('created', None)
         modified = kwargs.get('modified', None)
         created_by_ref = kwargs.get('createdByRef', None)
+        marking_definitions = kwargs.get('markingDefinitions', None)
         update = kwargs.get('update', False)
 
         object_result = self.read(filters=[{'key': 'indicator_pattern', 'values': [indicator_pattern]}])
@@ -302,7 +305,8 @@ class Indicator:
                 stix_id_key=stix_id_key,
                 created=created,
                 modified=modified,
-                createdByRef=created_by_ref
+                createdByRef=created_by_ref,
+                markingDefinitions=marking_definitions,
             )
 
     """
@@ -378,6 +382,8 @@ class Indicator:
                 indicator['labels'] = ['indicator']
             if self.opencti.not_empty(entity['description']): indicator['description'] = entity['description']
             indicator['pattern'] = entity['indicator_pattern']
+            indicator['valid_from'] = self.opencti.stix2.format_date(entity['valid_from'])
+            indicator['valid_until'] = self.opencti.stix2.format_date(entity['valid_until'])
             if self.opencti.not_empty(entity['pattern_type']):
                 indicator[CustomProperties.PATTERN_TYPE] = entity['pattern_type']
             else:

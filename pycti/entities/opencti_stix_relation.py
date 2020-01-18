@@ -260,6 +260,8 @@ class StixRelation:
         stix_id_key = kwargs.get('stix_id_key', None)
         created = kwargs.get('created', None)
         modified = kwargs.get('modified', None)
+        created_by_ref = kwargs.get('createdByRef', None)
+        marking_definitions = kwargs.get('markingDefinitions', None)
 
         self.opencti.log('info',
                          'Creating stix_relation {' + from_role + ': ' + from_id + ', ' + to_role + ': ' + to_id + '}.')
@@ -285,7 +287,9 @@ class StixRelation:
                 'internal_id_key': id,
                 'stix_id_key': stix_id_key,
                 'created': created,
-                'modified': modified
+                'modified': modified,
+                'createdByRef': created_by_ref,
+                'markingDefinitions': marking_definitions,
             }
         })
         return self.opencti.process_multiple_fields(result['data']['stixRelationAdd'])
@@ -312,6 +316,8 @@ class StixRelation:
         stix_id_key = kwargs.get('stix_id_key', None)
         created = kwargs.get('created', None)
         modified = kwargs.get('modified', None)
+        created_by_ref = kwargs.get('createdByRef', None)
+        marking_definitions = kwargs.get('markingDefinitions', None)
         update = kwargs.get('update', False)
         ignore_dates = kwargs.get('ignore_dates', False)
 
@@ -394,7 +400,9 @@ class StixRelation:
                 id=id,
                 stix_id_key=stix_id_key,
                 created=created,
-                modified=modified
+                modified=modified,
+                createdByRef=created_by_ref,
+                markingDefinitions=marking_definitions,
             )
 
     """

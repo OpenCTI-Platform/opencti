@@ -84,7 +84,7 @@ class OpenCTIApiClient:
         self.external_reference = ExternalReference(self)
         self.kill_chain_phase = KillChainPhase(self)
         self.stix_entity = StixEntity(self)
-        self.stix_domain_entity = StixDomainEntity(self)
+        self.stix_domain_entity = StixDomainEntity(self, File)
         self.stix_observable = StixObservable(self)
         self.stix_relation = StixRelation(self)
         self.stix_observable_relation = StixObservableRelation(self)
@@ -115,12 +115,13 @@ class OpenCTIApiClient:
         for key in var_keys:
             val = variables[key]
             is_file = type(val) is File
-            is_files = isinstance(val, list) and all(map(lambda x: isinstance(x, File), val))
+            is_files = isinstance(val, list) and len(val) > 0 and all(map(lambda x: isinstance(x, File), val))
             if is_file or is_files:
                 files_vars.append({'key': key, 'file': val, 'multiple': is_files})
                 query_var[key] = None if is_file else [None] * len(val)
             else:
                 query_var[key] = val
+
         # If yes, transform variable (file to null) and create multipart query
         if len(files_vars) > 0:
             multipart_data = {'operations': json.dumps({'query': query, 'variables': query_var})}
@@ -237,8 +238,10 @@ class OpenCTIApiClient:
         result = []
         if data is None:
             return result
-        for edge in data['edges'] if 'edges' in data and data['edges'] is not None else []:
-            result.append(edge['node']['id'])
+        if isinstance(data, list):
+            for d in data:
+                if isinstance(d, dict) and 'id' in d:
+                    result.append(d['id'])
         return result
 
     def process_multiple_fields(self, data):
@@ -338,20 +341,13 @@ class OpenCTIApiClient:
             }
         })
 
-    @deprecated(version='2.1.0', reason="Replaced by the StixDomainEntity class in pycti")
+    @deprecated(version='2.1.0', reason="Replaced by the StixRelation class in pycti")
     def update_stix_relation_field(self, id, key, value):
         return self.stix_relation.update_field(id=id, key=key, value=value)
 
-    # TODO Move to StixDomainEntity
+    @deprecated(version='2.1.0', reason="Replaced by the StixDomainEntity class in pycti")
     def push_stix_domain_entity_export(self, entity_id, file_name, data):
-        query = """
-            mutation StixDomainEntityEdit($id: ID!, $file: Upload!) {
-                stixDomainEntityEdit(id: $id) {
-                    exportPush(file: $file)
-                }
-            } 
-        """
-        self.query(query, {'id': entity_id, 'file': (File(file_name, data))})
+        return self.stix_domain_entity.push_entity_export(entity_id, file_name, data)
 
     # TODO Move to StixDomainEntity
     def delete_stix_domain_entity(self, id):
@@ -746,7 +742,7 @@ class OpenCTIApiClient:
     def get_threat_actors(self, limit=10000):
         return self.threat_actor.list(first=limit)
 
-    # TODO Move to ThreatActor
+    @deprecated(version='2.1.0', reason="Replaced by the Threat-Actor class in pycti")
     def create_threat_actor(self,
                             name,
                             description,
@@ -762,118 +758,21 @@ class OpenCTIApiClient:
                             created=None,
                             modified=None
                             ):
-        logging.info('Creating threat actor ' + name + '...')
-        query = """
-            mutation ThreatActorAdd($input: ThreatActorAddInput) {
-                threatActorAdd(input: $input) {
-                    id
-                    stix_id_key
-                    stix_label
-                    entity_type
-                    parent_types
-                    name
-                    alias
-                    description
-                    graph_data
-                    goal
-                    sophistication
-                    resource_level
-                    primary_motivation
-                    secondary_motivation
-                    personal_motivation
-                    created
-                    modified            
-                    created_at
-                    updated_at
-                    createdByRef {
-                        node {
-                            id
-                            entity_type
-                            stix_id_key
-                            stix_label
-                            name
-                            alias
-                            description
-                            created
-                            modified
-                        }
-                        relation {
-                            id
-                        }
-                    }            
-                    markingDefinitions {
-                        edges {
-                            node {
-                                id
-                                entity_type
-                                stix_id_key
-                                definition_type
-                                definition
-                                level
-                                color
-                                created
-                                modified
-                            }
-                            relation {
-                                id
-                            }
-                        }
-                    }
-                    tags {
-                        edges {
-                            node {
-                                id
-                                tag_type
-                                value
-                                color
-                            }
-                            relation {
-                                id
-                            }
-                        }
-                    }
-                    externalReferences {
-                        edges {
-                            node {
-                                id
-                                entity_type
-                                stix_id_key
-                                source_name
-                                description
-                                url
-                                hash
-                                external_id
-                                created
-                                modified
-                            }
-                            relation {
-                                id
-                            }
-                        }
-                    }  
-                }
-            }
-        """
-        result = self.query(query, {
-            'input': {
-                'name': name,
-                'description': description,
-                'alias': alias,
-                'goal': goal,
-                'sophistication': sophistication,
-                'resource_level': resource_level,
-                'primary_motivation': primary_motivation,
-                'secondary_motivation': secondary_motivation,
-                'personal_motivation': personal_motivation,
-                'internal_id_key': id,
-                'stix_id_key': stix_id_key,
-                'created': created,
-                'modified': modified
-            }
-        })
-        return self.process_multiple_fields(result['data']['threatActorAdd'])
+        return self.threat_actor.create(
+            name=name,
+            description=description,
+            alias=alias,
+            resource_level=resource_level,
+            primary_motivation=primary_motivation,
+            secondary_motivation=secondary_motivation,
+            personal_motivation=personal_motivation,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified
+        )
 
-    # TODO Move to ThreatActor
+    @deprecated(version='2.1.0', reason="Replaced by the Threat-Actor class in pycti")
     def create_threat_actor_if_not_exists(self,
                                           name,
                                           description,
@@ -890,41 +789,20 @@ class OpenCTIApiClient:
                                           modified=None,
                                           update=False
                                           ):
-        object_result = self.stix_domain_entity.get_by_stix_id_or_name(types=['Threat-Actor'], stix_id_key=stix_id_key,
-                                                                       name=name)
-        if object_result is not None:
-            if update:
-                self.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
-                object_result['name'] = name
-                self.stix_domain_entity.update_field(id=object_result['id'], key='description', value=description)
-                object_result['description'] = description
-                if alias is not None:
-                    if 'alias' in object_result:
-                        new_aliases = object_result['alias'] + list(set(alias) - set(object_result['alias']))
-                    else:
-                        new_aliases = alias
-                    self.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
-                    object_result['alias'] = new_aliases
-                if goal is not None:
-                    self.stix_domain_entity.update_field(id=object_result['id'], key='goal', value=goal)
-                    object_result['goal'] = goal
-            return object_result
-        else:
-            return self.create_threat_actor(
-                name,
-                description,
-                alias,
-                goal,
-                sophistication,
-                resource_level,
-                primary_motivation,
-                secondary_motivation,
-                personal_motivation,
-                id,
-                stix_id_key,
-                created,
-                modified
-            )
+        return self.threat_actor.create(
+            name=name,
+            description=description,
+            alias=alias,
+            resource_level=resource_level,
+            primary_motivation=primary_motivation,
+            secondary_motivation=secondary_motivation,
+            personal_motivation=personal_motivation,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified,
+            update=update
+        )
 
     @deprecated(version='2.1.0', reason="Replaced by the IntrusionSet class in pycti")
     def get_intrusion_set(self, id):
@@ -1166,7 +1044,7 @@ class OpenCTIApiClient:
             stix_id_key=stix_id_key,
             created=created,
             modified=modified,
-            update=False
+            update=update
         )
 
     @deprecated(version='2.1.0', reason="Replaced by the Tool class in pycti")
@@ -1177,138 +1055,40 @@ class OpenCTIApiClient:
     def get_tools(self, limit=10000):
         return self.tool.list(first=limit)
 
-    # TODO Move to Tool
+    @deprecated(version='2.1.0', reason="Replaced by the Tool class in pycti")
     def create_tool(self, name, description, alias=None, id=None, stix_id_key=None, created=None, modified=None):
-        logging.info('Creating tool ' + name + '...')
-        query = """
-            mutation ToolAdd($input: ToolAddInput) {
-                toolAdd(input: $input) {
-                    id
-                    stix_id_key
-                    stix_label
-                    entity_type
-                    parent_types
-                    name
-                    alias
-                    description
-                    graph_data
-                    tool_version
-                    created
-                    modified            
-                    created_at
-                    updated_at
-                    createdByRef {
-                        node {
-                            id
-                            entity_type
-                            stix_id_key
-                            stix_label
-                            name
-                            alias
-                            description
-                            created
-                            modified
-                        }
-                        relation {
-                            id
-                        }
-                    }            
-                    markingDefinitions {
-                        edges {
-                            node {
-                                id
-                                entity_type
-                                stix_id_key
-                                definition_type
-                                definition
-                                level
-                                color
-                                created
-                                modified
-                            }
-                            relation {
-                                id
-                            }
-                        }
-                    }
-                    tags {
-                        edges {
-                            node {
-                                id
-                                tag_type
-                                value
-                                color
-                            }
-                            relation {
-                                id
-                            }
-                        }
-                    }
-                    externalReferences {
-                        edges {
-                            node {
-                                id
-                                entity_type
-                                stix_id_key
-                                source_name
-                                description
-                                url
-                                hash
-                                external_id
-                                created
-                                modified
-                            }
-                            relation {
-                                id
-                            }
-                        }
-                    }     
-                }
-            }
-        """
-        result = self.query(query, {
-            'input': {
-                'name': name,
-                'description': description,
-                'alias': alias,
-                'internal_id_key': id,
-                'stix_id_key': stix_id_key,
-                'created': created,
-                'modified': modified
-            }
-        })
-        return self.process_multiple_fields(result['data']['toolAdd'])
+        return self.tool.create(
+            name=name,
+            description=description,
+            alias=alias,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified
+        )
 
-    # TODO Move to Tool
-    def create_tool_if_not_exists(self, name, description, alias=None, id=None, stix_id_key=None, created=None,
-                                  modified=None,
-                                  update=False):
-        object_result = self.stix_domain_entity.get_by_stix_id_or_name(types=['Tool'], stix_id_key=stix_id_key,
-                                                                       name=name)
-        if object_result is not None:
-            if update:
-                self.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
-                object_result['name'] = name
-                self.stix_domain_entity.update_field(id=object_result['id'], key='description', value=description)
-                object_result['description'] = description
-                if alias is not None:
-                    if 'alias' in object_result:
-                        new_aliases = object_result['alias'] + list(set(alias) - set(object_result['alias']))
-                    else:
-                        new_aliases = alias
-                    self.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
-                    object_result['alias'] = new_aliases
-            return object_result
-        else:
-            return self.create_tool(
-                name,
-                description,
-                alias,
-                id,
-                stix_id_key,
-                created,
-                modified
-            )
+    @deprecated(version='2.1.0', reason="Replaced by the Tool class in pycti")
+    def create_tool_if_not_exists(
+            self,
+            name,
+            description,
+            alias=None,
+            id=None,
+            stix_id_key=None,
+            created=None,
+            modified=None,
+            update=False
+    ):
+        return self.tool.create(
+            name=name,
+            description=description,
+            alias=alias,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified,
+            update=update
+        )
 
     @deprecated(version='2.1.0', reason="Replaced by the Vulnerability class in pycti")
     def get_vulnerability(self, id):
@@ -1318,137 +1098,49 @@ class OpenCTIApiClient:
     def get_vulnerabilities(self, limit=10000):
         return self.vulnerability.list(first=limit)
 
-    # TODO Move to Vulnerability
-    def create_vulnerability(self, name, description, alias=None, id=None, stix_id_key=None, created=None,
-                             modified=None):
-        logging.info('Creating vulnerability ' + name + '...')
-        query = """
-            mutation VulnerabilityAdd($input: VulnerabilityAddInput) {
-                vulnerabilityAdd(input: $input) {
-                    id
-                    stix_id_key
-                    stix_label
-                    entity_type
-                    parent_types
-                    name
-                    alias
-                    description
-                    graph_data
-                    created
-                    modified            
-                    created_at
-                    updated_at
-                    createdByRef {
-                        node {
-                            id
-                            entity_type
-                            stix_id_key
-                            stix_label
-                            name
-                            alias
-                            description
-                            created
-                            modified
-                        }
-                        relation {
-                            id
-                        }
-                    }            
-                    markingDefinitions {
-                        edges {
-                            node {
-                                id
-                                entity_type
-                                stix_id_key
-                                definition_type
-                                definition
-                                level
-                                color
-                                created
-                                modified
-                            }
-                            relation {
-                                id
-                            }
-                        }
-                    }
-                    tags {
-                        edges {
-                            node {
-                                id
-                                tag_type
-                                value
-                                color
-                            }
-                            relation {
-                                id
-                            }
-                        }
-                    } 
-                    externalReferences {
-                        edges {
-                            node {
-                                id
-                                entity_type
-                                stix_id_key
-                                source_name
-                                description
-                                url
-                                hash
-                                external_id
-                                created
-                                modified
-                            }
-                            relation {
-                                id
-                            }
-                        }
-                    }     
-                }
-            }
-        """
-        result = self.query(query, {
-            'input': {
-                'name': name,
-                'description': description,
-                'alias': alias,
-                'internal_id_key': id,
-                'stix_id_key': stix_id_key,
-                'created': created,
-                'modified': modified
-            }
-        })
-        return self.process_multiple_fields(result['data']['vulnerabilityAdd'])
+    @deprecated(version='2.1.0', reason="Replaced by the Vulnerability class in pycti")
+    def create_vulnerability(
+            self,
+            name,
+            description,
+            alias=None,
+            id=None,
+            stix_id_key=None,
+            created=None,
+            modified=None
+    ):
+        return self.vulnerability.create(
+            name=name,
+            description=description,
+            alias=alias,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified
+        )
 
     # TODO Move to Vulnerability
-    def create_vulnerability_if_not_exists(self, name, description, alias=None, id=None, stix_id_key=None, created=None,
-                                           modified=None, update=False):
-        object_result = self.stix_domain_entity.get_by_stix_id_or_name(types=['Vulnerability'], stix_id_key=stix_id_key,
-                                                                       name=name)
-        if object_result is not None:
-            if update:
-                self.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
-                object_result['name'] = name
-                self.stix_domain_entity.update_field(id=object_result['id'], key='description', value=description)
-                object_result['description'] = description
-                if alias is not None:
-                    if 'alias' in object_result:
-                        new_aliases = object_result['alias'] + list(set(alias) - set(object_result['alias']))
-                    else:
-                        new_aliases = alias
-                    self.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
-                    object_result['alias'] = new_aliases
-            return object_result
-        else:
-            return self.create_vulnerability(
-                name,
-                description,
-                alias,
-                id,
-                stix_id_key,
-                created,
-                modified
-            )
+    def create_vulnerability_if_not_exists(
+            self,
+            name,
+            description,
+            alias=None,
+            id=None,
+            stix_id_key=None,
+            created=None,
+            modified=None,
+            update=False
+    ):
+        return self.vulnerability.create(
+            name=name,
+            description=description,
+            alias=alias,
+            id=id,
+            stix_id_key=stix_id_key,
+            created=created,
+            modified=modified,
+            update=update
+        )
 
     @deprecated(version='2.1.0', reason="Replaced by the AttackPattern class in pycti")
     def get_attack_pattern(self, id):
@@ -1991,7 +1683,3 @@ class OpenCTIApiClient:
     @deprecated(version='2.1.0', reason="Replaced by the same method in class OpenCTIStix2 in pycti")
     def stix2_export_entity(self, entity_type, entity_id, mode='simple', max_marking_definition=None):
         return self.stix2.export_entity(entity_type, entity_id, mode, max_marking_definition)
-
-    @deprecated(version='2.1.0', reason="Replaced by the same method in class OpenCTIStix2 in pycti")
-    def stix2_export_bundle(self, types=[]):
-        return self.stix2.export_bundle(types)

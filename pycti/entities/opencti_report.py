@@ -110,6 +110,7 @@ class Report:
                         id
                         stix_id_key
                         entity_type
+                        observable_value
                     }
                     relation {
                         id
@@ -242,6 +243,7 @@ class Report:
         created = kwargs.get('created', None)
         modified = kwargs.get('modified', None)
         created_by_ref = kwargs.get('createdByRef', None)
+        marking_definitions = kwargs.get('markingDefinitions', None)
 
         if name is not None and description is not None and published is not None and report_class is not None:
             self.opencti.log('info', 'Creating Report {' + name + '}.')
@@ -265,7 +267,8 @@ class Report:
                     'stix_id_key': stix_id_key,
                     'created': created,
                     'modified': modified,
-                    'createdByRef': created_by_ref
+                    'createdByRef': created_by_ref,
+                    'markingDefinitions': marking_definitions,
                 }
             })
             return self.opencti.process_multiple_fields(result['data']['reportAdd'])
@@ -276,6 +279,8 @@ class Report:
          Create a Report object only if it not exists, update it on request
 
          :param name: the name of the Report
+         :param description: the description of the Report
+         :param published: the publication date of the Report
          :return Report object
      """
 
@@ -293,6 +298,7 @@ class Report:
         created = kwargs.get('created', None)
         modified = kwargs.get('modified', None)
         created_by_ref = kwargs.get('createdByRef', None)
+        marking_definitions = kwargs.get('markingDefinitions', None)
         update = kwargs.get('update', False)
 
         object_result = None
@@ -304,17 +310,17 @@ class Report:
         if object_result is None and name is not None:
             object_result = self.get_by_stix_id_or_name(stix_id_key=stix_id_key, name=name, published=published)
         if object_result is not None:
-            if report_class is not None and object_result['report_class'] != report_class:
-                self.opencti.stix_domain_entity.update_field(
-                    id=object_result['id'],
-                    key='report_class',
-                    value=report_class
-                )
-                object_result['report_class'] = report_class
             if update:
                 if object_result['name'] != name:
                     self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
                     object_result['name'] = name
+                if report_class is not None and object_result['report_class'] != report_class:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='report_class',
+                        value=report_class
+                    )
+                    object_result['report_class'] = report_class
                 if object_result['description'] != description:
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result['id'],
@@ -364,7 +370,8 @@ class Report:
                 stix_id_key=stix_id_key,
                 created=created,
                 modified=modified,
-                createdByRef=created_by_ref
+                createdByRef=created_by_ref,
+                markingDefinitions=marking_definitions,
             )
             if external_reference_id is not None:
                 self.opencti.stix_entity.add_external_reference(

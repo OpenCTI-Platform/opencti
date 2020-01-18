@@ -162,6 +162,110 @@ class Tool:
             return None
 
     """
+        Create a Tool object
+
+        :param name: the name of the Tool
+        :return Tool object
+    """
+
+    def create_raw(self, **kwargs):
+        name = kwargs.get('name', None)
+        description = kwargs.get('description', None)
+        alias = kwargs.get('alias', None)
+        id = kwargs.get('id', None)
+        stix_id_key = kwargs.get('stix_id_key', None)
+        created = kwargs.get('created', None)
+        modified = kwargs.get('modified', None)
+        created_by_ref = kwargs.get('createdByRef', None)
+        marking_definitions = kwargs.get('markingDefinitions', None)
+
+        if name is not None and description is not None:
+            self.opencti.log('info', 'Creating Tool {' + name + '}.')
+            query = """
+                mutation ToolAdd($input: ToolAddInput) {
+                    toolAdd(input: $input) {
+                        """ + self.properties + """
+                    }
+                }
+            """
+            result = self.opencti.query(query, {
+                'input': {
+                    'name': name,
+                    'description': description,
+                    'alias': alias,
+                    'internal_id_key': id,
+                    'stix_id_key': stix_id_key,
+                    'created': created,
+                    'modified': modified,
+                    'createdByRef': created_by_ref,
+                    'markingDefinitions': marking_definitions,
+                }
+            })
+            return self.opencti.process_multiple_fields(result['data']['toolAdd'])
+        else:
+            self.opencti.log('error', '[opencti_tool] Missing parameters: name and description')
+
+    """
+        Create a Tool object only if it not exists, update it on request
+
+        :param name: the name of the Tool
+        :return Tool object
+    """
+
+    def create(self, **kwargs):
+        name = kwargs.get('name', None)
+        description = kwargs.get('description', None)
+        alias = kwargs.get('alias', None)
+        id = kwargs.get('id', None)
+        stix_id_key = kwargs.get('stix_id_key', None)
+        created = kwargs.get('created', None)
+        modified = kwargs.get('modified', None)
+        created_by_ref = kwargs.get('createdByRef', None)
+        marking_definitions = kwargs.get('markingDefinitions', None)
+        update = kwargs.get('update', False)
+
+        object_result = self.opencti.stix_domain_entity.get_by_stix_id_or_name(
+            types=['Tool'],
+            stix_id_key=stix_id_key,
+            name=name
+        )
+        if object_result is not None:
+            if update:
+                # name
+                if object_result['name'] != name:
+                    self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
+                    object_result['name'] = name
+                # description
+                if object_result['description'] != description:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result['id'],
+                        key='description',
+                        value=description
+                    )
+                    object_result['description'] = description
+                # alias
+                if alias is not None and object_result['alias'] != alias:
+                    if 'alias' in object_result:
+                        new_aliases = object_result['alias'] + list(set(alias) - set(object_result['alias']))
+                    else:
+                        new_aliases = alias
+                    self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
+                    object_result['alias'] = new_aliases
+            return object_result
+        else:
+            return self.create_raw(
+                name=name,
+                description=description,
+                alias=alias,
+                id=id,
+                stix_id_key=stix_id_key,
+                created=created,
+                modified=modified,
+                createdByRef=created_by_ref,
+                markingDefinitions=marking_definitions,
+            )
+
+    """
         Export an Tool object in STIX2
     
         :param id: the id of the Tool

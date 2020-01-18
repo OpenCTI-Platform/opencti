@@ -2,10 +2,10 @@
 
 import json
 
-
 class StixDomainEntity:
-    def __init__(self, opencti):
+    def __init__(self, opencti, file):
         self.opencti = opencti
+        self.file = file
         self.properties = """
             id
             stix_id_key
@@ -146,6 +146,7 @@ class StixDomainEntity:
                             id
                             stix_id_key
                             entity_type
+                            observable_value
                         }
                         relation {
                             id
@@ -176,6 +177,7 @@ class StixDomainEntity:
                             id
                             stix_id_key
                             entity_type
+                            observable_value
                         }
                         relation {
                             id
@@ -199,7 +201,7 @@ class StixDomainEntity:
     """
         List Stix-Domain-Entity objects
 
-        :param types: the array of types
+        :param types: the list of types
         :param filters: the filters to apply
         :param search: the search keyword
         :param first: return the first n rows from the after ID (or the beginning if not set)
@@ -234,7 +236,8 @@ class StixDomainEntity:
                 }
             }
         """
-        result = self.opencti.query(query, {'types': types, 'filters': filters, 'search': search, 'first': first, 'after': after, 'orderBy': order_by,
+        result = self.opencti.query(query, {'types': types, 'filters': filters, 'search': search, 'first': first,
+                                            'after': after, 'orderBy': order_by,
                                             'orderMode': order_mode})
         return self.opencti.process_multiple(result['data']['stixDomainEntities'])
 
@@ -242,7 +245,7 @@ class StixDomainEntity:
         Read a Stix-Domain-Entity object
         
         :param id: the id of the Stix-Domain-Entity
-        :param types: the array of types
+        :param types: list of Stix Domain Entity types
         :param filters: the filters to apply if no id provided
         :return Stix-Domain-Entity object
     """
@@ -275,7 +278,7 @@ class StixDomainEntity:
     """
         Get a Stix-Domain-Entity object by stix_id or name
 
-        :param type: the Stix-Domain-Entity type
+        :param types: a list of Stix-Domain-Entity types
         :param stix_id_key: the STIX ID of the Stix-Domain-Entity
         :param name: the name of the Stix-Domain-Entity
         :return Stix-Domain-Entity object
@@ -329,3 +332,21 @@ class StixDomainEntity:
         else:
             self.opencti.log('error', 'Missing parameters: id and key and value')
             return None
+
+    def push_list_export(self, entity_type, file_name, data):
+        query = """
+            mutation StixDomainEntitiesExportPush($type: String!, $file: Upload!) {
+                stixDomainEntitiesExportPush(type: $type, file: $file)
+            } 
+        """
+        self.opencti.query(query, {'type': entity_type, 'file': (self.file(file_name, data))})
+
+    def push_entity_export(self, entity_id, file_name, data):
+        query = """
+            mutation StixDomainEntityEdit($id: ID!, $file: Upload!) {
+                stixDomainEntityEdit(id: $id) {
+                    exportPush(file: $file)
+                }
+            } 
+        """
+        self.opencti.query(query, {'id': entity_id, 'file': (self.file(file_name, data))})
