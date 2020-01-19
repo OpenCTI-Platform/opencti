@@ -89,7 +89,7 @@ class Incident:
                         id
                     }
                 }
-            } 
+            }
             observableRefs {
                 edges {
                     node {
@@ -102,7 +102,7 @@ class Incident:
                         id
                     }
                 }
-            }     
+            }
         """
 
     """
@@ -326,6 +326,55 @@ class Incident:
                 createdByRef=created_by_ref,
                 markingDefinitions=marking_definitions,
             )
+
+    """
+        Add a Stix-Observable object to Incident object (observable_refs)
+
+        :param id: the id of the Incident
+        :param entity_id: the id of the Stix-Observable
+        :return Boolean
+    """
+
+    def add_stix_observable(self, **kwargs):
+        id = kwargs.get('id', None)
+        incident = kwargs.get('incident', None)
+        stix_observable_id = kwargs.get('stix_observable_id', None)
+        if id is not None and stix_observable_id is not None:
+            if incident is None:
+                incident = self.read(id=id)
+            if incident is None:
+                self.opencti.log('error', '[opencti_incident] Cannot add Object Ref, incident not found')
+                return False
+            print(incident)
+            if stix_observable_id in incident['observableRefsIds']:
+                return True
+            else:
+                self.opencti.log(
+                    'info',
+                    'Adding Stix-Observable {' + stix_observable_id + '} to Incident {' + id + '}'
+                )
+                query = """
+                   mutation IncidentEdit($id: ID!, $input: RelationAddInput) {
+                       incidentEdit(id: $id) {
+                            relationAdd(input: $input) {
+                                id
+                            }
+                       }
+                   }
+                """
+                self.opencti.query(query, {
+                    'id': id,
+                    'input': {
+                        'fromRole': 'observables_aggregation',
+                        'toId': stix_observable_id,
+                        'toRole': 'soo',
+                        'through': 'observable_refs'
+                    }
+                })
+                return True
+        else:
+            self.opencti.log('error', '[opencti_incident] Missing parameters: id and stix_observable_id')
+            return False
 
     """
         Export an Incident object in STIX2

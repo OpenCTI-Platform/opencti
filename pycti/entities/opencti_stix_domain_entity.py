@@ -118,6 +118,19 @@ class StixDomainEntity:
                 objective
                 first_seen
                 last_seen
+                observableRefs {
+                    edges {
+                        node {
+                            id
+                            entity_type
+                            stix_id_key
+                            observable_value
+                        }
+                        relation {
+                            id
+                        }
+                    }
+                }
             }
             ... on Malware {
                 killChainPhases {

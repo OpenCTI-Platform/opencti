@@ -25,7 +25,6 @@ incident = opencti_api_client.incident.create(
     description="We have been compromised",
     objective="Espionage"
 )
-print(incident)
 object_refs.append(incident['id'])
 # Create the associated report
 report = opencti_api_client.report.create(
@@ -34,13 +33,11 @@ report = opencti_api_client.report.create(
     published=date,
     report_class="Internal Report"
 )
-print(report)
 
 # Associate the TTPs to the incident
 
 # Spearphishing Attachment
 ttp1 = opencti_api_client.attack_pattern.read(filters=[{'key': 'external_id', 'values': ['T1193']}])
-print(ttp1)
 ttp1_relation = opencti_api_client.stix_relation.create(
     fromType='Incident',
     fromId=incident['id'],
@@ -64,10 +61,8 @@ observable_ttp1 = opencti_api_client.stix_observable.create(
     type='Email-Address',
     observable_value='phishing@mail.com'
 )
-print(observable_ttp1)
 # Get the indicator
 indicator_ttp1 = observable_ttp1['indicators'][0]
-print(indicator_ttp1)
 # Indicates the relation Incident => uses => TTP
 indicator_ttp1_relation = opencti_api_client.stix_relation.create(
     fromType='Indicator',
@@ -91,7 +86,6 @@ observable_refs.append(observable_ttp1['id'])
 
 # Registry Run Keys / Startup Folder
 ttp2 = opencti_api_client.attack_pattern.read(filters=[{'key': 'external_id', 'values': ['T1060']}])
-print(ttp2)
 # Create the relation
 ttp2_relation = opencti_api_client.stix_relation.create(
     fromType='Incident',
@@ -116,10 +110,8 @@ observable_ttp2 = opencti_api_client.stix_observable.create(
     type='Registry-Key',
     observable_value='Disk security'
 )
-print(observable_ttp2)
 # Get the indicator
 indicator_ttp2 = observable_ttp2['indicators'][0]
-print(indicator_ttp2)
 # Indicates the relation Incident => uses => TTP
 indicator_ttp2_relation = opencti_api_client.stix_relation.create(
     fromType='Indicator',
@@ -142,7 +134,6 @@ observable_refs.append(observable_ttp2['id'])
 
 # Data Encrypted
 ttp3 = opencti_api_client.attack_pattern.read(filters=[{'key': 'external_id', 'values': ['T1022']}])
-print(ttp3)
 ttp3_relation = opencti_api_client.stix_relation.create(
     fromType='Incident',
     fromId=incident['id'],
@@ -167,3 +158,13 @@ for object_ref in object_refs:
     opencti_api_client.report.add_stix_entity(id=report['id'], report=report, entity_id=object_ref)
 for observable_ref in observable_refs:
     opencti_api_client.report.add_stix_observable(id=report['id'], report=report, stix_observable_id=observable_ref)
+    opencti_api_client.stix_relation.create(
+        fromType='Stix-Observable',
+        fromId=observable_ref,
+        toType='Incident',
+        toId=incident['id'],
+        relationship_type='related-to',
+        description='This observable is related to the incident.',
+        first_seen=date,
+        last_seen=date
+    )
