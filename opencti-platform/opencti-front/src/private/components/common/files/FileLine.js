@@ -1,7 +1,14 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose, filter, pipe, split, drop, join,
+  compose,
+  filter,
+  pipe,
+  split,
+  drop,
+  join,
+  pathOr,
+  propOr,
 } from 'ramda';
 import moment from 'moment';
 import { createFragmentContainer } from 'react-relay';
@@ -15,6 +22,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import { Link } from 'react-router-dom';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -127,15 +135,13 @@ class FileLineComponent extends Component {
           rel="noopener noreferrer"
         >
           <ListItemIcon>
-            <FileOutline />
+            {isProgress ? <CircularProgress size={20} /> : <FileOutline />}
           </ListItemIcon>
-          <Tooltip title={file.metaData.listargs ? file.metaData.listargs : ''}>
+          <Tooltip title={pathOr('', ['metaData', 'listargs'], file)}>
             <ListItemText
               classes={{ root: classes.itemText }}
               primary={fileName}
-              secondary={
-                file.lastModified ? fld(file.lastModified) : fld(moment())
-              }
+              secondary={fld(propOr(moment(), 'lastModified', file))}
             />
           </Tooltip>
           <ListItemSecondaryAction style={{ right: 0 }}>
