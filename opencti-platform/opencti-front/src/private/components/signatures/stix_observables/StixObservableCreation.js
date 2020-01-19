@@ -255,6 +255,7 @@ class StixObservableCreation extends Component {
                       containerstyle={{ width: '100%' }}
                     >
                       <MenuItem value="Autonomous-System">{t('Autonomous system')}</MenuItem>
+                      <MenuItem value="Directory">{t('Directory')}</MenuItem>
                       <MenuItem value="Domain">{t('Domain')}</MenuItem>
                       <MenuItem value="Email-Address">
                         {t('Email address')}
@@ -273,6 +274,8 @@ class StixObservableCreation extends Component {
                       </MenuItem>
                       <MenuItem value="IPv4-Addr">{t('IPv4 address')}</MenuItem>
                       <MenuItem value="IPv6-Addr">{t('IPv6 address')}</MenuItem>
+                      <MenuItem value="Mac-Addr">{t('MAC address')}</MenuItem>
+                      <MenuItem value="Mutex">{t('Mutex')}</MenuItem>
                       <MenuItem value="PDB-Path">{t('PDB Path')}</MenuItem>
                       <MenuItem value="Registry-Key">
                         {t('Registry key')}
@@ -280,7 +283,6 @@ class StixObservableCreation extends Component {
                       <MenuItem value="Registry-Key-Value">
                         {t('Registry key value')}
                       </MenuItem>
-                      <MenuItem value="Mutex">{t('Mutex')}</MenuItem>
                       <MenuItem value="URL">{t('URL')}</MenuItem>
                       <MenuItem value="Windows-Service-Name">
                         {t('Windows Service Name')}
@@ -424,6 +426,7 @@ class StixObservableCreation extends Component {
                     containerstyle={{ width: '100%' }}
                   >
                     <MenuItem value="Autonomous-System">{t('Autonomous system')}</MenuItem>
+                    <MenuItem value="Directory">{t('Directory')}</MenuItem>
                     <MenuItem value="Domain">{t('Domain')}</MenuItem>
                     <MenuItem value="Email-Address">
                       {t('Email address')}
@@ -440,6 +443,8 @@ class StixObservableCreation extends Component {
                     </MenuItem>
                     <MenuItem value="IPv4-Addr">{t('IPv4 address')}</MenuItem>
                     <MenuItem value="IPv6-Addr">{t('IPv6 address')}</MenuItem>
+                    <MenuItem value="Mac-Addr">{t('MAC address')}</MenuItem>
+                    <MenuItem value="Mutex">{t('Mutex')}</MenuItem>
                     <MenuItem value="PDB-Path">{t('PDB Path')}</MenuItem>
                     <MenuItem value="Registry-Key">
                       {t('Registry key')}
@@ -447,7 +452,6 @@ class StixObservableCreation extends Component {
                     <MenuItem value="Registry-Key-Value">
                       {t('Registry key value')}
                     </MenuItem>
-                    <MenuItem value="Mutex">{t('Mutex')}</MenuItem>
                     <MenuItem value="URL">{t('URL')}</MenuItem>
                     <MenuItem value="Windows-Service-Name">
                       {t('Windows Service Name')}

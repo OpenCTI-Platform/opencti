@@ -163,6 +163,18 @@ class IndicatorsRightBar extends Component {
           <ListItem
             dense={true}
             button={true}
+            onClick={handleToggleObservableType.bind(this, 'Mac-Addr')}
+            classes={{ root: classes.item }}
+          >
+            <Checkbox
+              checked={observableTypes.includes('Mac-Addr')}
+              disableRipple={true}
+            />
+            <ListItemText primary={t('MAC addresses')} />
+          </ListItem>
+          <ListItem
+            dense={true}
+            button={true}
             onClick={handleToggleObservableType.bind(this, 'IPv4-Addr')}
             classes={{ root: classes.item }}
           >
@@ -219,6 +231,18 @@ class IndicatorsRightBar extends Component {
               disableRipple={true}
             />
             <ListItemText primary={t('Mutex')} />
+          </ListItem>
+          <ListItem
+            dense={true}
+            button={true}
+            onClick={handleToggleObservableType.bind(this, 'Directory')}
+            classes={{ root: classes.item }}
+          >
+            <Checkbox
+              checked={observableTypes.includes('Directory')}
+              disableRipple={true}
+            />
+            <ListItemText primary={t('Directories')} />
           </ListItem>
           <ListItem
             dense={true}
