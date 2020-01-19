@@ -17,7 +17,7 @@ export const addIntrusionSet = async (user, intrusionSet) => {
   const currentDate = now();
   const intrusionSetToCreate = pipe(
     assoc('first_seen', intrusionSet.first_seen ? intrusionSet.first_seen : currentDate),
-    assoc('last_seen', intrusionSet.first_seen ? intrusionSet.first_seen : currentDate)
+    assoc('last_seen', intrusionSet.last_seen ? intrusionSet.last_seen : currentDate)
   )(intrusionSet);
   const created = await createEntity(intrusionSetToCreate, 'Intrusion-Set');
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
