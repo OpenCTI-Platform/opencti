@@ -14,13 +14,10 @@ import pytz
 import stix2
 from stix2.pattern_visitor import create_pattern_object
 from stix2 import ObjectPath, ObservationExpression, EqualityComparisonExpression, HashConstant
-from pycti.utils.constants import ObservableTypes, CustomProperties
+from pycti.utils.constants import ObservableTypes, IdentityTypes, CustomProperties
 
 datefinder.ValueError = ValueError, OverflowError
 utc = pytz.UTC
-
-# Identity
-IDENTITY_TYPES = ['user', 'city', 'country', 'region', 'organization', 'sector']
 
 # ObservableRelations
 OBSERVABLE_RELATIONS = ['corresponds', 'belongs']
@@ -804,7 +801,7 @@ class OpenCTIStix2:
             'objects': []
         }
         # Map types
-        if entity_type in IDENTITY_TYPES:
+        if IdentityTypes.has_value(entity_type):
             entity_type = 'identity'
 
         # Export
@@ -852,7 +849,7 @@ class OpenCTIStix2:
             'objects': []
         }
 
-        if entity_type in IDENTITY_TYPES:
+        if IdentityTypes.has_value(entity_type):
             if filters is not None:
                 filters.append({'key': 'entity_type', 'values': [entity_type]})
             else:
@@ -1077,7 +1074,7 @@ class OpenCTIStix2:
             # Get extra objects
             for entity_object in objects_to_get:
                 # Map types
-                if entity_object['entity_type'] in IDENTITY_TYPES:
+                if IdentityTypes.has_value(entity_object['entity_type']):
                     entity_object['entity_type'] = 'identity'
                 do_export = exporter.get(entity_object['entity_type'],
                                          lambda **kwargs: self.unknown_type({'type': entity_object['entity_type']}))

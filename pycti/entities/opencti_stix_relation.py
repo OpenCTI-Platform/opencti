@@ -460,8 +460,6 @@ class StixRelation:
         id = kwargs.get('id', None)
         kill_chain_phase_id = kwargs.get('kill_chain_phase_id', None)
         if id is not None and kill_chain_phase_id is not None:
-            self.opencti.log('info',
-                             'Adding Kill-Chain-Phase {' + kill_chain_phase_id + '} to Stix-Entity {' + id + '}')
             stix_entity = self.read(id=id)
             kill_chain_phases_ids = []
             for marking in stix_entity['killChainPhases']:
@@ -469,13 +467,13 @@ class StixRelation:
             if kill_chain_phase_id in kill_chain_phases_ids:
                 return True
             else:
+                self.opencti.log('info',
+                                 'Adding Kill-Chain-Phase {' + kill_chain_phase_id + '} to Stix-Entity {' + id + '}')
                 query = """
                    mutation StixRelationAddRelation($id: ID!, $input: RelationAddInput) {
                        stixRelationEdit(id: $id) {
                             relationAdd(input: $input) {
-                                node {
-                                    id
-                                }
+                                id
                             }
                        }
                    }
