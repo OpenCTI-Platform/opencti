@@ -2,6 +2,7 @@
 
 import json
 
+
 class StixDomainEntity:
     def __init__(self, opencti, file):
         self.opencti = opencti
@@ -333,13 +334,17 @@ class StixDomainEntity:
             self.opencti.log('error', 'Missing parameters: id and key and value')
             return None
 
-    def push_list_export(self, entity_type, file_name, data):
+    def push_list_export(self, entity_type, file_name, data, list_args=''):
         query = """
-            mutation StixDomainEntitiesExportPush($type: String!, $file: Upload!) {
-                stixDomainEntitiesExportPush(type: $type, file: $file)
+            mutation StixDomainEntitiesExportPush($type: String!, $file: Upload!, $listArgs: String) {
+                stixDomainEntitiesExportPush(type: $type, file: $file, listArgs: $listArgs)
             } 
         """
-        self.opencti.query(query, {'type': entity_type, 'file': (self.file(file_name, data))})
+        self.opencti.query(query, {
+            'type': entity_type,
+            'file': (self.file(file_name, data)),
+            'listArgs': list_args
+        })
 
     def push_entity_export(self, entity_id, file_name, data):
         query = """
