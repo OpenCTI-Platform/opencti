@@ -29,6 +29,9 @@ class StixDomainEntity:
                     description
                     created
                     modified
+                    ... on Organization {
+                        organization_class
+                    }
                 }
                 relation {
                     id
@@ -138,6 +141,9 @@ class StixDomainEntity:
             ... on Tool {
                 tool_version
             }
+            ... on Organization {
+                organization_class
+            }
             ... on Indicator {
                 indicator_pattern
                 pattern_type
@@ -218,6 +224,10 @@ class StixDomainEntity:
         after = kwargs.get('after', None)
         order_by = kwargs.get('orderBy', None)
         order_mode = kwargs.get('orderMode', None)
+        get_all = kwargs.get('getAll', False)
+        if get_all:
+            first = 500
+
         self.opencti.log('info', 'Listing Stix-Domain-Entities with filters ' + json.dumps(filters) + '.')
         query = """
             query StixDomainEntities($types: [String], $filters: [StixDomainEntitiesFiltering], $search: String, $first: Int, $after: ID, $orderBy: StixDomainEntitiesOrdering, $orderMode: OrderingMode) {
@@ -237,10 +247,37 @@ class StixDomainEntity:
                 }
             }
         """
-        result = self.opencti.query(query, {'types': types, 'filters': filters, 'search': search, 'first': first,
-                                            'after': after, 'orderBy': order_by,
-                                            'orderMode': order_mode})
-        return self.opencti.process_multiple(result['data']['stixDomainEntities'])
+        result = self.opencti.query(query, {
+            'types': types,
+            'filters': filters,
+            'search': search,
+            'first': first,
+            'after': after,
+            'orderBy': order_by,
+            'orderMode': order_mode
+        })
+
+        if get_all:
+            final_data = []
+            data = self.opencti.process_multiple(result['data']['stixDomainEntities'])
+            final_data = final_data + data
+            while result['data']['stixDomainEntities']['pageInfo']['hasNextPage']:
+                after = result['data']['stixDomainEntities']['pageInfo']['endCursor']
+                self.opencti.log('info', 'Listing Stix-Domain-Entities after ' + after)
+                result = self.opencti.query(query, {
+                    'types': types,
+                    'filters': filters,
+                    'search': search,
+                    'first': first,
+                    'after': after,
+                    'orderBy': order_by,
+                    'orderMode': order_mode
+                })
+                data = self.opencti.process_multiple(result['data']['stixDomainEntities'])
+                final_data = final_data + data
+            return final_data
+        else:
+            return self.opencti.process_multiple(result['data']['stixDomainEntities'])
 
     """
         Read a Stix-Domain-Entity object

@@ -30,6 +30,10 @@ class Tag:
         after = kwargs.get('after', None)
         order_by = kwargs.get('orderBy', None)
         order_mode = kwargs.get('orderMode', None)
+        get_all = kwargs.get('getAll', False)
+        if get_all:
+            first = 500
+
         self.opencti.log('info', 'Listing Tags with filters ' + json.dumps(filters) + '.')
         query = """
             query Tags($filters: [TagsFiltering], $first: Int, $after: ID, $orderBy: TagsOrdering, $orderMode: OrderingMode) {

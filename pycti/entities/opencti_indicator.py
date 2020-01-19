@@ -54,6 +54,9 @@ class Indicator:
                     description
                     created
                     modified
+                    ... on Organization {
+                        organization_class
+                    }
                 }
                 relation {
                     id
@@ -141,6 +144,10 @@ class Indicator:
         after = kwargs.get('after', None)
         order_by = kwargs.get('orderBy', None)
         order_mode = kwargs.get('orderMode', None)
+        get_all = kwargs.get('getAll', False)
+        if get_all:
+            first = 500
+
         self.opencti.log('info', 'Listing Indicators with filters ' + json.dumps(filters) + '.')
         query = """
             query Indicators($filters: [IndicatorsFiltering], $search: String, $first: Int, $after: ID, $orderBy: IndicatorsOrdering, $orderMode: OrderingMode) {
@@ -160,9 +167,35 @@ class Indicator:
                 }
             }
         """
-        result = self.opencti.query(query, {'filters': filters, 'search': search, 'first': first, 'after': after,
-                                            'orderBy': order_by, 'orderMode': order_mode})
-        return self.opencti.process_multiple(result['data']['indicators'])
+        result = self.opencti.query(query, {
+            'filters': filters,
+            'search': search,
+            'first': first,
+            'after': after,
+            'orderBy': order_by,
+            'orderMode': order_mode
+        })
+
+        if get_all:
+            final_data = []
+            data = self.opencti.process_multiple(result['data']['indicators'])
+            final_data = final_data + data
+            while result['data']['indicators']['pageInfo']['hasNextPage']:
+                after = result['data']['indicators']['pageInfo']['endCursor']
+                self.opencti.log('info', 'Listing Indicators after ' + after)
+                result = self.opencti.query(query, {
+                    'filters': filters,
+                    'search': search,
+                    'first': first,
+                    'after': after,
+                    'orderBy': order_by,
+                    'orderMode': order_mode
+                })
+                data = self.opencti.process_multiple(result['data']['indicators'])
+                final_data = final_data + data
+            return final_data
+        else:
+            return self.opencti.process_multiple(result['data']['indicators'])
 
     """
         Read a Indicator object

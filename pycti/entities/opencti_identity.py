@@ -20,6 +20,9 @@ class Identity:
             modified            
             created_at
             updated_at
+            ... on Organization {
+                organization_class
+            }
             createdByRef {
                 node {
                     id
@@ -31,6 +34,9 @@ class Identity:
                     description
                     created
                     modified
+                    ... on Organization {
+                        organization_class
+                    }
                 }
                 relation {
                     id
@@ -91,6 +97,7 @@ class Identity:
     """
         List Identity objects
 
+        :param types: the list of types
         :param filters: the filters to apply
         :param search: the search keyword
         :param first: return the first n rows from the after ID (or the beginning if not set)
@@ -99,16 +106,21 @@ class Identity:
     """
 
     def list(self, **kwargs):
+        types = kwargs.get('types', None)
         filters = kwargs.get('filters', None)
         search = kwargs.get('search', None)
         first = kwargs.get('first', 500)
         after = kwargs.get('after', None)
         order_by = kwargs.get('orderBy', None)
         order_mode = kwargs.get('orderMode', None)
+        get_all = kwargs.get('getAll', False)
+        if get_all:
+            first = 500
+
         self.opencti.log('info', 'Listing Identities with filters ' + json.dumps(filters) + '.')
         query = """
-            query Identities($filters: [IdentitiesFiltering], $search: String, $first: Int, $after: ID, $orderBy: IdentitiesOrdering, $orderMode: OrderingMode) {
-                identities(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+            query Identities($types: [String], $filters: [IdentitiesFiltering], $search: String, $first: Int, $after: ID, $orderBy: IdentitiesOrdering, $orderMode: OrderingMode) {
+                identities(types: $types, filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
                             """ + self.properties + """
@@ -124,8 +136,15 @@ class Identity:
                 }
             }
         """
-        result = self.opencti.query(query, {'filters': filters, 'search': search, 'first': first, 'after': after,
-                                            'orderBy': order_by, 'orderMode': order_mode})
+        result = self.opencti.query(query, {
+            'types': types,
+            'filters': filters,
+            'search': search,
+            'first': first,
+            'after': after,
+            'orderBy': order_by,
+            'orderMode': order_mode
+        })
         return self.opencti.process_multiple(result['data']['identities'])
 
     """

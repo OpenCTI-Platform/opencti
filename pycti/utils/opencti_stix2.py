@@ -835,8 +835,14 @@ class OpenCTIStix2:
             bundle['objects'].extend(objects)
         return bundle
 
-    def export_list(self, entity_type, search=None, filters=None, order_by=None, order_mode=None,
-                    max_marking_definition=None):
+    def export_list(self,
+                    entity_type,
+                    search=None,
+                    filters=None,
+                    order_by=None,
+                    order_mode=None,
+                    max_marking_definition=None
+                    ):
         max_marking_definition_entity = self.opencti.marking_definition.read(
             id=max_marking_definition) if max_marking_definition is not None else None
         bundle = {
@@ -845,6 +851,14 @@ class OpenCTIStix2:
             'spec_version': '2.0',
             'objects': []
         }
+
+        if entity_type in IDENTITY_TYPES:
+            if filters is not None:
+                filters.append({'key': 'entity_type', 'values': [entity_type]})
+            else:
+                filters = [{'key': 'entity_type', 'values': [entity_type]}]
+            entity_type = 'identity'
+
         # List
         lister = {
             'identity': self.opencti.identity.list,
@@ -868,7 +882,8 @@ class OpenCTIStix2:
             search=search,
             filters=filters,
             orderBy=order_by,
-            orderMode=order_mode
+            orderMode=order_mode,
+            getAll=True
         )
 
         if entities_list is not None:
@@ -891,9 +906,14 @@ class OpenCTIStix2:
                 entity_type,
                 lambda **kwargs: self.unknown_type({'type': entity_type})
             )
+            uuids = []
             for entity in entities_list:
                 entity_bundle = do_export(entity=entity, max_marking_definition_entity=max_marking_definition_entity)
-                bundle['objects'] = bundle['objects'] + entity_bundle
+                if entity_bundle is not None:
+                    entity_bundle_filtered = self.filter_objects(uuids, entity_bundle)
+                    for x in entity_bundle_filtered:
+                        uuids.append(x['id'])
+                    bundle['objects'] = bundle['objects'] + entity_bundle_filtered
 
         return bundle
 
@@ -926,6 +946,8 @@ class OpenCTIStix2:
                 created_by_ref['labels'] = ['identity']
             created_by_ref['created'] = self.format_date(entity_created_by_ref['created'])
             created_by_ref['modified'] = self.format_date(entity_created_by_ref['modified'])
+            if entity_created_by_ref['entity_type'] == 'organization' and 'organization_class' in entity_created_by_ref:
+                created_by_ref[CustomProperties.ORG_CLASS] = entity_created_by_ref['organization_class']
             if self.opencti.not_empty(entity_created_by_ref['alias']):
                 created_by_ref[CustomProperties.ALIASES] = entity_created_by_ref['alias']
             created_by_ref[CustomProperties.IDENTITY_TYPE] = entity_created_by_ref['entity_type']
