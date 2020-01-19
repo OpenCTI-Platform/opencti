@@ -45,12 +45,7 @@ const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
-    position: 'fixed',
     backgroundColor: theme.palette.navAlt.background,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
     padding: 0,
   },
   createButton: {
@@ -273,7 +268,8 @@ class StixRelationCreation extends Component {
     if (
       this.props.from !== prevProps.from
       && this.props.to !== prevProps.to
-      && this.props.from !== null && this.props.to !== null
+      && this.props.from !== null
+      && this.props.to !== null
     ) {
       fetchQuery(stixRelationCreationQuery, {
         fromId: this.props.from.id,
@@ -334,8 +330,8 @@ class StixRelationCreation extends Component {
         initialValues={initialValues}
         validationSchema={stixRelationValidation(t)}
         onSubmit={this.onSubmit.bind(this)}
-        onReset={this.handleClose.bind(this)}
-        render={({ submitForm, handleReset, isSubmitting }) => (
+      >
+        {({ submitForm, isSubmitting }) => (
           <Form>
             <div className={classes.header}>
               <IconButton
@@ -487,7 +483,7 @@ class StixRelationCreation extends Component {
               <div className={classes.buttons}>
                 <Button
                   variant="contained"
-                  onClick={handleReset}
+                  onClick={this.handleClose.bind(this)}
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
                 >
@@ -506,7 +502,7 @@ class StixRelationCreation extends Component {
             </div>
           </Form>
         )}
-      />
+      </Formik>
     );
   }
 
@@ -707,23 +703,24 @@ class StixRelationCreation extends Component {
   }
 
   render() {
-    const { open } = this.props;
+    const {
+      open, from, to, classes,
+    } = this.props;
     const { step } = this.state;
-    if (this.props.from !== null && this.props.to !== null) {
-      return (
-        <Drawer
-          open={open}
-          anchor="right"
-          classes={{ paper: this.props.classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
-          {step === 0 || step === undefined ? this.renderLoader() : ''}
-          {step === 1 ? this.renderSelectRelation() : ''}
-          {step === 2 ? this.renderForm() : ''}
-        </Drawer>
-      );
-    }
-    return <div style={{ display: 'none' }}> &nbsp; </div>;
+    return (
+      <Drawer
+        open={open}
+        anchor="right"
+        classes={{ paper: classes.drawerPaper }}
+        onClose={this.handleClose.bind(this)}
+      >
+        {step === 0 || step === undefined || from === null || to === null
+          ? this.renderLoader()
+          : ''}
+        {step === 1 ? this.renderSelectRelation() : ''}
+        {step === 2 ? this.renderForm() : ''}
+      </Drawer>
+    );
   }
 }
 
