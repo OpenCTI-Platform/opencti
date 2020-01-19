@@ -68,6 +68,8 @@ class CustomProperties:
     PATTERN_TYPE = 'x_opencti_pattern_type'
     OBSERVABLE_TYPE = 'x_opencti_observable_type'
     OBSERVABLE_VALUE = 'x_opencti_observable_value'
+    CREATE_OBSERVABLES = 'x_opencti_observables_create'
+    CREATE_INDICATOR = 'x_opencti_indicator_create'
 
     # custom created and modified dates
     # use with STIX "kill chain" and "external reference" objects

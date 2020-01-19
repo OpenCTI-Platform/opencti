@@ -52,6 +52,9 @@ class AttackPattern:
                     description
                     created
                     modified
+                    ... on Organization {
+                        organization_class
+                    }
                 }
                 relation {
                     id
@@ -126,6 +129,10 @@ class AttackPattern:
         after = kwargs.get('after', None)
         order_by = kwargs.get('orderBy', None)
         order_mode = kwargs.get('orderMode', None)
+        get_all = kwargs.get('getAll', False)
+        if get_all:
+            first = 500
+
         self.opencti.log('info', 'Listing Attack-Patterns with filters ' + json.dumps(filters) + '.')
         query = """
             query AttackPatterns($filters: [AttackPatternsFiltering], $search: String, $first: Int, $after: ID, $orderBy: AttackPatternsOrdering, $orderMode: OrderingMode) {
@@ -145,9 +152,34 @@ class AttackPattern:
                 }
             }
         """
-        result = self.opencti.query(query, {'filters': filters, 'search': search, 'first': first, 'after': after,
-                                            'orderBy': order_by, 'orderMode': order_mode})
-        return self.opencti.process_multiple(result['data']['attackPatterns'])
+        result = self.opencti.query(query, {
+            'filters': filters,
+            'search': search,
+            'first': first,
+            'after': after,
+            'orderBy': order_by,
+            'orderMode': order_mode
+        })
+        if get_all:
+            final_data = []
+            data = self.opencti.process_multiple(result['data']['attackPatterns'])
+            final_data = final_data + data
+            while result['data']['attackPatterns']['pageInfo']['hasNextPage']:
+                after = result['data']['attackPatterns']['pageInfo']['endCursor']
+                self.opencti.log('info', 'Listing Attack-Patterns after ' + after)
+                result = self.opencti.query(query, {
+                    'filters': filters,
+                    'search': search,
+                    'first': first,
+                    'after': after,
+                    'orderBy': order_by,
+                    'orderMode': order_mode
+                })
+                data = self.opencti.process_multiple(result['data']['attackPatterns'])
+                final_data = final_data + data
+            return final_data
+        else:
+            return self.opencti.process_multiple(result['data']['attackPatterns'])
 
     """
         Read a Attack-Pattern object

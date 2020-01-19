@@ -34,6 +34,10 @@ class KillChainPhase:
         after = kwargs.get('after', None)
         order_by = kwargs.get('orderBy', None)
         order_mode = kwargs.get('orderMode', None)
+        get_all = kwargs.get('getAll', False)
+        if get_all:
+            first = 500
+
         self.opencti.log('info', 'Listing Kill-Chain-Phase with filters ' + json.dumps(filters) + '.')
         query = """
             query KillChainPhases($filters: [KillChainPhasesFiltering], $first: Int, $after: ID, $orderBy: KillChainPhasesOrdering, $orderMode: OrderingMode) {

@@ -37,6 +37,9 @@ class Report:
                     description
                     created
                     modified
+                    ... on Organization {
+                        organization_class
+                    }
                 }
                 relation {
                     id
@@ -147,6 +150,10 @@ class Report:
         after = kwargs.get('after', None)
         order_by = kwargs.get('orderBy', None)
         order_mode = kwargs.get('orderMode', None)
+        get_all = kwargs.get('getAll', False)
+        if get_all:
+            first = 500
+
         self.opencti.log('info', 'Listing Reports with filters ' + json.dumps(filters) + '.')
         query = """
             query Reports($filters: [ReportsFiltering], $search: String, $first: Int, $after: ID, $orderBy: ReportsOrdering, $orderMode: OrderingMode) {

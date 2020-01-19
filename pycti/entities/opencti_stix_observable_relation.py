@@ -121,6 +121,10 @@ class StixObservableRelation:
         after = kwargs.get('after', None)
         order_by = kwargs.get('orderBy', None)
         order_mode = kwargs.get('orderMode', None)
+        get_all = kwargs.get('getAll', False)
+        if get_all:
+            first = 500
+
         self.opencti.log('info',
                          'Listing stix_observable_relations with {type: ' + str(relation_type) + ', from_id: ' + str(
                              from_id) + ', to_id: ' + str(to_id) + '}')

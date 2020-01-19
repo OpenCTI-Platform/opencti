@@ -26,6 +26,9 @@ class StixObservable:
                     description
                     created
                     modified
+                    ... on Organization {
+                        organization_class
+                    }
                 }
                 relation {
                     id
@@ -108,6 +111,10 @@ class StixObservable:
         after = kwargs.get('after', None)
         order_by = kwargs.get('orderBy', None)
         order_mode = kwargs.get('orderMode', None)
+        get_all = kwargs.get('getAll', False)
+        if get_all:
+            first = 500
+
         self.opencti.log('info', 'Listing StixObservables with filters ' + json.dumps(filters) + '.')
         query = """
             query StixObservables($types: [String], $filters: [StixObservablesFiltering], $search: String, $first: Int, $after: ID, $orderBy: StixObservablesOrdering, $orderMode: OrderingMode) {
@@ -127,8 +134,15 @@ class StixObservable:
                 }
             }
         """
-        result = self.opencti.query(query, {'types': types, 'filters': filters, 'search': search, 'first': first, 'after': after,
-                                            'orderBy': order_by, 'orderMode': order_mode})
+        result = self.opencti.query(query, {
+            'types': types,
+            'filters': filters,
+            'search': search,
+            'first': first,
+            'after': after,
+            'orderBy': order_by,
+            'orderMode': order_mode
+        })
         return self.opencti.process_multiple(result['data']['stixObservables'])
 
     """

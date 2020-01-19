@@ -23,6 +23,9 @@ class StixEntity:
                     description
                     created
                     modified
+                    ... on Organization {
+                        organization_class
+                    }
                 }
                 relation {
                     id
@@ -126,6 +129,9 @@ class StixEntity:
                 objective
                 first_seen
                 last_seen
+            }
+            ... on Organization {
+                organization_class
             }
             ... on Malware {
                 killChainPhases {
