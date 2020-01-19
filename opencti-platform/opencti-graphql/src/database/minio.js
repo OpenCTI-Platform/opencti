@@ -33,26 +33,41 @@ export const isStorageAlive = () => {
   });
 };
 
-const extractName = (entityId, entityType, filename = '') => {
-  return isEmpty(entityType) || isNil(entityType) ? `global/${filename}` : `${entityType}/${entityId}/${filename}`;
+const extractName = (entityType = null, entityId = null, filename = '') => {
+  if (isEmpty(entityType) || isNil(entityType)) {
+    return `global/${filename}`;
+  }
+  if (isEmpty(entityId) || isNil(entityId)) {
+    return `${entityType.toLowerCase()}/lists/${filename}`;
+  }
+  return `${entityType.toLowerCase()}/${entityId}/${filename}`;
 };
 
 /**
  * Generate a filename for the export
- * @param format mime type like application/json
+ * @param format mime type like application/json*
  * @param connector the connector for the export
+ * @param entity the target entity of the export (for entity)
+ * @param type entity type to export (for list)
  * @param exportType the export type simple or full
  * @param maxMarkingDefinitionEntity the marking definition entity
- * @param entity the target entity of the export
+
  * @returns {string}
  */
-export const generateFileExportName = (format, connector, exportType, maxMarkingDefinitionEntity, entity) => {
+export const generateFileExportName = (
+  format,
+  connector,
+  entity = null,
+  type = null,
+  exportType = null,
+  maxMarkingDefinitionEntity = null
+) => {
   const creation = now();
   const fileExt = mime.extension(format);
-  const entityInFile = `${entity.entity_type}-${entity.name}`;
+  const fileNamePart = entity && exportType ? `${entity.entity_type}-${entity.name}_${exportType}` : type;
   return `${creation}${maxMarkingDefinitionEntity ? `_${maxMarkingDefinitionEntity.definition}` : ''}_(${
     connector.name
-  })_${entityInFile}_${exportType}.${fileExt}`;
+  })_${fileNamePart}.${fileExt}`;
 };
 
 export const deleteFile = async (id, user) => {
@@ -90,12 +105,12 @@ const rawFilesListing = directory => {
   });
 };
 
-export const filesListing = async (first, category, entity = null) => {
-  const name = extractName(entity ? entity.id : null, entity ? entity.entity_type : null);
+export const filesListing = async (first, category, entityType, entity = null) => {
+  const name = extractName(entityType, entity ? entity.id : null);
   const files = await rawFilesListing(`${category}/${name}`);
   let allFiles = files;
   if (category === 'export') {
-    const inExport = await loadExportWorksAsProgressFiles(entity.id);
+    const inExport = await loadExportWorksAsProgressFiles(entityType, entity ? entity.id : null);
     allFiles = concat(inExport, files);
   }
   const sortedFiles = sort((a, b) => b.lastModified - a.lastModified, allFiles);
@@ -103,22 +118,23 @@ export const filesListing = async (first, category, entity = null) => {
   return buildPagination(first, 0, fileNodes, allFiles.length);
 };
 
-export const upload = async (user, category, file, entityId = null) => {
+export const upload = async (user, category, file, entityType = null, entityId = null, listArgs = null) => {
   const { createReadStream, filename, mimetype, encoding } = await file;
   const metadata = {
     filename: querystring.escape(filename),
     category,
     mimetype,
-    encoding
+    encoding,
+    listArgs
   };
-  let entityType = null;
-  if (entityId) {
+  let finalEntityType = entityType;
+  if (entityId && !finalEntityType) {
     const entity = await loadEntityById(entityId);
-    entityType = entity.entity_type;
+    finalEntityType = entity.entity_type;
   }
   // eslint-disable-next-line prettier/prettier
-  const fileDirName = `${category}/${extractName(entityId, entityType, filename)}`;
-  logger.debug(`FileManager > upload file ${filename} by ${user.email}`);
+  const fileDirName = `${category}/${extractName(finalEntityType.toLowerCase(), entityId, filename)}`;
+  logger.debug(`FileManager > upload file ${filename} to ${fileDirName} by ${user.email}`);
   // Upload the file in the storage
   return new Promise((resolve, reject) => {
     return minioClient.putObject(bucketName, fileDirName, createReadStream(), null, metadata, err => {

@@ -245,14 +245,14 @@ export const graknIsAlive = async () => {
 export const getGraknVersion = async () => {
   // It seems that Grakn server does not expose its version yet:
   // https://github.com/graknlabs/client-nodejs/issues/47
-  return '1.5.9';
+  return '1.6.1';
 };
 
 /**
  * Recursive fetch of every types of a concept
  * @param concept the element
  * @param currentType the current type
- * @param acc the recursive accumulator
+ * @param acc the recursive accuStixDomainEntitiesExportComponentmulator
  * @returns {Promise<Array>}
  */
 export const conceptTypes = async (concept, currentType = null, acc = []) => {
@@ -1136,7 +1136,7 @@ export const timeSeriesEntities = async (entityType, filters, options) => {
   const { startDate, endDate, operation, field, interval, inferred = false } = options;
   // Check if can be supported by ES
   let histogramData;
-  if (operation === 'count' && inferred === false) {
+  if (operation === 'count' && !inferred) {
     histogramData = await elHistogramCount(entityType, field, interval, startDate, endDate, filters);
   } else {
     // If not compatible, do it with grakn

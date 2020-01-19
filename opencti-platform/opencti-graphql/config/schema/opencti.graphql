@@ -23,7 +23,7 @@ scalar DateTime
 scalar ConstraintString
 scalar ConstraintNumber
 scalar Upload
-enum Status {
+enum Status {connectorsForExport
   wait
   progress
   partial
@@ -93,7 +93,7 @@ type DependencyVersion {
   version: String!
 }
 type AppInfo {
-  version: String!,
+  version: String!
   dependencies: [DependencyVersion!]!
 }
 
@@ -329,6 +329,7 @@ type FileMetadata {
   category: FileCategory!
   encoding: String
   mimetype: String
+  listargs: String
 }
 type File {
   id: ID!
@@ -397,12 +398,21 @@ interface StixEntity {
 enum StixDomainEntitiesOrdering {
   name
   entity_type
+  created
+  modified
   created_at
   updated_at
   tags
   markingDefinitions
+  published
+  object_status
+  valid_from
+  valid_to
+  indicator_pattern
 }
 enum StixDomainEntitiesFilter {
+  main_observable_type
+  entity_type
   name
   alias
   stix_id_key
@@ -411,6 +421,7 @@ enum StixDomainEntitiesFilter {
 input StixDomainEntitiesFiltering {
   key: StixDomainEntitiesFilter!
   values: [String]
+  operator: String
 }
 type StixDomainEntityConnection {
   pageInfo: PageInfo!
@@ -467,6 +478,7 @@ enum StixObservablesOrdering {
   markingDefinitions
 }
 enum StixObservablesFilter {
+  entity_type
   stix_id_key
   observable_value
   indicates
@@ -783,6 +795,7 @@ enum IdentitiesOrdering {
 enum IdentitiesFilter {
   name
   alias
+  entity_type
 }
 input IdentitiesFiltering {
   key: IdentitiesFilter!
@@ -2717,6 +2730,7 @@ type Query {
     filterMode: FilterMode
     search: String
   ): StixDomainEntityConnection @auth
+  stixDomainEntitiesExportFiles(first: Int, type: String!): FileConnection @auth
   stixDomainEntitiesTimeSeries(
     type: String
     field: String!
@@ -2731,12 +2745,12 @@ type Query {
   stixObservables(
     first: Int
     after: ID
+    types: [String]
     orderBy: StixObservablesOrdering
     orderMode: OrderingMode
     filters: [StixObservablesFiltering]
     filterMode: FilterMode
     search: String
-    types: [String]
   ): StixObservableConnection @auth
   stixObservablesNumber(type: String, endDate: DateTime): Number @auth
   stixObservablesTimeSeries(type: String): [TimeSeries] @auth
@@ -2786,12 +2800,7 @@ type Query {
     limit: Int
     order: String
   ): [Distribution] @auth
-  stixRelationsNumber(
-    type: String
-    fromId: String
-    endDate: DateTime
-    inferred: Boolean
-  ): Number @auth
+  stixRelationsNumber(type: String, fromId: String, endDate: DateTime, inferred: Boolean): Number @auth
   # StixObservableRelations
   stixObservableRelation(id: String!): StixObservableRelation @auth
   stixObservableRelations(
@@ -2830,6 +2839,7 @@ type Query {
   identities(
     first: Int
     after: ID
+    types: [String]
     orderBy: IdentitiesOrdering
     orderMode: OrderingMode
     search: String
@@ -2907,13 +2917,7 @@ type Query {
   ): RegionConnection @auth
   # Groups
   group(id: String!): Group @auth
-  groups(
-    first: Int
-    after: ID
-    orderBy: GroupsOrdering
-    orderMode: OrderingMode
-    search: String
-  ): GroupConnection @auth
+  groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection @auth
   # MarkingDefinitions
   markingDefinition(id: String!): MarkingDefinition @auth
   markingDefinitions(
@@ -3085,11 +3089,7 @@ type Query {
     endDate: DateTime!
     interval: String!
   ): [TimeSeries] @auth
-  reportsNumber(
-    reportClass: String
-    objectId: String
-    endDate: DateTime
-  ): Number @auth
+  reportsNumber(reportClass: String, objectId: String, endDate: DateTime): Number @auth
   reportsDistribution(
     objectId: String
     field: String!
@@ -3461,9 +3461,31 @@ type Mutation {
   # StixDomainEntity
   stixDomainEntityAdd(input: StixDomainEntityAddInput): StixDomainEntity @auth
   stixDomainEntityEdit(id: ID!): StixDomainEntityEditMutations @auth
+  stixDomainEntitiesExportAsk(
+    type: String!
+    format: String!
+    exportType: String!
+    maxMarkingDefinition: String
+    search: String
+    orderBy: StixDomainEntitiesOrdering
+    orderMode: OrderingMode
+    filters: [StixDomainEntitiesFiltering]
+    filterMode: FilterMode
+  ): FileConnection
+  stixDomainEntitiesExportPush(type: String!, file: Upload!, listArgs: String): Boolean @auth(for: ROLE_ADMIN)
   # StixObservable
   stixObservableAdd(input: StixObservableAddInput): StixObservable @auth
   stixObservableEdit(id: ID!): StixObservableEditMutations @auth
+  stixObservablesExportAsk(
+    types: [String]!
+    format: String!
+    exportType: String!
+    maxMarkingDefinition: String
+    orderBy: StixObservablesOrdering
+    orderMode: OrderingMode
+    filters: [StixObservablesFiltering]
+    filterMode: FilterMode
+  ): FileConnection
   # StixRelation
   stixRelationAdd(input: StixRelationAddInput, reversedReturn: Boolean): StixRelation @auth
   stixRelationEdit(id: ID!): StixRelationEditMutations @auth
@@ -3501,19 +3523,14 @@ type Mutation {
   groupAdd(input: GroupAddInput): Group @auth(for: ROLE_ADMIN)
   groupEdit(id: ID!): GroupEditMutations @auth(for: ROLE_ADMIN)
   # MarkingDefinition
-  markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition
-    @auth(for: ROLE_ADMIN)
-  markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations
-    @auth(for: ROLE_ADMIN)
+  markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition @auth(for: ROLE_ADMIN)
+  markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations @auth(for: ROLE_ADMIN)
   # ExternalReference
-  externalReferenceAdd(input: ExternalReferenceAddInput): ExternalReference
-    @auth
+  externalReferenceAdd(input: ExternalReferenceAddInput): ExternalReference @auth
   externalReferenceEdit(id: ID!): ExternalReferenceEditMutations @auth
   # KillChainPhase
-  killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase
-    @auth(for: ROLE_ADMIN)
-  killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations
-    @auth(for: ROLE_ADMIN)
+  killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase @auth(for: ROLE_ADMIN)
+  killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations @auth(for: ROLE_ADMIN)
   # AttackPattern
   attackPatternAdd(input: AttackPatternAddInput): AttackPattern @auth
   attackPatternEdit(id: ID!): AttackPatternEditMutations @auth

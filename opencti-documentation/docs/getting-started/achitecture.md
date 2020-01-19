@@ -14,7 +14,9 @@ The API is the central part of the OpenCTI platorm, allowing the *clients* (incl
 
 ## The write workers
 
-The workers are standalone Python processes that just consume messages from the RabbitMQ broker in order to do asynchroneous write queries. You can launch as many workers as you need to increase the write performances. Nevertheless, the Grakn database could have some problems with concurrent writing and fails on some operations.
+The workers are standalone Python processes that just consume messages from the RabbitMQ broker in order to do asynchroneous write queries. You can launch as many workers as you need to increase the write performances.
+
+> Since `Grakn 1.6.1`, there is no more race conditions on duplicate keys, so we strongly advise you to launch more than one worker.
 
 ## The connectors
 
