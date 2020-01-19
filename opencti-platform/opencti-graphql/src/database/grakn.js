@@ -535,6 +535,10 @@ const loadConcept = async (concept, args = {}) => {
         const pattern = `{ $${INFERRED_RELATION_KEY}(${fromRole}: $from, ${toRole}: $to) isa ${type}; $from id ${fromId}; $to id ${toId}; };`;
         return pipe(
           assoc('id', Buffer.from(pattern).toString('base64')),
+          assoc('internal_id_key', Buffer.from(pattern).toString('base64')),
+          assoc('stix_id_key', `relationship--${uuid()}`),
+          assoc('created', now()),
+          assoc('modified', now()),
           assoc('created_at', now()),
           assoc('updated_at', now())
         )(relationData);
