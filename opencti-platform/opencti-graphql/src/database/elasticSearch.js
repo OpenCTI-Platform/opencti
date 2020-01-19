@@ -577,22 +577,20 @@ export const elPaginate = async (indexName, options) => {
     for (let index = 0; index < validFilters.length; index += 1) {
       const valuesFiltering = [];
       const { key, values, operator = 'eq' } = validFilters[index];
-      if (values === null) {
-        mustnot = append({ exists: { field: key } }, mustnot);
-      } else {
-        for (let i = 0; i < values.length; i += 1) {
-          if (operator === 'eq') {
-            valuesFiltering.push({
-              match_phrase: { [`${dateFields.includes(key) ? key : `${key}.keyword`}`]: values[i] }
-            });
-          } else if (operator === 'match') {
-            must = append({ match_phrase: { [`${dateFields.includes(key) ? key : `${key}`}`]: values[i] } }, must);
-          } else {
-            valuesFiltering.push({ range: { [key]: { [operator]: values[i] } } });
-          }
+      for (let i = 0; i < values.length; i += 1) {
+        if (values[i] === null) {
+          mustnot = append({ exists: { field: key } }, mustnot);
+        } else if (operator === 'eq') {
+          valuesFiltering.push({
+            match_phrase: { [`${dateFields.includes(key) ? key : `${key}.keyword`}`]: values[i] }
+          });
+        } else if (operator === 'match') {
+          must = append({ match_phrase: { [`${dateFields.includes(key) ? key : `${key}`}`]: values[i] } }, must);
+        } else {
+          valuesFiltering.push({ range: { [key]: { [operator]: values[i] } } });
         }
-        must = append({ bool: { should: valuesFiltering, minimum_should_match: 1 } }, must);
       }
+      must = append({ bool: { should: valuesFiltering, minimum_should_match: 1 } }, must);
     }
   }
   if (orderBy !== null && orderBy.length > 0) {
