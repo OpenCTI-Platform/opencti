@@ -49,7 +49,15 @@ const LoginForm = (props) => {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        props.history.push(redirectLogin ? atob(redirectLogin) : '/');
+        let redirectUrl = '/';
+        if (redirectLogin) {
+          try {
+            redirectUrl = atob(redirectLogin);
+          } catch (e) {
+            // Encoding problem, seems a user trying some weird stuff.
+          }
+        }
+        props.history.push(redirectUrl);
       },
     });
   };

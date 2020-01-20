@@ -20,7 +20,9 @@ class ErrorBoundaryComponent extends React.Component {
       if (this.state.error instanceof ApplicationError) {
         const types = map((e) => e.name, this.state.error.data.res.errors);
         // Auth problem is always handled by a login redirect
+        // If access is forbidden, just redirect to login screen
         if (includes('ForbiddenAccess', types)) return <Redirect to="/login" />;
+        // If user not authenticated, redirect to login with encoded path
         if (includes('AuthRequired', types)) {
           const redirectUrl = `/login?redirectLogin=${btoa(window.location.pathname + window.location.search)}`;
           return <Redirect to={redirectUrl} />;
