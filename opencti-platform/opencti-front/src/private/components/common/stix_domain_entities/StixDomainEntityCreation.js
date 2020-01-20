@@ -24,7 +24,7 @@ import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import Select from '../../../../components/Select';
 import Autocomplete from '../../../../components/Autocomplete';
-import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
+import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -113,7 +113,7 @@ class StixDomainEntityCreation extends Component {
   }
 
   searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsSearchQuery, {
+    fetchQuery(markingDefinitionsLinesSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const markingDefinitions = pipe(

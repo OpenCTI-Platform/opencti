@@ -27,6 +27,7 @@ class Campaigns extends Component {
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('cards', 'view', params),
       filters: {},
+      openExports: false,
     };
   }
 
@@ -51,6 +52,10 @@ class Campaigns extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
+  handleToggleExports() {
+    this.setState({ openExports: !this.state.openExports });
+  }
+
   handleAddFilter(key, id, value, event) {
     event.stopPropagation();
     event.preventDefault();
@@ -65,7 +70,7 @@ class Campaigns extends Component {
 
   renderCards(paginationOptions) {
     const {
-      sortBy, orderAsc, searchTerm, filters,
+      sortBy, orderAsc, searchTerm, filters, openExports,
     } = this.state;
     const dataColumns = {
       name: {
@@ -90,9 +95,12 @@ class Campaigns extends Component {
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-        displayImport={true}
+        handleToggleExports={this.handleToggleExports.bind(this)}
+        openExports={openExports}
+        exportEntityType="Campaign"
         keyword={searchTerm}
         filters={filters}
+        paginationOptions={paginationOptions}
       >
         <QueryRenderer
           query={campaignsCardsQuery}
@@ -112,7 +120,7 @@ class Campaigns extends Component {
 
   renderLines(paginationOptions) {
     const {
-      sortBy, orderAsc, searchTerm, filters,
+      sortBy, orderAsc, searchTerm, filters, openExports,
     } = this.state;
     const dataColumns = {
       name: {
@@ -145,9 +153,12 @@ class Campaigns extends Component {
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-        displayImport={true}
+        handleToggleExports={this.handleToggleExports.bind(this)}
+        openExports={openExports}
+        exportEntityType="Campaign"
         keyword={searchTerm}
         filters={filters}
+        paginationOptions={paginationOptions}
       >
         <QueryRenderer
           query={campaignsLinesQuery}

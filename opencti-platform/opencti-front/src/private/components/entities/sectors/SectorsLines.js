@@ -35,8 +35,8 @@ class SectorsLinesComponent extends Component {
         prop('name'),
       ),
     );
-    const filterSubsector = n => n.isSubsector === false;
-    const filterByKeyword = n => keyword === ''
+    const filterSubsector = (n) => n.isSubsector === false;
+    const filterByKeyword = (n) => keyword === ''
       || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
       || n.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
       || propOr('', 'subsectors_text', n)
@@ -44,11 +44,11 @@ class SectorsLinesComponent extends Component {
         .indexOf(keyword.toLowerCase()) !== -1;
     const sectors = pipe(
       pathOr([], ['sectors', 'edges']),
-      map(n => n.node),
-      map(n => assoc(
+      map((n) => n.node),
+      map((n) => assoc(
         'subsectors_text',
         pipe(
-          map(o => `${o.node.name} ${o.node.description}`),
+          map((o) => `${o.node.name} ${o.node.description}`),
           join(' | '),
         )(pathOr([], ['subsectors', 'edges'], n)),
         n,
@@ -67,7 +67,7 @@ class SectorsLinesComponent extends Component {
           ? map((sector) => {
             const subsectors = pipe(
               pathOr([], ['subsectors', 'edges']),
-              map(n => n.node),
+              map((n) => n.node),
               filter(filterByKeyword),
               sortByNameCaseInsensitive,
             )(sector);

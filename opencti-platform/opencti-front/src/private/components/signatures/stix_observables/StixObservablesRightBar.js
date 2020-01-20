@@ -17,9 +17,20 @@ const styles = (theme) => ({
     padding: '0 0 20px 0',
     position: 'fixed',
     backgroundColor: theme.palette.navAlt.background,
-    transition: theme.transitions.create('width', {
+    transition: theme.transitions.create('right', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
+    }),
+  },
+  drawerPaperExports: {
+    minHeight: '100vh',
+    width: 250,
+    right: 310,
+    padding: '0 0 20px 0',
+    backgroundColor: theme.palette.navAlt.background,
+    transition: theme.transitions.create('right', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.leavingScreen,
     }),
   },
   listIcon: {
@@ -41,12 +52,15 @@ class StixObservablesRightBar extends Component {
       t,
       types,
       handleToggle,
+      openExports
     } = this.props;
     return (
       <Drawer
         variant="permanent"
         anchor="right"
-        classes={{ paper: classes.drawerPaper }}
+        classes={{
+          paper: openExports ? classes.drawerPaperExports : classes.drawerPaper,
+        }}
       >
         <div className={classes.toolbar} />
         <List
@@ -190,6 +204,7 @@ StixObservablesRightBar.propTypes = {
   handleToggle: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
+  openExports: PropTypes.bool,
 };
 
 export default compose(

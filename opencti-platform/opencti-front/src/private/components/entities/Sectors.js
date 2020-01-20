@@ -44,6 +44,7 @@ class Sectors extends Component {
     );
     this.state = {
       searchTerm: propOr('', 'searchTerm', params),
+      openExports: false,
     };
   }
 
@@ -58,6 +59,10 @@ class Sectors extends Component {
 
   handleSearch(value) {
     this.setState({ searchTerm: value }, () => this.saveView());
+  }
+
+  handleToggleExports() {
+    this.setState({ openExports: !this.state.openExports });
   }
 
   render() {
