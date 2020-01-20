@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
-import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -14,20 +13,6 @@ import MarkingDefinitionsLines, {
   markingDefinitionsLinesQuery,
 } from './marking_definitions/MarkingDefinitionsLines';
 import MarkingDefinitionCreation from './marking_definitions/MarkingDefinitionCreation';
-
-export const markingDefinitionsSearchQuery = graphql`
-  query MarkingDefinitionsSearchQuery($search: String) {
-    markingDefinitions(search: $search) {
-      edges {
-        node {
-          id
-          definition_type
-          definition
-        }
-      }
-    }
-  }
-`;
 
 class MarkingDefinitions extends Component {
   constructor(props) {

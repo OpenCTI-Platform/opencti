@@ -46,7 +46,7 @@ import Select from '../../../../components/Select';
 import Autocomplete from '../../../../components/Autocomplete';
 import DatePickerField from '../../../../components/DatePickerField';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
-import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
+import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
 import Loader from '../../../../components/Loader';
 
@@ -210,7 +210,7 @@ class StixRelationEditionContainer extends Component {
   }
 
   searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsSearchQuery, {
+    fetchQuery(markingDefinitionsLinesSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const markingDefinitions = pipe(

@@ -1,4 +1,5 @@
 import { withFilter } from 'graphql-subscriptions';
+import { assoc } from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixDomainEntity,
@@ -27,7 +28,8 @@ const stixDomainEntityResolvers = {
     stixDomainEntity: (_, { id }) => findById(id),
     stixDomainEntities: (_, args) => findAll(args),
     stixDomainEntitiesTimeSeries: (_, args) => stixDomainEntitiesTimeSeries(args),
-    stixDomainEntitiesNumber: (_, args) => stixDomainEntitiesNumber(args)
+    stixDomainEntitiesNumber: (_, args) => stixDomainEntitiesNumber(args),
+    stixDomainEntitiesExportFiles: (_, { type, first }) => filesListing(first, 'export', type)
   },
   StixDomainEntitiesOrdering: {
     markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
@@ -44,8 +46,8 @@ const stixDomainEntityResolvers = {
       }
       return 'Unknown';
     },
-    importFiles: (entity, { first }) => filesListing(first, 'import', entity),
-    exportFiles: (entity, { first }) => filesListing(first, 'export', entity)
+    importFiles: (entity, { first }) => filesListing(first, 'import', entity.entity_type, entity),
+    exportFiles: (entity, { first }) => filesListing(first, 'export', entity.entity_type, entity)
   },
   Mutation: {
     stixDomainEntityEdit: (_, { id }, { user }) => ({
@@ -56,12 +58,13 @@ const stixDomainEntityResolvers = {
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationsAdd: ({ input }) => stixDomainEntityAddRelations(user, id, input),
       relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId),
-      importPush: ({ file }) => stixDomainEntityImportPush(user, id, file),
-      exportAsk: ({ format, exportType, maxMarkingDefinition }) =>
-        stixDomainEntityExportAsk(id, format, exportType, maxMarkingDefinition),
-      exportPush: ({ file }) => stixDomainEntityExportPush(user, id, file)
+      importPush: ({ file }) => stixDomainEntityImportPush(user, null, id, file),
+      exportAsk: args => stixDomainEntityExportAsk(assoc('stixDomainEntityId', id, args)),
+      exportPush: ({ file }) => stixDomainEntityExportPush(user, null, id, file)
     }),
-    stixDomainEntityAdd: (_, { input }, { user }) => addStixDomainEntity(user, input)
+    stixDomainEntityAdd: (_, { input }, { user }) => addStixDomainEntity(user, input),
+    stixDomainEntitiesExportAsk: (_, args) => stixDomainEntityExportAsk(args),
+    stixDomainEntitiesExportPush: (_, { type, file, listArgs }, { user }) => stixDomainEntityExportPush(user, type, null, file, listArgs)
   },
   Subscription: {
     stixDomainEntity: {

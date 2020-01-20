@@ -59,7 +59,7 @@ import StixRelationCreationFromEntityStixObservablesLines, {
 import StixDomainEntityCreation from '../stix_domain_entities/StixDomainEntityCreation';
 import SearchInput from '../../../../components/SearchInput';
 import Autocomplete from '../../../../components/Autocomplete';
-import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
+import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
 import { truncate } from '../../../../utils/String';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
@@ -304,7 +304,7 @@ class StixRelationCreationFromEntity extends Component {
   }
 
   searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsSearchQuery, {
+    fetchQuery(markingDefinitionsLinesSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const markingDefinitions = pipe(

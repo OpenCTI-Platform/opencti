@@ -11,6 +11,20 @@ import {
 
 const nbOfRowsToLoad = 25;
 
+export const markingDefinitionsLinesSearchQuery = graphql`
+  query MarkingDefinitionsLinesSearchQuery($search: String) {
+    markingDefinitions(search: $search) {
+      edges {
+        node {
+          id
+          definition_type
+          definition
+        }
+      }
+    }
+  }
+`;
+
 class MarkingDefinitionsLines extends Component {
   render() {
     const {

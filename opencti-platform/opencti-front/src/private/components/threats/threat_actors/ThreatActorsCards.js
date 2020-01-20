@@ -34,6 +34,7 @@ class ThreatActorsCards extends Component {
 
 ThreatActorsCards.propTypes = {
   data: PropTypes.object,
+  connectorsExport: PropTypes.array,
   relay: PropTypes.object,
   initialLoading: PropTypes.bool,
   onTagClick: PropTypes.func,
