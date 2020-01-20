@@ -1,3 +1,5 @@
 .DS_Store
 .idea
 *.iml
+connectors
+venv

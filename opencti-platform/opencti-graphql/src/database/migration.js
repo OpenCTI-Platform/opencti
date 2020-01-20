@@ -92,32 +92,35 @@ const graknStateStorage = {
 const applyMigration = () => {
   logger.info('[MIGRATION] > Starting migration process');
   const set = new MigrationSet(graknStateStorage);
-  return graknStateStorage.load((err, state) => {
-    if (err) throw new Error(err);
-    // Set last run date on the set
-    set.lastRun = state.lastRun || null;
-    // Read migrations from webpack
-    const migrationSet = retrieveMigrations();
-    const stateMigrations = new Map(state.migrations ? state.migrations.map(i => [i.title, i]) : null);
-    for (let index = 0; index < migrationSet.length; index += 1) {
-      const migSet = migrationSet[index];
-      const migration = new Migration(migSet.title, migSet.up, migSet.down);
-      // Add timestamp if already done in remote state
-      const stateMigration = stateMigrations.get(migration.title);
-      if (stateMigration) {
-        migration.timestamp = stateMigration.timestamp;
-      } else {
-        logger.info(`[MIGRATION] > ${migSet.title} will be executed`);
+  return new Promise((resolve, reject) => {
+    graknStateStorage.load((err, state) => {
+      if (err) throw new Error(err);
+      // Set last run date on the set
+      set.lastRun = state.lastRun || null;
+      // Read migrations from webpack
+      const migrationSet = retrieveMigrations();
+      const stateMigrations = new Map(state.migrations ? state.migrations.map(i => [i.title, i]) : null);
+      for (let index = 0; index < migrationSet.length; index += 1) {
+        const migSet = migrationSet[index];
+        const migration = new Migration(migSet.title, migSet.up, migSet.down);
+        // Add timestamp if already done in remote state
+        const stateMigration = stateMigrations.get(migration.title);
+        if (stateMigration) {
+          migration.timestamp = stateMigration.timestamp;
+        } else {
+          logger.info(`[MIGRATION] > ${migSet.title} will be executed`);
+        }
+        set.addMigration(migration);
       }
-      set.addMigration(migration);
-    }
-    // Start the set migration
-    return set.up(migrationError => {
-      if (migrationError) {
-        logger.error('[GRAKN] Error during migration');
-        throw new Error(migrationError);
-      }
-      logger.info('[MIGRATION] > Migrations completed');
+      // Start the set migration
+      set.up(migrationError => {
+        if (migrationError) {
+          logger.error('[GRAKN] Error during migration');
+          reject(migrationError);
+        }
+        logger.info('[MIGRATION] > Migrations completed');
+        resolve();
+      });
     });
   });
 };

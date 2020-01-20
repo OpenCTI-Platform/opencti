@@ -49,7 +49,6 @@ const reportResolvers = {
     }
   },
   ReportsOrdering: {
-    createdByRef: `${REL_INDEX_PREFIX}created_by_ref.name`,
     markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
     tags: `${REL_INDEX_PREFIX}tagged.value`
   },

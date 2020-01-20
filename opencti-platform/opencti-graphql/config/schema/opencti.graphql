@@ -2442,7 +2442,6 @@ enum ReportsOrdering {
   modified
   published
   object_status
-  createdByRef
   created_at
   updated_at
   tags

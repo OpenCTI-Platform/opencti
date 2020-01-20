@@ -53,7 +53,7 @@ const virtualTypes = ['Identity', 'Email', 'File', 'Stix-Domain-Entity', 'Stix-D
 
 export const REL_INDEX_PREFIX = 'rel_';
 export const INDEX_STIX_OBSERVABLE = 'stix_observables';
-export const INDEX_STIX_ENTITIES = 'stix_domain_entities';
+export const INDEX_STIX_ENTITIES = 'stix_domain_entities_v2';
 export const INDEX_STIX_RELATIONS = 'stix_relations';
 export const INDEX_WORK_JOBS = 'work_jobs_index';
 export const PLATFORM_INDICES = [INDEX_STIX_ENTITIES, INDEX_STIX_RELATIONS, INDEX_STIX_OBSERVABLE, INDEX_WORK_JOBS];
@@ -80,6 +80,10 @@ export const elVersion = () => {
     .info()
     .then(info => info.body.version.number)
     .catch(() => 'Disconnected');
+};
+export const elIndexExists = async indexName => {
+  const existIndex = await el.indices.exists({ index: indexName });
+  return existIndex.body === true;
 };
 export const elCreateIndexes = async () => {
   return Promise.all(
@@ -153,6 +157,9 @@ export const elCreateIndexes = async () => {
                     type: 'date',
                     format: 'strict_year_month',
                     ignore_malformed: true
+                  },
+                  object_status: {
+                    type: 'integer'
                   }
                 }
               }
@@ -681,9 +688,9 @@ export const elLoadByGraknId = (id, relationsMap, indices = PLATFORM_INDICES) =>
 export const elBulk = async args => {
   return el.bulk(args);
 };
-export const elReindex = async indexMaps => {
+export const elReindex = async indices => {
   return Promise.all(
-    indexMaps.map(indexMap => {
+    indices.map(indexMap => {
       return el
         .reindex({
           timeout: '60m',
