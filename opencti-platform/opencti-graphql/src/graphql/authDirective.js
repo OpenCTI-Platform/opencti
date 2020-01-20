@@ -2,7 +2,7 @@
 import { SchemaDirectiveVisitor } from 'graphql-tools';
 import { append, includes, map } from 'ramda';
 import { defaultFieldResolver } from 'graphql';
-import { ForbiddenAccess } from '../config/errors';
+import { AuthRequired, ForbiddenAccess } from '../config/errors';
 import { ROLE_USER } from '../config/conf';
 
 export const AUTH_DIRECTIVE = 'auth';
@@ -28,7 +28,7 @@ class AuthDirective extends SchemaDirectiveVisitor {
     // If a role is required
     const context = args[2];
     const { user } = context;
-    if (!user) throw new ForbiddenAccess(); // User must be authenticated.
+    if (!user) throw new AuthRequired(); // User must be authenticated.
     const roles = append(ROLE_USER, user.grant); // Inject the basic ROLE_USER
     if (!includes(requiredRole, roles)) throw new ForbiddenAccess();
     return func.apply(this, args);

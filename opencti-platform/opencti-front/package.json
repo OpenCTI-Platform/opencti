@@ -29,6 +29,7 @@
     "moment-timezone": "^0.5.27",
     "object-hash": "^2.0.1",
     "prop-types": "^15.7.2",
+    "query-string": "^6.10.1",
     "ramda": "^0.26.1",
     "react": "^16.12.0",
     "react-color": "^2.17.3",
@@ -47,8 +48,8 @@
     "react-window-dimensions": "^1.0.2",
     "recharts": "^1.8.5",
     "relay-runtime": "^7.1.0",
-    "subscriptions-transport-ws": "^0.9.16",
     "storm-react-diagrams": "^5.2.1",
+    "subscriptions-transport-ws": "^0.9.16",
     "typeface-roboto": "^0.0.75",
     "uuid": "^3.3.3",
     "yup": "^0.28.0"
@@ -70,10 +71,10 @@
     "eslint-plugin-react": "^7.17.0",
     "fs-extra": "^8.1.0",
     "prettier": "^1.19.1",
-    "relay-compiler": "^7.1.0",
     "react-app-rewired": "^2.1.5",
-    "relay-devtools": "^1.4.0",
-    "react-scripts": "^3.3.0"
+    "react-scripts": "^3.3.0",
+    "relay-compiler": "^7.1.0",
+    "relay-devtools": "^1.4.0"
   },
   "babelMacros": {
     "relay": {}

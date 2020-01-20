@@ -93,8 +93,7 @@ class Login extends Component {
             variant="contained"
             size="small"
             component="a"
-            href="/auth/google"
-          >
+            href="/auth/google">
             <Google className={this.props.classes.iconSmall} />
             Google
           </Button>
@@ -105,8 +104,7 @@ class Login extends Component {
             variant="contained"
             size="small"
             component="a"
-            href="/auth/facebook"
-          >
+            href="/auth/facebook">
             <FacebookBox className={this.props.classes.iconSmall} />
             Facebook
           </Button>
@@ -117,8 +115,7 @@ class Login extends Component {
             variant="contained"
             size="small"
             component="a"
-            href="/auth/github"
-          >
+            href="/auth/github">
             <GithubCircle className={this.props.classes.iconSmall} />
             Github
           </Button>
@@ -138,20 +135,10 @@ class Login extends Component {
             return (
               <ConnectedIntlProvider
                 me={props.me ? props.me : null}
-                settings={props.settings}
-              >
-                <div
-                  className={this.props.classes.container}
-                  style={{ marginTop }}
-                >
-                  <img
-                    src={logo}
-                    alt="logo"
-                    className={this.props.classes.logo}
-                  />
-                  <LoginForm
-                    demo={pathOr(false, ['settings', 'platform_demo'], props)}
-                  />
+                settings={props.settings}>
+                <div className={this.props.classes.container} style={{ marginTop }}>
+                  <img src={logo} alt="logo" className={this.props.classes.logo} />
+                  <LoginForm demo={pathOr(false, ['settings', 'platform_demo'], props)} />
                   {pathOr(
                     false,
                     ['settings', 'platform_external_auth'],
