@@ -3,14 +3,7 @@ import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  map,
-  filter,
-  head,
-  keys,
-  groupBy,
-  assoc,
-  compose,
-  append,
+  map, filter, keys, groupBy, assoc, compose, append,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
