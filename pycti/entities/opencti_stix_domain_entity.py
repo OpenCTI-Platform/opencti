@@ -230,24 +230,30 @@ class StixDomainEntity:
     """
 
     def list(self, **kwargs):
-        types = kwargs.get('types', None)
-        filters = kwargs.get('filters', None)
-        search = kwargs.get('search', None)
-        first = kwargs.get('first', 500)
-        after = kwargs.get('after', None)
-        order_by = kwargs.get('orderBy', None)
-        order_mode = kwargs.get('orderMode', None)
-        get_all = kwargs.get('getAll', False)
+        types = kwargs.get("types", None)
+        filters = kwargs.get("filters", None)
+        search = kwargs.get("search", None)
+        first = kwargs.get("first", 500)
+        after = kwargs.get("after", None)
+        order_by = kwargs.get("orderBy", None)
+        order_mode = kwargs.get("orderMode", None)
+        get_all = kwargs.get("getAll", False)
         if get_all:
             first = 500
 
-        self.opencti.log('info', 'Listing Stix-Domain-Entities with filters ' + json.dumps(filters) + '.')
-        query = """
+        self.opencti.log(
+            "info",
+            "Listing Stix-Domain-Entities with filters " + json.dumps(filters) + ".",
+        )
+        query = (
+            """
             query StixDomainEntities($types: [String], $filters: [StixDomainEntitiesFiltering], $search: String, $first: Int, $after: ID, $orderBy: StixDomainEntitiesOrdering, $orderMode: OrderingMode) {
                 stixDomainEntities(types: $types, filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
-                            """ + self.properties + """
+                            """
+            + self.properties
+            + """
                         }
                     }
                     pageInfo {
@@ -260,37 +266,46 @@ class StixDomainEntity:
                 }
             }
         """
-        result = self.opencti.query(query, {
-            'types': types,
-            'filters': filters,
-            'search': search,
-            'first': first,
-            'after': after,
-            'orderBy': order_by,
-            'orderMode': order_mode
-        })
+        )
+        result = self.opencti.query(
+            query,
+            {
+                "types": types,
+                "filters": filters,
+                "search": search,
+                "first": first,
+                "after": after,
+                "orderBy": order_by,
+                "orderMode": order_mode,
+            },
+        )
 
         if get_all:
             final_data = []
-            data = self.opencti.process_multiple(result['data']['stixDomainEntities'])
+            data = self.opencti.process_multiple(result["data"]["stixDomainEntities"])
             final_data = final_data + data
-            while result['data']['stixDomainEntities']['pageInfo']['hasNextPage']:
-                after = result['data']['stixDomainEntities']['pageInfo']['endCursor']
-                self.opencti.log('info', 'Listing Stix-Domain-Entities after ' + after)
-                result = self.opencti.query(query, {
-                    'types': types,
-                    'filters': filters,
-                    'search': search,
-                    'first': first,
-                    'after': after,
-                    'orderBy': order_by,
-                    'orderMode': order_mode
-                })
-                data = self.opencti.process_multiple(result['data']['stixDomainEntities'])
+            while result["data"]["stixDomainEntities"]["pageInfo"]["hasNextPage"]:
+                after = result["data"]["stixDomainEntities"]["pageInfo"]["endCursor"]
+                self.opencti.log("info", "Listing Stix-Domain-Entities after " + after)
+                result = self.opencti.query(
+                    query,
+                    {
+                        "types": types,
+                        "filters": filters,
+                        "search": search,
+                        "first": first,
+                        "after": after,
+                        "orderBy": order_by,
+                        "orderMode": order_mode,
+                    },
+                )
+                data = self.opencti.process_multiple(
+                    result["data"]["stixDomainEntities"]
+                )
                 final_data = final_data + data
             return final_data
         else:
-            return self.opencti.process_multiple(result['data']['stixDomainEntities'])
+            return self.opencti.process_multiple(result["data"]["stixDomainEntities"])
 
     """
         Read a Stix-Domain-Entity object
@@ -302,20 +317,26 @@ class StixDomainEntity:
     """
 
     def read(self, **kwargs):
-        id = kwargs.get('id', None)
-        types = kwargs.get('types', None)
-        filters = kwargs.get('filters', None)
+        id = kwargs.get("id", None)
+        types = kwargs.get("types", None)
+        filters = kwargs.get("filters", None)
         if id is not None:
-            self.opencti.log('info', 'Reading Stix-Domain-Entity {' + id + '}.')
-            query = """
+            self.opencti.log("info", "Reading Stix-Domain-Entity {" + id + "}.")
+            query = (
+                """
                 query StixDomainEntity($id: String!) {
                     stixDomainEntity(id: $id) {
-                        """ + self.properties + """
+                        """
+                + self.properties
+                + """
                     }
                 }
              """
-            result = self.opencti.query(query, {'id': id})
-            return self.opencti.process_multiple_fields(result['data']['stixDomainEntity'])
+            )
+            result = self.opencti.query(query, {"id": id})
+            return self.opencti.process_multiple_fields(
+                result["data"]["stixDomainEntity"]
+            )
         elif filters is not None:
             result = self.list(types=types, filters=filters)
             if len(result) > 0:
@@ -323,7 +344,7 @@ class StixDomainEntity:
             else:
                 return None
         else:
-            self.opencti.log('error', 'Missing parameters: id or filters')
+            self.opencti.log("error", "Missing parameters: id or filters")
             return None
 
     """
@@ -336,16 +357,20 @@ class StixDomainEntity:
     """
 
     def get_by_stix_id_or_name(self, **kwargs):
-        types = kwargs.get('types', None)
-        stix_id_key = kwargs.get('stix_id_key', None)
-        name = kwargs.get('name', None)
+        types = kwargs.get("types", None)
+        stix_id_key = kwargs.get("stix_id_key", None)
+        name = kwargs.get("name", None)
         object_result = None
         if stix_id_key is not None:
             object_result = self.read(id=stix_id_key)
         if object_result is None and name is not None and type is not None:
-            object_result = self.read(types=types, filters=[{'key': 'name', 'values': [name]}])
+            object_result = self.read(
+                types=types, filters=[{"key": "name", "values": [name]}]
+            )
             if object_result is None:
-                object_result = self.read(types=types, filters=[{'key': 'alias', 'values': [name]}])
+                object_result = self.read(
+                    types=types, filters=[{"key": "alias", "values": [name]}]
+                )
         return object_result
 
     """
@@ -358,43 +383,50 @@ class StixDomainEntity:
     """
 
     def update_field(self, **kwargs):
-        id = kwargs.get('id', None)
-        key = kwargs.get('key', None)
-        value = kwargs.get('value', None)
+        id = kwargs.get("id", None)
+        key = kwargs.get("key", None)
+        value = kwargs.get("value", None)
         if id is not None and key is not None and value is not None:
-            self.opencti.log('info', 'Updating Stix-Domain-Entity {' + id + '} field {' + key + '}.')
-            query = """
+            self.opencti.log(
+                "info", "Updating Stix-Domain-Entity {" + id + "} field {" + key + "}."
+            )
+            query = (
+                """
                 mutation StixDomainEntityEdit($id: ID!, $input: EditInput!) {
                     stixDomainEntityEdit(id: $id) {
                         fieldPatch(input: $input) {
-                            """ + self.properties + """
+                            """
+                + self.properties
+                + """
                         }
                     }
                 }
             """
-            result = self.opencti.query(query, {
-                'id': id,
-                'input': {
-                    'key': key,
-                    'value': value
-                }
-            })
-            return self.opencti.process_multiple_fields(result['data']['stixDomainEntityEdit']['fieldPatch'])
+            )
+            result = self.opencti.query(
+                query, {"id": id, "input": {"key": key, "value": value}}
+            )
+            return self.opencti.process_multiple_fields(
+                result["data"]["stixDomainEntityEdit"]["fieldPatch"]
+            )
         else:
-            self.opencti.log('error', 'Missing parameters: id and key and value')
+            self.opencti.log("error", "Missing parameters: id and key and value")
             return None
 
-    def push_list_export(self, entity_type, file_name, data, list_args=''):
+    def push_list_export(self, entity_type, file_name, data, list_args=""):
         query = """
             mutation StixDomainEntitiesExportPush($type: String!, $file: Upload!, $listArgs: String) {
                 stixDomainEntitiesExportPush(type: $type, file: $file, listArgs: $listArgs)
             } 
         """
-        self.opencti.query(query, {
-            'type': entity_type,
-            'file': (self.file(file_name, data)),
-            'listArgs': list_args
-        })
+        self.opencti.query(
+            query,
+            {
+                "type": entity_type,
+                "file": (self.file(file_name, data)),
+                "listArgs": list_args,
+            },
+        )
 
     def push_entity_export(self, entity_id, file_name, data):
         query = """
@@ -404,4 +436,6 @@ class StixDomainEntity:
                 }
             } 
         """
-        self.opencti.query(query, {'id': entity_id, 'file': (self.file(file_name, data))})
+        self.opencti.query(
+            query, {"id": entity_id, "file": (self.file(file_name, data))}
+        )

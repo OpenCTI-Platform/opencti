@@ -9,3 +9,4 @@ pytz
 pika
 stix2-validator
 deprecated
+black

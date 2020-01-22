@@ -6,12 +6,11 @@ from pycti.connector.opencti_connector import OpenCTIConnector
 
 
 class OpenCTIApiConnector:
-
     def __init__(self, api):
         self.api = api
 
     def list(self):
-        logging.info('Getting connectors ...')
+        logging.info("Getting connectors ...")
         query = """
             query GetConnectors {
                 connectors {
@@ -26,7 +25,7 @@ class OpenCTIApiConnector:
             }
         """
         result = self.api.query(query)
-        return result['data']['connectors']
+        return result["data"]["connectors"]
 
     def ping(self, connector_id: str, connector_state) -> None:
         query = """
@@ -37,8 +36,10 @@ class OpenCTIApiConnector:
                 }
             }
            """
-        result = self.api.query(query, {'id': connector_id, 'state': json.dumps(connector_state)})
-        return result['data']['pingConnector']
+        result = self.api.query(
+            query, {"id": connector_id, "state": json.dumps(connector_state)}
+        )
+        return result["data"]["pingConnector"]
 
     def register(self, connector: OpenCTIConnector):
         query = """
@@ -57,5 +58,4 @@ class OpenCTIApiConnector:
             }
            """
         result = self.api.query(query, connector.to_input())
-        return result['data']['registerConnector']
-
+        return result["data"]["registerConnector"]

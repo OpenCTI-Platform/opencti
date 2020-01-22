@@ -107,33 +107,43 @@ class StixObservableRelation:
     """
 
     def list(self, **kwargs):
-        from_id = kwargs.get('fromId', None)
-        from_types = kwargs.get('fromTypes', None)
-        to_id = kwargs.get('toId', None)
-        to_types = kwargs.get('toTypes', None)
-        relation_type = kwargs.get('relationType', None)
-        first_seen_start = kwargs.get('firstSeenStart', None)
-        first_seen_stop = kwargs.get('firstSeenStop', None)
-        last_seen_start = kwargs.get('lastSeenStart', None)
-        last_seen_stop = kwargs.get('lastSeenStop', None)
-        inferred = kwargs.get('inferred', None)
-        first = kwargs.get('first', 500)
-        after = kwargs.get('after', None)
-        order_by = kwargs.get('orderBy', None)
-        order_mode = kwargs.get('orderMode', None)
-        get_all = kwargs.get('getAll', False)
+        from_id = kwargs.get("fromId", None)
+        from_types = kwargs.get("fromTypes", None)
+        to_id = kwargs.get("toId", None)
+        to_types = kwargs.get("toTypes", None)
+        relation_type = kwargs.get("relationType", None)
+        first_seen_start = kwargs.get("firstSeenStart", None)
+        first_seen_stop = kwargs.get("firstSeenStop", None)
+        last_seen_start = kwargs.get("lastSeenStart", None)
+        last_seen_stop = kwargs.get("lastSeenStop", None)
+        inferred = kwargs.get("inferred", None)
+        first = kwargs.get("first", 500)
+        after = kwargs.get("after", None)
+        order_by = kwargs.get("orderBy", None)
+        order_mode = kwargs.get("orderMode", None)
+        get_all = kwargs.get("getAll", False)
         if get_all:
             first = 500
 
-        self.opencti.log('info',
-                         'Listing stix_observable_relations with {type: ' + str(relation_type) + ', from_id: ' + str(
-                             from_id) + ', to_id: ' + str(to_id) + '}')
-        query = """
+        self.opencti.log(
+            "info",
+            "Listing stix_observable_relations with {type: "
+            + str(relation_type)
+            + ", from_id: "
+            + str(from_id)
+            + ", to_id: "
+            + str(to_id)
+            + "}",
+        )
+        query = (
+            """
             query StixObservableRelations($fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $relationType: String, $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $inferred: Boolean, $first: Int, $after: ID, $orderBy: StixObservableRelationsOrdering, $orderMode: OrderingMode) {
                 stixObservableRelations(fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationType: $relationType, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, inferred: $inferred, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
-                            """ + self.properties + """
+                            """
+            + self.properties
+            + """
                         }
                     }
                     pageInfo {
@@ -146,23 +156,27 @@ class StixObservableRelation:
                 }
             }
          """
-        result = self.opencti.query(query, {
-            'fromId': from_id,
-            'fromTypes': from_types,
-            'toId': to_id,
-            'toTypes': to_types,
-            'relationType': relation_type,
-            'firstSeenStart': first_seen_start,
-            'firstSeenStop': first_seen_stop,
-            'lastSeenStart': last_seen_start,
-            'lastSeenStop': last_seen_stop,
-            'inferred': inferred,
-            'first': first,
-            'after': after,
-            'orderBy': order_by,
-            'orderMode': order_mode
-        })
-        return self.opencti.process_multiple(result['data']['stixObservableRelations'])
+        )
+        result = self.opencti.query(
+            query,
+            {
+                "fromId": from_id,
+                "fromTypes": from_types,
+                "toId": to_id,
+                "toTypes": to_types,
+                "relationType": relation_type,
+                "firstSeenStart": first_seen_start,
+                "firstSeenStop": first_seen_stop,
+                "lastSeenStart": last_seen_start,
+                "lastSeenStop": last_seen_stop,
+                "inferred": inferred,
+                "first": first,
+                "after": after,
+                "orderBy": order_by,
+                "orderMode": order_mode,
+            },
+        )
+        return self.opencti.process_multiple(result["data"]["stixObservableRelations"])
 
     """
         Read a stix_observable_relation object
@@ -181,27 +195,32 @@ class StixObservableRelation:
     """
 
     def read(self, **kwargs):
-        id = kwargs.get('id', None)
-        from_id = kwargs.get('fromId', None)
-        to_id = kwargs.get('toId', None)
-        relation_type = kwargs.get('relationType', None)
-        first_seen_start = kwargs.get('firstSeenStart', None)
-        first_seen_stop = kwargs.get('firstSeenStop', None)
-        last_seen_start = kwargs.get('lastSeenStart', None)
-        last_seen_stop = kwargs.get('lastSeenStop', None)
-        inferred = kwargs.get('inferred', None)
+        id = kwargs.get("id", None)
+        from_id = kwargs.get("fromId", None)
+        to_id = kwargs.get("toId", None)
+        relation_type = kwargs.get("relationType", None)
+        first_seen_start = kwargs.get("firstSeenStart", None)
+        first_seen_stop = kwargs.get("firstSeenStop", None)
+        last_seen_start = kwargs.get("lastSeenStart", None)
+        last_seen_stop = kwargs.get("lastSeenStop", None)
+        inferred = kwargs.get("inferred", None)
         if id is not None:
-            self.opencti.log('info',
-                             'Reading stix_observable_relation {' + id + '}.')
-            query = """
+            self.opencti.log("info", "Reading stix_observable_relation {" + id + "}.")
+            query = (
+                """
                 query StixObservableRelation($id: String!) {
                     stixObservableRelation(id: $id) {
-                        """ + self.properties + """
+                        """
+                + self.properties
+                + """
                     }
                 }
              """
-            result = self.opencti.query(query, {'id': id})
-            return self.opencti.process_multiple_fields(result['data']['stixObservableRelation'])
+            )
+            result = self.opencti.query(query, {"id": id})
+            return self.opencti.process_multiple_fields(
+                result["data"]["stixObservableRelation"]
+            )
         else:
             result = self.list(
                 fromId=from_id,
@@ -211,7 +230,7 @@ class StixObservableRelation:
                 firstSeenStop=first_seen_stop,
                 lastSeenStart=last_seen_start,
                 lastSeenStop=last_seen_stop,
-                inferred=inferred
+                inferred=inferred,
             )
             if len(result) > 0:
                 return result[0]
@@ -226,49 +245,68 @@ class StixObservableRelation:
     """
 
     def create_raw(self, **kwargs):
-        from_id = kwargs.get('fromId', None)
-        from_role = kwargs.get('fromRole', None)
-        to_id = kwargs.get('toId', None)
-        to_role = kwargs.get('toRole', None)
-        relationship_type = kwargs.get('relationship_type', None)
-        description = kwargs.get('description', None)
-        role_played = kwargs.get('role_played', None)
-        first_seen = kwargs.get('first_seen', None)
-        last_seen = kwargs.get('last_seen', None)
-        weight = kwargs.get('weight', None)
-        id = kwargs.get('id', None)
-        stix_id_key = kwargs.get('stix_id_key', None)
-        created = kwargs.get('created', None)
-        modified = kwargs.get('modified', None)
+        from_id = kwargs.get("fromId", None)
+        from_role = kwargs.get("fromRole", None)
+        to_id = kwargs.get("toId", None)
+        to_role = kwargs.get("toRole", None)
+        relationship_type = kwargs.get("relationship_type", None)
+        description = kwargs.get("description", None)
+        role_played = kwargs.get("role_played", None)
+        first_seen = kwargs.get("first_seen", None)
+        last_seen = kwargs.get("last_seen", None)
+        weight = kwargs.get("weight", None)
+        id = kwargs.get("id", None)
+        stix_id_key = kwargs.get("stix_id_key", None)
+        created = kwargs.get("created", None)
+        modified = kwargs.get("modified", None)
 
-        self.opencti.log('info',
-                         'Creating stix_observable_relation {' + from_role + ': ' + from_id + ', ' + to_role + ': ' + to_id + '}.')
-        query = """
+        self.opencti.log(
+            "info",
+            "Creating stix_observable_relation {"
+            + from_role
+            + ": "
+            + from_id
+            + ", "
+            + to_role
+            + ": "
+            + to_id
+            + "}.",
+        )
+        query = (
+            """
                     mutation StixObservableRelationAdd($input: StixObservableRelationAddInput!) {
                         stixObservableRelationAdd(input: $input) {
-                            """ + self.properties + """
+                            """
+            + self.properties
+            + """
                         }
                     }
                 """
-        result = self.opencti.query(query, {
-            'input': {
-                'fromId': from_id,
-                'fromRole': from_role,
-                'toId': to_id,
-                'toRole': to_role,
-                'relationship_type': relationship_type,
-                'description': description,
-                'role_played': role_played,
-                'first_seen': first_seen,
-                'last_seen': last_seen,
-                'weight': weight,
-                'internal_id_key': id,
-                'stix_id_key': stix_id_key,
-                'created': created,
-                'modified': modified
-            }
-        })
-        return self.opencti.process_multiple_fields(result['data']['stixObservableRelationAdd'])
+        )
+        result = self.opencti.query(
+            query,
+            {
+                "input": {
+                    "fromId": from_id,
+                    "fromRole": from_role,
+                    "toId": to_id,
+                    "toRole": to_role,
+                    "relationship_type": relationship_type,
+                    "description": description,
+                    "role_played": role_played,
+                    "first_seen": first_seen,
+                    "last_seen": last_seen,
+                    "weight": weight,
+                    "internal_id_key": id,
+                    "stix_id_key": stix_id_key,
+                    "created": created,
+                    "modified": modified,
+                }
+            },
+        )
+        return self.opencti.process_multiple_fields(
+            result["data"]["stixObservableRelationAdd"]
+        )
 
     """
         Create a stix_observable_relation object only if it not exists, update it on request
@@ -278,34 +316,46 @@ class StixObservableRelation:
     """
 
     def create(self, **kwargs):
-        from_id = kwargs.get('fromId', None)
-        from_type = kwargs.get('fromType', None)
-        to_type = kwargs.get('toType', None)
-        to_id = kwargs.get('toId', None)
-        relationship_type = kwargs.get('relationship_type', None)
-        description = kwargs.get('description', None)
-        role_played = kwargs.get('role_played', None)
-        first_seen = kwargs.get('first_seen', None)
-        last_seen = kwargs.get('last_seen', None)
-        weight = kwargs.get('weight', None)
-        id = kwargs.get('id', None)
-        stix_id_key = kwargs.get('stix_id_key', None)
-        created = kwargs.get('created', None)
-        modified = kwargs.get('modified', None)
-        update = kwargs.get('update', False)
-        ignore_dates = kwargs.get('ignore_dates', False)
+        from_id = kwargs.get("fromId", None)
+        from_type = kwargs.get("fromType", None)
+        to_type = kwargs.get("toType", None)
+        to_id = kwargs.get("toId", None)
+        relationship_type = kwargs.get("relationship_type", None)
+        description = kwargs.get("description", None)
+        role_played = kwargs.get("role_played", None)
+        first_seen = kwargs.get("first_seen", None)
+        last_seen = kwargs.get("last_seen", None)
+        weight = kwargs.get("weight", None)
+        id = kwargs.get("id", None)
+        stix_id_key = kwargs.get("stix_id_key", None)
+        created = kwargs.get("created", None)
+        modified = kwargs.get("modified", None)
+        update = kwargs.get("update", False)
+        ignore_dates = kwargs.get("ignore_dates", False)
 
         stix_relation_result = None
         if stix_id_key is not None:
             stix_relation_result = self.read(id=stix_id_key)
         if stix_relation_result is None:
-            if ignore_dates is False and first_seen is not None and last_seen is not None:
+            if (
+                ignore_dates is False
+                and first_seen is not None
+                and last_seen is not None
+            ):
                 first_seen = dateutil.parser.parse(first_seen)
-                first_seen_start = (first_seen + datetime.timedelta(days=-1)).strftime('%Y-%m-%dT%H:%M:%S+00:00')
-                first_seen_stop = (first_seen + datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%S+00:00')
+                first_seen_start = (first_seen + datetime.timedelta(days=-1)).strftime(
+                    "%Y-%m-%dT%H:%M:%S+00:00"
+                )
+                first_seen_stop = (first_seen + datetime.timedelta(days=1)).strftime(
+                    "%Y-%m-%dT%H:%M:%S+00:00"
+                )
                 last_seen = dateutil.parser.parse(last_seen)
-                last_seen_start = (last_seen + datetime.timedelta(days=-1)).strftime('%Y-%m-%dT%H:%M:%S+00:00')
-                last_seen_stop = (last_seen + datetime.timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%S+00:00')
+                last_seen_start = (last_seen + datetime.timedelta(days=-1)).strftime(
+                    "%Y-%m-%dT%H:%M:%S+00:00"
+                )
+                last_seen_stop = (last_seen + datetime.timedelta(days=1)).strftime(
+                    "%Y-%m-%dT%H:%M:%S+00:00"
+                )
             else:
                 first_seen_start = None
                 first_seen_stop = None
@@ -323,23 +373,41 @@ class StixObservableRelation:
         if stix_relation_result is not None:
             if update:
                 if description is not None:
-                    self.update_field(id=stix_relation_result['id'], key='description', value=description)
-                    stix_relation_result['description'] = description
+                    self.update_field(
+                        id=stix_relation_result["id"],
+                        key="description",
+                        value=description,
+                    )
+                    stix_relation_result["description"] = description
                 if weight is not None:
-                    self.update_field(id=stix_relation_result['id'], key='weight', value=str(weight))
-                    stix_relation_result['weight'] = weight
+                    self.update_field(
+                        id=stix_relation_result["id"], key="weight", value=str(weight)
+                    )
+                    stix_relation_result["weight"] = weight
                 if first_seen is not None:
                     new_first_seen = dateutil.parser.parse(first_seen)
-                    old_first_seen = dateutil.parser.parse(stix_relation_result['first_seen'])
+                    old_first_seen = dateutil.parser.parse(
+                        stix_relation_result["first_seen"]
+                    )
                     if new_first_seen < old_first_seen:
-                        self.update_field(id=stix_relation_result['id'], key='first_seen', value=first_seen)
-                        stix_relation_result['first_seen'] = first_seen
+                        self.update_field(
+                            id=stix_relation_result["id"],
+                            key="first_seen",
+                            value=first_seen,
+                        )
+                        stix_relation_result["first_seen"] = first_seen
                 if last_seen is not None:
                     new_last_seen = dateutil.parser.parse(last_seen)
-                    old_last_seen = dateutil.parser.parse(stix_relation_result['last_seen'])
+                    old_last_seen = dateutil.parser.parse(
+                        stix_relation_result["last_seen"]
+                    )
                     if new_last_seen > old_last_seen:
-                        self.update_field(id=stix_relation_result['id'], key='last_seen', value=last_seen)
-                        stix_relation_result['last_seen'] = last_seen
+                        self.update_field(
+                            id=stix_relation_result["id"],
+                            key="last_seen",
+                            value=last_seen,
+                        )
+                        stix_relation_result["last_seen"] = last_seen
             return stix_relation_result
         else:
             roles = self.opencti.resolve_role(relationship_type, from_type, to_type)
@@ -352,15 +420,23 @@ class StixObservableRelation:
                     final_from_id = to_id
                     final_to_id = from_id
                 else:
-                    self.opencti.log('error',
-                                     'Relation creation failed, cannot resolve roles: {' + relationship_type + ': ' + from_type + ', ' + to_type + '}')
+                    self.opencti.log(
+                        "error",
+                        "Relation creation failed, cannot resolve roles: {"
+                        + relationship_type
+                        + ": "
+                        + from_type
+                        + ", "
+                        + to_type
+                        + "}",
+                    )
                     return None
 
             return self.create_raw(
                 fromId=final_from_id,
-                fromRole=roles['from_role'],
+                fromRole=roles["from_role"],
                 toId=final_to_id,
-                toRole=roles['to_role'],
+                toRole=roles["to_role"],
                 relationship_type=relationship_type,
                 description=description,
                 first_seen=first_seen,
@@ -370,7 +446,7 @@ class StixObservableRelation:
                 id=id,
                 stix_id_key=stix_id_key,
                 created=created,
-                modified=modified
+                modified=modified,
             )
 
     """
@@ -383,28 +459,33 @@ class StixObservableRelation:
     """
 
     def update_field(self, **kwargs):
-        id = kwargs.get('id', None)
-        key = kwargs.get('key', None)
-        value = kwargs.get('value', None)
+        id = kwargs.get("id", None)
+        key = kwargs.get("key", None)
+        value = kwargs.get("value", None)
         if id is not None and key is not None and value is not None:
-            self.opencti.log('info', 'Updating stix_observable_relation {' + id + '} field {' + key + '}.')
-            query = """
+            self.opencti.log(
+                "info",
+                "Updating stix_observable_relation {" + id + "} field {" + key + "}.",
+            )
+            query = (
+                """
                 mutation StixObservableRelationEdit($id: ID!, $input: EditInput!) {
                     stixObservableRelationEdit(id: $id) {
                         fieldPatch(input: $input) {
-                            """ + self.properties + """
+                            """
+                + self.properties
+                + """
                         }
                     }
                 }
             """
-            result = self.opencti.query(query, {
-                'id': id,
-                'input': {
-                    'key': key,
-                    'value': value
-                }
-            })
-            return self.opencti.process_multiple_fields(result['data']['stixObservableRelationEdit']['fieldPatch'])
+            )
+            result = self.opencti.query(
+                query, {"id": id, "input": {"key": key, "value": value}}
+            )
+            return self.opencti.process_multiple_fields(
+                result["data"]["stixObservableRelationEdit"]["fieldPatch"]
+            )
         else:
-            self.opencti.log('error', 'Missing parameters: id and key and value')
+            self.opencti.log("error", "Missing parameters: id and key and value")
             return None

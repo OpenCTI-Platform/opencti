@@ -10,6 +10,7 @@ class ObservableTypes(Enum):
     ref: https://github.com/OpenCTI-Platform/opencti/blob/8854c2576dc17da9da54e54b116779bd2131617c/opencti-front/src/private/components/report/ReportAddObservable.js
     NOTE: should this be a mapping between the stix2 SDO objects (i.e. stix2/v20/sdo.py)?
     """
+
     AUTONOMOUS_SYSTEM = "Autonomous-System"
     DOMAIN = "Domain"
     EMAIL_ADDR = "Email-Address"
@@ -39,6 +40,7 @@ class ObservableTypes(Enum):
         lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
         return value in lower_attr
 
+
 class IdentityTypes(Enum):
     SECTOR = "Sector"
     REGION = "Region"
@@ -51,63 +53,66 @@ class IdentityTypes(Enum):
         lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
         return value in lower_attr
 
+
 class CustomProperties:
     """These are the custom properies used by OpenCTI.
 
     """
 
     # internal id used by OpenCTI - this will be auto generated
-    ID = 'x_opencti_id'
+    ID = "x_opencti_id"
 
     # This should be set on all reports to one of the following values:
     #  "external"
     #  "internal"
-    REPORT_CLASS = 'x_opencti_report_class'
+    REPORT_CLASS = "x_opencti_report_class"
 
     # use with observed_data and indicators
-    PATTERN_TYPE = 'x_opencti_pattern_type'
-    OBSERVABLE_TYPE = 'x_opencti_observable_type'
-    OBSERVABLE_VALUE = 'x_opencti_observable_value'
-    CREATE_OBSERVABLES = 'x_opencti_observables_create'
-    CREATE_INDICATOR = 'x_opencti_indicator_create'
+    PATTERN_TYPE = "x_opencti_pattern_type"
+    OBSERVABLE_TYPE = "x_opencti_observable_type"
+    OBSERVABLE_VALUE = "x_opencti_observable_value"
+    CREATE_OBSERVABLES = "x_opencti_observables_create"
+    CREATE_INDICATOR = "x_opencti_indicator_create"
 
     # custom created and modified dates
     # use with STIX "kill chain" and "external reference" objects
-    CREATED = 'x_opencti_created'
-    MODIFIED = 'x_opencti_modified'
+    CREATED = "x_opencti_created"
+    MODIFIED = "x_opencti_modified"
 
     # use with attack pattern
-    EXTERNAL_ID = 'x_opencti_external_id'
+    EXTERNAL_ID = "x_opencti_external_id"
 
     # use with intrusion-set, campaign, relation
-    FIRST_SEEN = 'x_opencti_first_seen'
-    LAST_SEEN = 'x_opencti_last_seen'
+    FIRST_SEEN = "x_opencti_first_seen"
+    LAST_SEEN = "x_opencti_last_seen"
 
     # use with marking deinitions
-    COLOR = 'x_opencti_color'
-    LEVEL = 'x_opencti_level'  # should be an integer
+    COLOR = "x_opencti_color"
+    LEVEL = "x_opencti_level"  # should be an integer
 
     # use with kill chain
-    PHASE_ORDER = 'x_opencti_phase_order'
+    PHASE_ORDER = "x_opencti_phase_order"
 
     # use with relation
-    WEIGHT = 'x_opencti_weight'
-    SCORE = 'x_opencti_score'
-    ROLE_PLAYED = 'x_opencti_role_played'
-    EXPIRATION = 'x_opencti_expiration'
-    SOURCE_REF = 'x_opencti_source_ref'
-    TARGET_REF = 'x_opencti_target_ref'
-    IGNORE_DATES = 'x_opencti_ignore_dates'
+    WEIGHT = "x_opencti_weight"
+    SCORE = "x_opencti_score"
+    ROLE_PLAYED = "x_opencti_role_played"
+    EXPIRATION = "x_opencti_expiration"
+    SOURCE_REF = "x_opencti_source_ref"
+    TARGET_REF = "x_opencti_target_ref"
+    IGNORE_DATES = "x_opencti_ignore_dates"
 
     # generic property - applies to most SDOs
-    ALIASES = 'x_opencti_aliases'
+    ALIASES = "x_opencti_aliases"
 
     # applies to STIX Identity
-    ORG_CLASS = 'x_opencti_organization_class'
-    IDENTITY_TYPE = 'x_opencti_identity_type'  # this overrides the stix 'identity_class' property!
-    TAG_TYPE = 'x_opencti_tags'
+    ORG_CLASS = "x_opencti_organization_class"
+    IDENTITY_TYPE = (
+        "x_opencti_identity_type"  # this overrides the stix 'identity_class' property!
+    )
+    TAG_TYPE = "x_opencti_tags"
 
     # applies to STIX report
-    OBJECT_STATUS = 'x_opencti_object_status'
-    SRC_CONF_LEVEL = 'x_opencti_source_confidence_level'
-    GRAPH_DATA = 'x_opencti_graph_data'
+    OBJECT_STATUS = "x_opencti_object_status"
+    SRC_CONF_LEVEL = "x_opencti_source_confidence_level"
+    GRAPH_DATA = "x_opencti_graph_data"
