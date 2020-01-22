@@ -106,23 +106,28 @@ class Campaign:
     """
 
     def list(self, **kwargs):
-        filters = kwargs.get('filters', None)
-        search = kwargs.get('search', None)
-        first = kwargs.get('first', 500)
-        after = kwargs.get('after', None)
-        order_by = kwargs.get('orderBy', None)
-        order_mode = kwargs.get('orderMode', None)
-        get_all = kwargs.get('getAll', False)
+        filters = kwargs.get("filters", None)
+        search = kwargs.get("search", None)
+        first = kwargs.get("first", 500)
+        after = kwargs.get("after", None)
+        order_by = kwargs.get("orderBy", None)
+        order_mode = kwargs.get("orderMode", None)
+        get_all = kwargs.get("getAll", False)
         if get_all:
             first = 500
 
-        self.opencti.log('info', 'Listing Campaigns with filters ' + json.dumps(filters) + '.')
-        query = """
+        self.opencti.log(
+            "info", "Listing Campaigns with filters " + json.dumps(filters) + "."
+        )
+        query = (
+            """
             query Campaigns($filters: [CampaignsFiltering], $search: String, $first: Int, $after: ID, $orderBy: CampaignsOrdering, $orderMode: OrderingMode) {
                 campaigns(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
-                            """ + self.properties + """
+                            """
+            + self.properties
+            + """
                         }
                     }
                     pageInfo {
@@ -135,15 +140,19 @@ class Campaign:
                 }
             }
         """
-        result = self.opencti.query(query, {
-            'filters': filters,
-            'search': search,
-            'first': first,
-            'after': after,
-            'orderBy': order_by,
-            'orderMode': order_mode
-        })
-        return self.opencti.process_multiple(result['data']['campaigns'])
+        )
+        result = self.opencti.query(
+            query,
+            {
+                "filters": filters,
+                "search": search,
+                "first": first,
+                "after": after,
+                "orderBy": order_by,
+                "orderMode": order_mode,
+            },
+        )
+        return self.opencti.process_multiple(result["data"]["campaigns"])
 
     """
         Read a Campaign object
@@ -154,19 +163,23 @@ class Campaign:
     """
 
     def read(self, **kwargs):
-        id = kwargs.get('id', None)
-        filters = kwargs.get('filters', None)
+        id = kwargs.get("id", None)
+        filters = kwargs.get("filters", None)
         if id is not None:
-            self.opencti.log('info', 'Reading Campaign {' + id + '}.')
-            query = """
+            self.opencti.log("info", "Reading Campaign {" + id + "}.")
+            query = (
+                """
                 query Campaign($id: String!) {
                     campaign(id: $id) {
-                        """ + self.properties + """
+                        """
+                + self.properties
+                + """
                     }
                 }
              """
-            result = self.opencti.query(query, {'id': id})
-            return self.opencti.process_multiple_fields(result['data']['campaign'])
+            )
+            result = self.opencti.query(query, {"id": id})
+            return self.opencti.process_multiple_fields(result["data"]["campaign"])
         elif filters is not None:
             result = self.list(filters=filters)
             if len(result) > 0:
@@ -174,7 +187,7 @@ class Campaign:
             else:
                 return None
         else:
-            self.opencti.log('error', 'Missing parameters: id or filters')
+            self.opencti.log("error", "Missing parameters: id or filters")
             return None
 
     """
@@ -185,47 +198,56 @@ class Campaign:
     """
 
     def create_raw(self, **kwargs):
-        name = kwargs.get('name', None)
-        description = kwargs.get('description', None)
-        alias = kwargs.get('alias', None)
-        objective = kwargs.get('objective', None)
-        first_seen = kwargs.get('first_seen', None)
-        last_seen = kwargs.get('last_seen', None)
-        id = kwargs.get('id', None)
-        stix_id_key = kwargs.get('stix_id_key', None)
-        created = kwargs.get('created', None)
-        modified = kwargs.get('modified', None)
-        created_by_ref = kwargs.get('createdByRef', None)
-        marking_definitions = kwargs.get('markingDefinitions', None)
+        name = kwargs.get("name", None)
+        description = kwargs.get("description", None)
+        alias = kwargs.get("alias", None)
+        objective = kwargs.get("objective", None)
+        first_seen = kwargs.get("first_seen", None)
+        last_seen = kwargs.get("last_seen", None)
+        id = kwargs.get("id", None)
+        stix_id_key = kwargs.get("stix_id_key", None)
+        created = kwargs.get("created", None)
+        modified = kwargs.get("modified", None)
+        created_by_ref = kwargs.get("createdByRef", None)
+        marking_definitions = kwargs.get("markingDefinitions", None)
 
         if name is not None and description is not None:
-            self.opencti.log('info', 'Creating Campaign {' + name + '}.')
-            query = """
+            self.opencti.log("info", "Creating Campaign {" + name + "}.")
+            query = (
+                """
                 mutation CampaignAdd($input: CampaignAddInput) {
                     campaignAdd(input: $input) {
-                        """ + self.properties + """
+                        """
+                + self.properties
+                + """
                     }
                 }
             """
-            result = self.opencti.query(query, {
-                'input': {
-                    'name': name,
-                    'description': description,
-                    'alias': alias,
-                    'objective': objective,
-                    'first_seen': first_seen,
-                    'last_seen': last_seen,
-                    'internal_id_key': id,
-                    'stix_id_key': stix_id_key,
-                    'created': created,
-                    'modified': modified,
-                    'createdByRef': created_by_ref,
-                    'markingDefinitions': marking_definitions,
-                }
-            })
-            return self.opencti.process_multiple_fields(result['data']['campaignAdd'])
+            )
+            result = self.opencti.query(
+                query,
+                {
+                    "input": {
+                        "name": name,
+                        "description": description,
+                        "alias": alias,
+                        "objective": objective,
+                        "first_seen": first_seen,
+                        "last_seen": last_seen,
+                        "internal_id_key": id,
+                        "stix_id_key": stix_id_key,
+                        "created": created,
+                        "modified": modified,
+                        "createdByRef": created_by_ref,
+                        "markingDefinitions": marking_definitions,
+                    }
+                },
+            )
+            return self.opencti.process_multiple_fields(result["data"]["campaignAdd"])
         else:
-            self.opencti.log('error', '[opencti_campaign] Missing parameters: name and description')
+            self.opencti.log(
+                "error", "[opencti_campaign] Missing parameters: name and description"
+            )
 
     """
         Create a Campaign object only if it not exists, update it on request
@@ -235,71 +257,67 @@ class Campaign:
     """
 
     def create(self, **kwargs):
-        name = kwargs.get('name', None)
-        description = kwargs.get('description', None)
-        alias = kwargs.get('alias', None)
-        objective = kwargs.get('objective', None)
-        first_seen = kwargs.get('first_seen', None)
-        last_seen = kwargs.get('last_seen', None)
-        id = kwargs.get('id', None)
-        stix_id_key = kwargs.get('stix_id_key', None)
-        created = kwargs.get('created', None)
-        modified = kwargs.get('modified', None)
-        created_by_ref = kwargs.get('createdByRef', None)
-        marking_definitions = kwargs.get('markingDefinitions', None)
-        update = kwargs.get('update', False)
+        name = kwargs.get("name", None)
+        description = kwargs.get("description", None)
+        alias = kwargs.get("alias", None)
+        objective = kwargs.get("objective", None)
+        first_seen = kwargs.get("first_seen", None)
+        last_seen = kwargs.get("last_seen", None)
+        id = kwargs.get("id", None)
+        stix_id_key = kwargs.get("stix_id_key", None)
+        created = kwargs.get("created", None)
+        modified = kwargs.get("modified", None)
+        created_by_ref = kwargs.get("createdByRef", None)
+        marking_definitions = kwargs.get("markingDefinitions", None)
+        update = kwargs.get("update", False)
 
         object_result = self.opencti.stix_domain_entity.get_by_stix_id_or_name(
-            types=['Campaign'],
-            stix_id_key=stix_id_key,
-            name=name
+            types=["Campaign"], stix_id_key=stix_id_key, name=name
         )
         if object_result is not None:
             if update:
                 # name
-                if object_result['name'] != name:
-                    self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
-                    object_result['name'] = name
-                # description
-                if object_result['description'] != description:
+                if object_result["name"] != name:
                     self.opencti.stix_domain_entity.update_field(
-                        id=object_result['id'],
-                        key='description',
-                        value=description
+                        id=object_result["id"], key="name", value=name
                     )
-                    object_result['description'] = description
+                    object_result["name"] = name
+                # description
+                if object_result["description"] != description:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result["id"], key="description", value=description
+                    )
+                    object_result["description"] = description
                 # alias
-                if alias is not None and object_result['alias'] != alias:
-                    if 'alias' in object_result:
-                        new_aliases = object_result['alias'] + list(set(alias) - set(object_result['alias']))
+                if alias is not None and object_result["alias"] != alias:
+                    if "alias" in object_result:
+                        new_aliases = object_result["alias"] + list(
+                            set(alias) - set(object_result["alias"])
+                        )
                     else:
                         new_aliases = alias
-                    self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='alias', value=new_aliases)
-                    object_result['alias'] = new_aliases
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result["id"], key="alias", value=new_aliases
+                    )
+                    object_result["alias"] = new_aliases
                 # objective
-                if objective is not None and object_result['objective'] != objective:
+                if objective is not None and object_result["objective"] != objective:
                     self.opencti.stix_domain_entity.update_field(
-                        id=object_result['id'],
-                        key='objective',
-                        value=objective
+                        id=object_result["id"], key="objective", value=objective
                     )
-                    object_result['objective'] = objective
+                    object_result["objective"] = objective
                 # first_seen
-                if first_seen is not None and object_result['first_seen'] != first_seen:
+                if first_seen is not None and object_result["first_seen"] != first_seen:
                     self.opencti.stix_domain_entity.update_field(
-                        id=object_result['id'],
-                        key='first_seen',
-                        value=first_seen
+                        id=object_result["id"], key="first_seen", value=first_seen
                     )
-                    object_result['first_seen'] = first_seen
+                    object_result["first_seen"] = first_seen
                 # last_seen
-                if last_seen is not None and object_result['last_seen'] != last_seen:
+                if last_seen is not None and object_result["last_seen"] != last_seen:
                     self.opencti.stix_domain_entity.update_field(
-                        id=object_result['id'],
-                        key='last_seen',
-                        value=last_seen
+                        id=object_result["id"], key="last_seen", value=last_seen
                     )
-                    object_result['external_id'] = last_seen
+                    object_result["external_id"] = last_seen
             return object_result
         else:
             return self.create_raw(
@@ -325,33 +343,42 @@ class Campaign:
     """
 
     def to_stix2(self, **kwargs):
-        id = kwargs.get('id', None)
-        mode = kwargs.get('mode', 'simple')
-        max_marking_definition_entity = kwargs.get('max_marking_definition_entity', None)
-        entity = kwargs.get('entity', None)
+        id = kwargs.get("id", None)
+        mode = kwargs.get("mode", "simple")
+        max_marking_definition_entity = kwargs.get(
+            "max_marking_definition_entity", None
+        )
+        entity = kwargs.get("entity", None)
         if id is not None and entity is None:
             entity = self.read(id=id)
         if entity is not None:
             campaign = dict()
-            campaign['id'] = entity['stix_id_key']
-            campaign['type'] = 'campaign'
-            campaign['name'] = entity['name']
-            if self.opencti.not_empty(entity['stix_label']):
-                campaign['labels'] = entity['stix_label']
+            campaign["id"] = entity["stix_id_key"]
+            campaign["type"] = "campaign"
+            campaign["name"] = entity["name"]
+            if self.opencti.not_empty(entity["stix_label"]):
+                campaign["labels"] = entity["stix_label"]
             else:
-                campaign['labels'] = ['campaign']
-            if self.opencti.not_empty(entity['alias']): campaign['aliases'] = entity['alias']
-            if self.opencti.not_empty(entity['description']): campaign['description'] = entity['description']
-            if self.opencti.not_empty(entity['objective']): campaign['objective'] = entity['objective']
-            if self.opencti.not_empty(entity['first_seen']): campaign[
-                CustomProperties.FIRST_SEEN] = self.opencti.stix2.format_date(
-                entity['first_seen'])
-            if self.opencti.not_empty(entity['last_seen']): campaign[
-                CustomProperties.LAST_SEEN] = self.opencti.stix2.format_date(
-                entity['last_seen'])
-            campaign['created'] = self.opencti.stix2.format_date(entity['created'])
-            campaign['modified'] = self.opencti.stix2.format_date(entity['modified'])
-            campaign[CustomProperties.ID] = entity['id']
-            return self.opencti.stix2.prepare_export(entity, campaign, mode, max_marking_definition_entity)
+                campaign["labels"] = ["campaign"]
+            if self.opencti.not_empty(entity["alias"]):
+                campaign["aliases"] = entity["alias"]
+            if self.opencti.not_empty(entity["description"]):
+                campaign["description"] = entity["description"]
+            if self.opencti.not_empty(entity["objective"]):
+                campaign["objective"] = entity["objective"]
+            if self.opencti.not_empty(entity["first_seen"]):
+                campaign[CustomProperties.FIRST_SEEN] = self.opencti.stix2.format_date(
+                    entity["first_seen"]
+                )
+            if self.opencti.not_empty(entity["last_seen"]):
+                campaign[CustomProperties.LAST_SEEN] = self.opencti.stix2.format_date(
+                    entity["last_seen"]
+                )
+            campaign["created"] = self.opencti.stix2.format_date(entity["created"])
+            campaign["modified"] = self.opencti.stix2.format_date(entity["modified"])
+            campaign[CustomProperties.ID] = entity["id"]
+            return self.opencti.stix2.prepare_export(
+                entity, campaign, mode, max_marking_definition_entity
+            )
         else:
-            self.opencti.log('error', 'Missing parameters: id or entity')
+            self.opencti.log("error", "Missing parameters: id or entity")

@@ -11,6 +11,9 @@ jobs:
           name: install dependencies
           command: pip3 install -r requirements.txt --user
       - run:
+          name: install dependencies
+          command: black --check .
+      - run:
           name: build
           command: python3 setup.py sdist
       - persist_to_workspace:

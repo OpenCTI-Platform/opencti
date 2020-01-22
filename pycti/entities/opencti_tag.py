@@ -25,22 +25,27 @@ class Tag:
     """
 
     def list(self, **kwargs):
-        filters = kwargs.get('filters', None)
-        first = kwargs.get('first', 500)
-        after = kwargs.get('after', None)
-        order_by = kwargs.get('orderBy', None)
-        order_mode = kwargs.get('orderMode', None)
-        get_all = kwargs.get('getAll', False)
+        filters = kwargs.get("filters", None)
+        first = kwargs.get("first", 500)
+        after = kwargs.get("after", None)
+        order_by = kwargs.get("orderBy", None)
+        order_mode = kwargs.get("orderMode", None)
+        get_all = kwargs.get("getAll", False)
         if get_all:
             first = 500
 
-        self.opencti.log('info', 'Listing Tags with filters ' + json.dumps(filters) + '.')
-        query = """
+        self.opencti.log(
+            "info", "Listing Tags with filters " + json.dumps(filters) + "."
+        )
+        query = (
+            """
             query Tags($filters: [TagsFiltering], $first: Int, $after: ID, $orderBy: TagsOrdering, $orderMode: OrderingMode) {
                 tags(filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
-                            """ + self.properties + """
+                            """
+            + self.properties
+            + """
                         }
                     }
                     pageInfo {
@@ -53,14 +58,18 @@ class Tag:
                 }
             }
         """
-        result = self.opencti.query(query, {
-            'filters': filters,
-            'first': first,
-            'after': after,
-            'orderBy': order_by,
-            'orderMode': order_mode
-        })
-        return self.opencti.process_multiple(result['data']['tags'])
+        )
+        result = self.opencti.query(
+            query,
+            {
+                "filters": filters,
+                "first": first,
+                "after": after,
+                "orderBy": order_by,
+                "orderMode": order_mode,
+            },
+        )
+        return self.opencti.process_multiple(result["data"]["tags"])
 
     """
         Read a Tag object
@@ -71,19 +80,23 @@ class Tag:
     """
 
     def read(self, **kwargs):
-        id = kwargs.get('id', None)
-        filters = kwargs.get('filters', None)
+        id = kwargs.get("id", None)
+        filters = kwargs.get("filters", None)
         if id is not None:
-            self.opencti.log('info', 'Reading Tag {' + id + '}.')
-            query = """
+            self.opencti.log("info", "Reading Tag {" + id + "}.")
+            query = (
+                """
                 query Tag($id: String!) {
                     tag(id: $id) {
-                        """ + self.properties + """
+                        """
+                + self.properties
+                + """
                     }
                 }
             """
-            result = self.opencti.query(query, {'id': id})
-            return self.opencti.process_multiple_fields(result['data']['tag'])
+            )
+            result = self.opencti.query(query, {"id": id})
+            return self.opencti.process_multiple_fields(result["data"]["tag"])
         elif filters is not None:
             result = self.list(filters=filters)
             if len(result) > 0:
@@ -91,7 +104,7 @@ class Tag:
             else:
                 return None
         else:
-            self.opencti.log('error', 'Missing parameters: id or filters')
+            self.opencti.log("error", "Missing parameters: id or filters")
             return None
 
     """
@@ -104,28 +117,31 @@ class Tag:
     """
 
     def create_raw(self, **kwargs):
-        tag_type = kwargs.get('tag_type', None)
-        value = kwargs.get('value', None)
-        color = kwargs.get('color', None)
+        tag_type = kwargs.get("tag_type", None)
+        value = kwargs.get("value", None)
+        color = kwargs.get("color", None)
 
         if tag_type is not None and value is not None and color is not None:
-            query = """
+            query = (
+                """
                 mutation TagAdd($input: TagAddInput) {
                     tagAdd(input: $input) {
-                        """ + self.properties + """
+                        """
+                + self.properties
+                + """
                     }
                 }
             """
-            result = self.opencti.query(query, {
-                'input': {
-                    'tag_type': tag_type,
-                    'value': value,
-                    'color': color
-                }
-            })
-            return self.opencti.process_multiple_fields(result['data']['tagAdd'])
+            )
+            result = self.opencti.query(
+                query, {"input": {"tag_type": tag_type, "value": value, "color": color}}
+            )
+            return self.opencti.process_multiple_fields(result["data"]["tagAdd"])
         else:
-            self.opencti.log('error', '[opencti_tag] Missing parameters: tag_type and value and color')
+            self.opencti.log(
+                "error",
+                "[opencti_tag] Missing parameters: tag_type and value and color",
+            )
 
     """
         Create a Tag object only if it not exists, update it on request
@@ -137,19 +153,17 @@ class Tag:
     """
 
     def create(self, **kwargs):
-        tag_type = kwargs.get('tag_type', None)
-        value = kwargs.get('value', None)
-        color = kwargs.get('color', None)
+        tag_type = kwargs.get("tag_type", None)
+        value = kwargs.get("value", None)
+        color = kwargs.get("color", None)
 
-        object_result = self.read(filters=[
-            {'key': 'tag_type', 'values': [tag_type]},
-            {'key': 'value', 'values': [value]}
-        ])
+        object_result = self.read(
+            filters=[
+                {"key": "tag_type", "values": [tag_type]},
+                {"key": "value", "values": [value]},
+            ]
+        )
         if object_result is not None:
             return object_result
         else:
-            return self.create_raw(
-                tag_type=tag_type,
-                value=value,
-                color=color,
-            )
+            return self.create_raw(tag_type=tag_type, value=value, color=color,)

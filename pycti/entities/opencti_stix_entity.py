@@ -1,5 +1,6 @@
 # coding: utf-8
 
+
 class StixEntity:
     def __init__(self, opencti):
         self.opencti = opencti
@@ -240,20 +241,24 @@ class StixEntity:
     """
 
     def read(self, **kwargs):
-        id = kwargs.get('id', None)
+        id = kwargs.get("id", None)
         if id is not None:
-            self.opencti.log('info', 'Reading Stix-Entity {' + id + '}.')
-            query = """
+            self.opencti.log("info", "Reading Stix-Entity {" + id + "}.")
+            query = (
+                """
                 query StixEntity($id: String!) {
                     stixEntity(id: $id) {
-                        """ + self.properties + """
+                        """
+                + self.properties
+                + """
                     }
                 }
              """
-            result = self.opencti.query(query, {'id': id})
-            return self.opencti.process_multiple_fields(result['data']['stixEntity'])
+            )
+            result = self.opencti.query(query, {"id": id})
+            return self.opencti.process_multiple_fields(result["data"]["stixEntity"])
         else:
-            self.opencti.log('error', 'Missing parameters: id')
+            self.opencti.log("error", "Missing parameters: id")
             return None
 
     """
@@ -265,28 +270,34 @@ class StixEntity:
     """
 
     def update_created_by_ref(self, **kwargs):
-        id = kwargs.get('id', None)
-        stix_entity = kwargs.get('entity', None)
-        identity_id = kwargs.get('identity_id', None)
+        id = kwargs.get("id", None)
+        stix_entity = kwargs.get("entity", None)
+        identity_id = kwargs.get("identity_id", None)
         if id is not None and identity_id is not None:
             if stix_entity is None:
                 stix_entity = self.read(id=id)
             if stix_entity is None:
-                self.opencti.log('error', 'Cannot update created_by_ref, entity not found')
+                self.opencti.log(
+                    "error", "Cannot update created_by_ref, entity not found"
+                )
                 return False
             current_identity_id = None
             current_relation_id = None
-            if stix_entity['createdByRef'] is not None:
-                current_identity_id = stix_entity['createdByRef']['id']
-                current_relation_id = stix_entity['createdByRef']['remote_relation_id']
+            if stix_entity["createdByRef"] is not None:
+                current_identity_id = stix_entity["createdByRef"]["id"]
+                current_relation_id = stix_entity["createdByRef"]["remote_relation_id"]
 
             # Current identity is the same
             if current_identity_id == identity_id:
                 return True
             else:
                 self.opencti.log(
-                    'info',
-                    'Updating author of Stix-Entity {' + id + '} with Identity {' + identity_id + '}'
+                    "info",
+                    "Updating author of Stix-Entity {"
+                    + id
+                    + "} with Identity {"
+                    + identity_id
+                    + "}",
                 )
                 # Current identity is different, delete the old relation
                 if current_relation_id is not None:
@@ -299,7 +310,9 @@ class StixEntity:
                             }
                         }
                     """
-                    self.opencti.query(query, {'id': id, 'relationId': current_relation_id})
+                    self.opencti.query(
+                        query, {"id": id, "relationId": current_relation_id}
+                    )
                 # Add the new relation
                 query = """
                    mutation StixEntityEdit($id: ID!, $input: RelationAddInput) {
@@ -311,18 +324,18 @@ class StixEntity:
                    }
                 """
                 variables = {
-                    'id': id,
-                    'input': {
-                        'fromRole': 'so',
-                        'toId': identity_id,
-                        'toRole': 'creator',
-                        'through': 'created_by_ref'
-                    }
+                    "id": id,
+                    "input": {
+                        "fromRole": "so",
+                        "toId": identity_id,
+                        "toRole": "creator",
+                        "through": "created_by_ref",
+                    },
                 }
                 self.opencti.query(query, variables)
 
         else:
-            self.opencti.log('error', 'Missing parameters: id and identity_id')
+            self.opencti.log("error", "Missing parameters: id and identity_id")
             return False
 
     """
@@ -334,24 +347,30 @@ class StixEntity:
     """
 
     def add_marking_definition(self, **kwargs):
-        id = kwargs.get('id', None)
-        stix_entity = kwargs.get('entity', None)
-        marking_definition_id = kwargs.get('marking_definition_id', None)
+        id = kwargs.get("id", None)
+        stix_entity = kwargs.get("entity", None)
+        marking_definition_id = kwargs.get("marking_definition_id", None)
         if id is not None and marking_definition_id is not None:
             if stix_entity is None:
                 stix_entity = self.read(id=id)
             if stix_entity is None:
-                self.opencti.log('error', 'Cannot add Marking-Definition, entity not found')
+                self.opencti.log(
+                    "error", "Cannot add Marking-Definition, entity not found"
+                )
                 return False
             markings_ids = []
-            for marking in stix_entity['markingDefinitions']:
-                markings_ids.append(marking['id'])
+            for marking in stix_entity["markingDefinitions"]:
+                markings_ids.append(marking["id"])
             if marking_definition_id in markings_ids:
                 return True
             else:
                 self.opencti.log(
-                    'info',
-                    'Adding Marking-Definition {' + marking_definition_id + '} to Stix-Entity {' + id + '}'
+                    "info",
+                    "Adding Marking-Definition {"
+                    + marking_definition_id
+                    + "} to Stix-Entity {"
+                    + id
+                    + "}",
                 )
                 query = """
                    mutation StixEntityAddRelation($id: ID!, $input: RelationAddInput) {
@@ -362,18 +381,23 @@ class StixEntity:
                        }
                    }
                 """
-                self.opencti.query(query, {
-                    'id': id,
-                    'input': {
-                        'fromRole': 'so',
-                        'toId': marking_definition_id,
-                        'toRole': 'marking',
-                        'through': 'object_marking_refs'
-                    }
-                })
+                self.opencti.query(
+                    query,
+                    {
+                        "id": id,
+                        "input": {
+                            "fromRole": "so",
+                            "toId": marking_definition_id,
+                            "toRole": "marking",
+                            "through": "object_marking_refs",
+                        },
+                    },
+                )
                 return True
         else:
-            self.opencti.log('error', 'Missing parameters: id and marking_definition_id')
+            self.opencti.log(
+                "error", "Missing parameters: id and marking_definition_id"
+            )
             return False
 
     """
@@ -385,21 +409,20 @@ class StixEntity:
     """
 
     def add_tag(self, **kwargs):
-        id = kwargs.get('id', None)
-        stix_entity = kwargs.get('entity', None)
-        tag_id = kwargs.get('tag_id', None)
+        id = kwargs.get("id", None)
+        stix_entity = kwargs.get("entity", None)
+        tag_id = kwargs.get("tag_id", None)
         if id is not None and tag_id is not None:
             if stix_entity is None:
                 stix_entity = self.read(id=id)
             if stix_entity is None:
-                self.opencti.log('error', 'Cannot add Tag, entity not found')
+                self.opencti.log("error", "Cannot add Tag, entity not found")
                 return False
-            if tag_id in stix_entity['tagsIds']:
+            if tag_id in stix_entity["tagsIds"]:
                 return True
             else:
                 self.opencti.log(
-                    'info',
-                    'Adding Tag {' + tag_id + '} to Stix-Entity {' + id + '}'
+                    "info", "Adding Tag {" + tag_id + "} to Stix-Entity {" + id + "}"
                 )
                 query = """
                    mutation StixEntityAddRelation($id: ID!, $input: RelationAddInput) {
@@ -410,18 +433,21 @@ class StixEntity:
                        }
                    }
                 """
-                self.opencti.query(query, {
-                    'id': id,
-                    'input': {
-                        'fromRole': 'so',
-                        'toId': tag_id,
-                        'toRole': 'tagging',
-                        'through': 'tagged'
-                    }
-                })
+                self.opencti.query(
+                    query,
+                    {
+                        "id": id,
+                        "input": {
+                            "fromRole": "so",
+                            "toId": tag_id,
+                            "toRole": "tagging",
+                            "through": "tagged",
+                        },
+                    },
+                )
                 return True
         else:
-            self.opencti.log('error', 'Missing parameters: id and tag_id')
+            self.opencti.log("error", "Missing parameters: id and tag_id")
             return False
 
     """
@@ -433,24 +459,30 @@ class StixEntity:
     """
 
     def add_external_reference(self, **kwargs):
-        id = kwargs.get('id', None)
-        stix_entity = kwargs.get('entity', None)
-        external_reference_id = kwargs.get('external_reference_id', None)
+        id = kwargs.get("id", None)
+        stix_entity = kwargs.get("entity", None)
+        external_reference_id = kwargs.get("external_reference_id", None)
         if id is not None and external_reference_id is not None:
             if stix_entity is None:
                 stix_entity = self.read(id=id)
             if stix_entity is None:
-                self.opencti.log('error', 'Cannot add External-Reference, entity not found')
+                self.opencti.log(
+                    "error", "Cannot add External-Reference, entity not found"
+                )
                 return False
             external_references_ids = []
-            for external_reference in stix_entity['externalReferences']:
-                external_references_ids.append(external_reference['id'])
+            for external_reference in stix_entity["externalReferences"]:
+                external_references_ids.append(external_reference["id"])
             if external_reference_id in external_references_ids:
                 return True
             else:
                 self.opencti.log(
-                    'info',
-                    'Adding External-Reference {' + external_reference_id + '} to Stix-Entity {' + id + '}'
+                    "info",
+                    "Adding External-Reference {"
+                    + external_reference_id
+                    + "} to Stix-Entity {"
+                    + id
+                    + "}",
                 )
                 query = """
                    mutation StixEntityAddRelation($id: ID!, $input: RelationAddInput) {
@@ -461,18 +493,23 @@ class StixEntity:
                        }
                    }
                 """
-                self.opencti.query(query, {
-                    'id': id,
-                    'input': {
-                        'fromRole': 'so',
-                        'toId': external_reference_id,
-                        'toRole': 'external_reference',
-                        'through': 'external_references'
-                    }
-                })
+                self.opencti.query(
+                    query,
+                    {
+                        "id": id,
+                        "input": {
+                            "fromRole": "so",
+                            "toId": external_reference_id,
+                            "toRole": "external_reference",
+                            "through": "external_references",
+                        },
+                    },
+                )
                 return True
         else:
-            self.opencti.log('error', 'Missing parameters: id and external_reference_id')
+            self.opencti.log(
+                "error", "Missing parameters: id and external_reference_id"
+            )
             return False
 
     """
@@ -484,25 +521,31 @@ class StixEntity:
     """
 
     def add_kill_chain_phase(self, **kwargs):
-        id = kwargs.get('id', None)
-        stix_entity = kwargs.get('entity', None)
-        kill_chain_phase_id = kwargs.get('kill_chain_phase_id', None)
+        id = kwargs.get("id", None)
+        stix_entity = kwargs.get("entity", None)
+        kill_chain_phase_id = kwargs.get("kill_chain_phase_id", None)
         if id is not None and kill_chain_phase_id is not None:
             if stix_entity is None:
                 stix_entity = self.read(id=id)
             if stix_entity is None:
-                self.opencti.log('error', 'Cannot add External-Reference, entity not found')
+                self.opencti.log(
+                    "error", "Cannot add External-Reference, entity not found"
+                )
                 return False
             stix_entity = self.read(id=id)
             kill_chain_phases_ids = []
-            for kill_chain_phase in stix_entity['killChainPhases']:
-                kill_chain_phases_ids.append(kill_chain_phase['id'])
+            for kill_chain_phase in stix_entity["killChainPhases"]:
+                kill_chain_phases_ids.append(kill_chain_phase["id"])
             if kill_chain_phase_id in kill_chain_phases_ids:
                 return True
             else:
                 self.opencti.log(
-                    'info',
-                    'Adding Kill-Chain-Phase {' + kill_chain_phase_id + '} to Stix-Entity {' + id + '}'
+                    "info",
+                    "Adding Kill-Chain-Phase {"
+                    + kill_chain_phase_id
+                    + "} to Stix-Entity {"
+                    + id
+                    + "}",
                 )
                 query = """
                    mutation StixEntityAddRelation($id: ID!, $input: RelationAddInput) {
@@ -513,18 +556,21 @@ class StixEntity:
                        }
                    }
                 """
-                self.opencti.query(query, {
-                    'id': id,
-                    'input': {
-                        'fromRole': 'phase_belonging',
-                        'toId': kill_chain_phase_id,
-                        'toRole': 'kill_chain_phase',
-                        'through': 'kill_chain_phases'
-                    }
-                })
+                self.opencti.query(
+                    query,
+                    {
+                        "id": id,
+                        "input": {
+                            "fromRole": "phase_belonging",
+                            "toId": kill_chain_phase_id,
+                            "toRole": "kill_chain_phase",
+                            "through": "kill_chain_phases",
+                        },
+                    },
+                )
                 return True
         else:
-            self.opencti.log('error', 'Missing parameters: id and kill_chain_phase_id')
+            self.opencti.log("error", "Missing parameters: id and kill_chain_phase_id")
             return False
 
     """
@@ -535,9 +581,9 @@ class StixEntity:
     """
 
     def reports(self, **kwargs):
-        id = kwargs.get('id', None)
+        id = kwargs.get("id", None)
         if id is not None:
-            self.opencti.log('info', 'Getting reports of the Stix-Entity {' + id + '}.')
+            self.opencti.log("info", "Getting reports of the Stix-Entity {" + id + "}.")
             query = """
                 query StixEntity($id: String!) {
                     stixEntity(id: $id) {
@@ -671,9 +717,11 @@ class StixEntity:
                     }
                 }
              """
-            result = self.opencti.query(query, {'id': id})
-            processed_result = self.opencti.process_multiple_fields(result['data']['stixEntity'])
-            return processed_result['reports']
+            result = self.opencti.query(query, {"id": id})
+            processed_result = self.opencti.process_multiple_fields(
+                result["data"]["stixEntity"]
+            )
+            return processed_result["reports"]
         else:
-            self.opencti.log('error', 'Missing parameters: id')
+            self.opencti.log("error", "Missing parameters: id")
             return None

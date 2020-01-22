@@ -4,7 +4,10 @@ from pycti.api.opencti_api_job import OpenCTIApiJob
 
 from pycti.connector.opencti_connector import ConnectorType
 from pycti.connector.opencti_connector import OpenCTIConnector
-from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper, get_config_variable
+from pycti.connector.opencti_connector_helper import (
+    OpenCTIConnectorHelper,
+    get_config_variable,
+)
 
 from pycti.entities.opencti_tag import Tag
 from pycti.entities.opencti_marking_definition import MarkingDefinition

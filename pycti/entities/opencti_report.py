@@ -144,23 +144,28 @@ class Report:
     """
 
     def list(self, **kwargs):
-        filters = kwargs.get('filters', None)
-        search = kwargs.get('search', None)
-        first = kwargs.get('first', 500)
-        after = kwargs.get('after', None)
-        order_by = kwargs.get('orderBy', None)
-        order_mode = kwargs.get('orderMode', None)
-        get_all = kwargs.get('getAll', False)
+        filters = kwargs.get("filters", None)
+        search = kwargs.get("search", None)
+        first = kwargs.get("first", 500)
+        after = kwargs.get("after", None)
+        order_by = kwargs.get("orderBy", None)
+        order_mode = kwargs.get("orderMode", None)
+        get_all = kwargs.get("getAll", False)
         if get_all:
             first = 500
 
-        self.opencti.log('info', 'Listing Reports with filters ' + json.dumps(filters) + '.')
-        query = """
+        self.opencti.log(
+            "info", "Listing Reports with filters " + json.dumps(filters) + "."
+        )
+        query = (
+            """
             query Reports($filters: [ReportsFiltering], $search: String, $first: Int, $after: ID, $orderBy: ReportsOrdering, $orderMode: OrderingMode) {
                 reports(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
-                            """ + self.properties + """
+                            """
+            + self.properties
+            + """
                         }
                     }
                     pageInfo {
@@ -173,9 +178,19 @@ class Report:
                 }
             }
         """
-        result = self.opencti.query(query, {'filters': filters, 'search': search, 'first': first, 'after': after,
-                                            'orderBy': order_by, 'orderMode': order_mode})
-        return self.opencti.process_multiple(result['data']['reports'])
+        )
+        result = self.opencti.query(
+            query,
+            {
+                "filters": filters,
+                "search": search,
+                "first": first,
+                "after": after,
+                "orderBy": order_by,
+                "orderMode": order_mode,
+            },
+        )
+        return self.opencti.process_multiple(result["data"]["reports"])
 
     """
         Read a Report object
@@ -186,19 +201,23 @@ class Report:
     """
 
     def read(self, **kwargs):
-        id = kwargs.get('id', None)
-        filters = kwargs.get('filters', None)
+        id = kwargs.get("id", None)
+        filters = kwargs.get("filters", None)
         if id is not None:
-            self.opencti.log('info', 'Reading Report {' + id + '}.')
-            query = """
+            self.opencti.log("info", "Reading Report {" + id + "}.")
+            query = (
+                """
                 query Report($id: String!) {
                     report(id: $id) {
-                        """ + self.properties + """
+                        """
+                + self.properties
+                + """
                     }
                 }
             """
-            result = self.opencti.query(query, {'id': id})
-            return self.opencti.process_multiple_fields(result['data']['report'])
+            )
+            result = self.opencti.query(query, {"id": id})
+            return self.opencti.process_multiple_fields(result["data"]["report"])
         elif filters is not None:
             result = self.list(filters=filters)
             if len(result) > 0:
@@ -216,18 +235,20 @@ class Report:
     """
 
     def get_by_stix_id_or_name(self, **kwargs):
-        stix_id_key = kwargs.get('stix_id_key', None)
-        name = kwargs.get('name', None)
-        published = kwargs.get('published', None)
+        stix_id_key = kwargs.get("stix_id_key", None)
+        name = kwargs.get("name", None)
+        published = kwargs.get("published", None)
         object_result = None
         if stix_id_key is not None:
             object_result = self.read(id=stix_id_key)
         if object_result is None and name is not None and published is not None:
-            published_final = parse(published).strftime('%Y-%m-%d')
-            object_result = self.read(filters=[
-                {'key': 'name', 'values': [name]},
-                {'key': 'published_day', 'values': [published_final]}
-            ])
+            published_final = parse(published).strftime("%Y-%m-%d")
+            object_result = self.read(
+                filters=[
+                    {"key": "name", "values": [name]},
+                    {"key": "published_day", "values": [published_final]},
+                ]
+            )
         return object_result
 
     """
@@ -238,49 +259,64 @@ class Report:
     """
 
     def create_raw(self, **kwargs):
-        name = kwargs.get('name', None)
-        description = kwargs.get('description', None)
-        published = kwargs.get('published', None)
-        report_class = kwargs.get('report_class', None)
-        object_status = kwargs.get('object_status', None)
-        source_confidence_level = kwargs.get('source_confidence_level', None)
-        graph_data = kwargs.get('graph_data', None)
-        id = kwargs.get('id', None)
-        stix_id_key = kwargs.get('stix_id_key', None)
-        created = kwargs.get('created', None)
-        modified = kwargs.get('modified', None)
-        created_by_ref = kwargs.get('createdByRef', None)
-        marking_definitions = kwargs.get('markingDefinitions', None)
+        name = kwargs.get("name", None)
+        description = kwargs.get("description", None)
+        published = kwargs.get("published", None)
+        report_class = kwargs.get("report_class", None)
+        object_status = kwargs.get("object_status", None)
+        source_confidence_level = kwargs.get("source_confidence_level", None)
+        graph_data = kwargs.get("graph_data", None)
+        id = kwargs.get("id", None)
+        stix_id_key = kwargs.get("stix_id_key", None)
+        created = kwargs.get("created", None)
+        modified = kwargs.get("modified", None)
+        created_by_ref = kwargs.get("createdByRef", None)
+        marking_definitions = kwargs.get("markingDefinitions", None)
 
-        if name is not None and description is not None and published is not None and report_class is not None:
-            self.opencti.log('info', 'Creating Report {' + name + '}.')
-            query = """
+        if (
+            name is not None
+            and description is not None
+            and published is not None
+            and report_class is not None
+        ):
+            self.opencti.log("info", "Creating Report {" + name + "}.")
+            query = (
+                """
                 mutation ReportAdd($input: ReportAddInput) {
                     reportAdd(input: $input) {
-                        """ + self.properties + """
+                        """
+                + self.properties
+                + """
                     }
                 }
             """
-            result = self.opencti.query(query, {
-                'input': {
-                    'name': name,
-                    'description': description,
-                    'published': published,
-                    'report_class': report_class,
-                    'object_status': object_status,
-                    'source_confidence_level': source_confidence_level,
-                    'graph_data': graph_data,
-                    'internal_id_key': id,
-                    'stix_id_key': stix_id_key,
-                    'created': created,
-                    'modified': modified,
-                    'createdByRef': created_by_ref,
-                    'markingDefinitions': marking_definitions,
-                }
-            })
-            return self.opencti.process_multiple_fields(result['data']['reportAdd'])
+            )
+            result = self.opencti.query(
+                query,
+                {
+                    "input": {
+                        "name": name,
+                        "description": description,
+                        "published": published,
+                        "report_class": report_class,
+                        "object_status": object_status,
+                        "source_confidence_level": source_confidence_level,
+                        "graph_data": graph_data,
+                        "internal_id_key": id,
+                        "stix_id_key": stix_id_key,
+                        "created": created,
+                        "modified": modified,
+                        "createdByRef": created_by_ref,
+                        "markingDefinitions": marking_definitions,
+                    }
+                },
+            )
+            return self.opencti.process_multiple_fields(result["data"]["reportAdd"])
         else:
-            self.opencti.log('error', '[opencti_report] Missing parameters: name and description and published and report_class')
+            self.opencti.log(
+                "error",
+                "[opencti_report] Missing parameters: name and description and published and report_class",
+            )
 
     """
          Create a Report object only if it not exists, update it on request
@@ -292,76 +328,85 @@ class Report:
      """
 
     def create(self, **kwargs):
-        name = kwargs.get('name', None)
-        external_reference_id = kwargs.get('external_reference_id', None)
-        description = kwargs.get('description', None)
-        published = kwargs.get('published', None)
-        report_class = kwargs.get('report_class', None)
-        object_status = kwargs.get('object_status', None)
-        source_confidence_level = kwargs.get('source_confidence_level', None)
-        graph_data = kwargs.get('graph_data', None)
-        id = kwargs.get('id', None)
-        stix_id_key = kwargs.get('stix_id_key', None)
-        created = kwargs.get('created', None)
-        modified = kwargs.get('modified', None)
-        created_by_ref = kwargs.get('createdByRef', None)
-        marking_definitions = kwargs.get('markingDefinitions', None)
-        update = kwargs.get('update', False)
+        name = kwargs.get("name", None)
+        external_reference_id = kwargs.get("external_reference_id", None)
+        description = kwargs.get("description", None)
+        published = kwargs.get("published", None)
+        report_class = kwargs.get("report_class", None)
+        object_status = kwargs.get("object_status", None)
+        source_confidence_level = kwargs.get("source_confidence_level", None)
+        graph_data = kwargs.get("graph_data", None)
+        id = kwargs.get("id", None)
+        stix_id_key = kwargs.get("stix_id_key", None)
+        created = kwargs.get("created", None)
+        modified = kwargs.get("modified", None)
+        created_by_ref = kwargs.get("createdByRef", None)
+        marking_definitions = kwargs.get("markingDefinitions", None)
+        update = kwargs.get("update", False)
 
         object_result = None
         if external_reference_id is not None:
             object_result = self.opencti.stix_domain_entity.read(
-                types=['Report'],
-                filters=[{'key': 'hasExternalReference', 'values': [external_reference_id]}]
+                types=["Report"],
+                filters=[
+                    {"key": "hasExternalReference", "values": [external_reference_id]}
+                ],
             )
         if object_result is None and name is not None:
-            object_result = self.get_by_stix_id_or_name(stix_id_key=stix_id_key, name=name, published=published)
+            object_result = self.get_by_stix_id_or_name(
+                stix_id_key=stix_id_key, name=name, published=published
+            )
         if object_result is not None:
             if update:
-                if object_result['name'] != name:
-                    self.opencti.stix_domain_entity.update_field(id=object_result['id'], key='name', value=name)
-                    object_result['name'] = name
-                if report_class is not None and object_result['report_class'] != report_class:
+                if object_result["name"] != name:
                     self.opencti.stix_domain_entity.update_field(
-                        id=object_result['id'],
-                        key='report_class',
-                        value=report_class
+                        id=object_result["id"], key="name", value=name
                     )
-                    object_result['report_class'] = report_class
-                if object_result['description'] != description:
+                    object_result["name"] = name
+                if (
+                    report_class is not None
+                    and object_result["report_class"] != report_class
+                ):
                     self.opencti.stix_domain_entity.update_field(
-                        id=object_result['id'],
-                        key='description',
-                        value=description
+                        id=object_result["id"], key="report_class", value=report_class
                     )
-                    object_result['description'] = description
-                if object_status is not None and object_result['object_status'] != object_status:
+                    object_result["report_class"] = report_class
+                if object_result["description"] != description:
                     self.opencti.stix_domain_entity.update_field(
-                        id=object_result['id'],
-                        key='object_status',
-                        value=str(object_status)
+                        id=object_result["id"], key="description", value=description
                     )
-                    object_result['object_status'] = object_status
-                if source_confidence_level is not None and object_result[
-                    'source_confidence_level'] != source_confidence_level:
+                    object_result["description"] = description
+                if (
+                    object_status is not None
+                    and object_result["object_status"] != object_status
+                ):
                     self.opencti.stix_domain_entity.update_field(
-                        id=object_result['id'],
-                        key='source_confidence_level',
-                        value=str(source_confidence_level)
+                        id=object_result["id"],
+                        key="object_status",
+                        value=str(object_status),
                     )
-                    object_result['source_confidence_level'] = source_confidence_level
-                if graph_data is not None and object_result['graph_data'] != graph_data:
+                    object_result["object_status"] = object_status
+                if (
+                    source_confidence_level is not None
+                    and object_result["source_confidence_level"]
+                    != source_confidence_level
+                ):
                     self.opencti.stix_domain_entity.update_field(
-                        id=object_result['id'],
-                        key='graph_data',
-                        value=graph_data
+                        id=object_result["id"],
+                        key="source_confidence_level",
+                        value=str(source_confidence_level),
                     )
-                    object_result['graph_data'] = graph_data
+                    object_result["source_confidence_level"] = source_confidence_level
+                if graph_data is not None and object_result["graph_data"] != graph_data:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result["id"], key="graph_data", value=graph_data
+                    )
+                    object_result["graph_data"] = graph_data
             if external_reference_id is not None:
                 self.opencti.stix_entity.add_external_reference(
-                    id=object_result['id'],
+                    id=object_result["id"],
                     entity=object_result,
-                    external_reference_id=external_reference_id
+                    external_reference_id=external_reference_id,
                 )
             return object_result
         else:
@@ -382,9 +427,9 @@ class Report:
             )
             if external_reference_id is not None:
                 self.opencti.stix_entity.add_external_reference(
-                    id=report['id'],
+                    id=report["id"],
                     entity=report,
-                    external_reference_id=external_reference_id
+                    external_reference_id=external_reference_id,
                 )
             return report
 
@@ -397,28 +442,30 @@ class Report:
     """
 
     def add_stix_entity(self, **kwargs):
-        id = kwargs.get('id', None)
-        report = kwargs.get('report', None)
-        entity_id = kwargs.get('entity_id', None)
+        id = kwargs.get("id", None)
+        report = kwargs.get("report", None)
+        entity_id = kwargs.get("entity_id", None)
         if id is not None and entity_id is not None:
             if report is None:
                 report = self.read(id=id)
             if report is None:
-                self.opencti.log('error', '[opencti_report] Cannot add Object Ref, report not found')
+                self.opencti.log(
+                    "error", "[opencti_report] Cannot add Object Ref, report not found"
+                )
                 return False
             refs_ids = []
-            for ref in report['objectRefs']:
-                refs_ids.append(ref['id'])
-            for ref in report['observableRefs']:
-                refs_ids.append(ref['id'])
-            for ref in report['relationRefs']:
-                refs_ids.append(ref['id'])
+            for ref in report["objectRefs"]:
+                refs_ids.append(ref["id"])
+            for ref in report["observableRefs"]:
+                refs_ids.append(ref["id"])
+            for ref in report["relationRefs"]:
+                refs_ids.append(ref["id"])
             if entity_id in refs_ids:
                 return True
             else:
                 self.opencti.log(
-                    'info',
-                    'Adding Stix-Entity {' + entity_id + '} to Report {' + id + '}'
+                    "info",
+                    "Adding Stix-Entity {" + entity_id + "} to Report {" + id + "}",
                 )
                 query = """
                    mutation ReportEdit($id: ID!, $input: RelationAddInput) {
@@ -429,18 +476,23 @@ class Report:
                        }
                    }
                 """
-                self.opencti.query(query, {
-                    'id': id,
-                    'input': {
-                        'fromRole': 'knowledge_aggregation',
-                        'toId': entity_id,
-                        'toRole': 'so',
-                        'through': 'object_refs'
-                    }
-                })
+                self.opencti.query(
+                    query,
+                    {
+                        "id": id,
+                        "input": {
+                            "fromRole": "knowledge_aggregation",
+                            "toId": entity_id,
+                            "toRole": "so",
+                            "through": "object_refs",
+                        },
+                    },
+                )
                 return True
         else:
-            self.opencti.log('error', '[opencti_report] Missing parameters: id and entity_id')
+            self.opencti.log(
+                "error", "[opencti_report] Missing parameters: id and entity_id"
+            )
             return False
 
     """
@@ -452,21 +504,27 @@ class Report:
     """
 
     def add_stix_observable(self, **kwargs):
-        id = kwargs.get('id', None)
-        report = kwargs.get('report', None)
-        stix_observable_id = kwargs.get('stix_observable_id', None)
+        id = kwargs.get("id", None)
+        report = kwargs.get("report", None)
+        stix_observable_id = kwargs.get("stix_observable_id", None)
         if id is not None and stix_observable_id is not None:
             if report is None:
                 report = self.read(id=id)
             if report is None:
-                self.opencti.log('error', '[opencti_report] Cannot add Object Ref, report not found')
+                self.opencti.log(
+                    "error", "[opencti_report] Cannot add Object Ref, report not found"
+                )
                 return False
-            if stix_observable_id in report['observableRefsIds']:
+            if stix_observable_id in report["observableRefsIds"]:
                 return True
             else:
                 self.opencti.log(
-                    'info',
-                    'Adding Stix-Observable {' + stix_observable_id + '} to Report {' + id + '}'
+                    "info",
+                    "Adding Stix-Observable {"
+                    + stix_observable_id
+                    + "} to Report {"
+                    + id
+                    + "}",
                 )
                 query = """
                    mutation ReportEdit($id: ID!, $input: RelationAddInput) {
@@ -477,18 +535,24 @@ class Report:
                        }
                    }
                 """
-                self.opencti.query(query, {
-                    'id': id,
-                    'input': {
-                        'fromRole': 'observables_aggregation',
-                        'toId': stix_observable_id,
-                        'toRole': 'soo',
-                        'through': 'observable_refs'
-                    }
-                })
+                self.opencti.query(
+                    query,
+                    {
+                        "id": id,
+                        "input": {
+                            "fromRole": "observables_aggregation",
+                            "toId": stix_observable_id,
+                            "toRole": "soo",
+                            "through": "observable_refs",
+                        },
+                    },
+                )
                 return True
         else:
-            self.opencti.log('error', '[opencti_report] Missing parameters: id and stix_observable_id')
+            self.opencti.log(
+                "error",
+                "[opencti_report] Missing parameters: id and stix_observable_id",
+            )
             return False
 
     """
@@ -499,35 +563,45 @@ class Report:
     """
 
     def to_stix2(self, **kwargs):
-        id = kwargs.get('id', None)
-        mode = kwargs.get('mode', 'simple')
-        max_marking_definition_entity = kwargs.get('max_marking_definition_entity', None)
-        entity = kwargs.get('entity', None)
+        id = kwargs.get("id", None)
+        mode = kwargs.get("mode", "simple")
+        max_marking_definition_entity = kwargs.get(
+            "max_marking_definition_entity", None
+        )
+        entity = kwargs.get("entity", None)
         if id is not None and entity is None:
             entity = self.read(id=id)
         if entity is not None:
             report = dict()
-            report['id'] = entity['stix_id_key']
-            report['type'] = 'report'
-            report['name'] = entity['name']
-            if self.opencti.not_empty(entity['stix_label']):
-                report['labels'] = entity['stix_label']
+            report["id"] = entity["stix_id_key"]
+            report["type"] = "report"
+            report["name"] = entity["name"]
+            if self.opencti.not_empty(entity["stix_label"]):
+                report["labels"] = entity["stix_label"]
             else:
-                report['labels'] = ['report']
-            if self.opencti.not_empty(entity['description']): report['description'] = entity['description']
-            report['published'] = self.opencti.stix2.format_date(entity['published'])
-            report['created'] = self.opencti.stix2.format_date(entity['created'])
-            report['modified'] = self.opencti.stix2.format_date(entity['modified'])
-            if self.opencti.not_empty(entity['alias']): report[CustomProperties.ALIASES] = entity['alias']
-            if self.opencti.not_empty(entity['report_class']): report[CustomProperties.REPORT_CLASS] = entity[
-                'report_class']
-            if self.opencti.not_empty(entity['object_status']): report[CustomProperties.OBJECT_STATUS] = entity[
-                'object_status']
-            if self.opencti.not_empty(entity['source_confidence_level']): report[CustomProperties.SRC_CONF_LEVEL] = \
-                entity[
-                    'source_confidence_level']
-            if self.opencti.not_empty(entity['graph_data']): report[CustomProperties.GRAPH_DATA] = entity['graph_data']
-            report[CustomProperties.ID] = entity['id']
-            return self.opencti.stix2.prepare_export(entity, report, mode, max_marking_definition_entity)
+                report["labels"] = ["report"]
+            if self.opencti.not_empty(entity["description"]):
+                report["description"] = entity["description"]
+            report["published"] = self.opencti.stix2.format_date(entity["published"])
+            report["created"] = self.opencti.stix2.format_date(entity["created"])
+            report["modified"] = self.opencti.stix2.format_date(entity["modified"])
+            if self.opencti.not_empty(entity["alias"]):
+                report[CustomProperties.ALIASES] = entity["alias"]
+            if self.opencti.not_empty(entity["report_class"]):
+                report[CustomProperties.REPORT_CLASS] = entity["report_class"]
+            if self.opencti.not_empty(entity["object_status"]):
+                report[CustomProperties.OBJECT_STATUS] = entity["object_status"]
+            if self.opencti.not_empty(entity["source_confidence_level"]):
+                report[CustomProperties.SRC_CONF_LEVEL] = entity[
+                    "source_confidence_level"
+                ]
+            if self.opencti.not_empty(entity["graph_data"]):
+                report[CustomProperties.GRAPH_DATA] = entity["graph_data"]
+            report[CustomProperties.ID] = entity["id"]
+            return self.opencti.stix2.prepare_export(
+                entity, report, mode, max_marking_definition_entity
+            )
         else:
-            self.opencti.log('error', '[opencti_report] Missing parameters: id or entity')
+            self.opencti.log(
+                "error", "[opencti_report] Missing parameters: id or entity"
+            )
