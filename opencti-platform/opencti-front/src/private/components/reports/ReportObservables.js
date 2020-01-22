@@ -6,7 +6,7 @@ import { createFragmentContainer } from 'react-relay';
 import { QueryRenderer } from '../../../relay/environment';
 import ReportHeader from './ReportHeader';
 import ListLines from '../../../components/list_lines/ListLines';
-import ReportStixObservablesLines, {
+import ReportObservablesLines, {
   reportObservablesLinesQuery,
 } from './ReportObservablesLines';
 import {
@@ -99,7 +99,7 @@ class ReportObservablesComponent extends Component {
             query={reportObservablesLinesQuery}
             variables={{ id: report.id, count: 25, ...paginationOptions }}
             render={({ props }) => (
-              <ReportStixObservablesLines
+              <ReportObservablesLines
                 report={props ? props.report : null}
                 paginationOptions={paginationOptions}
                 dataColumns={dataColumns}

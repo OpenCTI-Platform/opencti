@@ -53,8 +53,7 @@ export const reportRefPopoverDeletionMutation = graphql`
         toId: $toId
         relationType: $relationType
       ) {
-        ...ReportEntities_report
-        ...ReportObservablesLines_report
+        id
       }
     }
   }
@@ -94,6 +93,7 @@ class ReportRefPopover extends Component {
       toId,
       relationId,
       relationType,
+      paginationKey,
       paginationOptions,
     } = this.props;
     this.setState({ deleting: true });
@@ -109,7 +109,7 @@ class ReportRefPopover extends Component {
         if (toId) {
           const conn = ConnectionHandler.getConnection(
             store.get(reportId),
-            'Pagination_observableRefs',
+            paginationKey,
             paginationOptions,
           );
           ConnectionHandler.deleteNode(conn, toId);
@@ -176,6 +176,7 @@ ReportRefPopover.propTypes = {
   toId: PropTypes.string,
   relationId: PropTypes.string,
   relationType: PropTypes.string,
+  paginationKey: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

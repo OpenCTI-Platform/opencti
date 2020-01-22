@@ -74,7 +74,7 @@ class ReportAddObservableRefsLinesContainer extends Component {
   }
 
   toggleStixObservable(stixObservable) {
-    const { reportId } = this.props;
+    const { reportId, paginationOptions } = this.props;
     const alreadyAdded = this.state.addedObservables.includes(
       stixObservable.id,
     );
@@ -91,7 +91,7 @@ class ReportAddObservableRefsLinesContainer extends Component {
           const conn = ConnectionHandler.getConnection(
             store.get(reportId),
             'Pagination_observableRefs',
-            this.props.paginationOptions,
+            paginationOptions,
           );
           ConnectionHandler.deleteNode(conn, stixObservable.id);
         },

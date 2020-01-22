@@ -10,9 +10,9 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { Description, MoreVert } from '@material-ui/icons';
 import { compose, pathOr, take } from 'ramda';
-import { HexagonOutline } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
+import ItemIcon from '../../../components/ItemIcon';
 import ReportRefPopover from './ReportRefPopover';
 
 const styles = (theme) => ({
@@ -46,7 +46,7 @@ const styles = (theme) => ({
   },
 });
 
-class ReportObservableLineComponent extends Component {
+class ReportEntityLineComponent extends Component {
   render() {
     const {
       t,
@@ -66,7 +66,7 @@ class ReportObservableLineComponent extends Component {
         to={`/dashboard/signatures/observables/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <HexagonOutline />
+          <ItemIcon type={node.entity_type} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -75,13 +75,13 @@ class ReportObservableLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                {t(`observable_${node.entity_type}`)}
+                {t(`entity_${node.entity_type}`)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.observable_value.width }}
+                style={{ width: dataColumns.name.width }}
               >
-                {node.observable_value}
+                {node.name}
               </div>
               <div
                 className={classes.bodyItem}
@@ -117,8 +117,8 @@ class ReportObservableLineComponent extends Component {
           <ReportRefPopover
             reportId={reportId}
             toId={node.id}
-            relationType="observable_refs"
-            paginationKey="Pagination_observableRefs"
+            relationType="object_refs"
+            paginationKey="Pagination_objectRefs"
             paginationOptions={paginationOptions}
           />
         </ListItemSecondaryAction>
@@ -127,7 +127,7 @@ class ReportObservableLineComponent extends Component {
   }
 }
 
-ReportObservableLineComponent.propTypes = {
+ReportEntityLineComponent.propTypes = {
   reportId: PropTypes.string,
   dataColumns: PropTypes.object,
   node: PropTypes.object,
@@ -137,13 +137,13 @@ ReportObservableLineComponent.propTypes = {
   paginationOptions: PropTypes.object,
 };
 
-const ReportObservableLineFragment = createFragmentContainer(
-  ReportObservableLineComponent,
+const ReportEntityLineFragment = createFragmentContainer(
+  ReportEntityLineComponent,
   {
     node: graphql`
-      fragment ReportObservableLine_node on StixObservable {
+      fragment ReportEntityLine_node on StixDomainEntity {
         id
-        observable_value
+        name
         entity_type
         created_at
         createdByRef {
@@ -165,12 +165,12 @@ const ReportObservableLineFragment = createFragmentContainer(
   },
 );
 
-export const ReportObservableLine = compose(
+export const ReportEntityLine = compose(
   inject18n,
   withStyles(styles),
-)(ReportObservableLineFragment);
+)(ReportEntityLineFragment);
 
-class ReportObservableLineDummyComponent extends Component {
+class ReportEntityLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -189,7 +189,7 @@ class ReportObservableLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.observable_value.width }}
+                style={{ width: dataColumns.name.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
@@ -222,12 +222,12 @@ class ReportObservableLineDummyComponent extends Component {
   }
 }
 
-ReportObservableLineDummyComponent.propTypes = {
+ReportEntityLineDummyComponent.propTypes = {
   classes: PropTypes.object,
   dataColumns: PropTypes.object,
 };
 
-export const ReportObservableLineDummy = compose(
+export const ReportEntityLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(ReportObservableLineDummyComponent);
+)(ReportEntityLineDummyComponent);
