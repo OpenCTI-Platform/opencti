@@ -2,35 +2,19 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { pathOr } from 'ramda';
-import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import {
-  MarkingDefinitionLine,
-  MarkingDefinitionLineDummy,
-} from './MarkingDefinitionLine';
+import { pathOr, propOr } from 'ramda';
+import ListLinesContent from '../../../components/list_lines/ListLinesContent';
+import { ReportEntityLine, ReportEntityLineDummy } from './ReportEntityLine';
 
 const nbOfRowsToLoad = 25;
 
-export const markingDefinitionsLinesSearchQuery = graphql`
-  query MarkingDefinitionsLinesSearchQuery($search: String) {
-    markingDefinitions(search: $search) {
-      edges {
-        node {
-          id
-          definition_type
-          definition
-        }
-      }
-    }
-  }
-`;
-
-class MarkingDefinitionsLines extends Component {
+class ReportEntitiesLines extends Component {
   render() {
     const {
       initialLoading,
       dataColumns,
       relay,
+      report,
       paginationOptions,
     } = this.props;
     return (
@@ -39,76 +23,83 @@ class MarkingDefinitionsLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['markingDefinitions', 'edges'], this.props.data)}
+        dataList={pathOr([], ['objectRefs', 'edges'], report)}
+        paginationOptions={paginationOptions}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['markingDefinitions', 'pageInfo', 'globalCount'],
-          this.props.data,
+          ['objectRefs', 'pageInfo', 'globalCount'],
+          report,
         )}
-        LineComponent={<MarkingDefinitionLine />}
-        DummyLineComponent={<MarkingDefinitionLineDummy />}
+        LineComponent={
+          <ReportEntityLine reportId={propOr(null, 'id', report)} />
+        }
+        DummyLineComponent={<ReportEntityLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
-        paginationOptions={paginationOptions}
       />
     );
   }
 }
 
-MarkingDefinitionsLines.propTypes = {
+ReportEntitiesLines.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object.isRequired,
-  data: PropTypes.object,
+  report: PropTypes.object,
   relay: PropTypes.object,
-  markingDefinitions: PropTypes.object,
   initialLoading: PropTypes.bool,
+  searchTerm: PropTypes.string,
 };
 
-export const markingDefinitionsLinesQuery = graphql`
-  query MarkingDefinitionsLinesPaginationQuery(
+export const ReportEntitiesLinesQuery = graphql`
+  query ReportEntitiesLinesQuery(
+    $id: String!
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: MarkingDefinitionsOrdering
+    $orderBy: StixDomainEntitiesOrdering
     $orderMode: OrderingMode
+    $filters: [ StixDomainEntitiesFiltering]
   ) {
-    ...MarkingDefinitionsLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    report(id: $id) {
+      ...ReportEntitiesLines_report
+        @arguments(
+          search: $search
+          count: $count
+          cursor: $cursor
+          orderBy: $orderBy
+          orderMode: $orderMode
+          filters: $filters
+        )
+    }
   }
 `;
 
 export default createPaginationContainer(
-  MarkingDefinitionsLines,
+  ReportEntitiesLines,
   {
-    data: graphql`
-      fragment MarkingDefinitionsLines_data on Query
+    report: graphql`
+      fragment ReportEntitiesLines_report on Report
         @argumentDefinitions(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: {
-            type: "MarkingDefinitionsOrdering"
-            defaultValue: "definition"
-          }
+          orderBy: { type: "StixDomainEntitiesOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          filters: { type: "[StixDomainEntitiesFiltering]" }
         ) {
-        markingDefinitions(
+        id
+        objectRefs(
           search: $search
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
-        ) @connection(key: "Pagination_markingDefinitions") {
+          filters: $filters
+        ) @connection(key: "Pagination_objectRefs") {
           edges {
             node {
-              ...MarkingDefinitionLine_node
+              ...ReportEntityLine_node
             }
           }
           pageInfo {
@@ -123,7 +114,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.markingDefinitions;
+      return props.report && props.report.objectRefs;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -133,13 +124,15 @@ export default createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
-        search: fragmentVariables.search,
+        id: fragmentVariables.id,
         count,
         cursor,
+        search: fragmentVariables.search,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
-    query: markingDefinitionsLinesQuery,
+    query: ReportEntitiesLinesQuery,
   },
 );

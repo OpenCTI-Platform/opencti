@@ -8,7 +8,7 @@ import {
   loadEntityByStixId,
   loadWithConnectedRelations
 } from '../database/grakn';
-import { findAll as relationFindAll, search as relationSearch } from './stixRelation';
+import { findAll as relationFindAll } from './stixRelation';
 import { buildPagination } from '../database/utils';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
@@ -73,9 +73,6 @@ export const externalReferences = async stixDomainEntityId => {
 
 export const stixRelations = (stixEntityId, args) => {
   const finalArgs = assoc('fromId', stixEntityId, args);
-  if (finalArgs.search && finalArgs.search.length > 0) {
-    return relationSearch(finalArgs);
-  }
   return relationFindAll(finalArgs);
 };
 

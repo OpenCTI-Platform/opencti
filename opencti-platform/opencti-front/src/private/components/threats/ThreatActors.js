@@ -1,16 +1,31 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  assoc, compose, dissoc, head, last, map, pipe, propOr, toPairs,
+  assoc,
+  compose,
+  dissoc,
+  head,
+  last,
+  map,
+  pipe,
+  propOr,
+  toPairs,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
-import ThreatActorsCards, { threatActorsCardsQuery } from './threat_actors/ThreatActorsCards';
-import ThreatActorsLines, { threatActorsLinesQuery } from './threat_actors/ThreatActorsLines';
+import ThreatActorsCards, {
+  threatActorsCardsQuery,
+} from './threat_actors/ThreatActorsCards';
+import ThreatActorsLines, {
+  threatActorsLinesQuery,
+} from './threat_actors/ThreatActorsLines';
 import ThreatActorCreation from './threat_actors/ThreatActorCreation';
 
 class ThreatActors extends Component {
@@ -19,7 +34,7 @@ class ThreatActors extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'ThreatActors-view',
+      'view_threat-actors',
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
@@ -27,6 +42,7 @@ class ThreatActors extends Component {
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('cards', 'view', params),
       filters: {},
+      openExports: false,
     };
   }
 
@@ -34,7 +50,7 @@ class ThreatActors extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'ThreatActors-view',
+      'view_threat-actors',
       dissoc('filters', this.state),
     );
   }
@@ -51,6 +67,10 @@ class ThreatActors extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
+  handleToggleExports() {
+    this.setState({ openExports: !this.state.openExports });
+  }
+
   handleAddFilter(key, id, value, event) {
     event.stopPropagation();
     event.preventDefault();
@@ -65,7 +85,7 @@ class ThreatActors extends Component {
 
   renderCards(paginationOptions) {
     const {
-      sortBy, orderAsc, searchTerm, filters,
+      sortBy, orderAsc, searchTerm, filters, openExports,
     } = this.state;
     const dataColumns = {
       name: {
@@ -90,9 +110,12 @@ class ThreatActors extends Component {
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-        displayImport={true}
+        handleToggleExports={this.handleToggleExports.bind(this)}
+        openExports={openExports}
+        exportEntityType="Threat-Actor"
         keyword={searchTerm}
         filters={filters}
+        paginationOptions={paginationOptions}
       >
         <QueryRenderer
           query={threatActorsCardsQuery}
@@ -112,7 +135,7 @@ class ThreatActors extends Component {
 
   renderLines(paginationOptions) {
     const {
-      sortBy, orderAsc, searchTerm, filters,
+      sortBy, orderAsc, searchTerm, filters, openExports,
     } = this.state;
     const dataColumns = {
       name: {
@@ -145,9 +168,12 @@ class ThreatActors extends Component {
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-        displayImport={true}
+        handleToggleExports={this.handleToggleExports.bind(this)}
+        openExports={openExports}
+        exportEntityType="Threat-Actor"
         keyword={searchTerm}
         filters={filters}
+        paginationOptions={paginationOptions}
       >
         <QueryRenderer
           query={threatActorsLinesQuery}
@@ -200,7 +226,4 @@ ThreatActors.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-)(ThreatActors);
+export default compose(inject18n, withRouter)(ThreatActors);

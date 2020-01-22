@@ -12,7 +12,7 @@ const uploadJobImport = async (fileId, fileMime) => {
     const workList = await Promise.all(
       map(
         connector =>
-          createWork(connector, null, fileId).then(({ work, job }) => ({
+          createWork(connector, null, null, fileId).then(({ work, job }) => ({
             connector,
             work,
             job

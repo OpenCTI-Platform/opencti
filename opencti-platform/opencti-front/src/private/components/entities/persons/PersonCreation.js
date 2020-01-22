@@ -19,7 +19,7 @@ import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import Autocomplete from '../../../../components/Autocomplete';
 import AutocompleteCreate from '../../../../components/AutocompleteCreate';
 import TextField from '../../../../components/TextField';
-import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
+import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
@@ -136,7 +136,7 @@ class PersonCreation extends Component {
   }
 
   searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsSearchQuery, {
+    fetchQuery(markingDefinitionsLinesSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const markingDefinitions = pipe(

@@ -588,12 +588,12 @@ export const elPaginate = async (indexName, options) => {
         mustnot = append({ exists: { field: key } }, mustnot);
       } else {
         for (let i = 0; i < values.length; i += 1) {
-          if (operator === 'eq') {
+          if (operator === 'eq' || operator === 'match') {
             valuesFiltering.push({
-              match_phrase: { [`${dateFields.includes(key) ? key : `${key}.keyword`}`]: values[i] }
+              match_phrase: {
+                [`${dateFields.includes(key) || operator === 'match' ? key : `${key}.keyword`}`]: values[i]
+              }
             });
-          } else if (operator === 'match') {
-            must = append({ match_phrase: { [`${dateFields.includes(key) ? key : `${key}`}`]: values[i] } }, must);
           } else {
             valuesFiltering.push({ range: { [key]: { [operator]: values[i] } } });
           }

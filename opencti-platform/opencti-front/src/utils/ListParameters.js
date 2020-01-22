@@ -12,6 +12,7 @@ export const saveViewParameters = (
     dissoc('types'),
     dissoc('indicatorTypes'),
     dissoc('observableTypes'),
+    dissoc('openExports'),
   )(params);
   history.replace(
     `${location.pathname}?${new URLSearchParams(urlParams).toString()}`,

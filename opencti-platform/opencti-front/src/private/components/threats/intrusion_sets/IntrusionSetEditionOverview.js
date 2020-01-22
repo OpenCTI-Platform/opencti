@@ -25,7 +25,7 @@ import {
   fetchQuery,
   WS_ACTIVATED,
 } from '../../../../relay/environment';
-import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
+import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import AutocompleteCreate from '../../../../components/AutocompleteCreate';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
@@ -151,7 +151,7 @@ class IntrusionSetEditionOverviewComponent extends Component {
   }
 
   searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsSearchQuery, {
+    fetchQuery(markingDefinitionsLinesSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const markingDefinitions = pipe(
