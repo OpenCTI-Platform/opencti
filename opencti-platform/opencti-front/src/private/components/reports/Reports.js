@@ -25,6 +25,7 @@ class Reports extends Component {
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
+      openExports: false,
     };
   }
 
@@ -45,8 +46,12 @@ class Reports extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
+  handleToggleExports() {
+    this.setState({ openExports: !this.state.openExports });
+  }
+
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc, searchTerm } = this.state;
+    const { sortBy, orderAsc, searchTerm, openExports } = this.state;
     const dataColumns = {
       name: {
         label: 'Title',
@@ -81,8 +86,11 @@ class Reports extends Component {
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
-        displayImport={true}
+        handleToggleExports={this.handleToggleExports.bind(this)}
+        openExports={openExports}
+        exportEntityType="Report"
         keyword={searchTerm}
+        paginationOptions={paginationOptions}
       >
         <QueryRenderer
           query={reportsLinesQuery}

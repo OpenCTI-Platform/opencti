@@ -1,16 +1,31 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  assoc, compose, dissoc, head, last, map, pipe, propOr, toPairs,
+  assoc,
+  compose,
+  dissoc,
+  head,
+  last,
+  map,
+  pipe,
+  propOr,
+  toPairs,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
-import IntrusionSetsCards, { intrusionSetsCardsQuery } from './intrusion_sets/IntrusionSetsCards';
-import IntrusionSetsLines, { intrusionSetsLinesQuery } from './intrusion_sets/IntrusionSetsLines';
+import IntrusionSetsCards, {
+  intrusionSetsCardsQuery,
+} from './intrusion_sets/IntrusionSetsCards';
+import IntrusionSetsLines, {
+  intrusionSetsLinesQuery,
+} from './intrusion_sets/IntrusionSetsLines';
 import IntrusionSetCreation from './intrusion_sets/IntrusionSetCreation';
 
 class IntrusionSets extends Component {
@@ -27,6 +42,7 @@ class IntrusionSets extends Component {
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('cards', 'view', params),
       filters: {},
+      openExports: false,
     };
   }
 
@@ -51,6 +67,10 @@ class IntrusionSets extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
+  handleToggleExports() {
+    this.setState({ openExports: !this.state.openExports });
+  }
+
   handleAddFilter(key, id, value, event) {
     event.stopPropagation();
     event.preventDefault();
@@ -65,7 +85,7 @@ class IntrusionSets extends Component {
 
   renderCards(paginationOptions) {
     const {
-      sortBy, orderAsc, searchTerm, filters,
+      sortBy, orderAsc, searchTerm, filters, openExports,
     } = this.state;
     const dataColumns = {
       name: {
@@ -90,9 +110,12 @@ class IntrusionSets extends Component {
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-        displayImport={true}
+        handleToggleExports={this.handleToggleExports.bind(this)}
+        openExports={openExports}
+        exportEntityType="Intrusion-Set"
         keyword={searchTerm}
         filters={filters}
+        paginationOptions={paginationOptions}
       >
         <QueryRenderer
           query={intrusionSetsCardsQuery}
@@ -112,7 +135,7 @@ class IntrusionSets extends Component {
 
   renderLines(paginationOptions) {
     const {
-      sortBy, orderAsc, searchTerm, filters,
+      sortBy, orderAsc, searchTerm, filters, openExports,
     } = this.state;
     const dataColumns = {
       name: {
@@ -145,9 +168,12 @@ class IntrusionSets extends Component {
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-        displayImport={true}
+        handleToggleExports={this.handleToggleExports.bind(this)}
+        openExports={openExports}
+        exportEntityType="Intrusion-Set"
         keyword={searchTerm}
         filters={filters}
+        paginationOptions={paginationOptions}
       >
         <QueryRenderer
           query={intrusionSetsLinesQuery}
@@ -199,7 +225,4 @@ IntrusionSets.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-)(IntrusionSets);
+export default compose(inject18n, withRouter)(IntrusionSets);

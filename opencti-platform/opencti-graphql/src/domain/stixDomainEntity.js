@@ -52,17 +52,34 @@ export const stixDomainEntitiesNumber = args => ({
   total: elCount('stix_domain_entities', dissoc('endDate', args))
 });
 // endregion
-const askJobExports = async (entity, format, exportType, maxMarkingDefinition) => {
+
+// region export
+const askJobExports = async (
+  format,
+  entity = null,
+  type = null,
+  exportType = null,
+  maxMarkingDefinition = null,
+  listArgs = null
+) => {
   const connectors = await connectorsForExport(format, true);
   // Create job for every connectors
   const maxMarkingDefinitionEntity =
     maxMarkingDefinition && maxMarkingDefinition.length > 0
       ? await findMarkingDefintionById(maxMarkingDefinition)
       : null;
+  const finalEntityType = entity ? entity.entity_type : type.toLowerCase();
   const workList = await Promise.all(
     map(connector => {
-      const fileName = generateFileExportName(format, connector, exportType, maxMarkingDefinitionEntity, entity);
-      return createWork(connector, entity.id, fileName).then(({ work, job }) => ({
+      const fileName = generateFileExportName(
+        format,
+        connector,
+        entity,
+        finalEntityType,
+        exportType,
+        maxMarkingDefinitionEntity
+      );
+      return createWork(connector, finalEntityType, entity ? entity.id : null, fileName).then(({ work, job }) => ({
         connector,
         job,
         work
@@ -77,9 +94,10 @@ const askJobExports = async (entity, format, exportType, maxMarkingDefinition) =
         work_id: work.internal_id_key, // work(id)
         job_id: job.internal_id_key, // job(id)
         max_marking_definition: maxMarkingDefinition && maxMarkingDefinition.length > 0 ? maxMarkingDefinition : null, // markingDefinition(id)
-        export_type: exportType, // simple or full
-        entity_type: entity.entity_type, // report, threat, ...
-        entity_id: entity.id, // report(id), thread(id), ...
+        export_type: exportType, // for entity, simple or full / for list, withArgs / withoutArgs
+        entity_type: entity ? entity.entity_type : type, // report, threat, ...
+        entity_id: entity ? entity.id : null, // report(id), thread(id), ...
+        list_args: listArgs,
         file_name: work.work_file // Base path for the upload
       };
       return pushToConnector(connector, message);
@@ -87,29 +105,27 @@ const askJobExports = async (entity, format, exportType, maxMarkingDefinition) =
   );
   return workList;
 };
-export const stixDomainEntityImportPush = (user, entityId, file) => {
-  return upload(user, 'import', file, entityId);
-};
+// endregion
 
+// region mutation
 /**
  * Create export element waiting for completion
- * @param domainEntityId
- * @param format
- * @param exportType > stix2-bundle-full | stix2-bundle-simple
- * @param maxMarkingDefinition > maxMarkingDefinitionEntity
+ * @param args
  * @returns {*}
  */
-export const stixDomainEntityExportAsk = async (domainEntityId, format, exportType, maxMarkingDefinition) => {
-  const entity = await loadEntityById(domainEntityId);
-  const workList = await askJobExports(entity, format, exportType, maxMarkingDefinition);
+export const stixDomainEntityExportAsk = async args => {
+  const { format, type = null, stixDomainEntityId = null, exportType = null, maxMarkingDefinition = null } = args;
+  const entity = stixDomainEntityId ? await loadEntityById(stixDomainEntityId) : null;
+  const workList = await askJobExports(format, entity, type, exportType, maxMarkingDefinition, args);
   // Return the work list to do
   return map(w => workToExportFile(w.work), workList);
 };
-
-// region mutation
-export const stixDomainEntityExportPush = async (user, entityId, file) => {
+export const stixDomainEntityImportPush = (user, entityType = null, entityId = null, file) => {
+  return upload(user, 'import', file, entityType, entityId);
+};
+export const stixDomainEntityExportPush = async (user, entityType = null, entityId = null, file, listArgs = null) => {
   // Upload the document in minio
-  await upload(user, 'export', file, entityId);
+  await upload(user, 'export', file, entityType, entityId, listArgs);
   return true;
 };
 export const addStixDomainEntity = async (user, stixDomainEntity) => {

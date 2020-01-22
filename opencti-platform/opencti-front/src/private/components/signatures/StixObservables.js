@@ -39,6 +39,7 @@ class StixObservables extends Component {
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
       types: [],
+      openExports: false,
     };
   }
 
@@ -59,6 +60,10 @@ class StixObservables extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
+  handleToggleExports() {
+    this.setState({ openExports: !this.state.openExports });
+  }
+
   handleToggle(type) {
     if (this.state.types.includes(type)) {
       this.setState({ types: filter((t) => t !== type, this.state.types) });
@@ -68,7 +73,9 @@ class StixObservables extends Component {
   }
 
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc } = this.state;
+    const {
+      sortBy, orderAsc, searchTerm, openExports,
+    } = this.state;
     const dataColumns = {
       entity_type: {
         label: 'Type',
@@ -97,6 +104,11 @@ class StixObservables extends Component {
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
+        handleToggleExports={this.handleToggleExports.bind(this)}
+        openExports={openExports}
+        exportEntityType="Stix-Observable"
+        keyword={searchTerm}
+        paginationOptions={paginationOptions}
       >
         <QueryRenderer
           query={stixObservablesLinesQuery}
@@ -117,7 +129,12 @@ class StixObservables extends Component {
   render() {
     const { classes } = this.props;
     const {
-      view, types, sortBy, orderAsc, searchTerm,
+      view,
+      types,
+      sortBy,
+      orderAsc,
+      searchTerm,
+      openExports,
     } = this.state;
     const paginationOptions = {
       types: this.state.types.length > 0 ? this.state.types : null,
@@ -128,10 +145,14 @@ class StixObservables extends Component {
     return (
       <div className={classes.container}>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <StixObservableCreation paginationOptions={paginationOptions} />
+        <StixObservableCreation
+          paginationOptions={paginationOptions}
+          openExports={openExports}
+        />
         <StixObservablesRightBar
           types={types}
           handleToggle={this.handleToggle.bind(this)}
+          openExports={openExports}
         />
       </div>
     );

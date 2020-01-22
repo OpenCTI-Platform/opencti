@@ -59,6 +59,15 @@ export const workForEntity = async (entityId, args) => {
   });
 };
 
+export const workForEntityType = async (entityType, args) => {
+  return elPaginate(INDEX_WORK_JOBS, {
+    type: 'Work',
+    connectionFormat: false,
+    first: args.first,
+    filters: [{ key: 'work_entity_type', values: [entityType] }]
+  });
+};
+
 export const loadFileWorks = async fileId => {
   return elPaginate(INDEX_WORK_JOBS, {
     type: 'Work',
@@ -67,8 +76,10 @@ export const loadFileWorks = async fileId => {
   });
 };
 
-export const loadExportWorksAsProgressFiles = async entityId => {
-  const works = await workForEntity(entityId, { first: 200 });
+export const loadExportWorksAsProgressFiles = async (entityType, entityId) => {
+  const works = entityId
+    ? await workForEntity(entityId, { first: 200 })
+    : await workForEntityType(entityType.toLowerCase(), { first: 200 });
   // Filter if all jobs completed
   const worksWithStatus = await Promise.all(
     map(w => {
@@ -104,7 +115,7 @@ export const initiateJob = workId => {
   });
 };
 
-export const createWork = async (connector, entityId = null, fileId = null) => {
+export const createWork = async (connector, entityType = null, entityId = null, fileId = null) => {
   // Create the work and a initial job
   const workInternalId = uuid();
   const createdWork = await elIndex(INDEX_WORK_JOBS, {
@@ -114,6 +125,7 @@ export const createWork = async (connector, entityId = null, fileId = null) => {
     work_id: workInternalId,
     entity_type: 'Work',
     connector_id: connector.id,
+    work_entity_type: entityType,
     work_entity: entityId,
     work_file: fileId,
     work_type: connector.connector_type,

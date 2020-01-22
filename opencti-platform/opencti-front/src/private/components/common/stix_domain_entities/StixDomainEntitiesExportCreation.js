@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
 import {
   compose,
   filter,
@@ -8,70 +7,103 @@ import {
   fromPairs,
   includes,
   map,
+  propOr,
   uniq,
   zip,
 } from 'ramda';
-import * as Yup from 'yup';
-import Grid from '@material-ui/core/Grid';
-import { withStyles } from '@material-ui/core';
-import { ConnectionHandler } from 'relay-runtime';
-import MenuItem from '@material-ui/core/MenuItem';
-import { createFragmentContainer } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
+import graphql from 'babel-plugin-relay/macro';
+import { withStyles } from '@material-ui/core/styles';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
-import FileExportViewer from './FileExportViewer';
-import FileImportViewer from './FileImportViewer';
-import Select from '../../../../components/Select';
+import Slide from '@material-ui/core/Slide';
+import { Add } from '@material-ui/icons';
+import { createFragmentContainer } from 'react-relay';
+import { Field, Form, Formik } from 'formik';
+import MenuItem from '@material-ui/core/MenuItem';
+import IconButton from '@material-ui/core/IconButton';
+import * as Yup from 'yup';
+import Tooltip from '@material-ui/core/Tooltip';
+import inject18n from '../../../../components/i18n';
 import {
   commitMutation,
   MESSAGING$,
   QueryRenderer,
 } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
+import Select from '../../../../components/Select';
 import Loader from '../../../../components/Loader';
 
-const styles = () => ({
-  container: {
-    margin: 0,
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
+
+const styles = (theme) => ({
+  createButton: {
+    float: 'left',
   },
-  gridContainer: {
-    marginBottom: 20,
+  drawerPaper: {
+    minHeight: '100vh',
+    width: 250,
+    padding: '0 0 20px 0',
+    position: 'fixed',
+    backgroundColor: theme.palette.navAlt.background,
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
   },
-  paper: {
-    height: '100%',
-    minHeight: '100%',
-    margin: '10px 0 0 0',
-    padding: '15px',
-    borderRadius: 6,
+  listIcon: {
+    marginRight: 0,
   },
+  item: {
+    padding: '0 0 0 10px',
+  },
+  itemField: {
+    padding: '0 15px 0 15px',
+  },
+  toolbar: theme.mixins.toolbar,
 });
 
-export const FileManagerExportMutation = graphql`
-  mutation FileManagerExportMutation(
-    $id: ID!
+export const StixDomainEntitiesExportCreationMutation = graphql`
+  mutation StixDomainEntitiesExportCreationMutation(
+    $type: String!
     $format: String!
     $exportType: String!
     $maxMarkingDefinition: String
+    $search: String
+    $orderBy: StixDomainEntitiesOrdering
+    $orderMode: OrderingMode
+    $filters: [StixDomainEntitiesFiltering]
   ) {
-    stixDomainEntityEdit(id: $id) {
-      exportAsk(
-        format: $format
-        exportType: $exportType
-        maxMarkingDefinition: $maxMarkingDefinition
-      ) {
-        id
-        name
-        uploadStatus
-        lastModifiedSinceMin
+    stixDomainEntitiesExportAsk(
+      type: $type
+      format: $format
+      exportType: $exportType
+      maxMarkingDefinition: $maxMarkingDefinition
+      search: $search
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) {
+      edges {
+        node {
+          id
+          name
+          uploadStatus
+          lastModifiedSinceMin
+        }
       }
     }
   }
 `;
+
+const exportValidation = (t) => Yup.object().shape({
+  format: Yup.string().required(t('This field is required')),
+});
 
 export const scopesConn = (exportConnectors) => {
   const scopes = uniq(flatten(map((c) => c.connector_scope, exportConnectors)));
@@ -89,94 +121,88 @@ export const scopesConn = (exportConnectors) => {
   return fromPairs(zipped);
 };
 
-const exportValidation = (t) => Yup.object().shape({
-  format: Yup.string().required(t('This field is required')),
-  type: Yup.string().required(t('This field is required')),
-});
+class StixDomainEntitiesExportCreationComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { open: false };
+  }
 
-const FileManager = ({
-  id, entity, t, classes, connectorsExport,
-}) => {
-  const [openExport, setOpenExport] = useState(false);
-  const exportScopes = uniq(
-    flatten(map((c) => c.connector_scope, connectorsExport)),
-  );
-  const exportConnsPerFormat = scopesConn(connectorsExport);
-  const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
-  const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
-  const handleOpenExport = () => setOpenExport(true);
-  const handleCloseExport = () => setOpenExport(false);
+  handleOpen() {
+    this.setState({ open: true });
+  }
 
-  const onSubmit = (values, { setSubmitting, resetForm }) => {
+  handleClose() {
+    this.setState({ open: false });
+  }
+
+  onSubmit(values, { setSubmitting, resetForm }) {
+    const { paginationOptions } = this.props;
     const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
       ? null
       : values.maxMarkingDefinition;
     commitMutation({
-      mutation: FileManagerExportMutation,
+      mutation: StixDomainEntitiesExportCreationMutation,
       variables: {
-        id,
+        type: this.props.exportEntityType,
         format: values.format,
-        exportType: values.type,
+        exportType: 'all',
         maxMarkingDefinition,
-      },
-      updater: (store) => {
-        const root = store.getRootField('stixDomainEntityEdit');
-        const payloads = root.getLinkedRecords('exportAsk', {
-          format: values.format,
-          exportType: values.type,
-          maxMarkingDefinition,
-        });
-        const entityPage = store.get(id);
-        const conn = ConnectionHandler.getConnection(
-          entityPage,
-          'Pagination_exportFiles',
-        );
-        for (let index = 0; index < payloads.length; index += 1) {
-          const payload = payloads[index];
-          const newEdge = payload.setLinkedRecord(payload, 'node');
-          ConnectionHandler.insertEdgeBefore(conn, newEdge);
-        }
+        ...paginationOptions,
       },
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        handleCloseExport();
+        this.handleClose();
         MESSAGING$.notifySuccess('Export successfully started');
       },
     });
-  };
+  }
 
-  return (
-    <div className={classes.container}>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-      >
-        <FileImportViewer entity={entity} />
-        <FileExportViewer
-          entity={entity}
-          handleOpenExport={handleOpenExport}
-          isExportPossible={isExportPossible}
-        />
-      </Grid>
-      <div>
+  render() {
+    const { classes, t, data } = this.props;
+    const connectorsExport = propOr([], 'connectorsForExport', data);
+    const exportScopes = uniq(
+      flatten(map((c) => c.connector_scope, connectorsExport)),
+    );
+    const exportConnsPerFormat = scopesConn(connectorsExport);
+    const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
+    const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
+
+    return (
+      <div className={classes.createButton}>
+        <Tooltip
+          title={
+            isExportPossible
+              ? t('Generate an export')
+              : t('No export connector available to generate an export')
+          }
+          aria-label="generate-export"
+        >
+          <span>
+            <IconButton
+              onClick={this.handleOpen.bind(this)}
+              color="secondary"
+              aria-label="Add"
+              disabled={!isExportPossible}
+            >
+              <Add />
+            </IconButton>
+          </span>
+        </Tooltip>
         <Formik
           enableReinitialize={true}
           initialValues={{
             format: '',
-            type: 'full',
             maxMarkingDefinition: 'none',
           }}
           validationSchema={exportValidation(t)}
-          onSubmit={onSubmit}
-          onReset={handleCloseExport}
+          onSubmit={this.onSubmit.bind(this)}
+          onReset={this.handleClose.bind(this)}
           render={({ submitForm, handleReset, isSubmitting }) => (
-            <Form style={{ margin: '0 0 20px 0' }}>
+            <Form>
               <Dialog
-                open={openExport}
-                keepMounted={true}
-                onClose={handleCloseExport}
+                open={this.state.open}
+                onClose={this.handleClose.bind(this)}
                 fullWidth={true}
               >
                 <DialogTitle>{t('Generate an export')}</DialogTitle>
@@ -209,24 +235,6 @@ const FileManager = ({
                             ))}
                           </Field>
                           <Field
-                            name="type"
-                            component={Select}
-                            label={t('Export type')}
-                            fullWidth={true}
-                            inputProps={{
-                              name: 'type',
-                              id: 'type',
-                            }}
-                            containerstyle={{ marginTop: 20, width: '100%' }}
-                          >
-                            <MenuItem value="simple">
-                              {t('Simple export (just the entity)')}
-                            </MenuItem>
-                            <MenuItem value="full">
-                              {t('Full export (entity and first neighbours)')}
-                            </MenuItem>
-                          </Field>
-                          <Field
                             name="maxMarkingDefinition"
                             component={Select}
                             label={t('Max marking definition level')}
@@ -235,7 +243,10 @@ const FileManager = ({
                               name: 'maxMarkingDefinition',
                               id: 'maxMarkingDefinition',
                             }}
-                            containerstyle={{ marginTop: 20, width: '100%' }}
+                            containerstyle={{
+                              marginTop: 20,
+                              width: '100%',
+                            }}
                           >
                             <MenuItem value="none">{t('None')}</MenuItem>
                             {map(
@@ -278,27 +289,36 @@ const FileManager = ({
           )}
         />
       </div>
-    </div>
-  );
+    );
+  }
+}
+
+const StixDomainEntitiesExportCreations = createFragmentContainer(
+  StixDomainEntitiesExportCreationComponent,
+  {
+    data: graphql`
+      fragment StixDomainEntitiesExportCreation_data on Query {
+        connectorsForExport {
+          id
+          name
+          active
+          connector_scope
+          updated_at
+        }
+      }
+    `,
+  },
+);
+
+StixDomainEntitiesExportCreations.propTypes = {
+  classes: PropTypes.object.isRequired,
+  t: PropTypes.func,
+  data: PropTypes.object,
+  exportEntityType: PropTypes.string.isRequired,
+  paginationOptions: PropTypes.object,
 };
 
-FileManager.propTypes = {
-  nsdt: PropTypes.func,
-  id: PropTypes.string.isRequired,
-  entity: PropTypes.object.isRequired,
-  connectorsExport: PropTypes.array.isRequired,
-};
-
-const FileManagerFragment = createFragmentContainer(FileManager, {
-  connectorsExport: graphql`
-    fragment FileManager_connectorsExport on Connector @relay(plural: true) {
-      id
-      name
-      active
-      connector_scope
-      updated_at
-    }
-  `,
-});
-
-export default compose(inject18n, withStyles(styles))(FileManagerFragment);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixDomainEntitiesExportCreations);
