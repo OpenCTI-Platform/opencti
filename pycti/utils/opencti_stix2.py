@@ -1646,7 +1646,7 @@ class OpenCTIStix2:
             else "Unknown",
             pattern_type=stix_object[CustomProperties.PATTERN_TYPE]
             if CustomProperties.PATTERN_TYPE in stix_object
-            else "stix2",
+            else "stix",
             valid_from=stix_object["valid_from"]
             if "valid_from" in stix_object
             else None,
