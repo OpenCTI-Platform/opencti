@@ -1,2 +1,3 @@
+antlr4-python2-runtime==4.7.1
 stix2
 stix2-validator

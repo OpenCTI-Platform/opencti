@@ -24,10 +24,15 @@ const styles = () => ({
   card: {
     width: '100%',
     height: '100%',
+    position: 'relative',
   },
   cardContent: {
     paddingTop: 0,
-    height: 190,
+    marginBottom: 40,
+  },
+  actions: {
+    position: 'absolute',
+    bottom: 0,
   },
 });
 
@@ -107,7 +112,7 @@ class Inferences extends Component {
                           {inference.rule}
                         </pre>
                       </CardContent>
-                      <CardActions disableSpacing>
+                      <CardActions disableSpacing className={classes.actions}>
                         <FormControlLabel
                           control={
                             <Switch
