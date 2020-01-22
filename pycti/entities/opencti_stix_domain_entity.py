@@ -153,6 +153,23 @@ class StixDomainEntity:
             }
             ... on Tool {
                 tool_version
+                killChainPhases {
+                    edges {
+                        node {
+                            id
+                            entity_type
+                            stix_id_key
+                            kill_chain_name
+                            phase_name
+                            phase_order
+                            created
+                            modified
+                        }
+                        relation {
+                            id
+                        }
+                    }
+                }
             }
             ... on Organization {
                 organization_class

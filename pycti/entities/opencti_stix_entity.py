@@ -153,6 +153,29 @@ class StixEntity:
                     }
                 }                
             }
+            ... on Tool {
+                tool_version
+                killChainPhases {
+                    edges {
+                        node {
+                            id
+                            entity_type
+                            stix_id_key
+                            kill_chain_name
+                            phase_name
+                            phase_order
+                            created
+                            modified
+                        }
+                        relation {
+                            id
+                        }
+                    }
+                }
+            }
+            ... on Organization {
+                organization_class
+            }
             ... on Indicator {
                 indicator_pattern
                 pattern_type
@@ -163,6 +186,23 @@ class StixEntity:
                             stix_id_key
                             entity_type
                             observable_value
+                        }
+                        relation {
+                            id
+                        }
+                    }
+                }
+                killChainPhases {
+                    edges {
+                        node {
+                            id
+                            entity_type
+                            stix_id_key
+                            kill_chain_name
+                            phase_name
+                            phase_order
+                            created
+                            modified
                         }
                         relation {
                             id
@@ -358,10 +398,7 @@ class StixEntity:
                     "error", "Cannot add Marking-Definition, entity not found"
                 )
                 return False
-            markings_ids = []
-            for marking in stix_entity["markingDefinitions"]:
-                markings_ids.append(marking["id"])
-            if marking_definition_id in markings_ids:
+            if marking_definition_id in stix_entity["markingDefinitionsIds"]:
                 return True
             else:
                 self.opencti.log(
@@ -470,10 +507,7 @@ class StixEntity:
                     "error", "Cannot add External-Reference, entity not found"
                 )
                 return False
-            external_references_ids = []
-            for external_reference in stix_entity["externalReferences"]:
-                external_references_ids.append(external_reference["id"])
-            if external_reference_id in external_references_ids:
+            if external_reference_id in stix_entity["externalReferencesIds"]:
                 return True
             else:
                 self.opencti.log(
@@ -529,14 +563,10 @@ class StixEntity:
                 stix_entity = self.read(id=id)
             if stix_entity is None:
                 self.opencti.log(
-                    "error", "Cannot add External-Reference, entity not found"
+                    "error", "Cannot add Kill-Chain-Phase, entity not found"
                 )
                 return False
-            stix_entity = self.read(id=id)
-            kill_chain_phases_ids = []
-            for kill_chain_phase in stix_entity["killChainPhases"]:
-                kill_chain_phases_ids.append(kill_chain_phase["id"])
-            if kill_chain_phase_id in kill_chain_phases_ids:
+            if kill_chain_phase_id in stix_entity["killChainPhasesIds"]:
                 return True
             else:
                 self.opencti.log(
