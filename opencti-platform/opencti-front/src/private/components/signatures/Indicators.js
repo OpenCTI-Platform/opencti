@@ -40,6 +40,7 @@ class Indicators extends Component {
       view: propOr('lines', 'view', params),
       indicatorTypes: [],
       observableTypes: [],
+      openExports: false,
     };
   }
 
@@ -60,24 +61,38 @@ class Indicators extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
+  handleToggleExports() {
+    this.setState({ openExports: !this.state.openExports });
+  }
+
   handleToggleIndicatorType(type) {
     if (this.state.indicatorTypes.includes(type)) {
-      this.setState({ indicatorTypes: filter((t) => t !== type, this.state.indicatorTypes) });
+      this.setState({
+        indicatorTypes: filter((t) => t !== type, this.state.indicatorTypes),
+      });
     } else {
-      this.setState({ indicatorTypes: append(type, this.state.indicatorTypes) });
+      this.setState({
+        indicatorTypes: append(type, this.state.indicatorTypes),
+      });
     }
   }
 
   handleToggleObservableType(type) {
     if (this.state.observableTypes.includes(type)) {
-      this.setState({ observableTypes: filter((t) => t !== type, this.state.observableTypes) });
+      this.setState({
+        observableTypes: filter((t) => t !== type, this.state.observableTypes),
+      });
     } else {
-      this.setState({ observableTypes: append(type, this.state.observableTypes) });
+      this.setState({
+        observableTypes: append(type, this.state.observableTypes),
+      });
     }
   }
 
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc, searchTerm } = this.state;
+    const {
+      sortBy, orderAsc, searchTerm, openExports,
+    } = this.state;
     const dataColumns = {
       pattern_type: {
         label: 'Pattern type',
@@ -111,8 +126,11 @@ class Indicators extends Component {
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
-        displayImport={true}
+        handleToggleExports={this.handleToggleExports.bind(this)}
+        openExports={openExports}
+        exportEntityType="Indicator"
         keyword={searchTerm}
+        paginationOptions={paginationOptions}
       >
         <QueryRenderer
           query={indicatorsLinesQuery}
@@ -139,6 +157,7 @@ class Indicators extends Component {
       searchTerm,
       indicatorTypes,
       observableTypes,
+      openExports,
     } = this.state;
     let filters = [];
     if (indicatorTypes.length > 0) {
@@ -166,7 +185,10 @@ class Indicators extends Component {
     return (
       <div className={classes.container}>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <IndicatorCreation paginationOptions={paginationOptions} />
+        <IndicatorCreation
+          paginationOptions={paginationOptions}
+          openExports={openExports}
+        />
         <IndicatorsRightBar
           indicatorTypes={indicatorTypes}
           observableTypes={observableTypes}
@@ -174,6 +196,7 @@ class Indicators extends Component {
           handleToggleObservableType={this.handleToggleObservableType.bind(
             this,
           )}
+          openExports={openExports}
         />
       </div>
     );

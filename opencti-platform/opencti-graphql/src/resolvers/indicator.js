@@ -19,7 +19,8 @@ const indicatorResolvers = {
     tags: `${REL_INDEX_PREFIX}tagged.value`
   },
   IndicatorsFilter: {
-    observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`
+    observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`,
+    indicates: `${REL_INDEX_PREFIX}indicates.internal_id_key`,
   },
   Indicator: {
     observableRefs: report => observableRefs(report.id)

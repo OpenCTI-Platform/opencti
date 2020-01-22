@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  map, filter, head, keys, groupBy, assoc, compose,
+  map, filter, keys, groupBy, assoc, compose, append,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
@@ -15,9 +15,11 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { ExpandMore, CheckCircle } from '@material-ui/icons';
+import { ConnectionHandler } from 'relay-runtime';
 import { commitMutation } from '../../../relay/environment';
 import ItemIcon from '../../../components/ItemIcon';
 import inject18n from '../../../components/i18n';
+import { reportRefPopoverDeletionMutation } from './ReportRefPopover';
 
 const styles = (theme) => ({
   container: {
@@ -57,22 +59,9 @@ export const reportMutationRelationAdd = graphql`
     reportEdit(id: $id) {
       relationAdd(input: $input) {
         id
-        from {
-          ...ReportObservablesLines_report
+        to {
+          ...ReportObservableLine_node
         }
-      }
-    }
-  }
-`;
-
-export const reportMutationRelationDelete = graphql`
-  mutation ReportAddObservableRefsLinesRelationDeleteMutation(
-    $id: ID!
-    $relationId: ID!
-  ) {
-    reportEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
-        ...ReportObservablesLines_report
       }
     }
   }
@@ -81,23 +70,38 @@ export const reportMutationRelationDelete = graphql`
 class ReportAddObservableRefsLinesContainer extends Component {
   constructor(props) {
     super(props);
-    this.state = { expandedPanels: {} };
+    this.state = { expandedPanels: {}, addedObservables: [] };
   }
 
   toggleStixObservable(stixObservable) {
-    const { reportId, reportObservableRefs } = this.props;
-    const reportObservableRefsIds = map((n) => n.node.id, reportObservableRefs);
-    const alreadyAdded = reportObservableRefsIds.includes(stixObservable.id);
+    const { reportId, paginationOptions } = this.props;
+    const alreadyAdded = this.state.addedObservables.includes(
+      stixObservable.id,
+    );
 
     if (alreadyAdded) {
-      const existingStixObservable = head(
-        filter((n) => n.node.id === stixObservable.id, reportObservableRefs),
-      );
       commitMutation({
-        mutation: reportMutationRelationDelete,
+        mutation: reportRefPopoverDeletionMutation,
         variables: {
           id: reportId,
-          relationId: existingStixObservable.relation.id,
+          toId: stixObservable.id,
+          relationType: 'observable_refs',
+        },
+        updater: (store) => {
+          const conn = ConnectionHandler.getConnection(
+            store.get(reportId),
+            'Pagination_observableRefs',
+            paginationOptions,
+          );
+          ConnectionHandler.deleteNode(conn, stixObservable.id);
+        },
+        onCompleted: () => {
+          this.setState({
+            addedObservables: filter(
+              (n) => n !== stixObservable.id,
+              this.state.addedObservables,
+            ),
+          });
         },
       });
     } else {
@@ -112,6 +116,27 @@ class ReportAddObservableRefsLinesContainer extends Component {
         variables: {
           id: reportId,
           input,
+        },
+        updater: (store) => {
+          const payload = store
+            .getRootField('reportEdit')
+            .getLinkedRecord('relationAdd', { input })
+            .getLinkedRecord('to');
+          const newEdge = payload.setLinkedRecord(payload, 'node');
+          const conn = ConnectionHandler.getConnection(
+            store.get(reportId),
+            'Pagination_observableRefs',
+            this.props.paginationOptions,
+          );
+          ConnectionHandler.insertEdgeBefore(conn, newEdge);
+        },
+        onCompleted: () => {
+          this.setState({
+            addedObservables: append(
+              stixObservable.id,
+              this.state.addedObservables,
+            ),
+          });
         },
       });
     }
@@ -134,10 +159,8 @@ class ReportAddObservableRefsLinesContainer extends Component {
   }
 
   render() {
-    const {
-      t, classes, data, reportObservableRefs,
-    } = this.props;
-    const reportObservableRefsIds = map((n) => n.node.id, reportObservableRefs);
+    const { t, classes, data } = this.props;
+    const { addedObservables } = this.state;
     const stixObservablesNodes = map((n) => n.node, data.stixObservables.edges);
     const byType = groupBy((stixObservable) => stixObservable.entity_type);
     const stixObservables = byType(stixObservablesNodes);
@@ -170,7 +193,7 @@ class ReportAddObservableRefsLinesContainer extends Component {
               >
                 <List classes={{ root: classes.list }}>
                   {stixObservables[type].map((stixObservable) => {
-                    const alreadyAdded = reportObservableRefsIds.includes(
+                    const alreadyAdded = addedObservables.includes(
                       stixObservable.id,
                     );
                     return (
@@ -191,7 +214,9 @@ class ReportAddObservableRefsLinesContainer extends Component {
                             <ItemIcon type={type} />
                           )}
                         </ListItemIcon>
-                        <ListItemText primary={stixObservable.observable_value} />
+                        <ListItemText
+                          primary={stixObservable.observable_value}
+                        />
                       </ListItem>
                     );
                   })}
@@ -211,12 +236,12 @@ class ReportAddObservableRefsLinesContainer extends Component {
 
 ReportAddObservableRefsLinesContainer.propTypes = {
   reportId: PropTypes.string,
-  reportObservableRefs: PropTypes.array,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
+  paginationOptions: PropTypes.object,
 };
 
 export const reportAddObservableRefsLinesQuery = graphql`

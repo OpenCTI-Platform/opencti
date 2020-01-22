@@ -49,7 +49,6 @@ const reportResolvers = {
     }
   },
   ReportsOrdering: {
-    createdByRef: `${REL_INDEX_PREFIX}created_by_ref.name`,
     markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
     tags: `${REL_INDEX_PREFIX}tagged.value`
   },
@@ -60,7 +59,7 @@ const reportResolvers = {
   },
   Report: {
     objectRefs: (report, args) => objectRefs(report.id, args),
-    observableRefs: report => observableRefs(report.id),
+    observableRefs: (report, args) => observableRefs(report.id, args),
     relationRefs: (report, args) => relationRefs(report.id, args)
   },
   Mutation: {
@@ -70,7 +69,8 @@ const reportResolvers = {
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId, toId, relationType }) =>
+        stixDomainEntityDeleteRelation(user, id, relationId, toId, relationType)
     }),
     reportAdd: (_, { input }, { user }) => addReport(user, input)
   }

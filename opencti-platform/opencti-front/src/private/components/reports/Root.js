@@ -35,6 +35,7 @@ const reportQuery = graphql`
       ...ReportDetails_report
       ...ReportKnowledge_report
       ...ReportEntities_report
+      ...ReportObservables_report
       ...FileImportViewer_entity
       ...FileExportViewer_entity
     }
@@ -115,7 +116,10 @@ class RootReport extends Component {
                     exact
                     path="/dashboard/reports/all/:reportId/observables"
                     render={(routeProps) => (
-                      <ReportObservables {...routeProps} reportId={reportId} />
+                      <ReportObservables
+                        {...routeProps}
+                        report={props.report}
+                      />
                     )}
                   />
                   <Route

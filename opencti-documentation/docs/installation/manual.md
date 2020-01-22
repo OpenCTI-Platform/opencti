@@ -10,7 +10,7 @@ sidebar_label: Manual deployment
 | ------------- |-----------------------| ----------------------------------------------------------|
 | NodeJS        | `>= 12.* && < 13.0.0` | https://nodejs.org/en/download                            |
 | Python        | `>= 3.6`              | https://www.python.org/downloads                          |
-| Grakn Core    | `=== 1.5.9`           | https://grakn.ai/download#core                            |
+| Grakn Core    | `=== 1.6.1`           | https://grakn.ai/download#core                            |
 | ElasticSearch | `>= 7.5`              | https://www.elastic.co/downloads/elasticsearch            |
 | MinIO         | `>= 20191012`         | https://min.io/download                                   |
 | Redis         | `>= 3.0`              | https://redis.io/download                                 |
@@ -87,6 +87,8 @@ $ python3 worker.py &
 ```
 
 ## Upgrade the platform
+
+> If you are upgrading from Grakn 1.5.9 to Grakn 1.6.1, you need to be aware of the manual migration procedure for keep your old data, as documented in the [Grakn documentation](https://dev.grakn.ai/docs/running-grakn/install-and-run).
 
 When upgrading the platform, you have to replace all files and restart the platform, the schema migrations will be done automatically:
 

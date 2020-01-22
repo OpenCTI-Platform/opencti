@@ -4,7 +4,6 @@ import {
   addStixObservableRelation,
   findAll,
   findById,
-  search,
   stixObservableRelationAddRelation,
   stixObservableRelationCleanContext,
   stixObservableRelationDelete,
@@ -20,9 +19,6 @@ const stixObservableRelationResolvers = {
   Query: {
     stixObservableRelation: (_, { id }) => findById(id),
     stixObservableRelations: (_, args) => {
-      if (args.search && args.search.length > 0) {
-        return search(args);
-      }
       if (args.stix_id_key && args.stix_id_key.length > 0) {
         return findById(args.stix_id_key);
       }

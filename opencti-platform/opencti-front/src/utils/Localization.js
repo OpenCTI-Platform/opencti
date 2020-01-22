@@ -206,6 +206,10 @@ const i18n = {
       'The alias has been added': "L'alias a bien été ajouté",
       'Settings have been updated': 'Les paramètres ont été mis à jour',
       'Export the entity': "Exporter l'entité",
+      'Cards view': 'Vue cartes',
+      'Lines view': 'Vue lignes',
+      'Exports panel': 'Volet exports',
+      'Exports list': 'Liste des exports',
       'Demo credentials': 'Identifiants de démo',
       'No connectors are enabled on this platform.':
         "Aucun connecteur n'est actif sur cette plateforme",

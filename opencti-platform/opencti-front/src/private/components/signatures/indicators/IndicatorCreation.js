@@ -20,7 +20,7 @@ import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import Autocomplete from '../../../../components/Autocomplete';
 import AutocompleteCreate from '../../../../components/AutocompleteCreate';
 import TextField from '../../../../components/TextField';
-import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
+import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
@@ -43,6 +43,19 @@ const styles = (theme) => ({
     position: 'fixed',
     bottom: 30,
     right: 280,
+    transition: theme.transitions.create('right', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  },
+  createButtonExports: {
+    position: 'fixed',
+    bottom: 30,
+    right: 590,
+    transition: theme.transitions.create('right', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
   },
   buttons: {
     marginTop: 20,
@@ -141,7 +154,7 @@ class IndicatorCreation extends Component {
   }
 
   searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsSearchQuery, {
+    fetchQuery(markingDefinitionsLinesSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const markingDefinitions = pipe(
@@ -192,14 +205,14 @@ class IndicatorCreation extends Component {
   }
 
   render() {
-    const { t, classes } = this.props;
+    const { t, classes, openExports } = this.props;
     return (
       <div>
         <Fab
           onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Add"
-          className={classes.createButton}
+          className={openExports ? classes.createButtonExports : classes.createButton}
         >
           <Add />
         </Fab>
@@ -422,6 +435,7 @@ IndicatorCreation.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  openExports: PropTypes.bool,
 };
 
 export default compose(

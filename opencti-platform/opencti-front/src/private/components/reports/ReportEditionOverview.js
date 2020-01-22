@@ -30,7 +30,7 @@ import TextField from '../../../components/TextField';
 import Select from '../../../components/Select';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import AutocompleteCreate from '../../../components/AutocompleteCreate';
-import { markingDefinitionsSearchQuery } from '../settings/MarkingDefinitions';
+import { markingDefinitionsLinesSearchQuery } from '../settings/marking_definitions/MarkingDefinitionsLines';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../common/identities/IdentityCreation';
@@ -157,7 +157,7 @@ class ReportEditionOverviewComponent extends Component {
   }
 
   searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsSearchQuery, {
+    fetchQuery(markingDefinitionsLinesSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const markingDefinitions = pipe(

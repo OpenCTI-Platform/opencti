@@ -19,7 +19,7 @@ class Incidents extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'Incidents-view',
+      'view-incidents',
     );
     this.state = {
       sortBy: propOr('created', 'sortBy', params),
@@ -27,6 +27,7 @@ class Incidents extends Component {
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
       filters: {},
+      openExports: false,
     };
   }
 
@@ -34,7 +35,7 @@ class Incidents extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'Incidents-view',
+      'view-incidents',
       dissoc('filters', this.state),
     );
   }
@@ -51,6 +52,10 @@ class Incidents extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
+  handleToggleExports() {
+    this.setState({ openExports: !this.state.openExports });
+  }
+
   handleAddFilter(key, id, value, event) {
     event.stopPropagation();
     event.preventDefault();
@@ -65,7 +70,7 @@ class Incidents extends Component {
 
   renderCards(paginationOptions) {
     const {
-      sortBy, orderAsc, searchTerm, filters,
+      sortBy, orderAsc, searchTerm, filters, openExports,
     } = this.state;
     const dataColumns = {
       name: {
@@ -90,9 +95,12 @@ class Incidents extends Component {
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-        displayImport={true}
+        handleToggleExports={this.handleToggleExports.bind(this)}
+        openExports={openExports}
+        exportEntityType="Incident"
         keyword={searchTerm}
         filters={filters}
+        paginationOptions={paginationOptions}
       >
         <QueryRenderer
           query={incidentsCardsQuery}
@@ -112,7 +120,7 @@ class Incidents extends Component {
 
   renderLines(paginationOptions) {
     const {
-      sortBy, orderAsc, searchTerm, filters,
+      sortBy, orderAsc, searchTerm, filters, openExports,
     } = this.state;
     const dataColumns = {
       name: {
@@ -145,9 +153,12 @@ class Incidents extends Component {
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-        displayImport={true}
+        handleToggleExports={this.handleToggleExports.bind(this)}
+        openExports={openExports}
+        exportEntityType="Incident"
         keyword={searchTerm}
         filters={filters}
+        paginationOptions={paginationOptions}
       >
         <QueryRenderer
           query={incidentsLinesQuery}

@@ -1,4 +1,5 @@
 import uuid from 'uuid/v4';
+import uuid5 from 'uuid/v5';
 import {
   __,
   append,
@@ -245,14 +246,14 @@ export const graknIsAlive = async () => {
 export const getGraknVersion = async () => {
   // It seems that Grakn server does not expose its version yet:
   // https://github.com/graknlabs/client-nodejs/issues/47
-  return '1.5.9';
+  return '1.6.2';
 };
 
 /**
  * Recursive fetch of every types of a concept
  * @param concept the element
  * @param currentType the current type
- * @param acc the recursive accumulator
+ * @param acc the recursive accuStixDomainEntitiesExportComponentmulator
  * @returns {Promise<Array>}
  */
 export const conceptTypes = async (concept, currentType = null, acc = []) => {
@@ -535,6 +536,10 @@ const loadConcept = async (concept, args = {}) => {
         const pattern = `{ $${INFERRED_RELATION_KEY}(${fromRole}: $from, ${toRole}: $to) isa ${type}; $from id ${fromId}; $to id ${toId}; };`;
         return pipe(
           assoc('id', Buffer.from(pattern).toString('base64')),
+          assoc('internal_id_key', Buffer.from(pattern).toString('base64')),
+          assoc('stix_id_key', `relationship--${uuid()}`),
+          assoc('created', now()),
+          assoc('modified', now()),
           assoc('created_at', now()),
           assoc('updated_at', now())
         )(relationData);
@@ -609,7 +614,13 @@ const getConcepts = async (
   // 06. Filter every relation in double
   // Grakn can respond with twice the relations (browse in 2 directions)
   const uniqFilter = uniqueKey || head(entities);
-  return uniqBy(u => u[uniqFilter].grakn_id, result);
+  if (result.length > 0) {
+    const firstResult = head(result);
+    if ('relationship_type' in firstResult[uniqFilter]) {
+      return uniqBy(u => u[uniqFilter].grakn_id, result);
+    }
+  }
+  return result;
 };
 export const find = async (query, entities, { infer } = findOpts) => {
   // Remove empty values from entities
@@ -903,7 +914,7 @@ export const loadEntityByGraknId = async (graknId, args = {}) => {
     const fromCache = await elLoadByGraknId(graknId);
     if (fromCache) return fromCache;
   }
-  const query = `match $x isa entity; $x id ${escapeString(graknId)}; get;`;
+  const query = `match $x id ${escapeString(graknId)}; get;`;
   const element = await load(query, ['x']);
   return element.x;
 };
@@ -1136,7 +1147,7 @@ export const timeSeriesEntities = async (entityType, filters, options) => {
   const { startDate, endDate, operation, field, interval, inferred = false } = options;
   // Check if can be supported by ES
   let histogramData;
-  if (operation === 'count' && inferred === false) {
+  if (operation === 'count' && !inferred) {
     histogramData = await elHistogramCount(entityType, field, interval, startDate, endDate, filters);
   } else {
     // If not compatible, do it with grakn
@@ -1253,7 +1264,6 @@ const flatAttributesForObject = data => {
 // region mutation relation
 const createRelationRaw = async (fromInternalId, input, opts = {}) => {
   const { indexable = true, reversedReturn = false, isStixObservableRelation = false } = opts;
-  const relationId = uuid();
   // 01. First fix the direction of the relation
   const isStixRelation = includes('stix_id_key', Object.keys(input)) || input.relationship_type;
   const relationshipType = input.relationship_type || input.through;
@@ -1275,6 +1285,8 @@ const createRelationRaw = async (fromInternalId, input, opts = {}) => {
   }
   // 02. Prepare the data to create or index
   const today = now();
+  const relationId =
+    entityType === TYPE_RELATION_EMBEDDED ? uuid5(`${fromInternalId}${input.toId}`, uuid5.DNS) : uuid();
   let relationAttributes = { internal_id_key: relationId };
   if (isStixRelation) {
     const currentDate = now();
@@ -1691,6 +1703,17 @@ export const deleteRelationById = async relationId => {
     return relationId;
   });
 };
+export const deleteRelationsByFromAndTo = async (fromId, toId, relationType = 'relation') => {
+  const efromId = escapeString(fromId);
+  const etoId = escapeString(toId);
+  const read = `match $from has internal_id_key "${efromId}"; $to has internal_id_key "${etoId}"; $rel($from, $to) isa ${relationType}; get;`;
+  const relationsToDelete = await find(read, ['rel']);
+  const relationsIds = map(r => r.rel.id, relationsToDelete);
+  for (const relationId of relationsIds) {
+    await deleteRelationById(relationId);
+  }
+};
+
 export const deleteAttributeById = async id => {
   return executeWrite(async wTx => {
     const query = `match $x id ${escape(id)}; delete $x;`;

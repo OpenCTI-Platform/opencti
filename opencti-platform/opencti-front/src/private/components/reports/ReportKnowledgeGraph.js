@@ -38,10 +38,6 @@ import { serializeGraph } from '../../../utils/GraphHelper';
 import { dateFormat } from '../../../utils/Time';
 import { reportMutationFieldPatch } from './ReportEditionOverview';
 import ReportAddObjectRefs from './ReportAddObjectRefs';
-import {
-  reportMutationRelationAdd,
-  reportMutationRelationDelete,
-} from './ReportAddObjectRefsLines';
 import StixRelationCreation from '../common/stix_relations/StixRelationCreation';
 import StixDomainEntityEdition from '../common/stix_domain_entities/StixDomainEntityEdition';
 import StixRelationEdition from '../common/stix_relations/StixRelationEdition';
@@ -93,6 +89,35 @@ const reportKnowledgeGraphStixEntityQuery = graphql`
       name
       description
       entity_type
+    }
+  }
+`;
+
+const reportKnowledgeGraphtMutationRelationAdd = graphql`
+  mutation ReportKnowledgeGraphRelationAddMutation(
+    $id: ID!
+    $input: RelationAddInput!
+  ) {
+    reportEdit(id: $id) {
+      relationAdd(input: $input) {
+        id
+        from {
+          ...ReportKnowledgeGraph_report
+        }
+      }
+    }
+  }
+`;
+
+const reportKnowledgeGraphtMutationRelationDelete = graphql`
+  mutation ReportKnowledgeGraphRelationDeleteMutation(
+    $id: ID!
+    $relationId: ID!
+  ) {
+    reportEdit(id: $id) {
+      relationDelete(relationId: $relationId) {
+        ...ReportKnowledgeGraph_report
+      }
     }
   }
 `;
@@ -431,7 +456,7 @@ class ReportKnowledgeGraphComponent extends Component {
         // handle entity deletion
         if (node.type === 'entity') {
           commitMutation({
-            mutation: reportMutationRelationDelete,
+            mutation: reportKnowledgeGraphtMutationRelationDelete,
             variables: {
               id: this.props.report.id,
               relationId: node.extras.relationId,
@@ -446,7 +471,7 @@ class ReportKnowledgeGraphComponent extends Component {
               ? node.extras.id
               : node.extras.relationId;
             commitMutation({
-              mutation: reportMutationRelationDelete,
+              mutation: reportKnowledgeGraphtMutationRelationDelete,
               variables: {
                 id: this.props.report.id,
                 relationId: relationIdToDelete,
@@ -555,7 +580,7 @@ class ReportKnowledgeGraphComponent extends Component {
       through: 'object_refs',
     };
     commitMutation({
-      mutation: reportMutationRelationAdd,
+      mutation: reportKnowledgeGraphtMutationRelationAdd,
       variables: {
         id: this.props.report.id,
         input,

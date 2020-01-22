@@ -105,7 +105,7 @@ class StixDomainEntityHeader extends Component {
   }
 
   deleteAlias(alias) {
-    const aliases = filter(a => a !== alias, this.props.stixDomainEntity.alias);
+    const aliases = filter((a) => a !== alias, this.props.stixDomainEntity.alias);
     commitMutation({
       mutation: stixDomainEntityMutation,
       variables: {
@@ -140,7 +140,7 @@ class StixDomainEntityHeader extends Component {
         </div>
         {variant !== 'noalias' ? (
           <div className={classes.aliases}>
-            {take(5, alias).map(label => (label.length > 0 ? (
+            {take(5, alias).map((label) => (label.length > 0 ? (
                 <Chip
                   key={label}
                   classes={{ root: classes.alias }}
@@ -160,6 +160,7 @@ class StixDomainEntityHeader extends Component {
               </IconButton>
             ) : (
               <IconButton
+                style={{ float: 'left' }}
                 color="secondary"
                 aria-label="Alias"
                 onClick={this.handleToggleCreateAlias.bind(this)}
@@ -177,10 +178,11 @@ class StixDomainEntityHeader extends Component {
               mountOnEnter={true}
               unmountOnExit={true}
             >
-              <Formik
-                initialValues={{ new_alias: '' }}
-                onSubmit={this.onSubmitCreateAlias.bind(this, 'main')}
-                render={() => (
+              <div style={{ float: 'left' }}>
+                <Formik
+                  initialValues={{ new_alias: '' }}
+                  onSubmit={this.onSubmitCreateAlias.bind(this, 'main')}
+                >
                   <Form style={{ float: 'right' }}>
                     <Field
                       name="new_alias"
@@ -190,8 +192,8 @@ class StixDomainEntityHeader extends Component {
                       className={classes.aliasInput}
                     />
                   </Form>
-                )}
-              />
+                </Formik>
+              </div>
             </Slide>
           </div>
         ) : (
@@ -224,7 +226,7 @@ class StixDomainEntityHeader extends Component {
           </DialogTitle>
           <DialogContent dividers={true}>
             <List>
-              {propOr([], 'alias', stixDomainEntity).map(label => (label.length > 0 ? (
+              {propOr([], 'alias', stixDomainEntity).map((label) => (label.length > 0 ? (
                   <ListItem key={label} disableGutters={true} dense={true}>
                     <ListItemText primary={label} />
                     <ListItemSecondaryAction>
@@ -287,7 +289,4 @@ StixDomainEntityHeader.propTypes = {
   fld: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixDomainEntityHeader);
+export default compose(inject18n, withStyles(styles))(StixDomainEntityHeader);

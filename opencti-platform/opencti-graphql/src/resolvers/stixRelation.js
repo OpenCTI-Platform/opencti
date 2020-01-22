@@ -4,7 +4,6 @@ import {
   addStixRelation,
   findAll,
   findById,
-  search,
   stixRelationAddRelation,
   stixRelationCleanContext,
   stixRelationDelete,
@@ -21,12 +20,7 @@ import { distributionRelations, loadByGraknId, timeSeriesRelations } from '../da
 const stixRelationResolvers = {
   Query: {
     stixRelation: (_, { id }) => findById(id),
-    stixRelations: (_, args) => {
-      if (args.search && args.search.length > 0) {
-        return search(args);
-      }
-      return findAll(args);
-    },
+    stixRelations: (_, args) => findAll(args),
     stixRelationsTimeSeries: (_, args) => timeSeriesRelations(args),
     stixRelationsDistribution: async (_, args) => distributionRelations(args),
     stixRelationsNumber: (_, args) => stixRelationsNumber(args)

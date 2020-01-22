@@ -15,10 +15,30 @@ import {
   Dashboard,
 } from '@material-ui/icons';
 import Chip from '@material-ui/core/Chip';
+import Tooltip from '@material-ui/core/Tooltip';
+import { FileExportOutline } from 'mdi-material-ui';
+import { QueryRenderer } from '../../relay/environment';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
+import StixDomainEntitiesExports, {
+  stixDomainEntitiesExportsQuery,
+} from '../../private/components/common/stix_domain_entities/StixDomainEntitiesExports';
 
-const styles = () => ({
+const styles = (theme) => ({
+  container: {
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+  },
+  containerOpenExports: {
+    flexGrow: 1,
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    marginRight: 310,
+  },
   parameters: {
     float: 'left',
     marginTop: -10,
@@ -102,15 +122,23 @@ class ListLines extends Component {
       handleSearch,
       handleChangeView,
       handleRemoveFilter,
+      handleToggleExports,
+      openExports,
       dataColumns,
       secondaryAction,
+      paginationOptions,
       keyword,
       filters,
       bottomNav,
       children,
+      exportEntityType,
     } = this.props;
     return (
-      <div>
+      <div
+        className={
+          openExports ? classes.containerOpenExports : classes.container
+        }
+      >
         <div className={classes.parameters}>
           {typeof handleSearch === 'function' ? (
             <div style={{ float: 'left', marginRight: 20 }}>
@@ -130,7 +158,9 @@ class ListLines extends Component {
                     <Chip
                       key={filter[0]}
                       classes={{ root: classes.filter }}
-                      label={`${filter[0]}: ${f.value === null ? t('No tag') : f.value}`}
+                      label={`${filter[0]}: ${
+                        f.value === null ? t('No tag') : f.value
+                      }`}
                       onDelete={handleRemoveFilter.bind(this, filter[0])}
                     />
                 ),
@@ -143,22 +173,40 @@ class ListLines extends Component {
         <div className={classes.views}>
           <div style={{ float: 'right', marginTop: -20 }}>
             {typeof handleChangeView === 'function' ? (
-              <IconButton
-                color="primary"
-                classes={{ root: classes.button }}
-                onClick={handleChangeView.bind(this, 'cards')}>
-                <Dashboard />
-              </IconButton>
+              <Tooltip title={t('Cards view')}>
+                <IconButton
+                  color="primary"
+                  classes={{ root: classes.button }}
+                  onClick={handleChangeView.bind(this, 'cards')}
+                >
+                  <Dashboard />
+                </IconButton>
+              </Tooltip>
             ) : (
               ''
             )}
             {typeof handleChangeView === 'function' ? (
-              <IconButton
-                color="secondary"
-                classes={{ root: classes.button }}
-                onClick={handleChangeView.bind(this, 'lines')}>
-                <TableChart />
-              </IconButton>
+              <Tooltip title={t('Lines view')}>
+                <IconButton
+                  color="secondary"
+                  classes={{ root: classes.button }}
+                  onClick={handleChangeView.bind(this, 'lines')}
+                >
+                  <TableChart />
+                </IconButton>
+              </Tooltip>
+            ) : (
+              ''
+            )}
+            {typeof handleToggleExports === 'function' ? (
+              <Tooltip title={t('Exports panel')}>
+                <IconButton
+                  color={openExports ? 'secondary' : 'primary'}
+                  onClick={handleToggleExports.bind(this)}
+                >
+                  <FileExportOutline />
+                </IconButton>
+              </Tooltip>
             ) : (
               ''
             )}
@@ -208,6 +256,23 @@ class ListLines extends Component {
           </ListItem>
           {children}
         </List>
+        {typeof handleToggleExports === 'function' ? (
+          <QueryRenderer
+            query={stixDomainEntitiesExportsQuery}
+            variables={{ count: 25, type: exportEntityType }}
+            render={({ props }) => (
+              <StixDomainEntitiesExports
+                open={openExports}
+                handleToggle={handleToggleExports.bind(this)}
+                data={props}
+                paginationOptions={paginationOptions}
+                exportEntityType={exportEntityType}
+              />
+            )}
+          />
+        ) : (
+          ''
+        )}
       </div>
     );
   }
@@ -221,17 +286,18 @@ ListLines.propTypes = {
   handleSort: PropTypes.func.isRequired,
   handleChangeView: PropTypes.func,
   handleRemoveFilter: PropTypes.func,
+  handleToggleExports: PropTypes.func,
+  openExports: PropTypes.bool,
   views: PropTypes.array,
+  exportEntityType: PropTypes.string,
   keyword: PropTypes.string,
   filters: PropTypes.object,
   sortBy: PropTypes.string,
   orderAsc: PropTypes.bool.isRequired,
   dataColumns: PropTypes.object.isRequired,
+  paginationOptions: PropTypes.object,
   secondaryAction: PropTypes.bool,
   bottomNav: PropTypes.bool,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(ListLines);
+export default compose(inject18n, withStyles(styles))(ListLines);

@@ -1,3 +1,4 @@
+import { assoc, append, propOr } from 'ramda';
 import {
   createEntity,
   distributionEntities,
@@ -13,8 +14,16 @@ import {
   timeSeriesEntities
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { notify } from '../database/redis';
 import { buildPagination } from '../database/utils';
+import { findAll as findAllStixObservables } from './stixObservable';
+import { findAll as findAllStixDomainEntities } from './stixDomainEntity';
+
+export const STATUS_STATUS_NEW = 0;
+export const STATUS_STATUS_PROGRESS = 1;
+export const STATUS_STATUS_ANALYZED = 2;
+export const STATUS_STATUS_CLOSED = 3;
 
 export const findById = reportId => {
   if (reportId.match(/[a-z-]+--[\w-]{36}/g)) {
@@ -28,6 +37,17 @@ export const findAll = async args => {
 
 // Entities tab
 export const objectRefs = (reportId, args) => {
+  if (args.orderBy || args.filters || args.search) {
+    const finalArgs = assoc(
+      'filters',
+      append(
+        { key: `${REL_INDEX_PREFIX}object_refs.internal_id_key`, values: [reportId] },
+        propOr([], 'filters', args)
+      ),
+      args
+    );
+    return findAllStixDomainEntities(finalArgs);
+  }
   return findWithConnectedRelations(
     `match $from isa Report; $rel(knowledge_aggregation:$from, so:$to) isa object_refs;
     $to isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
@@ -42,10 +62,21 @@ export const relationRefs = (reportId, args) => {
   return listRelations(args.relationType, pointingFilter, args);
 };
 // Observable refs
-export const observableRefs = reportId => {
+export const observableRefs = (reportId, args) => {
+  if (args.orderBy || args.filters || args.search) {
+    const finalArgs = assoc(
+      'filters',
+      append(
+        { key: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`, values: [reportId] },
+        propOr([], 'filters', args)
+      ),
+      args
+    );
+    return findAllStixObservables(finalArgs);
+  }
   return findWithConnectedRelations(
     `match $from isa Report; $rel(observables_aggregation:$from, soo:$to) isa observable_refs;
-    $to isa Stix-Observable;
+    $to isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
     $from has internal_id_key "${escapeString(reportId)}"; get;`,
     'to',
     'rel'
@@ -118,7 +149,9 @@ export const reportsDistributionByEntity = async args => {
 
 // region mutations
 export const addReport = async (user, report) => {
-  const created = await createEntity(report, 'Report');
+  // If no status in creation, just force STATUS_NEW
+  const reportWithStatus = report.object_status ? report : assoc('object_status', STATUS_STATUS_NEW, report);
+  const created = await createEntity(reportWithStatus, 'Report');
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 // endregion

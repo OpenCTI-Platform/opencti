@@ -15,7 +15,7 @@ export const askEnrich = async (observableId, scope) => {
   // Create a work for each connector
   const workList = await Promise.all(
     map(connector => {
-      return createWork(connector, observableId).then(({ job, work }) => {
+      return createWork(connector, 'Stix-Observable', observableId).then(({ job, work }) => {
         return { connector, job, work };
       });
     }, targetConnectors)
