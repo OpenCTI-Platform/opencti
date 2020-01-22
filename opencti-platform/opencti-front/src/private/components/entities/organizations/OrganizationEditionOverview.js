@@ -365,7 +365,7 @@ class OrganizationEditionOverviewComponent extends Component {
                   component={Select}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
-                  label={t('Category')}
+                  label={t('Organization type')}
                   fullWidth={true}
                   inputProps={{
                     name: 'organization_class',

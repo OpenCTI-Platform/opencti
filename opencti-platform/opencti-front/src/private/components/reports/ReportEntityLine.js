@@ -14,6 +14,7 @@ import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
 import ItemIcon from '../../../components/ItemIcon';
 import ReportRefPopover from './ReportRefPopover';
+import { resolveLink } from '../../../utils/Entity';
 
 const styles = (theme) => ({
   item: {
@@ -63,7 +64,7 @@ class ReportEntityLineComponent extends Component {
         divider={true}
         button={true}
         component={Link}
-        to={`/dashboard/signatures/observables/${node.id}`}
+        to={`${resolveLink(node.entity_type)}/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ItemIcon type={node.entity_type} />

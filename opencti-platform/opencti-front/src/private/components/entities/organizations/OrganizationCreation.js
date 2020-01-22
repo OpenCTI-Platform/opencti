@@ -257,7 +257,7 @@ class OrganizationCreation extends Component {
                     <Field
                       name="organization_class"
                       component={Select}
-                      label={t('Category')}
+                      label={t('Organization type')}
                       fullWidth={true}
                       inputProps={{
                         name: 'organization_class',
