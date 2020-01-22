@@ -84,16 +84,6 @@ const threatActorValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
 });
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_threatActors',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
 class ThreatActorCreation extends Component {
   constructor(props) {
     super(props);
@@ -166,14 +156,13 @@ class ThreatActorCreation extends Component {
       },
       updater: (store) => {
         const payload = store.getRootField('threatActorAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
+        const newEdge = payload.setLinkedRecord(payload, 'node');
+        const conn = ConnectionHandler.getConnection(
+          store.get(store.getRoot().getDataID()),
+          'Pagination_threatActors',
           this.props.paginationOptions,
-          newEdge,
         );
+        ConnectionHandler.insertEdgeBefore(conn, newEdge);
       },
       setSubmitting,
       onCompleted: () => {

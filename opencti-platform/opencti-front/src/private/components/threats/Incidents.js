@@ -19,7 +19,7 @@ class Incidents extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'Incidents-view',
+      'view-incidents',
     );
     this.state = {
       sortBy: propOr('created', 'sortBy', params),
@@ -35,7 +35,7 @@ class Incidents extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'Incidents-view',
+      'view-incidents',
       dissoc('filters', this.state),
     );
   }

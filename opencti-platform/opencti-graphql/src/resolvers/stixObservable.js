@@ -33,7 +33,8 @@ const stixObservableResolvers = {
     tags: `${REL_INDEX_PREFIX}tagged.value`
   },
   StixObservablesFilter: {
-    indicates: `${REL_INDEX_PREFIX}indicates.internal_id_key`
+    relatedTo: `${REL_INDEX_PREFIX}related-to.internal_id_key`,
+    observablesContained: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`
   },
   StixObservable: {
     indicators: stixObservable => indicators(stixObservable.id),

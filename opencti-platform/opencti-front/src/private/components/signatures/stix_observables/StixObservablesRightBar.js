@@ -91,6 +91,18 @@ class StixObservablesRightBar extends Component {
           <ListItem
             dense={true}
             button={true}
+            onClick={handleToggle.bind(this, 'Mac-Addr')}
+            classes={{ root: classes.item }}
+          >
+            <Checkbox
+              checked={types.includes('Mac-Addr')}
+              disableRipple={true}
+            />
+            <ListItemText primary={t('MAC addresses')} />
+          </ListItem>
+          <ListItem
+            dense={true}
+            button={true}
             onClick={handleToggle.bind(this, 'IPv4-Addr')}
             classes={{ root: classes.item }}
           >
@@ -138,6 +150,18 @@ class StixObservablesRightBar extends Component {
           >
             <Checkbox checked={types.includes('Mutex')} disableRipple={true} />
             <ListItemText primary={t('Mutex')} />
+          </ListItem>
+          <ListItem
+            dense={true}
+            button={true}
+            onClick={handleToggle.bind(this, 'Directory')}
+            classes={{ root: classes.item }}
+          >
+            <Checkbox
+              checked={types.includes('Directory')}
+              disableRipple={true}
+            />
+            <ListItemText primary={t('Directories')} />
           </ListItem>
           <ListItem
             dense={true}

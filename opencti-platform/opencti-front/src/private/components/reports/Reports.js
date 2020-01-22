@@ -22,7 +22,7 @@ class Reports extends Component {
     );
     this.state = {
       sortBy: propOr('published', 'sortBy', params),
-      orderAsc: propOr('false', 'orderAsc', params) === 'true',
+      orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
       openExports: false,
@@ -61,7 +61,7 @@ class Reports extends Component {
       createdByRef: {
         label: 'Author',
         width: '20%',
-        isSortable: true,
+        isSortable: false,
       },
       published: {
         label: 'Publication date',
