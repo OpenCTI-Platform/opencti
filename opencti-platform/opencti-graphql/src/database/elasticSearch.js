@@ -587,8 +587,7 @@ export const elPaginate = async (indexName, options) => {
       for (let i = 0; i < values.length; i += 1) {
         if (values[i] === null) {
           mustnot = append({ exists: { field: key } }, mustnot);
-        }
-        else if (operator === 'eq' || operator === 'match') {
+        } else if (operator === 'eq' || operator === 'match') {
           valuesFiltering.push({
             match_phrase: {
               [`${dateFields.includes(key) || operator === 'match' ? key : `${key}.keyword`}`]: values[i]
