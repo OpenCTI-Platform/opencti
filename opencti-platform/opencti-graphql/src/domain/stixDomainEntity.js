@@ -17,7 +17,7 @@ import {
   deleteRelationsByFromAndTo
 } from '../database/grakn';
 import { findById as findMarkingDefintionById } from './markingDefinition';
-import { elCount } from '../database/elasticSearch';
+import { elCount, INDEX_STIX_ENTITIES } from '../database/elasticSearch';
 import { generateFileExportName, upload } from '../database/minio';
 import { connectorsForExport } from './connector';
 import { createWork, workToExportFile } from './work';
@@ -48,8 +48,8 @@ export const stixDomainEntitiesTimeSeries = args => {
 };
 
 export const stixDomainEntitiesNumber = args => ({
-  count: elCount('stix_domain_entities', args),
-  total: elCount('stix_domain_entities', dissoc('endDate', args))
+  count: elCount(INDEX_STIX_ENTITIES, args),
+  total: elCount(INDEX_STIX_ENTITIES, dissoc('endDate', args))
 });
 // endregion
 
