@@ -133,7 +133,7 @@ export const upload = async (user, category, file, entityType = null, entityId =
     finalEntityType = entity.entity_type;
   }
   // eslint-disable-next-line prettier/prettier
-  const fileDirName = `${category}/${extractName(finalEntityType.toLowerCase(), entityId, filename)}`;
+  const fileDirName = `${category}/${extractName(finalEntityType, entityId, filename)}`;
   logger.debug(`FileManager > upload file ${filename} to ${fileDirName} by ${user.email}`);
   // Upload the file in the storage
   return new Promise((resolve, reject) => {
