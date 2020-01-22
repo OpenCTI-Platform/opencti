@@ -5,7 +5,7 @@
   "author": "Luatix",
   "license": "Apache-2.0",
   "scripts": {
-    "start": "webpack --mode development",
+    "start": "webpack --mode development --max_old_space_size=8192",
     "build": "webpack --mode production",
     "serv": "node --max_old_space_size=8192 build/index.js",
     "lint": "eslint --max-warnings 0 .",

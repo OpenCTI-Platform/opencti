@@ -19,7 +19,7 @@ class Campaigns extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'Campaigns-view',
+      'view-campaigns',
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
@@ -34,7 +34,7 @@ class Campaigns extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'Campaigns-view',
+      'view-campaigns',
       dissoc('filters', this.state),
     );
   }

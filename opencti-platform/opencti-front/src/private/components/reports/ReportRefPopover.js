@@ -13,9 +13,9 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
+import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../components/i18n';
-import { commitMutation, fetchQuery } from '../../../relay/environment';
-import { stixRelationEditionDeleteMutation } from '../common/stix_relations/StixRelationEdition';
+import { commitMutation } from '../../../relay/environment';
 
 const styles = (theme) => ({
   container: {
@@ -40,27 +40,21 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const reportRefPopoverDeletionMutation = graphql`
-  mutation ReportRefPopoverDeletionMutation($id: ID!, $relationId: ID!) {
+export const reportRefPopoverDeletionMutation = graphql`
+  mutation ReportRefPopoverDeletionMutation(
+    $id: ID!
+    $relationId: ID
+    $toId: String
+    $relationType: String
+  ) {
     reportEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(
+        relationId: $relationId
+        toId: $toId
+        relationType: $relationType
+      ) {
         ...ReportEntities_report
         ...ReportObservablesLines_report
-      }
-    }
-  }
-`;
-
-const reportRefPopoverCheckRelationQuery = graphql`
-  query ReportRefPopoverCheckRelationQuery($id: String!) {
-    stixRelation(id: $id) {
-      id
-      reports {
-        edges {
-          node {
-            id
-          }
-        }
       }
     }
   }
@@ -95,33 +89,31 @@ class ReportRefPopover extends Component {
   }
 
   submitDelete() {
+    const {
+      reportId,
+      toId,
+      relationId,
+      relationType,
+      paginationOptions,
+    } = this.props;
     this.setState({ deleting: true });
-    if (this.props.isRelation) {
-      fetchQuery(reportRefPopoverCheckRelationQuery, {
-        id: this.props.entityId,
-      }).then((data) => {
-        if (data.stixRelation.reports.edges.length === 1) {
-          commitMutation({
-            mutation: stixRelationEditionDeleteMutation,
-            variables: {
-              id: this.props.entityId,
-            },
-          });
-        }
-        commitMutation({
-          mutation: reportRefPopoverDeletionMutation,
-          variables: {
-            id: this.props.reportId,
-            relationId: this.props.secondaryRelationId,
-          },
-        });
-      });
-    }
     commitMutation({
       mutation: reportRefPopoverDeletionMutation,
       variables: {
-        id: this.props.reportId,
-        relationId: this.props.relationId,
+        id: reportId,
+        toId,
+        relationId,
+        relationType,
+      },
+      updater: (store) => {
+        if (toId) {
+          const conn = ConnectionHandler.getConnection(
+            store.get(reportId),
+            'Pagination_observableRefs',
+            paginationOptions,
+          );
+          ConnectionHandler.deleteNode(conn, toId);
+        }
       },
       onCompleted: () => {
         this.handleCloseDelete();
@@ -181,10 +173,9 @@ class ReportRefPopover extends Component {
 
 ReportRefPopover.propTypes = {
   reportId: PropTypes.string,
-  entityId: PropTypes.string,
+  toId: PropTypes.string,
   relationId: PropTypes.string,
-  secondaryRelationId: PropTypes.string,
-  isRelation: PropTypes.bool,
+  relationType: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
