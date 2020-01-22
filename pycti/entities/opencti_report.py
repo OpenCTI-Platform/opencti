@@ -453,14 +453,10 @@ class Report:
                     "error", "[opencti_report] Cannot add Object Ref, report not found"
                 )
                 return False
-            refs_ids = []
-            for ref in report["objectRefs"]:
-                refs_ids.append(ref["id"])
-            for ref in report["observableRefs"]:
-                refs_ids.append(ref["id"])
-            for ref in report["relationRefs"]:
-                refs_ids.append(ref["id"])
-            if entity_id in refs_ids:
+            if (
+                entity_id in report["objectRefsIds"]
+                or entity_id in report["relationRefsIds"]
+            ):
                 return True
             else:
                 self.opencti.log(

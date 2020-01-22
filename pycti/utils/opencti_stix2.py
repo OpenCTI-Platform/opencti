@@ -344,15 +344,12 @@ class OpenCTIStix2:
                         }
                         self.opencti.stix_entity.add_marking_definition(
                             id=report["id"],
-                            entity=report,
                             marking_definition_id=object_marking_ref_result["id"],
                         )
 
                     # Add external reference to report
                     self.opencti.stix_entity.add_external_reference(
-                        id=report["id"],
-                        entity=report,
-                        external_reference_id=external_reference_id,
+                        id=report["id"], external_reference_id=external_reference_id,
                     )
                     reports[external_reference_id] = report
 
@@ -434,9 +431,7 @@ class OpenCTIStix2:
                 and stix_object["type"] != "marking-definition"
             ):
                 self.opencti.stix_entity.update_created_by_ref(
-                    id=stix_object_result["id"],
-                    entity=stix_object_result,
-                    identity_id=created_by_ref_id,
+                    id=stix_object_result["id"], identity_id=created_by_ref_id,
                 )
             if (
                 created_by_ref_id is not None
@@ -453,7 +448,6 @@ class OpenCTIStix2:
             for marking_definition_id in marking_definitions_ids:
                 self.opencti.stix_entity.add_marking_definition(
                     id=stix_object_result["id"],
-                    entity=stix_object_result,
                     marking_definition_id=marking_definition_id,
                 )
                 if (
@@ -469,36 +463,29 @@ class OpenCTIStix2:
             # Add tags
             for tag_id in tags_ids:
                 self.opencti.stix_entity.add_tag(
-                    id=stix_object_result["id"],
-                    entity=stix_object_result,
-                    marking_definition_id=tag_id,
+                    id=stix_object_result["id"], marking_definition_id=tag_id,
                 )
             # Add external references
             for external_reference_id in external_references_ids:
                 self.opencti.stix_entity.add_external_reference(
                     id=stix_object_result["id"],
-                    entity=stix_object_result,
                     external_reference_id=external_reference_id,
                 )
                 if external_reference_id in reports:
                     self.opencti.report.add_stix_entity(
                         id=reports[external_reference_id]["id"],
-                        report=reports[external_reference_id],
                         entity_id=stix_object_result["id"],
                     )
             # Add kill chain phases
             for kill_chain_phase_id in kill_chain_phases_ids:
                 self.opencti.stix_entity.add_kill_chain_phase(
                     id=stix_object_result["id"],
-                    entity=stix_object_result,
                     kill_chain_phase_id=kill_chain_phase_id,
                 )
             # Add object refs
             for object_refs_id in object_refs_ids:
                 self.opencti.report.add_stix_entity(
-                    id=stix_object_result["id"],
-                    report=stix_object_result,
-                    entity_id=object_refs_id,
+                    id=stix_object_result["id"], entity_id=object_refs_id,
                 )
                 if (
                     object_refs_id in self.mapping_cache
@@ -512,7 +499,6 @@ class OpenCTIStix2:
                     ]:
                         self.opencti.report.add_stix_observable(
                             id=stix_object_result["id"],
-                            report=stix_object_result,
                             stix_observable_id=observable_ref["id"],
                         )
 
@@ -661,46 +647,35 @@ class OpenCTIStix2:
         # Update created by ref
         if created_by_ref_id is not None:
             self.opencti.stix_entity.update_created_by_ref(
-                id=stix_relation_result["id"],
-                entity=stix_relation_result,
-                identity_id=created_by_ref_id,
+                id=stix_relation_result["id"], identity_id=created_by_ref_id,
             )
         # Add marking definitions
         for marking_definition_id in marking_definitions_ids:
             self.opencti.stix_entity.add_marking_definition(
                 id=stix_relation_result["id"],
-                entity=stix_relation_result,
                 marking_definition_id=marking_definition_id,
             )
         # Add external references
         for external_reference_id in external_references_ids:
             self.opencti.stix_entity.add_external_reference(
                 id=stix_relation_result["id"],
-                entity=stix_relation_result,
                 external_reference_id=external_reference_id,
             )
             if external_reference_id in reports:
                 self.opencti.report.add_stix_entity(
                     id=reports[external_reference_id]["id"],
-                    report=reports[external_reference_id],
                     entity_id=stix_relation_result["id"],
                 )
                 self.opencti.report.add_stix_entity(
-                    id=reports[external_reference_id]["id"],
-                    report=reports[external_reference_id],
-                    entity_id=source_id,
+                    id=reports[external_reference_id]["id"], entity_id=source_id,
                 )
                 self.opencti.report.add_stix_entity(
-                    id=reports[external_reference_id]["id"],
-                    report=reports[external_reference_id],
-                    entity_id=target_id,
+                    id=reports[external_reference_id]["id"], entity_id=target_id,
                 )
         # Add kill chain phases
         for kill_chain_phase_id in kill_chain_phases_ids:
             self.opencti.stix_entity.add_kill_chain_phase(
-                id=stix_relation_result["id"],
-                entity=stix_relation_result,
-                kill_chain_phase_id=kill_chain_phase_id,
+                id=stix_relation_result["id"], kill_chain_phase_id=kill_chain_phase_id,
             )
 
     def import_observables(self, stix_object):
