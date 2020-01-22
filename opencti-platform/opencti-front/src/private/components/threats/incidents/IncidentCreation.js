@@ -19,7 +19,7 @@ import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import Autocomplete from '../../../../components/Autocomplete';
 import AutocompleteCreate from '../../../../components/AutocompleteCreate';
 import TextField from '../../../../components/TextField';
-import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
+import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
@@ -84,16 +84,6 @@ const incidentValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
 });
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_incidents',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
 class IncidentCreation extends Component {
   constructor(props) {
     super(props);
@@ -136,7 +126,7 @@ class IncidentCreation extends Component {
   }
 
   searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsSearchQuery, {
+    fetchQuery(markingDefinitionsLinesSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const markingDefinitions = pipe(
@@ -166,13 +156,12 @@ class IncidentCreation extends Component {
       updater: (store) => {
         const payload = store.getRootField('incidentAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node');
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
+        const conn = ConnectionHandler.getConnection(
+          store.get(store.getRoot().getDataID()),
+          'Pagination_incidents',
           this.props.paginationOptions,
-          newEdge,
         );
+        ConnectionHandler.insertEdgeBefore(conn, newEdge);
       },
       setSubmitting,
       onCompleted: () => {

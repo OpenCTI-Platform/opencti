@@ -10,7 +10,9 @@ export const findById = identityId => {
   return loadEntityById(identityId);
 };
 export const findAll = args => {
-  return listEntities(['Identity'], ['name', 'alias'], args);
+  const noTypes = !args.types || args.types.length === 0;
+  const entityTypes = noTypes ? ['Identity'] : args.types;
+  return listEntities(entityTypes, ['name', 'alias'], args);
 };
 
 export const addIdentity = async (user, identity) => {

@@ -25,6 +25,7 @@ class Cities extends Component {
       orderAsc: propOr(true, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
+      openExports: false,
     };
   }
 
@@ -45,8 +46,12 @@ class Cities extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
+  handleToggleExports() {
+    this.setState({ openExports: !this.state.openExports });
+  }
+
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc, searchTerm } = this.state;
+    const { sortBy, orderAsc, searchTerm, openExports } = this.state;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -66,14 +71,17 @@ class Cities extends Component {
     };
     return (
       <ListLines
+        secondaryAction={true}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
-        displayImport={true}
-        secondaryAction={true}
+        handleToggleExports={this.handleToggleExports.bind(this)}
+        openExports={openExports}
+        exportEntityType="City"
         keyword={searchTerm}
+        paginationOptions={paginationOptions}
       >
         <QueryRenderer
           query={citiesLinesQuery}

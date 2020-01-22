@@ -25,6 +25,7 @@ class Vulnerabilities extends Component {
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
       filters: {},
+      openExports: false,
     };
   }
 
@@ -45,6 +46,10 @@ class Vulnerabilities extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
+  handleToggleExports() {
+    this.setState({ openExports: !this.state.openExports });
+  }
+
   handleAddFilter(key, id, value, event) {
     event.stopPropagation();
     event.preventDefault();
@@ -59,7 +64,7 @@ class Vulnerabilities extends Component {
 
   renderLines(paginationOptions) {
     const {
-      sortBy, orderAsc, searchTerm, filters,
+      sortBy, orderAsc, searchTerm, filters, openExports,
     } = this.state;
     const dataColumns = {
       name: {
@@ -91,9 +96,12 @@ class Vulnerabilities extends Component {
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-        displayImport={true}
+        handleToggleExports={this.handleToggleExports.bind(this)}
+        openExports={openExports}
+        exportEntityType="Vulnerability"
         keyword={searchTerm}
         filters={filters}
+        paginationOptions={paginationOptions}
       >
         <QueryRenderer
           query={vulnerabilitiesLinesQuery}

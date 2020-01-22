@@ -1,9 +1,10 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { Field, Form, Formik } from 'formik';
 import { TextField } from 'formik-material-ui';
 import Button from '@material-ui/core/Button';
 import graphql from 'babel-plugin-relay/macro';
+import queryString from 'query-string';
 import { withRouter } from 'react-router-dom';
 import { compose, head } from 'ramda';
 import * as Yup from 'yup';
@@ -30,29 +31,37 @@ const loginValidation = (t) => Yup.object().shape({
   password: Yup.string().required(t('This field is required')),
 });
 
-class LoginForm extends Component {
-  onSubmit(values, { setSubmitting, resetForm, setErrors }) {
+const LoginForm = (props) => {
+  const { classes, t, demo } = props;
+  const params = queryString.parse(props.location.search);
+  const { redirectLogin } = params;
+  const onSubmit = (values, { setSubmitting, resetForm, setErrors }) => {
     commitMutation({
       mutation: loginMutation,
       variables: {
         input: values,
       },
       onError: (error) => {
-        const errorMessage = this.props.t(head(error.res.errors).message);
+        const errorMessage = props.t(head(error.res.errors).message);
         setErrors({ email: errorMessage });
       },
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        this.props.history.push('/');
+        let redirectUrl = '/';
+        if (redirectLogin) {
+          try {
+            redirectUrl = atob(redirectLogin);
+          } catch (e) {
+            // Encoding problem, seems a user trying some weird stuff.
+          }
+        }
+        props.history.push(redirectUrl);
       },
     });
-  }
-
-  render() {
-    const { classes, t, demo } = this.props;
-    return (
+  };
+  return (
       <div className={classes.login}>
         <Formik
           initialValues={{
@@ -60,7 +69,7 @@ class LoginForm extends Component {
             password: demo ? 'demo' : '',
           }}
           validationSchema={loginValidation(t)}
-          onSubmit={this.onSubmit.bind(this)}
+          onSubmit={onSubmit}
           render={({ submitForm, isSubmitting }) => (
             <Form>
               <Field
@@ -83,17 +92,15 @@ class LoginForm extends Component {
                 color="primary"
                 disabled={isSubmitting}
                 onClick={submitForm}
-                style={{ marginTop: 30 }}
-              >
+                style={{ marginTop: 30 }}>
                 {t('Sign in')}
               </Button>
             </Form>
           )}
         />
       </div>
-    );
-  }
-}
+  );
+};
 
 LoginForm.propTypes = {
   classes: PropTypes.object,

@@ -24,7 +24,7 @@ import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import Autocomplete from '../../../../components/Autocomplete';
 import AutocompleteCreate from '../../../../components/AutocompleteCreate';
 import TextField from '../../../../components/TextField';
-import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
+import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
@@ -46,6 +46,19 @@ const styles = (theme) => ({
     position: 'fixed',
     bottom: 30,
     right: 280,
+    transition: theme.transitions.create('right', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  },
+  createButtonExports: {
+    position: 'fixed',
+    bottom: 30,
+    right: 590,
+    transition: theme.transitions.create('right', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
   },
   createButtonContextual: {
     position: 'fixed',
@@ -145,7 +158,7 @@ class StixObservableCreation extends Component {
   }
 
   searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsSearchQuery, {
+    fetchQuery(markingDefinitionsLinesSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const markingDefinitions = pipe(
@@ -196,14 +209,16 @@ class StixObservableCreation extends Component {
   }
 
   renderClassic() {
-    const { t, classes } = this.props;
+    const { t, classes, openExports } = this.props;
     return (
       <div>
         <Fab
           onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Add"
-          className={classes.createButton}
+          className={
+            openExports ? classes.createButtonExports : classes.createButton
+          }
         >
           <Add />
         </Fab>
@@ -254,7 +269,10 @@ class StixObservableCreation extends Component {
                       }}
                       containerstyle={{ width: '100%' }}
                     >
-                      <MenuItem value="Autonomous-System">{t('Autonomous system')}</MenuItem>
+                      <MenuItem value="Autonomous-System">
+                        {t('Autonomous system')}
+                      </MenuItem>
+                      <MenuItem value="Directory">{t('Directory')}</MenuItem>
                       <MenuItem value="Domain">{t('Domain')}</MenuItem>
                       <MenuItem value="Email-Address">
                         {t('Email address')}
@@ -273,6 +291,8 @@ class StixObservableCreation extends Component {
                       </MenuItem>
                       <MenuItem value="IPv4-Addr">{t('IPv4 address')}</MenuItem>
                       <MenuItem value="IPv6-Addr">{t('IPv6 address')}</MenuItem>
+                      <MenuItem value="Mac-Addr">{t('MAC address')}</MenuItem>
+                      <MenuItem value="Mutex">{t('Mutex')}</MenuItem>
                       <MenuItem value="PDB-Path">{t('PDB Path')}</MenuItem>
                       <MenuItem value="Registry-Key">
                         {t('Registry key')}
@@ -280,7 +300,6 @@ class StixObservableCreation extends Component {
                       <MenuItem value="Registry-Key-Value">
                         {t('Registry key value')}
                       </MenuItem>
-                      <MenuItem value="Mutex">{t('Mutex')}</MenuItem>
                       <MenuItem value="URL">{t('URL')}</MenuItem>
                       <MenuItem value="Windows-Service-Name">
                         {t('Windows Service Name')}
@@ -399,11 +418,7 @@ class StixObservableCreation extends Component {
           validationSchema={stixObservableValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onReset.bind(this)}
-          render={({
-            submitForm,
-            handleReset,
-            isSubmitting,
-          }) => (
+          render={({ submitForm, handleReset, isSubmitting }) => (
             <Form>
               <Dialog
                 open={this.state.open}
@@ -423,7 +438,10 @@ class StixObservableCreation extends Component {
                     }}
                     containerstyle={{ width: '100%' }}
                   >
-                    <MenuItem value="Autonomous-System">{t('Autonomous system')}</MenuItem>
+                    <MenuItem value="Autonomous-System">
+                      {t('Autonomous system')}
+                    </MenuItem>
+                    <MenuItem value="Directory">{t('Directory')}</MenuItem>
                     <MenuItem value="Domain">{t('Domain')}</MenuItem>
                     <MenuItem value="Email-Address">
                       {t('Email address')}
@@ -440,6 +458,8 @@ class StixObservableCreation extends Component {
                     </MenuItem>
                     <MenuItem value="IPv4-Addr">{t('IPv4 address')}</MenuItem>
                     <MenuItem value="IPv6-Addr">{t('IPv6 address')}</MenuItem>
+                    <MenuItem value="Mac-Addr">{t('MAC address')}</MenuItem>
+                    <MenuItem value="Mutex">{t('Mutex')}</MenuItem>
                     <MenuItem value="PDB-Path">{t('PDB Path')}</MenuItem>
                     <MenuItem value="Registry-Key">
                       {t('Registry key')}
@@ -447,7 +467,6 @@ class StixObservableCreation extends Component {
                     <MenuItem value="Registry-Key-Value">
                       {t('Registry key value')}
                     </MenuItem>
-                    <MenuItem value="Mutex">{t('Mutex')}</MenuItem>
                     <MenuItem value="URL">{t('URL')}</MenuItem>
                     <MenuItem value="Windows-Service-Name">
                       {t('Windows Service Name')}
@@ -529,6 +548,7 @@ StixObservableCreation.propTypes = {
   contextual: PropTypes.bool,
   display: PropTypes.bool,
   inputValue: PropTypes.string,
+  openExports: PropTypes.bool,
 };
 
 export default compose(

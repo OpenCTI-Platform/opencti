@@ -27,7 +27,7 @@ import {
   fetchQuery,
   WS_ACTIVATED,
 } from '../../../../relay/environment';
-import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
+import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import AutocompleteCreate from '../../../../components/AutocompleteCreate';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
@@ -154,7 +154,7 @@ class OrganizationEditionOverviewComponent extends Component {
   }
 
   searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsSearchQuery, {
+    fetchQuery(markingDefinitionsLinesSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const markingDefinitions = pipe(
@@ -365,7 +365,7 @@ class OrganizationEditionOverviewComponent extends Component {
                   component={Select}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
-                  label={t('Category')}
+                  label={t('Organization type')}
                   fullWidth={true}
                   inputProps={{
                     name: 'organization_class',

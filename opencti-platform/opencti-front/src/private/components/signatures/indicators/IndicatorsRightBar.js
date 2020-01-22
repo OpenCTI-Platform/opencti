@@ -14,12 +14,23 @@ const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: 250,
+    right: 0,
     padding: '0 0 20px 0',
-    position: 'fixed',
     backgroundColor: theme.palette.navAlt.background,
-    transition: theme.transitions.create('width', {
+    transition: theme.transitions.create('right', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
+    }),
+  },
+  drawerPaperExports: {
+    minHeight: '100vh',
+    width: 250,
+    right: 310,
+    padding: '0 0 20px 0',
+    backgroundColor: theme.palette.navAlt.background,
+    transition: theme.transitions.create('right', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.leavingScreen,
     }),
   },
   listIcon: {
@@ -43,12 +54,15 @@ class IndicatorsRightBar extends Component {
       observableTypes,
       handleToggleIndicatorType,
       handleToggleObservableType,
+      openExports,
     } = this.props;
     return (
       <Drawer
         variant="permanent"
         anchor="right"
-        classes={{ paper: classes.drawerPaper }}
+        classes={{
+          paper: openExports ? classes.drawerPaperExports : classes.drawerPaper,
+        }}
       >
         <div className={classes.toolbar} />
         <List
@@ -163,6 +177,18 @@ class IndicatorsRightBar extends Component {
           <ListItem
             dense={true}
             button={true}
+            onClick={handleToggleObservableType.bind(this, 'Mac-Addr')}
+            classes={{ root: classes.item }}
+          >
+            <Checkbox
+              checked={observableTypes.includes('Mac-Addr')}
+              disableRipple={true}
+            />
+            <ListItemText primary={t('MAC addresses')} />
+          </ListItem>
+          <ListItem
+            dense={true}
+            button={true}
             onClick={handleToggleObservableType.bind(this, 'IPv4-Addr')}
             classes={{ root: classes.item }}
           >
@@ -219,6 +245,18 @@ class IndicatorsRightBar extends Component {
               disableRipple={true}
             />
             <ListItemText primary={t('Mutex')} />
+          </ListItem>
+          <ListItem
+            dense={true}
+            button={true}
+            onClick={handleToggleObservableType.bind(this, 'Directory')}
+            classes={{ root: classes.item }}
+          >
+            <Checkbox
+              checked={observableTypes.includes('Directory')}
+              disableRipple={true}
+            />
+            <ListItemText primary={t('Directories')} />
           </ListItem>
           <ListItem
             dense={true}
@@ -307,6 +345,7 @@ IndicatorsRightBar.propTypes = {
   handleToggleObservableType: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
+  openExports: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(IndicatorsRightBar);

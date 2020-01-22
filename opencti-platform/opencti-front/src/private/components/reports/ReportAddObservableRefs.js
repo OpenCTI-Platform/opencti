@@ -86,9 +86,7 @@ class ReportAddObservableRefs extends Component {
   }
 
   render() {
-    const {
-      t, classes, reportId, reportObservableRefs,
-    } = this.props;
+    const { t, classes, reportId } = this.props;
     const paginationOptions = {
       search: this.state.search,
       orderBy: 'created_at',
@@ -133,19 +131,14 @@ class ReportAddObservableRefs extends Component {
           <div className={classes.container}>
             <QueryRenderer
               query={reportAddObservableRefsLinesQuery}
-              variables={{
-                search: this.state.search,
-                orderBy: 'created_at',
-                orderMode: 'desc',
-                count: 50,
-              }}
+              variables={{ count: 50, ...paginationOptions }}
               render={({ props }) => {
                 if (props) {
                   return (
                     <ReportAddObservableRefsLines
                       reportId={reportId}
-                      reportObservableRefs={reportObservableRefs}
                       data={props}
+                      paginationOptions={this.props.paginationOptions}
                     />
                   );
                 }
@@ -193,13 +186,10 @@ class ReportAddObservableRefs extends Component {
 
 ReportAddObservableRefs.propTypes = {
   reportId: PropTypes.string,
-  reportObservableRefs: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
+  paginationOptions: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(ReportAddObservableRefs);
+export default compose(inject18n, withStyles(styles))(ReportAddObservableRefs);

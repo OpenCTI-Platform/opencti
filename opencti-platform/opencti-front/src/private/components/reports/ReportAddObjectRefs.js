@@ -81,9 +81,7 @@ class ReportAddObjectRefs extends Component {
   }
 
   render() {
-    const {
-      t, classes, reportId, reportObjectRefs,
-    } = this.props;
+    const { t, classes, reportId } = this.props;
     const paginationOptions = {
       search: this.state.search,
       orderBy: 'created_at',
@@ -139,8 +137,8 @@ class ReportAddObjectRefs extends Component {
                   return (
                     <ReportAddObjectRefsLines
                       reportId={reportId}
-                      reportObjectRefs={reportObjectRefs}
                       data={props}
+                      paginationOptions={this.props.paginationOptions}
                     />
                   );
                 }
@@ -188,13 +186,10 @@ class ReportAddObjectRefs extends Component {
 
 ReportAddObjectRefs.propTypes = {
   reportId: PropTypes.string,
-  reportObjectRefs: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
+  paginationOptions: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(ReportAddObjectRefs);
+export default compose(inject18n, withStyles(styles))(ReportAddObjectRefs);

@@ -1,6 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, filter } from 'ramda';
+import {
+  compose,
+  filter,
+  pipe,
+  split,
+  drop,
+  join,
+  pathOr,
+  propOr,
+} from 'ramda';
 import moment from 'moment';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -13,6 +22,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import { Link } from 'react-router-dom';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -99,12 +109,16 @@ class FileLineComponent extends Component {
       connectors,
       dense,
       disableImport,
+      directDownload,
     } = this.props;
     const { lastModifiedSinceMin, uploadStatus } = file;
     const isFail = uploadStatus === 'error' || uploadStatus === 'partial';
     const isProgress = uploadStatus === 'progress';
     const isOutdated = isProgress && lastModifiedSinceMin > 5;
     const isImportActive = () => connectors && filter((x) => x.data.active, connectors).length > 0;
+    const fileName = file.name.includes('_')
+      ? pipe(split('_'), drop(1), join('_'))(file.name)
+      : file.name;
     return (
       <div>
         <ListItem
@@ -114,20 +128,24 @@ class FileLineComponent extends Component {
           button={true}
           component={Link}
           disabled={isProgress}
-          to={`/storage/view/${file.id}`}
+          to={
+            directDownload
+              ? `/storage/get/${file.id}`
+              : `/storage/view/${file.id}`
+          }
           target="_blank"
           rel="noopener noreferrer"
         >
           <ListItemIcon>
-            <FileOutline />
+            {isProgress ? <CircularProgress size={20} /> : <FileOutline />}
           </ListItemIcon>
-          <ListItemText
-            classes={{ root: classes.itemText }}
-            primary={file.name}
-            secondary={
-              file.lastModified ? fld(file.lastModified) : fld(moment())
-            }
-          />
+          <Tooltip title={pathOr('', ['metaData', 'listargs'], file)}>
+            <ListItemText
+              classes={{ root: classes.itemText }}
+              primary={fileName}
+              secondary={fld(propOr(moment(), 'lastModified', file))}
+            />
+          </Tooltip>
           <ListItemSecondaryAction style={{ right: 0 }}>
             {!disableImport ? (
               <Tooltip title={t('Launch an import of this file')}>
@@ -145,18 +163,22 @@ class FileLineComponent extends Component {
             ) : (
               ''
             )}
-            <Tooltip title={t('Download this file')}>
-              <span>
-                <IconButton
-                  disabled={isProgress}
-                  href={`/storage/get/${file.id}`}
-                  aria-haspopup="true"
-                  color="primary"
-                >
-                  <GetApp />
-                </IconButton>
-              </span>
-            </Tooltip>
+            {!directDownload ? (
+              <Tooltip title={t('Download this file')}>
+                <span>
+                  <IconButton
+                    disabled={isProgress}
+                    href={`/storage/get/${file.id}`}
+                    aria-haspopup="true"
+                    color="primary"
+                  >
+                    <GetApp />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            ) : (
+              ''
+            )}
             {isFail || isOutdated ? (
               <Tooltip title={t('Delete this file')}>
                 <span>
@@ -198,6 +220,7 @@ FileLineComponent.propTypes = {
   connectors: PropTypes.array,
   dense: PropTypes.bool,
   disableImport: PropTypes.bool,
+  directDownload: PropTypes.bool,
 };
 
 const FileLine = createFragmentContainer(FileLineComponent, {
@@ -211,13 +234,11 @@ const FileLine = createFragmentContainer(FileLineComponent, {
       metaData {
         category
         mimetype
+        listargs
       }
       ...FileWork_file
     }
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(FileLine);
+export default compose(inject18n, withStyles(styles))(FileLine);

@@ -21,7 +21,7 @@ import Autocomplete from '../../../../components/Autocomplete';
 import AutocompleteCreate from '../../../../components/AutocompleteCreate';
 import TextField from '../../../../components/TextField';
 import Select from '../../../../components/Select';
-import { markingDefinitionsSearchQuery } from '../../settings/MarkingDefinitions';
+import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
@@ -139,7 +139,7 @@ class OrganizationCreation extends Component {
   }
 
   searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsSearchQuery, {
+    fetchQuery(markingDefinitionsLinesSearchQuery, {
       search: event.target.value,
     }).then((data) => {
       const markingDefinitions = pipe(
@@ -257,7 +257,7 @@ class OrganizationCreation extends Component {
                     <Field
                       name="organization_class"
                       component={Select}
-                      label={t('Category')}
+                      label={t('Organization type')}
                       fullWidth={true}
                       inputProps={{
                         name: 'organization_class',

@@ -15,7 +15,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Avatar from '@material-ui/core/Avatar';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { markingDefinitionsSearchQuery } from '../MarkingDefinitions';
+import { markingDefinitionsLinesSearchQuery } from '../marking_definitions/MarkingDefinitionsLines';
 
 const styles = (theme) => ({
   list: {
@@ -92,7 +92,7 @@ class GroupEditionPermissionsComponent extends Component {
     return (
       <div>
         <QueryRenderer
-          query={markingDefinitionsSearchQuery}
+          query={markingDefinitionsLinesSearchQuery}
           variables={{ search: '' }}
           render={({ props }) => {
             if (props) {

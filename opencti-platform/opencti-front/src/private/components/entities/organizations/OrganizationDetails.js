@@ -6,6 +6,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import Chip from '@material-ui/core/Chip';
 import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
 import inject18n from '../../../../components/i18n';
 
@@ -23,6 +24,12 @@ const styles = () => ({
     '&:hover': {
       background: 'rgba(0, 0, 0, 0.1)',
     },
+  },
+  chip: {
+    fontSize: 12,
+    height: 25,
+    margin: '0 7px 7px 0',
+    backgroundColor: '#795548',
   },
 });
 
@@ -43,11 +50,14 @@ class OrganizationDetailsComponent extends Component {
           >
             {t('Organization type')}
           </Typography>
-          {t(
-            organization.organization_class
-              ? `organization_${organization.organization_class}`
-              : 'organization_other',
-          )}
+          <Chip
+            classes={{ root: classes.chip }}
+            label={t(
+              organization.organization_class
+                ? `organization_${organization.organization_class}`
+                : 'organization_other',
+            )}
+          />
         </Paper>
       </div>
     );
@@ -86,7 +96,4 @@ const OrganizationDetails = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(OrganizationDetails);
+export default compose(inject18n, withStyles(styles))(OrganizationDetails);

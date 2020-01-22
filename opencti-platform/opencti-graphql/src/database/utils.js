@@ -85,7 +85,11 @@ export const execPython3 = async (scriptPath, scriptName, args) => {
           reject(new Error(`Python3 is missing or script not found: ${err}`));
         }
         try {
-          const result = JSON.parse(results[0]);
+          let result = results[0];
+          if (result.includes('ANTLR')) {
+            result = results[2];
+          }
+          result = JSON.parse(result);
           resolve(result);
         } catch (err2) {
           reject(new Error(`No valid JSON from Python script: ${err2}`));
