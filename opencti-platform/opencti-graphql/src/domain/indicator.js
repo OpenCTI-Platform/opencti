@@ -117,7 +117,7 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
   const indicatorToCreate = pipe(
     assoc('main_observable_type', indicator.main_observable_type.toLowerCase()),
     assoc('score', indicator.score ? indicator.score : 50),
-    assoc('valid_from', indicator.valid_from ? indicator.valid_from : Date.now()),
+    assoc('valid_from', indicator.valid_from ? indicator.valid_from : new Date()),
     assoc('valid_until', indicator.valid_until ? indicator.valid_until : await computeValidUntil(indicator))
   )(indicator);
   // create the linked observables
