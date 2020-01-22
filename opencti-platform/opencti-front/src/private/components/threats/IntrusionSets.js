@@ -34,7 +34,7 @@ class IntrusionSets extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'IntrusionSets-view',
+      'view-intrusion_sets',
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
@@ -50,7 +50,7 @@ class IntrusionSets extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'IntrusionSets-view',
+      'view-intrusion_sets',
       dissoc('filters', this.state),
     );
   }

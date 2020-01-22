@@ -33,8 +33,8 @@ enum Status {connectorsForExport
 
 ### Relations
 type RelationEmbedded {
-  id: ID!
-  entity_type: String!
+  id: ID
+  entity_type: String
   from: GlobalObject
   fromRole: String
   fromTypes: [String]
@@ -481,7 +481,8 @@ enum StixObservablesFilter {
   entity_type
   stix_id_key
   observable_value
-  indicates
+  relatedTo
+  observablesContained
 }
 input StixObservablesFiltering {
   key: StixObservablesFilter!
@@ -2512,8 +2513,26 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
   exportFiles(first: Int): FileConnection
   tags: TagConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  objectRefs: StixDomainEntityConnection
-  observableRefs: StixObservableConnection
+  objectRefs(
+    first: Int
+    after: ID
+    orderBy: StixDomainEntitiesOrdering
+    orderMode: OrderingMode
+    filters: [StixDomainEntitiesFiltering]
+    filterMode: FilterMode
+    search: String
+    types: [String]
+  ): StixDomainEntityConnection
+  observableRefs(
+    first: Int
+    after: ID
+    orderBy: StixObservablesOrdering
+    orderMode: OrderingMode
+    filters: [StixObservablesFiltering]
+    filterMode: FilterMode
+    search: String
+    types: [String]
+  ): StixObservableConnection
   relationRefs(relationType: String, knowledgeLevels: [String]): StixRelationConnection
   stixRelations(
     first: Int
@@ -2578,6 +2597,7 @@ enum IndicatorsFilter {
   pattern_type
   tags
   observablesContains
+  indicates
 }
 input IndicatorsFiltering {
   key: IndicatorsFilter!
@@ -3417,7 +3437,7 @@ type ReportEditMutations {
   contextPatch(input: EditContext): Report
   contextClean: Report
   relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Report
+  relationDelete(relationId: ID, toId: String, relationType: String): Report
 }
 
 # Indicator

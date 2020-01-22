@@ -1,3 +1,4 @@
+import { propOr } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createRelation,
@@ -16,10 +17,7 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 
 export const findAll = async args => {
-  return listRelations(args.relationType, null, args);
-};
-export const search = async args => {
-  return listRelations('stix_relation', null, args);
+  return listRelations(propOr('stix_relation', 'relationType', args), null, args);
 };
 export const findById = stixRelationId => {
   if (stixRelationId.match(/[a-z-]+--[\w-]{36}/g)) {

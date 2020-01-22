@@ -13,7 +13,8 @@ import {
   loadEntityById,
   loadEntityByStixId,
   timeSeriesEntities,
-  updateAttribute
+  updateAttribute,
+  deleteRelationsByFromAndTo
 } from '../database/grakn';
 import { findById as findMarkingDefintionById } from './markingDefinition';
 import { elCount } from '../database/elasticSearch';
@@ -155,8 +156,20 @@ export const stixDomainEntityAddRelations = async (user, stixDomainEntityId, inp
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, stixDomainEntity, user)
   );
 };
-export const stixDomainEntityDeleteRelation = async (user, stixDomainEntityId, relationId) => {
-  await deleteRelationById(relationId);
+export const stixDomainEntityDeleteRelation = async (
+  user,
+  stixDomainEntityId,
+  relationId = null,
+  toId = null,
+  relationType = 'relation'
+) => {
+  if (relationId) {
+    await deleteRelationById(relationId);
+  } else if (toId) {
+    await deleteRelationsByFromAndTo(stixDomainEntityId, toId, relationType);
+  } else {
+    throw new Error('Cannot delete the relation, missing relationId or toId');
+  }
   const data = await loadEntityById(stixDomainEntityId);
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
 };

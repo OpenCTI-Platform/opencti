@@ -34,7 +34,7 @@ class ThreatActors extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'ThreatActors-view',
+      'view_threat-actors',
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
@@ -50,7 +50,7 @@ class ThreatActors extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'ThreatActors-view',
+      'view_threat-actors',
       dissoc('filters', this.state),
     );
   }

@@ -4,14 +4,11 @@ import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { pathOr, propOr } from 'ramda';
 import ListLinesContent from '../../../components/list_lines/ListLinesContent';
-import {
-  ReportObservableLine,
-  ReportObservableLineDummy,
-} from './ReportObservableLine';
+import { ReportEntityLine, ReportEntityLineDummy } from './ReportEntityLine';
 
 const nbOfRowsToLoad = 25;
 
-class ReportObservablesLines extends Component {
+class ReportEntitiesLines extends Component {
   render() {
     const {
       initialLoading,
@@ -26,17 +23,17 @@ class ReportObservablesLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['observableRefs', 'edges'], report)}
+        dataList={pathOr([], ['objectRefs', 'edges'], report)}
         paginationOptions={paginationOptions}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['observableRefs', 'pageInfo', 'globalCount'],
+          ['objectRefs', 'pageInfo', 'globalCount'],
           report,
         )}
         LineComponent={
-          <ReportObservableLine reportId={propOr(null, 'id', report)} />
+          <ReportEntityLine reportId={propOr(null, 'id', report)} />
         }
-        DummyLineComponent={<ReportObservableLineDummy />}
+        DummyLineComponent={<ReportEntityLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
       />
@@ -44,7 +41,7 @@ class ReportObservablesLines extends Component {
   }
 }
 
-ReportObservablesLines.propTypes = {
+ReportEntitiesLines.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object.isRequired,
@@ -54,18 +51,18 @@ ReportObservablesLines.propTypes = {
   searchTerm: PropTypes.string,
 };
 
-export const reportObservablesLinesQuery = graphql`
-  query ReportObservablesLinesQuery(
+export const ReportEntitiesLinesQuery = graphql`
+  query ReportEntitiesLinesQuery(
     $id: String!
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: StixObservablesOrdering
+    $orderBy: StixDomainEntitiesOrdering
     $orderMode: OrderingMode
-    $filters: [StixObservablesFiltering]
+    $filters: [ StixDomainEntitiesFiltering]
   ) {
     report(id: $id) {
-      ...ReportObservablesLines_report
+      ...ReportEntitiesLines_report
         @arguments(
           search: $search
           count: $count
@@ -79,30 +76,30 @@ export const reportObservablesLinesQuery = graphql`
 `;
 
 export default createPaginationContainer(
-  ReportObservablesLines,
+  ReportEntitiesLines,
   {
     report: graphql`
-      fragment ReportObservablesLines_report on Report
+      fragment ReportEntitiesLines_report on Report
         @argumentDefinitions(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixObservablesOrdering", defaultValue: "name" }
+          orderBy: { type: "StixDomainEntitiesOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[StixObservablesFiltering]" }
+          filters: { type: "[StixDomainEntitiesFiltering]" }
         ) {
         id
-        observableRefs(
+        objectRefs(
           search: $search
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
           filters: $filters
-        ) @connection(key: "Pagination_observableRefs") {
+        ) @connection(key: "Pagination_objectRefs") {
           edges {
             node {
-              ...ReportObservableLine_node
+              ...ReportEntityLine_node
             }
           }
           pageInfo {
@@ -117,7 +114,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.report && props.report.observableRefs;
+      return props.report && props.report.objectRefs;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -136,6 +133,6 @@ export default createPaginationContainer(
         filters: fragmentVariables.filters,
       };
     },
-    query: reportObservablesLinesQuery,
+    query: ReportEntitiesLinesQuery,
   },
 );
