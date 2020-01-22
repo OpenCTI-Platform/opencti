@@ -560,7 +560,7 @@ export const elPaginate = async (indexName, options) => {
         query_string: {
           query: `${finalSearch}`,
           analyze_wildcard: true,
-          default_field: '*'
+          fields: ['name^5', '*']
         }
       },
       must

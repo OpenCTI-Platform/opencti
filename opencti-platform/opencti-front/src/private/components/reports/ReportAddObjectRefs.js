@@ -24,12 +24,7 @@ const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
-    position: 'fixed',
     backgroundColor: theme.palette.navAlt.background,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
     padding: 0,
   },
   createButton: {
