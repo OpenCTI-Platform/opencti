@@ -61,7 +61,7 @@ class Reports extends Component {
       createdByRef: {
         label: 'Author',
         width: '20%',
-        isSortable: true,
+        isSortable: false,
       },
       published: {
         label: 'Publication date',

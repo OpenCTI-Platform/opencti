@@ -20,6 +20,11 @@ import { buildPagination } from '../database/utils';
 import { findAll as findAllStixObservables } from './stixObservable';
 import { findAll as findAllStixDomainEntities } from './stixDomainEntity';
 
+export const STATUS_STATUS_NEW = 0;
+export const STATUS_STATUS_PROGRESS = 1;
+export const STATUS_STATUS_ANALYZED = 2;
+export const STATUS_STATUS_CLOSED = 3;
+
 export const findById = reportId => {
   if (reportId.match(/[a-z-]+--[\w-]{36}/g)) {
     return loadEntityByStixId(reportId);
@@ -144,7 +149,9 @@ export const reportsDistributionByEntity = async args => {
 
 // region mutations
 export const addReport = async (user, report) => {
-  const created = await createEntity(report, 'Report');
+  // If no status in creation, just force STATUS_NEW
+  const reportWithStatus = report.object_status ? report : assoc('object_status', STATUS_STATUS_NEW, report);
+  const created = await createEntity(reportWithStatus, 'Report');
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 // endregion
