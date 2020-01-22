@@ -73,6 +73,7 @@ export const up = async next => {
     }
   }
 
+  hasMore = true;
   logger.info(`[MIGRATION] clean_duplicate_embedded_relations > Cleaning stix domain entities in batchs of 100`);
   while (hasMore) {
     logger.info(

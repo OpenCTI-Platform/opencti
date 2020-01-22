@@ -95,7 +95,7 @@ export const up = async next => {
               const stixObservableReportEdge = stixObservableReports.edges[index];
               const stixObservableReportObjectRefs = await objectRefs(stixObservableReportEdge.node.id, {});
               const stixObservableReportObjectRefsIds = map(n => n.node.id, stixObservableReportObjectRefs.edges);
-              const stixObservableReportObservableRefs = await observableRefs(stixObservableReportEdge.node.id);
+              const stixObservableReportObservableRefs = await observableRefs(stixObservableReportEdge.node.id, {});
               const stixObservableReportObservableRefsIds = map(
                 n => n.node.id,
                 stixObservableReportObservableRefs.edges
