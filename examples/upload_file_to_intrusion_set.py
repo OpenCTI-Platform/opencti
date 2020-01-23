@@ -23,7 +23,7 @@ intrusion_set = opencti_api_client.intrusion_set.create(
 print(intrusion_set)
 
 # Upload the file
-file = opencti_api_client.stix_domain_entity.upload_file(
+file = opencti_api_client.stix_domain_entity.add_file(
     id=intrusion_set["id"], file_name="./2005_002_001_14428.pdf",
 )
 print(file)

@@ -4,6 +4,7 @@ import time
 import os
 import json
 import uuid
+import base64
 import datetime
 from typing import List
 
@@ -175,6 +176,12 @@ class OpenCTIStix2:
                     tag_result = self.opencti.tag.read(id=tag["id"])
                     if tag_result is not None:
                         self.mapping_cache[tag["id"]] = {"id": tag_result["id"]}
+                    else:
+                        tag_result = self.opencti.tag.create(
+                            tag_type=tag["tag_type"],
+                            value=tag["value"],
+                            color=tag["color"]
+                        )
                 if tag_result is not None:
                     tags_ids.append(tag_result["id"])
 
@@ -463,7 +470,7 @@ class OpenCTIStix2:
             # Add tags
             for tag_id in tags_ids:
                 self.opencti.stix_entity.add_tag(
-                    id=stix_object_result["id"], marking_definition_id=tag_id,
+                    id=stix_object_result["id"], tag_id=tag_id,
                 )
             # Add external references
             for external_reference_id in external_references_ids:
@@ -501,6 +508,14 @@ class OpenCTIStix2:
                             id=stix_object_result["id"],
                             stix_observable_id=observable_ref["id"],
                         )
+            # Add files
+            if CustomProperties.FILES in stix_object:
+                for file in stix_object[CustomProperties.FILES]:
+                    self.opencti.stix_domain_entity.add_file(
+                        file_name=file['name'],
+                        data=base64.b64decode(file['data']),
+                        mime_type=file['mime_type']
+                    )
 
         return stix_object_results
 
