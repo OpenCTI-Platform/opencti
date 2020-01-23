@@ -333,6 +333,9 @@ class OpenCTIApiClient:
         if "indicators" in data:
             data["indicators"] = self.process_multiple(data["indicators"])
             data["indicatorsIds"] = self.process_multiple_ids(data["indicators"])
+        if "importFiles" in data:
+            data["importFiles"] = self.process_multiple(data["importFiles"])
+            data["importFilesIds"] = self.process_multiple_ids(data["importFiles"])
         return data
 
     def upload_file(self, **kwargs):

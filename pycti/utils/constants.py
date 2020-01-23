@@ -62,6 +62,9 @@ class CustomProperties:
     # internal id used by OpenCTI - this will be auto generated
     ID = "x_opencti_id"
 
+    # List of files
+    FILES = "x_opencti_files"
+
     # This should be set on all reports to one of the following values:
     #  "external"
     #  "internal"
