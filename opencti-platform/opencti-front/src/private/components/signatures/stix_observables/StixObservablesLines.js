@@ -23,7 +23,9 @@ class StixObservablesLines extends Component {
   }
 
   render() {
-    const { initialLoading, dataColumns, relay } = this.props;
+    const {
+      initialLoading, dataColumns, relay, onTagClick,
+    } = this.props;
     return (
       <ListLinesContent
         initialLoading={initialLoading}
@@ -40,6 +42,7 @@ class StixObservablesLines extends Component {
         DummyLineComponent={<StixObservableLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
+        onTagClick={onTagClick.bind(this)}
       />
     );
   }
@@ -53,6 +56,7 @@ StixObservablesLines.propTypes = {
   relay: PropTypes.object,
   stixObservables: PropTypes.object,
   initialLoading: PropTypes.bool,
+  onTagClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
 };
 
@@ -64,6 +68,7 @@ export const stixObservablesLinesQuery = graphql`
     $cursor: ID
     $orderBy: StixObservablesOrdering
     $orderMode: OrderingMode
+    $filters: [StixObservablesFiltering]
   ) {
     ...StixObservablesLines_data
       @arguments(
@@ -73,6 +78,7 @@ export const stixObservablesLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -108,6 +114,7 @@ export default createPaginationContainer(
             defaultValue: "observable_value"
           }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          filters: { type: "[StixObservablesFiltering]" }
         ) {
         stixObservables(
           types: $types
@@ -116,6 +123,7 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_stixObservables") {
           edges {
             node {
@@ -164,6 +172,7 @@ export default createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: stixObservablesLinesQuery,

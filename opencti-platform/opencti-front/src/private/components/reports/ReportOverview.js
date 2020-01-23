@@ -1,13 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, pathOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import Chip from '@material-ui/core/Chip';
 import inject18n from '../../../components/i18n';
 import ExpandableMarkdown from '../../../components/ExpandableMarkdown';
+import ItemCreator from '../../../components/ItemCreator';
 
 const styles = () => ({
   paper: {
@@ -16,6 +18,12 @@ const styles = () => ({
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 6,
+  },
+  chip: {
+    fontSize: 12,
+    height: 25,
+    margin: '0 7px 7px 0',
+    backgroundColor: '#455a64',
   },
 });
 
@@ -33,15 +41,18 @@ class ReportOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Report type')}
           </Typography>
-          {report.report_class}
+          <Chip
+            classes={{ root: classes.chip }}
+            label={report.report_class}
+          />
           <Typography
             variant="h3"
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t('Creation date')}
+            {t('Publication date')}
           </Typography>
-          {fld(report.created)}
+          {fld(report.published)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -50,6 +61,16 @@ class ReportOverviewComponent extends Component {
             {t('Modification date')}
           </Typography>
           {fld(report.modified)}
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
+            {t('Author')}
+          </Typography>
+          <ItemCreator
+            createdByRef={pathOr(null, ['createdByRef', 'node'], report)}
+          />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -81,14 +102,18 @@ const ReportOverview = createFragmentContainer(ReportOverviewComponent, {
       id
       name
       description
-      created
+      published
       modified
       report_class
+      createdByRef {
+        node {
+          id
+          name
+          entity_type
+        }
+      }
     }
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(ReportOverview);
+export default compose(inject18n, withStyles(styles))(ReportOverview);

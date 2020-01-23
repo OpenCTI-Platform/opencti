@@ -28,7 +28,7 @@ class Tools extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'Tools-view',
+      'view-tools',
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
@@ -45,7 +45,7 @@ class Tools extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'Tools-view',
+      'view-tools',
       dissoc('filters', this.state),
     );
   }

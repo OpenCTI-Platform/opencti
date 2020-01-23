@@ -35,7 +35,6 @@ const vulnerabilityQuery = graphql`
       name
       alias
       ...Vulnerability_vulnerability
-      ...VulnerabilityOverview_vulnerability
       ...VulnerabilityReports_vulnerability
       ...VulnerabilityKnowledge_vulnerability
       ...FileImportViewer_entity

@@ -35,8 +35,6 @@ const attackPatternQuery = graphql`
       name
       alias
       ...AttackPattern_attackPattern
-      ...AttackPatternOverview_attackPattern
-      ...AttackPatternDetails_attackPattern
       ...AttackPatternReports_attackPattern
       ...AttackPatternKnowledge_attackPattern
       ...FileImportViewer_entity

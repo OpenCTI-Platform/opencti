@@ -12,6 +12,7 @@ import { HexagonOutline } from 'mdi-material-ui';
 import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
+import StixObjectTags from '../../common/stix_object/StixObjectTags';
 
 const styles = (theme) => ({
   item: {
@@ -47,9 +48,8 @@ const styles = (theme) => ({
 class StixObservableLineComponent extends Component {
   render() {
     const {
-      t, fd, classes, dataColumns, node,
+      t, fd, classes, dataColumns, node, onTagClick,
     } = this.props;
-
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -75,6 +75,16 @@ class StixObservableLineComponent extends Component {
                 style={{ width: dataColumns.observable_value.width }}
               >
                 {node.observable_value}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.tags.width }}
+              >
+                <StixObjectTags
+                  variant="inList"
+                  tags={node.tags}
+                  onClick={onTagClick.bind(this)}
+                />
               </div>
               <div
                 className={classes.bodyItem}
@@ -113,6 +123,7 @@ StixObservableLineComponent.propTypes = {
   classes: PropTypes.object,
   fd: PropTypes.func,
   t: PropTypes.func,
+  onTagClick: PropTypes.func,
 };
 
 const StixObservableLineFragment = createFragmentContainer(
@@ -131,6 +142,19 @@ const StixObservableLineFragment = createFragmentContainer(
             node {
               id
               definition
+            }
+          }
+        }
+        tags {
+          edges {
+            node {
+              id
+              tag_type
+              value
+              color
+            }
+            relation {
+              id
             }
           }
         }
@@ -166,6 +190,12 @@ class StixObservableLineDummyComponent extends Component {
                 style={{ width: dataColumns.observable_value.width }}
               >
                 <div className="fakeItem" style={{ width: '70%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.tags.width }}
+              >
+                <div className="fakeItem" style={{ width: '90%' }} />
               </div>
               <div
                 className={classes.bodyItem}

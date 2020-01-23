@@ -36,8 +36,6 @@ const threatActorQuery = graphql`
       name
       alias
       ...ThreatActor_threatActor
-      ...ThreatActorOverview_threatActor
-      ...ThreatActorDetails_threatActor
       ...ThreatActorReports_threatActor
       ...ThreatActorKnowledge_threatActor
       ...ThreatActorIndicators_threatActor

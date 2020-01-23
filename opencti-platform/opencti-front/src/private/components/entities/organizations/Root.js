@@ -36,8 +36,6 @@ const organizationQuery = graphql`
       name
       alias
       ...Organization_organization
-      ...OrganizationOverview_organization
-      ...OrganizationDetails_organization
       ...OrganizationReports_organization
       ...OrganizationKnowledge_organization
       ...OrganizationObservables_organization

@@ -9,7 +9,7 @@ import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
-  compose, pathOr, pipe, map, pluck, union, assoc,
+  compose, pathOr, pipe, map, pluck, union, evolve, path,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -30,6 +30,7 @@ import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
 import Select from '../../../../components/Select';
+import TagAutocompleteField from '../../common/form/TagAutocompleteField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -177,14 +178,18 @@ class StixObservableCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const finalValues = pipe(
-      assoc('createdByRef', values.createdByRef.value),
-      assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
-    )(values);
+    const adaptedValues = evolve(
+      {
+        createdByRef: path(['value']),
+        markingDefinitions: pluck('value'),
+        tags: pluck('value'),
+      },
+      values,
+    );
     commitMutation({
       mutation: stixObservableMutation,
       variables: {
-        input: finalValues,
+        input: adaptedValues,
       },
       updater: (store) => {
         const payload = store.getRootField('stixObservableAdd');
@@ -248,6 +253,7 @@ class StixObservableCreation extends Component {
                 description: '',
                 createdByRef: '',
                 markingDefinitions: [],
+                tags: [],
                 createIndicator: false,
               }}
               validationSchema={stixObservableValidation(t)}
@@ -355,6 +361,7 @@ class StixObservableCreation extends Component {
                       options={this.state.markingDefinitions}
                       onInputChange={this.searchMarkingDefinitions.bind(this)}
                     />
+                    <TagAutocompleteField />
                     <Field
                       name="createIndicator"
                       component={Switch}

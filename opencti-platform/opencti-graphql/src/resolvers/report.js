@@ -50,9 +50,11 @@ const reportResolvers = {
   },
   ReportsOrdering: {
     markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
-    tags: `${REL_INDEX_PREFIX}tagged.value`
+    tags: `${REL_INDEX_PREFIX}tagged.value`,
+    createdBy: `${REL_INDEX_PREFIX}created_by_ref.name`
   },
   ReportsFilter: {
+    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
     createdBy: `${REL_INDEX_PREFIX}created_by_ref.internal_id_key`,
     knowledgeContains: `${REL_INDEX_PREFIX}object_refs.internal_id_key`,
     observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`

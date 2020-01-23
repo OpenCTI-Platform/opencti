@@ -33,8 +33,6 @@ const courseOfActionQuery = graphql`
       name
       alias
       ...CourseOfAction_courseOfAction
-      ...CourseOfActionOverview_courseOfAction
-      ...CourseOfActionDetails_courseOfAction
       ...FileImportViewer_entity
       ...FileExportViewer_entity
     }

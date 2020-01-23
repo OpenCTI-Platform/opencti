@@ -10,7 +10,14 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
-  compose, pathOr, pipe, map, pluck, union, assoc,
+  compose,
+  pathOr,
+  pipe,
+  map,
+  pluck,
+  union,
+  evolve,
+  path,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -33,6 +40,7 @@ import IdentityCreation, {
 } from '../common/identities/IdentityCreation';
 import { attributesQuery } from '../settings/attributes/AttributesLines';
 import Loader from '../../../components/Loader';
+import TagAutocompleteField from '../common/form/TagAutocompleteField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -158,15 +166,19 @@ class ReportCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const finalValues = pipe(
-      assoc('published', parse(values.published).format()),
-      assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
-      assoc('createdByRef', values.createdByRef.value),
-    )(values);
+    const adaptedValues = evolve(
+      {
+        published: parse(values.published).format(),
+        createdByRef: path(['value']),
+        markingDefinitions: pluck('value'),
+        tags: pluck('value'),
+      },
+      values,
+    );
     commitMutation({
       mutation: reportMutation,
       variables: {
-        input: finalValues,
+        input: adaptedValues,
       },
       updater: (store) => {
         const payload = store.getRootField('reportAdd');
@@ -236,6 +248,7 @@ class ReportCreation extends Component {
                         report_class: '',
                         createdByRef: '',
                         markingDefinitions: [],
+                        tags: [],
                       }}
                       validationSchema={reportValidation(t)}
                       onSubmit={this.onSubmit.bind(this)}
@@ -311,6 +324,7 @@ class ReportCreation extends Component {
                                 this,
                               )}
                             />
+                            <TagAutocompleteField />
                             <div className={classes.buttons}>
                               <Button
                                 variant="contained"

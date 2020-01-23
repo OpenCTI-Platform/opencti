@@ -14,7 +14,7 @@ import CityObservables from './CityObservables';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import FileManager from '../../common/files/FileManager';
 import CityPopover from './CityPopover';
-import Loader from "../../../../components/Loader";
+import Loader from '../../../../components/Loader';
 
 const subscription = graphql`
   subscription RootCitiesSubscription($id: ID!) {
@@ -36,7 +36,6 @@ const cityQuery = graphql`
       name
       alias
       ...City_city
-      ...CityOverview_city
       ...CityReports_city
       ...CityKnowledge_city
       ...CityObservables_city

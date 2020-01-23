@@ -34,10 +34,10 @@ class ReportComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={4}>
+          <Grid item={true} xs={3}>
             <ReportOverview report={report} />
           </Grid>
-          <Grid item={true} xs={2}>
+          <Grid item={true} xs={3}>
             <ReportIdentity report={report} />
           </Grid>
           <Grid item={true} xs={6}>

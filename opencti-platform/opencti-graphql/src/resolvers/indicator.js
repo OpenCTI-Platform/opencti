@@ -21,6 +21,7 @@ const indicatorResolvers = {
   IndicatorsFilter: {
     observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`,
     indicates: `${REL_INDEX_PREFIX}indicates.internal_id_key`,
+    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`
   },
   Indicator: {
     observableRefs: report => observableRefs(report.id)

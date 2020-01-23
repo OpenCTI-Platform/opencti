@@ -9,7 +9,14 @@ import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
-  compose, pathOr, pipe, map, pluck, union, assoc,
+  compose,
+  pathOr,
+  pipe,
+  map,
+  pluck,
+  union,
+  evolve,
+  path,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -26,6 +33,7 @@ import IdentityCreation, {
 } from '../../common/identities/IdentityCreation';
 import DatePickerField from '../../../../components/DatePickerField';
 import Select from '../../../../components/Select';
+import TagAutocompleteField from '../../common/form/TagAutocompleteField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -168,14 +176,18 @@ class IndicatorCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const finalValues = pipe(
-      assoc('createdByRef', values.createdByRef.value),
-      assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
-    )(values);
+    const adaptedValues = evolve(
+      {
+        createdByRef: path(['value']),
+        markingDefinitions: pluck('value'),
+        tags: pluck('value'),
+      },
+      values,
+    );
     commitMutation({
       mutation: indicatorMutation,
       variables: {
-        input: finalValues,
+        input: adaptedValues,
       },
       updater: (store) => {
         const payload = store.getRootField('indicatorAdd');
@@ -243,6 +255,7 @@ class IndicatorCreation extends Component {
                 description: '',
                 createdByRef: '',
                 markingDefinitions: [],
+                tags: [],
               }}
               validationSchema={indicatorValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -387,6 +400,7 @@ class IndicatorCreation extends Component {
                       options={this.state.markingDefinitions}
                       onInputChange={this.searchMarkingDefinitions.bind(this)}
                     />
+                    <TagAutocompleteField />
                     <div className={classes.buttons}>
                       <Button
                         variant="contained"

@@ -1,7 +1,17 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose, append, filter, propOr,
+  compose,
+  append,
+  filter,
+  propOr,
+  assoc,
+  dissoc,
+  pipe,
+  toPairs,
+  map,
+  last,
+  head,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
@@ -31,13 +41,14 @@ class StixObservables extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'StixObservables-view',
+      'view-stix_observables',
     );
     this.state = {
       sortBy: propOr('created_at', 'sortBy', params),
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
+      filters: {},
       types: [],
       numberOfElements: { number: 0, symbol: '' },
     };
@@ -47,8 +58,8 @@ class StixObservables extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'StixObservables-view',
-      this.state,
+      'view-stix_observables',
+      dissoc('filters', this.state),
     );
   }
 
@@ -66,10 +77,22 @@ class StixObservables extends Component {
 
   handleToggle(type) {
     if (this.state.types.includes(type)) {
-      this.setState({ types: filter((t) => t !== type, this.state.types) });
+      this.setState({ types: filter((t) => t !== type, this.state.types) }, () => this.saveView());
     } else {
-      this.setState({ types: append(type, this.state.types) });
+      this.setState({ types: append(type, this.state.types) }, () => this.saveView());
     }
+  }
+
+  handleAddFilter(key, id, value, event) {
+    event.stopPropagation();
+    event.preventDefault();
+    this.setState({
+      filters: assoc(key, [{ id, value }], this.state.filters),
+    });
+  }
+
+  handleRemoveFilter(key) {
+    this.setState({ filters: dissoc(key, this.state.filters) });
   }
 
   setNumberOfElements(numberOfElements) {
@@ -78,18 +101,27 @@ class StixObservables extends Component {
 
   renderLines(paginationOptions) {
     const {
-      sortBy, orderAsc, searchTerm, numberOfElements,
+      sortBy,
+      orderAsc,
+      searchTerm,
+      filters,
+      numberOfElements,
     } = this.state;
     const dataColumns = {
       entity_type: {
         label: 'Type',
-        width: '20%',
+        width: '15%',
         isSortable: true,
       },
       observable_value: {
         label: 'Value',
-        width: '50%',
+        width: '35%',
         isSortable: true,
+      },
+      tags: {
+        label: 'Tags',
+        width: '20%',
+        isSortable: false,
       },
       created_at: {
         label: 'Creation date',
@@ -108,8 +140,10 @@ class StixObservables extends Component {
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
+        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         exportEntityType="Stix-Observable"
         keyword={searchTerm}
+        filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
       >
@@ -122,6 +156,7 @@ class StixObservables extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              onTagClick={this.handleAddFilter.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
@@ -138,11 +173,21 @@ class StixObservables extends Component {
       sortBy,
       orderAsc,
       searchTerm,
+      filters,
       openExports,
     } = this.state;
+    const finalFilters = pipe(
+      toPairs,
+      map((pair) => {
+        const values = last(pair);
+        const valIds = map((v) => v.id, values);
+        return { key: head(pair), values: valIds };
+      }),
+    )(filters);
     const paginationOptions = {
       types: this.state.types.length > 0 ? this.state.types : null,
       search: searchTerm,
+      filters: finalFilters,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };

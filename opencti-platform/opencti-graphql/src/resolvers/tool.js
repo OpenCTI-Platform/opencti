@@ -19,6 +19,9 @@ const toolResolvers = {
     markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
     tags: `${REL_INDEX_PREFIX}tagged.value`
   },
+  ToolsFilter: {
+    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`
+  },
   Tool: {
     killChainPhases: tool => killChainPhases(tool.id)
   },

@@ -31,6 +31,9 @@ const userResolvers = {
     markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
     tags: `${REL_INDEX_PREFIX}tagged.value`
   },
+  UsersFilter: {
+    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`
+  },
   User: {
     groups: user => groups(user.id),
     token: (user, args, context) => token(user.id, args, context)

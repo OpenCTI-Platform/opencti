@@ -24,6 +24,7 @@ class IndicatorsLines extends Component {
       initialLoading,
       dataColumns,
       relay,
+      onTagClick,
       paginationOptions,
     } = this.props;
     return (
@@ -42,6 +43,7 @@ class IndicatorsLines extends Component {
         DummyLineComponent={<IndicatorLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
+        onTagClick={onTagClick.bind(this)}
         paginationOptions={paginationOptions}
       />
     );
@@ -56,6 +58,7 @@ IndicatorsLines.propTypes = {
   relay: PropTypes.object,
   indicators: PropTypes.object,
   initialLoading: PropTypes.bool,
+  onTagClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
 };
 

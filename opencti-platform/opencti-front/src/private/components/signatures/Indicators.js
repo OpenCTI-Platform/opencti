@@ -1,7 +1,17 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  append, compose, filter, propOr,
+  append,
+  assoc,
+  compose,
+  dissoc,
+  filter,
+  head,
+  last,
+  map,
+  pipe,
+  propOr,
+  toPairs,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core';
@@ -31,13 +41,14 @@ class Indicators extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'Indicators-view',
+      'view-indicators',
     );
     this.state = {
       sortBy: propOr('valid_from', 'sortBy', params),
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
+      filters: {},
       indicatorTypes: [],
       observableTypes: [],
       openExports: false,
@@ -49,8 +60,8 @@ class Indicators extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'Indicators-view',
-      this.state,
+      'view-indicators',
+      dissoc('filters', this.state),
     );
   }
 
@@ -90,6 +101,18 @@ class Indicators extends Component {
     }
   }
 
+  handleAddFilter(key, id, value, event) {
+    event.stopPropagation();
+    event.preventDefault();
+    this.setState({
+      filters: assoc(key, [{ id, value }], this.state.filters),
+    });
+  }
+
+  handleRemoveFilter(key) {
+    this.setState({ filters: dissoc(key, this.state.filters) });
+  }
+
   setNumberOfElements(numberOfElements) {
     this.setState({ numberOfElements });
   }
@@ -99,19 +122,25 @@ class Indicators extends Component {
       sortBy,
       orderAsc,
       searchTerm,
+      filters,
       openExports,
       numberOfElements,
     } = this.state;
     const dataColumns = {
       pattern_type: {
         label: 'Pattern type',
-        width: '15%',
+        width: '10%',
         isSortable: true,
       },
       name: {
         label: 'Name',
-        width: '35%',
+        width: '25%',
         isSortable: true,
+      },
+      tags: {
+        label: 'Tags',
+        width: '20%',
+        isSortable: false,
       },
       valid_from: {
         label: 'Valid from',
@@ -135,10 +164,12 @@ class Indicators extends Component {
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
+        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
         exportEntityType="Indicator"
         keyword={searchTerm}
+        filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
       >
@@ -151,6 +182,7 @@ class Indicators extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              onTagClick={this.handleAddFilter.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
@@ -166,29 +198,37 @@ class Indicators extends Component {
       sortBy,
       orderAsc,
       searchTerm,
+      filters,
       indicatorTypes,
       observableTypes,
       openExports,
     } = this.state;
-    let filters = [];
+    let finalFilters = pipe(
+      toPairs,
+      map((pair) => {
+        const values = last(pair);
+        const valIds = map((v) => v.id, values);
+        return { key: head(pair), values: valIds };
+      }),
+    )(filters);
     if (indicatorTypes.length > 0) {
-      filters = append(
+      finalFilters = append(
         { key: 'pattern_type', values: indicatorTypes, operator: 'match' },
-        filters,
+        finalFilters,
       );
     }
     if (observableTypes.length > 0) {
-      filters = append(
+      finalFilters = append(
         {
           key: 'main_observable_type',
           values: observableTypes,
           operator: 'match',
         },
-        filters,
+        finalFilters,
       );
     }
     const paginationOptions = {
-      filters,
+      filters: finalFilters,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
