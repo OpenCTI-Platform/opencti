@@ -23,18 +23,18 @@ import StixDomainEntitiesExports from '../../private/components/common/stix_doma
 
 const styles = (theme) => ({
   container: {
-    transition: theme.transitions.create('margin', {
+    transition: theme.transitions.create('padding', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
   },
   containerOpenExports: {
     flexGrow: 1,
-    transition: theme.transitions.create('margin', {
+    transition: theme.transitions.create('padding', {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
     }),
-    marginRight: 310,
+    paddingRight: 310,
   },
   parameters: {
     float: 'left',
@@ -121,6 +121,7 @@ class ListLines extends Component {
       handleRemoveFilter,
       handleToggleExports,
       openExports,
+      noPadding,
       dataColumns,
       secondaryAction,
       paginationOptions,
@@ -134,7 +135,9 @@ class ListLines extends Component {
     return (
       <div
         className={
-          openExports ? classes.containerOpenExports : classes.container
+          openExports && !noPadding
+            ? classes.containerOpenExports
+            : classes.container
         }
       >
         <div className={classes.parameters}>
@@ -285,6 +288,7 @@ ListLines.propTypes = {
   handleRemoveFilter: PropTypes.func,
   handleToggleExports: PropTypes.func,
   openExports: PropTypes.bool,
+  noPadding: PropTypes.bool,
   views: PropTypes.array,
   exportEntityType: PropTypes.string,
   keyword: PropTypes.string,

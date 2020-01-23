@@ -417,6 +417,10 @@ enum StixDomainEntitiesFilter {
   alias
   stix_id_key
   hasExternalReference
+  knowledgeContains
+  observablesContains
+  tags
+  createdBy
 }
 input StixDomainEntitiesFiltering {
   key: StixDomainEntitiesFilter!

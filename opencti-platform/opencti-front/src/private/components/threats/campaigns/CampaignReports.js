@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -10,9 +10,20 @@ import CampaignPopover from './CampaignPopover';
 import Reports from '../../reports/Reports';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
-const styles = () => ({
+const styles = (theme) => ({
   container: {
-    margin: 0,
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+  },
+  containerWithPadding: {
+    flexGrow: 1,
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    paddingRight: 310,
   },
   paper: {
     height: '100%',
@@ -24,16 +35,30 @@ const styles = () => ({
 });
 
 class CampaignReportsComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { withPadding: false };
+  }
+
   render() {
+    const { withPadding } = this.state;
     const { classes, campaign } = this.props;
     return (
-      <div className={classes.container}>
+      <div
+        className={
+          withPadding ? classes.containerWithPadding : classes.container
+        }
+      >
         <StixDomainEntityHeader
           stixDomainEntity={campaign}
           PopoverComponent={<CampaignPopover />}
         />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Reports objectId={campaign.id} />
+          <Reports
+            objectId={campaign.id}
+            onChangeOpenExports={(openExports) => this.setState({ withPadding: openExports })
+            }
+          />
         </Paper>
       </div>
     );
@@ -56,7 +81,4 @@ const CampaignReports = createFragmentContainer(CampaignReportsComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(CampaignReports);
+export default compose(inject18n, withStyles(styles))(CampaignReports);

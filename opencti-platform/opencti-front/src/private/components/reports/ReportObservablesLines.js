@@ -8,10 +8,21 @@ import {
   ReportObservableLine,
   ReportObservableLineDummy,
 } from './ReportObservableLine';
+import { setNumberOfElements } from '../../../utils/Number';
 
 const nbOfRowsToLoad = 25;
 
 class ReportObservablesLines extends Component {
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'observableRefs',
+      this.props.setNumberOfElements.bind(this),
+      'report',
+    );
+  }
+
   render() {
     const {
       initialLoading,
@@ -52,11 +63,13 @@ ReportObservablesLines.propTypes = {
   relay: PropTypes.object,
   initialLoading: PropTypes.bool,
   searchTerm: PropTypes.string,
+  setNumberOfElements: PropTypes.func,
 };
 
 export const reportObservablesLinesQuery = graphql`
   query ReportObservablesLinesQuery(
     $id: String!
+    $types: [String]
     $search: String
     $count: Int!
     $cursor: ID
@@ -67,6 +80,7 @@ export const reportObservablesLinesQuery = graphql`
     report(id: $id) {
       ...ReportObservablesLines_report
         @arguments(
+          types: $types
           search: $search
           count: $count
           cursor: $cursor
@@ -84,6 +98,7 @@ export default createPaginationContainer(
     report: graphql`
       fragment ReportObservablesLines_report on Report
         @argumentDefinitions(
+          types: { type: "[String]" }
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
@@ -93,6 +108,7 @@ export default createPaginationContainer(
         ) {
         id
         observableRefs(
+          types: $types
           search: $search
           first: $count
           after: $cursor
@@ -130,6 +146,7 @@ export default createPaginationContainer(
         id: fragmentVariables.id,
         count,
         cursor,
+        types: fragmentVariables.types,
         search: fragmentVariables.search,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,

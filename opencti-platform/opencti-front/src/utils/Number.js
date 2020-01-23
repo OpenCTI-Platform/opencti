@@ -25,9 +25,9 @@ export const numberFormat = (number, digits = 2) => {
   };
 };
 
-export const setNumberOfElements = (prevProps, props, key, callback) => {
-  const currentNumberOfElements = pathOr(0, [key, 'pageInfo', 'globalCount'], props.data);
-  const prevNumberOfElements = pathOr(0, [key, 'pageInfo', 'globalCount'], prevProps.data);
+export const setNumberOfElements = (prevProps, props, key, callback, propKey = 'data') => {
+  const currentNumberOfElements = pathOr(0, [key, 'pageInfo', 'globalCount'], props[propKey]);
+  const prevNumberOfElements = pathOr(0, [key, 'pageInfo', 'globalCount'], prevProps[propKey]);
   if (currentNumberOfElements !== prevNumberOfElements) {
     callback(numberFormat(currentNumberOfElements));
   }

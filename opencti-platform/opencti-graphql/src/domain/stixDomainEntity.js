@@ -1,4 +1,4 @@
-import { assoc, dissoc, map } from 'ramda';
+import { assoc, dissoc, map, propOr, pipe, invertObj } from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
@@ -22,6 +22,7 @@ import { generateFileExportName, upload } from '../database/minio';
 import { connectorsForExport } from './connector';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
+import stixDomainEntityResolvers from '../resolvers/stixDomainEntity';
 
 export const findAll = args => {
   const noTypes = !args.types || args.types.length === 0;
@@ -86,6 +87,26 @@ const askJobExports = async (
       }));
     }, connectors)
   );
+  const stixDomainEntitiesFiltersInversed = invertObj(stixDomainEntityResolvers.StixDomainEntitiesFilter);
+  const stixDomainEntitiesOrderingInversed = invertObj(stixDomainEntityResolvers.StixDomainEntitiesOrdering);
+  const finalListArgs = pipe(
+    assoc(
+      'filters',
+      map(
+        n => ({
+          key: n.key in stixDomainEntitiesFiltersInversed ? stixDomainEntitiesFiltersInversed[n.key] : n.key,
+          values: n.values
+        }),
+        propOr([], 'filters', listArgs)
+      )
+    ),
+    assoc(
+      'orderBy',
+      listArgs.orderBy in stixDomainEntitiesOrderingInversed
+        ? stixDomainEntitiesOrderingInversed[listArgs.orderBy]
+        : listArgs.orderBy
+    )
+  )(listArgs);
   // Send message to all correct connectors queues
   await Promise.all(
     map(data => {
@@ -97,7 +118,7 @@ const askJobExports = async (
         export_type: exportType, // for entity, simple or full / for list, withArgs / withoutArgs
         entity_type: entity ? entity.entity_type : type, // report, threat, ...
         entity_id: entity ? entity.id : null, // report(id), thread(id), ...
-        list_args: listArgs,
+        list_args: finalListArgs,
         file_name: work.work_file // Base path for the upload
       };
       return pushToConnector(connector, message);

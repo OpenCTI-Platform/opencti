@@ -5,10 +5,21 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr, propOr } from 'ramda';
 import ListLinesContent from '../../../components/list_lines/ListLinesContent';
 import { ReportEntityLine, ReportEntityLineDummy } from './ReportEntityLine';
+import { setNumberOfElements } from '../../../utils/Number';
 
 const nbOfRowsToLoad = 25;
 
 class ReportEntitiesLines extends Component {
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'objectRefs',
+      this.props.setNumberOfElements.bind(this),
+      'report',
+    );
+  }
+
   render() {
     const {
       initialLoading,
@@ -49,6 +60,7 @@ ReportEntitiesLines.propTypes = {
   relay: PropTypes.object,
   initialLoading: PropTypes.bool,
   searchTerm: PropTypes.string,
+  setNumberOfElements: PropTypes.func,
 };
 
 export const ReportEntitiesLinesQuery = graphql`
@@ -59,7 +71,7 @@ export const ReportEntitiesLinesQuery = graphql`
     $cursor: ID
     $orderBy: StixDomainEntitiesOrdering
     $orderMode: OrderingMode
-    $filters: [ StixDomainEntitiesFiltering]
+    $filters: [StixDomainEntitiesFiltering]
   ) {
     report(id: $id) {
       ...ReportEntitiesLines_report

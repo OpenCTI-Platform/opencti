@@ -1,8 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import {
+  append, compose, filter, propOr,
+} from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
+import { withStyles } from '@material-ui/core';
 import { QueryRenderer } from '../../../relay/environment';
 import ReportHeader from './ReportHeader';
 import ListLines from '../../../components/list_lines/ListLines';
@@ -15,6 +18,14 @@ import {
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ReportAddObservableRefs from './ReportAddObservableRefs';
+import StixObservablesRightBar from '../signatures/stix_observables/StixObservablesRightBar';
+
+const styles = () => ({
+  container: {
+    margin: 0,
+    padding: '0 250px 0 0',
+  },
+});
 
 class ReportObservablesComponent extends Component {
   constructor(props) {
@@ -28,6 +39,9 @@ class ReportObservablesComponent extends Component {
       sortBy: propOr('created_at', 'sortBy', params),
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
+      types: [],
+      openExports: false,
+      numberOfElements: { number: 0, symbol: '' },
     };
   }
 
@@ -48,9 +62,32 @@ class ReportObservablesComponent extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
+  handleToggleExports() {
+    this.setState({ openExports: !this.state.openExports });
+  }
+
+  handleToggle(type) {
+    if (this.state.types.includes(type)) {
+      this.setState({ types: filter((t) => t !== type, this.state.types) }, () => this.saveView());
+    } else {
+      this.setState({ types: append(type, this.state.types) }, () => this.saveView());
+    }
+  }
+
+  setNumberOfElements(numberOfElements) {
+    this.setState({ numberOfElements });
+  }
+
   render() {
-    const { report } = this.props;
-    const { sortBy, orderAsc, searchTerm } = this.state;
+    const { report, classes } = this.props;
+    const {
+      sortBy,
+      orderAsc,
+      searchTerm,
+      types,
+      openExports,
+      numberOfElements,
+    } = this.state;
     const dataColumns = {
       entity_type: {
         label: 'Type',
@@ -78,13 +115,13 @@ class ReportObservablesComponent extends Component {
       },
     };
     const paginationOptions = {
-      types: null,
+      types,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div style={{ paddingBottom: 50 }}>
+      <div className={classes.container}>
         <ReportHeader report={report} />
         <br />
         <ListLines
@@ -94,6 +131,7 @@ class ReportObservablesComponent extends Component {
           handleSort={this.handleSort.bind(this)}
           handleSearch={this.handleSearch.bind(this)}
           secondaryAction={true}
+          numberOfElements={numberOfElements}
         >
           <QueryRenderer
             query={reportObservablesLinesQuery}
@@ -104,6 +142,7 @@ class ReportObservablesComponent extends Component {
                 paginationOptions={paginationOptions}
                 dataColumns={dataColumns}
                 initialLoading={props === null}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
               />
             )}
           />
@@ -111,6 +150,11 @@ class ReportObservablesComponent extends Component {
         <ReportAddObservableRefs
           reportId={report.id}
           paginationOptions={paginationOptions}
+        />
+        <StixObservablesRightBar
+          types={types}
+          handleToggle={this.handleToggle.bind(this)}
+          openExports={openExports}
         />
       </div>
     );
@@ -134,4 +178,4 @@ const ReportObservables = createFragmentContainer(ReportObservablesComponent, {
   `,
 });
 
-export default compose(inject18n)(ReportObservables);
+export default compose(inject18n, withStyles(styles))(ReportObservables);
