@@ -10,3 +10,4 @@ pika
 stix2-validator
 deprecated
 black
+python-magic

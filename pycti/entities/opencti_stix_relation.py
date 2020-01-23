@@ -163,11 +163,11 @@ class StixRelation:
         )
         query = (
             """
-            query StixRelations($fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $relationType: String, $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $inferred: Boolean, $first: Int, $after: ID, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode) {
-                stixRelations(fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationType: $relationType, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, inferred: $inferred, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
-                    edges {
-                        node {
-                            """
+                query StixRelations($fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $relationType: String, $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $inferred: Boolean, $first: Int, $after: ID, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode) {
+                    stixRelations(fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationType: $relationType, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, inferred: $inferred, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+                        edges {
+                            node {
+                                """
             + self.properties
             + """
                         }
@@ -233,9 +233,9 @@ class StixRelation:
             self.opencti.log("info", "Reading stix_relation {" + id + "}.")
             query = (
                 """
-                query StixRelation($id: String!) {
-                    stixRelation(id: $id) {
-                        """
+                    query StixRelation($id: String!) {
+                        stixRelation(id: $id) {
+                            """
                 + self.properties
                 + """
                     }
@@ -302,9 +302,9 @@ class StixRelation:
         )
         query = (
             """
-                    mutation StixRelationAdd($input: StixRelationAddInput!) {
-                        stixRelationAdd(input: $input) {
-                           """
+                        mutation StixRelationAdd($input: StixRelationAddInput!) {
+                            stixRelationAdd(input: $input) {
+                               """
             + self.properties
             + """
                         }
@@ -505,10 +505,10 @@ class StixRelation:
             )
             query = (
                 """
-                mutation StixRelationEdit($id: ID!, $input: EditInput!) {
-                    stixRelationEdit(id: $id) {
-                        fieldPatch(input: $input) {
-                            """
+                    mutation StixRelationEdit($id: ID!, $input: EditInput!) {
+                        stixRelationEdit(id: $id) {
+                            fieldPatch(input: $input) {
+                                """
                 + self.properties
                 + """
                         }
@@ -523,7 +523,33 @@ class StixRelation:
                 result["data"]["stixRelationEdit"]["fieldPatch"]
             )
         else:
-            self.opencti.log("error", "Missing parameters: id and key and value")
+            self.opencti.log(
+                "error",
+                "[opencti_stix_relation] Missing parameters: id and key and value",
+            )
+            return None
+
+    """
+        Delete a stix_relation
+
+        :param id: the stix_relation id
+        :return void
+    """
+
+    def delete(self, **kwargs):
+        id = kwargs.get("id", None)
+        if id is not None:
+            self.opencti.log("info", "Deleting stix_relation {" + id + "}.")
+            query = """
+                mutation StixRelationEdit($id: ID!) {
+                    stixRelationEdit(id: $id) {
+                        delete
+                    }
+                }
+            """
+            self.opencti.query(query, {"id": id})
+        else:
+            self.opencti.log("error", "[opencti_stix_relation] Missing parameters: id")
             return None
 
     """
@@ -576,7 +602,10 @@ class StixRelation:
                 )
                 return True
         else:
-            self.opencti.log("error", "Missing parameters: id and kill_chain_phase_id")
+            self.opencti.log(
+                "error",
+                "[opencti_stix_relation] Missing parameters: id and kill_chain_phase_id",
+            )
             return False
 
     """
@@ -627,4 +656,6 @@ class StixRelation:
                 entity, stix_relation, mode, max_marking_definition_entity
             )
         else:
-            self.opencti.log("error", "Missing parameters: id or entity")
+            self.opencti.log(
+                "error", "[opencti_stix_relation] Missing parameters: id or entity"
+            )

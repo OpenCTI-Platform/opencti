@@ -1,6 +1,8 @@
 # coding: utf-8
 
 import json
+import os
+import magic
 
 
 class StixDomainEntity:
@@ -67,7 +69,7 @@ class StixDomainEntity:
                         id
                     }
                 }
-            } 
+            }
             externalReferences {
                 edges {
                     node {
@@ -281,11 +283,11 @@ class StixDomainEntity:
         )
         query = (
             """
-            query StixDomainEntities($types: [String], $filters: [StixDomainEntitiesFiltering], $search: String, $first: Int, $after: ID, $orderBy: StixDomainEntitiesOrdering, $orderMode: OrderingMode) {
-                stixDomainEntities(types: $types, filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
-                    edges {
-                        node {
-                            """
+                query StixDomainEntities($types: [String], $filters: [StixDomainEntitiesFiltering], $search: String, $first: Int, $after: ID, $orderBy: StixDomainEntitiesOrdering, $orderMode: OrderingMode) {
+                    stixDomainEntities(types: $types, filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+                        edges {
+                            node {
+                                """
             + self.properties
             + """
                         }
@@ -358,9 +360,9 @@ class StixDomainEntity:
             self.opencti.log("info", "Reading Stix-Domain-Entity {" + id + "}.")
             query = (
                 """
-                query StixDomainEntity($id: String!) {
-                    stixDomainEntity(id: $id) {
-                        """
+                    query StixDomainEntity($id: String!) {
+                        stixDomainEntity(id: $id) {
+                            """
                 + self.properties
                 + """
                     }
@@ -426,10 +428,10 @@ class StixDomainEntity:
             )
             query = (
                 """
-                mutation StixDomainEntityEdit($id: ID!, $input: EditInput!) {
-                    stixDomainEntityEdit(id: $id) {
-                        fieldPatch(input: $input) {
-                            """
+                    mutation StixDomainEntityEdit($id: ID!, $input: EditInput!) {
+                        stixDomainEntityEdit(id: $id) {
+                            fieldPatch(input: $input) {
+                                """
                 + self.properties
                 + """
                         }
@@ -444,7 +446,77 @@ class StixDomainEntity:
                 result["data"]["stixDomainEntityEdit"]["fieldPatch"]
             )
         else:
-            self.opencti.log("error", "Missing parameters: id and key and value")
+            self.opencti.log(
+                "error",
+                "[opencti_stix_domain_entity] Missing parameters: id and key and value",
+            )
+            return None
+
+    """
+        Delete a Stix-Domain-Entity
+
+        :param id: the Stix-Domain-Entity id
+        :return void
+    """
+
+    def delete(self, **kwargs):
+        id = kwargs.get("id", None)
+        if id is not None:
+            self.opencti.log("info", "Deleting Stix-Domain-Entity {" + id + "}.")
+            query = """
+                 mutation StixDomainEntityEdit($id: ID!) {
+                     stixDomainEntityEdit(id: $id) {
+                         delete
+                     }
+                 }
+             """
+            self.opencti.query(query, {"id": id})
+        else:
+            self.opencti.log(
+                "error", "[opencti_stix_domain_entity] Missing parameters: id"
+            )
+            return None
+
+    """
+        Upload a file in this Stix-Domain-Entity 
+
+        :param id: the Stix-Domain-Entity id
+        :param file_name
+        :param data
+        :return void
+    """
+
+    def upload_file(self, **kwargs):
+        id = kwargs.get("id", None)
+        file_name = kwargs.get("file_name", None)
+        data = kwargs.get("data", None)
+        mime_type = kwargs.get("mime_type", "text/plain")
+        if id is not None and file_name is not None:
+            self.opencti.log(
+                "info", "Uploading a file in Stix-Domain-Entity {" + id + "}."
+            )
+            query = """
+                mutation StixDomainEntityEdit($id: ID!, $file: Upload!) {
+                    stixDomainEntityEdit(id: $id) {
+                        importPush(file: $file) {
+                            id
+                            name
+                        }
+                    }
+                }
+             """
+            if data is None:
+                data = open(file_name, "rb")
+                mime_type = magic.from_file(file_name, mime=True)
+
+            return self.opencti.query(
+                query, {"id": id, "file": (self.file(file_name, data, mime_type))}
+            )
+        else:
+            self.opencti.log(
+                "error",
+                "[opencti_stix_domain_entity] Missing parameters: id or file_name or data",
+            )
             return None
 
     def push_list_export(self, entity_type, file_name, data, list_args=""):

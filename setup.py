@@ -63,6 +63,7 @@ setup(
         "pytz",
         "pika",
         "deprecated",
+        "python-magic",
     ],
     cmdclass={"verify": VerifyVersionCommand,},
     extras_require={"dev": ["black", "wheel"],},  # Optional

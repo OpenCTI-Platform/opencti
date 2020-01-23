@@ -7,7 +7,7 @@ from pycti import OpenCTIApiClient
 
 # Variables
 api_url = "https://demo.opencti.io"
-api_token = "bb4aca90-b98c-49ee-9582-7eac92b61b82"
+api_token = "609caced-7610-4c84-80b4-f3a380d1939b"
 
 # OpenCTI initialization
 opencti_api_client = OpenCTIApiClient(api_url, api_token)
@@ -59,7 +59,7 @@ for kill_chain_phase_id in ttp1["killChainPhasesIds"]:
 # Create the observable and indicator and indicates to the relation
 # Create the observable
 observable_ttp1 = opencti_api_client.stix_observable.create(
-    type="Email-Address", observable_value="phishing@mail.com"
+    type="Email-Address", observable_value="phishing@mail.com", createIndicator=True
 )
 # Get the indicator
 indicator_ttp1 = observable_ttp1["indicators"][0]
@@ -110,7 +110,7 @@ for kill_chain_phase_id in ttp2["killChainPhasesIds"]:
 # Create the observable and indicator and indicates to the relation
 # Create the observable
 observable_ttp2 = opencti_api_client.stix_observable.create(
-    type="Registry-Key", observable_value="Disk security"
+    type="Registry-Key", observable_value="Disk security", createIndicator=True
 )
 # Get the indicator
 indicator_ttp2 = observable_ttp2["indicators"][0]

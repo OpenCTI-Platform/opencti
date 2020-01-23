@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import io
+import magic
 from typing import List
 from deprecated import deprecated
 
@@ -42,9 +43,10 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class File:
-    def __init__(self, name, data):
+    def __init__(self, name, data, mime="text/plain"):
         self.name = name
         self.data = data
+        self.mime = mime
 
 
 class OpenCTIApiClient:
@@ -156,17 +158,30 @@ class OpenCTIApiClient:
                 is_multiple_files = file_var_item["multiple"]
                 if is_multiple_files:
                     for file in files:
-                        multipart_files.append(
-                            (
+                        if isinstance(file.data, str):
+                            file_multi = (
                                 str(file_index),
-                                (file.name, io.BytesIO(file.data.encode())),
+                                (file.name, io.BytesIO(file.data.encode()), file.mime,),
                             )
-                        )
+                        else:
+                            file_multi = (
+                                str(file_index),
+                                (file.name, file.data, file.mime),
+                            )
+                        multipart_files.append(file_multi)
                         file_index += 1
                 else:
-                    multipart_files.append(
-                        (str(file_index), (files.name, io.BytesIO(files.data.encode())))
-                    )
+                    if isinstance(files.data, str):
+                        file_multi = (
+                            str(file_index),
+                            (files.name, io.BytesIO(files.data.encode()), files.mime),
+                        )
+                    else:
+                        file_multi = (
+                            str(file_index),
+                            (files.name, files.data, files.mime),
+                        )
+                    multipart_files.append(file_multi)
                     file_index += 1
             # Send the multipart request
             r = requests.post(
@@ -320,6 +335,31 @@ class OpenCTIApiClient:
             data["indicatorsIds"] = self.process_multiple_ids(data["indicators"])
         return data
 
+    def upload_file(self, **kwargs):
+        file_name = kwargs.get("file_name", None)
+        data = kwargs.get("data", None)
+        mime_type = kwargs.get("mime_type", "text/plain")
+        if file_name is not None:
+            self.log("info", "Uploading a file.")
+            query = """
+                mutation UploadImport($file: Upload!) {
+                    uploadImport(file: $file) {
+                        id
+                        name
+                    }
+                }
+             """
+            if data is None:
+                data = open(file_name, "rb")
+                mime_type = magic.from_file(file_name, mime=True)
+
+            return self.query(query, {"file": (File(file_name, data, mime_type))})
+        else:
+            self.log(
+                "error", "[upload] Missing parameters: file_name or data",
+            )
+            return None
+
     @deprecated(
         version="2.1.0", reason="Replaced by the StixDomainEntity class in pycti"
     )
@@ -402,17 +442,11 @@ class OpenCTIApiClient:
     def push_stix_domain_entity_export(self, entity_id, file_name, data):
         return self.stix_domain_entity.push_entity_export(entity_id, file_name, data)
 
-    # TODO Move to StixDomainEntity
+    @deprecated(
+        version="2.1.0", reason="Replaced by the StixDomainEntity class in pycti"
+    )
     def delete_stix_domain_entity(self, id):
-        logging.info("Deleting + " + id + "...")
-        query = """
-             mutation StixDomainEntityEdit($id: ID!) {
-                 stixDomainEntityEdit(id: $id) {
-                     delete
-                 }
-             }
-         """
-        self.query(query, {"id": id})
+        return self.stix_domain_entity.delete(id=id)
 
     @deprecated(version="2.1.0", reason="Replaced by the StixRelation class in pycti")
     def get_stix_relation_by_stix_id_key(self, stix_id_key):
@@ -573,17 +607,9 @@ class OpenCTIApiClient:
             update=update,
         )
 
-    # TODO Move to StixRelation
+    @deprecated(version="2.1.0", reason="Replaced by the StixRelation class in pycti")
     def delete_relation(self, id):
-        logging.info("Deleting " + id + "...")
-        query = """
-            mutation StixRelationEdit($id: ID!) {
-                stixRelationEdit(id: $id) {
-                    delete
-                }
-            }
-        """
-        self.query(query, {"id": id})
+        return self.stix_relation.delete(id=id)
 
     @deprecated(
         version="2.1.0", reason="Replaced by the MarkingDefinition class in pycti"

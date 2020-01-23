@@ -192,7 +192,9 @@ class IntrusionSet:
             else:
                 return None
         else:
-            self.opencti.log("error", "Missing parameters: id or filters")
+            self.opencti.log(
+                "error", "[opencti_intrusion_set] Missing parameters: id or filters"
+            )
             return None
 
     """
