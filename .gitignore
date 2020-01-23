@@ -9,3 +9,4 @@ test.py
 .idea
 *.iml
 examples/*.json
+examples/*.pdf

@@ -34,6 +34,19 @@ class StixObservable:
                     id
                 }
             }
+            tags {
+                edges {
+                    node {
+                        id
+                        tag_type
+                        value
+                        color
+                    }
+                    relation {
+                        id
+                    }
+                }
+            }            
             markingDefinitions {
                 edges {
                     node {
@@ -207,6 +220,7 @@ class StixObservable:
         stix_id_key = kwargs.get("stix_id_key", None)
         created_by_ref = kwargs.get("createdByRef", None)
         marking_definitions = kwargs.get("markingDefinitions", None)
+        create_indicator = kwargs.get("createIndicator", False)
 
         if type is not None and observable_value is not None:
             self.opencti.log(
@@ -234,6 +248,7 @@ class StixObservable:
                         "stix_id_key": stix_id_key,
                         "createdByRef": created_by_ref,
                         "markingDefinitions": marking_definitions,
+                        "createIndicator": create_indicator,
                     }
                 },
             )
@@ -258,6 +273,7 @@ class StixObservable:
         stix_id_key = kwargs.get("stix_id_key", None)
         created_by_ref = kwargs.get("createdByRef", None)
         marking_definitions = kwargs.get("markingDefinitions", None)
+        create_indicator = kwargs.get("createIndicator", False)
         update = kwargs.get("update", False)
 
         object_result = self.read(
@@ -283,6 +299,7 @@ class StixObservable:
                 stix_id_key=stix_id_key,
                 createdByRef=created_by_ref,
                 markingDefinitions=marking_definitions,
+                createIndicator=create_indicator,
             )
 
     """

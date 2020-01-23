@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import json
 from pycti import OpenCTIApiClient
 
 # Variables
@@ -14,11 +15,5 @@ intrusion_set = opencti_api_client.intrusion_set.read(
     filters=[{"key": "name", "values": ["APT28"]}]
 )
 
-# Get the relations from APT28 to malwares
-stix_relations = opencti_api_client.stix_relation.list(
-    fromId=intrusion_set["id"], toTypes=["Malware"], inferred=True
-)
-
-# Print
-for stix_relation in stix_relations:
-    print("[" + stix_relation["to"]["stix_id_key"] + "] " + stix_relation["to"]["name"])
+# Delete the intrusion set
+opencti_api_client.stix_domain_entity.delete(id=intrusion_set["id"])
