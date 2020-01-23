@@ -180,7 +180,7 @@ class OpenCTIStix2:
                         tag_result = self.opencti.tag.create(
                             tag_type=tag["tag_type"],
                             value=tag["value"],
-                            color=tag["color"]
+                            color=tag["color"],
                         )
                 if tag_result is not None:
                     tags_ids.append(tag_result["id"])
@@ -512,9 +512,9 @@ class OpenCTIStix2:
             if CustomProperties.FILES in stix_object:
                 for file in stix_object[CustomProperties.FILES]:
                     self.opencti.stix_domain_entity.add_file(
-                        file_name=file['name'],
-                        data=base64.b64decode(file['data']),
-                        mime_type=file['mime_type']
+                        file_name=file["name"],
+                        data=base64.b64decode(file["data"]),
+                        mime_type=file["mime_type"],
                     )
 
         return stix_object_results

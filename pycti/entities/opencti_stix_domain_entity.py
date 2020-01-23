@@ -503,14 +503,12 @@ class StixDomainEntity:
         if id is not None and file_name is not None:
             stix_domain_entity = self.read(id=id)
             if stix_domain_entity is None:
-                self.opencti.log(
-                    "error", "Cannot add File, entity not found"
-                )
+                self.opencti.log("error", "Cannot add File, entity not found")
                 return False
             final_file_name = os.path.basename(file_name)
             current_files = {}
-            for file in stix_domain_entity['importFiles']:
-                current_files[file['name']] = file
+            for file in stix_domain_entity["importFiles"]:
+                current_files[file["name"]] = file
             if final_file_name in current_files:
                 return current_files[final_file_name]
             else:
@@ -532,7 +530,8 @@ class StixDomainEntity:
                     mime_type = magic.from_file(file_name, mime=True)
 
                 return self.opencti.query(
-                    query, {"id": id, "file": (self.file(final_file_name, data, mime_type))}
+                    query,
+                    {"id": id, "file": (self.file(final_file_name, data, mime_type))},
                 )
         else:
             self.opencti.log(
