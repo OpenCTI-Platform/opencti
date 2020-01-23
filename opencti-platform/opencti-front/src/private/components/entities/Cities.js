@@ -26,6 +26,7 @@ class Cities extends Component {
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
       openExports: false,
+      numberOfElements: { number: 0, symbol: '' },
     };
   }
 
@@ -50,8 +51,18 @@ class Cities extends Component {
     this.setState({ openExports: !this.state.openExports });
   }
 
+  setNumberOfElements(numberOfElements) {
+    this.setState({ numberOfElements });
+  }
+
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc, searchTerm, openExports } = this.state;
+    const {
+      sortBy,
+      orderAsc,
+      searchTerm,
+      openExports,
+      numberOfElements,
+    } = this.state;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -82,6 +93,7 @@ class Cities extends Component {
         exportEntityType="City"
         keyword={searchTerm}
         paginationOptions={paginationOptions}
+        numberOfElements={numberOfElements}
       >
         <QueryRenderer
           query={citiesLinesQuery}
@@ -92,6 +104,7 @@ class Cities extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
         />
@@ -123,7 +136,4 @@ Cities.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-)(Cities);
+export default compose(inject18n, withRouter)(Cities);

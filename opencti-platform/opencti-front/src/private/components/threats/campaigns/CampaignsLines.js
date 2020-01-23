@@ -5,10 +5,20 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { CampaignLine, CampaignLineDummy } from './CampaignLine';
+import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 25;
 
 class CampaignsLines extends Component {
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'campaigns',
+      this.props.setNumberOfElements.bind(this),
+    );
+  }
+
   render() {
     const {
       initialLoading, dataColumns, relay, onTagClick,
@@ -43,6 +53,7 @@ CampaignsLines.propTypes = {
   relay: PropTypes.object,
   initialLoading: PropTypes.bool,
   onTagClick: PropTypes.func,
+  setNumberOfElements: PropTypes.func,
 };
 
 export const campaignsLinesQuery = graphql`

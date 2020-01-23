@@ -1,16 +1,31 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  assoc, compose, dissoc, head, last, map, pipe, propOr, toPairs,
+  assoc,
+  compose,
+  dissoc,
+  head,
+  last,
+  map,
+  pipe,
+  propOr,
+  toPairs,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
-import CampaignsCards, { campaignsCardsQuery } from './campaigns/CampaignsCards';
-import CampaignsLines, { campaignsLinesQuery } from './campaigns/CampaignsLines';
+import CampaignsCards, {
+  campaignsCardsQuery,
+} from './campaigns/CampaignsCards';
+import CampaignsLines, {
+  campaignsLinesQuery,
+} from './campaigns/CampaignsLines';
 import CampaignCreation from './campaigns/CampaignCreation';
 
 class Campaigns extends Component {
@@ -28,6 +43,7 @@ class Campaigns extends Component {
       view: propOr('cards', 'view', params),
       filters: {},
       openExports: false,
+      numberOfElements: { number: 0, symbol: '' },
     };
   }
 
@@ -68,9 +84,18 @@ class Campaigns extends Component {
     this.setState({ filters: dissoc(key, this.state.filters) });
   }
 
+  setNumberOfElements(numberOfElements) {
+    this.setState({ numberOfElements });
+  }
+
   renderCards(paginationOptions) {
     const {
-      sortBy, orderAsc, searchTerm, filters, openExports,
+      sortBy,
+      orderAsc,
+      searchTerm,
+      filters,
+      openExports,
+      numberOfElements,
     } = this.state;
     const dataColumns = {
       name: {
@@ -101,6 +126,7 @@ class Campaigns extends Component {
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
+        numberOfElements={numberOfElements}
       >
         <QueryRenderer
           query={campaignsCardsQuery}
@@ -111,6 +137,7 @@ class Campaigns extends Component {
               paginationOptions={paginationOptions}
               initialLoading={props === null}
               onTagClick={this.handleAddFilter.bind(this)}
+              setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
         />
@@ -120,7 +147,12 @@ class Campaigns extends Component {
 
   renderLines(paginationOptions) {
     const {
-      sortBy, orderAsc, searchTerm, filters, openExports,
+      sortBy,
+      orderAsc,
+      searchTerm,
+      filters,
+      openExports,
+      numberOfElements,
     } = this.state;
     const dataColumns = {
       name: {
@@ -159,6 +191,8 @@ class Campaigns extends Component {
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
+        $
+        numberOfElements={numberOfElements}
       >
         <QueryRenderer
           query={campaignsLinesQuery}
@@ -170,6 +204,7 @@ class Campaigns extends Component {
               dataColumns={dataColumns}
               initialLoading={props === null}
               onTagClick={this.handleAddFilter.bind(this)}
+              setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
         />
@@ -211,7 +246,4 @@ Campaigns.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-)(Campaigns);
+export default compose(inject18n, withRouter)(Campaigns);

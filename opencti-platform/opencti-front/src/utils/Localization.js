@@ -191,6 +191,7 @@ const i18n = {
       'Update an observable': 'Modifier un observable',
       'Create an indicator': 'Créer un indicateur',
       'Update an indicator': 'Modifier un indicateur',
+      'Create an indicator from this observable': 'Créer un indicateur à partir de cet observable',
       'Create a relationship': 'Créer une relation',
       'Update a relationship': 'Modifier une relation',
       'Select a relationship': 'Sélectionner une relation',

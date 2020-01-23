@@ -4579,7 +4579,7 @@ create-hmac@^1.1.0, create-hmac@^1.1.2, create-hmac@^1.1.4:
     safe-buffer "^5.0.1"
     sha.js "^2.4.8"
 
-create-react-context@^0.2.1:
+create-react-context@^0.2.1, create-react-context@^0.2.2:
   version "0.2.3"
   resolved "https://registry.yarnpkg.com/create-react-context/-/create-react-context-0.2.3.tgz#9ec140a6914a22ef04b8b09b7771de89567cb6f3"
   integrity sha512-CQBmD0+QGgTaxDL3OX1IDXYqjkp2It4RIbcb99jS6AEg27Ga+a9G3JtK6SIu0HBwPLZlmwt9F7UwWA4Bn92Rag==
@@ -6549,24 +6549,25 @@ format@^0.2.2:
   resolved "https://registry.yarnpkg.com/format/-/format-0.2.2.tgz#d6170107e9efdc4ed30c9dc39016df942b5cb58b"
   integrity sha1-1hcBB+nv3E7TDJ3DkBbflCtctYs=
 
-formik-material-ui@^1.0.0:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/formik-material-ui/-/formik-material-ui-1.0.1.tgz#d945e116d7399c709d223f3194a132e2495fcbe3"
-  integrity sha512-0TvLrQbOobF1SBhgTgz88mptYiZ73AeOG9Z+JsTncNU6Cgw2DN7W2WuYaYX1gFlPazfkAkwsupKAbCUu64BQkA==
+formik-material-ui@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/formik-material-ui/-/formik-material-ui-1.0.2.tgz#34368caa6eaffcbfa178fa12a798378e557241f3"
+  integrity sha512-mor+FmPWA92Jri9dGJUuLPZkYzWOeJqLfyg6qVcob80RY7IF5gHi7ukubjL7rITjWAD58bW6rYabMYQ+2MPFiw==
 
-formik@^2.0.8:
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/formik/-/formik-2.1.2.tgz#573f63383d35461c607dad717ea9417e6c192682"
-  integrity sha512-lbhyV8FQ/hkg4tsVf075Ad9/vDXVbSj6XLW8ooZtAZyNJK8MBYLf1fRJ6iEo2C0pODQneDboYpEUby7nsPW00Q==
+formik@^1.5.8:
+  version "1.5.8"
+  resolved "https://registry.yarnpkg.com/formik/-/formik-1.5.8.tgz#eee8cd345effe46839bc748c7f920486f12f14b0"
+  integrity sha512-fNvPe+ddbh+7xiByT25vuso2p2hseG/Yvuj211fV1DbCjljUEG9OpgRpcb7g7O3kxHX/q31cbZDzMxJXPWSNwA==
   dependencies:
+    create-react-context "^0.2.2"
     deepmerge "^2.1.1"
     hoist-non-react-statics "^3.3.0"
     lodash "^4.17.14"
     lodash-es "^4.17.14"
+    prop-types "^15.6.1"
     react-fast-compare "^2.0.1"
-    scheduler "^0.18.0"
     tiny-warning "^1.0.2"
-    tslib "^1.10.0"
+    tslib "^1.9.3"
 
 forwarded@~0.1.2:
   version "0.1.2"
@@ -12865,7 +12866,7 @@ run-queue@^1.0.0, run-queue@^1.0.3:
   dependencies:
     aproba "^1.1.1"
 
-rxjs@^6.4.0, rxjs@^6.5.3:
+rxjs@^6.4.0, rxjs@^6.5.3, rxjs@^6.5.4:
   version "6.5.4"
   resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-6.5.4.tgz#e0777fe0d184cec7872df147f303572d414e211c"
   integrity sha512-naMQXcgEo3csAEGvw/NydRA0fuS2nDZJiw1YUWFKU7aPPAPGZEsD4Iimit96qwCieH6y614MCLYwdkrWx7z/7Q==

@@ -95,7 +95,7 @@ export default createPaginationContainer(
     data: graphql`
       fragment EntityIndicatorsLines_data on Query
         @argumentDefinitions(
-          inferred: { type: "Boolean"}
+          inferred: { type: "Boolean" }
           fromId: { type: "String" }
           toTypes: { type: "[String]" }
           relationType: { type: "String" }

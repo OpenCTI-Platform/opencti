@@ -8,10 +8,20 @@ import {
   CourseOfActionLine,
   CourseOfActionLineDummy,
 } from './CourseOfActionLine';
+import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 25;
 
 class CoursesOfActionLines extends Component {
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'coursesOfAction',
+      this.props.setNumberOfElements.bind(this),
+    );
+  }
+
   render() {
     const {
       initialLoading, dataColumns, relay, onTagClick,
@@ -46,6 +56,7 @@ CoursesOfActionLines.propTypes = {
   relay: PropTypes.object,
   initialLoading: PropTypes.bool,
   onTagClick: PropTypes.func,
+  setNumberOfElements: PropTypes.func,
 };
 
 export const coursesOfActionLinesQuery = graphql`

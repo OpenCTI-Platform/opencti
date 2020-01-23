@@ -41,6 +41,7 @@ class Indicators extends Component {
       indicatorTypes: [],
       observableTypes: [],
       openExports: false,
+      numberOfElements: { number: 0, symbol: '' },
     };
   }
 
@@ -89,9 +90,17 @@ class Indicators extends Component {
     }
   }
 
+  setNumberOfElements(numberOfElements) {
+    this.setState({ numberOfElements });
+  }
+
   renderLines(paginationOptions) {
     const {
-      sortBy, orderAsc, searchTerm, openExports,
+      sortBy,
+      orderAsc,
+      searchTerm,
+      openExports,
+      numberOfElements,
     } = this.state;
     const dataColumns = {
       pattern_type: {
@@ -131,6 +140,7 @@ class Indicators extends Component {
         exportEntityType="Indicator"
         keyword={searchTerm}
         paginationOptions={paginationOptions}
+        numberOfElements={numberOfElements}
       >
         <QueryRenderer
           query={indicatorsLinesQuery}
@@ -141,6 +151,7 @@ class Indicators extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
         />

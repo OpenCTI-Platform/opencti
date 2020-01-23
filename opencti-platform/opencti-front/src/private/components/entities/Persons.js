@@ -1,11 +1,22 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  assoc, compose, dissoc, head, last, map, pipe, propOr, toPairs,
+  assoc,
+  compose,
+  dissoc,
+  head,
+  last,
+  map,
+  pipe,
+  propOr,
+  toPairs,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import PersonsLines, { personsLinesQuery } from './persons/PersonsLines';
@@ -26,6 +37,7 @@ class Persons extends Component {
       view: propOr('lines', 'view', params),
       filters: {},
       openExports: false,
+      numberOfElements: { number: 0, symbol: '' },
     };
   }
 
@@ -62,9 +74,18 @@ class Persons extends Component {
     this.setState({ filters: dissoc(key, this.state.filters) });
   }
 
+  setNumberOfElements(numberOfElements) {
+    this.setState({ numberOfElements });
+  }
+
   renderLines(paginationOptions) {
     const {
-      sortBy, orderAsc, searchTerm, filters, openExports,
+      sortBy,
+      orderAsc,
+      searchTerm,
+      filters,
+      openExports,
+      numberOfElements,
     } = this.state;
     const dataColumns = {
       name: {
@@ -102,6 +123,7 @@ class Persons extends Component {
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
+        numberOfElements={numberOfElements}
       >
         <QueryRenderer
           query={personsLinesQuery}
@@ -113,6 +135,7 @@ class Persons extends Component {
               dataColumns={dataColumns}
               initialLoading={props === null}
               onTagClick={this.handleAddFilter.bind(this)}
+              setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
         />
@@ -141,7 +164,7 @@ class Persons extends Component {
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <PersonCreation paginationOptions={paginationOptions}/>
+        <PersonCreation paginationOptions={paginationOptions} />
       </div>
     );
   }
@@ -153,7 +176,4 @@ Persons.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-)(Persons);
+export default compose(inject18n, withRouter)(Persons);

@@ -5,10 +5,20 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { RegionLine, RegionLineDummy } from './RegionLine';
+import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 25;
 
 class RegionsLines extends Component {
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'regions',
+      this.props.setNumberOfElements.bind(this),
+    );
+  }
+
   render() {
     const {
       initialLoading,
@@ -44,8 +54,8 @@ RegionsLines.propTypes = {
   dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,
   relay: PropTypes.object,
-  regions: PropTypes.object,
   initialLoading: PropTypes.bool,
+  setNumberOfElements: PropTypes.func,
 };
 
 export const regionsLinesQuery = graphql`
@@ -93,6 +103,11 @@ export default createPaginationContainer(
               description
               ...RegionLine_node
             }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+            globalCount
           }
         }
       }

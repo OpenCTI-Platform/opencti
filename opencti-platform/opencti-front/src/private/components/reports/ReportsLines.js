@@ -5,10 +5,20 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../components/list_lines/ListLinesContent';
 import { ReportLine, ReportLineDummy } from './ReportLine';
+import { setNumberOfElements } from '../../../utils/Number';
 
 const nbOfRowsToLoad = 25;
 
 class ReportsLines extends Component {
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'reports',
+      this.props.setNumberOfElements.bind(this),
+    );
+  }
+
   render() {
     const { initialLoading, dataColumns, relay } = this.props;
     return (
@@ -41,6 +51,7 @@ ReportsLines.propTypes = {
   reports: PropTypes.object,
   initialLoading: PropTypes.bool,
   searchTerm: PropTypes.string,
+  setNumberOfElements: PropTypes.func,
 };
 
 export const reportsLinesQuery = graphql`

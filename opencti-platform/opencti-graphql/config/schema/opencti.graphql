@@ -550,6 +550,7 @@ input StixObservableAddInput {
   createdByRef: String
   markingDefinitions: [String]
   clientMutationId: String
+  createIndicator: Boolean
 }
 
 ### STIX relations

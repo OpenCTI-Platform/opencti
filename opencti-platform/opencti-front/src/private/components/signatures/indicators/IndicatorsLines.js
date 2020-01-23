@@ -5,10 +5,20 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { IndicatorLine, IndicatorLineDummy } from './IndicatorLine';
+import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 25;
 
 class IndicatorsLines extends Component {
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'indicators',
+      this.props.setNumberOfElements.bind(this),
+    );
+  }
+
   render() {
     const {
       initialLoading,
@@ -46,6 +56,7 @@ IndicatorsLines.propTypes = {
   relay: PropTypes.object,
   indicators: PropTypes.object,
   initialLoading: PropTypes.bool,
+  setNumberOfElements: PropTypes.func,
 };
 
 export const indicatorsLinesQuery = graphql`

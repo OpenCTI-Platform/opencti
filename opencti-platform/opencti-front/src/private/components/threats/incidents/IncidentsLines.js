@@ -5,12 +5,24 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { IncidentLine, IncidentLineDummy } from './IncidentLine';
+import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 25;
 
 class IncidentsLines extends Component {
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'incidents',
+      this.props.setNumberOfElements.bind(this),
+    );
+  }
+
   render() {
-    const { initialLoading, dataColumns, relay, onTagClick } = this.props;
+    const {
+      initialLoading, dataColumns, relay, onTagClick,
+    } = this.props;
     return (
       <ListLinesContent
         initialLoading={initialLoading}
@@ -41,6 +53,7 @@ IncidentsLines.propTypes = {
   relay: PropTypes.object,
   initialLoading: PropTypes.bool,
   onTagClick: PropTypes.func,
+  setNumberOfElements: PropTypes.func,
 };
 
 export const incidentsLinesQuery = graphql`

@@ -96,9 +96,6 @@ const indicatorValidation = (t) => Yup.object().shape({
   indicator_pattern: Yup.string().required(t('This field is required')),
   pattern_type: Yup.string().required(t('This field is required')),
   main_observable_type: Yup.string().required(t('This field is required')),
-  valid_from: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
-    .required(t('This field is required')),
   description: Yup.string(),
 });
 
@@ -212,7 +209,9 @@ class IndicatorCreation extends Component {
           onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Add"
-          className={openExports ? classes.createButtonExports : classes.createButton}
+          className={
+            openExports ? classes.createButtonExports : classes.createButton
+          }
         >
           <Add />
         </Fab>
