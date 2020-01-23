@@ -35,8 +35,6 @@ const personQuery = graphql`
       name
       alias
       ...Person_person
-      ...PersonOverview_person
-      ...PersonDetails_person
       ...PersonReports_person
       ...PersonKnowledge_person
       ...FileImportViewer_entity

@@ -7,6 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
 import ToolOverview from './ToolOverview';
+import ToolDetails from './ToolDetails';
 import ToolEdition from './ToolEdition';
 import ToolPopover from './ToolPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
@@ -37,8 +38,11 @@ class ToolComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={3}>
             <ToolOverview tool={tool} />
+          </Grid>
+          <Grid item={true} xs={3}>
+            <ToolDetails tool={tool} />
           </Grid>
           <Grid item={true} xs={6}>
             <EntityLastReports entityId={tool.id} />
@@ -76,6 +80,7 @@ const Tool = createFragmentContainer(ToolComponent, {
       name
       alias
       ...ToolOverview_tool
+      ...ToolDetails_tool
     }
   `,
 });

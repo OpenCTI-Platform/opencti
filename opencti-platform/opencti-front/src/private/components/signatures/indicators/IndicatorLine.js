@@ -13,6 +13,7 @@ import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import ItemPatternType from '../../../../components/ItemPatternType';
+import StixObjectTags from '../../common/stix_object/StixObjectTags';
 
 const styles = (theme) => ({
   item: {
@@ -48,7 +49,7 @@ const styles = (theme) => ({
 class IndicatorLineComponent extends Component {
   render() {
     const {
-      fd, classes, dataColumns, node,
+      fd, classes, dataColumns, node, onTagClick,
     } = this.props;
     return (
       <ListItem
@@ -75,6 +76,16 @@ class IndicatorLineComponent extends Component {
                 style={{ width: dataColumns.name.width }}
               >
                 {node.name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.tags.width }}
+              >
+                <StixObjectTags
+                  variant="inList"
+                  tags={node.tags}
+                  onClick={onTagClick.bind(this)}
+                />
               </div>
               <div
                 className={classes.bodyItem}
@@ -118,6 +129,7 @@ IndicatorLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
+  onTagClick: PropTypes.func,
 };
 
 const IndicatorLineFragment = createFragmentContainer(IndicatorLineComponent, {
@@ -135,6 +147,19 @@ const IndicatorLineFragment = createFragmentContainer(IndicatorLineComponent, {
           node {
             id
             definition
+          }
+        }
+      }
+      tags {
+        edges {
+          node {
+            id
+            tag_type
+            value
+            color
+          }
+          relation {
+            id
           }
         }
       }
@@ -169,6 +194,12 @@ class IndicatorLineDummyComponent extends Component {
                 style={{ width: dataColumns.name.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.tags.width }}
+              >
+                <div className="fakeItem" style={{ width: '90%' }} />
               </div>
               <div
                 className={classes.bodyItem}

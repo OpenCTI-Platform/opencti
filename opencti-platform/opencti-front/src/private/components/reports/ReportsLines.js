@@ -20,7 +20,9 @@ class ReportsLines extends Component {
   }
 
   render() {
-    const { initialLoading, dataColumns, relay } = this.props;
+    const {
+      initialLoading, dataColumns, relay, onTagClick,
+    } = this.props;
     return (
       <ListLinesContent
         initialLoading={initialLoading}
@@ -37,6 +39,7 @@ class ReportsLines extends Component {
         DummyLineComponent={<ReportLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
+        onTagClick={onTagClick.bind(this)}
       />
     );
   }
@@ -51,6 +54,7 @@ ReportsLines.propTypes = {
   reports: PropTypes.object,
   initialLoading: PropTypes.bool,
   searchTerm: PropTypes.string,
+  onTagClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
 };
 

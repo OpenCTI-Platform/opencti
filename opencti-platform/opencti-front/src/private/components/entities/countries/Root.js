@@ -36,7 +36,6 @@ const countryQuery = graphql`
       name
       alias
       ...Country_country
-      ...CountryOverview_country
       ...CountryReports_country
       ...CountryKnowledge_country
       ...CountryObservables_country

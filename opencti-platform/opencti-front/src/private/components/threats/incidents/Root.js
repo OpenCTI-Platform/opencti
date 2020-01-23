@@ -36,8 +36,6 @@ const incidentQuery = graphql`
       name
       alias
       ...Incident_incident
-      ...IncidentOverview_incident
-      ...IncidentDetails_incident
       ...IncidentReports_incident
       ...IncidentKnowledge_incident
       ...IncidentObservables_incident

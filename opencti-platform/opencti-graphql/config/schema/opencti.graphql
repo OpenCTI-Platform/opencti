@@ -481,6 +481,7 @@ enum StixObservablesFilter {
   entity_type
   stix_id_key
   observable_value
+  tags
   relatedTo
   observablesContained
 }
@@ -549,6 +550,7 @@ input StixObservableAddInput {
   description: String
   createdByRef: String
   markingDefinitions: [String]
+  tags: [String]
   clientMutationId: String
   createIndicator: Boolean
 }
@@ -793,11 +795,13 @@ enum IdentitiesOrdering {
   name
   created_at
   updated_at
+  tags
 }
 enum IdentitiesFilter {
   name
   alias
   entity_type
+  tags
 }
 input IdentitiesFiltering {
   key: IdentitiesFilter!
@@ -877,8 +881,14 @@ enum UsersOrdering {
   tags
   markingDefinitions
 }
+enum UsersFilter {
+  name
+  alias
+  entity_type
+  tags
+}
 input UsersFiltering {
-  key: String!
+  key: UsersFilter!
   values: [String]
 }
 enum UserRole {
@@ -2459,6 +2469,7 @@ enum ReportsOrdering {
   object_status
   created_at
   updated_at
+  createdBy
   tags
   markingDefinitions
 }
@@ -2467,6 +2478,7 @@ enum ReportsFilter {
   published
   published_day
   report_class
+  tags
   createdBy
   knowledgeContains
   observablesContains

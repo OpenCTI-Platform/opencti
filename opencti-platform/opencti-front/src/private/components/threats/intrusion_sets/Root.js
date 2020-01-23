@@ -36,8 +36,6 @@ const intrusionSetQuery = graphql`
       name
       alias
       ...IntrusionSet_intrusionSet
-      ...IntrusionSetOverview_intrusionSet
-      ...IntrusionSetDetails_intrusionSet
       ...IntrusionSetReports_intrusionSet
       ...IntrusionSetKnowledge_intrusionSet
       ...IntrusionSetIndicators_intrusionSet

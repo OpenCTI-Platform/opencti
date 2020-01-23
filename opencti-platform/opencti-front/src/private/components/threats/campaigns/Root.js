@@ -36,8 +36,6 @@ const campaignQuery = graphql`
       name
       alias
       ...Campaign_campaign
-      ...CampaignOverview_campaign
-      ...CampaignDetails_campaign
       ...CampaignReports_campaign
       ...CampaignKnowledge_campaign
       ...CampaignIndicators_campaign

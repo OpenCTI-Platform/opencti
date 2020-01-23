@@ -36,7 +36,6 @@ const toolQuery = graphql`
       name
       alias
       ...Tool_tool
-      ...ToolOverview_tool
       ...ToolReports_tool
       ...ToolKnowledge_tool
       ...ToolIndicators_tool

@@ -12,6 +12,7 @@ import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
 import ItemStatus from '../../../components/ItemStatus';
+import StixObjectTags from '../common/stix_object/StixObjectTags';
 
 const styles = (theme) => ({
   item: {
@@ -47,9 +48,8 @@ const styles = (theme) => ({
 class ReportLineComponent extends Component {
   render() {
     const {
-      t, fd, classes, node, dataColumns,
+      t, fd, classes, node, dataColumns, onTagClick,
     } = this.props;
-
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -72,9 +72,19 @@ class ReportLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.createdByRef.width }}
+                style={{ width: dataColumns.createdBy.width }}
               >
                 {pathOr('', ['createdByRef', 'node', 'name'], node)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.tags.width }}
+              >
+                <StixObjectTags
+                  variant="inList"
+                  tags={node.tags}
+                  onClick={onTagClick.bind(this)}
+                />
               </div>
               <div
                 className={classes.bodyItem}
@@ -128,6 +138,7 @@ ReportLineComponent.propTypes = {
   classes: PropTypes.object,
   fd: PropTypes.func,
   t: PropTypes.func,
+  onTagClick: PropTypes.func,
 };
 
 const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
@@ -148,6 +159,19 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
             id
             definition
             color
+          }
+        }
+      }
+      tags {
+        edges {
+          node {
+            id
+            tag_type
+            value
+            color
+          }
+          relation {
+            id
           }
         }
       }
@@ -179,9 +203,15 @@ class ReportLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.createdByRef.width }}
+                style={{ width: dataColumns.createdBy.width }}
               >
                 <div className="fakeItem" style={{ width: '70%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.tags.width }}
+              >
+                <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}

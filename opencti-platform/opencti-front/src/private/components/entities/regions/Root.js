@@ -36,7 +36,6 @@ const regionQuery = graphql`
       name
       alias
       ...Region_region
-      ...RegionOverview_region
       ...RegionReports_region
       ...RegionKnowledge_region
       ...RegionObservables_region
