@@ -26,6 +26,7 @@ class Regions extends Component {
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
       openExports: false,
+      numberOfElements: { number: 0, symbol: '' },
     };
   }
 
@@ -50,9 +51,17 @@ class Regions extends Component {
     this.setState({ openExports: !this.state.openExports });
   }
 
+  setNumberOfElements(numberOfElements) {
+    this.setState({ numberOfElements });
+  }
+
   renderLines(paginationOptions) {
     const {
-      sortBy, orderAsc, searchTerm, openExports,
+      sortBy,
+      orderAsc,
+      searchTerm,
+      openExports,
+      numberOfElements,
     } = this.state;
     const dataColumns = {
       name: {
@@ -83,6 +92,7 @@ class Regions extends Component {
         exportEntityType="Region"
         keyword={searchTerm}
         paginationOptions={paginationOptions}
+        numberOfElements={numberOfElements}
       >
         <QueryRenderer
           query={regionsLinesQuery}
@@ -93,6 +103,7 @@ class Regions extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
         />
@@ -124,7 +135,4 @@ Regions.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-)(Regions);
+export default compose(inject18n, withRouter)(Regions);

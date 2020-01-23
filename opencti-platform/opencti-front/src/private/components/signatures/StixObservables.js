@@ -39,7 +39,7 @@ class StixObservables extends Component {
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
       types: [],
-      openExports: false,
+      numberOfElements: { number: 0, symbol: '' },
     };
   }
 
@@ -72,9 +72,13 @@ class StixObservables extends Component {
     }
   }
 
+  setNumberOfElements(numberOfElements) {
+    this.setState({ numberOfElements });
+  }
+
   renderLines(paginationOptions) {
     const {
-      sortBy, orderAsc, searchTerm, openExports,
+      sortBy, orderAsc, searchTerm, numberOfElements,
     } = this.state;
     const dataColumns = {
       entity_type: {
@@ -104,11 +108,10 @@ class StixObservables extends Component {
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
-        handleToggleExports={this.handleToggleExports.bind(this)}
-        openExports={openExports}
         exportEntityType="Stix-Observable"
         keyword={searchTerm}
         paginationOptions={paginationOptions}
+        numberOfElements={numberOfElements}
       >
         <QueryRenderer
           query={stixObservablesLinesQuery}
@@ -119,6 +122,7 @@ class StixObservables extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
         />

@@ -11,7 +11,7 @@ import {
   TYPE_STIX_DOMAIN_ENTITY,
   TYPE_STIX_OBSERVABLE
 } from '../database/grakn';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logger } from '../config/conf';
 import { notify } from '../database/redis';
 import { buildPagination, extractObservables } from '../database/utils';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
@@ -123,45 +123,49 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
   // create the linked observables
   let observablesToLink = [];
   if (createObservables && indicator.pattern_type === 'stix') {
-    const observables = await extractObservables(indicator.indicator_pattern);
-    if (observables && observables.length > 0) {
-      observablesToLink = await Promise.all(
-        observables.map(async observable => {
-          const args = {
-            parentType: 'Stix-Observable',
-            filters: [{ key: 'observable_value', values: [observable.value] }]
-          };
-          const existingObservables = await listEntities(
-            ['Stix-Observable'],
-            ['name', 'description', 'observable_value'],
-            args
-          );
-          if (existingObservables.edges.length === 0) {
-            const stixObservable = pipe(
-              dissoc('stix_id_key'),
-              dissoc('main_observable_type'),
-              dissoc('score'),
-              dissoc('valid_from'),
-              dissoc('valid_until'),
-              dissoc('pattern_type'),
-              dissoc('indicator_pattern'),
-              dissoc('created'),
-              dissoc('modified'),
-              assoc('type', observable.type),
-              assoc('observable_value', observable.value)
-            )(indicatorToCreate);
-            const innerType = stixObservable.type;
-            const stixObservableToCreate = dissoc('type', stixObservable);
-            const createdStixObservable = await createEntity(stixObservableToCreate, innerType, {
-              modelType: TYPE_STIX_OBSERVABLE,
-              stixIdType: 'observable'
-            });
-            await askEnrich(createdStixObservable.id, innerType);
-            return createdStixObservable.id;
-          }
-          return existingObservables.edges[0].node.id;
-        })
-      );
+    try {
+      const observables = await extractObservables(indicator.indicator_pattern);
+      if (observables && observables.length > 0) {
+        observablesToLink = await Promise.all(
+          observables.map(async observable => {
+            const args = {
+              parentType: 'Stix-Observable',
+              filters: [{ key: 'observable_value', values: [observable.value] }]
+            };
+            const existingObservables = await listEntities(
+              ['Stix-Observable'],
+              ['name', 'description', 'observable_value'],
+              args
+            );
+            if (existingObservables.edges.length === 0) {
+              const stixObservable = pipe(
+                dissoc('stix_id_key'),
+                dissoc('main_observable_type'),
+                dissoc('score'),
+                dissoc('valid_from'),
+                dissoc('valid_until'),
+                dissoc('pattern_type'),
+                dissoc('indicator_pattern'),
+                dissoc('created'),
+                dissoc('modified'),
+                assoc('type', observable.type),
+                assoc('observable_value', observable.value)
+              )(indicatorToCreate);
+              const innerType = stixObservable.type;
+              const stixObservableToCreate = dissoc('type', stixObservable);
+              const createdStixObservable = await createEntity(stixObservableToCreate, innerType, {
+                modelType: TYPE_STIX_OBSERVABLE,
+                stixIdType: 'observable'
+              });
+              await askEnrich(createdStixObservable.id, innerType);
+              return createdStixObservable.id;
+            }
+            return existingObservables.edges[0].node.id;
+          })
+        );
+      }
+    } catch (err) {
+      logger.info(`Cannot create observable > Error ${err}`);
     }
   }
   let observableRefs = [];

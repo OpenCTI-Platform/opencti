@@ -17,12 +17,9 @@ import {
 import Chip from '@material-ui/core/Chip';
 import Tooltip from '@material-ui/core/Tooltip';
 import { FileExportOutline } from 'mdi-material-ui';
-import { QueryRenderer } from '../../relay/environment';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
-import StixDomainEntitiesExports, {
-  stixDomainEntitiesExportsQuery,
-} from '../../private/components/common/stix_domain_entities/StixDomainEntitiesExports';
+import StixDomainEntitiesExports from '../../private/components/common/stix_domain_entities/StixDomainEntitiesExports';
 
 const styles = (theme) => ({
   container: {
@@ -132,6 +129,7 @@ class ListLines extends Component {
       bottomNav,
       children,
       exportEntityType,
+      numberOfElements,
     } = this.props;
     return (
       <div
@@ -172,11 +170,18 @@ class ListLines extends Component {
         </div>
         <div className={classes.views}>
           <div style={{ float: 'right', marginTop: -20 }}>
+            {numberOfElements ? (
+              <div style={{ float: 'left', padding: '15px 5px 0 0' }}>
+                <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
+                {t('entitie(s)')}
+              </div>
+            ) : (
+              ''
+            )}
             {typeof handleChangeView === 'function' ? (
               <Tooltip title={t('Cards view')}>
                 <IconButton
                   color="primary"
-                  classes={{ root: classes.button }}
                   onClick={handleChangeView.bind(this, 'cards')}
                 >
                   <Dashboard />
@@ -189,7 +194,6 @@ class ListLines extends Component {
               <Tooltip title={t('Lines view')}>
                 <IconButton
                   color="secondary"
-                  classes={{ root: classes.button }}
                   onClick={handleChangeView.bind(this, 'lines')}
                 >
                   <TableChart />
@@ -257,18 +261,11 @@ class ListLines extends Component {
           {children}
         </List>
         {typeof handleToggleExports === 'function' ? (
-          <QueryRenderer
-            query={stixDomainEntitiesExportsQuery}
-            variables={{ count: 25, type: exportEntityType }}
-            render={({ props }) => (
-              <StixDomainEntitiesExports
-                open={openExports}
-                handleToggle={handleToggleExports.bind(this)}
-                data={props}
-                paginationOptions={paginationOptions}
-                exportEntityType={exportEntityType}
-              />
-            )}
+          <StixDomainEntitiesExports
+            open={openExports}
+            handleToggle={handleToggleExports.bind(this)}
+            paginationOptions={paginationOptions}
+            exportEntityType={exportEntityType}
           />
         ) : (
           ''
@@ -298,6 +295,7 @@ ListLines.propTypes = {
   paginationOptions: PropTypes.object,
   secondaryAction: PropTypes.bool,
   bottomNav: PropTypes.bool,
+  numberOfElements: PropTypes.object,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

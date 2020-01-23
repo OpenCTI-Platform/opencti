@@ -49,7 +49,7 @@ const styles = () => ({
     marginRight: 7,
   },
   aliasInput: {
-    margin: '4px 0 0 10px',
+    margin: '4px 15px 0 10px',
     float: 'right',
   },
 });
@@ -160,7 +160,7 @@ class StixDomainEntityHeader extends Component {
               </IconButton>
             ) : (
               <IconButton
-                style={{ float: 'left' }}
+                style={{ float: 'left', marginTop: -5 }}
                 color="secondary"
                 aria-label="Alias"
                 onClick={this.handleToggleCreateAlias.bind(this)}
@@ -178,7 +178,7 @@ class StixDomainEntityHeader extends Component {
               mountOnEnter={true}
               unmountOnExit={true}
             >
-              <div style={{ float: 'left' }}>
+              <div style={{ float: 'left', marginTop: -5 }}>
                 <Formik
                   initialValues={{ new_alias: '' }}
                   onSubmit={this.onSubmitCreateAlias.bind(this, 'main')}

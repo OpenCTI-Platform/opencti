@@ -5,10 +5,20 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
 import { IncidentCard, IncidentCardDummy } from './IncidentCard';
+import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfCardsToLoad = 25;
 
 class IncidentsCards extends Component {
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'incidents',
+      this.props.setNumberOfElements.bind(this),
+    );
+  }
+
   render() {
     const { initialLoading, relay, onTagClick } = this.props;
     return (
@@ -41,6 +51,7 @@ IncidentsCards.propTypes = {
   initialLoading: PropTypes.bool,
   searchTerm: PropTypes.string,
   onTagClick: PropTypes.func,
+  setNumberOfElements: PropTypes.func,
 };
 
 export const incidentsCardsQuery = graphql`

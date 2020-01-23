@@ -1,3 +1,5 @@
+import { pathOr } from 'ramda';
+
 export const random = (min, max) => Math.random() * (max - min) + min;
 
 export const numberFormat = (number, digits = 2) => {
@@ -21,4 +23,12 @@ export const numberFormat = (number, digits = 2) => {
     number: (number / si[i].value).toFixed(digits).replace(rx, '$1'),
     symbol: si[i].symbol,
   };
+};
+
+export const setNumberOfElements = (prevProps, props, key, callback) => {
+  const currentNumberOfElements = pathOr(0, [key, 'pageInfo', 'globalCount'], props.data);
+  const prevNumberOfElements = pathOr(0, [key, 'pageInfo', 'globalCount'], prevProps.data);
+  if (currentNumberOfElements !== prevNumberOfElements) {
+    callback(numberFormat(currentNumberOfElements));
+  }
 };

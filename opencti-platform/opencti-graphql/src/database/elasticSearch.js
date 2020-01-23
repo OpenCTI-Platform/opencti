@@ -390,7 +390,12 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) =
 };
 export const elHistogramCount = (type, field, interval, start, end, filters) => {
   const histoFilters = map(f => {
-    const key = f.isRelation ? 'rel_*.internal_id_key' : `${f.type}.keyword`;
+    // eslint-disable-next-line no-nested-ternary
+    const key = f.isRelation
+      ? f.type
+        ? `rel_${f.type}.internal_id_key`
+        : 'rel_*.internal_id_key'
+      : `${f.type}.keyword`;
     return {
       multi_match: {
         fields: [key],

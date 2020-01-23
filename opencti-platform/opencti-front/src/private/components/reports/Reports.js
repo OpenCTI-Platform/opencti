@@ -26,6 +26,7 @@ class Reports extends Component {
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
       openExports: false,
+      numberOfElements: { number: 0, symbol: '' },
     };
   }
 
@@ -50,8 +51,18 @@ class Reports extends Component {
     this.setState({ openExports: !this.state.openExports });
   }
 
+  setNumberOfElements(numberOfElements) {
+    this.setState({ numberOfElements });
+  }
+
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc, searchTerm, openExports } = this.state;
+    const {
+      sortBy,
+      orderAsc,
+      searchTerm,
+      openExports,
+      numberOfElements,
+    } = this.state;
     const dataColumns = {
       name: {
         label: 'Title',
@@ -91,6 +102,7 @@ class Reports extends Component {
         exportEntityType="Report"
         keyword={searchTerm}
         paginationOptions={paginationOptions}
+        numberOfElements={numberOfElements}
       >
         <QueryRenderer
           query={reportsLinesQuery}
@@ -101,6 +113,7 @@ class Reports extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
         />
@@ -121,7 +134,8 @@ class Reports extends Component {
       view, sortBy, orderAsc, searchTerm,
     } = this.state;
     const reportFilterClass = reportClass !== 'all' && reportClass !== undefined
-      ? reportClass.replace(/_/g, ' ') : '';
+      ? reportClass.replace(/_/g, ' ')
+      : '';
     const filters = [];
     if (reportFilterClass) filters.push({ key: 'report_class', values: [reportFilterClass] });
     if (authorId) filters.push({ key: 'createdBy', values: [authorId] });
@@ -155,7 +169,4 @@ Reports.propTypes = {
   displayCreate: PropTypes.bool,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-)(Reports);
+export default compose(inject18n, withRouter)(Reports);

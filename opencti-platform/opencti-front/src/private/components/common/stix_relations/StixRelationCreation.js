@@ -330,8 +330,7 @@ class StixRelationCreation extends Component {
         initialValues={initialValues}
         validationSchema={stixRelationValidation(t)}
         onSubmit={this.onSubmit.bind(this)}
-      >
-        {({ submitForm, isSubmitting }) => (
+        render={({ submitForm, isSubmitting }) => (
           <Form>
             <div className={classes.header}>
               <IconButton
@@ -502,7 +501,7 @@ class StixRelationCreation extends Component {
             </div>
           </Form>
         )}
-      </Formik>
+      />
     );
   }
 

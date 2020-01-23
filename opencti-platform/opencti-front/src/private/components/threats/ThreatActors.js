@@ -43,6 +43,7 @@ class ThreatActors extends Component {
       view: propOr('cards', 'view', params),
       filters: {},
       openExports: false,
+      numberOfElements: { number: 0, symbol: '' },
     };
   }
 
@@ -83,9 +84,18 @@ class ThreatActors extends Component {
     this.setState({ filters: dissoc(key, this.state.filters) });
   }
 
+  setNumberOfElements(numberOfElements) {
+    this.setState({ numberOfElements });
+  }
+
   renderCards(paginationOptions) {
     const {
-      sortBy, orderAsc, searchTerm, filters, openExports,
+      sortBy,
+      orderAsc,
+      searchTerm,
+      filters,
+      openExports,
+      numberOfElements,
     } = this.state;
     const dataColumns = {
       name: {
@@ -116,6 +126,7 @@ class ThreatActors extends Component {
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
+        numberOfElements={numberOfElements}
       >
         <QueryRenderer
           query={threatActorsCardsQuery}
@@ -126,6 +137,7 @@ class ThreatActors extends Component {
               paginationOptions={paginationOptions}
               initialLoading={props === null}
               onTagClick={this.handleAddFilter.bind(this)}
+              setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
         />
@@ -135,7 +147,12 @@ class ThreatActors extends Component {
 
   renderLines(paginationOptions) {
     const {
-      sortBy, orderAsc, searchTerm, filters, openExports,
+      sortBy,
+      orderAsc,
+      searchTerm,
+      filters,
+      openExports,
+      numberOfElements,
     } = this.state;
     const dataColumns = {
       name: {
@@ -174,6 +191,7 @@ class ThreatActors extends Component {
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
+        numberOfElements={numberOfElements}
       >
         <QueryRenderer
           query={threatActorsLinesQuery}
@@ -185,6 +203,7 @@ class ThreatActors extends Component {
               dataColumns={dataColumns}
               initialLoading={props === null}
               onTagClick={this.handleAddFilter.bind(this)}
+              setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
         />

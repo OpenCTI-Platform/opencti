@@ -16,7 +16,7 @@ import {
   TYPE_STIX_OBSERVABLE,
   updateAttribute
 } from '../database/grakn';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logger } from '../config/conf';
 import { elCount } from '../database/elasticSearch';
 import { buildPagination, createStixPattern } from '../database/utils';
 import { createWork } from './work';
@@ -74,35 +74,39 @@ export const indicators = stixObservableId => {
     'rel'
   ).then(data => buildPagination(0, 0, data, data.length));
 };
-export const addStixObservable = async (user, stixObservable, createIndicator = true) => {
+export const addStixObservable = async (user, stixObservable) => {
   const innerType = stixObservable.type;
-  const observableToCreate = dissoc('type', stixObservable);
+  const observableToCreate = pipe(dissoc('type'), dissoc('createIndicator'))(stixObservable);
   const created = await createEntity(observableToCreate, innerType, {
     modelType: TYPE_STIX_OBSERVABLE,
     stixIdType: 'observable'
   });
   await askEnrich(created.id, innerType);
   // create the linked indicator
-  if (createIndicator) {
-    const pattern = await createStixPattern(created.entity_type, created.observable_value);
-    if (pattern) {
-      const indicatorToCreate = pipe(
-        dissoc('stix_id_key'),
-        dissoc('observable_value'),
-        assoc('name', stixObservable.observable_value),
-        assoc(
-          'description',
-          stixObservable.description
-            ? stixObservable.description
-            : `Simple indicator of observable {${stixObservable.observable_value}}`
-        ),
-        assoc('indicator_pattern', pattern),
-        assoc('pattern_type', 'stix'),
-        assoc('main_observable_type', innerType),
-        assoc('valid_from', stixObservable.observable_date ? stixObservable.observable_date : now()),
-        assoc('observableRefs', [created.id])
-      )(observableToCreate);
-      await addIndicator(user, indicatorToCreate, false);
+  if (stixObservable.createIndicator) {
+    try {
+      const pattern = await createStixPattern(created.entity_type, created.observable_value);
+      if (pattern) {
+        const indicatorToCreate = pipe(
+          dissoc('stix_id_key'),
+          dissoc('observable_value'),
+          assoc('name', stixObservable.observable_value),
+          assoc(
+            'description',
+            stixObservable.description
+              ? stixObservable.description
+              : `Simple indicator of observable {${stixObservable.observable_value}}`
+          ),
+          assoc('indicator_pattern', pattern),
+          assoc('pattern_type', 'stix'),
+          assoc('main_observable_type', innerType),
+          assoc('valid_from', stixObservable.observable_date ? stixObservable.observable_date : now()),
+          assoc('observableRefs', [created.id])
+        )(observableToCreate);
+        await addIndicator(user, indicatorToCreate, false);
+      }
+    } catch (err) {
+      logger.info(`Cannot create indicator > Error ${err}`);
     }
   }
   return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user);

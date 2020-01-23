@@ -116,7 +116,7 @@ class FileLineComponent extends Component {
     const isProgress = uploadStatus === 'progress';
     const isOutdated = isProgress && lastModifiedSinceMin > 5;
     const isImportActive = () => connectors && filter((x) => x.data.active, connectors).length > 0;
-    const fileName = file.name.includes('_')
+    const fileName = propOr('', 'name', file).includes('_')
       ? pipe(split('_'), drop(1), join('_'))(file.name)
       : file.name;
     return (

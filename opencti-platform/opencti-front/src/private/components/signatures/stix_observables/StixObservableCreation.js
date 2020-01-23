@@ -24,6 +24,7 @@ import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import Autocomplete from '../../../../components/Autocomplete';
 import AutocompleteCreate from '../../../../components/AutocompleteCreate';
 import TextField from '../../../../components/TextField';
+import Switch from '../../../../components/Switch';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
@@ -104,6 +105,7 @@ const stixObservableValidation = (t) => Yup.object().shape({
   type: Yup.string().required(t('This field is required')),
   observable_value: Yup.string().required(t('This field is required')),
   description: Yup.string(),
+  createIndicator: Yup.boolean(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -246,6 +248,7 @@ class StixObservableCreation extends Component {
                 description: '',
                 createdByRef: '',
                 markingDefinitions: [],
+                createIndicator: false,
               }}
               validationSchema={stixObservableValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -351,6 +354,12 @@ class StixObservableCreation extends Component {
                       label={t('Marking')}
                       options={this.state.markingDefinitions}
                       onInputChange={this.searchMarkingDefinitions.bind(this)}
+                    />
+                    <Field
+                      name="createIndicator"
+                      component={Switch}
+                      label={t('Create an indicator from this observable')}
+                      containerstyle={{ marginTop: 20 }}
                     />
                     <div className={classes.buttons}>
                       <Button

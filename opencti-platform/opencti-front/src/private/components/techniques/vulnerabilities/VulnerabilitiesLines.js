@@ -5,12 +5,24 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { VulnerabilityLine, VulnerabilityLineDummy } from './VulnerabilityLine';
+import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 25;
 
 class VulnerabilitiesLines extends Component {
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'vulnerabilities',
+      this.props.setNumberOfElements.bind(this),
+    );
+  }
+
   render() {
-    const { initialLoading, dataColumns, relay, onTagClick } = this.props;
+    const {
+      initialLoading, dataColumns, relay, onTagClick,
+    } = this.props;
     return (
       <ListLinesContent
         initialLoading={initialLoading}
@@ -41,6 +53,7 @@ VulnerabilitiesLines.propTypes = {
   relay: PropTypes.object,
   initialLoading: PropTypes.bool,
   onTagClick: PropTypes.func,
+  setNumberOfElements: PropTypes.func,
 };
 
 export const vulnerabilitiesLinesQuery = graphql`

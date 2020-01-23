@@ -5,10 +5,20 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { ThreatActorLine, ThreatActorLineDummy } from './ThreatActorLine';
+import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 25;
 
 class ThreatActorsLines extends Component {
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'threatActors',
+      this.props.setNumberOfElements.bind(this),
+    );
+  }
+
   render() {
     const {
       initialLoading, dataColumns, relay, onTagClick,
@@ -44,6 +54,7 @@ ThreatActorsLines.propTypes = {
   threatActors: PropTypes.object,
   initialLoading: PropTypes.bool,
   onTagClick: PropTypes.func,
+  setNumberOfElements: PropTypes.func,
 };
 
 export const threatActorsLinesQuery = graphql`

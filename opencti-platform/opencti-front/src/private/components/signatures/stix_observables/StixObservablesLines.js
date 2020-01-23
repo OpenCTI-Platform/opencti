@@ -8,10 +8,20 @@ import {
   StixObservableLine,
   StixObservableLineDummy,
 } from './StixObservableLine';
+import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 25;
 
 class StixObservablesLines extends Component {
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'stixObservables',
+      this.props.setNumberOfElements.bind(this),
+    );
+  }
+
   render() {
     const { initialLoading, dataColumns, relay } = this.props;
     return (
@@ -43,6 +53,7 @@ StixObservablesLines.propTypes = {
   relay: PropTypes.object,
   stixObservables: PropTypes.object,
   initialLoading: PropTypes.bool,
+  setNumberOfElements: PropTypes.func,
 };
 
 export const stixObservablesLinesQuery = graphql`

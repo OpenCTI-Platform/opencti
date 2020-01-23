@@ -28,6 +28,7 @@ class Countries extends Component {
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
       openExports: false,
+      numberOfElements: { number: 0, symbol: '' },
     };
   }
 
@@ -52,8 +53,18 @@ class Countries extends Component {
     this.setState({ openExports: !this.state.openExports });
   }
 
+  setNumberOfElements(numberOfElements) {
+    this.setState({ numberOfElements });
+  }
+
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc, searchTerm, openExports } = this.state;
+    const {
+      sortBy,
+      orderAsc,
+      searchTerm,
+      openExports,
+      numberOfElements,
+    } = this.state;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -83,6 +94,7 @@ class Countries extends Component {
         exportEntityType="Country"
         keyword={searchTerm}
         paginationOptions={paginationOptions}
+        numberOfElements={numberOfElements}
       >
         <QueryRenderer
           query={countriesLinesQuery}
@@ -93,6 +105,7 @@ class Countries extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
         />
@@ -124,7 +137,4 @@ Countries.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-)(Countries);
+export default compose(inject18n, withRouter)(Countries);

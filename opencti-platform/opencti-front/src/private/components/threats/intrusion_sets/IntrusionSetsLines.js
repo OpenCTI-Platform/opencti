@@ -5,10 +5,20 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { IntrusionSetLine, IntrusionSetLineDummy } from './IntrusionSetLine';
+import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 25;
 
 class IntrusionSetsLines extends Component {
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'intrusionSets',
+      this.props.setNumberOfElements.bind(this),
+    );
+  }
+
   render() {
     const {
       initialLoading, dataColumns, relay, onTagClick,
@@ -45,6 +55,7 @@ IntrusionSetsLines.propTypes = {
   initialLoading: PropTypes.bool,
   searchTerm: PropTypes.string,
   onTagClick: PropTypes.func,
+  setNumberOfElements: PropTypes.func,
 };
 
 export const intrusionSetsLinesQuery = graphql`
