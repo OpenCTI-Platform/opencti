@@ -408,7 +408,7 @@ class StixDomainEntity:
         object_result = None
         if stix_id_key is not None:
             object_result = self.read(id=stix_id_key)
-        if object_result is None and name is not None and type is not None:
+        if object_result is None and name is not None:
             object_result = self.read(
                 types=types, filters=[{"key": "name", "values": [name]}]
             )
