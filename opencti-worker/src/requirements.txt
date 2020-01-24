@@ -1,5 +1,15 @@
 requests
 PyYAML
+setuptools
+pypandoc
+python-dateutil
+datefinder
+stix2
+pytz
 pika
+stix2-validator
+deprecated
+black
+python-magic
 pycti
 black
