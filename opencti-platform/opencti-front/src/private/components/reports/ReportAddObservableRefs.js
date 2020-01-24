@@ -35,7 +35,7 @@ const styles = (theme) => ({
   createButton: {
     position: 'fixed',
     bottom: 30,
-    right: 30,
+    right: 280,
     zIndex: 1100,
   },
   title: {
