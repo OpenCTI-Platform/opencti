@@ -10,9 +10,20 @@ import PersonPopover from './PersonPopover';
 import Reports from '../../reports/Reports';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
-const styles = () => ({
+const styles = (theme) => ({
   container: {
-    margin: 0,
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+  },
+  containerWithPadding: {
+    flexGrow: 1,
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    paddingRight: 310,
   },
   paper: {
     height: '100%',
@@ -24,16 +35,30 @@ const styles = () => ({
 });
 
 class PersonReportsComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { withPadding: false };
+  }
+
   render() {
+    const { withPadding } = this.state;
     const { classes, person } = this.props;
     return (
-      <div className={classes.container}>
+      <div
+        className={
+          withPadding ? classes.containerWithPadding : classes.container
+        }
+      >
         <StixDomainEntityHeader
           stixDomainEntity={person}
           PopoverComponent={<PersonPopover />}
         />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Reports objectId={person.id} />
+          <Reports
+            objectId={person.id}
+            onChangeOpenExports={(openExports) => this.setState({ withPadding: openExports })
+            }
+          />
         </Paper>
       </div>
     );
@@ -56,7 +81,4 @@ const PersonReports = createFragmentContainer(PersonReportsComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(PersonReports);
+export default compose(inject18n, withStyles(styles))(PersonReports);

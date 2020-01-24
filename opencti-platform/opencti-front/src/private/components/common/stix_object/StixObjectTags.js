@@ -68,7 +68,7 @@ class StixObjectTags extends Component {
                       tagEdge.node.id,
                       tagEdge.node.value,
                     )
-                    : ''
+                    : null
                 }
               />
             ),
@@ -82,7 +82,7 @@ class StixObjectTags extends Component {
             onClick={
               typeof onClick === 'function'
                 ? onClick.bind(this, 'tags', null, null)
-                : ''
+                : null
             }
           />
         )}
@@ -99,7 +99,4 @@ StixObjectTags.propTypes = {
   tags: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixObjectTags);
+export default compose(inject18n, withStyles(styles))(StixObjectTags);

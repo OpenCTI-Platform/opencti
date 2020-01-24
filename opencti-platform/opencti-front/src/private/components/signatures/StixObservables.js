@@ -31,7 +31,7 @@ import {
 const styles = () => ({
   container: {
     margin: 0,
-    padding: '0 260px 0 0',
+    padding: '0 250px 0 0',
   },
 });
 
@@ -50,6 +50,7 @@ class StixObservables extends Component {
       view: propOr('lines', 'view', params),
       filters: {},
       types: [],
+      openExports: false,
       numberOfElements: { number: 0, symbol: '' },
     };
   }

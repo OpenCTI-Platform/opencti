@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose, contains } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -10,9 +10,20 @@ import OrganizationPopover from './OrganizationPopover';
 import Reports from '../../reports/Reports';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
-const styles = () => ({
+const styles = (theme) => ({
   container: {
-    margin: 0,
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+  },
+  containerWithPadding: {
+    flexGrow: 1,
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    paddingRight: 310,
   },
   paper: {
     height: '100%',
@@ -26,31 +37,53 @@ const styles = () => ({
 const organizationTypesForAuthorMode = ['vendor', 'csirt', 'partner'];
 
 class OrganizationReportsComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { withPadding: false };
+  }
+
   render() {
+    const { withPadding } = this.state;
     const { classes, organization } = this.props;
     if (
       contains(organization.organization_class, organizationTypesForAuthorMode)
     ) {
       return (
-        <div className={classes.container}>
+        <div
+          className={
+            withPadding ? classes.containerWithPadding : classes.container
+          }
+        >
           <StixDomainEntityHeader
             stixDomainEntity={organization}
             PopoverComponent={<OrganizationPopover />}
           />
           <Paper classes={{ root: classes.paper }} elevation={2}>
-            <Reports authorId={organization.id} />
+            <Reports
+              authorId={organization.id}
+              onChangeOpenExports={(openExports) => this.setState({ withPadding: openExports })
+              }
+            />
           </Paper>
         </div>
       );
     }
     return (
-      <div className={classes.container}>
+      <div
+        className={
+          withPadding ? classes.containerWithPadding : classes.container
+        }
+      >
         <StixDomainEntityHeader
           stixDomainEntity={organization}
           PopoverComponent={<OrganizationPopover />}
         />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Reports objectId={organization.id} />
+          <Reports
+            objectId={organization.id}
+            onChangeOpenExports={(openExports) => this.setState({ withPadding: openExports })
+            }
+          />
         </Paper>
       </div>
     );
@@ -77,7 +110,4 @@ const OrganizationReports = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(OrganizationReports);
+export default compose(inject18n, withStyles(styles))(OrganizationReports);

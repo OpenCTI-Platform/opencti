@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import {
+  append, compose, filter, propOr,
+} from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { QueryRenderer } from '../../../relay/environment';
@@ -28,6 +30,8 @@ class ReportEntitiesComponent extends Component {
       sortBy: propOr('name', 'sortBy', params),
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
+      openExports: false,
+      numberOfElements: { number: 0, symbol: '' },
     };
   }
 
@@ -48,9 +52,30 @@ class ReportEntitiesComponent extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
+  handleToggleExports() {
+    this.setState({ openExports: !this.state.openExports });
+  }
+
+  handleToggle(type) {
+    if (this.state.types.includes(type)) {
+      this.setState({ types: filter((t) => t !== type, this.state.types) }, () => this.saveView());
+    } else {
+      this.setState({ types: append(type, this.state.types) }, () => this.saveView());
+    }
+  }
+
+  setNumberOfElements(numberOfElements) {
+    this.setState({ numberOfElements });
+  }
+
   render() {
     const { report } = this.props;
-    const { sortBy, orderAsc, searchTerm } = this.state;
+    const {
+      sortBy,
+      orderAsc,
+      searchTerm,
+      numberOfElements,
+    } = this.state;
     const dataColumns = {
       entity_type: {
         label: 'Type',
@@ -94,6 +119,7 @@ class ReportEntitiesComponent extends Component {
           handleSort={this.handleSort.bind(this)}
           handleSearch={this.handleSearch.bind(this)}
           secondaryAction={true}
+          numberOfElements={numberOfElements}
         >
           <QueryRenderer
             query={ReportEntitiesLinesQuery}
@@ -104,6 +130,7 @@ class ReportEntitiesComponent extends Component {
                 paginationOptions={paginationOptions}
                 dataColumns={dataColumns}
                 initialLoading={props === null}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
               />
             )}
           />

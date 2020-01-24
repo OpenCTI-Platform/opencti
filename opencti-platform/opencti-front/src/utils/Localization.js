@@ -438,6 +438,7 @@ const i18n = {
       Month: 'Mois',
       Year: 'Année',
       Role: 'Rôle',
+      Date: 'Date',
       'Start date': 'Date de début',
       'End date': 'Date de fin',
       // Properties

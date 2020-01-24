@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -10,9 +10,20 @@ import SectorPopover from './SectorPopover';
 import Reports from '../../reports/Reports';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
-const styles = () => ({
+const styles = (theme) => ({
   container: {
-    margin: 0,
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+  },
+  containerWithPadding: {
+    flexGrow: 1,
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    paddingRight: 310,
   },
   paper: {
     height: '100%',
@@ -24,16 +35,30 @@ const styles = () => ({
 });
 
 class SectorReportsComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { withPadding: false };
+  }
+
   render() {
+    const { withPadding } = this.state;
     const { classes, sector } = this.props;
     return (
-      <div className={classes.container}>
+      <div
+        className={
+          withPadding ? classes.containerWithPadding : classes.container
+        }
+      >
         <StixDomainEntityHeader
           stixDomainEntity={sector}
           PopoverComponent={<SectorPopover />}
         />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Reports objectId={sector.id} />
+          <Reports
+            objectId={sector.id}
+            onChangeOpenExports={(openExports) => this.setState({ withPadding: openExports })
+            }
+          />
         </Paper>
       </div>
     );
@@ -56,7 +81,4 @@ const SectorReports = createFragmentContainer(SectorReportsComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(SectorReports);
+export default compose(inject18n, withStyles(styles))(SectorReports);

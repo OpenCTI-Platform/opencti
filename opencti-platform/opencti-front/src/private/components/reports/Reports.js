@@ -28,7 +28,7 @@ class Reports extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-reports${this.props.objectId ? `-${this.props.objectId}` : ''}`,
+      `view-reports${props.objectId ? `-${props.objectId}` : ''}`,
     );
     this.state = {
       sortBy: propOr('published', 'sortBy', params),
@@ -59,7 +59,11 @@ class Reports extends Component {
   }
 
   handleToggleExports() {
-    this.setState({ openExports: !this.state.openExports });
+    this.setState({ openExports: !this.state.openExports }, () => {
+      if (typeof this.props.onChangeOpenExports === 'function') {
+        this.props.onChangeOpenExports(this.state.openExports);
+      }
+    });
   }
 
   handleAddFilter(key, id, value, event) {
@@ -129,6 +133,7 @@ class Reports extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
+        noPadding={typeof this.props.onChangeOpenExports === 'function'}
         exportEntityType="Report"
         keyword={searchTerm}
         filters={filters}
@@ -211,6 +216,7 @@ Reports.propTypes = {
   history: PropTypes.object,
   location: PropTypes.object,
   displayCreate: PropTypes.bool,
+  onChangeOpenExports: PropTypes.func,
 };
 
 export default compose(inject18n, withRouter)(Reports);

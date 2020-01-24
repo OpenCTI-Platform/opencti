@@ -36,7 +36,12 @@ const stixDomainEntityResolvers = {
     tags: `${REL_INDEX_PREFIX}tagged.value`
   },
   StixDomainEntitiesFilter: {
-    hasExternalReference: `${REL_INDEX_PREFIX}external_references.internal_id_key`
+    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
+    createdBy: `${REL_INDEX_PREFIX}created_by_ref.internal_id_key`,
+    knowledgeContains: `${REL_INDEX_PREFIX}object_refs.internal_id_key`,
+    observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`,
+    hasExternalReference: `${REL_INDEX_PREFIX}external_references.internal_id_key`,
+    indicates: `${REL_INDEX_PREFIX}indicates.internal_id_key`
   },
   StixDomainEntity: {
     // eslint-disable-next-line no-underscore-dangle
@@ -64,7 +69,8 @@ const stixDomainEntityResolvers = {
     }),
     stixDomainEntityAdd: (_, { input }, { user }) => addStixDomainEntity(user, input),
     stixDomainEntitiesExportAsk: (_, args) => stixDomainEntityExportAsk(args),
-    stixDomainEntitiesExportPush: (_, { type, file, listArgs }, { user }) => stixDomainEntityExportPush(user, type, null, file, listArgs)
+    stixDomainEntitiesExportPush: (_, { type, file, listArgs }, { user }) =>
+      stixDomainEntityExportPush(user, type, null, file, listArgs)
   },
   Subscription: {
     stixDomainEntity: {

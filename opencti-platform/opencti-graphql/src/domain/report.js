@@ -76,7 +76,7 @@ export const observableRefs = (reportId, args) => {
   }
   return findWithConnectedRelations(
     `match $from isa Report; $rel(observables_aggregation:$from, soo:$to) isa observable_refs;
-    $to isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
+    $to isa ${args.type ? escape(args.type) : 'Stix-Observable'};
     $from has internal_id_key "${escapeString(reportId)}"; get;`,
     'to',
     'rel'

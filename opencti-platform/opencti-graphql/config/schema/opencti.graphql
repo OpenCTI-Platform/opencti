@@ -417,6 +417,11 @@ enum StixDomainEntitiesFilter {
   alias
   stix_id_key
   hasExternalReference
+  knowledgeContains
+  observablesContains
+  tags
+  createdBy
+  indicates
 }
 input StixDomainEntitiesFiltering {
   key: StixDomainEntitiesFilter!
@@ -566,6 +571,11 @@ enum StixRelationsOrdering {
   modified
   created_at
   updated_at
+  toName
+  toValidFrom
+  toValidUntil
+  toPatternType
+  toCreatedAt
 }
 type StixRelationConnection {
   pageInfo: PageInfo!

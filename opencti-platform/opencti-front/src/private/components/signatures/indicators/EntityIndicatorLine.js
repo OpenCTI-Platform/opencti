@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, pathOr, take } from 'ramda';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -12,9 +12,10 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
 import { ShieldSearch } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
-import ItemConfidenceLevel from '../../../../components/ItemConfidenceLevel';
 import StixRelationPopover from '../../common/stix_relations/StixRelationPopover';
 import ItemPatternType from '../../../../components/ItemPatternType';
+import StixObjectTags from '../../common/stix_object/StixObjectTags';
+import ItemMarking from '../../../../components/ItemMarking';
 
 const styles = (theme) => ({
   item: {
@@ -69,7 +70,7 @@ class EntityIndicatorLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.pattern_type.width }}
+                style={{ width: dataColumns.toPatternType.width }}
               >
                 <ItemPatternType
                   variant="inList"
@@ -78,36 +79,42 @@ class EntityIndicatorLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
+                style={{ width: dataColumns.toName.width }}
               >
                 {node.to.name}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.role_played.width }}
+                style={{ width: dataColumns.tags.width }}
               >
-                {node.inferred ? '-' : node.role_played}
+                <StixObjectTags variant="inList" tags={node.to.tags} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.first_seen.width }}
+                style={{ width: dataColumns.toValidFrom.width }}
               >
-                {node.inferred ? '-' : nsd(node.first_seen)}
+                {nsd(node.to.valid_from)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.last_seen.width }}
+                style={{ width: dataColumns.toValidUntil.width }}
               >
-                {node.inferred ? '-' : nsd(node.last_seen)}
+                {nsd(node.to.valid_until)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.weight.width }}
+                style={{ width: dataColumns.markingDefinitions.width }}
               >
-                <ItemConfidenceLevel
-                  level={node.inferred ? 99 : node.weight}
-                  variant="inList"
-                />
+                {take(
+                  1,
+                  pathOr([], ['markingDefinitions', 'edges'], node.to),
+                ).map((markingDefinition) => (
+                  <ItemMarking
+                    key={markingDefinition.node.id}
+                    variant="inList"
+                    label={markingDefinition.node.definition}
+                  />
+                ))}
               </div>
             </div>
           }
@@ -157,6 +164,27 @@ const EntityIndicatorLineFragment = createFragmentContainer(
             valid_until
             score
             created
+            markingDefinitions {
+              edges {
+                node {
+                  id
+                  definition
+                }
+              }
+            }
+            tags {
+              edges {
+                node {
+                  id
+                  tag_type
+                  value
+                  color
+                }
+                relation {
+                  id
+                }
+              }
+            }
           }
         }
       }
@@ -182,37 +210,37 @@ class EntityIndicatorLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.pattern_type.width }}
+                style={{ width: dataColumns.toPatternType.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
+                style={{ width: dataColumns.toName.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.role_played.width }}
+                style={{ width: dataColumns.tags.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.first_seen.width }}
+                style={{ width: dataColumns.toValidFrom.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.last_seen.width }}
+                style={{ width: dataColumns.toValidUntil.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.weight.width }}
+                style={{ width: dataColumns.markingDefinitions.width }}
               >
                 <div className="fakeItem" style={{ width: 80 }} />
               </div>

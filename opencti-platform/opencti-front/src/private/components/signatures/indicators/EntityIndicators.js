@@ -1,86 +1,117 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import Drawer from '@material-ui/core/Drawer';
-import Grid from '@material-ui/core/Grid';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
-import { withStyles } from '@material-ui/core';
+import { propOr } from 'ramda';
 import EntityIndicatorsLines, {
   entityIndicatorsLinesQuery,
 } from './EntityIndicatorsLines';
 import ListLines from '../../../../components/list_lines/ListLines';
-import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixRelationCreationFromEntity from '../../common/stix_relations/StixRelationCreationFromEntity';
-
-const styles = (theme) => ({
-  bottomNav: {
-    zIndex: 1000,
-    padding: '10px 274px 10px 84px',
-    backgroundColor: theme.palette.navBottom.background,
-    display: 'flex',
-  },
-});
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 
 class EntityIndicators extends Component {
   constructor(props) {
     super(props);
+    const params = buildViewParamsFromUrlAndStorage(
+      props.history,
+      props.location,
+      `view-indicators-${props.entityId}`,
+    );
     this.state = {
-      sortBy: 'first_seen',
-      orderAsc: false,
+      sortBy: propOr('first_seen', 'sortBy', params),
+      orderAsc: propOr(false, 'orderAsc', params),
+      searchTerm: propOr('', 'searchTerm', params),
+      view: 'lines',
       lastSeenStart: null,
       lastSeenStop: null,
       targetEntityTypes: ['Indicator'],
-      view: 'lines',
       inferred: false,
     };
   }
 
-  handleChangeInferred() {
-    this.setState({
-      inferred: !this.state.inferred,
-      sortBy: !this.state.inferred ? null : this.state.sortBy,
-    });
+  saveView() {
+    saveViewParameters(
+      this.props.history,
+      this.props.location,
+      `view-indicators-${this.props.entityId}`,
+      this.state,
+    );
+  }
+
+  handleSearch(value) {
+    this.setState({ searchTerm: value }, () => this.saveView());
   }
 
   handleSort(field, orderAsc) {
-    this.setState({ sortBy: field, orderAsc });
+    this.setState({ sortBy: field, orderAsc }, () => this.saveView());
+  }
+
+  handleToggleExports() {
+    this.setState({ openExports: !this.state.openExports }, () => {
+      if (typeof this.props.onChangeOpenExports === 'function') {
+        this.props.onChangeOpenExports(this.state.openExports);
+      }
+    });
+  }
+
+  setNumberOfElements(numberOfElements) {
+    this.setState({ numberOfElements });
   }
 
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc } = this.state;
-    const { entityLink } = this.props;
+    const {
+      sortBy,
+      orderAsc,
+      searchTerm,
+      openExports,
+      numberOfElements,
+    } = this.state;
+    const { entityId, entityLink } = this.props;
     const dataColumns = {
-      pattern_type: {
+      toPatternType: {
         label: 'Type',
         width: '10%',
-        isSortable: false,
+        isSortable: true,
       },
-      name: {
+      toName: {
         label: 'Name',
         width: '30%',
-        isSortable: false,
+        isSortable: true,
       },
-      role_played: {
-        label: 'Played role',
+      tags: {
+        label: 'Tags',
         width: '15%',
         isSortable: false,
       },
-      first_seen: {
-        label: 'First obs.',
+      toValidFrom: {
+        label: 'Valid from',
         width: '15%',
         isSortable: true,
       },
-      last_seen: {
-        label: 'Last obs.',
+      toValidUntil: {
+        label: 'Valid until',
         width: '15%',
         isSortable: true,
       },
-      weight: {
-        label: 'Confidence level',
-        isSortable: true,
+      markingDefinitions: {
+        label: 'Marking',
+        isSortable: false,
       },
+    };
+    const orderByMapping = {
+      toPatternType: 'pattern_type',
+      toName: 'name',
+      toValidFrom: 'valid_from',
+      toValidUntil: 'valid_until',
+    };
+    const exportPaginationOptions = {
+      filters: [{ key: 'indicates', values: [entityId] }],
+      orderBy: orderByMapping[sortBy === 'first_seen' ? 'toValidFrom' : sortBy],
+      orderMode: orderAsc ? 'asc' : 'desc',
+      search: searchTerm,
     };
     return (
       <ListLines
@@ -88,8 +119,14 @@ class EntityIndicators extends Component {
         orderAsc={orderAsc}
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
-        displayImport={false}
+        handleSearch={this.handleSearch.bind(this)}
+        handleToggleExports={this.handleToggleExports.bind(this)}
+        openExports={openExports}
+        paginationOptions={exportPaginationOptions}
+        exportEntityType="Indicator"
+        keyword={searchTerm}
         secondaryAction={true}
+        numberOfElements={numberOfElements}
       >
         <QueryRenderer
           query={entityIndicatorsLinesQuery}
@@ -101,6 +138,7 @@ class EntityIndicators extends Component {
               entityLink={entityLink}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
         />
@@ -109,9 +147,7 @@ class EntityIndicators extends Component {
   }
 
   render() {
-    const {
-      t, entityId, relationType, classes,
-    } = this.props;
+    const { entityId, relationType } = this.props;
     const {
       view,
       targetEntityTypes,
@@ -120,9 +156,11 @@ class EntityIndicators extends Component {
       lastSeenStart,
       lastSeenStop,
       inferred,
+      searchTerm,
     } = this.state;
     const paginationOptions = {
       inferred,
+      search: searchTerm,
       toTypes: targetEntityTypes,
       fromId: entityId,
       relationType,
@@ -133,27 +171,6 @@ class EntityIndicators extends Component {
     };
     return (
       <div>
-        <Drawer
-          anchor="bottom"
-          variant="permanent"
-          classes={{ paper: classes.bottomNav }}
-        >
-          <Grid container={true} spacing={1}>
-            <Grid item={true} xs="auto">
-              <FormControlLabel
-                style={{ paddingTop: 5, marginRight: 15 }}
-                control={
-                  <Switch
-                    checked={inferred}
-                    onChange={this.handleChangeInferred.bind(this)}
-                    color="primary"
-                  />
-                }
-                label={t('Inferences')}
-              />
-            </Grid>
-          </Grid>
-        </Drawer>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <StixRelationCreationFromEntity
           entityId={entityId}
@@ -169,9 +186,7 @@ class EntityIndicators extends Component {
 EntityIndicators.propTypes = {
   entityId: PropTypes.string,
   entityLink: PropTypes.string,
-  classes: PropTypes.object,
-  t: PropTypes.func,
   history: PropTypes.object,
 };
 
-export default compose(inject18n, withStyles(styles))(EntityIndicators);
+export default EntityIndicators;

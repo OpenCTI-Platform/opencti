@@ -4,8 +4,7 @@ import { loadFileWorks } from '../domain/work';
 
 const fileResolvers = {
   Query: {
-    importFiles: (entity, { first }) => filesListing(first, 'import'),
-
+    importFiles: (entity, { first }) => filesListing(first, 'import')
   },
   File: {
     works: file => loadFileWorks(file.id)
