@@ -15,7 +15,8 @@ import {
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { killChainPhases } from '../domain/stixEntity';
-import { distributionRelations, loadByGraknId, timeSeriesRelations } from '../database/grakn';
+import { distributionRelations, loadByGraknId, timeSeriesRelations, REL_CONNECTED_SUFFIX } from '../database/grakn';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const stixRelationResolvers = {
   Query: {
@@ -24,6 +25,13 @@ const stixRelationResolvers = {
     stixRelationsTimeSeries: (_, args) => timeSeriesRelations(args),
     stixRelationsDistribution: async (_, args) => distributionRelations(args),
     stixRelationsNumber: (_, args) => stixRelationsNumber(args)
+  },
+  StixRelationsOrdering: {
+    toName: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.name`,
+    toValidFrom: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.valid_from`,
+    toValidUntil: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.valid_until`,
+    toPatternType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.pattern_type`,
+    toCreatedAt: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.created_at`
   },
   StixRelation: {
     killChainPhases: rel => killChainPhases(rel.id),

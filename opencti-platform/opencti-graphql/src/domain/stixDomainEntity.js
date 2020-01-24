@@ -87,26 +87,29 @@ const askJobExports = async (
       }));
     }, connectors)
   );
-  const stixDomainEntitiesFiltersInversed = invertObj(stixDomainEntityResolvers.StixDomainEntitiesFilter);
-  const stixDomainEntitiesOrderingInversed = invertObj(stixDomainEntityResolvers.StixDomainEntitiesOrdering);
-  const finalListArgs = pipe(
-    assoc(
-      'filters',
-      map(
-        n => ({
-          key: n.key in stixDomainEntitiesFiltersInversed ? stixDomainEntitiesFiltersInversed[n.key] : n.key,
-          values: n.values
-        }),
-        propOr([], 'filters', listArgs)
+  let finalListArgs = listArgs;
+  if (listArgs !== null) {
+    const stixDomainEntitiesFiltersInversed = invertObj(stixDomainEntityResolvers.StixDomainEntitiesFilter);
+    const stixDomainEntitiesOrderingInversed = invertObj(stixDomainEntityResolvers.StixDomainEntitiesOrdering);
+    finalListArgs = pipe(
+      assoc(
+        'filters',
+        map(
+          n => ({
+            key: n.key in stixDomainEntitiesFiltersInversed ? stixDomainEntitiesFiltersInversed[n.key] : n.key,
+            values: n.values
+          }),
+          propOr([], 'filters', listArgs)
+        )
+      ),
+      assoc(
+        'orderBy',
+        listArgs.orderBy in stixDomainEntitiesOrderingInversed
+          ? stixDomainEntitiesOrderingInversed[listArgs.orderBy]
+          : listArgs.orderBy
       )
-    ),
-    assoc(
-      'orderBy',
-      listArgs.orderBy in stixDomainEntitiesOrderingInversed
-        ? stixDomainEntitiesOrderingInversed[listArgs.orderBy]
-        : listArgs.orderBy
-    )
-  )(listArgs);
+    )(listArgs);
+  }
   // Send message to all correct connectors queues
   await Promise.all(
     map(data => {

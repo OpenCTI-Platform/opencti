@@ -56,6 +56,7 @@ EntityIndicatorsLines.propTypes = {
 
 export const entityIndicatorsLinesQuery = graphql`
   query EntityIndicatorsLinesPaginationQuery(
+    $search: String
     $inferred: Boolean
     $fromId: String
     $toTypes: [String]
@@ -72,6 +73,7 @@ export const entityIndicatorsLinesQuery = graphql`
   ) {
     ...EntityIndicatorsLines_data
       @arguments(
+        search: $search
         inferred: $inferred
         fromId: $fromId
         toTypes: $toTypes
@@ -95,6 +97,7 @@ export default createPaginationContainer(
     data: graphql`
       fragment EntityIndicatorsLines_data on Query
         @argumentDefinitions(
+          search: { type: "String" }
           inferred: { type: "Boolean" }
           fromId: { type: "String" }
           toTypes: { type: "[String]" }
@@ -110,6 +113,7 @@ export default createPaginationContainer(
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
         stixRelations(
+          search: $search
           inferred: $inferred
           fromId: $fromId
           toTypes: $toTypes
@@ -151,6 +155,7 @@ export default createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
+        search: fragmentVariables.search,
         inferred: fragmentVariables.inferred,
         fromId: fragmentVariables.fromId,
         toTypes: fragmentVariables.toTypes,

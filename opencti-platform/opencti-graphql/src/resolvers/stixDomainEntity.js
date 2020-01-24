@@ -40,7 +40,8 @@ const stixDomainEntityResolvers = {
     createdBy: `${REL_INDEX_PREFIX}created_by_ref.internal_id_key`,
     knowledgeContains: `${REL_INDEX_PREFIX}object_refs.internal_id_key`,
     observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`,
-    hasExternalReference: `${REL_INDEX_PREFIX}external_references.internal_id_key`
+    hasExternalReference: `${REL_INDEX_PREFIX}external_references.internal_id_key`,
+    indicates: `${REL_INDEX_PREFIX}indicates.internal_id_key`
   },
   StixDomainEntity: {
     // eslint-disable-next-line no-underscore-dangle

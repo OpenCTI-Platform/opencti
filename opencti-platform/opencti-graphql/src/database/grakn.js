@@ -68,6 +68,7 @@ const dateFormat = 'YYYY-MM-DDTHH:mm:ss';
 const GraknString = 'String';
 const GraknDate = 'Date';
 
+export const REL_CONNECTED_SUFFIX = 'CONNECTED';
 export const TYPE_OPENCTI_INTERNAL = 'Internal';
 export const TYPE_STIX_DOMAIN = 'Stix-Domain';
 export const TYPE_STIX_DOMAIN_ENTITY = 'Stix-Domain-Entity';
@@ -819,9 +820,14 @@ export const listRelations = async (relationType, relationFilter, args) => {
   if (isRelationOrderBy) {
     const [relation, field] = orderBy.split('.');
     const curatedRelation = relation.replace(REL_INDEX_PREFIX, '');
-    relationsFields.push(
-      `($rel, $${curatedRelation}) isa ${curatedRelation}; $${curatedRelation} has ${field} $order;`
-    );
+    if (curatedRelation.includes(REL_CONNECTED_SUFFIX)) {
+      const finalCuratedRelation = curatedRelation.replace(REL_CONNECTED_SUFFIX, '');
+      relationsFields.push(`$${finalCuratedRelation} has ${field} $order;`);
+    } else {
+      relationsFields.push(
+        `($rel, $${curatedRelation}) isa ${curatedRelation}; $${curatedRelation} has ${field} $order;`
+      );
+    }
   } else if (orderBy) {
     attributesFields.push(`$rel has ${orderBy} $order;`);
   }

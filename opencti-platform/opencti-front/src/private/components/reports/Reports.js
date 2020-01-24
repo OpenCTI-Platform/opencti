@@ -28,7 +28,7 @@ class Reports extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-reports${this.props.objectId ? `-${this.props.objectId}` : ''}`,
+      `view-reports${props.objectId ? `-${props.objectId}` : ''}`,
     );
     this.state = {
       sortBy: propOr('published', 'sortBy', params),

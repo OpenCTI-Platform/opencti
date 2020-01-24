@@ -114,7 +114,7 @@ class FileLineComponent extends Component {
     const { lastModifiedSinceMin, uploadStatus } = file;
     const isFail = uploadStatus === 'error' || uploadStatus === 'partial';
     const isProgress = uploadStatus === 'progress';
-    const isOutdated = isProgress && lastModifiedSinceMin > 5;
+    const isOutdated = isProgress && lastModifiedSinceMin > 1;
     const isImportActive = () => connectors && filter((x) => x.data.active, connectors).length > 0;
     const fileName = propOr('', 'name', file).includes('_')
       ? pipe(split('_'), drop(1), join('_'))(file.name)
@@ -183,7 +183,6 @@ class FileLineComponent extends Component {
               <Tooltip title={t('Delete this file')}>
                 <span>
                   <IconButton
-                    disabled={isProgress}
                     color="secondary"
                     onClick={this.handleRemoveJob.bind(this, file.id)}
                   >
