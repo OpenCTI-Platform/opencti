@@ -29,7 +29,7 @@ export const getApplicationInfo = () => ({
 
 export const getSettings = async () => {
   const data = await listEntities(['Settings'], ['platform_title'], {});
-  return head(data.edges).node;
+  return data.edges.length > 0 ? head(data.edges).node : null;
 };
 
 export const addSettings = async (user, settings) => {

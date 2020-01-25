@@ -1,8 +1,8 @@
 import uuid from 'uuid/v4';
-import { filter, head, isEmpty, map } from 'ramda';
+import { filter, head, map } from 'ramda';
 import { MigrationSet } from 'migrate';
 import Migration from 'migrate/lib/migration';
-import { executeWrite, find, write } from './grakn';
+import { executeWrite, find, load, write } from './grakn';
 import { logger } from '../config/conf';
 
 const normalizeMigrationName = rawName => {
@@ -27,28 +27,29 @@ const retrieveMigrations = () => {
 const graknStateStorage = {
   async load(fn) {
     // Get current status of migrations in Grakn
-    const result = await find(
+    const migration = await load(`match $status isa MigrationStatus; get;`, ['status'], { noCache: true });
+    if (!migration) {
+      // If no migration found, initialize
+      logger.info('[MIGRATION] > Fresh platform detected, creating migration structure');
+      const lastRunInit = `${new Date().getTime()}-init`;
+      await write(`insert $x isa MigrationStatus, has lastRun "${lastRunInit}", has internal_id_key "${uuid()}";`);
+      return fn(null, { lastRun: lastRunInit, migrations: [] });
+    }
+    // If migrations found, convert to current status
+    const migrations = await find(
       `match $from isa MigrationStatus; $rel(status:$from, state:$to) isa migrate; get;`,
-      ['rel', 'from', 'to'],
+      ['from', 'to'],
       { noCache: true }
     );
-    logger.info(`[MIGRATION] > Read ${result.length} from the database`);
-    if (isEmpty(result)) {
-      logger.info(
-        '[MIGRATION] > Cannot read migrations from database. If this is the first time you run migrations,' +
-          ' then this is normal.'
-      );
-      await write(`insert $x isa MigrationStatus, has internal_id_key "${uuid()}";`);
-      return fn(null, {});
-    }
+    logger.info(`[MIGRATION] > Read ${migrations.length} migrations from the database`);
     const migrationStatus = {
-      lastRun: head(result).from.lastRun,
+      lastRun: migration.status.lastRun,
       migrations: map(
         record => ({
           title: record.to.title,
           timestamp: record.to.timestamp
         }),
-        result
+        migrations
       )
     };
     return fn(null, migrationStatus);
@@ -96,19 +97,29 @@ const applyMigration = () => {
     graknStateStorage.load((err, state) => {
       if (err) throw new Error(err);
       // Set last run date on the set
-      set.lastRun = state.lastRun || null;
+      set.lastRun = state.lastRun;
       // Read migrations from webpack
-      const migrationSet = retrieveMigrations();
-      const stateMigrations = new Map(state.migrations ? state.migrations.map(i => [i.title, i]) : null);
-      for (let index = 0; index < migrationSet.length; index += 1) {
-        const migSet = migrationSet[index];
+      const filesMigrationSet = retrieveMigrations();
+      // Filter migration to apply. Should be > lastRun
+      const [platformTime] = state.lastRun.split('-');
+      const platformDate = new Date(parseInt(platformTime, 10));
+      const migrationToApply = filter(file => {
+        const [time] = file.title.split('-');
+        const fileDate = new Date(parseInt(time, 10));
+        return fileDate > platformDate;
+      }, filesMigrationSet);
+      const alreadyAppliedMigrations = new Map(state.migrations ? state.migrations.map(i => [i.title, i]) : null);
+      /** Match the files migrations to the database migrations.
+       Plays migrations that doesnt have matching name / timestamp */
+      if (migrationToApply.length > 0) {
+        logger.info(`[MIGRATION] > ${migrationToApply.length} migrations will be executed`);
+      }
+      for (let index = 0; index < migrationToApply.length; index += 1) {
+        const migSet = migrationToApply[index];
         const migration = new Migration(migSet.title, migSet.up, migSet.down);
-        // Add timestamp if already done in remote state
-        const stateMigration = stateMigrations.get(migration.title);
+        const stateMigration = alreadyAppliedMigrations.get(migration.title);
         if (stateMigration) {
-          migration.timestamp = stateMigration.timestamp;
-        } else {
-          logger.info(`[MIGRATION] > ${migSet.title} will be executed`);
+          logger.info(`[MIGRATION] > Replaying migration ${migration.title}`);
         }
         set.addMigration(migration);
       }
@@ -118,7 +129,7 @@ const applyMigration = () => {
           logger.error('[GRAKN] Error during migration');
           reject(migrationError);
         }
-        logger.info('[MIGRATION] > Migrations completed');
+        logger.info('[MIGRATION] > Migration process completed, platform is up to date');
         resolve();
       });
     });
