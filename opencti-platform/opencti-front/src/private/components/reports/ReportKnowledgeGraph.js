@@ -93,7 +93,7 @@ const reportKnowledgeGraphStixEntityQuery = graphql`
   }
 `;
 
-const reportKnowledgeGraphtMutationRelationAdd = graphql`
+export const reportKnowledgeGraphtMutationRelationAdd = graphql`
   mutation ReportKnowledgeGraphRelationAddMutation(
     $id: ID!
     $input: RelationAddInput!
@@ -109,13 +109,15 @@ const reportKnowledgeGraphtMutationRelationAdd = graphql`
   }
 `;
 
-const reportKnowledgeGraphtMutationRelationDelete = graphql`
+export const reportKnowledgeGraphtMutationRelationDelete = graphql`
   mutation ReportKnowledgeGraphRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String
+    $relationType: String
+    $relationId: ID
   ) {
     reportEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(relationId: $relationId, toId: $toId, relationType: $relationType) {
         ...ReportKnowledgeGraph_report
       }
     }
@@ -207,7 +209,6 @@ class ReportKnowledgeGraphComponent extends Component {
       const newNodes = map(
         (n) => new EntityNodeModel({
           id: n.node.id,
-          relationId: n.relation.id,
           name: n.node.name,
           type: n.node.entity_type,
         }),
@@ -291,7 +292,6 @@ class ReportKnowledgeGraphComponent extends Component {
     forEach((n) => {
       const newNode = new EntityNodeModel({
         id: n.node.id,
-        relationId: n.relation.id,
         name: n.node.name,
         type: n.node.entity_type,
       });
@@ -312,10 +312,9 @@ class ReportKnowledgeGraphComponent extends Component {
     // add relations
     const createdRelations = [];
     forEach((l) => {
-      if (!includes(l.relation.id, createdRelations)) {
+      if (!includes(l.node.id, createdRelations)) {
         const newNode = new RelationNodeModel({
           id: l.node.id,
-          relationId: l.relation.id,
           type: l.node.relationship_type,
           first_seen: l.node.first_seen,
           last_seen: l.node.last_seen,
@@ -332,7 +331,7 @@ class ReportKnowledgeGraphComponent extends Component {
           newNode.setPosition(position.x, position.y);
         }
         model.addNode(newNode);
-        createdRelations.push(l.relation.id);
+        createdRelations.push(l.node.id);
       }
     }, relations);
     // build usables nodes object
@@ -346,7 +345,7 @@ class ReportKnowledgeGraphComponent extends Component {
     // add links
     const createdLinks = [];
     forEach((l) => {
-      if (!includes(l.relation.id, createdLinks)) {
+      if (!includes(l.node.id, createdLinks)) {
         const sourceFromPort = finalNodesObject[l.node.from.id]
           ? finalNodesObject[l.node.from.id].node.getPort('main')
           : null;
@@ -371,7 +370,7 @@ class ReportKnowledgeGraphComponent extends Component {
           newLinkTarget.setTargetPort(targetToPort);
           model.addLink(newLinkTarget);
         }
-        createdLinks.push(l.relation.id);
+        createdLinks.push(l.node.id);
       }
     }, relations);
 
@@ -459,7 +458,8 @@ class ReportKnowledgeGraphComponent extends Component {
             mutation: reportKnowledgeGraphtMutationRelationDelete,
             variables: {
               id: this.props.report.id,
-              relationId: node.extras.relationId,
+              toId: node.extras.id,
+              relationType: 'object_refs',
             },
           });
         }
@@ -467,16 +467,24 @@ class ReportKnowledgeGraphComponent extends Component {
           fetchQuery(reportKnowledgeGraphCheckRelationQuery, {
             id: node.extras.id,
           }).then((data) => {
-            const relationIdToDelete = data.stixRelation.reports.edges.length === 1
-              ? node.extras.id
-              : node.extras.relationId;
-            commitMutation({
-              mutation: reportKnowledgeGraphtMutationRelationDelete,
-              variables: {
-                id: this.props.report.id,
-                relationId: relationIdToDelete,
-              },
-            });
+            if (data.stixRelation.reports.edges.length === 1) {
+              commitMutation({
+                mutation: reportKnowledgeGraphtMutationRelationDelete,
+                variables: {
+                  id: this.props.report.id,
+                  relationId: node.extras.id,
+                },
+              });
+            } else {
+              commitMutation({
+                mutation: reportKnowledgeGraphtMutationRelationDelete,
+                variables: {
+                  id: this.props.report.id,
+                  toId: node.extras.id,
+                  relationType: 'object_regs',
+                },
+              });
+            }
           });
         }
         this.handleSaveGraph();
@@ -585,10 +593,9 @@ class ReportKnowledgeGraphComponent extends Component {
         id: this.props.report.id,
         input,
       },
-      onCompleted: (data) => {
+      onCompleted: () => {
         const newNode = new RelationNodeModel({
           id: result.id,
-          relationId: data.reportEdit.relationAdd.id,
           type: result.relationship_type,
           first_seen: result.first_seen,
           last_seen: result.last_seen,
@@ -652,7 +659,6 @@ class ReportKnowledgeGraphComponent extends Component {
         const nodeObject = model.getNode(currentNode);
         nodeObject.setExtras({
           id: currentNode.extras.id,
-          relationId: currentNode.extras.relationId,
           name: stixEntity.name,
           type: stixEntity.entity_type,
         });
@@ -677,7 +683,6 @@ class ReportKnowledgeGraphComponent extends Component {
         const nodeObject = model.getNode(currentNode);
         nodeObject.setExtras({
           id: currentNode.extras.id,
-          relationId: currentNode.extras.relationId,
           type: stixRelation.relationship_type,
           first_seen: stixRelation.first_seen,
           last_seen: stixRelation.last_seen,
@@ -801,6 +806,7 @@ class ReportKnowledgeGraphComponent extends Component {
         <ReportAddObjectRefs
           reportId={report.id}
           reportObjectRefs={report.objectRefs.edges}
+          knowledgeGraph={true}
         />
         <StixRelationCreation
           open={openCreateRelation}
@@ -854,9 +860,6 @@ const ReportKnowledgeGraph = createFragmentContainer(
               created_at
               updated_at
             }
-            relation {
-              id
-            }
           }
         }
         relationRefs {
@@ -878,9 +881,6 @@ const ReportKnowledgeGraph = createFragmentContainer(
                 entity_type
                 name
               }
-            }
-            relation {
-              id
             }
           }
         }

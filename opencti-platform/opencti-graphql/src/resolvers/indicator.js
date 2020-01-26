@@ -24,7 +24,7 @@ const indicatorResolvers = {
     tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`
   },
   Indicator: {
-    observableRefs: report => observableRefs(report.id)
+    observableRefs: indicator => observableRefs(indicator.id)
   },
   Mutation: {
     indicatorEdit: (_, { id }, { user }) => ({

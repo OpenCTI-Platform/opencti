@@ -56,9 +56,6 @@ const stixDomainEntityMutationRelationsAdd = graphql`
               value
               color
             }
-            relation {
-              id
-            }
           }
         }
       }
@@ -69,10 +66,11 @@ const stixDomainEntityMutationRelationsAdd = graphql`
 const stixDomainEntityMutationRelationDelete = graphql`
   mutation StixDomainEntityTagsRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String
+    $relationType: String
   ) {
     stixDomainEntityEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationType: $relationType) {
           ... on StixEntity {
             tags {
               edges {
@@ -81,9 +79,6 @@ const stixDomainEntityMutationRelationDelete = graphql`
                   tag_type
                   value
                   color
-                }
-                relation {
-                  id
                 }
               }
             }
@@ -160,12 +155,13 @@ class StixDomainEntityTags extends Component {
     });
   }
 
-  handleRemoveTag(relationId) {
+  handleRemoveTag(tagId) {
     commitMutation({
       mutation: stixDomainEntityMutationRelationDelete,
       variables: {
         id: this.props.id,
-        relationId,
+        toId: tagId,
+        relationType: 'tagged',
       },
     });
   }
@@ -198,7 +194,7 @@ class StixDomainEntityTags extends Component {
                 classes={{ root: classes.tag }}
                 label={tagEdge.node.value}
                 style={{ backgroundColor: tagEdge.node.color }}
-                onDelete={this.handleRemoveTag.bind(this, tagEdge.relation.id)}
+                onDelete={this.handleRemoveTag.bind(this, tagEdge.node.id)}
               />
             ),
             tags.edges,
@@ -285,7 +281,4 @@ StixDomainEntityTags.propTypes = {
   tags: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixDomainEntityTags);
+export default compose(inject18n, withStyles(styles))(StixDomainEntityTags);

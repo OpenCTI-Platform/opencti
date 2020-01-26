@@ -328,6 +328,8 @@ define
     has created_at_month,
     has created_at_year,
     has updated_at,
+    plays relate_from,
+    plays relate_to,
     plays phase_belonging,
     plays characterize,
     plays so;

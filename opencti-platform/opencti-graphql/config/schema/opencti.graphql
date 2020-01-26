@@ -435,7 +435,7 @@ type StixDomainEntityConnection {
 type StixDomainEntityEdge {
   cursor: String!
   node: StixDomainEntity!
-  relation: RelationEmbedded!
+  relation: RelationEmbedded
 }
 interface StixDomainEntity {
   id: ID!
@@ -501,7 +501,7 @@ type StixObservableConnection {
 type StixObservableEdge {
   cursor: String!
   node: StixObservable!
-  relation: RelationEmbedded!
+  relation: RelationEmbedded
 }
 type StixObservable implements GlobalObject & StixEntity {
   id: ID!
@@ -771,7 +771,7 @@ type WorkspaceConnection {
 type WorkspaceEdge {
   cursor: String!
   node: Workspace!
-  relation: RelationEmbedded!
+  relation: RelationEmbedded
 }
 type Workspace implements GlobalObject {
   id: ID!
@@ -824,7 +824,7 @@ type IdentityConnection {
 type IdentityEdge {
   cursor: String!
   node: Identity!
-  relation: RelationEmbedded!
+  relation: RelationEmbedded
 }
 interface Identity {
   id: ID!
@@ -1112,7 +1112,7 @@ type SectorConnection {
 type SectorEdge {
   cursor: String!
   node: Sector!
-  relation: RelationEmbedded!
+  relation: RelationEmbedded
 }
 type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
@@ -1433,7 +1433,7 @@ type GroupConnection {
 type GroupEdge {
   cursor: String!
   node: Group!
-  relation: RelationEmbedded!
+  relation: RelationEmbedded
 }
 type Group implements GlobalObject {
   id: ID!
@@ -1485,7 +1485,7 @@ type MarkingDefinitionConnection {
 type MarkingDefinitionEdge {
   cursor: String!
   node: MarkingDefinition!
-  relation: RelationEmbedded!
+  relation: RelationEmbedded
 }
 type MarkingDefinition implements GlobalObject {
   id: ID!
@@ -1543,7 +1543,7 @@ type ExternalReferenceConnection {
 type ExternalReferenceEdge {
   cursor: String!
   node: ExternalReference!
-  relation: RelationEmbedded!
+  relation: RelationEmbedded
 }
 type ExternalReference implements GlobalObject {
   id: ID!
@@ -1600,7 +1600,7 @@ type KillChainPhaseConnection {
 type KillChainPhaseEdge {
   cursor: String!
   node: KillChainPhase!
-  relation: RelationEmbedded!
+  relation: RelationEmbedded
 }
 type KillChainPhase implements GlobalObject {
   id: ID!
@@ -1660,7 +1660,7 @@ type AttackPatternConnection {
 type AttackPatternEdge {
   cursor: String!
   node: AttackPattern!
-  relation: RelationEmbedded!
+  relation: RelationEmbedded
 }
 type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
@@ -1755,7 +1755,7 @@ type CourseOfActionConnection {
 type CourseOfActionEdge {
   cursor: String!
   node: CourseOfAction!
-  relation: RelationEmbedded!
+  relation: RelationEmbedded
 }
 type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
@@ -2504,7 +2504,7 @@ type ReportConnection {
 type ReportEdge {
   cursor: String!
   node: Report!
-  relation: RelationEmbedded!
+  relation: RelationEmbedded
 }
 type ReportPayload {
   reportEdge: ReportEdge
@@ -2633,7 +2633,7 @@ type IndicatorConnection {
 type IndicatorEdge {
   cursor: String!
   node: Indicator!
-  relation: RelationEmbedded!
+  relation: RelationEmbedded
 }
 type Indicator implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
@@ -3203,7 +3203,7 @@ type StixDomainEntityEditMutations {
   contextClean: StixDomainEntity
   relationAdd(input: RelationAddInput): RelationEmbedded
   relationsAdd(input: RelationsAddInput): StixEntity
-  relationDelete(relationId: ID!): StixEntity
+  relationDelete(relationId: ID, toId: String, relationType: String): StixEntity
   importPush(file: Upload!): File @auth
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
   exportPush(file: Upload!): Boolean @auth(for: ROLE_ADMIN)

@@ -2,9 +2,7 @@ import { assoc, append, propOr } from 'ramda';
 import {
   createEntity,
   distributionEntities,
-  escape,
   escapeString,
-  findWithConnectedRelations,
   getSingleValueNumber,
   listEntities,
   listRelations,
@@ -16,7 +14,6 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { notify } from '../database/redis';
-import { buildPagination } from '../database/utils';
 import { findAll as findAllStixObservables } from './stixObservable';
 import { findAll as findAllStixDomainEntities } from './stixDomainEntity';
 
@@ -37,24 +34,12 @@ export const findAll = async args => {
 
 // Entities tab
 export const objectRefs = (reportId, args) => {
-  if (args.orderBy || args.filters || args.search) {
-    const finalArgs = assoc(
-      'filters',
-      append(
-        { key: `${REL_INDEX_PREFIX}object_refs.internal_id_key`, values: [reportId] },
-        propOr([], 'filters', args)
-      ),
-      args
-    );
-    return findAllStixDomainEntities(finalArgs);
-  }
-  return findWithConnectedRelations(
-    `match $from isa Report; $rel(knowledge_aggregation:$from, so:$to) isa object_refs;
-    $to isa ${args.type ? escape(args.type) : 'Stix-Domain-Entity'};
-    $from has internal_id_key "${escapeString(reportId)}"; get;`,
-    'to',
-    'rel'
-  ).then(data => buildPagination(0, 0, data, data.length));
+  const finalArgs = assoc(
+    'filters',
+    append({ key: `${REL_INDEX_PREFIX}object_refs.internal_id_key`, values: [reportId] }, propOr([], 'filters', args)),
+    args
+  );
+  return findAllStixDomainEntities(finalArgs);
 };
 // Relation refs
 export const relationRefs = (reportId, args) => {
@@ -63,24 +48,15 @@ export const relationRefs = (reportId, args) => {
 };
 // Observable refs
 export const observableRefs = (reportId, args) => {
-  if (args.orderBy || args.filters || args.search) {
-    const finalArgs = assoc(
-      'filters',
-      append(
-        { key: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`, values: [reportId] },
-        propOr([], 'filters', args)
-      ),
-      args
-    );
-    return findAllStixObservables(finalArgs);
-  }
-  return findWithConnectedRelations(
-    `match $from isa Report; $rel(observables_aggregation:$from, soo:$to) isa observable_refs;
-    $to isa ${args.type ? escape(args.type) : 'Stix-Observable'};
-    $from has internal_id_key "${escapeString(reportId)}"; get;`,
-    'to',
-    'rel'
-  ).then(data => buildPagination(0, 0, data, data.length));
+  const finalArgs = assoc(
+    'filters',
+    append(
+      { key: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`, values: [reportId] },
+      propOr([], 'filters', args)
+    ),
+    args
+  );
+  return findAllStixObservables(finalArgs);
 };
 
 // region series
