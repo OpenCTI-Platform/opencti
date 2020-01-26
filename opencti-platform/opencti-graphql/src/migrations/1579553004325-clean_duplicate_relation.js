@@ -7,7 +7,7 @@ import { logger } from '../config/conf';
 
 const purgeDuplicates = async (query, relation = false, reportId = null) => {
   try {
-    let relations = null;
+    let relations;
     if (relation) {
       const pointingFilter = { relation: 'object_refs', fromRole: 'so', toRole: 'knowledge_aggregation', id: reportId };
       relations = await listRelations('stix_relation', pointingFilter, { withCache: false, first: 500000 });
@@ -16,10 +16,13 @@ const purgeDuplicates = async (query, relation = false, reportId = null) => {
       relations = await findWithConnectedRelations(query, 'to', 'rel');
     }
     const groupedRelations = groupBy(n => n.node.internal_id_key, relations);
+    // eslint-disable-next-line no-restricted-syntax,guard-for-in
     for (const groupedRelationKey in groupedRelations) {
+      // noinspection JSUnfilteredForInLoop
       const groupedRelation = groupedRelations[groupedRelationKey];
       if (groupedRelation.length > 1) {
         const relationsToDelete = map(n => n.relation.internal_id_key, dropLast(1, groupedRelation));
+        // eslint-disable-next-line no-restricted-syntax
         for (const relationToDelete of relationsToDelete) {
           await deleteRelationById(relationToDelete);
         }
