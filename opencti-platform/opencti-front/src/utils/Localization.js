@@ -217,6 +217,8 @@ const i18n = {
       'Enabled import connectors': "Connecteurs d'import activés",
       'Enrichment connectors': "Connecteurs d'enrichissement",
       'Registered connectors': 'Connecteurs enregistrés',
+      Scope: 'Périmètre',
+      Modified: 'Modifié',
       'No import connectors on this platform':
         "Aucun connecteur d'import sur cette plateforme",
       'No connectors for this type of observable':
