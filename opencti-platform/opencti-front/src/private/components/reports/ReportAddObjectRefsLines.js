@@ -21,6 +21,7 @@ import { truncate } from '../../../utils/String';
 import ItemIcon from '../../../components/ItemIcon';
 import inject18n from '../../../components/i18n';
 import { reportRefPopoverDeletionMutation } from './ReportRefPopover';
+import { reportKnowledgeGraphtMutationRelationAdd } from './ReportKnowledgeGraph';
 
 const styles = (theme) => ({
   container: {
@@ -75,7 +76,7 @@ class ReportAddObjectRefsLinesContainer extends Component {
   }
 
   toggleStixDomain(stixDomain) {
-    const { reportId, paginationOptions } = this.props;
+    const { reportId, paginationOptions, knowledgeGraph } = this.props;
     const alreadyAdded = this.state.addedStixDomainEntities.includes(
       stixDomain.id,
     );
@@ -112,34 +113,52 @@ class ReportAddObjectRefsLinesContainer extends Component {
         toRole: 'so',
         through: 'object_refs',
       };
-      commitMutation({
-        mutation: reportMutationRelationAdd,
-        variables: {
-          id: reportId,
-          input,
-        },
-        updater: (store) => {
-          const payload = store
-            .getRootField('reportEdit')
-            .getLinkedRecord('relationAdd', { input })
-            .getLinkedRecord('to');
-          const newEdge = payload.setLinkedRecord(payload, 'node');
-          const conn = ConnectionHandler.getConnection(
-            store.get(reportId),
-            'Pagination_objectRefs',
-            paginationOptions,
-          );
-          ConnectionHandler.insertEdgeBefore(conn, newEdge);
-        },
-        onCompleted: () => {
-          this.setState({
-            addedStixDomainEntities: append(
-              stixDomain.id,
-              this.state.addedStixDomainEntities,
-            ),
-          });
-        },
-      });
+      if (knowledgeGraph) {
+        commitMutation({
+          mutation: reportKnowledgeGraphtMutationRelationAdd,
+          variables: {
+            id: reportId,
+            input,
+          },
+          onCompleted: () => {
+            this.setState({
+              addedStixDomainEntities: append(
+                stixDomain.id,
+                this.state.addedStixDomainEntities,
+              ),
+            });
+          },
+        });
+      } else {
+        commitMutation({
+          mutation: reportMutationRelationAdd,
+          variables: {
+            id: reportId,
+            input,
+          },
+          updater: (store) => {
+            const payload = store
+              .getRootField('reportEdit')
+              .getLinkedRecord('relationAdd', { input })
+              .getLinkedRecord('to');
+            const newEdge = payload.setLinkedRecord(payload, 'node');
+            const conn = ConnectionHandler.getConnection(
+              store.get(reportId),
+              'Pagination_objectRefs',
+              paginationOptions,
+            );
+            ConnectionHandler.insertEdgeBefore(conn, newEdge);
+          },
+          onCompleted: () => {
+            this.setState({
+              addedStixDomainEntities: append(
+                stixDomain.id,
+                this.state.addedStixDomainEntities,
+              ),
+            });
+          },
+        });
+      }
     }
   }
 
@@ -250,6 +269,7 @@ ReportAddObjectRefsLinesContainer.propTypes = {
   t: PropTypes.func,
   fld: PropTypes.func,
   paginationOptions: PropTypes.object,
+  knowledgeGraph: PropTypes.bool,
 };
 
 export const reportAddObjectRefsLinesQuery = graphql`
