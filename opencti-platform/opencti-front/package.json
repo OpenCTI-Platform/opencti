@@ -73,7 +73,7 @@
     "fs-extra": "^8.1.0",
     "prettier": "^1.19.1",
     "react-app-rewired": "^2.1.5",
-    "react-scripts": "^3.3.0",
+    "react-scripts": "3.2.0",
     "relay-compiler": "^7.1.0",
     "relay-devtools": "^1.4.0"
   },

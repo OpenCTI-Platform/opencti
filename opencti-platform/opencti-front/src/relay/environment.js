@@ -119,7 +119,7 @@ QueryRenderer.propTypes = {
   managedErrorTypes: PropTypes.array,
   variables: PropTypes.object,
   render: PropTypes.func,
-  query: PropTypes.func,
+  query: PropTypes.object,
 };
 
 // Relay functions
