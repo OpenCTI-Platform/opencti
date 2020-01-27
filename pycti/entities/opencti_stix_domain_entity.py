@@ -231,9 +231,6 @@ class StixDomainEntity:
                             stix_id_key
                             entity_type
                         }
-                        relation {
-                            id
-                        }
                     }
                 }
                 observableRefs {
@@ -244,9 +241,6 @@ class StixDomainEntity:
                             entity_type
                             observable_value
                         }
-                        relation {
-                            id
-                        }
                     }
                 }
                 relationRefs {
@@ -254,9 +248,6 @@ class StixDomainEntity:
                         node {
                             id
                             stix_id_key
-                        }
-                        relation {
-                            id
                         }
                     }
                 }

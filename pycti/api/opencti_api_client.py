@@ -261,7 +261,7 @@ class OpenCTIApiClient:
         ):
             row = edge["node"]
             # Handle remote relation ID
-            if "relation" in edge:
+            if "relation" in edge and edge["relation"] is not None and "id" in edge["relation"]:
                 row["remote_relation_id"] = edge["relation"]["id"]
             result.append(self.process_multiple_fields(row))
         return result

@@ -102,9 +102,6 @@ class Report:
                         stix_id_key
                         entity_type
                     }
-                    relation {
-                        id
-                    }
                 }
             }
             observableRefs {
@@ -115,9 +112,6 @@ class Report:
                         entity_type
                         observable_value
                     }
-                    relation {
-                        id
-                    }
                 }
             }
             relationRefs {
@@ -125,9 +119,6 @@ class Report:
                     node {
                         id
                         stix_id_key
-                    }
-                    relation {
-                        id
                     }
                 }
             }
