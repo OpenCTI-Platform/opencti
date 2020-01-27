@@ -11,7 +11,7 @@
     "lint": "eslint --max-warnings 0 .",
     "migrate:add": "migrate create --template-file src/utils/migration-template.js --migrations-dir=./src/migrations",
     "test": "yarn build && jest --coverage --e test",
-    "index": "babel-node -r node_modules/dotenv/config ./src/indexer.js",
+    "index": "babel-node ./src/indexer.js",
     "clean": "babel-node ./src/database/clean.js"
   },
   "bin": {
