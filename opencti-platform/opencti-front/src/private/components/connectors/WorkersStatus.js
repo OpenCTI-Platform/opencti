@@ -52,6 +52,10 @@ class WorkersStatusComponent extends Component {
     });
   }
 
+  componentWillUnmount() {
+    this.subscription.unsubscribe();
+  }
+
   render() {
     const {
       classes, t, n, data,

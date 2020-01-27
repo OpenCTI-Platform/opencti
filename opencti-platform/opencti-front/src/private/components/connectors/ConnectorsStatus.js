@@ -156,6 +156,10 @@ class ConnectorsStatusComponent extends Component {
     });
   }
 
+  componentWillUnmount() {
+    this.subscription.unsubscribe();
+  }
+
   handleResetState(connectorId) {
     commitMutation({
       mutation: connectorsStatusResetStateMutation,
