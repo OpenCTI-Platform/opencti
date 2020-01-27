@@ -170,18 +170,20 @@ class OpenCTIStix2:
         tags_ids = []
         if CustomProperties.TAG_TYPE in stix_object:
             for tag in stix_object[CustomProperties.TAG_TYPE]:
-                if tag["id"] in self.mapping_cache:
-                    tag_result = self.mapping_cache[tag["id"]]
-                else:
-                    tag_result = self.opencti.tag.read(id=tag["id"])
-                    if tag_result is not None:
-                        self.mapping_cache[tag["id"]] = {"id": tag_result["id"]}
+                tag_result = None
+                if "id" in tag:
+                    if tag["id"] in self.mapping_cache:
+                        tag_result = self.mapping_cache[tag["id"]]
                     else:
-                        tag_result = self.opencti.tag.create(
-                            tag_type=tag["tag_type"],
-                            value=tag["value"],
-                            color=tag["color"],
-                        )
+                        tag_result = self.opencti.tag.read(id=tag["id"])
+                if tag_result is not None:
+                    self.mapping_cache[tag["id"]] = {"id": tag_result["id"]}
+                else:
+                    tag_result = self.opencti.tag.create(
+                        tag_type=tag["tag_type"],
+                        value=tag["value"],
+                        color=tag["color"],
+                    )
                 if tag_result is not None:
                     tags_ids.append(tag_result["id"])
 
