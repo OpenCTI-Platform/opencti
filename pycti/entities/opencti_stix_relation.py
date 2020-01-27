@@ -39,7 +39,7 @@ class StixRelation:
                 ...on StixDomainEntity {
                     name
                     description
-                }                
+                }       
             }
             createdByRef {
                 node {
