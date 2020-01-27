@@ -1,4 +1,2 @@
-config.yml
+.idea
 __pycache__
-logs
-*.gql
