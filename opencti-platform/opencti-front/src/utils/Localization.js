@@ -12,6 +12,12 @@ const i18n = {
         'Vous devez être authentifié pour faire cette action.',
       'You are not allowed to do this.':
         "Vous n'ête pas autorisés à faire cette action.",
+      // Dependencies
+      Grakn: 'Grakn',
+      Elasticsearch: 'Elasticsearch',
+      RabbitMQ: 'RabbitMQ',
+      Redis: 'Redis',
+      MinIO: 'MinIO',
       // Interface
       Search: 'Rechercher',
       'Search for a threat...': 'Rechercher une menace...',
@@ -215,8 +221,11 @@ const i18n = {
       'No connectors are enabled on this platform.':
         "Aucun connecteur n'est actif sur cette plateforme",
       'Enabled import connectors': "Connecteurs d'import activés",
+      'No enrichment connectors on this platform': "Aucun connecteur d'enrichissement sur cette plateforme",
       'Enrichment connectors': "Connecteurs d'enrichissement",
       'Registered connectors': 'Connecteurs enregistrés',
+      Scope: 'Périmètre',
+      Modified: 'Modifié',
       'No import connectors on this platform':
         "Aucun connecteur d'import sur cette plateforme",
       'No connectors for this type of observable':

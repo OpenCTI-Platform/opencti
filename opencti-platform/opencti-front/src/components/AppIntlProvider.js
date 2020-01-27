@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { IntlProvider } from 'react-intl';
 import MomentUtils from '@date-io/moment';
@@ -11,23 +11,28 @@ import { pathOr } from 'ramda';
 import locale from '../utils/BrowserLanguage';
 import i18n from '../utils/Localization';
 
-class AppIntlProvider extends Component {
-  render() {
-    const { children } = this.props;
-    const platformLanguage = pathOr(
-      null,
-      ['settings', 'platform_language'],
-      this.props,
-    );
-    const userLanguage = pathOr(null, ['me', 'language'], this.props);
-    const platformLang = platformLanguage !== null && platformLanguage !== 'auto'
-      ? this.props.settings.platform_language
-      : locale;
-    const lang = userLanguage !== null && userLanguage !== 'auto'
-      ? this.props.me.language
-      : platformLang;
-    return (
-      <IntlProvider locale={lang} key={lang} messages={i18n.messages[lang]}>
+const AppIntlProvider = (props) => {
+  const { children } = props;
+  const intlError = (error) => {
+    const matchingLocale = /for locale: "([a-z]+)"/gm;
+    const regMatch = matchingLocale.exec(error);
+    const currentLocale = regMatch !== null ? regMatch[1] : null;
+    if (currentLocale && currentLocale !== 'en') console.error(error);
+  };
+  const platformLanguage = pathOr(
+    null,
+    ['settings', 'platform_language'],
+    props,
+  );
+  const userLanguage = pathOr(null, ['me', 'language'], props);
+  const platformLang = platformLanguage !== null && platformLanguage !== 'auto'
+    ? props.settings.platform_language
+    : locale;
+  const lang = userLanguage !== null && userLanguage !== 'auto'
+    ? props.me.language
+    : platformLang;
+  return (
+      <IntlProvider locale={lang} onError={intlError} key={lang} messages={i18n.messages[lang]}>
         <MuiPickersUtilsProvider
           utils={MomentUtils}
           locale={lang}
@@ -35,9 +40,8 @@ class AppIntlProvider extends Component {
           {children}
         </MuiPickersUtilsProvider>
       </IntlProvider>
-    );
-  }
-}
+  );
+};
 
 AppIntlProvider.propTypes = {
   children: PropTypes.node,

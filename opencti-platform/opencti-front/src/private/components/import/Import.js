@@ -72,6 +72,10 @@ class ImportComponent extends Component {
     });
   }
 
+  componentWillUnmount() {
+    this.subscription.unsubscribe();
+  }
+
   render() {
     const {
       classes,
