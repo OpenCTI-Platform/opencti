@@ -29,10 +29,10 @@ And change the variable `OPENCTI_TOKEN` (for the `worker` and all connectors) ac
 - OPENCTI_TOKEN=ChangeMe
 ```
 
-As OpenCTI has a dependency to ElasticSearch, you have to set the `vm.max_map_count` before running the containers, as mentioned in the [ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode).
+As OpenCTI has a dependency to ElasticSearch and Grakn, you have to set the `vm.max_map_count` before running the containers, as mentioned in the [ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode).
 
 ```bash
-$ sysctl -w vm.max_map_count=262144 
+$ sysctl -w vm.max_map_count=1048575
 ```
 
 ## Run

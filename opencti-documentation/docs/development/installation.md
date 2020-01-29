@@ -6,12 +6,17 @@ sidebar_label: Development environment
 
 ## Prerequisites
 
-- Docker
-- Node.JS (>= 12.* < 13.0.0)
-- Python (>= 3)
-- Yarn (>= 1.16)
+| Component     | Version               | Link                                                      |
+| ------------- |-----------------------| ----------------------------------------------------------|
+| Docker        | `>= 19.*`             | https://docs.docker.com/install                           |
+| NodeJS        | `>= 12.* && < 13.0.0` | https://nodejs.org/en/download                            |
+| Yarn          | `>= 1.16`             | https://yarnpkg.com/getting-started/install               |
+| Python        | `>= 3.6`              | https://www.python.org/downloads                          |
 
-### Installation of dependencies (Ubuntu 18.04)
+
+### Installation of dependencies (Ubuntu 19.10)
+
+If you are on a version of Debian/Ubuntu prior to 19.04, please refer to this [GIthub issue](https://github.com/OpenCTI-Platform/opencti/issues/413).
 
 ```bash
 $ sudo apt-get install nodejs python3 python3-pip
