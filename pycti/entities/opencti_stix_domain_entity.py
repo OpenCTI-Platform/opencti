@@ -527,7 +527,7 @@ class StixDomainEntity:
         else:
             self.opencti.log(
                 "error",
-                "[opencti_stix_domain_entity] Missing parameters: id or file_name or data",
+                "[opencti_stix_domain_entity] Missing parameters: id or file_name",
             )
             return None
 
