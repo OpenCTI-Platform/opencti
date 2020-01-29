@@ -514,6 +514,7 @@ class OpenCTIStix2:
             if CustomProperties.FILES in stix_object:
                 for file in stix_object[CustomProperties.FILES]:
                     self.opencti.stix_domain_entity.add_file(
+                        id=stix_object_result["id"],
                         file_name=file["name"],
                         data=base64.b64decode(file["data"]),
                         mime_type=file["mime_type"],
