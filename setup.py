@@ -13,7 +13,7 @@ except ImportError:
     print("warning: pypandoc module not found, could not convert Markdown to RST")
     read_md = lambda f: open(f, "r").read()
 
-VERSION = "2.1.12"
+VERSION = "2.1.13"
 
 
 class VerifyVersionCommand(install):
