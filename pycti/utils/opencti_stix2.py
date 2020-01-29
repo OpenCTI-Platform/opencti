@@ -20,7 +20,12 @@ from stix2 import (
     EqualityComparisonExpression,
     HashConstant,
 )
-from pycti.utils.constants import ObservableTypes, IdentityTypes, CustomProperties
+from pycti.utils.constants import (
+    ObservableTypes,
+    IdentityTypes,
+    CustomProperties,
+    StixObservableRelationTypes,
+)
 
 datefinder.ValueError = ValueError, OverflowError
 utc = pytz.UTC
@@ -542,7 +547,9 @@ class OpenCTIStix2:
             source_ref = stix_relation["source_ref"]
         if source_ref in self.mapping_cache:
             if (
-                stix_relation["relationship_type"] in OBSERVABLE_RELATIONS
+                StixObservableRelationTypes.has_value(
+                    stix_relation["relationship_type"]
+                )
                 and "observableRefs" in self.mapping_cache[source_ref]
                 and self.mapping_cache[source_ref]["observableRefs"] is not None
                 and len(self.mapping_cache[source_ref]["observableRefs"]) > 0
@@ -573,7 +580,9 @@ class OpenCTIStix2:
             target_ref = stix_relation["target_ref"]
         if target_ref in self.mapping_cache:
             if (
-                stix_relation["relationship_type"] in OBSERVABLE_RELATIONS
+                StixObservableRelationTypes.has_value(
+                    stix_relation["relationship_type"]
+                )
                 and "observableRefs" in self.mapping_cache[target_ref]
                 and self.mapping_cache[target_ref]["observableRefs"] is not None
                 and len(self.mapping_cache[target_ref]["observableRefs"]) > 0
@@ -622,38 +631,81 @@ class OpenCTIStix2:
                 .isoformat()
             )
 
-        stix_relation_result = self.opencti.stix_relation.create(
-            fromId=source_id,
-            fromType=source_type,
-            toId=target_id,
-            toType=target_type,
-            relationship_type=stix_relation["relationship_type"],
-            description=self.convert_markdown(stix_relation["description"])
-            if "description" in stix_relation
-            else None,
-            first_seen=stix_relation[CustomProperties.FIRST_SEEN]
-            if CustomProperties.FIRST_SEEN in stix_relation
-            else date,
-            last_seen=stix_relation[CustomProperties.LAST_SEEN]
-            if CustomProperties.LAST_SEEN in stix_relation
-            else date,
-            weight=stix_relation[CustomProperties.WEIGHT]
-            if CustomProperties.WEIGHT in stix_relation
-            else 1,
-            role_played=stix_relation[CustomProperties.ROLE_PLAYED]
-            if CustomProperties.ROLE_PLAYED in stix_relation
-            else None,
-            id=stix_relation[CustomProperties.ID]
-            if CustomProperties.ID in stix_relation
-            else None,
-            stix_id_key=stix_relation["id"] if "id" in stix_relation else None,
-            created=stix_relation["created"] if "created" in stix_relation else None,
-            modified=stix_relation["modified"] if "modified" in stix_relation else None,
-            update=update,
-            ignore_dates=stix_relation[CustomProperties.IGNORE_DATES]
-            if CustomProperties.IGNORE_DATES in stix_relation
-            else None,
-        )
+        stix_relation_result = None
+        if StixObservableRelationTypes.has_value(stix_relation["relationship_type"]):
+            stix_relation_result = self.opencti.stix_observable_relation.create(
+                fromId=source_id,
+                fromType=source_type,
+                toId=target_id,
+                toType=target_type,
+                relationship_type=stix_relation["relationship_type"],
+                description=self.convert_markdown(stix_relation["description"])
+                if "description" in stix_relation
+                else None,
+                first_seen=stix_relation[CustomProperties.FIRST_SEEN]
+                if CustomProperties.FIRST_SEEN in stix_relation
+                else date,
+                last_seen=stix_relation[CustomProperties.LAST_SEEN]
+                if CustomProperties.LAST_SEEN in stix_relation
+                else date,
+                weight=stix_relation[CustomProperties.WEIGHT]
+                if CustomProperties.WEIGHT in stix_relation
+                else 1,
+                role_played=stix_relation[CustomProperties.ROLE_PLAYED]
+                if CustomProperties.ROLE_PLAYED in stix_relation
+                else None,
+                id=stix_relation[CustomProperties.ID]
+                if CustomProperties.ID in stix_relation
+                else None,
+                stix_id_key=stix_relation["id"] if "id" in stix_relation else None,
+                created=stix_relation["created"]
+                if "created" in stix_relation
+                else None,
+                modified=stix_relation["modified"]
+                if "modified" in stix_relation
+                else None,
+                update=update,
+                ignore_dates=stix_relation[CustomProperties.IGNORE_DATES]
+                if CustomProperties.IGNORE_DATES in stix_relation
+                else None,
+            )
+        else:
+            stix_relation_result = self.opencti.stix_relation.create(
+                fromId=source_id,
+                fromType=source_type,
+                toId=target_id,
+                toType=target_type,
+                relationship_type=stix_relation["relationship_type"],
+                description=self.convert_markdown(stix_relation["description"])
+                if "description" in stix_relation
+                else None,
+                first_seen=stix_relation[CustomProperties.FIRST_SEEN]
+                if CustomProperties.FIRST_SEEN in stix_relation
+                else date,
+                last_seen=stix_relation[CustomProperties.LAST_SEEN]
+                if CustomProperties.LAST_SEEN in stix_relation
+                else date,
+                weight=stix_relation[CustomProperties.WEIGHT]
+                if CustomProperties.WEIGHT in stix_relation
+                else 1,
+                role_played=stix_relation[CustomProperties.ROLE_PLAYED]
+                if CustomProperties.ROLE_PLAYED in stix_relation
+                else None,
+                id=stix_relation[CustomProperties.ID]
+                if CustomProperties.ID in stix_relation
+                else None,
+                stix_id_key=stix_relation["id"] if "id" in stix_relation else None,
+                created=stix_relation["created"]
+                if "created" in stix_relation
+                else None,
+                modified=stix_relation["modified"]
+                if "modified" in stix_relation
+                else None,
+                update=update,
+                ignore_dates=stix_relation[CustomProperties.IGNORE_DATES]
+                if CustomProperties.IGNORE_DATES in stix_relation
+                else None,
+            )
         if stix_relation_result is not None:
             self.mapping_cache[stix_relation["id"]] = {
                 "id": stix_relation_result["id"],

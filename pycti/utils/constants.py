@@ -54,6 +54,19 @@ class IdentityTypes(Enum):
         return value in lower_attr
 
 
+class StixObservableRelationTypes(Enum):
+    LINKED = "linked"
+    RESOLVES = "resolves"
+    BELONGS = "belongs"
+    CONTAINS = "contains"
+    CORRESPONDS = "corresponds"
+
+    @classmethod
+    def has_value(cls, value):
+        lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
+        return value in lower_attr
+
+
 class CustomProperties:
     """These are the custom properies used by OpenCTI.
 
