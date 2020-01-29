@@ -9,6 +9,7 @@
       "installation/docker",
       "installation/manual",
       "installation/connectors",
+      "installation/maintenance",
       "development/installation"
     ],
     "Usage": [

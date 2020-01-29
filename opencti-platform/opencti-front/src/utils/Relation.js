@@ -110,9 +110,16 @@ const relationsTypesMapping = {
   'file-sha256_file-sha1': ['corresponds'],
 };
 
-export const resolveRelationsTypes = (fromType, toType) => (relationsTypesMapping[`${fromType}_${toType}`]
-  ? append('related-to', relationsTypesMapping[`${fromType}_${toType}`])
-  : ['related-to']);
+export const resolveRelationsTypes = (fromType, toType, relatedTo = true) => {
+  if (relatedTo) {
+    return relationsTypesMapping[`${fromType}_${toType}`]
+      ? append('related-to', relationsTypesMapping[`${fromType}_${toType}`])
+      : ['related-to'];
+  }
+  return relationsTypesMapping[`${fromType}_${toType}`]
+    ? relationsTypesMapping[`${fromType}_${toType}`]
+    : [];
+};
 
 export const resolveRoles = (type) => {
   switch (type) {

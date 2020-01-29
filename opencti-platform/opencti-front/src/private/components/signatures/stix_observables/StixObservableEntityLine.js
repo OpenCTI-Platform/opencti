@@ -54,6 +54,7 @@ class StixObservableEntityLineComponent extends Component {
       displayRelation,
       entityId,
     } = this.props;
+    console.log(node);
     const link = node.to.parent_types.includes('stix_relation')
       ? `/dashboard/observables/all/${entityId}/knowledge/relations/${node.id}`
       : `${resolveLink(node.to.entity_type)}/${
