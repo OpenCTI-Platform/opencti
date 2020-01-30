@@ -1,5 +1,5 @@
 ### Directives
-directive @auth(for: Capabilities = PLATFORM_ACCESS) on OBJECT | FIELD_DEFINITION
+directive @auth(for: Capabilities = null) on OBJECT | FIELD_DEFINITION
 directive @constraint(
   # String constraints
   minLength: Int
@@ -31,9 +31,17 @@ enum Status {
   error
 }
 enum Capabilities {
-  PLATFORM_ROOT
-  PLATFORM_MODIFY
-  PLATFORM_ACCESS
+  BYPASS
+  KNOWLEDGE
+  KNOWLEDGE_KNCREATE
+  KNOWLEDGE_KNEDIT
+  KNOWLEDGE_KNIMPORT
+  KNOWLEDGE_KNEXPORT
+  MODULES
+  MODULES_MODMANAGE
+  MODULES_MODEXPORT
+  SETTINGS
+  SETTINGS_SETACCESSES
 }
 
 ### Relations
@@ -914,19 +922,59 @@ type UserEdge {
   cursor: String!
   node: User!
 }
-type Role {
+
+### Roles
+type Role implements GlobalObject {
   id: ID!
   internal_id_key: String!
+  entity_type: String!
   name: String!
-  editable: Boolean
+  removable: Boolean
   description: String
+  created_at: DateTime!
+  updated_at: DateTime!
+  capabilities: [Capability]
+  editContext: [EditUserContext]
 }
-type Capability {
+enum RolesOrdering {
+  name
+  created_at
+  updated_at
+}
+type RoleEdge {
+  cursor: String!
+  node: Role!
+  relation: RelationEmbedded
+}
+type RoleConnection {
+  pageInfo: PageInfo!
+  edges: [RoleEdge]
+}
+
+type Capability implements GlobalObject {
   id: ID!
   internal_id_key: String!
+  entity_type: String!
   name: String!
   description: String
+  created_at: DateTime!
+  updated_at: DateTime!
 }
+type CapabilityEdge {
+  cursor: String!
+  node: Capability!
+  relation: RelationEmbedded
+}
+type CapabilityConnection {
+  pageInfo: PageInfo!
+  edges: [CapabilityEdge]
+}
+input RoleAddInput {
+  name: String!
+  description: String
+  clientMutationId: String
+}
+
 type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
   internal_id_key: String!
@@ -989,7 +1037,7 @@ input UserAddInput {
   firstname: String
   lastname: String
   language: String
-  grant: [ID]
+  roles: [ID]
   alias: [String]
   createdByRef: String
   markingDefinitions: [String]
@@ -2746,7 +2794,7 @@ input RelationsAddInput {
 type Query {
   # Technical
   about: AppInfo @auth
-  settings: Settings
+  settings: Settings @auth(for: SETTINGS)
   inferences: [Inference] @auth
   attribute(id: String): Attribute @auth
   attributes(
@@ -2768,7 +2816,7 @@ type Query {
     filterMode: FilterMode
     search: String
   ): TagConnection @auth
-  rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: PLATFORM_ROOT)
+  rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: MODULES)
   connectors: [Connector] @auth
   connectorsForExport: [Connector] @auth
   connectorsForImport: [Connector] @auth
@@ -2905,7 +2953,7 @@ type Query {
   ): IdentityConnection @auth
   # Users
   me: User @auth
-  user(id: String!): User @auth
+  user(id: String!): User @auth(for: SETTINGS_SETACCESSES)
   users(
     first: Int
     after: ID
@@ -2915,7 +2963,8 @@ type Query {
     filterMode: FilterMode
     search: String
     isUser: Boolean
-  ): UserConnection @auth
+  ): UserConnection @auth(for: SETTINGS_SETACCESSES)
+  role(id: String!): Role @auth(for: SETTINGS_SETACCESSES)
   # Organizations
   organization(id: String!): Organization @auth
   organizations(
@@ -2975,6 +3024,8 @@ type Query {
   # Groups
   group(id: String!): Group @auth
   groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection @auth
+  roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection @auth
+  capabilities(first: Int): CapabilityConnection @auth
   # MarkingDefinitions
   markingDefinition(id: String!): MarkingDefinition @auth
   markingDefinitions(
@@ -3169,10 +3220,10 @@ type Query {
 
 ### SUBSCRIPTIONS
 type Subscription {
-  settings(id: ID!): Settings @auth(for: PLATFORM_ROOT)
-  tag(id: ID!): Tag @auth(for: PLATFORM_ROOT)
-  markingDefinition(id: ID!): MarkingDefinition @auth(for: PLATFORM_ROOT)
-  killChainPhase(id: ID!): KillChainPhase @auth(for: PLATFORM_ROOT)
+  settings(id: ID!): Settings @auth(for: SETTINGS)
+  tag(id: ID!): Tag @auth(for: SETTINGS)
+  markingDefinition(id: ID!): MarkingDefinition @auth(for: SETTINGS)
+  killChainPhase(id: ID!): KillChainPhase @auth(for: SETTINGS)
   stixDomainEntity(id: ID!): StixDomainEntity @auth
   stixObservable(id: ID!): StixObservable @auth
   stixRelation(id: ID!): StixRelation @auth
@@ -3221,7 +3272,7 @@ type StixDomainEntityEditMutations {
   relationDelete(relationId: ID, toId: String, relationType: String): StixEntity
   importPush(file: Upload!): File @auth
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
-  exportPush(file: Upload!): Boolean @auth(for: PLATFORM_ROOT)
+  exportPush(file: Upload!): Boolean @auth(for: MODULES_MODEXPORT)
 }
 
 # StixObservable
@@ -3335,6 +3386,16 @@ type RegionEditMutations {
   contextClean: Region
   relationAdd(input: RelationAddInput): RelationEmbedded
   relationDelete(relationId: ID!): Region
+}
+
+# Role
+type RoleEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): Role
+  contextPatch(input: EditContext): Role
+  contextClean: Role
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  removeCapability(name: String): Role
 }
 
 # Group
@@ -3492,17 +3553,17 @@ type Mutation {
   # Login
   token(input: UserLoginInput): String
   # Settings
-  settingsEdit(id: ID!): SettingsEditMutations @auth(for: PLATFORM_ROOT)
+  settingsEdit(id: ID!): SettingsEditMutations @auth(for: SETTINGS)
   # Inferences
   inferenceEnable(id: ID!): Inference
   inferenceDisable(id: ID!): Inference
   # Attribute
-  attributeAdd(input: AttributeAddInput): Attribute @auth(for: PLATFORM_ROOT)
-  attributeEdit(id: ID!): AttributeEditMutations @auth(for: PLATFORM_ROOT)
+  attributeAdd(input: AttributeAddInput): Attribute @auth(for: SETTINGS)
+  attributeEdit(id: ID!): AttributeEditMutations @auth(for: SETTINGS)
   # Connector
-  pingConnector(id: ID!, state: String): Connector @auth(for: PLATFORM_ROOT)
-  registerConnector(input: RegisterConnectorInput): Connector @auth(for: PLATFORM_ROOT)
-  resetStateConnector(id: ID!): Connector @auth(for: PLATFORM_ROOT)
+  pingConnector(id: ID!, state: String): Connector @auth(for: MODULES_MODMANAGE)
+  registerConnector(input: RegisterConnectorInput): Connector @auth(for: MODULES_MODMANAGE)
+  resetStateConnector(id: ID!): Connector @auth(for: MODULES_MODMANAGE)
   deleteWork(id: ID!): ID! @auth
   initiateJob(workId: ID!): Job @auth
   updateJob(jobId: ID!, status: Status!, messages: [String]): Job @auth
@@ -3512,7 +3573,7 @@ type Mutation {
   askJobImport(fileName: ID!): File @auth
   # Tag
   tagAdd(input: TagAddInput): Tag
-  tagEdit(id: ID!): TagEditMutations @auth(for: PLATFORM_ROOT)
+  tagEdit(id: ID!): TagEditMutations @auth(for: SETTINGS)
   # StixEntity
   stixEntityEdit(id: ID!): StixEntityEditMutations @auth
   # StixDomainEntity
@@ -3529,7 +3590,7 @@ type Mutation {
     filters: [StixDomainEntitiesFiltering]
     filterMode: FilterMode
   ): FileConnection
-  stixDomainEntitiesExportPush(type: String!, file: Upload!, listArgs: String): Boolean @auth(for: PLATFORM_ROOT)
+  stixDomainEntitiesExportPush(type: String!, file: Upload!, listArgs: String): Boolean @auth(for: MODULES_MODEXPORT)
   # StixObservable
   stixObservableAdd(input: StixObservableAddInput): StixObservable @auth
   stixObservableEdit(id: ID!): StixObservableEditMutations @auth
@@ -3556,11 +3617,14 @@ type Mutation {
   identityAdd(input: IdentityAddInput): Identity @auth
   identityEdit(id: ID!): IdentityEditMutations @auth
   # User
-  userAdd(input: UserAddInput): User @auth(for: PLATFORM_ROOT)
+  userAdd(input: UserAddInput): User @auth(for: SETTINGS_SETACCESSES)
   personAdd(input: PersonAddInput): User @auth
-  userEdit(id: ID!): UserEditMutations @auth(for: PLATFORM_ROOT)
+  userEdit(id: ID!): UserEditMutations @auth(for: SETTINGS_SETACCESSES)
   meEdit(input: EditInput): User @auth
   logout: ID @auth
+  # Role
+  roleAdd(input: RoleAddInput): Role @auth(for: SETTINGS_SETACCESSES)
+  roleEdit(id: ID!): RoleEditMutations @auth(for: SETTINGS_SETACCESSES)
   # Organization
   organizationAdd(input: OrganizationAddInput): Organization @auth
   organizationEdit(id: ID!): OrganizationEditMutations @auth
@@ -3577,17 +3641,17 @@ type Mutation {
   regionAdd(input: RegionAddInput): Region @auth
   regionEdit(id: ID!): RegionEditMutations @auth
   # Group
-  groupAdd(input: GroupAddInput): Group @auth(for: PLATFORM_ROOT)
-  groupEdit(id: ID!): GroupEditMutations @auth(for: PLATFORM_ROOT)
+  groupAdd(input: GroupAddInput): Group @auth(for: SETTINGS_SETACCESSES)
+  groupEdit(id: ID!): GroupEditMutations @auth(for: SETTINGS_SETACCESSES)
   # MarkingDefinition
-  markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition @auth(for: PLATFORM_ROOT)
-  markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations @auth(for: PLATFORM_ROOT)
+  markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition @auth(for: SETTINGS)
+  markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations @auth(for: SETTINGS)
   # ExternalReference
   externalReferenceAdd(input: ExternalReferenceAddInput): ExternalReference @auth
   externalReferenceEdit(id: ID!): ExternalReferenceEditMutations @auth
   # KillChainPhase
-  killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase @auth(for: PLATFORM_ROOT)
-  killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations @auth(for: PLATFORM_ROOT)
+  killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase @auth(for: SETTINGS)
+  killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations @auth(for: SETTINGS)
   # AttackPattern
   attackPatternAdd(input: AttackPatternAddInput): AttackPattern @auth
   attackPatternEdit(id: ID!): AttackPatternEditMutations @auth

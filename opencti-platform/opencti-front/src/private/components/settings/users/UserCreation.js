@@ -1,21 +1,19 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Field, Form } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
+import {Field, Form, Formik} from 'formik';
+import {withStyles} from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
-import { Add, Close } from '@material-ui/icons';
-import {
-  assoc, compose, pipe, pluck, omit,
-} from 'ramda';
+import {Add, Close} from '@material-ui/icons';
+import {assoc, compose, omit, pipe, pluck,} from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
-import { ConnectionHandler } from 'relay-runtime';
+import {ConnectionHandler} from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import {commitMutation} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Autocomplete from '../../../../components/Autocomplete';
 
@@ -78,7 +76,7 @@ const userValidation = (t) => Yup.object().shape({
   firstname: Yup.string(),
   lastname: Yup.string(),
   description: Yup.string(),
-  grant: Yup.array(),
+  roles: Yup.array(),
   password: Yup.string().required(t('This field is required')),
   confirmation: Yup.string()
     .oneOf([Yup.ref('password'), null], t('The values do not match'))
@@ -111,7 +109,7 @@ class UserCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = pipe(
-      assoc('grant', pluck('value', values.grant)),
+      assoc('roles', pluck('value', values.roles)),
       omit(['confirmation']),
     )(values);
     commitMutation({
@@ -179,7 +177,7 @@ class UserCreation extends Component {
                 firstname: '',
                 lastname: '',
                 description: '',
-                grant: [],
+                roles: [],
                 password: '',
                 confirmation: '',
               }}
@@ -216,7 +214,7 @@ class UserCreation extends Component {
                     style={{ marginTop: 20 }}
                   />
                   <Field
-                    name="grant"
+                    name="roles"
                     component={Autocomplete}
                     multiple={true}
                     label={t('Roles')}

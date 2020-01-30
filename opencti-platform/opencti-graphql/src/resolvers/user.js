@@ -3,8 +3,13 @@ import {
   addUser,
   findAll,
   findById,
+  findCapabilities,
+  findRoles,
+  getCapabilities,
+  getRoleCapabilities,
+  getRoles,
   logout,
-  meEditField,
+  meEditField, roleRemoveCapability,
   setAuthenticationCookie,
   token,
   userDelete,
@@ -15,18 +20,25 @@ import { logger } from '../config/conf';
 import {
   stixDomainEntityAddRelation,
   stixDomainEntityCleanContext,
+  stixDomainEntityDelete,
   stixDomainEntityDeleteRelation,
-  stixDomainEntityEditContext
+  stixDomainEntityEditContext,
+  stixDomainEntityEditField
 } from '../domain/stixDomainEntity';
 import { groups } from '../domain/group';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import passport, { FORM_PROVIDERS } from '../config/security';
 import { AuthenticationFailure } from '../config/errors';
+import { addRole } from '../domain/grant';
+import { fetchEditContext } from '../database/redis';
 
 const userResolvers = {
   Query: {
     user: (_, { id }) => findById(id),
     users: (_, args) => findAll(args),
+    role: (_, { id }) => findById(id),
+    roles: (_, args) => findRoles(args),
+    capabilities: (_, args) => findCapabilities(args),
     me: (_, args, { user }) => findById(user.id)
   },
   UsersOrdering: {
@@ -38,7 +50,13 @@ const userResolvers = {
   },
   User: {
     groups: user => groups(user.id),
+    roles: user => getRoles(user.id),
+    capabilities: user => getCapabilities(user.id),
     token: (user, args, context) => token(user.id, args, context)
+  },
+  Role: {
+    editContext: role => fetchEditContext(role.id),
+    capabilities: role => getRoleCapabilities(role.id)
   },
   Mutation: {
     token: async (_, { input }, context) => {
@@ -64,6 +82,15 @@ const userResolvers = {
       throw new AuthenticationFailure();
     },
     logout: (_, args, context) => logout(context.user, context.res),
+    roleEdit: (_, { id }, { user }) => ({
+      delete: () => stixDomainEntityDelete(id),
+      fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
+      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
+      contextClean: () => stixDomainEntityCleanContext(user, id),
+      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
+      removeCapability: ({ name }) => roleRemoveCapability(id, name)
+    }),
+    roleAdd: (_, { input }, { user }) => addRole(user, input),
     userEdit: (_, { id }, { user }) => ({
       delete: () => userDelete(id),
       fieldPatch: ({ input }) => userEditField(user, id, input),

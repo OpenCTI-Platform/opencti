@@ -184,7 +184,7 @@ class LeftBar extends Component {
               </ListItemIcon>
             </MenuItem>
           </MenuList>
-          {includes('PLATFORM_ROOT', capabilities) && (
+          {includes('BYPASS', capabilities) && (
             <div>
               <Divider />
               <MenuList component="nav">

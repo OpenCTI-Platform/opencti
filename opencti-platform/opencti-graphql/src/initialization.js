@@ -12,10 +12,45 @@ import { ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from './domain/user';
 import { addCapability, addRole } from './domain/grant';
 
 const fs = require('fs');
+/**
+ * Bypass all
+ * Knowledge view
+ *   - Create
+ *   - Edit
+ *   - Import
+ *   - Export
+ * Modules view
+ *   - State
+ * Settings access
+ *   - Accesses
+ */
+const CAPABILITIES = [
+  { name: 'BYPASS', description: 'Bypass all capabilities' },
+  {
+    name: 'KNOWLEDGE',
+    description: 'Access knowledge',
+    dependencies: [
+      { name: 'KNCREATE', description: 'Create knowledge' },
+      { name: 'KNEDIT', description: 'Edit knowledge' },
+      { name: 'KNASKIMPORT', description: 'Import knowledge' },
+      { name: 'KNASKEXPORT', description: 'Export knowledge' }
+    ]
+  },
+  {
+    name: 'MODULES',
+    description: 'Access connectors',
+    dependencies: [
+      { name: 'MODMANAGE', description: 'Manage connector state' },
+      { name: 'MODEXPORT', description: 'Push export files through API' }
+    ]
+  },
+  {
+    name: 'SETTINGS',
+    description: 'Access administration',
+    dependencies: [{ name: 'SETACCESSES', description: 'Manage credentials' }]
+  }
+];
 
-export const PLATFORM_ROOT = 'PLATFORM_ROOT';
-export const PLATFORM_MODIFY = 'PLATFORM_MODIFY';
-export const PLATFORM_ACCESS = 'PLATFORM_ACCESS';
 // Check every dependencies
 export const checkSystemDependencies = async () => {
   // Check if Grakn is available
@@ -75,24 +110,30 @@ const createMarkingDefinitions = async () => {
   });
 };
 
+const createCapabilities = async (capabilities, parentName = '') => {
+  for (let i = 0; i < capabilities.length; i += 1) {
+    const capability = capabilities[i];
+    const { name, description } = capability;
+    const capabilityName = `${parentName}${name}`;
+    // eslint-disable-next-line no-await-in-loop
+    await addCapability({ name: capabilityName, description });
+    if (capability.dependencies && capability.dependencies.length > 0) {
+      // eslint-disable-next-line no-await-in-loop
+      await createCapabilities(capability.dependencies, `${capabilityName}_`);
+    }
+  }
+};
+
 export const createBasicRolesAndCapabilities = async () => {
   // Create capabilities
-  const bypassCapability = await addCapability({
-    name: PLATFORM_ROOT,
-    description: 'Bypass every capabilities'
-  });
-  const writeCapability = await addCapability({
-    name: PLATFORM_MODIFY,
-    description: 'Create/modify elements of the platform'
-  });
-  const accessCapability = await addCapability({
-    name: PLATFORM_ACCESS,
-    description: 'Access the platform'
-  });
+  await createCapabilities(CAPABILITIES);
   // Create roles
-  await addRole({ name: ROLE_DEFAULT, capabilities: [accessCapability.id], editable: false });
-  await addRole({ name: ROLE_ADMINISTRATOR, capabilities: [bypassCapability.id] });
-  await addRole({ name: 'Agent', capabilities: [accessCapability.id, writeCapability.id] });
+  await addRole({ name: ROLE_DEFAULT, capabilities: ['KNOWLEDGE'], removable: false });
+  await addRole({ name: ROLE_ADMINISTRATOR, capabilities: ['BYPASS'] });
+  await addRole({
+    name: 'Analyst',
+    capabilities: ['KNOWLEDGE_KNCREATE', 'KNOWLEDGE_KNEDIT', 'KNOWLEDGE_KNASKIMPORT', 'KNOWLEDGE_KNASKEXPORT']
+  });
 };
 
 const initializeDefaultValues = async () => {

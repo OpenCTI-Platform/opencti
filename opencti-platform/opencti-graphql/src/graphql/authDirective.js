@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle,no-param-reassign */
 import { SchemaDirectiveVisitor } from 'graphql-tools';
-import { includes, map } from 'ramda';
+import { includes, map, pipe, flatten } from 'ramda';
 import { defaultFieldResolver } from 'graphql';
 import { AuthRequired, ForbiddenAccess } from '../config/errors';
 
@@ -28,8 +28,12 @@ class AuthDirective extends SchemaDirectiveVisitor {
     const context = args[2];
     const { user } = context;
     if (!user) throw new AuthRequired(); // User must be authenticated.
-    const capabilities = map(c => c.name, user.capabilities);
-    if (requiredCapability && !includes(requiredCapability, capabilities)) throw new ForbiddenAccess();
+    const capabilities = pipe(
+      map(c => c.name.split('_')),
+      flatten()
+    )(user.capabilities);
+    const shouldBypass = capabilities.includes('BYPASS');
+    if (requiredCapability && !shouldBypass && !includes(requiredCapability, capabilities)) throw new ForbiddenAccess();
     return func.apply(this, args);
   }
 

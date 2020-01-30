@@ -18,6 +18,7 @@ import { SubscriptionAvatars } from '../../../../components/Subscription';
 import UserEditionOverview from './UserEditionOverview';
 import UserEditionPassword from './UserEditionPassword';
 import UserEditionGroups from './UserEditionGroups';
+import UserEditionRoles from './UserEditionRoles';
 
 const styles = (theme) => ({
   header: {
@@ -113,6 +114,7 @@ class UserEdition extends Component {
               onChange={this.handleChangeTab.bind(this)}
             >
               <Tab label={t('Overview')} />
+              <Tab label={t('Roles')} />
               <Tab label={t('Password')} />
               <Tab label={t('Groups')} />
             </Tabs>
@@ -125,13 +127,20 @@ class UserEdition extends Component {
             />
           )}
           {this.state.currentTab === 1 && (
+              <UserEditionRoles
+                  user={this.props.user}
+                  editUsers={editUsers}
+                  me={me}
+              />
+          )}
+          {this.state.currentTab === 2 && (
             <UserEditionPassword
               user={this.props.user}
               editUsers={editUsers}
               me={me}
             />
           )}
-          {this.state.currentTab === 2 && (
+          {this.state.currentTab === 3 && (
             <UserEditionGroups
               user={this.props.user}
               editUsers={editUsers}

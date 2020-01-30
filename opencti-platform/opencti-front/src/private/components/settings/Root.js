@@ -5,6 +5,7 @@ import Inferences from './Inferences';
 import About from './About';
 import Users from './Users';
 import Groups from './Groups';
+import Roles from './Roles';
 import MarkingDefinitions from './MarkingDefinitions';
 import KillChainPhases from './KillChainPhases';
 import Attributes from './Attributes';
@@ -25,6 +26,11 @@ const Root = () => (
       exact
       path="/dashboard/settings/accesses/users"
       component={Users}
+    />
+    <BoundaryRoute
+        exact
+        path="/dashboard/settings/accesses/roles"
+        component={Roles}
     />
     <BoundaryRoute
       exact

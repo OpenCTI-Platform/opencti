@@ -11,14 +11,15 @@ export const addRole = async role => {
   const { capabilities } = role;
   const roleToCreate = pipe(
     assoc('internal_id_key', uuidv5(role.name, uuidv5.DNS)),
-    assoc('editable', role.editable ? role.editable : true),
+    assoc('description', role.description ? role.description : ''),
+    assoc('removable', role.removable ? role.removable : true),
     dissoc('capabilities')
   )(role);
   const roleEntity = await createEntity(roleToCreate, 'Role', { modelType: TYPE_OPENCTI_INTERNAL });
   const relationPromises = map(
-    capabilityId =>
+    capabilityName =>
       createRelation(roleEntity.id, {
-        toId: capabilityId,
+        toId: uuidv5(capabilityName, uuidv5.DNS),
         fromRole: 'position',
         toRole: 'capability',
         through: 'role_capability'

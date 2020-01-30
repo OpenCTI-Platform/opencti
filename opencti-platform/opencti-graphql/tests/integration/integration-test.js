@@ -2,7 +2,7 @@ import registerRequireContextHook from 'babel-plugin-require-context-hook/regist
 import { createTestClient } from 'apollo-server-testing';
 import { ApolloServer } from 'apollo-server-express';
 import createSchema from '../../src/graphql/schema';
-import { initializeSchema, PLATFORM_ROOT } from '../../src/initialization';
+import { initializeSchema } from '../../src/initialization';
 import applyMigration from '../../src/database/migration';
 import { ROLE_ADMINISTRATOR } from '../../src/domain/user';
 
@@ -22,8 +22,8 @@ const server = new ApolloServer({
       id: USER_ID,
       name: 'admin',
       email: 'admin@opencti.io',
-      roles: [ROLE_ADMINISTRATOR],
-      capabilities: [PLATFORM_ROOT]
+      roles: [{ name: ROLE_ADMINISTRATOR }],
+      capabilities: [{ name: 'BYPASS' }]
     }
   })
 });

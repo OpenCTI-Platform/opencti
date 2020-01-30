@@ -61,27 +61,10 @@ export const ROLE_DEFAULT = 'Default';
 export const ROLE_ADMINISTRATOR = 'Administrator';
 
 export const findById = async (userId, args) => {
-  let user;
   if (userId.match(/[a-z-]+--[\w-]{36}/g)) {
-    user = await loadEntityByStixId(userId);
-  } else {
-    user = await loadEntityById(userId, args);
+    return loadEntityByStixId(userId);
   }
-  // Complete with roles and capabilities
-  const data = await find(
-    `match $client isa User, has internal_id_key "${escapeString(user.id)}";
-            (client: $client, position: $role) isa user_role; 
-            (position: $role, capability: $capability) isa role_capability; 
-            get;`,
-    ['client', 'role', 'capability']
-  );
-  const roles = map(r => r.role, data);
-  const capabilities = map(r => r.capability, data);
-  return pipe(
-    // Assign
-    assoc('roles', roles),
-    assoc('capabilities', capabilities)
-  )(user);
+  return loadEntityById(userId, args);
 };
 export const findAll = args => {
   return listEntities(['User'], ['email', 'firstname', 'lastname'], args);
@@ -98,6 +81,7 @@ export const token = (userId, args, context) => {
     'rel'
   ).then(result => result.node.uuid);
 };
+
 export const getTokenId = async userId => {
   return loadWithConnectedRelations(
     `match $x isa Token;
@@ -107,7 +91,53 @@ export const getTokenId = async userId => {
     'rel'
   ).then(result => pathOr(null, ['node', 'id'], result));
 };
+export const getRoles = async userId => {
+  const data = await find(
+    `match $client isa User, has internal_id_key "${escapeString(userId)}";
+            (client: $client, position: $role) isa user_role; 
+            get;`,
+    ['role']
+  );
+  return map(r => r.role, data);
+};
+export const getCapabilities = async userId => {
+  const data = await find(
+    `match $client isa User, has internal_id_key "${escapeString(userId)}";
+            (client: $client, position: $role) isa user_role; 
+            (position: $role, capability: $capability) isa role_capability; 
+            get;`,
+    ['capability']
+  );
+  return map(r => r.capability, data);
+};
+export const getRoleCapabilities = async roleId => {
+  const data = await find(
+    `match $role isa Role, has internal_id_key "${escapeString(roleId)}";
+            (position: $role, capability: $capability) isa role_capability; 
+            get;`,
+    ['capability']
+  );
+  return map(r => r.capability, data);
+};
 
+export const findRoles = args => {
+  return listEntities(['Role'], ['name'], args);
+};
+export const findCapabilities = args => {
+  const finalArgs = assoc('orderBy', 'name', args);
+  return listEntities(['Capability'], ['description'], finalArgs);
+};
+
+export const roleRemoveCapability = async (roleId, capabilityName) => {
+  await executeWrite(async wTx => {
+    const query = `match $rel(position: $from, capability: $to) isa role_capability; 
+            $from has internal_id_key "${escapeString(roleId)}"; 
+            $to has name $name; { $name contains "${escapeString(capabilityName)}";}; 
+            delete $rel;`;
+    await wTx.tx.query(query, { infer: false });
+  });
+  return loadEntityById(roleId);
+};
 export const addPerson = async (user, newUser) => {
   const created = await createEntity(newUser, 'User', { modelType: TYPE_STIX_DOMAIN_ENTITY, stixIdType: 'identity' });
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
@@ -219,6 +249,7 @@ export const userRenewToken = async (userId, newToken = generateOpenCTIWebToken(
   return loadEntityById(userId);
 };
 export const findByTokenUUID = async tokenValue => {
+  // This method is call every time a user to a platform action
   let user = await getAccessCache(tokenValue);
   if (!user) {
     const data = await find(

@@ -38,9 +38,17 @@ class SettingsMenu extends Component {
             selected={
               location.pathname === '/dashboard/settings/accesses/users'
             }
-            dense={false}
-          >
+            dense={false}>
             <ListItemText primary={t('Users')} />
+          </MenuItem>
+          <MenuItem
+              component={Link}
+              to={'/dashboard/settings/accesses/roles'}
+              selected={
+                location.pathname === '/dashboard/settings/accesses/roles'
+              }
+              dense={false}>
+            <ListItemText primary={t('Roles')} />
           </MenuItem>
           <MenuItem
             component={Link}
@@ -49,8 +57,7 @@ class SettingsMenu extends Component {
               location.pathname
               === '/dashboard/settings/accesses/groups'
             }
-            dense={false}
-          >
+            dense={false}>
             <ListItemText primary={t('Groups')} />
           </MenuItem>
         </MenuList>
