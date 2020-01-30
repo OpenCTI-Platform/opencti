@@ -5,7 +5,7 @@ import { createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
-  assoc, compose, map, propOr, pick, pipe, pluck,
+  assoc, compose, map, pick, pipe, pluck,
 } from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -16,12 +16,7 @@ import Autocomplete from '../../../../components/Autocomplete';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 
-const roles = [
-  { label: 'ROLE_ROOT', value: 'ROLE_ROOT' },
-  { label: 'ROLE_ADMIN', value: 'ROLE_ADMIN' },
-];
-
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -56,7 +51,7 @@ const userEditionOverviewFocus = graphql`
   }
 `;
 
-const userValidation = t => Yup.object().shape({
+const userValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   email: Yup.string()
     .required(t('This field is required'))
@@ -104,12 +99,12 @@ class UserEditionOverviewComponent extends Component {
     const {
       t, user, editUsers, me,
     } = this.props;
-    const grant = pipe(
-      propOr([], 'grant'),
-      map(n => ({ label: n, value: n })),
-    )(user);
+    const external = user.external === true;
+    const userRoles = pipe(
+      map((n) => ({ label: n.name, value: n.id })),
+    )(user.roles);
     const initialValues = pipe(
-      assoc('grant', grant),
+      assoc('grant', userRoles),
       pick([
         'name',
         'description',
@@ -132,6 +127,7 @@ class UserEditionOverviewComponent extends Component {
                 name="name"
                 component={TextField}
                 label={t('name')}
+                disabled={external}
                 fullWidth={true}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
@@ -146,6 +142,7 @@ class UserEditionOverviewComponent extends Component {
               <Field
                 name="email"
                 component={TextField}
+                disabled={external}
                 label={t('Email address')}
                 fullWidth={true}
                 style={{ marginTop: 10 }}
@@ -213,7 +210,7 @@ class UserEditionOverviewComponent extends Component {
               >
                 <MenuItem value="auto">
                   <em>{t('Automatic')}</em>
-                </MenuItem>
+                </MenuItem>RO
                 <MenuItem value="en">English</MenuItem>
                 <MenuItem value="fr">Français</MenuItem>
               </Field>
@@ -222,7 +219,7 @@ class UserEditionOverviewComponent extends Component {
                 component={Autocomplete}
                 multiple={true}
                 label={t('Roles')}
-                options={roles}
+                options={[]}
                 onChange={this.handleSubmitField.bind(this)}
                 onFocus={this.handleChangeFocus.bind(this)}
                 helperText={
@@ -276,11 +273,15 @@ const UserEditionOverview = createFragmentContainer(
         id
         name
         description
+        external
         email
         firstname
         lastname
         language
-        grant
+        roles {
+            id
+            name
+        }
       }
     `,
   },

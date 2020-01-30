@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { pathOr, includes } from 'ramda';
+import { pathOr, includes, compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { Google, FacebookBox, GithubCircle } from 'mdi-material-ui';
@@ -138,14 +138,16 @@ class Login extends Component {
                 settings={props.settings}>
                 <div className={this.props.classes.container} style={{ marginTop }}>
                   <img src={logo} alt="logo" className={this.props.classes.logo} />
-                  <LoginForm demo={pathOr(false, ['settings', 'platform_demo'], props)} />
-                  {pathOr(
-                    false,
-                    ['settings', 'platform_external_auth'],
-                    props,
-                  ) === true
-                    ? this.renderExternalAuth()
-                    : ''}
+                  { ACCESS_PROVIDERS.length > 0 ? <div>
+                    {includes('local', ACCESS_PROVIDERS) && (
+                      <LoginForm demo={pathOr(false, ['settings', 'platform_demo'], props)} />
+                    )}
+                    {pathOr(false, ['settings', 'platform_external_auth'], props) === true
+                      ? this.renderExternalAuth()
+                      : ''}
+                  </div> : <div>
+                    No authentication providers available
+                  </div> }
                 </div>
               </ConnectedIntlProvider>
             );
@@ -161,4 +163,6 @@ Login.propTypes = {
   classes: PropTypes.object,
 };
 
-export default withStyles(styles)(Login);
+export default compose(
+  withStyles(styles),
+)(Login);

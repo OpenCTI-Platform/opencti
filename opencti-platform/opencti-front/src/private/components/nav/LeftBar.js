@@ -23,7 +23,7 @@ import {
   Extension,
 } from '@material-ui/icons';
 import { Settings, Database, Binoculars } from 'mdi-material-ui';
-import { compose, includes, propOr } from 'ramda';
+import { compose, includes, map } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import logo from '../../../resources/images/logo_text.png';
@@ -74,6 +74,7 @@ class LeftBar extends Component {
     const {
       t, location, classes, me,
     } = this.props;
+    const capabilities = map((c) => c.name, me.capabilities);
     return (
       <div>
         <Drawer variant="permanent" classes={{ paper: classes.drawerPaper }}>
@@ -183,7 +184,7 @@ class LeftBar extends Component {
               </ListItemIcon>
             </MenuItem>
           </MenuList>
-          {includes('ROLE_ADMIN', propOr([], 'grant', me)) && (
+          {includes('PLATFORM_ROOT', capabilities) && (
             <div>
               <Divider />
               <MenuList component="nav">
@@ -368,7 +369,7 @@ class LeftBar extends Component {
               <ListItemText primary={t('Correlate')} />
             </MenuItem>
           </MenuList>
-          {includes('ROLE_ADMIN', propOr([], 'grant', me)) && (
+          {includes('PLATFORM_ROOT', capabilities) && (
             <div>
               <Divider />
               <MenuList component="nav">
@@ -432,7 +433,10 @@ LeftBar.propTypes = {
 const LeftBarFragment = createFragmentContainer(LeftBar, {
   me: graphql`
     fragment LeftBar_me on User {
-      grant
+      capabilities {
+        id
+        name
+      }
     }
   `,
 });

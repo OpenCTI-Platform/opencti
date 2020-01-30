@@ -3,7 +3,6 @@ import {
   addUser,
   findAll,
   findById,
-  login,
   logout,
   meEditField,
   setAuthenticationCookie,
@@ -12,6 +11,7 @@ import {
   userEditField,
   userRenewToken
 } from '../domain/user';
+import { logger } from '../config/conf';
 import {
   stixDomainEntityAddRelation,
   stixDomainEntityCleanContext,
@@ -20,6 +20,8 @@ import {
 } from '../domain/stixDomainEntity';
 import { groups } from '../domain/group';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
+import passport, { FORM_PROVIDERS } from '../config/security';
+import { AuthenticationFailure } from '../config/errors';
 
 const userResolvers = {
   Query: {
@@ -39,11 +41,28 @@ const userResolvers = {
     token: (user, args, context) => token(user.id, args, context)
   },
   Mutation: {
-    token: (_, { input }, context) =>
-      login(input.email, input.password).then(tokenObject => {
-        setAuthenticationCookie(tokenObject, context.res);
-        return tokenObject.uuid;
-      }),
+    token: async (_, { input }, context) => {
+      // We need to iterate on each provider to find one that validated the credentials
+      if (FORM_PROVIDERS.length === 0) {
+        logger.error('[Configuration] Cant authenticate without any local providers');
+      }
+      for (let index = 0; index < FORM_PROVIDERS.length; index += 1) {
+        const provider = FORM_PROVIDERS[index];
+        // eslint-disable-next-line no-await-in-loop
+        const loginToken = await new Promise(resolve => {
+          passport.authenticate(provider, (err, tokenObject) => {
+            resolve(tokenObject);
+          })({ body: { username: input.email, password: input.password } });
+        });
+        // As soon as credential is validated, set the cookie and return.
+        if (loginToken) {
+          setAuthenticationCookie(loginToken, context.res);
+          return loginToken.uuid;
+        }
+      }
+      // User cannot be authenticated in any providers
+      throw new AuthenticationFailure();
+    },
     logout: (_, args, context) => logout(context.user, context.res),
     userEdit: (_, { id }, { user }) => ({
       delete: () => userDelete(id),

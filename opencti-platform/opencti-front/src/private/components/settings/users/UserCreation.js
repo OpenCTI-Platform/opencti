@@ -19,11 +19,6 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import Autocomplete from '../../../../components/Autocomplete';
 
-const roles = [
-  { label: 'ROLE_ROOT', value: 'ROLE_ROOT' },
-  { label: 'ROLE_ADMIN', value: 'ROLE_ADMIN' },
-];
-
 const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
@@ -225,7 +220,7 @@ class UserCreation extends Component {
                     component={Autocomplete}
                     multiple={true}
                     label={t('Roles')}
-                    options={roles}
+                    options={[]}
                     style={{ marginTop: 20 }}
                   />
                   <Field

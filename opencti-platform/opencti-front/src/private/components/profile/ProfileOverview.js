@@ -34,7 +34,7 @@ const profileOverviewFieldPatch = graphql`
   }
 `;
 
-const userValidation = t => Yup.object().shape({
+const userValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   email: Yup.string()
     .required(t('This field is required'))
@@ -45,7 +45,7 @@ const userValidation = t => Yup.object().shape({
   description: Yup.string(),
 });
 
-const passwordValidation = t => Yup.object().shape({
+const passwordValidation = (t) => Yup.object().shape({
   password: Yup.string().required(t('This field is required')),
   confirmation: Yup.string()
     .oneOf([Yup.ref('password'), null], t('The values do not match'))
@@ -88,6 +88,7 @@ class ProfileOverviewComponent extends Component {
 
   render() {
     const { t, me, classes } = this.props;
+    const external = me.external === true;
     const initialValues = pick(
       ['name', 'description', 'email', 'firstname', 'lastname', 'language'],
       me,
@@ -96,7 +97,7 @@ class ProfileOverviewComponent extends Component {
       <div>
         <Paper classes={{ root: classes.panel }} elevation={2}>
           <Typography variant="h1" gutterBottom={true}>
-            {t('Profile')}
+            {t('Profile')} {external && `(${t('external')})`}
           </Typography>
           <Formik
             enableReinitialize={true}
@@ -107,6 +108,7 @@ class ProfileOverviewComponent extends Component {
                 <Field
                   name="name"
                   component={TextField}
+                  disabled={external}
                   label={t('Name')}
                   fullWidth={true}
                   onSubmit={this.handleSubmitField.bind(this)}
@@ -114,6 +116,7 @@ class ProfileOverviewComponent extends Component {
                 <Field
                   name="email"
                   component={TextField}
+                  disabled={true}
                   label={t('Email address')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
@@ -257,6 +260,7 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       name
       description
       email
+      external 
       firstname
       lastname
       language

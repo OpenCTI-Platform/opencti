@@ -1,5 +1,5 @@
 ### Directives
-directive @auth(for: UserRole = ROLE_USER) on OBJECT | FIELD_DEFINITION
+directive @auth(for: Capabilities = PLATFORM_ACCESS) on OBJECT | FIELD_DEFINITION
 directive @constraint(
   # String constraints
   minLength: Int
@@ -23,12 +23,17 @@ scalar DateTime
 scalar ConstraintString
 scalar ConstraintNumber
 scalar Upload
-enum Status {connectorsForExport
+enum Status {
   wait
   progress
   partial
   complete
   error
+}
+enum Capabilities {
+  PLATFORM_ROOT
+  PLATFORM_MODIFY
+  PLATFORM_ACCESS
 }
 
 ### Relations
@@ -901,11 +906,6 @@ input UsersFiltering {
   key: UsersFilter!
   values: [String]
 }
-enum UserRole {
-  ROLE_ROOT
-  ROLE_ADMIN
-  ROLE_USER
-}
 type UserConnection {
   pageInfo: PageInfo!
   edges: [UserEdge]
@@ -913,6 +913,19 @@ type UserConnection {
 type UserEdge {
   cursor: String!
   node: User!
+}
+type Role {
+  id: ID!
+  internal_id_key: String!
+  name: String!
+  editable: Boolean
+  description: String
+}
+type Capability {
+  id: ID!
+  internal_id_key: String!
+  name: String!
+  description: String
 }
 type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
@@ -928,7 +941,9 @@ type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   lastname: String
   email: String
   language: String
-  grant: [String]
+  external: Boolean
+  roles: [Role]!
+  capabilities: [Capability]!
   created: DateTime
   modified: DateTime
   graph_data: String
@@ -974,7 +989,7 @@ input UserAddInput {
   firstname: String
   lastname: String
   language: String
-  grant: [UserRole]
+  grant: [ID]
   alias: [String]
   createdByRef: String
   markingDefinitions: [String]
@@ -2753,7 +2768,7 @@ type Query {
     filterMode: FilterMode
     search: String
   ): TagConnection @auth
-  rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: ROLE_ADMIN)
+  rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: PLATFORM_ROOT)
   connectors: [Connector] @auth
   connectorsForExport: [Connector] @auth
   connectorsForImport: [Connector] @auth
@@ -3154,10 +3169,10 @@ type Query {
 
 ### SUBSCRIPTIONS
 type Subscription {
-  settings(id: ID!): Settings @auth(for: ROLE_ADMIN)
-  tag(id: ID!): Tag @auth(for: ROLE_ADMIN)
-  markingDefinition(id: ID!): MarkingDefinition @auth(for: ROLE_ADMIN)
-  killChainPhase(id: ID!): KillChainPhase @auth(for: ROLE_ADMIN)
+  settings(id: ID!): Settings @auth(for: PLATFORM_ROOT)
+  tag(id: ID!): Tag @auth(for: PLATFORM_ROOT)
+  markingDefinition(id: ID!): MarkingDefinition @auth(for: PLATFORM_ROOT)
+  killChainPhase(id: ID!): KillChainPhase @auth(for: PLATFORM_ROOT)
   stixDomainEntity(id: ID!): StixDomainEntity @auth
   stixObservable(id: ID!): StixObservable @auth
   stixRelation(id: ID!): StixRelation @auth
@@ -3206,7 +3221,7 @@ type StixDomainEntityEditMutations {
   relationDelete(relationId: ID, toId: String, relationType: String): StixEntity
   importPush(file: Upload!): File @auth
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
-  exportPush(file: Upload!): Boolean @auth(for: ROLE_ADMIN)
+  exportPush(file: Upload!): Boolean @auth(for: PLATFORM_ROOT)
 }
 
 # StixObservable
@@ -3477,17 +3492,17 @@ type Mutation {
   # Login
   token(input: UserLoginInput): String
   # Settings
-  settingsEdit(id: ID!): SettingsEditMutations @auth(for: ROLE_ADMIN)
+  settingsEdit(id: ID!): SettingsEditMutations @auth(for: PLATFORM_ROOT)
   # Inferences
   inferenceEnable(id: ID!): Inference
   inferenceDisable(id: ID!): Inference
   # Attribute
-  attributeAdd(input: AttributeAddInput): Attribute @auth(for: ROLE_ADMIN)
-  attributeEdit(id: ID!): AttributeEditMutations @auth(for: ROLE_ADMIN)
+  attributeAdd(input: AttributeAddInput): Attribute @auth(for: PLATFORM_ROOT)
+  attributeEdit(id: ID!): AttributeEditMutations @auth(for: PLATFORM_ROOT)
   # Connector
-  pingConnector(id: ID!, state: String): Connector @auth(for: ROLE_ADMIN)
-  registerConnector(input: RegisterConnectorInput): Connector @auth(for: ROLE_ADMIN)
-  resetStateConnector(id: ID!): Connector @auth(for: ROLE_ADMIN)
+  pingConnector(id: ID!, state: String): Connector @auth(for: PLATFORM_ROOT)
+  registerConnector(input: RegisterConnectorInput): Connector @auth(for: PLATFORM_ROOT)
+  resetStateConnector(id: ID!): Connector @auth(for: PLATFORM_ROOT)
   deleteWork(id: ID!): ID! @auth
   initiateJob(workId: ID!): Job @auth
   updateJob(jobId: ID!, status: Status!, messages: [String]): Job @auth
@@ -3497,7 +3512,7 @@ type Mutation {
   askJobImport(fileName: ID!): File @auth
   # Tag
   tagAdd(input: TagAddInput): Tag
-  tagEdit(id: ID!): TagEditMutations @auth(for: ROLE_ADMIN)
+  tagEdit(id: ID!): TagEditMutations @auth(for: PLATFORM_ROOT)
   # StixEntity
   stixEntityEdit(id: ID!): StixEntityEditMutations @auth
   # StixDomainEntity
@@ -3514,7 +3529,7 @@ type Mutation {
     filters: [StixDomainEntitiesFiltering]
     filterMode: FilterMode
   ): FileConnection
-  stixDomainEntitiesExportPush(type: String!, file: Upload!, listArgs: String): Boolean @auth(for: ROLE_ADMIN)
+  stixDomainEntitiesExportPush(type: String!, file: Upload!, listArgs: String): Boolean @auth(for: PLATFORM_ROOT)
   # StixObservable
   stixObservableAdd(input: StixObservableAddInput): StixObservable @auth
   stixObservableEdit(id: ID!): StixObservableEditMutations @auth
@@ -3541,9 +3556,9 @@ type Mutation {
   identityAdd(input: IdentityAddInput): Identity @auth
   identityEdit(id: ID!): IdentityEditMutations @auth
   # User
-  userAdd(input: UserAddInput): User @auth(for: ROLE_ADMIN)
+  userAdd(input: UserAddInput): User @auth(for: PLATFORM_ROOT)
   personAdd(input: PersonAddInput): User @auth
-  userEdit(id: ID!): UserEditMutations @auth(for: ROLE_ADMIN)
+  userEdit(id: ID!): UserEditMutations @auth(for: PLATFORM_ROOT)
   meEdit(input: EditInput): User @auth
   logout: ID @auth
   # Organization
@@ -3562,17 +3577,17 @@ type Mutation {
   regionAdd(input: RegionAddInput): Region @auth
   regionEdit(id: ID!): RegionEditMutations @auth
   # Group
-  groupAdd(input: GroupAddInput): Group @auth(for: ROLE_ADMIN)
-  groupEdit(id: ID!): GroupEditMutations @auth(for: ROLE_ADMIN)
+  groupAdd(input: GroupAddInput): Group @auth(for: PLATFORM_ROOT)
+  groupEdit(id: ID!): GroupEditMutations @auth(for: PLATFORM_ROOT)
   # MarkingDefinition
-  markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition @auth(for: ROLE_ADMIN)
-  markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations @auth(for: ROLE_ADMIN)
+  markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition @auth(for: PLATFORM_ROOT)
+  markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations @auth(for: PLATFORM_ROOT)
   # ExternalReference
   externalReferenceAdd(input: ExternalReferenceAddInput): ExternalReference @auth
   externalReferenceEdit(id: ID!): ExternalReferenceEditMutations @auth
   # KillChainPhase
-  killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase @auth(for: ROLE_ADMIN)
-  killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations @auth(for: ROLE_ADMIN)
+  killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase @auth(for: PLATFORM_ROOT)
+  killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations @auth(for: PLATFORM_ROOT)
   # AttackPattern
   attackPatternAdd(input: AttackPatternAddInput): AttackPattern @auth
   attackPatternEdit(id: ID!): AttackPatternEditMutations @auth

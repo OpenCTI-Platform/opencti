@@ -1,9 +1,8 @@
 /* eslint-disable no-underscore-dangle,no-param-reassign */
 import { SchemaDirectiveVisitor } from 'graphql-tools';
-import { append, includes, map } from 'ramda';
+import { includes, map } from 'ramda';
 import { defaultFieldResolver } from 'graphql';
 import { AuthRequired, ForbiddenAccess } from '../config/errors';
-import { ROLE_USER } from '../config/conf';
 
 export const AUTH_DIRECTIVE = 'auth';
 
@@ -13,24 +12,24 @@ class AuthDirective extends SchemaDirectiveVisitor {
   visitObject(type) {
     this.ensureFieldsWrapped(type);
     // noinspection JSUndefinedPropertyAssignment
-    type._requiredAuthRole = this.args.for;
+    type._requiredCapability = this.args.for;
   }
 
   visitFieldDefinition(field, details) {
     this.ensureFieldsWrapped(details.objectType);
-    field._requiredAuthRole = this.args.for;
+    field._requiredCapability = this.args.for;
   }
 
   authenticationControl(func, args, objectType, field) {
     // Get the required Role from the field first, falling back
     // to the objectType if no Role is required by the field:
-    const requiredRole = field._requiredAuthRole || objectType._requiredAuthRole || ROLE_USER;
+    const requiredCapability = field._requiredCapability || objectType._requiredCapability;
     // If a role is required
     const context = args[2];
     const { user } = context;
     if (!user) throw new AuthRequired(); // User must be authenticated.
-    const roles = append(ROLE_USER, user.grant); // Inject the basic ROLE_USER
-    if (!includes(requiredRole, roles)) throw new ForbiddenAccess();
+    const capabilities = map(c => c.name, user.capabilities);
+    if (requiredCapability && !includes(requiredCapability, capabilities)) throw new ForbiddenAccess();
     return func.apply(this, args);
   }
 

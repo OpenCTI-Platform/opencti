@@ -42,20 +42,44 @@
     "password": "guest"
   },
   "providers": {
+    "ldap": {
+      "active": false,
+      "strategy": "LdapStrategy",
+      "config": {
+        "url": "ldap://xxxxxxxx:389",
+        "searchBase": "ou=Users,dc=xxxx,dc=org,dc=dns"
+      }
+    },
+    "local": {
+      "active": true,
+      "strategy": "LocalStrategy"
+    },
     "facebook": {
-      "client_id": "xxxxxx",
-      "client_secret": "xxxxxx",
-      "callback_uri": "http://localhost:4000/auth/facebook/callback"
+      "active": false,
+      "strategy": "FacebookStrategy",
+      "config": {
+        "clientID": "xxxxxx",
+        "clientSecret": "xxxxxx",
+        "callbackURL": "http://localhost:4000/auth/facebook/callback"
+      }
     },
     "google": {
-      "client_id": "xxxxxx",
-      "client_secret": "xxxxxx",
-      "callback_uri": "http://localhost:4000/auth/google/callback"
+      "active": false,
+      "strategy": "GoogleStrategy",
+      "config": {
+        "clientID": "xxxxxx",
+        "clientSecret": "xxxxxx",
+        "callbackURL": "http://localhost:4000/auth/google/callback"
+      }
     },
     "github": {
-      "client_id": "xxxxxx",
-      "client_secret": "xxxxxx",
-      "callback_uri": "http://localhost:4000/auth/github/callback"
+      "active": false,
+      "strategy": "GitHubStrategy",
+      "config": {
+        "clientID": "xxxxxx",
+        "clientSecret": "xxxxxx",
+        "callbackURL": "http://localhost:4000/auth/github/callback"
+      }
     }
   }
 }

@@ -19,7 +19,7 @@ import UserEditionOverview from './UserEditionOverview';
 import UserEditionPassword from './UserEditionPassword';
 import UserEditionGroups from './UserEditionGroups';
 
-const styles = theme => ({
+const styles = (theme) => ({
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
     padding: '20px 20px 20px 60px',

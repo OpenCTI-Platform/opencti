@@ -6,11 +6,16 @@ import applyMigration from './database/migration';
 import { initializeAdminUser } from './config/security';
 import { isStorageAlive } from './database/minio';
 import { checkPythonStix2 } from './database/utils';
-import { addMarkingDefinition, findById as markingById } from './domain/markingDefinition';
+import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings, getSettings } from './domain/settings';
+import { ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from './domain/user';
+import { addCapability, addRole } from './domain/grant';
 
 const fs = require('fs');
 
+export const PLATFORM_ROOT = 'PLATFORM_ROOT';
+export const PLATFORM_MODIFY = 'PLATFORM_MODIFY';
+export const PLATFORM_ACCESS = 'PLATFORM_ACCESS';
 // Check every dependencies
 export const checkSystemDependencies = async () => {
   // Check if Grakn is available
@@ -38,68 +43,78 @@ export const initializeSchema = async () => {
   logger.info(`[INIT] > Elasticsearch indexes loaded`);
 };
 
-const initMarkingDef = async marking => {
-  const getMarking = await markingById(marking.stix_id_key);
-  if (getMarking === null) {
-    await addMarkingDefinition({}, marking);
-    logger.info(`[INIT] > Marking ${marking.definition} injected`);
-  }
-};
-
-const initSettings = async () => {
-  const settings = await getSettings();
-  if (!settings) {
-    await addSettings(
-      {},
-      {
-        platform_title: 'Cyber threat intelligence platform',
-        platform_email: 'admin@opencti.io',
-        platform_url: '',
-        platform_language: 'auto',
-        platform_external_auth: true,
-        platform_registration: false,
-        platform_demo: false
-      }
-    );
-    logger.info(`[INIT] > Platform default settings initialized`);
-  }
-};
-
-const initializeDefaultValues = async () => {
-  await initMarkingDef({
+const createMarkingDefinitions = async () => {
+  // Create marking defs
+  await addMarkingDefinition(SYSTEM_USER, {
     stix_id_key: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9',
     definition_type: 'TLP',
     definition: 'TLP:WHITE',
     color: '#ffffff',
     level: 1
   });
-  await initMarkingDef({
+  await addMarkingDefinition(SYSTEM_USER, {
     stix_id_key: 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
     definition_type: 'TLP',
     definition: 'TLP:GREEN',
     color: '#2e7d32',
     level: 2
   });
-  await initMarkingDef({
+  await addMarkingDefinition(SYSTEM_USER, {
     stix_id_key: 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
     definition_type: 'TLP',
     definition: 'TLP:AMBER',
     color: '#d84315',
     level: 3
   });
-  await initMarkingDef({
+  await addMarkingDefinition(SYSTEM_USER, {
     stix_id_key: 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
     definition_type: 'TLP',
     definition: 'TLP:RED',
     color: '#c62828',
     level: 4
   });
-  await initSettings();
+};
+
+export const createBasicRolesAndCapabilities = async () => {
+  // Create capabilities
+  const bypassCapability = await addCapability({
+    name: PLATFORM_ROOT,
+    description: 'Bypass every capabilities'
+  });
+  const writeCapability = await addCapability({
+    name: PLATFORM_MODIFY,
+    description: 'Create/modify elements of the platform'
+  });
+  const accessCapability = await addCapability({
+    name: PLATFORM_ACCESS,
+    description: 'Access the platform'
+  });
+  // Create roles
+  await addRole({ name: ROLE_DEFAULT, capabilities: [accessCapability.id], editable: false });
+  await addRole({ name: ROLE_ADMINISTRATOR, capabilities: [bypassCapability.id] });
+  await addRole({ name: 'Agent', capabilities: [accessCapability.id, writeCapability.id] });
+};
+
+const initializeDefaultValues = async () => {
+  await addSettings(SYSTEM_USER, {
+    platform_title: 'Cyber threat intelligence platform',
+    platform_email: 'admin@opencti.io',
+    platform_url: '',
+    platform_language: 'auto',
+    platform_external_auth: true,
+    platform_registration: false,
+    platform_demo: false
+  });
+  await createMarkingDefinitions();
+  await createBasicRolesAndCapabilities();
 };
 
 const initializeData = async () => {
+  // Init default values only if platform as no settings
+  const settings = await getSettings();
+  if (!settings) await initializeDefaultValues();
+  logger.info(`[INIT] > Platform default initialized`);
   await initializeAdminUser();
-  await initializeDefaultValues();
 };
 
 const init = async () => {

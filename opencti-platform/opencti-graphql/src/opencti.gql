@@ -22,7 +22,9 @@ define
   firstname sub attribute, datatype string;
   lastname sub attribute, datatype string;
   language sub attribute, datatype string;
+  external sub attribute, datatype boolean;
   grant sub attribute, datatype string;
+  editable sub attribute, datatype boolean;
   platform_title sub attribute, datatype string;
   platform_language sub attribute, datatype string;
   platform_email sub attribute, datatype string;
@@ -229,11 +231,15 @@ define
     relates allowed,
     relates allow;
 
-  user_permission sub relation,
+  user_role sub relation,
     key internal_id_key,
-    has grant,
-    relates allowed,
-    relates allow;
+    relates client,
+    relates position;
+
+  role_capability sub relation,
+    key internal_id_key,
+    relates position,
+    relates capability;
 
   # OpenCTI embeded relationships
   relation_embedded sub relation,
@@ -681,13 +687,38 @@ define
     has firstname,
     has lastname,
     has language,
-    has grant, # roles is a reserved word
+    has external,
     plays client,
     plays author,
     plays owner,
     plays member,
     plays allowed,
     plays characterize;
+
+  Role sub entity,
+    key internal_id_key,
+    key name,
+    has entity_type,
+    has editable,
+    has description,
+    has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
+    has updated_at,
+    plays position;
+
+  Capability sub entity,
+    key internal_id_key,
+    key name,
+    has entity_type,
+    has description,
+    has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
+    has updated_at,
+    plays capability;
 
   Incident sub Stix-Domain-Entity,
     has objective,

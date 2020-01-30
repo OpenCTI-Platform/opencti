@@ -278,6 +278,7 @@ class PersonEditionOverviewComponent extends Component {
     const {
       t, person, editUsers, me,
     } = this.props;
+    const external = person.external === true;
     const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], person) === null
       ? ''
       : {
@@ -310,6 +311,7 @@ class PersonEditionOverviewComponent extends Component {
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   name="name"
+                  disabled={external}
                   component={TextField}
                   label={t('Name')}
                   fullWidth={true}
@@ -418,6 +420,7 @@ const PersonEditionOverview = createFragmentContainer(
         id
         name
         description
+        external
         createdByRef {
           node {
             id
