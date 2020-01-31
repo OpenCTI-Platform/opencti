@@ -23,11 +23,10 @@ import {
   Extension,
 } from '@material-ui/icons';
 import { Settings, Database, Binoculars } from 'mdi-material-ui';
-import { compose, includes, map } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { compose } from 'ramda';
 import logo from '../../../resources/images/logo_text.png';
 import inject18n from '../../../components/i18n';
+import Security, { KNOWLEDGE, SETTINGS } from '../../../utils/Security';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -72,9 +71,8 @@ class LeftBar extends Component {
 
   render() {
     const {
-      t, location, classes, me,
+      t, location, classes,
     } = this.props;
-    const capabilities = map((c) => c.name, me.capabilities);
     return (
       <div>
         <Drawer variant="permanent" classes={{ paper: classes.drawerPaper }}>
@@ -85,164 +83,152 @@ class LeftBar extends Component {
               to="/dashboard"
               selected={location.pathname === '/dashboard'}
               dense={false}
-              classes={{ root: classes.menuItem }}
-            >
+              classes={{ root: classes.menuItem }}>
               <ListItemIcon>
                 <Dashboard />
               </ListItemIcon>
             </MenuItem>
-            <MenuItem
-              component={Link}
-              to="/dashboard/threats"
-              selected={location.pathname.includes('/dashboard/threats')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon>
-                <Database />
-              </ListItemIcon>
-            </MenuItem>
-            <MenuItem
-              component={Link}
-              to="/dashboard/techniques"
-              selected={location.pathname.includes('/dashboard/techniques')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon>
-                <Layers />
-              </ListItemIcon>
-            </MenuItem>
-            <MenuItem
-              component={Link}
-              to="/dashboard/signatures"
-              selected={location.pathname.includes('/dashboard/signatures')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon>
-                <Binoculars />
-              </ListItemIcon>
-            </MenuItem>
-            <MenuItem
-              component={Link}
-              to="/dashboard/reports"
-              selected={location.pathname.includes('/dashboard/reports')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon>
-                <Assignment />
-              </ListItemIcon>
-            </MenuItem>
-            <MenuItem
-              component={Link}
-              to="/dashboard/entities"
-              selected={location.pathname.includes('/dashboard/entities')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon>
-                <ListAlt />
-              </ListItemIcon>
-            </MenuItem>
+            <Security roles={[KNOWLEDGE]}>
+              <MenuItem
+                component={Link}
+                to="/dashboard/threats"
+                selected={location.pathname.includes('/dashboard/threats')}
+                dense={false}
+                classes={{ root: classes.menuItem }}>
+                <ListItemIcon>
+                  <Database />
+                </ListItemIcon>
+              </MenuItem>
+              <MenuItem
+                component={Link}
+                to="/dashboard/techniques"
+                selected={location.pathname.includes('/dashboard/techniques')}
+                dense={false}
+                classes={{ root: classes.menuItem }}>
+                <ListItemIcon>
+                  <Layers />
+                </ListItemIcon>
+              </MenuItem>
+              <MenuItem
+                component={Link}
+                to="/dashboard/signatures"
+                selected={location.pathname.includes('/dashboard/signatures')}
+                dense={false}
+                classes={{ root: classes.menuItem }}>
+                <ListItemIcon>
+                  <Binoculars />
+                </ListItemIcon>
+              </MenuItem>
+              <MenuItem
+                component={Link}
+                to="/dashboard/reports"
+                selected={location.pathname.includes('/dashboard/reports')}
+                dense={false}
+                classes={{ root: classes.menuItem }}>
+                <ListItemIcon>
+                  <Assignment />
+                </ListItemIcon>
+              </MenuItem>
+              <MenuItem
+                component={Link}
+                to="/dashboard/entities"
+                selected={location.pathname.includes('/dashboard/entities')}
+                dense={false}
+                classes={{ root: classes.menuItem }}>
+                <ListItemIcon>
+                  <ListAlt />
+                </ListItemIcon>
+              </MenuItem>
+            </Security>
           </MenuList>
-          <Divider />
-          <MenuList component="nav">
-            <MenuItem
-              component={Link}
-              to="/dashboard/explore"
-              selected={location.pathname.includes('/dashboard/explore')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon>
-                <Explore />
-              </ListItemIcon>
-            </MenuItem>
-            <MenuItem
-              component={Link}
-              disabled={true}
-              to="/dashboard/investigate"
-              selected={location.pathname.includes('/dashboard/investigate')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon>
-                <DeviceHub />
-              </ListItemIcon>
-            </MenuItem>
-            <MenuItem
-              component={Link}
-              disabled={true}
-              to="/dashboard/correlate"
-              selected={location.pathname.includes('/dashboard/correlate')}
-              dense={false}
-            >
-              <ListItemIcon>
-                <GroupWork />
-              </ListItemIcon>
-            </MenuItem>
-          </MenuList>
-          {includes('BYPASS', capabilities) && (
-            <div>
-              <Divider />
-              <MenuList component="nav">
-                <MenuItem
-                  component={Link}
-                  to="/dashboard/connectors"
-                  selected={location.pathname.includes('/dashboard/connectors')}
-                  dense={false}
-                  classes={{ root: classes.menuItem }}
-                >
-                  <ListItemIcon>
-                    <Extension />
-                  </ListItemIcon>
-                </MenuItem>
-                <MenuItem
-                  component={Link}
-                  to="/dashboard/settings"
-                  selected={location.pathname.includes('/dashboard/settings')}
-                  dense={false}
-                  style={{ marginBottom: 50 }}
-                  classes={{ root: classes.menuItem }}
-                >
-                  <ListItemIcon>
-                    <Settings />
-                  </ListItemIcon>
-                </MenuItem>
-              </MenuList>
-            </div>
-          )}
-          <MenuList
-            component="nav"
-            classes={{ root: this.props.classes.menuList }}
-          >
+          <Security roles={[KNOWLEDGE]}>
+            <Divider />
+            <MenuList component="nav">
+              <MenuItem
+                component={Link}
+                to="/dashboard/explore"
+                selected={location.pathname.includes('/dashboard/explore')}
+                dense={false}
+                classes={{ root: classes.menuItem }}
+              >
+                <ListItemIcon>
+                  <Explore />
+                </ListItemIcon>
+              </MenuItem>
+              <MenuItem
+                component={Link}
+                disabled={true}
+                to="/dashboard/investigate"
+                selected={location.pathname.includes('/dashboard/investigate')}
+                dense={false}
+                classes={{ root: classes.menuItem }}
+              >
+                <ListItemIcon>
+                  <DeviceHub />
+                </ListItemIcon>
+              </MenuItem>
+              <MenuItem
+                component={Link}
+                disabled={true}
+                to="/dashboard/correlate"
+                selected={location.pathname.includes('/dashboard/correlate')}
+                dense={false}
+              >
+                <ListItemIcon>
+                  <GroupWork />
+                </ListItemIcon>
+              </MenuItem>
+            </MenuList>
+          </Security>
+          <Security roles={[SETTINGS]}>
+            <Divider />
+            <MenuList component="nav">
+              <MenuItem
+                component={Link}
+                to="/dashboard/connectors"
+                selected={location.pathname.includes('/dashboard/connectors')}
+                dense={false}
+                classes={{ root: classes.menuItem }}>
+                <ListItemIcon>
+                  <Extension />
+                </ListItemIcon>
+              </MenuItem>
+              <MenuItem
+                component={Link}
+                to="/dashboard/settings"
+                selected={location.pathname.includes('/dashboard/settings')}
+                dense={false}
+                style={{ marginBottom: 50 }}
+                classes={{ root: classes.menuItem }}
+              >
+                <ListItemIcon>
+                  <Settings />
+                </ListItemIcon>
+              </MenuItem>
+            </MenuList>
+          </Security>
+          <MenuList component="nav" classes={{ root: this.props.classes.menuList }}>
             <MenuItem
               onClick={this.toggle.bind(this)}
               dense={false}
               style={{ position: 'absolute', bottom: 10, width: '100%' }}
-              classes={{ root: classes.menuItem }}
-            >
+              classes={{ root: classes.menuItem }}>
               <ListItemIcon>
                 <KeyboardArrowRight />
               </ListItemIcon>
             </MenuItem>
           </MenuList>
         </Drawer>
-        <Drawer
-          open={this.state.open}
+        <Drawer open={this.state.open}
           classes={{ paper: classes.drawerPaperOpen }}
-          onClose={this.toggle.bind(this)}
-        >
+          onClose={this.toggle.bind(this)}>
           <Toolbar>
             <IconButton
               classes={{ root: classes.logoButton }}
               color="inherit"
               aria-label="Menu"
               component={Link}
-              to="/dashboard"
-            >
+              to="/dashboard">
               <img src={logo} alt="logo" className={classes.logo} />
             </IconButton>
           </Toolbar>
@@ -369,10 +355,9 @@ class LeftBar extends Component {
               <ListItemText primary={t('Correlate')} />
             </MenuItem>
           </MenuList>
-          {includes('PLATFORM_ROOT', capabilities) && (
-            <div>
-              <Divider />
-              <MenuList component="nav">
+          <Security roles={[SETTINGS]}>
+            <Divider />
+            <MenuList component="nav">
                 <MenuItem
                   component={Link}
                   to="/dashboard/connectors"
@@ -401,12 +386,8 @@ class LeftBar extends Component {
                   <ListItemText primary={t('Settings')} />
                 </MenuItem>
               </MenuList>
-            </div>
-          )}
-          <MenuList
-            component="nav"
-            classes={{ root: this.props.classes.menuList }}
-          >
+          </Security>
+          <MenuList component="nav" classes={{ root: this.props.classes.menuList }}>
             <MenuItem
               onClick={this.toggle.bind(this)}
               dense={false}
@@ -430,19 +411,8 @@ LeftBar.propTypes = {
   t: PropTypes.func,
 };
 
-const LeftBarFragment = createFragmentContainer(LeftBar, {
-  me: graphql`
-    fragment LeftBar_me on User {
-      capabilities {
-        id
-        name
-      }
-    }
-  `,
-});
-
 export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(LeftBarFragment);
+)(LeftBar);

@@ -3,6 +3,7 @@ import { SchemaDirectiveVisitor } from 'graphql-tools';
 import { includes, map, pipe, flatten } from 'ramda';
 import { defaultFieldResolver } from 'graphql';
 import { AuthRequired, ForbiddenAccess } from '../config/errors';
+import {OPENCTI_ADMIN_UUID} from "../domain/user";
 
 export const AUTH_DIRECTIVE = 'auth';
 
@@ -32,7 +33,8 @@ class AuthDirective extends SchemaDirectiveVisitor {
       map(c => c.name.split('_')),
       flatten()
     )(user.capabilities);
-    const shouldBypass = capabilities.includes('BYPASS');
+    // Accept everything if bypass capability or the system user (protection).
+    const shouldBypass = capabilities.includes('BYPASS') || user.id === OPENCTI_ADMIN_UUID;
     if (requiredCapability && !shouldBypass && !includes(requiredCapability, capabilities)) throw new ForbiddenAccess();
     return func.apply(this, args);
   }

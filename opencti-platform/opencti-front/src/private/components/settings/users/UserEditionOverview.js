@@ -5,7 +5,7 @@ import { createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
-  assoc, compose, map, pick, pipe, pluck,
+  assoc, compose, difference, head, map, pathOr, pick, pipe, union,
 } from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -14,7 +14,7 @@ import TextField from '../../../../components/TextField';
 import Select from '../../../../components/Select';
 import Autocomplete from '../../../../components/Autocomplete';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation } from '../../../../relay/environment';
+import { commitMutation, fetchQuery } from '../../../../relay/environment';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -51,6 +51,41 @@ const userEditionOverviewFocus = graphql`
   }
 `;
 
+export const userEditionOverviewRolesSearchQuery = graphql`
+    query UserEditionOverviewRolesSearchQuery($search: String) {
+        roles(search: $search) {
+            edges {
+                node {
+                    id
+                    name
+                }
+            }
+        }
+    }
+`;
+
+const userEditionOverviewAddRole = graphql`
+    mutation UserEditionOverviewAddRoleMutation($id: ID!, $input: RelationAddInput!) {
+        userEdit(id: $id) {
+            relationAdd(input: $input) {
+                from {
+                    ...UserEditionOverview_user
+                }
+            }
+        }
+    }
+`;
+
+const userEditionOverviewDeleteRole = graphql`
+    mutation UserEditionOverviewDeleteRoleMutation($id: ID!, $name: String!) {
+        userEdit(id: $id) {
+            removeRole(name: $name) {
+                ...UserEditionOverview_user
+            }
+        }
+    }
+`;
+
 const userValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   email: Yup.string()
@@ -64,6 +99,11 @@ const userValidation = (t) => Yup.object().shape({
 });
 
 class UserEditionOverviewComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { roles: [] };
+  }
+
   handleChangeFocus(name) {
     commitMutation({
       mutation: userEditionOverviewFocus,
@@ -77,22 +117,65 @@ class UserEditionOverviewComponent extends Component {
   }
 
   handleSubmitField(name, value) {
-    let newValue = value;
-    if (name === 'grant') {
-      newValue = pluck('value', value);
-    }
     userValidation(this.props.t)
-      .validateAt(name, { [name]: newValue })
+      .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
           mutation: userMutationFieldPatch,
           variables: {
             id: this.props.user.id,
-            input: { key: name, value: newValue },
+            input: { key: name, value },
           },
         });
       })
       .catch(() => false);
+  }
+
+  searchRoles(event) {
+    fetchQuery(userEditionOverviewRolesSearchQuery, {
+      search: event.target.value,
+    }).then((data) => {
+      const roles = pipe(
+        pathOr([], ['roles', 'edges']),
+        map((n) => ({ label: n.node.name, value: n.node.id })),
+      )(data);
+      this.setState({
+        roles: union(
+          this.state.roles,
+          roles,
+        ),
+      });
+    });
+  }
+
+  handleChangeRole(event, values) {
+    const { user } = this.props;
+    const fieldRoles = map((i) => ({ id: i.value, name: i.label }), values);
+    const added = difference(fieldRoles, user.roles);
+    const removed = difference(user.roles, fieldRoles);
+    if (added.length > 0) {
+      commitMutation({
+        mutation: userEditionOverviewAddRole,
+        variables: {
+          id: user.id,
+          input: {
+            fromRole: 'client',
+            toRole: 'position',
+            toId: head(added).id,
+            through: 'user_role',
+          },
+        },
+      });
+    }
+    if (removed.length > 0) {
+      commitMutation({
+        mutation: userEditionOverviewDeleteRole,
+        variables: {
+          id: user.id,
+          name: head(removed).name,
+        },
+      });
+    }
   }
 
   render() {
@@ -100,11 +183,9 @@ class UserEditionOverviewComponent extends Component {
       t, user, editUsers, me,
     } = this.props;
     const external = user.external === true;
-    const userRoles = pipe(
-      map((n) => ({ label: n.name, value: n.id })),
-    )(user.roles);
+    const userRoles = pipe(map((n) => ({ label: n.name, value: n.id })))(user.roles);
     const initialValues = pipe(
-      assoc('grant', userRoles),
+      assoc('roles', userRoles),
       pick([
         'name',
         'description',
@@ -112,7 +193,7 @@ class UserEditionOverviewComponent extends Component {
         'firstname',
         'lastname',
         'language',
-        'grant',
+        'roles',
       ]),
     )(user);
     return (
@@ -215,19 +296,19 @@ class UserEditionOverviewComponent extends Component {
                 <MenuItem value="fr">Français</MenuItem>
               </Field>
               <Field
-                name="grant"
+                name="roles"
                 component={Autocomplete}
                 multiple={true}
                 label={t('Roles')}
-                options={[]}
-                onChange={this.handleSubmitField.bind(this)}
-                onFocus={this.handleChangeFocus.bind(this)}
+                options={this.state.roles}
+                onInputChange={this.searchRoles.bind(this)}
+                onChange={this.handleChangeRole.bind(this)}
                 helperText={
-                  <SubscriptionFocus
-                    me={me}
-                    users={editUsers}
-                    fieldName="grant"
-                  />
+                    <SubscriptionFocus
+                        me={me}
+                        users={editUsers}
+                        fieldName="roles"
+                    />
                 }
               />
               <Field

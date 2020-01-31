@@ -49,6 +49,7 @@ import TopMenuConnectors from './TopMenuConnectors';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuProfile from './TopMenuProfile';
 import { commitMutation } from '../../../relay/environment';
+import Security, { KNOWLEDGE_KNIMPORT } from '../../../utils/Security';
 
 const styles = (theme) => ({
   appBar: {
@@ -333,22 +334,24 @@ class TopBar extends Component {
               keyword={keyword}
             />
           </div>
-          <Tooltip title={t('Data import')}>
-            <IconButton
-              component={Link}
-              to="/dashboard/import"
-              variant={
-                location.pathname === '/dashboard/import' ? 'contained' : 'text'
-              }
-              color={
-                location.pathname === '/dashboard/import'
-                  ? 'primary'
-                  : 'inherit'
-              }
-              classes={{ root: classes.button }}>
-              <UploadNetworkOutline fontSize="large" />
-            </IconButton>
-          </Tooltip>
+          <Security roles={[KNOWLEDGE_KNIMPORT]}>
+            <Tooltip title={t('Data import')}>
+              <IconButton
+                component={Link}
+                to="/dashboard/import"
+                variant={
+                  location.pathname === '/dashboard/import' ? 'contained' : 'text'
+                }
+                color={
+                  location.pathname === '/dashboard/import'
+                    ? 'primary'
+                    : 'inherit'
+                }
+                classes={{ root: classes.button }}>
+                <UploadNetworkOutline fontSize="large" />
+              </IconButton>
+            </Tooltip>
+          </Security>
           <IconButton
             size="medium"
             classes={{ root: classes.menuButton }}

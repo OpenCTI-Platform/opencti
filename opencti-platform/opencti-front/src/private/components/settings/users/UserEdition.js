@@ -18,7 +18,6 @@ import { SubscriptionAvatars } from '../../../../components/Subscription';
 import UserEditionOverview from './UserEditionOverview';
 import UserEditionPassword from './UserEditionPassword';
 import UserEditionGroups from './UserEditionGroups';
-import UserEditionRoles from './UserEditionRoles';
 
 const styles = (theme) => ({
   header: {
@@ -87,6 +86,7 @@ class UserEdition extends Component {
       t, classes, handleClose, user, me,
     } = this.props;
     const { editContext } = user;
+    const external = user.external === true;
     const missingMe = find(propEq('name', me.email))(editContext) === undefined;
     const editUsers = missingMe
       ? insert(0, { name: me.email }, editContext)
@@ -111,11 +111,9 @@ class UserEdition extends Component {
           <AppBar position="static" elevation={0} className={classes.appBar}>
             <Tabs
               value={this.state.currentTab}
-              onChange={this.handleChangeTab.bind(this)}
-            >
+              onChange={this.handleChangeTab.bind(this)}>
               <Tab label={t('Overview')} />
-              <Tab label={t('Roles')} />
-              <Tab label={t('Password')} />
+              <Tab disabled={external} label={t('Password')} />
               <Tab label={t('Groups')} />
             </Tabs>
           </AppBar>
@@ -127,20 +125,13 @@ class UserEdition extends Component {
             />
           )}
           {this.state.currentTab === 1 && (
-              <UserEditionRoles
-                  user={this.props.user}
-                  editUsers={editUsers}
-                  me={me}
-              />
-          )}
-          {this.state.currentTab === 2 && (
             <UserEditionPassword
               user={this.props.user}
               editUsers={editUsers}
               me={me}
             />
           )}
-          {this.state.currentTab === 3 && (
+          {this.state.currentTab === 2 && (
             <UserEditionGroups
               user={this.props.user}
               editUsers={editUsers}
@@ -166,6 +157,7 @@ const UserEditionFragment = createFragmentContainer(UserEdition, {
   user: graphql`
     fragment UserEdition_user on User {
       id
+      external
       ...UserEditionOverview_user
       ...UserEditionPassword_user
       ...UserEditionGroups_user

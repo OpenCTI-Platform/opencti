@@ -12,18 +12,8 @@ import { ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from './domain/user';
 import { addCapability, addRole } from './domain/grant';
 
 const fs = require('fs');
-/**
- * Bypass all
- * Knowledge view
- *   - Create
- *   - Edit
- *   - Import
- *   - Export
- * Modules view
- *   - State
- * Settings access
- *   - Accesses
- */
+
+// Platform capabilities definition
 const CAPABILITIES = [
   { name: 'BYPASS', description: 'Bypass all capabilities' },
   {
@@ -128,10 +118,20 @@ export const createBasicRolesAndCapabilities = async () => {
   // Create capabilities
   await createCapabilities(CAPABILITIES);
   // Create roles
-  await addRole({ name: ROLE_DEFAULT, capabilities: ['KNOWLEDGE'], removable: false });
-  await addRole({ name: ROLE_ADMINISTRATOR, capabilities: ['BYPASS'] });
+  await addRole({
+    name: ROLE_DEFAULT,
+    description: 'Default role associated to all users',
+    capabilities: ['KNOWLEDGE'],
+    default_assignation: true
+  });
+  await addRole({
+    name: ROLE_ADMINISTRATOR,
+    description: 'Administrator role that bypass every capabilities',
+    capabilities: ['BYPASS']
+  });
   await addRole({
     name: 'Analyst',
+    description: 'Role able to manage the platform knowledge',
     capabilities: ['KNOWLEDGE_KNCREATE', 'KNOWLEDGE_KNEDIT', 'KNOWLEDGE_KNASKIMPORT', 'KNOWLEDGE_KNASKEXPORT']
   });
 };

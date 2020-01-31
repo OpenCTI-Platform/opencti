@@ -33,15 +33,6 @@ class SettingsMenu extends Component {
         <div className={classes.toolbar} />
         <MenuList component="nav">
           <MenuItem
-            component={Link}
-            to={'/dashboard/settings/accesses/users'}
-            selected={
-              location.pathname === '/dashboard/settings/accesses/users'
-            }
-            dense={false}>
-            <ListItemText primary={t('Users')} />
-          </MenuItem>
-          <MenuItem
               component={Link}
               to={'/dashboard/settings/accesses/roles'}
               selected={
@@ -49,6 +40,15 @@ class SettingsMenu extends Component {
               }
               dense={false}>
             <ListItemText primary={t('Roles')} />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={'/dashboard/settings/accesses/users'}
+            selected={
+              location.pathname === '/dashboard/settings/accesses/users'
+            }
+            dense={false}>
+            <ListItemText primary={t('Users')} />
           </MenuItem>
           <MenuItem
             component={Link}

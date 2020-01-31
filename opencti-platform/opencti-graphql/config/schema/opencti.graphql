@@ -929,7 +929,7 @@ type Role implements GlobalObject {
   internal_id_key: String!
   entity_type: String!
   name: String!
-  removable: Boolean
+  default_assignation: Boolean
   description: String
   created_at: DateTime!
   updated_at: DateTime!
@@ -2794,7 +2794,7 @@ input RelationsAddInput {
 type Query {
   # Technical
   about: AppInfo @auth
-  settings: Settings @auth(for: SETTINGS)
+  settings: Settings
   inferences: [Inference] @auth
   attribute(id: String): Attribute @auth
   attributes(
@@ -3335,6 +3335,7 @@ type UserEditMutations {
   contextClean: User
   tokenRenew: User
   relationAdd(input: RelationAddInput): RelationEmbedded
+  removeRole(name: String!): User
   relationDelete(relationId: ID!): User
 }
 
@@ -3395,7 +3396,7 @@ type RoleEditMutations {
   contextPatch(input: EditContext): Role
   contextClean: Role
   relationAdd(input: RelationAddInput): RelationEmbedded
-  removeCapability(name: String): Role
+  removeCapability(name: String!): Role
 }
 
 # Group

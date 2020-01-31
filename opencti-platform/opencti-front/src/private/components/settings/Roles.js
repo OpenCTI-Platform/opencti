@@ -74,7 +74,12 @@ class Roles extends Component {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '60%',
+        width: '45%',
+        isSortable: true,
+      },
+      default_assignation: {
+        label: 'Creation assign',
+        width: '15%',
         isSortable: true,
       },
       created_at: {

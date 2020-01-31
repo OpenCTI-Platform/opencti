@@ -12,7 +12,7 @@ export const addRole = async role => {
   const roleToCreate = pipe(
     assoc('internal_id_key', uuidv5(role.name, uuidv5.DNS)),
     assoc('description', role.description ? role.description : ''),
-    assoc('removable', role.removable ? role.removable : true),
+    assoc('default_assignation', role.default_assignation ? role.default_assignation : false),
     dissoc('capabilities')
   )(role);
   const roleEntity = await createEntity(roleToCreate, 'Role', { modelType: TYPE_OPENCTI_INTERNAL });

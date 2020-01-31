@@ -1,4 +1,4 @@
-import { assoc, head, isNil, pathOr, pipe, map, dissoc } from 'ramda';
+import { assoc, head, isNil, pathOr, pipe, map, dissoc, append, flatten } from 'ramda';
 import uuid from 'uuid/v4';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
@@ -128,6 +128,16 @@ export const findCapabilities = args => {
   return listEntities(['Capability'], ['description'], finalArgs);
 };
 
+export const removeRole = async (userId, roleName) => {
+  await executeWrite(async wTx => {
+    const query = `match $rel(client: $from, position: $to) isa user_role; 
+            $from has internal_id_key "${escapeString(userId)}"; 
+            $to has name "${escapeString(roleName)}"; 
+            delete $rel;`;
+    await wTx.tx.query(query, { infer: false });
+  });
+  return findById(userId);
+};
 export const roleRemoveCapability = async (roleId, capabilityName) => {
   await executeWrite(async wTx => {
     const query = `match $rel(position: $from, capability: $to) isa role_capability; 
@@ -143,8 +153,16 @@ export const addPerson = async (user, newUser) => {
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken()) => {
-  const userRoles = newUser.roles || [];
-  if (!userRoles.includes(ROLE_DEFAULT)) userRoles.push(ROLE_DEFAULT);
+  let userRoles = newUser.roles || []; // Expected roles name
+  // Assign default roles to user
+  const defaultRoles = await findRoles({ filters: [{ key: 'default_assignation', values: [true] }] });
+  if (defaultRoles && defaultRoles.edges.length > 0) {
+    userRoles = pipe(
+      map(n => n.node.name),
+      append(userRoles),
+      flatten
+    )(defaultRoles.edges);
+  }
   const userToCreate = pipe(
     assoc('password', bcrypt.hashSync(newUser.password ? newUser.password.toString() : uuid())),
     assoc('language', newUser.language ? newUser.language : 'auto'),

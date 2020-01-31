@@ -19,6 +19,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import inject18n from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
+import Switch from '../../../../components/Switch';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -107,6 +108,7 @@ const roleEditionOverviewCapabilities = graphql`
 const roleValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string(),
+  default_assignation: Yup.bool(),
 });
 
 class RoleEditionOverviewComponent extends Component {
@@ -164,7 +166,7 @@ class RoleEditionOverviewComponent extends Component {
     const {
       t, role, editUsers, me, classes,
     } = this.props;
-    const initialValues = pick(['name', 'description'], role);
+    const initialValues = pick(['name', 'description', 'default_assignation'], role);
     return (
       <div>
         <Formik
@@ -206,6 +208,12 @@ class RoleEditionOverviewComponent extends Component {
                     fieldName="description"
                   />
                 }
+              />
+              <Field
+                  name="default_assignation"
+                  component={Switch}
+                  label={t('Assign at user creation')}
+                  onChange={this.handleSubmitField.bind(this)}
               />
               <QueryRenderer query={roleEditionOverviewCapabilities}
                   variables={{}} render={({ props }) => {
@@ -269,6 +277,7 @@ const RoleEditionOverview = createFragmentContainer(
       fragment RoleEditionOverview_role on Role {
         id
         name
+        default_assignation
         description
         capabilities {
           id

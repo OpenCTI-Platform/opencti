@@ -20,7 +20,7 @@ const Root = () => (
     <BoundaryRoute
       exact
       path="/dashboard/settings/accesses"
-      render={() => <Redirect to="/dashboard/settings/accesses/users" />}
+      render={() => <Redirect to="/dashboard/settings/accesses/roles" />}
     />
     <BoundaryRoute
       exact

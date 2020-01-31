@@ -24,7 +24,7 @@ define
   language sub attribute, datatype string;
   external sub attribute, datatype boolean;
   grant sub attribute, datatype string;
-  removable sub attribute, datatype boolean;
+  default_assignation sub attribute, datatype boolean;
   platform_title sub attribute, datatype string;
   platform_language sub attribute, datatype string;
   platform_email sub attribute, datatype string;
@@ -699,7 +699,7 @@ define
     key internal_id_key,
     key name,
     has entity_type,
-    has removable,
+    has default_assignation,
     has description,
     has created_at,
     has created_at_day,

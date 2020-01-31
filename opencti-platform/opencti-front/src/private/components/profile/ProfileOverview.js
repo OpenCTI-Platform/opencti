@@ -200,7 +200,7 @@ class ProfileOverviewComponent extends Component {
             </Button>
           </div>
         </Paper>
-        <Paper classes={{ root: classes.panel }} elevation={2}>
+          {!external && <Paper classes={{ root: classes.panel }} elevation={2}>
           <Typography variant="h1" gutterBottom={true}>
             {t('Password')}
           </Typography>
@@ -241,7 +241,7 @@ class ProfileOverviewComponent extends Component {
               </Form>
             )}
           />
-        </Paper>
+        </Paper>}
       </div>
     );
   }

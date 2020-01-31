@@ -1,21 +1,21 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {Field, Form, Formik} from 'formik';
-import {withStyles} from '@material-ui/core/styles';
+import { Field, Form, Formik } from 'formik';
+import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
-import {Add, Close} from '@material-ui/icons';
-import {assoc, compose, omit, pipe, pluck,} from 'ramda';
+import { Add, Close } from '@material-ui/icons';
+import { compose, omit, pipe } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
-import {ConnectionHandler} from 'relay-runtime';
+import { ConnectionHandler } from 'relay-runtime';
+import ListSubheader from '@material-ui/core/ListSubheader';
 import inject18n from '../../../../components/i18n';
-import {commitMutation} from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import Autocomplete from '../../../../components/Autocomplete';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -76,7 +76,6 @@ const userValidation = (t) => Yup.object().shape({
   firstname: Yup.string(),
   lastname: Yup.string(),
   description: Yup.string(),
-  roles: Yup.array(),
   password: Yup.string().required(t('This field is required')),
   confirmation: Yup.string()
     .oneOf([Yup.ref('password'), null], t('The values do not match'))
@@ -109,7 +108,6 @@ class UserCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = pipe(
-      assoc('roles', pluck('value', values.roles)),
       omit(['confirmation']),
     )(values);
     commitMutation({
@@ -149,16 +147,14 @@ class UserCreation extends Component {
           onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Add"
-          className={classes.createButton}
-        >
+          className={classes.createButton}>
           <Add />
         </Fab>
         <Drawer
           open={this.state.open}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
+          onClose={this.handleClose.bind(this)}>
           <div className={classes.header}>
             <IconButton
               aria-label="Close"
@@ -177,7 +173,6 @@ class UserCreation extends Component {
                 firstname: '',
                 lastname: '',
                 description: '',
-                roles: [],
                 password: '',
                 confirmation: '',
               }}
@@ -185,7 +180,10 @@ class UserCreation extends Component {
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
               render={({ submitForm, handleReset, isSubmitting }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
+                <Form>
+                  <ListSubheader component="div" style={{ paddingLeft: 0 }}>
+                      {t('User will be created with default roles')}
+                  </ListSubheader>
                   <Field
                     name="name"
                     component={TextField}
@@ -214,20 +212,12 @@ class UserCreation extends Component {
                     style={{ marginTop: 20 }}
                   />
                   <Field
-                    name="roles"
-                    component={Autocomplete}
-                    multiple={true}
-                    label={t('Roles')}
-                    options={[]}
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
                     name="password"
                     component={TextField}
                     label={t('Password')}
                     type="password"
-                    fullWidth={true}
                     style={{ marginTop: 20 }}
+                    fullWidth={true}
                   />
                   <Field
                     name="confirmation"

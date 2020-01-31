@@ -7,7 +7,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { MoreVert, Security } from '@material-ui/icons';
+import { MoreVert, Security, Check } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import RolePopover from './RolePopover';
@@ -62,6 +62,10 @@ class RoleLineComponent extends Component {
                 {node.name}
               </div>
               <div className={classes.bodyItem}
+                style={{ width: dataColumns.default_assignation.width }}>
+                {node.default_assignation ? <Check/> : '-'}
+              </div>
+              <div className={classes.bodyItem}
                 style={{ width: dataColumns.created_at.width }}>
                 {fd(node.created_at)}
               </div>
@@ -97,6 +101,7 @@ const RoleLineFragment = createFragmentContainer(RoleLineComponent, {
     fragment RoleLine_node on Role {
       id
       name
+      default_assignation
       created_at
       updated_at
     }
@@ -123,6 +128,10 @@ class RoleLineDummyComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}>
                 <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div className={classes.bodyItem}
+                   style={{ width: dataColumns.default_assignation.width }}>
+                <div className="fakeItem" style={{ width: 80 }} />
               </div>
               <div
                 className={classes.bodyItem}

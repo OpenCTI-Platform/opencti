@@ -46,7 +46,8 @@ const dateFields = [
   'valid_until',
   'valid_until_day',
   'valid_until_month',
-  'observable_date'
+  'observable_date',
+  'default_assignation' // TODO @JRI Ask @Sam for this.
 ];
 const numberFields = ['object_status', 'phase_order', 'level', 'weight'];
 const virtualTypes = ['Identity', 'Email', 'File', 'Stix-Domain-Entity', 'Stix-Domain', 'Stix-Observable'];

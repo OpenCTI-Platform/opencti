@@ -9,8 +9,9 @@ export const up = async next => {
   // Migrate all users to assign roles user and admin
   await createBasicRolesAndCapabilities();
   // Migrate current users.
-  // Admin role for OPENCTI_ADMIN_UUID
-  // Default role for others
+  // -- Admin role for OPENCTI_ADMIN_UUID
+
+  // -- Default role for others
   next();
 };
 

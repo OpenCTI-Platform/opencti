@@ -199,7 +199,6 @@ class Autocomplete extends Component {
   }
 
   render() {
-    console.log(this.props)
     const {
       required,
       classes,

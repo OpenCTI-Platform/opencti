@@ -9,7 +9,9 @@ import {
   getRoleCapabilities,
   getRoles,
   logout,
-  meEditField, roleRemoveCapability,
+  meEditField,
+  removeRole,
+  roleRemoveCapability,
   setAuthenticationCookie,
   token,
   userDelete,
@@ -97,6 +99,7 @@ const userResolvers = {
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
       tokenRenew: () => userRenewToken(id),
+      removeRole: ({ name }) => removeRole(id, name),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
     }),
