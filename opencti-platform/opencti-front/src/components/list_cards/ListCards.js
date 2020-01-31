@@ -19,7 +19,7 @@ import { FileExportOutline } from 'mdi-material-ui';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainEntitiesExports from '../../private/components/common/stix_domain_entities/StixDomainEntitiesExports';
-import Security, {KNOWLEDGE_KNEXPORT, KNOWLEDGE_KNIMPORT} from "../../utils/Security";
+import Security, { KNOWLEDGE_KNEXPORT } from '../../utils/Security';
 
 const styles = (theme) => ({
   container: {
