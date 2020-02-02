@@ -70,9 +70,6 @@ const roleEditionQuery = graphql`
     role(id: $id) {
       ...RoleEdition_role
     }
-    me {
-      ...RoleEdition_me
-    }
   }
 `;
 
@@ -174,9 +171,7 @@ class RolePopover extends Component {
               render={({ props }) => {
                 if (props) {
                   return (
-                      <RoleEdition
-                          me={props.me}
-                          role={props.role}
+                      <RoleEdition role={props.role}
                           handleClose={this.handleCloseUpdate.bind(this)}
                       />
                   );

@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import {
-  compose, insert, find, propEq,
-} from 'ramda';
+import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
@@ -83,28 +81,23 @@ class UserEdition extends Component {
 
   render() {
     const {
-      t, classes, handleClose, user, me,
+      t, classes, handleClose, user,
     } = this.props;
     const { editContext } = user;
     const external = user.external === true;
-    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe
-      ? insert(0, { name: me.email }, editContext)
-      : editContext;
     return (
       <div>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}
-          >
+            onClick={handleClose.bind(this)}>
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update a user')}
           </Typography>
-          <SubscriptionAvatars users={editUsers} />
+          <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
@@ -118,25 +111,13 @@ class UserEdition extends Component {
             </Tabs>
           </AppBar>
           {this.state.currentTab === 0 && (
-            <UserEditionOverview
-              user={this.props.user}
-              editUsers={editUsers}
-              me={me}
-            />
+            <UserEditionOverview user={this.props.user} context={editContext}/>
           )}
           {this.state.currentTab === 1 && (
-            <UserEditionPassword
-              user={this.props.user}
-              editUsers={editUsers}
-              me={me}
-            />
+            <UserEditionPassword user={this.props.user} context={editContext}/>
           )}
           {this.state.currentTab === 2 && (
-            <UserEditionGroups
-              user={this.props.user}
-              editUsers={editUsers}
-              me={me}
-            />
+            <UserEditionGroups user={this.props.user} context={editContext}/>
           )}
         </div>
       </div>
@@ -165,11 +146,6 @@ const UserEditionFragment = createFragmentContainer(UserEdition, {
         name
         focusOn
       }
-    }
-  `,
-  me: graphql`
-    fragment UserEdition_me on User {
-      email
     }
   `,
 });

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
   assoc, compose, pick, pipe,
@@ -15,7 +15,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
 import { dateFormat } from '../../../../utils/Time';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -66,7 +66,7 @@ const incidentEditionDetailsFocus = graphql`
   }
 `;
 
-const incidentValidation = t => Yup.object().shape({
+const incidentValidation = (t) => Yup.object().shape({
   first_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
@@ -107,9 +107,7 @@ class IncidentEditionDetailsComponent extends Component {
   }
 
   render() {
-    const {
-      t, incident, editUsers, me,
-    } = this.props;
+    const { t, incident, context } = this.props;
     const initialValues = pipe(
       assoc('first_seen', dateFormat(incident.first_seen)),
       assoc('last_seen', dateFormat(incident.last_seen)),
@@ -133,13 +131,7 @@ class IncidentEditionDetailsComponent extends Component {
                   fullWidth={true}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="first_seen"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="first_seen"/>}
                 />
                 <Field
                   name="last_seen"
@@ -149,13 +141,7 @@ class IncidentEditionDetailsComponent extends Component {
                   style={{ marginTop: 10 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="last_seen"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="last_seen"/>}
                 />
                 <Field
                   name="objective"
@@ -167,13 +153,7 @@ class IncidentEditionDetailsComponent extends Component {
                   style={{ marginTop: 10 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="objective"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="objective"/>}
                 />
               </Form>
             </div>
@@ -189,8 +169,7 @@ IncidentEditionDetailsComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   incident: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
+  context: PropTypes.array,
 };
 
 const IncidentEditionDetails = createFragmentContainer(

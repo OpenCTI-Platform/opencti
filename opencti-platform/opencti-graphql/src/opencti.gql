@@ -18,7 +18,7 @@ define
   issuer sub attribute, datatype string;
   duration sub attribute, datatype string;
   password sub attribute, datatype string;
-  email sub attribute, datatype string;
+  user_email sub attribute, datatype string;
   firstname sub attribute, datatype string;
   lastname sub attribute, datatype string;
   language sub attribute, datatype string;
@@ -682,8 +682,8 @@ define
     plays localized;
 
   User sub Identity,
+    key user_email,
     has password,
-    has email,
     has firstname,
     has lastname,
     has language,

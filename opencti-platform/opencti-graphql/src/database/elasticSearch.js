@@ -527,7 +527,6 @@ export const elPaginate = async (indexName, options) => {
     after,
     types = null,
     filters = [],
-    isUser = null, // TODO @Sam refactor this to use filter
     search = null,
     orderBy = null,
     orderMode = 'asc',
@@ -581,9 +580,6 @@ export const elPaginate = async (indexName, options) => {
       })
     );
     must = append({ bool: { should, minimum_should_match: 1 } }, must);
-  }
-  if (isUser !== null && isUser === true) {
-    must = append({ exists: { field: 'email' } }, must);
   }
   const validFilters = filter(f => f && f.values.length > 0, filters || []);
   if (validFilters.length > 0) {

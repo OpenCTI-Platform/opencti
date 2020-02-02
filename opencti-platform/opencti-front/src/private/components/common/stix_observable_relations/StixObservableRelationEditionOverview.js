@@ -3,20 +3,9 @@ import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import {
-  compose,
-  insert,
-  find,
-  propEq,
-  pick,
-  assoc,
-  pipe,
-  map,
-  pathOr,
-  difference,
-  head,
-  union,
+  assoc, compose, difference, head, map, pathOr, pick, pipe, union,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -29,16 +18,10 @@ import { dateFormat } from '../../../../utils/Time';
 import { resolveLink } from '../../../../utils/Entity';
 import inject18n from '../../../../components/i18n';
 import {
-  QueryRenderer,
-  commitMutation,
-  fetchQuery,
-  requestSubscription,
+  commitMutation, fetchQuery, QueryRenderer, requestSubscription,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import {
-  SubscriptionAvatars,
-  SubscriptionFocus,
-} from '../../../../components/Subscription';
+import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
 import Select from '../../../../components/Select';
 import Autocomplete from '../../../../components/Autocomplete';
 import DatePickerField from '../../../../components/DatePickerField';
@@ -273,14 +256,9 @@ class StixObservableRelationEditionContainer extends Component {
       handleClose,
       handleDelete,
       stixObservableRelation,
-      me,
       stixDomainEntity,
     } = this.props;
     const { editContext } = stixObservableRelation;
-    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe
-      ? insert(0, { name: me.email }, editContext)
-      : editContext;
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
       map((n) => ({
@@ -328,7 +306,7 @@ class StixObservableRelationEditionContainer extends Component {
           <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update a relationship')}
           </Typography>
-          <SubscriptionAvatars users={editUsers} />
+          <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
@@ -358,11 +336,7 @@ class StixObservableRelationEditionContainer extends Component {
                           }}
                           containerstyle={{ marginTop: 10, width: '100%' }}
                           helpertext={
-                            <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
-                              fieldName="role_played"
-                            />
+                            <SubscriptionFocus context={editContext} fieldName="role_played"/>
                           }
                         >
                           {rolesPlayedEdges.map((rolePlayedEdge) => (
@@ -383,11 +357,7 @@ class StixObservableRelationEditionContainer extends Component {
                           onFocus={this.handleChangeFocus.bind(this)}
                           onSubmit={this.handleSubmitField.bind(this)}
                           helperText={
-                            <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
-                              fieldName="first_seen"
-                            />
+                            <SubscriptionFocus context={editContext} fieldName="first_seen"/>
                           }
                         />
                         <Field
@@ -399,11 +369,7 @@ class StixObservableRelationEditionContainer extends Component {
                           onFocus={this.handleChangeFocus.bind(this)}
                           onSubmit={this.handleSubmitField.bind(this)}
                           helperText={
-                            <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
-                              fieldName="last_seen"
-                            />
+                            <SubscriptionFocus context={editContext} fieldName="last_seen"/>
                           }
                         />
                         <Field
@@ -417,11 +383,7 @@ class StixObservableRelationEditionContainer extends Component {
                           onFocus={this.handleChangeFocus.bind(this)}
                           onSubmit={this.handleSubmitField.bind(this)}
                           helperText={
-                            <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
-                              fieldName="description"
-                            />
+                            <SubscriptionFocus context={editContext} fieldName="description"/>
                           }
                         />
                         <Field
@@ -438,11 +400,7 @@ class StixObservableRelationEditionContainer extends Component {
                           )}
                           onFocus={this.handleChangeFocus.bind(this)}
                           helperText={
-                            <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
-                              fieldName="markingDefinitions"
-                            />
+                            <SubscriptionFocus context={editContext} fieldName="markingDefinitions"/>
                           }
                         />
                       </Form>
@@ -489,7 +447,6 @@ StixObservableRelationEditionContainer.propTypes = {
   classes: PropTypes.object,
   stixDomainEntity: PropTypes.object,
   stixObservableRelation: PropTypes.object,
-  me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
@@ -522,11 +479,6 @@ const StixObservableRelationEditionFragment = createFragmentContainer(
           name
           focusOn
         }
-      }
-    `,
-    me: graphql`
-      fragment StixObservableRelationEditionOverview_me on User {
-        email
       }
     `,
   },

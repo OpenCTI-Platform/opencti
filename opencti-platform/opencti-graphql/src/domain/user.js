@@ -3,7 +3,7 @@ import uuid from 'uuid/v4';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
 import uuidv5 from 'uuid/v5';
-import { delUserContext, getAccessCache, notify, storeAccessCache } from '../database/redis';
+import { clearAccessCache, delUserContext, getAccessCache, notify, storeAccessCache } from '../database/redis';
 import { AuthenticationFailure, ForbiddenAccess } from '../config/errors';
 import conf, {
   BUS_TOPICS,
@@ -67,7 +67,7 @@ export const findById = async (userId, args) => {
   return loadEntityById(userId, args);
 };
 export const findAll = args => {
-  return listEntities(['User'], ['email', 'firstname', 'lastname'], args);
+  return listEntities(['User'], ['user_email', 'firstname', 'lastname'], args);
 };
 export const token = (userId, args, context) => {
   if (userId !== context.user.id) {
@@ -169,12 +169,11 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
     assoc('external', newUser.external ? newUser.external : false),
     dissoc('roles')
   )(newUser);
-  const userCreated = await createEntity(userToCreate, 'User', {
-    modelType: TYPE_STIX_DOMAIN_ENTITY,
-    stixIdType: 'identity'
-  });
+  const userOptions = { modelType: TYPE_STIX_DOMAIN_ENTITY, stixIdType: 'identity' };
+  const userCreated = await createEntity(userToCreate, 'User', userOptions);
   // Create token and link it to the user
-  const defaultToken = await createEntity(newToken, 'Token', { modelType: TYPE_OPENCTI_INTERNAL, indexable: false });
+  const tokenOptions = { modelType: TYPE_OPENCTI_INTERNAL, indexable: false };
+  const defaultToken = await createEntity(newToken, 'Token', tokenOptions);
   const input = { fromRole: 'client', toId: defaultToken.id, toRole: 'authorization', through: 'authorize' };
   await createRelation(userCreated.id, input, { indexable: false });
   // Link to the roles
@@ -222,7 +221,7 @@ export const loginFromProvider = async (email, name) => {
     ['client', 'token']
   );
   if (isNil(result)) {
-    const newUser = { name, email, external: true, grant: conf.get('app:default_roles') };
+    const newUser = { name, user_email: email, external: true, grant: conf.get('app:default_roles') };
     return addUser(SYSTEM_USER, newUser).then(() => loginFromProvider(email, name));
   }
   // update the name
@@ -230,23 +229,25 @@ export const loginFromProvider = async (email, name) => {
   await userEditField(SYSTEM_USER, result.client.id, inputName);
   const inputExternal = { key: 'external', value: [true] };
   await userEditField(SYSTEM_USER, result.client.id, inputExternal);
-  return Promise.resolve(result.token);
+  await clearAccessCache(result.token.id);
+  return result.token;
 };
 export const login = async (email, password) => {
   const result = await load(
-    `match $client isa User, has email "${escapeString(
-      email
-    )}"; (authorization:$token, client:$client) isa authorize; get;`,
+    `match $client isa User, has user_email "${escapeString(email)}";
+     (authorization:$token, client:$client) isa authorize; get;`,
     ['client', 'token']
   );
   if (isNil(result)) throw new AuthenticationFailure();
   const dbPassword = result.client.password;
   const match = bcrypt.compareSync(password, dbPassword);
   if (!match) throw new AuthenticationFailure();
+  await clearAccessCache(result.token.uuid);
   return result.token;
 };
 export const logout = async (user, res) => {
   res.clearCookie(OPENCTI_TOKEN);
+  await clearAccessCache(user.token.uuid);
   await delUserContext(user);
   return user.id;
 };
@@ -323,7 +324,7 @@ export const initAdmin = async (email, password, tokenValue) => {
   if (admin) {
     // Update admin fields
     await executeWrite(async wTx => {
-      await updateAttribute(admin.id, { key: 'email', value: [email] }, wTx);
+      await updateAttribute(admin.id, { key: 'user_email', value: [email] }, wTx);
       await updateAttribute(admin.id, { key: 'password', value: [bcrypt.hashSync(password, 10)] }, wTx);
       await updateAttribute(admin.id, { key: 'external', value: [true] }, wTx);
     });
@@ -333,11 +334,11 @@ export const initAdmin = async (email, password, tokenValue) => {
     const userToCreate = {
       internal_id_key: OPENCTI_ADMIN_UUID,
       stix_id_key: `identity--${OPENCTI_ADMIN_UUID}`,
+      user_email: email.toLowerCase(),
       name: 'admin',
       firstname: 'Admin',
       lastname: 'OpenCTI',
       description: 'Principal admin account',
-      email,
       password,
       roles: [ROLE_ADMINISTRATOR]
     };

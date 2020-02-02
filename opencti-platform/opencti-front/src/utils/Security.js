@@ -4,6 +4,7 @@ import {
 } from 'ramda';
 
 export const UserContext = React.createContext({});
+export const BYPASS = 'BYPASS';
 export const KNOWLEDGE = 'KNOWLEDGE';
 export const KNOWLEDGE_KNIMPORT = 'KNOWLEDGE_KNIMPORT';
 export const KNOWLEDGE_KNEXPORT = 'KNOWLEDGE_KNEXPORT';
@@ -18,6 +19,7 @@ const granted = (me, roles, matchAll = false) => {
     flatten,
     uniq,
   )(me.capabilities);
+  if (userCapabilities.includes(BYPASS)) return true;
   if (!matchAll) return userCapabilities.some((r) => roles.includes(r));
   for (let index = 0; index < roles.length; index += 1) {
     const checkRole = roles[index];

@@ -41,9 +41,6 @@ export const toolEditionQuery = graphql`
     tool(id: $id) {
       ...ToolEditionContainer_tool
     }
-    me {
-      ...ToolEditionContainer_me
-    }
   }
 `;
 
@@ -74,29 +71,23 @@ class ToolEdition extends Component {
     const { classes, toolId } = this.props;
     return (
       <div>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
+        <Fab onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Edit"
-          className={classes.editButton}
-        >
+          className={classes.editButton}>
           <Edit />
         </Fab>
-        <Drawer
-          open={this.state.open}
+        <Drawer open={this.state.open}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
+          onClose={this.handleClose.bind(this)}>
           <QueryRenderer
             query={toolEditionQuery}
             variables={{ id: toolId }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <ToolEditionContainer
-                    me={props.me}
-                    tool={props.tool}
+                  <ToolEditionContainer tool={props.tool}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );

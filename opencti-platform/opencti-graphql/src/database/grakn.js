@@ -1712,12 +1712,12 @@ export const deleteRelationById = async relationId => {
 export const deleteRelationsByFromAndTo = async (fromId, toId, relationType = 'relation') => {
   const efromId = escapeString(fromId);
   const etoId = escapeString(toId);
-  const read = `match $from has internal_id_key "${efromId}"; $to has internal_id_key "${etoId}"; $rel($from, $to) isa ${relationType}; get;`;
+  const read = `match $from has internal_id_key "${efromId}"; 
+    $to has internal_id_key "${etoId}"; 
+    $rel($from, $to) isa ${relationType}; get;`;
   const relationsToDelete = await find(read, ['rel']);
   const relationsIds = map(r => r.rel.id, relationsToDelete);
-  for (const relationId of relationsIds) {
-    await deleteRelationById(relationId);
-  }
+  await Promise.all(map(id => deleteRelationById(id), relationsIds));
 };
 
 export const deleteAttributeById = async id => {

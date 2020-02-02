@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import {
-  compose, insert, find, propEq,
-} from 'ramda';
+import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
@@ -13,7 +11,7 @@ import inject18n from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import IndicatorEditionOverview from './IndicatorEditionOverview';
 
-const styles = theme => ({
+const styles = (theme) => ({
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
     padding: '20px 20px 20px 60px',
@@ -46,35 +44,26 @@ const styles = theme => ({
 class IndicatorEditionContainer extends Component {
   render() {
     const {
-      t, classes, handleClose, indicator, me,
+      t, classes, handleClose, indicator,
     } = this.props;
     const { editContext } = indicator;
-    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe
-      ? insert(0, { name: me.email }, editContext)
-      : editContext;
     return (
       <div>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}
-          >
+            onClick={handleClose.bind(this)}>
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update an indicator')}
           </Typography>
-          <SubscriptionAvatars users={editUsers} />
+          <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <IndicatorEditionOverview
-            indicator={this.props.indicator}
-            editUsers={editUsers}
-            me={me}
-          />
+          <IndicatorEditionOverview indicator={this.props.indicator} context={editContext}/>
         </div>
       </div>
     );
@@ -85,7 +74,6 @@ IndicatorEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
   indicator: PropTypes.object,
-  me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
@@ -101,11 +89,6 @@ const IndicatorEditionFragment = createFragmentContainer(
           name
           focusOn
         }
-      }
-    `,
-    me: graphql`
-      fragment IndicatorEditionContainer_me on User {
-        email
       }
     `,
   },

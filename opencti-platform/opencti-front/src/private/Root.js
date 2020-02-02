@@ -51,12 +51,14 @@ const useStyles = makeStyles((theme) => ({
 const rootQuery = graphql`
   query RootQuery {
     me {
-      email
+      id
+      name
+      lastname
+      user_email
       capabilities {
         name
       }
       ...AppIntlProvider_me
-      ...TopBar_me
     }
     settings {
       ...AppIntlProvider_settings
@@ -68,9 +70,7 @@ const Root = () => {
   const paddingRight = 24;
   const classes = useStyles();
   return (
-    <QueryRenderer
-      query={rootQuery}
-      variables={{}}
+    <QueryRenderer query={rootQuery} variables={{}}
       render={({ props }) => {
         if (props) {
           return (

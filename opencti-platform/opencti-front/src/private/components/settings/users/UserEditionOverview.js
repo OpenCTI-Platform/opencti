@@ -179,9 +179,7 @@ class UserEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, user, editUsers, me,
-    } = this.props;
+    const { t, user, context } = this.props;
     const external = user.external === true;
     const userRoles = pipe(map((n) => ({ label: n.name, value: n.id })))(user.roles);
     const initialValues = pipe(
@@ -212,13 +210,7 @@ class UserEditionOverviewComponent extends Component {
                 fullWidth={true}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus
-                    me={me}
-                    users={editUsers}
-                    fieldName="name"
-                  />
-                }
+                helperText={<SubscriptionFocus context={context} fieldName="name"/>}
               />
               <Field
                 name="email"
@@ -229,13 +221,7 @@ class UserEditionOverviewComponent extends Component {
                 style={{ marginTop: 10 }}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus
-                    me={me}
-                    users={editUsers}
-                    fieldName="email"
-                  />
-                }
+                helperText={<SubscriptionFocus context={context} fieldName="email"/>}
               />
               <Field
                 name="firstname"
@@ -245,13 +231,7 @@ class UserEditionOverviewComponent extends Component {
                 style={{ marginTop: 10 }}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus
-                    me={me}
-                    users={editUsers}
-                    fieldName="firstname"
-                  />
-                }
+                helperText={<SubscriptionFocus context={context} fieldName="firstname"/>}
               />
               <Field
                 name="lastname"
@@ -261,13 +241,7 @@ class UserEditionOverviewComponent extends Component {
                 style={{ marginTop: 10 }}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus
-                    me={me}
-                    users={editUsers}
-                    fieldName="lastname"
-                  />
-                }
+                helperText={<SubscriptionFocus context={context} fieldName="lastname"/>}
               />
               <Field
                 name="language"
@@ -281,13 +255,7 @@ class UserEditionOverviewComponent extends Component {
                 containerstyle={{ marginTop: 10, width: '100%' }}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onChange={this.handleSubmitField.bind(this)}
-                helpertext={
-                  <SubscriptionFocus
-                    me={me}
-                    users={editUsers}
-                    fieldName="language"
-                  />
-                }
+                helpertext={<SubscriptionFocus context={context} fieldName="language"/>}
               >
                 <MenuItem value="auto">
                   <em>{t('Automatic')}</em>
@@ -303,13 +271,7 @@ class UserEditionOverviewComponent extends Component {
                 options={this.state.roles}
                 onInputChange={this.searchRoles.bind(this)}
                 onChange={this.handleChangeRole.bind(this)}
-                helperText={
-                    <SubscriptionFocus
-                        me={me}
-                        users={editUsers}
-                        fieldName="roles"
-                    />
-                }
+                helperText={<SubscriptionFocus context={context} fieldName="roles"/>}
               />
               <Field
                 name="description"
@@ -321,13 +283,7 @@ class UserEditionOverviewComponent extends Component {
                 style={{ marginTop: 10 }}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus
-                    me={me}
-                    users={editUsers}
-                    fieldName="description"
-                  />
-                }
+                helperText={<SubscriptionFocus context={context} fieldName="description"/>}
               />
             </Form>
           )}
@@ -342,8 +298,7 @@ UserEditionOverviewComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   user: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
+  context: PropTypes.array,
 };
 
 const UserEditionOverview = createFragmentContainer(
@@ -355,7 +310,7 @@ const UserEditionOverview = createFragmentContainer(
         name
         description
         external
-        email
+        user_email
         firstname
         lastname
         language

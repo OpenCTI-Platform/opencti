@@ -987,7 +987,7 @@ type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   description: String
   firstname: String
   lastname: String
-  email: String
+  user_email: String
   language: String
   external: Boolean
   roles: [Role]!

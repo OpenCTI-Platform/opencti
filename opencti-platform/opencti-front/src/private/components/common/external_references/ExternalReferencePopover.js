@@ -56,9 +56,6 @@ const externalReferenceEditionQuery = graphql`
     externalReference(id: $id) {
       ...ExternalReferenceEdition_externalReference
     }
-    me {
-      ...ExternalReferenceEdition_me
-    }
   }
 `;
 
@@ -158,7 +155,6 @@ class ExternalReferencePopover extends Component {
                 // Done
                 return (
                   <ExternalReferenceEdition
-                    me={props.me}
                     externalReference={props.externalReference}
                     handleClose={this.handleCloseUpdate.bind(this)}
                   />

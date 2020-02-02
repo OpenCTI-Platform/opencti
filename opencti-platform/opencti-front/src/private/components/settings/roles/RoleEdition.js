@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import {
-  compose, insert, find, propEq,
-} from 'ramda';
+import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
@@ -46,35 +44,26 @@ const styles = (theme) => ({
 class RoleEdition extends Component {
   render() {
     const {
-      t, classes, handleClose, role, me,
+      t, classes, handleClose, role,
     } = this.props;
     const { editContext } = role;
-    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe
-      ? insert(0, { name: me.email }, editContext)
-      : editContext;
     return (
       <div>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}
-          >
+            onClick={handleClose.bind(this)}>
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update a role')}
           </Typography>
-          <SubscriptionAvatars users={editUsers} />
+          <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
-            <RoleEditionOverview
-              role={this.props.role}
-              editUsers={editUsers}
-              me={me}
-            />
+            <RoleEditionOverview role={this.props.role} context={editContext}/>
         </div>
       </div>
     );
@@ -85,7 +74,6 @@ RoleEdition.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
   role: PropTypes.object,
-  me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
@@ -99,11 +87,6 @@ const RoleEditionFragment = createFragmentContainer(RoleEdition, {
         name
         focusOn
       }
-    }
-  `,
-  me: graphql`
-    fragment RoleEdition_me on User {
-      email
     }
   `,
 });

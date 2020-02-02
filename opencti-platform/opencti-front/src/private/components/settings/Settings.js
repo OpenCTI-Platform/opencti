@@ -2,10 +2,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import { Formik, Field, Form } from 'formik';
-import {
-  compose, find, insert, pick, propEq,
-} from 'ramda';
+import { Field, Form, Formik } from 'formik';
+import { compose, pick } from 'ramda';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -52,9 +50,6 @@ const settingsQuery = graphql`
         name
         focusOn
       }
-    }
-    me {
-      email
     }
   }
 `;
@@ -134,14 +129,9 @@ class Settings extends Component {
         <QueryRenderer
           query={settingsQuery}
           render={({ props }) => {
-            if (props && props.settings && props.me) {
-              const { settings, me } = props;
+            if (props && props.settings) {
+              const { settings } = props;
               const { id, editContext } = settings;
-              // Add current group to the context if is not available yet.
-              const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-              const editUsers = missingMe
-                ? insert(0, { name: me.email }, editContext)
-                : editContext;
               const initialValues = pick(
                 [
                   'platform_title',
@@ -155,8 +145,7 @@ class Settings extends Component {
                 settings,
               );
               return (
-                <Formik
-                  enableReinitialize={true}
+                <Formik enableReinitialize={true}
                   initialValues={initialValues}
                   validationSchema={settingsValidation(t)}
                   render={() => (
@@ -165,8 +154,7 @@ class Settings extends Component {
                         <Grid item={true} xs={9}>
                           <Paper
                             classes={{ root: classes.paper }}
-                            elevation={2}
-                          >
+                            elevation={2}>
                             <Typography variant="h1" gutterBottom={true}>
                               {t('Global')}
                             </Typography>
@@ -177,13 +165,7 @@ class Settings extends Component {
                               fullWidth={true}
                               onFocus={this.handleChangeFocus.bind(this, id)}
                               onSubmit={this.handleSubmitField.bind(this, id)}
-                              helperText={
-                                <SubscriptionFocus
-                                  me={me}
-                                  users={editUsers}
-                                  fieldName="platform_title"
-                                />
-                              }
+                              helperText={<SubscriptionFocus context={editContext} fieldName="platform_title"/>}
                             />
                             <Field
                               name="platform_email"
@@ -193,13 +175,7 @@ class Settings extends Component {
                               style={{ marginTop: 10 }}
                               onFocus={this.handleChangeFocus.bind(this, id)}
                               onSubmit={this.handleSubmitField.bind(this, id)}
-                              helperText={
-                                <SubscriptionFocus
-                                  me={me}
-                                  users={editUsers}
-                                  fieldName="platform_email"
-                                />
-                              }
+                              helperText={<SubscriptionFocus context={editContext} fieldName="platform_email"/>}
                             />
                             <Field
                               name="platform_url"
@@ -209,13 +185,7 @@ class Settings extends Component {
                               style={{ marginTop: 10 }}
                               onFocus={this.handleChangeFocus.bind(this, id)}
                               onSubmit={this.handleSubmitField.bind(this, id)}
-                              helperText={
-                                <SubscriptionFocus
-                                  me={me}
-                                  users={editUsers}
-                                  fieldName="platform_email"
-                                />
-                              }
+                              helperText={<SubscriptionFocus context={editContext} fieldName="platform_email"/>}
                             />
                             <Field
                               name="platform_language"
@@ -229,13 +199,7 @@ class Settings extends Component {
                               containerstyle={{ marginTop: 10, width: '100%' }}
                               onFocus={this.handleChangeFocus.bind(this, id)}
                               onChange={this.handleSubmitField.bind(this, id)}
-                              helpertext={
-                                <SubscriptionFocus
-                                  me={me}
-                                  users={editUsers}
-                                  fieldName="platform_language"
-                                />
-                              }
+                              helpertext={<SubscriptionFocus context={editContext} fieldName="platform_language"/>}
                             >
                               <MenuItem value="auto">
                                 <em>{t('Automatic')}</em>
@@ -246,10 +210,7 @@ class Settings extends Component {
                           </Paper>
                         </Grid>
                         <Grid item={true} xs={3}>
-                          <Paper
-                            classes={{ root: classes.paper }}
-                            elevation={2}
-                          >
+                          <Paper classes={{ root: classes.paper }} elevation={2}>
                             <Typography variant="h1" gutterBottom={true}>
                               {t('Options')}
                             </Typography>

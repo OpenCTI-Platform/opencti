@@ -29,9 +29,6 @@ const stixRelationEditionQuery = graphql`
     stixRelation(id: $id) {
       ...StixRelationEditionOverview_stixRelation
     }
-    me {
-      ...StixRelationEditionOverview_me
-    }
   }
 `;
 
@@ -68,7 +65,6 @@ class StixRelationEdition extends Component {
               if (props) {
                 return (
                   <StixRelationEditionOverview
-                    me={props.me}
                     stixDomainEntity={stixDomainEntity}
                     stixRelation={props.stixRelation}
                     handleClose={handleClose.bind(this)}

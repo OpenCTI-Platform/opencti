@@ -41,9 +41,6 @@ export const intrusionSetEditionQuery = graphql`
     intrusionSet(id: $id) {
       ...IntrusionSetEditionContainer_intrusionSet
     }
-    me {
-      ...IntrusionSetEditionContainer_me
-    }
   }
 `;
 
@@ -78,27 +75,22 @@ class IntrusionSetEdition extends Component {
           onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Edit"
-          className={classes.editButton}
-        >
+          className={classes.editButton}>
           <Edit />
         </Fab>
         <Drawer
           open={this.state.open}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
+          onClose={this.handleClose.bind(this)}>
           <QueryRenderer
             query={intrusionSetEditionQuery}
             variables={{ id: intrusionSetId }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <IntrusionSetEditionContainer
-                    me={props.me}
-                    intrusionSet={props.intrusionSet}
-                    handleClose={this.handleClose.bind(this)}
-                  />
+                  <IntrusionSetEditionContainer intrusionSet={props.intrusionSet}
+                    handleClose={this.handleClose.bind(this)}/>
                 );
               }
               return <Loader variant="inElement" />;

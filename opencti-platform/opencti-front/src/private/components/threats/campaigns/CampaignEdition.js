@@ -41,9 +41,6 @@ export const campaignEditionQuery = graphql`
     campaign(id: $id) {
       ...CampaignEditionContainer_campaign
     }
-    me {
-      ...CampaignEditionContainer_me
-    }
   }
 `;
 
@@ -94,11 +91,8 @@ class CampaignEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <CampaignEditionContainer
-                    me={props.me}
-                    campaign={props.campaign}
-                    handleClose={this.handleClose.bind(this)}
-                  />
+                  <CampaignEditionContainer campaign={props.campaign}
+                    handleClose={this.handleClose.bind(this)}/>
                 );
               }
               return <Loader variant="inElement" />;

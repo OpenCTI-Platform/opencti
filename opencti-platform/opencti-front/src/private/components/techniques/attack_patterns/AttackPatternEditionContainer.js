@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import {
-  compose, insert, find, propEq,
-} from 'ramda';
+import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import AppBar from '@material-ui/core/AppBar';
@@ -17,7 +15,7 @@ import { SubscriptionAvatars } from '../../../../components/Subscription';
 import AttackPatternEditionOverview from './AttackPatternEditionOverview';
 import AttackPatternEditionDetails from './AttackPatternEditionDetails';
 
-const styles = theme => ({
+const styles = (theme) => ({
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
     padding: '20px 20px 20px 60px',
@@ -59,28 +57,22 @@ class AttackPatternEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, attackPattern, me,
+      t, classes, handleClose, attackPattern,
     } = this.props;
     const { editContext } = attackPattern;
-    // Add current user to the context if is not available yet.
-    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe
-      ? insert(0, { name: me.email }, editContext)
-      : editContext;
     return (
       <div>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}
-          >
+            onClick={handleClose.bind(this)}>
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update an attack pattern')}
           </Typography>
-          <SubscriptionAvatars users={editUsers} />
+          <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
@@ -94,18 +86,10 @@ class AttackPatternEditionContainer extends Component {
             </Tabs>
           </AppBar>
           {this.state.currentTab === 0 && (
-            <AttackPatternEditionOverview
-              attackPattern={attackPattern}
-              editUsers={editUsers}
-              me={me}
-            />
+            <AttackPatternEditionOverview attackPattern={attackPattern} context={editContext}/>
           )}
           {this.state.currentTab === 1 && (
-            <AttackPatternEditionDetails
-              attackPattern={attackPattern}
-              editUsers={editUsers}
-              me={me}
-            />
+            <AttackPatternEditionDetails attackPattern={attackPattern} context={editContext}/>
           )}
         </div>
       </div>
@@ -117,7 +101,6 @@ AttackPatternEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
   attackPattern: PropTypes.object,
-  me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
@@ -134,11 +117,6 @@ const AttackPatternEditionFragment = createFragmentContainer(
           name
           focusOn
         }
-      }
-    `,
-    me: graphql`
-      fragment AttackPatternEditionContainer_me on User {
-        email
       }
     `,
   },

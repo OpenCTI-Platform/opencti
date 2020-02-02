@@ -1,10 +1,8 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import {
-  compose, insert, find, propEq,
-} from 'ramda';
+import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
@@ -17,7 +15,7 @@ import { SubscriptionAvatars } from '../../../../components/Subscription';
 import GroupEditionOverview from './GroupEditionOverview';
 import GroupEditionPermissions from './GroupEditionPermissions';
 
-const styles = theme => ({
+const styles = (theme) => ({
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
     padding: '20px 20px 20px 60px',
@@ -47,76 +45,49 @@ const styles = theme => ({
   },
 });
 
-class GroupEdition extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { currentTab: 0 };
-  }
-
-  handleChangeTab(event, value) {
-    this.setState({ currentTab: value });
-  }
-
-  render() {
-    const {
-      t, classes, handleClose, group, me,
-    } = this.props;
-    const { editContext } = group;
-    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe
-      ? insert(0, { name: me.email }, editContext)
-      : editContext;
-    return (
+const GroupEdition = ({
+  t, classes, handleClose, group,
+}) => {
+  const [currentTab, setTab] = useState(0);
+  const { editContext } = group;
+  return (
       <div>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}
-          >
+            onClick={handleClose}>
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update a group')}
           </Typography>
-          <SubscriptionAvatars users={editUsers} />
+          <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
           <AppBar position="static" elevation={0} className={classes.appBar}>
-            <Tabs
-              value={this.state.currentTab}
-              onChange={this.handleChangeTab.bind(this)}
-            >
+            <Tabs value={currentTab}
+              onChange={(event, value) => setTab(value)}>
               <Tab label={t('Overview')} />
               <Tab label={t('Permissions')} />
             </Tabs>
           </AppBar>
-          {this.state.currentTab === 0 && (
-            <GroupEditionOverview
-              group={this.props.group}
-              editUsers={editUsers}
-              me={me}
-            />
+          {currentTab === 0 && (
+            <GroupEditionOverview group={this.props.group} context={editContext} />
           )}
-          {this.state.currentTab === 1 && (
-            <GroupEditionPermissions
-              group={this.props.group}
-              editUsers={editUsers}
-              me={me}
-            />
+          {currentTab === 1 && (
+            <GroupEditionPermissions group={this.props.group} />
           )}
         </div>
       </div>
-    );
-  }
-}
+  );
+};
 
 GroupEdition.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
   group: PropTypes.object,
-  me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
@@ -131,11 +102,6 @@ const GroupEditionFragment = createFragmentContainer(GroupEdition, {
         name
         focusOn
       }
-    }
-  `,
-  me: graphql`
-    fragment GroupEdition_me on User {
-      email
     }
   `,
 });

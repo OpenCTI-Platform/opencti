@@ -36,7 +36,7 @@ const profileOverviewFieldPatch = graphql`
 
 const userValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  email: Yup.string()
+  user_email: Yup.string()
     .required(t('This field is required'))
     .email(t('The value must be an email address')),
   firstname: Yup.string(),
@@ -90,7 +90,7 @@ class ProfileOverviewComponent extends Component {
     const { t, me, classes } = this.props;
     const external = me.external === true;
     const initialValues = pick(
-      ['name', 'description', 'email', 'firstname', 'lastname', 'language'],
+      ['name', 'description', 'user_email', 'firstname', 'lastname', 'language'],
       me,
     );
     return (
@@ -114,7 +114,7 @@ class ProfileOverviewComponent extends Component {
                   onSubmit={this.handleSubmitField.bind(this)}
                 />
                 <Field
-                  name="email"
+                  name="user_email"
                   component={TextField}
                   disabled={true}
                   label={t('Email address')}
@@ -259,7 +259,7 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
     fragment ProfileOverview_me on User {
       name
       description
-      email
+      user_email
       external 
       firstname
       lastname

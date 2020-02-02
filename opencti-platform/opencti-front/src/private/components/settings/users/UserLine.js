@@ -62,7 +62,7 @@ class UserLineComponent extends Component {
                 {node.name}
               </div>
               <div className={classes.bodyItem} style={{ width: dataColumns.email.width }}>
-                {node.email}
+                {node.user_email}
               </div>
               <div className={classes.bodyItem} style={{ width: dataColumns.firstname.width }}>
                 {node.firstname}
@@ -99,7 +99,7 @@ const UserLineFragment = createFragmentContainer(UserLineComponent, {
     fragment UserLine_node on User {
       id
       name
-      email
+      user_email
       firstname
       external
       lastname
@@ -124,34 +124,19 @@ class UserLineDummyComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.email.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.email.width }}>
                 <div className="fakeItem" style={{ width: '70%' }} />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.firstname.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.firstname.width }}>
                 <div className="fakeItem" style={{ width: '60%' }} />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.lastname.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.lastname.width }}>
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.created.width }}>
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
             </div>

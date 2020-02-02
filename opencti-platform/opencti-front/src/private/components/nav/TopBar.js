@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
@@ -11,7 +11,6 @@ import { UploadNetworkOutline } from 'mdi-material-ui';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Tooltip from '@material-ui/core/Tooltip';
-import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import logo from '../../../resources/images/logo.png';
 import inject18n from '../../../components/i18n';
@@ -98,22 +97,19 @@ const logoutMutation = graphql`
   }
 `;
 
-class TopBar extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { menuOpen: false };
-  }
-
-  handleOpenMenu(event) {
+const TopBar = (props) => {
+  const {
+    t, classes, location, keyword,
+  } = props;
+  const [menuOpen, setMenuOpen] = useState({ open: false, anchorEl: null });
+  const handleOpenMenu = (event) => {
     event.preventDefault();
-    this.setState({ menuOpen: true, anchorEl: event.currentTarget });
-  }
-
-  handleCloseMenu() {
-    this.setState({ menuOpen: false });
-  }
-
-  handleLogout() {
+    setMenuOpen({ open: true, anchorEl: event.currentTarget });
+  };
+  const handleCloseMenu = () => {
+    setMenuOpen({ open: false, anchorEl: null });
+  };
+  const handleLogout = () => {
     commitMutation({
       mutation: logoutMutation,
       variables: {},
@@ -121,267 +117,259 @@ class TopBar extends Component {
         this.props.history.push('/login');
       },
     });
-  }
-
-  handleSearch(keyword) {
-    if (keyword.length > 0) {
+  };
+  const handleSearch = (searchKeyword) => {
+    if (searchKeyword.length > 0) {
       // With need to double encode because of react router.
       // Waiting for history 5.0 integrated to react router.
-      const encodeKey = encodeURIComponent(encodeURIComponent(keyword));
+      const encodeKey = encodeURIComponent(encodeURIComponent(searchKeyword));
       this.props.history.push(`/dashboard/search/${encodeKey}`);
     }
-  }
-
-  render() {
-    const {
-      t, classes, location, keyword,
-    } = this.props;
-    return (
-      <AppBar position="fixed" className={classes.appBar}>
-        <Toolbar>
-          <IconButton
-            classes={{ root: classes.logoButton }}
-            color="inherit"
-            aria-label="Menu"
-            component={Link}
-            to="/dashboard"
-          >
-            <img src={logo} alt="logo" className={classes.logo} />
-          </IconButton>
-          <div className={classes.menuContainer}>
-            {location.pathname === '/dashboard'
-            || location.pathname === '/dashboard/entities'
-            || location.pathname === '/dashboard/import' ? (
-              <TopMenuDashboard />
-              ) : (
-                ''
-              )}
-            {location.pathname.includes('/dashboard/search/') ? (
-              <TopMenuSearch />
+  };
+  return (
+    <AppBar position="fixed" className={classes.appBar}>
+      <Toolbar>
+        <IconButton
+          classes={{ root: classes.logoButton }}
+          color="inherit"
+          aria-label="Menu"
+          component={Link}
+          to="/dashboard">
+          <img src={logo} alt="logo" className={classes.logo} />
+        </IconButton>
+        <div className={classes.menuContainer}>
+          {location.pathname === '/dashboard'
+          || location.pathname === '/dashboard/entities'
+          || location.pathname === '/dashboard/import' ? (
+            <TopMenuDashboard />
             ) : (
               ''
             )}
-            {location.pathname === '/dashboard/explore' ? (
-              <TopMenuExplore />
+          {location.pathname.includes('/dashboard/search/') ? (
+            <TopMenuSearch />
+          ) : (
+            ''
+          )}
+          {location.pathname === '/dashboard/explore' ? (
+            <TopMenuExplore />
+          ) : (
+            ''
+          )}
+          {location.pathname.includes('/dashboard/explore/') ? (
+            <TopMenuExploreWorkspace />
+          ) : (
+            ''
+          )}
+          {location.pathname === '/dashboard/investigate' ? (
+            <TopMenuInvestigate />
+          ) : (
+            ''
+          )}
+          {location.pathname.includes('/dashboard/investigate/') ? (
+            <TopMenuInvestigateWorkspace />
+          ) : (
+            ''
+          )}
+          {location.pathname === '/dashboard/threats'
+          || location.pathname.match('/dashboard/threats/[a-z_]+$') ? (
+            <TopMenuKnowledge />
             ) : (
               ''
             )}
-            {location.pathname.includes('/dashboard/explore/') ? (
-              <TopMenuExploreWorkspace />
+          {location.pathname.includes('/dashboard/threats/threat_actors/') ? (
+            <TopMenuThreatActor />
+          ) : (
+            ''
+          )}
+          {location.pathname.includes(
+            '/dashboard/threats/intrusion_sets/',
+          ) ? (
+            <TopMenuIntrusionSet />
             ) : (
               ''
             )}
-            {location.pathname === '/dashboard/investigate' ? (
-              <TopMenuInvestigate />
+          {location.pathname.includes('/dashboard/threats/campaigns/') ? (
+            <TopMenuCampaign />
+          ) : (
+            ''
+          )}
+          {location.pathname.includes('/dashboard/threats/incidents/') ? (
+            <TopMenuIncident />
+          ) : (
+            ''
+          )}
+          {location.pathname.includes('/dashboard/threats/malwares/') ? (
+            <TopMenuMalware />
+          ) : (
+            ''
+          )}
+          {location.pathname === '/dashboard/techniques'
+          || location.pathname.match('/dashboard/techniques/[a-z_]+$') ? (
+            <TopMenuTechniques />
             ) : (
               ''
             )}
-            {location.pathname.includes('/dashboard/investigate/') ? (
-              <TopMenuInvestigateWorkspace />
+          {location.pathname.includes(
+            '/dashboard/techniques/attack_patterns/',
+          ) ? (
+            <TopMenuAttackPattern />
             ) : (
               ''
             )}
-            {location.pathname === '/dashboard/threats'
-            || location.pathname.match('/dashboard/threats/[a-z_]+$') ? (
-              <TopMenuKnowledge />
-              ) : (
-                ''
-              )}
-            {location.pathname.includes('/dashboard/threats/threat_actors/') ? (
-              <TopMenuThreatActor />
+          {location.pathname.includes(
+            '/dashboard/techniques/courses_of_action/',
+          ) ? (
+            <TopMenuCourseOfAction />
             ) : (
               ''
             )}
-            {location.pathname.includes(
-              '/dashboard/threats/intrusion_sets/',
-            ) ? (
-              <TopMenuIntrusionSet />
-              ) : (
-                ''
-              )}
-            {location.pathname.includes('/dashboard/threats/campaigns/') ? (
-              <TopMenuCampaign />
+          {location.pathname.includes('/dashboard/techniques/tools/') ? (
+            <TopMenuTool />
+          ) : (
+            ''
+          )}
+          {location.pathname.includes(
+            '/dashboard/techniques/vulnerabilities/',
+          ) ? (
+            <TopMenuVulnerability />
             ) : (
               ''
             )}
-            {location.pathname.includes('/dashboard/threats/incidents/') ? (
-              <TopMenuIncident />
+          {location.pathname === '/dashboard/signatures'
+          || location.pathname.match('/dashboard/signatures/[a-z1-9_]+$') ? (
+            <TopMenuSignatures />
             ) : (
               ''
             )}
-            {location.pathname.includes('/dashboard/threats/malwares/') ? (
-              <TopMenuMalware />
+          {location.pathname.includes('/dashboard/signatures/observables/') ? (
+            <TopMenuObservable />
+          ) : (
+            ''
+          )}
+          {location.pathname.includes('/dashboard/signatures/indicators/') ? (
+            <TopMenuIndicator />
+          ) : (
+            ''
+          )}
+          {location.pathname === '/dashboard/reports'
+          || location.pathname.match('/dashboard/reports/[a-zA-Z1-9_-]+$') ? (
+            <TopMenuReports />
             ) : (
               ''
             )}
-            {location.pathname === '/dashboard/techniques'
-            || location.pathname.match('/dashboard/techniques/[a-z_]+$') ? (
-              <TopMenuTechniques />
-              ) : (
-                ''
-              )}
-            {location.pathname.includes(
-              '/dashboard/techniques/attack_patterns/',
-            ) ? (
-              <TopMenuAttackPattern />
-              ) : (
-                ''
-              )}
-            {location.pathname.includes(
-              '/dashboard/techniques/courses_of_action/',
-            ) ? (
-              <TopMenuCourseOfAction />
-              ) : (
-                ''
-              )}
-            {location.pathname.includes('/dashboard/techniques/tools/') ? (
-              <TopMenuTool />
+          {location.pathname.includes('/dashboard/reports/all/') ? (
+            <TopMenuReport />
+          ) : (
+            ''
+          )}
+          {location.pathname === '/dashboard/entities'
+          || location.pathname.match('/dashboard/entities/[a-z_]+$') ? (
+            <TopMenuEntities />
             ) : (
               ''
             )}
-            {location.pathname.includes(
-              '/dashboard/techniques/vulnerabilities/',
-            ) ? (
-              <TopMenuVulnerability />
-              ) : (
-                ''
-              )}
-            {location.pathname === '/dashboard/signatures'
-            || location.pathname.match('/dashboard/signatures/[a-z1-9_]+$') ? (
-              <TopMenuSignatures />
-              ) : (
-                ''
-              )}
-            {location.pathname.includes('/dashboard/signatures/observables/') ? (
-              <TopMenuObservable />
+          {location.pathname.includes('/dashboard/entities/sectors/') ? (
+            <TopMenuSector />
+          ) : (
+            ''
+          )}
+          {location.pathname.includes('/dashboard/entities/regions/') ? (
+            <TopMenuRegion />
+          ) : (
+            ''
+          )}
+          {location.pathname.includes('/dashboard/entities/countries/') ? (
+            <TopMenuCountry />
+          ) : (
+            ''
+          )}
+          {location.pathname.includes('/dashboard/entities/cities/') ? (
+            <TopMenuCity />
+          ) : (
+            ''
+          )}
+          {location.pathname.includes(
+            '/dashboard/entities/organizations/',
+          ) ? (
+            <TopMenuOrganization />
             ) : (
               ''
             )}
-            {location.pathname.includes('/dashboard/signatures/indicators/') ? (
-              <TopMenuIndicator />
+          {location.pathname.includes('/dashboard/entities/persons/') ? (
+            <TopMenuPerson />
+          ) : (
+            ''
+          )}
+          {location.pathname === '/dashboard/connectors'
+          || location.pathname.match('/dashboard/connectors/[a-z_]+$') ? (
+            <TopMenuConnectors />
             ) : (
               ''
             )}
-            {location.pathname === '/dashboard/reports'
-            || location.pathname.match('/dashboard/reports/[a-zA-Z1-9_-]+$') ? (
-              <TopMenuReports />
-              ) : (
-                ''
-              )}
-            {location.pathname.includes('/dashboard/reports/all/') ? (
-              <TopMenuReport />
-            ) : (
-              ''
-            )}
-            {location.pathname === '/dashboard/entities'
-            || location.pathname.match('/dashboard/entities/[a-z_]+$') ? (
-              <TopMenuEntities />
-              ) : (
-                ''
-              )}
-            {location.pathname.includes('/dashboard/entities/sectors/') ? (
-              <TopMenuSector />
-            ) : (
-              ''
-            )}
-            {location.pathname.includes('/dashboard/entities/regions/') ? (
-              <TopMenuRegion />
-            ) : (
-              ''
-            )}
-            {location.pathname.includes('/dashboard/entities/countries/') ? (
-              <TopMenuCountry />
-            ) : (
-              ''
-            )}
-            {location.pathname.includes('/dashboard/entities/cities/') ? (
-              <TopMenuCity />
-            ) : (
-              ''
-            )}
-            {location.pathname.includes(
-              '/dashboard/entities/organizations/',
-            ) ? (
-              <TopMenuOrganization />
-              ) : (
-                ''
-              )}
-            {location.pathname.includes('/dashboard/entities/persons/') ? (
-              <TopMenuPerson />
-            ) : (
-              ''
-            )}
-            {location.pathname === '/dashboard/connectors'
-            || location.pathname.match('/dashboard/connectors/[a-z_]+$') ? (
-              <TopMenuConnectors />
-              ) : (
-                ''
-              )}
-            {location.pathname.includes('/dashboard/settings') ? (
-              <TopMenuSettings />
-            ) : (
-              ''
-            )}
-            {location.pathname === '/dashboard/profile' ? (
-              <TopMenuProfile />
-            ) : (
-              ''
-            )}
-          </div>
-          <div className={classes.searchContainer}>
-            <SearchInput
-              onSubmit={this.handleSearch.bind(this)}
-              keyword={keyword}
-            />
-          </div>
-          <Security roles={[KNOWLEDGE_KNIMPORT]}>
-            <Tooltip title={t('Data import')}>
-              <IconButton
-                component={Link}
-                to="/dashboard/import"
-                variant={
-                  location.pathname === '/dashboard/import' ? 'contained' : 'text'
-                }
-                color={
-                  location.pathname === '/dashboard/import'
-                    ? 'primary'
-                    : 'inherit'
-                }
-                classes={{ root: classes.button }}>
-                <UploadNetworkOutline fontSize="large" />
-              </IconButton>
-            </Tooltip>
-          </Security>
-          <IconButton
-            size="medium"
-            classes={{ root: classes.menuButton }}
-            aria-owns={this.state.open ? 'menu-appbar' : null}
-            aria-haspopup="true"
-            onClick={this.handleOpenMenu.bind(this)}
-            color="inherit">
-            <AccountCircle fontSize="large" />
-          </IconButton>
-          <Menu
-            id="menu-appbar"
-            style={{ marginTop: 40, zIndex: 2100 }}
-            anchorEl={this.state.anchorEl}
-            open={this.state.menuOpen}
-            onClose={this.handleCloseMenu.bind(this)}>
-            <MenuItem
+          {location.pathname.includes('/dashboard/settings') ? (
+            <TopMenuSettings />
+          ) : (
+            ''
+          )}
+          {location.pathname === '/dashboard/profile' ? (
+            <TopMenuProfile />
+          ) : (
+            ''
+          )}
+        </div>
+        <div className={classes.searchContainer}>
+          <SearchInput
+            onSubmit={handleSearch}
+            keyword={keyword}
+          />
+        </div>
+        <Security roles={[KNOWLEDGE_KNIMPORT]}>
+          <Tooltip title={t('Data import')}>
+            <IconButton
               component={Link}
-              to="/dashboard/profile"
-              onClick={this.handleCloseMenu.bind(this)}>
-              {t('Profile')}
-            </MenuItem>
-            <MenuItem onClick={this.handleLogout.bind(this)}>
-              {t('Logout')}
-            </MenuItem>
-          </Menu>
-        </Toolbar>
-      </AppBar>
-    );
-  }
-}
+              to="/dashboard/import"
+              variant={
+                location.pathname === '/dashboard/import' ? 'contained' : 'text'
+              }
+              color={
+                location.pathname === '/dashboard/import'
+                  ? 'primary'
+                  : 'inherit'
+              }
+              classes={{ root: classes.button }}>
+              <UploadNetworkOutline fontSize="large" />
+            </IconButton>
+          </Tooltip>
+        </Security>
+        <IconButton
+          size="medium"
+          classes={{ root: classes.menuButton }}
+          aria-owns={menuOpen ? 'menu-appbar' : null}
+          aria-haspopup="true"
+          onClick={handleOpenMenu}
+          color="inherit">
+          <AccountCircle fontSize="large" />
+        </IconButton>
+        <Menu
+          id="menu-appbar"
+          style={{ marginTop: 40, zIndex: 2100 }}
+          anchorEl={menuOpen.anchorEl}
+          open={menuOpen.open}
+          onClose={handleCloseMenu}>
+          <MenuItem
+            component={Link}
+            to="/dashboard/profile"
+            onClick={handleCloseMenu}>
+            {t('Profile')}
+          </MenuItem>
+          <MenuItem onClick={handleLogout}>
+            {t('Logout')}
+          </MenuItem>
+        </Menu>
+      </Toolbar>
+    </AppBar>
+  );
+};
 
 TopBar.propTypes = {
   keyword: PropTypes.string,
@@ -392,16 +380,8 @@ TopBar.propTypes = {
   history: PropTypes.object,
 };
 
-const TopBarFragment = createFragmentContainer(TopBar, {
-  me: graphql`
-    fragment TopBar_me on User {
-      email
-    }
-  `,
-});
-
 export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(TopBarFragment);
+)(TopBar);

@@ -281,9 +281,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, courseOfAction, editUsers, me,
-    } = this.props;
+    const { t, courseOfAction, context } = this.props;
     const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], courseOfAction) === null
       ? ''
       : {
@@ -335,13 +333,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
                   fullWidth={true}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="name"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="name"/>}
                 />
                 <Field
                   name="description"
@@ -353,12 +345,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
                   style={{ marginTop: 10 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="description"
-                    />
+                  helperText={<SubscriptionFocus context={context} fieldName="description"/>
                   }
                 />
                 <Field
@@ -371,13 +358,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
                   onInputChange={this.searchIdentities.bind(this)}
                   onChange={this.handleChangeCreatedByRef.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="createdByRef"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="createdByRef"/>}
                 />
                 <Field
                   name="markingDefinitions"
@@ -388,13 +369,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
                   onInputChange={this.searchMarkingDefinitions.bind(this)}
                   onChange={this.handleChangeMarkingDefinition.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="markingDefinitions"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="markingDefinitions"/>}
                 />
               </Form>
               <IdentityCreation
@@ -426,8 +401,7 @@ CourseOfActionEditionOverviewComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   courseOfAction: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
+  context: PropTypes.array,
 };
 
 const CourseOfActionEditionOverview = createFragmentContainer(

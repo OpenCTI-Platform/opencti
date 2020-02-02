@@ -12,6 +12,10 @@ export const up = async next => {
   // -- Admin role for OPENCTI_ADMIN_UUID
 
   // -- Default role for others
+
+  // New field user_email
+
+  // Remove old field email
   next();
 };
 

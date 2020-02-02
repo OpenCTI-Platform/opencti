@@ -41,9 +41,6 @@ export const workspaceEditionQuery = graphql`
     workspace(id: $id) {
       ...WorkspaceEditionContainer_workspace
     }
-    me {
-      ...WorkspaceEditionContainer_me
-    }
   }
 `;
 
@@ -78,16 +75,13 @@ class WorkspaceEdition extends Component {
           onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Edit"
-          className={classes.editButton}
-        >
+          className={classes.editButton}>
           <Edit />
         </Fab>
-        <Drawer
-          open={this.state.open}
+        <Drawer open={this.state.open}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
+          onClose={this.handleClose.bind(this)}>
           <QueryRenderer
             query={workspaceEditionQuery}
             variables={{ id: workspaceId }}
@@ -95,7 +89,6 @@ class WorkspaceEdition extends Component {
               if (props) {
                 return (
                   <WorkspaceEditionContainer
-                    me={props.me}
                     workspace={props.workspace}
                     handleClose={this.handleClose.bind(this)}
                   />
@@ -112,7 +105,6 @@ class WorkspaceEdition extends Component {
 
 WorkspaceEdition.propTypes = {
   workspaceId: PropTypes.string,
-  me: PropTypes.object,
   workspace: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,

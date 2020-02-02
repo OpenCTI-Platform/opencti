@@ -42,9 +42,6 @@ export const attackPatternEditionQuery = graphql`
       ...AttackPatternEditionContainer_attackPattern
       ...AttackPatternEditionDetails_attackPattern
     }
-    me {
-      ...AttackPatternEditionContainer_me
-    }
   }
 `;
 
@@ -75,20 +72,16 @@ class AttackPatternEdition extends Component {
     const { classes, attackPatternId } = this.props;
     return (
       <div>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
+        <Fab onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Edit"
-          className={classes.editButton}
-        >
+          className={classes.editButton}>
           <Edit />
         </Fab>
-        <Drawer
-          open={this.state.open}
+        <Drawer open={this.state.open}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
+          onClose={this.handleClose.bind(this)}>
           <QueryRenderer
             query={attackPatternEditionQuery}
             variables={{ id: attackPatternId }}
@@ -96,7 +89,6 @@ class AttackPatternEdition extends Component {
               if (props) {
                 return (
                   <AttackPatternEditionContainer
-                    me={props.me}
                     attackPattern={props.attackPattern}
                     handleClose={this.handleClose.bind(this)}
                   />

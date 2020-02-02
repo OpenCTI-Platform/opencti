@@ -56,9 +56,6 @@ const userEditionQuery = graphql`
     user(id: $id) {
       ...UserEdition_user
     }
-    me {
-      ...UserEdition_me
-    }
   }
 `;
 
@@ -133,8 +130,7 @@ class UserPopover extends Component {
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
           <MoreVert />
         </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
+        <Menu anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
           style={{ marginTop: 50 }}>
@@ -147,8 +143,7 @@ class UserPopover extends Component {
             </MenuItem>
           }
         </Menu>
-        <Drawer
-          open={this.state.displayUpdate}
+        <Drawer open={this.state.displayUpdate}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleCloseUpdate.bind(this)}>
@@ -158,9 +153,7 @@ class UserPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <UserEdition
-                    me={props.me}
-                    user={props.user}
+                  <UserEdition user={props.user}
                     handleClose={this.handleCloseUpdate.bind(this)}
                   />
                 );
@@ -169,8 +162,7 @@ class UserPopover extends Component {
             }}
           />
         </Drawer>
-        <Dialog
-          open={this.state.displayDelete}
+        <Dialog open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
           onClose={this.handleCloseDelete.bind(this)}>

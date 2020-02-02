@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import {
   assoc, compose, pick, pipe,
 } from 'ramda';
@@ -41,7 +41,7 @@ const intrusionSetEditionDetailsFocus = graphql`
   }
 `;
 
-const intrusionSetValidation = t => Yup.object().shape({
+const intrusionSetValidation = (t) => Yup.object().shape({
   first_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
@@ -86,9 +86,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
   }
 
   render() {
-    const {
-      t, intrusionSet, editUsers, me,
-    } = this.props;
+    const { t, intrusionSet, context } = this.props;
     const initialValues = pipe(
       assoc('first_seen', dateFormat(intrusionSet.first_seen)),
       assoc('last_seen', dateFormat(intrusionSet.last_seen)),
@@ -119,13 +117,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
                   fullWidth={true}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="first_seen"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="first_seen"/>}
                 />
                 <Field
                   name="last_seen"
@@ -135,13 +127,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
                   style={{ marginTop: 10 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="last_seen"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="last_seen"/>}
                 />
                 <Field
                   name="sophistication"
@@ -155,13 +141,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
                     id: 'sophistication',
                   }}
                   containerstyle={{ width: '100%' }}
-                  helpertext={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="sophistication"
-                    />
-                  }
+                  helpertext={<SubscriptionFocus context={context} fieldName="sophistication"/>}
                 >
                   <MenuItem key="none" value="none">
                     {t('sophistication_none')}
@@ -197,13 +177,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
                     id: 'resource_level',
                   }}
                   containerstyle={{ width: '100%' }}
-                  helpertext={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="resource_level"
-                    />
-                  }>
+                  helpertext={<SubscriptionFocus context={context} fieldName="resource_level"/>}>
                   <MenuItem key="none" value="">
                     {t('None')}
                   </MenuItem>
@@ -238,13 +212,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
                     id: 'primary_motivation',
                   }}
                   containerstyle={{ width: '100%' }}
-                  helpertext={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="primary_motivation"
-                    />
-                  }
+                  helpertext={<SubscriptionFocus context={context} fieldName="primary_motivation"/>}
                 >
                   <MenuItem key="none" value="">
                     {t('None')}
@@ -298,13 +266,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
                     id: 'secondary_motivation',
                   }}
                   containerstyle={{ width: '100%' }}
-                  helpertext={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="secondary_motivation"
-                    />
-                  }
+                  helpertext={<SubscriptionFocus context={context} fieldName="secondary_motivation"/>}
                 >
                   <MenuItem key="none" value="">
                     {t('None')}
@@ -358,8 +320,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
 IntrusionSetEditionDetailsComponent.propTypes = {
   t: PropTypes.func,
   intrusionSet: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
+  context: PropTypes.array,
 };
 
 const IntrusionSetEditionDetails = createFragmentContainer(

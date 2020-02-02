@@ -164,7 +164,7 @@ class RoleEditionOverviewComponent extends Component {
 
   render() {
     const {
-      t, role, editUsers, me, classes,
+      t, role, context, classes,
     } = this.props;
     const initialValues = pick(['name', 'description', 'default_assignation'], role);
     return (
@@ -184,11 +184,7 @@ class RoleEditionOverviewComponent extends Component {
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
                 helperText={
-                  <SubscriptionFocus
-                    me={me}
-                    users={editUsers}
-                    fieldName="name"
-                  />
+                  <SubscriptionFocus context={context} fieldName="name"/>
                 }
               />
               <Field
@@ -202,11 +198,7 @@ class RoleEditionOverviewComponent extends Component {
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
                 helperText={
-                  <SubscriptionFocus
-                    me={me}
-                    users={editUsers}
-                    fieldName="description"
-                  />
+                  <SubscriptionFocus context={context} fieldName="description"/>
                 }
               />
               <Field
@@ -266,8 +258,7 @@ RoleEditionOverviewComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   role: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
+  context: PropTypes.array,
 };
 
 const RoleEditionOverview = createFragmentContainer(

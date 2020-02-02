@@ -275,9 +275,7 @@ class PersonEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, person, editUsers, me,
-    } = this.props;
+    const { t, person, context } = this.props;
     const external = person.external === true;
     const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], person) === null
       ? ''
@@ -318,11 +316,7 @@ class PersonEditionOverviewComponent extends Component {
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="name"
-                    />
+                    <SubscriptionFocus context={context} fieldName="name"/>
                   }
                 />
                 <Field
@@ -336,11 +330,7 @@ class PersonEditionOverviewComponent extends Component {
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="description"
-                    />
+                    <SubscriptionFocus context={context} fieldName="description"/>
                   }
                 />
                 <Field
@@ -354,11 +344,7 @@ class PersonEditionOverviewComponent extends Component {
                   onChange={this.handleChangeCreatedByRef.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="createdByRef"
-                    />
+                    <SubscriptionFocus context={context} fieldName="createdByRef"/>
                   }
                 />
                 <Field
@@ -371,11 +357,7 @@ class PersonEditionOverviewComponent extends Component {
                   onChange={this.handleChangeMarkingDefinition.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="markingDefinitions"
-                    />
+                    <SubscriptionFocus context={context} fieldName="markingDefinitions"/>
                   }
                 />
               </Form>
@@ -408,8 +390,7 @@ PersonEditionOverviewComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   person: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
+  context: PropTypes.array,
 };
 
 const PersonEditionOverview = createFragmentContainer(

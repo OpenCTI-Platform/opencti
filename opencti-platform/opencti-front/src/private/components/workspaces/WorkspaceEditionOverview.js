@@ -206,9 +206,7 @@ class WorkspaceEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, workspace, editUsers, me,
-    } = this.props;
+    const { t, workspace, context } = this.props;
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
       map((n) => ({
@@ -237,13 +235,7 @@ class WorkspaceEditionOverviewComponent extends Component {
                   fullWidth={true}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="name"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="name"/>}
                 />
                 <Field
                   name="description"
@@ -255,13 +247,7 @@ class WorkspaceEditionOverviewComponent extends Component {
                   style={{ marginTop: 10 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="description"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="description"/>}
                 />
                 <Field
                   name="markingDefinitions"
@@ -272,13 +258,7 @@ class WorkspaceEditionOverviewComponent extends Component {
                   onInputChange={this.searchMarkingDefinitions.bind(this)}
                   onChange={this.handleChangeMarkingDefinition.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="markingDefinitions"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="markingDefinitions"/>}
                 />
               </Form>
             </div>
@@ -294,8 +274,7 @@ WorkspaceEditionOverviewComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   workspace: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
+  context: PropTypes.array,
 };
 
 const WorkspaceEditionOverview = createFragmentContainer(

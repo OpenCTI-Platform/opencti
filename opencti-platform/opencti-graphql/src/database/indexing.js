@@ -76,6 +76,8 @@ const index = async () => {
   // MigrationReference  - Not needed, migration related.
   // Token - Not needed, authentication
   await indexElement('Settings');
+  await indexElement('Role');
+  await indexElement('Capability');
   await indexElement('Tag');
   await indexElement('Connector');
   await indexElement('Group');
@@ -88,7 +90,6 @@ const index = async () => {
   // authorize - Not needed, authentication
   await indexElement('membership', true);
   await indexElement('permission', true);
-  await indexElement('user_permission', true);
   await indexElement('stix_relation', true);
   await indexElement('stix_observable_relation', true);
   await indexElement('relation_embedded', true);
