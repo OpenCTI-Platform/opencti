@@ -104,6 +104,9 @@ const siteConfig = {
 
   // Sidebars
   docsSideNavCollapsible: true,
+
+  // Edit URL
+  editURL: 'https://github.com/OpenCTI-Platform/opencti/tree/master/opencti-documentation/docs/'
 };
 
 module.exports = siteConfig;

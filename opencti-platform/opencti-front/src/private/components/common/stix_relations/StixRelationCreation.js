@@ -40,6 +40,7 @@ import Autocomplete from '../../../../components/Autocomplete';
 import DatePickerField from '../../../../components/DatePickerField';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
+import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -370,7 +371,9 @@ class StixRelationCreation extends Component {
                     </div>
                   </div>
                   <div className={classes.content}>
-                    <span className={classes.name}>{from.name}</span>
+                    <span className={classes.name}>
+                      {truncate(from.name, 20)}
+                    </span>
                   </div>
                 </div>
                 <div className={classes.middle} style={{ paddingTop: 25 }}>
@@ -400,7 +403,9 @@ class StixRelationCreation extends Component {
                     <div className={classes.type}>{t(`entity_${to.type}`)}</div>
                   </div>
                   <div className={classes.content}>
-                    <span className={classes.name}>{to.name}</span>
+                    <span className={classes.name}>
+                      {truncate(to.name, 20)}
+                    </span>
                   </div>
                 </div>
               </div>

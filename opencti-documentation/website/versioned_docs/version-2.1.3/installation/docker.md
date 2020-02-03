@@ -1,7 +1,8 @@
 ---
-id: docker
+id: version-2.1.3-docker
 title: Docker installation
 sidebar_label: Using Docker
+original_id: docker
 ---
 
 OpenCTI could be deployed using the *docker-compose* command.

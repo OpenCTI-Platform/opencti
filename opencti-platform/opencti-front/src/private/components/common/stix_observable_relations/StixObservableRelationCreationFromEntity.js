@@ -372,6 +372,7 @@ class StixObservableRelationCreationFromEntity extends Component {
     const relationshipTypes = resolveRelationsTypes(
       fromEntity.entity_type,
       toEntity.entity_type,
+      false,
     );
     const defaultRelationshipType = head(relationshipTypes)
       ? head(relationshipTypes)
