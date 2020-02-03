@@ -2316,6 +2316,7 @@ enum ToolsFilter {
 input ToolsFiltering {
   key: ToolsFilter!
   values: [String]
+  operator: String
 }
 type ToolConnection {
   pageInfo: PageInfo!
