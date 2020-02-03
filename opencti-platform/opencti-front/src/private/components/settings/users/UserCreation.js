@@ -70,7 +70,7 @@ const userMutation = graphql`
 
 const userValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  email: Yup.string()
+  user_email: Yup.string()
     .required(t('This field is required'))
     .email(t('The value must be an email address')),
   firstname: Yup.string(),
@@ -159,8 +159,7 @@ class UserCreation extends Component {
             <IconButton
               aria-label="Close"
               className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
-            >
+              onClick={this.handleClose.bind(this)}>
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6">{t('Create a user')}</Typography>
@@ -169,7 +168,7 @@ class UserCreation extends Component {
             <Formik
               initialValues={{
                 name: '',
-                email: '',
+                user_email: '',
                 firstname: '',
                 lastname: '',
                 description: '',
@@ -191,7 +190,7 @@ class UserCreation extends Component {
                     fullWidth={true}
                   />
                   <Field
-                    name="email"
+                    name="user_email"
                     component={TextField}
                     label={t('Email address')}
                     fullWidth={true}
@@ -232,8 +231,7 @@ class UserCreation extends Component {
                       variant="contained"
                       onClick={handleReset}
                       disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
+                      classes={{ root: classes.button }}>
                       {t('Cancel')}
                     </Button>
                     <Button
@@ -241,8 +239,7 @@ class UserCreation extends Component {
                       color="primary"
                       onClick={submitForm}
                       disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
+                      classes={{ root: classes.button }}>
                       {t('Create')}
                     </Button>
                   </div>

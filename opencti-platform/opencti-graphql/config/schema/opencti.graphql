@@ -1030,7 +1030,7 @@ type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
 input UserAddInput {
   internal_id_key: String
   stix_id_key: String
-  email: String @constraint(minLength: 5, format: "email")
+  user_email: String @constraint(minLength: 5, format: "email")
   name: String! @constraint(minLength: 3)
   description: String
   password: String

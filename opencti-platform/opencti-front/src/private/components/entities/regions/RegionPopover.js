@@ -164,9 +164,7 @@ class RegionPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <RegionEditionContainer
-                    me={props.me}
-                    region={props.region}
+                  <RegionEditionContainer region={props.region}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

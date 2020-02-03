@@ -133,9 +133,7 @@ class Login extends Component {
         render={({ props }) => {
           if (props && props.settings) {
             return (
-              <ConnectedIntlProvider
-                me={props.me ? props.me : null}
-                settings={props.settings}>
+              <ConnectedIntlProvider settings={props.settings}>
                 <div className={this.props.classes.container} style={{ marginTop }}>
                   <img src={logo} alt="logo" className={this.props.classes.logo} />
                   { ACCESS_PROVIDERS.length > 0 ? <div>

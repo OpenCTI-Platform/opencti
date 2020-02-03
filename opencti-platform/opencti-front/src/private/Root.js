@@ -54,11 +54,11 @@ const rootQuery = graphql`
       id
       name
       lastname
+      language
       user_email
       capabilities {
         name
       }
-      ...AppIntlProvider_me
     }
     settings {
       ...AppIntlProvider_settings
@@ -75,10 +75,10 @@ const Root = () => {
         if (props) {
           return (
             <UserContext.Provider value={props.me}>
-              <ConnectedIntlProvider me={props.me} settings={props.settings}>
+              <ConnectedIntlProvider settings={props.settings}>
                 <div className={classes.root}>
-                  <TopBar me={props.me} />
-                  <LeftBar me={props.me} />
+                  <TopBar />
+                  <LeftBar />
                   <Message />
                   <main className={classes.content} style={{ paddingRight }}>
                     <div className={classes.toolbar} />

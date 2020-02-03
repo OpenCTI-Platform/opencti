@@ -97,10 +97,9 @@ const logoutMutation = graphql`
   }
 `;
 
-const TopBar = (props) => {
-  const {
-    t, classes, location, keyword,
-  } = props;
+const TopBar = ({
+  t, classes, location, history, keyword,
+}) => {
   const [menuOpen, setMenuOpen] = useState({ open: false, anchorEl: null });
   const handleOpenMenu = (event) => {
     event.preventDefault();
@@ -113,9 +112,7 @@ const TopBar = (props) => {
     commitMutation({
       mutation: logoutMutation,
       variables: {},
-      onCompleted: () => {
-        this.props.history.push('/login');
-      },
+      onCompleted: () => history.push('/login'),
     });
   };
   const handleSearch = (searchKeyword) => {
@@ -123,7 +120,7 @@ const TopBar = (props) => {
       // With need to double encode because of react router.
       // Waiting for history 5.0 integrated to react router.
       const encodeKey = encodeURIComponent(encodeURIComponent(searchKeyword));
-      this.props.history.push(`/dashboard/search/${encodeKey}`);
+      history.push(`/dashboard/search/${encodeKey}`);
     }
   };
   return (
@@ -318,10 +315,7 @@ const TopBar = (props) => {
           )}
         </div>
         <div className={classes.searchContainer}>
-          <SearchInput
-            onSubmit={handleSearch}
-            keyword={keyword}
-          />
+          <SearchInput onSubmit={handleSearch} keyword={keyword}/>
         </div>
         <Security roles={[KNOWLEDGE_KNIMPORT]}>
           <Tooltip title={t('Data import')}>
@@ -341,8 +335,7 @@ const TopBar = (props) => {
             </IconButton>
           </Tooltip>
         </Security>
-        <IconButton
-          size="medium"
+        <IconButton size="medium"
           classes={{ root: classes.menuButton }}
           aria-owns={menuOpen ? 'menu-appbar' : null}
           aria-haspopup="true"
@@ -350,14 +343,12 @@ const TopBar = (props) => {
           color="inherit">
           <AccountCircle fontSize="large" />
         </IconButton>
-        <Menu
-          id="menu-appbar"
+        <Menu id="menu-appbar"
           style={{ marginTop: 40, zIndex: 2100 }}
           anchorEl={menuOpen.anchorEl}
           open={menuOpen.open}
           onClose={handleCloseMenu}>
-          <MenuItem
-            component={Link}
+          <MenuItem component={Link}
             to="/dashboard/profile"
             onClick={handleCloseMenu}>
             {t('Profile')}
@@ -373,7 +364,6 @@ const TopBar = (props) => {
 
 TopBar.propTypes = {
   keyword: PropTypes.string,
-  me: PropTypes.object,
   classes: PropTypes.object,
   location: PropTypes.object,
   t: PropTypes.func,

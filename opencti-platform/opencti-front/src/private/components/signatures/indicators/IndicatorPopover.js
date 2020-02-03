@@ -164,9 +164,7 @@ class IndicatorPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <IndicatorEditionContainer
-                    me={props.me}
-                    indicator={props.indicator}
+                  <IndicatorEditionContainer indicator={props.indicator}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

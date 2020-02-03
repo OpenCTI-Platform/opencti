@@ -164,9 +164,7 @@ class CityPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <CityEditionContainer
-                    me={props.me}
-                    city={props.city}
+                  <CityEditionContainer city={props.city}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

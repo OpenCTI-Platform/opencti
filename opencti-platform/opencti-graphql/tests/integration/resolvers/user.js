@@ -6,7 +6,7 @@ const CREATE_QUERY = `
     mutation UserAdd($input: UserAddInput) {
       userAdd(input: $input) {
         name
-        email
+        user_email
         firstname
         lastname
       }
