@@ -116,6 +116,26 @@ class OrganizationKnowledgeComponent extends Component {
             />
           )}
         />
+        <Route
+          exact
+          path="/dashboard/entities/organizations/:organizationId/knowledge/attribution"
+          render={(routeProps) => (
+            <EntityStixRelations
+              entityId={organization.id}
+              relationType="attributed-to"
+              targetEntityTypes={[
+                'Threat-Actor',
+                'Intrusion-Set',
+                'Campaign',
+                'Incident',
+                'Malware',
+              ]}
+              entityLink={link}
+              creationIsFrom={false}
+              {...routeProps}
+            />
+          )}
+        />
       </div>
     );
   }
