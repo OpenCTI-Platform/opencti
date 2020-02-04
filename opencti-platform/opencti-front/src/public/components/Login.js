@@ -1,14 +1,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { pathOr, includes, compose } from 'ramda';
+import {
+  compose, filter, head, pathOr,
+} from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { Google, FacebookBox, GithubCircle } from 'mdi-material-ui';
-import { ACCESS_PROVIDERS, QueryRenderer } from '../../relay/environment';
+import { withRouter } from 'react-router-dom';
+import { QueryRenderer } from '../../relay/environment';
 import { ConnectedIntlProvider } from '../../components/AppIntlProvider';
 import logo from '../../resources/images/logo_opencti.png';
 import LoginForm from './LoginForm';
+import inject18n from '../../components/i18n';
+import Loader from '../../components/Loader';
 
 const loginHeight = 400;
 
@@ -58,10 +62,20 @@ const LoginQuery = graphql`
     settings {
       platform_external_auth
       platform_demo
+      platform_providers {
+        name
+        type
+        provider
+      }
       ...AppIntlProvider_settings
     }
   }
 `;
+
+const LoginMessage = ({ message, sso, t }) => <div>
+  {t(message)}<br/>{sso && <a href='/login'>{t('Login with')}&nbsp;{sso.name}</a>}
+</div>;
+const Message = inject18n(LoginMessage);
 
 class Login extends Component {
   constructor(props) {
@@ -83,69 +97,52 @@ class Login extends Component {
     this.setState({ width: window.innerWidth, height: window.innerHeight });
   }
 
-  renderExternalAuth() {
+  renderExternalAuth(authButtons) {
     return (
       <div>
         <div style={{ marginTop: 20 }}>&nbsp;</div>
-        {includes('google', ACCESS_PROVIDERS) && (
-          <Button
-            className={this.props.classes.buttonGoogle}
-            variant="contained"
-            size="small"
-            component="a"
-            href="/auth/google">
-            <Google className={this.props.classes.iconSmall} />
-            Google
-          </Button>
-        )}
-        {includes('facebook', ACCESS_PROVIDERS) && (
-          <Button
-            className={this.props.classes.buttonFacebook}
-            variant="contained"
-            size="small"
-            component="a"
-            href="/auth/facebook">
-            <FacebookBox className={this.props.classes.iconSmall} />
-            Facebook
-          </Button>
-        )}
-        {includes('github', ACCESS_PROVIDERS) && (
-          <Button
-            className={this.props.classes.buttonGithub}
-            variant="contained"
-            size="small"
-            component="a"
-            href="/auth/github">
-            <GithubCircle className={this.props.classes.iconSmall} />
-            Github
-          </Button>
-        )}
+        {authButtons.map((value, index) => <Button
+              key={`${value.provider}_${index}`}
+              className={this.props.classes.buttonGoogle}
+              variant="contained"
+              size="small"
+              component="a"
+              href={`/auth/${value.provider}`}>
+            {value.name}
+          </Button>)}
       </div>
     );
   }
 
   render() {
+    const query = new URLSearchParams(this.props.location.search);
+    const message = query.get('message');
     const marginTop = this.state.height / 2 - loginHeight / 2 - 120;
     return (
-      <QueryRenderer
-        query={LoginQuery}
-        variables={{}}
+      <QueryRenderer query={LoginQuery} variables={{}}
         render={({ props }) => {
           if (props && props.settings) {
+            const providers = props.settings.platform_providers;
+            const isAuthForm = filter((p) => p.type === 'FORM', providers).length > 0;
+            const authSSOs = filter((p) => p.type === 'SSO', providers);
+            if (authSSOs.length === 1 && !message) {
+              const authSSO = head(authSSOs);
+              window.location.href = `/auth/${authSSO.provider}`;
+            }
+            // If not display form and buttons if configured
+            const sso = authSSOs.length === 1;
+            const auto = sso && !message;
+            const isAuthButtons = authSSOs.length > 1;
             return (
               <ConnectedIntlProvider settings={props.settings}>
                 <div className={this.props.classes.container} style={{ marginTop }}>
                   <img src={logo} alt="logo" className={this.props.classes.logo} />
-                  { ACCESS_PROVIDERS.length > 0 ? <div>
-                    {includes('local', ACCESS_PROVIDERS) && (
-                      <LoginForm demo={pathOr(false, ['settings', 'platform_demo'], props)} />
-                    )}
-                    {pathOr(false, ['settings', 'platform_external_auth'], props) === true
-                      ? this.renderExternalAuth()
-                      : ''}
-                  </div> : <div>
-                    No authentication providers available
-                  </div> }
+                  { message && <Message message={message} sso={sso ? head(authSSOs) : null}/> }
+                  { auto && <Loader /> }
+                  { isAuthForm && !auto && <LoginForm demo={pathOr(false, ['settings', 'platform_demo'], props)} />}
+                  { isAuthButtons && !auto && pathOr(false, ['settings', 'platform_external_auth'], props) === true
+                      && this.renderExternalAuth(authSSOs)}
+                  { providers.length === 0 && <Message message={'No authentication providers available'} /> }
                 </div>
               </ConnectedIntlProvider>
             );
@@ -162,5 +159,6 @@ Login.propTypes = {
 };
 
 export default compose(
+  withRouter,
   withStyles(styles),
 )(Login);

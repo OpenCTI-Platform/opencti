@@ -94,7 +94,6 @@ const userValidation = (t) => Yup.object().shape({
   firstname: Yup.string(),
   lastname: Yup.string(),
   language: Yup.string(),
-  grant: Yup.array(),
   description: Yup.string(),
 });
 

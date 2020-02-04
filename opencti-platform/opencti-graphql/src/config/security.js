@@ -4,7 +4,7 @@ import GithubStrategy from 'passport-github';
 import LocalStrategy from 'passport-local';
 import LdapStrategy from 'passport-ldapauth';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
-import { join, head, anyPass, isNil, isEmpty } from 'ramda';
+import { head, anyPass, isNil, isEmpty } from 'ramda';
 import validator from 'validator';
 import { initAdmin, login, loginFromProvider } from '../domain/user';
 import conf, { logger } from './conf';
@@ -36,12 +36,15 @@ export const initializeAdminUser = async () => {
 };
 
 // Providers definition
+const AUTH_SSO = 'SSO';
+const AUTH_FORM = 'FORM';
+
 const providers = [];
-const formProviders = [];
 const confProviders = conf.get('providers');
 const providerKeys = Object.keys(confProviders);
 for (let i = 0; i < providerKeys.length; i += 1) {
-  const { active, strategy, config } = confProviders[providerKeys[i]];
+  const provider = confProviders[providerKeys[i]];
+  const { active, strategy, config } = provider;
   if (active === true) {
     if (strategy === 'LocalStrategy') {
       const localStrategy = new LocalStrategy((username, password, done) => {
@@ -51,9 +54,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           })
           .catch(() => done(null, false));
       });
-      passport.use(localStrategy);
-      if (!providers.includes('local')) providers.push('local');
-      formProviders.push('local');
+      passport.use('local', localStrategy);
+      providers.push({ name: providerKeys[i], type: AUTH_FORM, provider: 'local' });
     }
     if (strategy === 'LdapStrategy') {
       const specificConfig = { searchFilter: '(mail={{username}})' };
@@ -68,9 +70,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             done(err);
           });
       });
-      passport.use(ldapStrategy);
-      if (!providers.includes('local')) providers.push('local');
-      formProviders.push('ldapauth');
+      passport.use('ldapauth', ldapStrategy);
+      providers.push({ name: providerKeys[i], type: AUTH_FORM, provider: 'ldapauth' });
     }
     if (strategy === 'FacebookStrategy') {
       const specificConfig = { profileFields: ['id', 'emails', 'name'], scope: 'email' };
@@ -88,8 +89,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             done(err);
           });
       });
-      passport.use(facebookStrategy);
-      providers.push('facebook');
+      passport.use('facebook', facebookStrategy);
+      providers.push({ name: providerKeys[i], type: AUTH_SSO, provider: 'facebook' });
     }
     if (strategy === 'GoogleStrategy') {
       const specificConfig = { scope: 'email' };
@@ -107,7 +108,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           });
       });
       passport.use(googleStrategy);
-      providers.push('google');
+      providers.push({ name: providerKeys[i], type: AUTH_SSO, provider: 'google' });
     }
     if (strategy === 'GithubStrategy') {
       const specificConfig = { scope: 'user:email' };
@@ -124,12 +125,11 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             done(err);
           });
       });
-      passport.use(githubStrategy);
-      providers.push('github');
+      passport.use('github', githubStrategy);
+      providers.push({ name: providerKeys[i], type: AUTH_SSO, provider: 'github' });
     }
   }
 }
 
-export const FORM_PROVIDERS = formProviders;
-export const ACCESS_PROVIDERS = join(',', providers);
+export const PROVIDERS = providers;
 export default passport;

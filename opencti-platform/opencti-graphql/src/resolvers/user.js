@@ -1,3 +1,4 @@
+import { filter } from 'ramda';
 import {
   addPerson,
   addUser,
@@ -29,7 +30,7 @@ import {
 } from '../domain/stixDomainEntity';
 import { groups } from '../domain/group';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
-import passport, { FORM_PROVIDERS } from '../config/security';
+import passport, { PROVIDERS } from '../config/security';
 import { AuthenticationFailure } from '../config/errors';
 import { addRole } from '../domain/grant';
 import { fetchEditContext } from '../database/redis';
@@ -63,16 +64,22 @@ const userResolvers = {
   Mutation: {
     token: async (_, { input }, context) => {
       // We need to iterate on each provider to find one that validated the credentials
-      if (FORM_PROVIDERS.length === 0) {
-        logger.error('[Configuration] Cant authenticate without any local providers');
+      const formProviders = filter(p => p.type === 'FORM', PROVIDERS);
+      if (formProviders.length === 0) {
+        logger.error('[Configuration] Cant authenticate without any form providers');
       }
-      for (let index = 0; index < FORM_PROVIDERS.length; index += 1) {
-        const provider = FORM_PROVIDERS[index];
+      for (let index = 0; index < formProviders.length; index += 1) {
+        const auth = formProviders[index];
         // eslint-disable-next-line no-await-in-loop
         const loginToken = await new Promise(resolve => {
-          passport.authenticate(provider, (err, tokenObject) => {
-            resolve(tokenObject);
-          })({ body: { username: input.email, password: input.password } });
+          try {
+            passport.authenticate(auth.provider, (err, tokenObject) => {
+              resolve(tokenObject);
+            })({ body: { username: input.email, password: input.password } });
+          } catch (e) {
+            logger.error(`[Configuration] Cant authenticate with ${auth.provider}`, e);
+            resolve(null);
+          }
         });
         // As soon as credential is validated, set the cookie and return.
         if (loginToken) {

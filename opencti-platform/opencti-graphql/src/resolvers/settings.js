@@ -1,5 +1,5 @@
 import { withFilter } from 'graphql-subscriptions';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, isAppRealTime } from '../config/conf';
 import {
   getSettings,
   settingsDelete,
@@ -10,6 +10,7 @@ import {
 } from '../domain/settings';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
+import { PROVIDERS } from '../config/security';
 
 const settingsResolvers = {
   Query: {
@@ -17,6 +18,7 @@ const settingsResolvers = {
     settings: () => getSettings()
   },
   Settings: {
+    platform_providers: () => PROVIDERS,
     editContext: settings => fetchEditContext(settings.id)
   },
   Mutation: {

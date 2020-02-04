@@ -112,7 +112,7 @@ const TopBar = ({
     commitMutation({
       mutation: logoutMutation,
       variables: {},
-      onCompleted: () => history.push('/login'),
+      onCompleted: () => history.push('/login?message=You have successfully logged out'),
     });
   };
   const handleSearch = (searchKeyword) => {

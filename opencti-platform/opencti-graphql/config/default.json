@@ -6,7 +6,6 @@
     "reactive": true,
     "cookie_secure": false,
     "base_path" : "",
-    "default_roles": [],
     "admin": {
       "email": "admin@opencti.io",
       "password": "ChangeMe",
@@ -42,44 +41,9 @@
     "password": "guest"
   },
   "providers": {
-    "ldap": {
-      "active": false,
-      "strategy": "LdapStrategy",
-      "config": {
-        "url": "ldap://xxxxxxxx:389",
-        "searchBase": "ou=Users,dc=xxxx,dc=org,dc=dns"
-      }
-    },
-    "local": {
+    "Local": {
       "active": true,
       "strategy": "LocalStrategy"
-    },
-    "facebook": {
-      "active": false,
-      "strategy": "FacebookStrategy",
-      "config": {
-        "clientID": "xxxxxx",
-        "clientSecret": "xxxxxx",
-        "callbackURL": "http://localhost:4000/auth/facebook/callback"
-      }
-    },
-    "google": {
-      "active": false,
-      "strategy": "GoogleStrategy",
-      "config": {
-        "clientID": "xxxxxx",
-        "clientSecret": "xxxxxx",
-        "callbackURL": "http://localhost:4000/auth/google/callback"
-      }
-    },
-    "github": {
-      "active": false,
-      "strategy": "GitHubStrategy",
-      "config": {
-        "clientID": "xxxxxx",
-        "clientSecret": "xxxxxx",
-        "callbackURL": "http://localhost:4000/auth/github/callback"
-      }
     }
   }
 }

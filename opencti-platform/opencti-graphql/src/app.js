@@ -8,7 +8,7 @@ import { isEmpty } from 'ramda';
 import path from 'path';
 import nconf from 'nconf';
 import { isAppRealTime, logger, OPENCTI_TOKEN } from './config/conf';
-import passport, { ACCESS_PROVIDERS } from './config/security';
+import passport from './config/security';
 import { authentication, setAuthenticationCookie } from './domain/user';
 import { downloadFile, loadFile } from './database/minio';
 
@@ -70,7 +70,9 @@ const createApp = apolloServer => {
   app.get('/auth/:provider/callback', urlencodedParser, passport.initialize(), (req, res, next) => {
     const { provider } = req.params;
     passport.authenticate(provider, (err, token) => {
-      if (err || !token) return res.status(err.status).send(err);
+      if (err || !token) {
+        return res.redirect(`/login?message=${err.message}`);
+      }
       setAuthenticationCookie(token, res);
       return res.redirect('/dashboard');
     })(req, res, next);
@@ -88,10 +90,9 @@ const createApp = apolloServer => {
   // Other routes
   app.get('*', (req, res) => {
     const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');
-    const withOptionValued = data
+    const withOptionValued = data // Replace all variables
       .replace(/%BASE_PATH%/g, basePath)
-      .replace(/%WS_ACTIVATED%/g, isAppRealTime)
-      .replace(/%ACCESS_PROVIDERS%/g, ACCESS_PROVIDERS);
+      .replace(/%WS_ACTIVATED%/g, isAppRealTime);
     res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
     res.header('Expires', '-1');
     res.header('Pragma', 'no-cache');

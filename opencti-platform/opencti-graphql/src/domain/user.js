@@ -201,10 +201,6 @@ export const userEditField = (user, userId, input) => {
   });
 };
 export const meEditField = (user, userId, input) => {
-  const { key } = input;
-  if (key === 'grant') {
-    throw new ForbiddenAccess();
-  }
   return userEditField(user, userId, input);
 };
 export const userDelete = async userId => {
@@ -217,11 +213,11 @@ export const userDelete = async userId => {
 
 export const loginFromProvider = async (email, name) => {
   const result = await load(
-    `match $client isa User, has email "${escapeString(email)}"; (authorization:$token, client:$client); get;`,
+    `match $client isa User, has user_email "${escapeString(email)}"; (authorization:$token, client:$client); get;`,
     ['client', 'token']
   );
   if (isNil(result)) {
-    const newUser = { name, user_email: email, external: true, grant: conf.get('app:default_roles') };
+    const newUser = { name, user_email: email, external: true };
     return addUser(SYSTEM_USER, newUser).then(() => loginFromProvider(email, name));
   }
   // update the name

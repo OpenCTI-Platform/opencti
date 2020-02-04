@@ -4,7 +4,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
-import { compose, pick, pluck } from 'ramda';
+import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
@@ -54,16 +54,12 @@ const passwordValidation = (t) => Yup.object().shape({
 
 class ProfileOverviewComponent extends Component {
   handleSubmitField(name, value) {
-    let newValue = value;
-    if (name === 'grant') {
-      newValue = pluck('value', value);
-    }
     userValidation(this.props.t)
-      .validateAt(name, { [name]: newValue })
+      .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
           mutation: profileOverviewFieldPatch,
-          variables: { input: { key: name, value: newValue } },
+          variables: { input: { key: name, value } },
         });
       })
       .catch(() => false);
