@@ -1679,7 +1679,7 @@ class OpenCTIApiClient:
                 },
                 "tool": {"attack-pattern": {"from_role": "user", "to_role": "usage"}},
             },
-            "variants-of": {
+            "variant-of": {
                 "malware": {
                     "malware": {"from_role": "original", "to_role": "variation"},
                 },
@@ -1751,6 +1751,10 @@ class OpenCTIApiClient:
                     "threat-actor": {"from_role": "attribution", "to_role": "origin"},
                     "intrusion-set": {"from_role": "attribution", "to_role": "origin"},
                     "campaign": {"from_role": "attribution", "to_role": "origin"},
+                },
+                "malware": {
+                    "identity": {"from_role": "attribution", "to_role": "origin"},
+                    "threat-actor": {"from_role": "attribution", "to_role": "origin"}
                 },
             },
             "mitigates": {
