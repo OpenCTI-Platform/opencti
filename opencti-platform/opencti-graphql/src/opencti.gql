@@ -100,6 +100,7 @@ define
   platform sub attribute, datatype string;
   required_permission sub attribute, datatype string;
   source_confidence_level sub attribute, datatype long;
+  reliability sub attribute, datatype string;
   value sub attribute, datatype string;
   pattern_type sub attribute, datatype string;
 
@@ -659,6 +660,7 @@ define
 
   Organization sub Identity,
     has organization_class,
+    has reliability,
     plays characterize;
 
   Threat-Actor sub Identity,
