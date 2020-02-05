@@ -336,9 +336,11 @@ class Indicator:
         marking_definitions = kwargs.get("markingDefinitions", None)
         update = kwargs.get("update", False)
 
-        object_result = self.read(
-            filters=[{"key": "indicator_pattern", "values": [indicator_pattern]}]
-        )
+        object_result = self.opencti.indicator.read(id=stix_id_key)
+        if object_result is None:
+            object_result = self.read(
+                filters=[{"key": "indicator_pattern", "values": [indicator_pattern]}]
+            )
         if object_result is not None:
             if update:
                 # name
