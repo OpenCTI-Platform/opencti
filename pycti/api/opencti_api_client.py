@@ -1754,7 +1754,7 @@ class OpenCTIApiClient:
                 },
                 "malware": {
                     "identity": {"from_role": "attribution", "to_role": "origin"},
-                    "threat-actor": {"from_role": "attribution", "to_role": "origin"}
+                    "threat-actor": {"from_role": "attribution", "to_role": "origin"},
                 },
             },
             "mitigates": {

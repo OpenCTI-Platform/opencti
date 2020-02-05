@@ -1381,6 +1381,7 @@ class OpenCTIStix2:
                 result = result + relation_object_bundle
 
             # Get extra reports
+            """
             for uuid in uuids:
                 if "marking-definition" not in uuid:
                     reports = self.opencti.stix_entity.reports(id=uuid)
@@ -1395,6 +1396,7 @@ class OpenCTIStix2:
                         )
                         uuids = uuids + [x["id"] for x in report_object_bundle]
                         result = result + report_object_bundle
+            """
 
             # Refilter all the reports object refs
             final_result = []
