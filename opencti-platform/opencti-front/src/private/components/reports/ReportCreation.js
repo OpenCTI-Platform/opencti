@@ -10,14 +10,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
-  compose,
-  pathOr,
-  pipe,
-  map,
-  pluck,
-  union,
-  evolve,
-  path,
+  compose, pathOr, pipe, map, pluck, union, evolve, path,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -253,7 +246,8 @@ class ReportCreation extends Component {
                       validationSchema={reportValidation(t)}
                       onSubmit={this.onSubmit.bind(this)}
                       onReset={this.onReset.bind(this)}
-                      render={({
+                    >
+                      {({
                         submitForm,
                         handleReset,
                         isSubmitting,
@@ -261,9 +255,8 @@ class ReportCreation extends Component {
                       }) => (
                         <div>
                           <Form style={{ margin: '20px 0 20px 0' }}>
-                            <Field
+                            <TextField
                               name="name"
-                              component={TextField}
                               label={t('Name')}
                               fullWidth={true}
                             />
@@ -274,9 +267,8 @@ class ReportCreation extends Component {
                               fullWidth={true}
                               style={{ marginTop: 20 }}
                             />
-                            <Field
+                            <Select
                               name="report_class"
-                              component={Select}
                               label={t('Report type')}
                               fullWidth={true}
                               inputProps={{
@@ -293,10 +285,9 @@ class ReportCreation extends Component {
                                   {reportClassEdge.node.value}
                                 </MenuItem>
                               ))}
-                            </Field>
-                            <Field
+                            </Select>
+                            <TextField
                               name="description"
-                              component={TextField}
                               label={t('Description')}
                               fullWidth={true}
                               multiline={true}
@@ -361,7 +352,7 @@ class ReportCreation extends Component {
                           />
                         </div>
                       )}
-                    />
+                    </Formik>
                   );
                 }
                 return <Loader variant="inElement" />;

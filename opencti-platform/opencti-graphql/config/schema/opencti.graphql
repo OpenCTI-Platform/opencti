@@ -2568,7 +2568,7 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
     search: String
     types: [String]
   ): StixObservableConnection
-  relationRefs(relationType: String, knowledgeLevels: [String]): StixRelationConnection
+  relationRefs(first: Int, relationType: String, knowledgeLevels: [String]): StixRelationConnection
   stixRelations(
     first: Int
     after: ID

@@ -5,7 +5,8 @@ import Popover from '@material-ui/core/Popover';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import { ColorLens } from '@material-ui/icons';
 import MuiTextField from '@material-ui/core/TextField';
-import { fieldToTextField } from 'formik-material-ui';
+import { useField } from 'formik';
+import { useFieldToTextField } from 'formik-material-ui';
 
 class ColorPickerField extends Component {
   constructor(props) {
@@ -33,14 +34,16 @@ class ColorPickerField extends Component {
   }
 
   render() {
+    const fieldProps = useFieldToTextField(this.props);
+    const [, , helpers] = useField(this.props.name);
     return (
       <div>
         <MuiTextField
-          {...fieldToTextField(this.props)}
+          {...fieldProps}
           ref={this.anchorEl}
           onChange={(event) => {
             const { value } = event.target;
-            this.props.form.setFieldValue(this.props.field.name, value);
+            helpers.setValue(value);
             if (typeof this.props.onChange === 'function') {
               this.props.onChange(this.props.field.name, value);
             }
@@ -51,7 +54,7 @@ class ColorPickerField extends Component {
             }
           }}
           onKeyPress={(event) => {
-            this.props.form.setFieldTouched(this.props.field.name, true, true);
+            helpers.setTouched(true);
             if (
               typeof this.props.onSubmit === 'function'
               && event.key === 'Enter'
@@ -60,7 +63,7 @@ class ColorPickerField extends Component {
             }
           }}
           onBlur={(event) => {
-            this.props.form.setFieldTouched(this.props.field.name, true, true);
+            helpers.setTouched(true);
             if (typeof this.props.onSubmit === 'function') {
               this.props.onSubmit(this.props.field.name, event.target.value);
             }

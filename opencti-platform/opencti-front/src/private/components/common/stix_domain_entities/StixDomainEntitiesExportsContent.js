@@ -50,7 +50,10 @@ const styles = (theme) => ({
 class StixDomainEntitiesExportsContentComponent extends Component {
   componentDidMount() {
     this.subscription = interval$.subscribe(() => {
-      this.props.relay.refetch({ type: this.props.exportEntityType });
+      this.props.relay.refetch({
+        type: this.props.exportEntityType,
+        count: 25,
+      });
     });
   }
 

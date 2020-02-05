@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import fileDownload from 'js-file-download';
 import Markdown from 'react-markdown';
 import {
   compose,
@@ -19,23 +22,33 @@ import {
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
+import IconButton from '@material-ui/core/IconButton';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Collapse from '@material-ui/core/Collapse';
-import { Launch, LockPattern } from 'mdi-material-ui';
+import {
+  Launch,
+  LockPattern,
+  FileImageOutline,
+  FilePdfOutline,
+} from 'mdi-material-ui';
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
-import IconButton from '@material-ui/core/IconButton';
 import { createRefetchContainer } from 'react-relay';
+import Tooltip from '@material-ui/core/Tooltip';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import StixRelationPopover from '../stix_relations/StixRelationPopover';
 import StixRelationCreationFromEntity from '../stix_relations/StixRelationCreationFromEntity';
 import ItemYears from '../../../../components/ItemYears';
+import SearchInput from '../../../../components/SearchInput';
 
 const styles = (theme) => ({
+  container: {
+    paddingBottom: 70,
+  },
   itemIcon: {
     color: theme.palette.primary.main,
   },
@@ -47,7 +60,11 @@ const styles = (theme) => ({
 class StixDomainEntityKillChainLinesComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { expandedLines: {} };
+    this.state = { expandedLines: {}, searchTerm: '' };
+  }
+
+  handleSearch(value) {
+    this.setState({ searchTerm: value });
   }
 
   handleToggleLine(lineKey) {
@@ -59,6 +76,81 @@ class StixDomainEntityKillChainLinesComponent extends Component {
           : false,
         this.state.expandedLines,
       ),
+    });
+  }
+
+  setInlineStyles(targetElem) {
+    const transformProperties = [
+      'fill',
+      'color',
+      'font-size',
+      'stroke',
+      'font',
+    ];
+    const svgElems = Array.from(targetElem.getElementsByTagName('svg'));
+    function recurseElementChildren(node) {
+      if (!node.style) return;
+      const inlineStyles = getComputedStyle(node);
+      for (const transformProperty of transformProperties) {
+        node.style[transformProperty] = inlineStyles[transformProperty];
+      }
+      for (const child of Array.from(node.childNodes)) {
+        recurseElementChildren(child);
+      }
+    }
+    for (const svgElement of svgElems) {
+      recurseElementChildren(svgElement);
+      svgElement.setAttribute(
+        'width',
+        svgElement.getBoundingClientRect().width,
+      );
+      svgElement.setAttribute(
+        'height',
+        svgElement.getBoundingClientRect().height,
+      );
+    }
+  }
+
+  exportImage() {
+    const container = document.getElementById('container');
+    this.setInlineStyles(container);
+    html2canvas(container, {
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#303030',
+    }).then((canvas) => {
+      canvas.toBlob((blob) => {
+        fileDownload(blob, 'KillChain.png', 'image/png');
+      });
+    });
+  }
+
+  exportPdf() {
+    const container = document.getElementById('container');
+    this.setInlineStyles(container);
+    html2canvas(container, {
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#303030',
+      scale: 0.5,
+    }).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      const imgWidth = 210;
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      const doc = new jsPDF('p', 'mm');
+      let position = 0;
+      doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        doc.addPage();
+        doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      doc.save('KillChain.pdf');
     });
   }
 
@@ -105,91 +197,120 @@ class StixDomainEntityKillChainLinesComponent extends Component {
     )(data.stixRelations.edges);
     return (
       <div>
-        <List>
-          {stixRelations.map((stixRelation) => (
-            <div key={stixRelation.id}>
-              <ListItem
-                button={true}
-                divider={true}
-                onClick={this.handleToggleLine.bind(this, stixRelation.id)}
-              >
-                <ListItemIcon classes={{ root: classes.itemIcon }}>
-                  <Launch />
-                </ListItemIcon>
-                <ListItemText primary={stixRelation.phase_name} />
-                <ListItemSecondaryAction>
-                  <IconButton
-                    onClick={this.handleToggleLine.bind(this, stixRelation.id)}
-                    aria-haspopup="true"
-                  >
-                    {this.state.expandedLines[stixRelation.id] === false ? (
-                      <ExpandMore />
-                    ) : (
-                      <ExpandLess />
-                    )}
-                  </IconButton>
-                </ListItemSecondaryAction>
-              </ListItem>
-              <Collapse
-                in={this.state.expandedLines[stixRelation.id] !== false}
-              >
-                <List>
-                  {stixRelation.attackPatterns.map((attackPattern) => {
-                    const link = `${entityLink}/relations/${attackPattern.id}`;
-                    return (
-                      <ListItem
-                        key={attackPattern.id}
-                        classes={{ root: classes.nested }}
-                        divider={true}
-                        button={true}
-                        dense={true}
-                        component={Link}
-                        to={link}
-                      >
-                        <ListItemIcon classes={{ root: classes.itemIcon }}>
-                          <LockPattern />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={`${attackPattern.to.external_id} - ${attackPattern.to.name}`}
-                          secondary={
-                            // eslint-disable-next-line no-nested-ternary
-                            attackPattern.description
-                            && attackPattern.description.length > 0 ? (
-                              <Markdown
-                                className="markdown"
-                                source={attackPattern.description}
-                              />
-                              ) : attackPattern.inferred ? (
-                              <i>{t('This relation is inferred')}</i>
-                              ) : (
-                                t('No description of this usage')
-                              )
-                          }
-                        />
-                        <ItemYears
-                          variant="inList"
-                          years={
-                            attackPattern.inferred
-                              ? t('Inferred')
-                              : attackPattern.years
-                          }
-                          disabled={attackPattern.inferred}
-                        />
-                        <ListItemSecondaryAction>
-                          <StixRelationPopover
-                            stixRelationId={attackPattern.id}
-                            paginationOptions={paginationOptions}
-                            onDelete={this.props.relay.refetch.bind(this)}
+        <div style={{ float: 'left' }}>
+          <SearchInput
+            variant="small"
+            onSubmit={this.handleSearch.bind(this)}
+          />
+        </div>
+        <div style={{ float: 'right' }}>
+          <Tooltip title={t('Export as image')}>
+            <IconButton color="primary" onClick={this.exportImage.bind(this)}>
+              <FileImageOutline />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={t('Export as PDF')}>
+            <IconButton color="primary" onClick={this.exportPdf.bind(this)}>
+              <FilePdfOutline />
+            </IconButton>
+          </Tooltip>
+        </div>
+        <div className="clearfix" />
+        <div className={classes.container} id="container">
+          <List id="test">
+            {stixRelations.map((stixRelation) => (
+              <div key={stixRelation.id}>
+                <ListItem
+                  button={true}
+                  divider={true}
+                  onClick={this.handleToggleLine.bind(this, stixRelation.id)}
+                >
+                  <ListItemIcon>
+                    <Launch color="primary" ari-hidden="false" />
+                  </ListItemIcon>
+                  <ListItemText primary={stixRelation.phase_name} />
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      onClick={this.handleToggleLine.bind(
+                        this,
+                        stixRelation.id,
+                      )}
+                      aria-haspopup="true"
+                    >
+                      {this.state.expandedLines[stixRelation.id] === false ? (
+                        <ExpandMore />
+                      ) : (
+                        <ExpandLess />
+                      )}
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
+                <Collapse
+                  in={this.state.expandedLines[stixRelation.id] !== false}
+                >
+                  <List>
+                    {stixRelation.attackPatterns.map((attackPattern) => {
+                      const link = `${entityLink}/relations/${attackPattern.id}`;
+                      return (
+                        <ListItem
+                          key={attackPattern.id}
+                          classes={{ root: classes.nested }}
+                          divider={true}
+                          button={true}
+                          dense={true}
+                          component={Link}
+                          to={link}
+                        >
+                          <ListItemIcon>
+                            <LockPattern color="primary" />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={
+                              <span>
+                                <strong>{attackPattern.to.external_id}</strong>{' '}
+                                - {attackPattern.to.name}
+                              </span>
+                            }
+                            secondary={
+                              // eslint-disable-next-line no-nested-ternary
+                              attackPattern.description
+                              && attackPattern.description.length > 0 ? (
+                                <Markdown
+                                  className="markdown"
+                                  source={attackPattern.description}
+                                />
+                                ) : attackPattern.inferred ? (
+                                <i>{t('This relation is inferred')}</i>
+                                ) : (
+                                  t('No description of this usage')
+                                )
+                            }
                           />
-                        </ListItemSecondaryAction>
-                      </ListItem>
-                    );
-                  })}
-                </List>
-              </Collapse>
-            </div>
-          ))}
-        </List>
+                          <ItemYears
+                            variant="inList"
+                            years={
+                              attackPattern.inferred
+                                ? t('Inferred')
+                                : attackPattern.years
+                            }
+                            disabled={attackPattern.inferred}
+                          />
+                          <ListItemSecondaryAction>
+                            <StixRelationPopover
+                              stixRelationId={attackPattern.id}
+                              paginationOptions={paginationOptions}
+                              onDelete={this.props.relay.refetch.bind(this)}
+                            />
+                          </ListItemSecondaryAction>
+                        </ListItem>
+                      );
+                    })}
+                  </List>
+                </Collapse>
+              </div>
+            ))}
+          </List>
+        </div>
         <StixRelationCreationFromEntity
           entityId={stixDomainEntityId}
           isFrom={true}
