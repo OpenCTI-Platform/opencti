@@ -139,6 +139,7 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
             );
             if (existingObservables.edges.length === 0) {
               const stixObservable = pipe(
+                dissoc('internal_id_key'),
                 dissoc('stix_id_key'),
                 dissoc('main_observable_type'),
                 dissoc('score'),
