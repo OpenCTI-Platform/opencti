@@ -521,7 +521,7 @@ const elReconstructRelation = (concept, relationsMap = null) => {
 
 // region elastic common loader.
 const specialElasticCharsEscape = query => {
-  return query.replace(/([+|\-*()~={}:?])/g, '\\$1');
+  return query.replace(/([+|\-*()~={}:?\\])/g, '\\$1');
 };
 export const elPaginate = async (indexName, options) => {
   const {
