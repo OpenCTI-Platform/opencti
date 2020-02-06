@@ -520,6 +520,9 @@ const elReconstructRelation = (concept, relationsMap = null) => {
 // endregion
 
 // region elastic common loader.
+const specialElasticCharsEscape = query => {
+  return query.replace(/([+|\-*()~={}:?])/g, '\\$1');
+};
 export const elPaginate = async (indexName, options) => {
   const {
     first = 200,
@@ -545,16 +548,16 @@ export const elPaginate = async (indexName, options) => {
     } catch (e) {
       decodedSearch = search;
     }
-    const trimedSearch = decodedSearch.trim();
+    const cleanSearch = specialElasticCharsEscape(decodedSearch.trim());
     let finalSearch;
-    if (trimedSearch.startsWith('http://')) {
-      finalSearch = `"*${trimedSearch.replace('http://', '')}*"`;
-    } else if (trimedSearch.startsWith('https://')) {
-      finalSearch = `"*${trimedSearch.replace('https://', '')}*"`;
-    } else if (trimedSearch.startsWith('"')) {
-      finalSearch = `${trimedSearch}`;
+    if (cleanSearch.startsWith('http://')) {
+      finalSearch = `"*${cleanSearch.replace('http://', '')}*"`;
+    } else if (cleanSearch.startsWith('https://')) {
+      finalSearch = `"*${cleanSearch.replace('https://', '')}*"`;
+    } else if (cleanSearch.startsWith('"')) {
+      finalSearch = `${cleanSearch}`;
     } else {
-      const splitSearch = decodedSearch.split(/[\s/\\]+/);
+      const splitSearch = cleanSearch.split(/[\s]+/);
       finalSearch = pipe(
         map(n => `*${n}*`),
         join(' ')
@@ -563,7 +566,7 @@ export const elPaginate = async (indexName, options) => {
     must = append(
       {
         query_string: {
-          query: `${finalSearch}`,
+          query: finalSearch,
           analyze_wildcard: true,
           fields: ['name^5', '*']
         }
