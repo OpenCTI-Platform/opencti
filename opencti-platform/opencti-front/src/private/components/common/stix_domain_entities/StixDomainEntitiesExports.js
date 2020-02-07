@@ -53,6 +53,7 @@ class StixDomainEntitiesExports extends Component {
               data={props}
               paginationOptions={paginationOptions}
               exportEntityType={exportEntityType}
+              isOpen={open}
             />
           )}
         />

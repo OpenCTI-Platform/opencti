@@ -657,7 +657,7 @@ const listElements = async (baseQuery, first, offset, orderBy, orderMode, queryK
 };
 export const listEntities = async (entityTypes, searchFields, args) => {
   // filters contains potential relations like, mitigates, tagged ...
-  const { first = 500, after, orderBy, orderMode = 'asc', withCache = true } = args;
+  const { first = 1000, after, orderBy, orderMode = 'asc', withCache = true } = args;
   const { parentType = null, search, filters } = args;
   const offset = after ? cursorToOffset(after) : 0;
   const isRelationOrderBy = orderBy && includes('.', orderBy);
