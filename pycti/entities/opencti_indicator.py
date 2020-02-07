@@ -339,7 +339,13 @@ class Indicator:
         object_result = self.opencti.indicator.read(id=stix_id_key)
         if object_result is None:
             object_result = self.read(
-                filters=[{"key": "indicator_pattern", "values": [indicator_pattern]}]
+                filters=[
+                    {
+                        "key": "indicator_pattern",
+                        "values": [indicator_pattern],
+                        "operator": "match",
+                    }
+                ],
             )
         if object_result is not None:
             if update:

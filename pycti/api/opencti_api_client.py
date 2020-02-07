@@ -107,7 +107,11 @@ class OpenCTIApiClient:
 
         # Check if openCTI is available
         if not self.health_check():
-            raise ValueError("OpenCTI API seems down")
+            self.log(
+                "error",
+                "OpenCTI API is not reachable. Waiting for OpenCTI API to start or check your configuration...",
+            )
+            exit(1)
 
     def query(self, query, variables={}):
         query_var = {}
