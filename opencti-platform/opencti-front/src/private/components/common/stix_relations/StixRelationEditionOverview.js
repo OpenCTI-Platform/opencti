@@ -491,7 +491,7 @@ const StixRelationEditionContainer = ({
         {typeof handleDelete === 'function' ? (
           <Button
             variant="contained"
-            onClick={handleDelete.bind(this)}
+            onClick={() => handleDelete()}
             classes={{ root: classes.button }}
           >
             {t('Delete')}

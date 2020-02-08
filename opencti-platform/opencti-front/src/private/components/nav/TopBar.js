@@ -345,7 +345,7 @@ const TopBar = ({
         </IconButton>
         <Menu id="menu-appbar"
           style={{ marginTop: 40, zIndex: 2100 }}
-          anchorEl={menuOpen && menuOpen.anchorEl}
+          anchorEl={menuOpen.anchorEl}
           open={menuOpen.open}
           onClose={handleCloseMenu}>
           <MenuItem component={Link}
