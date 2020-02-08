@@ -96,8 +96,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const specificConfig = { scope: 'email' };
       const googleOptions = { ...config, ...specificConfig };
       const googleStrategy = new GoogleStrategy(googleOptions, (token, tokenSecret, profile, done) => {
-        const name = profile.displayName;
         const email = head(profile.emails).value;
+        const name = profile.displayName || email;
         // let picture = head(profile.photos).value;
         loginFromProvider(email, name)
           .then(loggedToken => {

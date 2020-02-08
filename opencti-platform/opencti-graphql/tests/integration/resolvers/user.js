@@ -24,7 +24,7 @@ describe('User resolver standard behavior', () => {
       input: {
         name: 'admin',
         password: 'admin',
-        email: 'admin@opencti.io',
+        user_email: 'admin@opencti.io',
         firstname: 'Administrator',
         lastname: 'OpenCTI'
       }
@@ -45,6 +45,6 @@ describe('User resolver standard behavior', () => {
     expect(res.data).not.toBeNull();
     expect(res.data.token).toBeDefined();
     const user = await authentication(res.data.token);
-    expect(user.email).toBe('admin@opencti.io');
+    expect(user.user_email).toBe('admin@opencti.io');
   });
 });

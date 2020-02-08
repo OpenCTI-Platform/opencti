@@ -31,6 +31,7 @@ import inject18n from '../../components/i18n';
 import ItemNumberDifference from '../../components/ItemNumberDifference';
 import ItemMarking from '../../components/ItemMarking';
 import Loader from '../../components/Loader';
+import Security, { KNOWLEDGE } from '../../utils/Security';
 
 const styles = (theme) => ({
   root: {
@@ -210,349 +211,343 @@ class Dashboard extends Component {
     };
     return (
       <div className={classes.root}>
-        <Grid container={true} spacing={2}>
-          <Grid item={true} lg={3} xs={6}>
-            <Card
-              raised={true}
-              classes={{ root: classes.card }}
-              style={{ height: 120 }}
-            >
-              <QueryRenderer
-                query={dashboardStixDomainEntitiesNumberQuery}
-                variables={{ endDate: dayAgo() }}
-                render={({ props }) => {
-                  if (props && props.stixDomainEntitiesNumber) {
-                    const { total } = props.stixDomainEntitiesNumber;
-                    const difference = total - props.stixDomainEntitiesNumber.count;
-                    return (
-                      <CardContent>
-                        <div className={classes.number}>{n(total)}</div>
-                        <ItemNumberDifference
-                          difference={difference}
-                          description="24h"
-                        />
-                        <div className="clearfix" />
-                        <div className={classes.title}>
-                          {t('Total entities')}
-                        </div>
-                        <div className={classes.icon}>
-                          <Database color="inherit" fontSize="large" />
-                        </div>
-                      </CardContent>
-                    );
-                  }
-                  return <Loader variant='inElement'/>;
-                }}
-              />
-            </Card>
-            <Card
-              raised={true}
-              classes={{ root: classes.card }}
-              style={{ height: 120 }}
-            >
-              <QueryRenderer
-                query={dashboardStixDomainEntitiesNumberQuery}
-                variables={{ type: 'report', endDate: dayAgo() }}
-                render={({ props }) => {
-                  if (props && props.stixDomainEntitiesNumber) {
-                    const { total } = props.stixDomainEntitiesNumber;
-                    const difference = total - props.stixDomainEntitiesNumber.count;
-                    return (
-                      <CardContent>
-                        <div className={classes.number}>{n(total)}</div>
-                        <ItemNumberDifference
-                          difference={difference}
-                          description="24h"
-                        />
-                        <div className="clearfix" />
-                        <div className={classes.title}>
-                          {t('Total reports')}
-                        </div>
-                        <div className={classes.icon}>
-                          <Assignment color="inherit" fontSize="large" />
-                        </div>
-                      </CardContent>
-                    );
-                  }
-                  return <Loader variant='inElement'/>;
-                }}
-              />
-            </Card>
-          </Grid>
-          <Grid item={true} lg={3} xs={6}>
-            <Card
-              raised={true}
-              classes={{ root: classes.card }}
-              style={{ height: 120 }}
-            >
-              <QueryRenderer
-                query={dashboardStixObservablesNumberQuery}
-                variables={{ endDate: dayAgo() }}
-                render={({ props }) => {
-                  if (props && props.stixObservablesNumber) {
-                    const { total } = props.stixObservablesNumber;
-                    const difference = total - props.stixObservablesNumber.count;
-                    return (
-                      <CardContent>
-                        <div className={classes.number}>{n(total)}</div>
-                        <ItemNumberDifference
-                          difference={difference}
-                          description="24h"
-                        />
-                        <div className="clearfix" />
-                        <div className={classes.title}>
-                          {t('Total observables')}
-                        </div>
-                        <div className={classes.icon}>
-                          <Layers color="inherit" fontSize="large" />
-                        </div>
-                      </CardContent>
-                    );
-                  }
-                  return <Loader variant='inElement'/>;
-                }}
-              />
-            </Card>
-            <Card
-              raised={true}
-              classes={{ root: classes.card }}
-              style={{ height: 120 }}
-            >
-              <QueryRenderer
-                query={dashboardStixDomainEntitiesNumberQuery}
-                variables={{ type: 'workspace', endDate: dayAgo() }}
-                render={({ props }) => {
-                  if (props && props.stixDomainEntitiesNumber) {
-                    const { total } = props.stixDomainEntitiesNumber;
-                    const difference = total - props.stixDomainEntitiesNumber.count;
-                    return (
-                      <CardContent>
-                        <div className={classes.number}>{n(total)}</div>
-                        <ItemNumberDifference
-                          difference={difference}
-                          description="24h"
-                        />
-                        <div className="clearfix" />
-                        <div className={classes.title}>
-                          {t('Total workspaces')}
-                        </div>
-                        <div className={classes.icon}>
-                          <Work color="inherit" fontSize="large" />
-                        </div>
-                      </CardContent>
-                    );
-                  }
-                  return <Loader variant='inElement'/>;
-                }}
-              />
-            </Card>
-          </Grid>
-          <Grid item={true} lg={6} xs={12}>
-            <Card
-              raised={true}
-              classes={{ root: classes.card }}
-              style={{ height: 260 }}
-            >
-              <CardContent>
-                <div className={classes.title}>{t('Ingested entities')}</div>
-                <div className={classes.graphContainer}>
-                  <QueryRenderer
-                    query={dashboardStixDomainEntitiesTimeSeriesQuery}
-                    variables={stixDomainEntitiesTimeSeriesVariables}
-                    render={({ props }) => {
-                      if (props && props.stixDomainEntitiesTimeSeries) {
-                        return (
-                          <ResponsiveContainer height={180} width="100%">
-                            <BarChart
-                              data={props.stixDomainEntitiesTimeSeries}
-                              margin={{
-                                top: 5,
-                                right: 5,
-                                bottom: 25,
-                                left: 5,
-                              }}
-                            >
-                              <XAxis
-                                dataKey="date"
-                                stroke="#ffffff"
-                                interval={15}
-                                angle={-45}
-                                textAnchor="end"
-                                tickFormatter={nsd}
-                              />
-                              <YAxis stroke="#ffffff" />
-                              <CartesianGrid
-                                strokeDasharray="2 2"
-                                stroke="#0f181f"
-                              />
-                              <Tooltip
-                                cursor={{
-                                  fill: 'rgba(0, 0, 0, 0.2)',
-                                  stroke: 'rgba(0, 0, 0, 0.2)',
-                                  strokeWidth: 2,
-                                }}
-                                contentStyle={{
-                                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                                  fontSize: 12,
-                                  borderRadius: 10,
-                                }}
-                                labelFormatter={nsd}
-                              />
-                              <Bar
-                                fill={Theme.palette.primary.main}
-                                dataKey="value"
-                                barSize={10}
-                              />
-                            </BarChart>
-                          </ResponsiveContainer>
-                        );
-                      }
-                      return <Loader variant='inElement'/>;
-                    }}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-        <Grid container={true} spacing={2}>
-          <Grid item={true} lg={6} xs={12} style={{ marginBottom: 30 }}>
-            <Typography variant="h2" gutterBottom={true}>
-              {t('Last reports')}
-            </Typography>
-            <Paper classes={{ root: classes.paper }} elevation={2}>
-              <QueryRenderer
-                query={dashboardLastReportsQuery}
-                variables={{
-                  first: 10,
-                  orderBy: 'published',
-                  orderMode: 'desc',
-                }}
-                render={({ props }) => {
-                  if (props && props.reports) {
-                    return (
-                      <List>
-                        {props.reports.edges.map((reportEdge) => {
-                          const report = reportEdge.node;
-                          const markingDefinition = head(
-                            pathOr([], ['markingDefinitions', 'edges'], report),
-                          );
+        <Security roles={[KNOWLEDGE]} placeholder={t('You currently have no access to openCTI Knowledge')}>
+          <Grid container={true} spacing={2}>
+            <Grid item={true} lg={3} xs={6}>
+              <Card raised={true}
+                classes={{ root: classes.card }}
+                style={{ height: 120 }}>
+                <QueryRenderer
+                  query={dashboardStixDomainEntitiesNumberQuery}
+                  variables={{ endDate: dayAgo() }}
+                  render={({ props }) => {
+                    if (props && props.stixDomainEntitiesNumber) {
+                      const { total } = props.stixDomainEntitiesNumber;
+                      const difference = total - props.stixDomainEntitiesNumber.count;
+                      return (
+                        <CardContent>
+                          <div className={classes.number}>{n(total)}</div>
+                          <ItemNumberDifference
+                            difference={difference}
+                            description="24h"
+                          />
+                          <div className="clearfix" />
+                          <div className={classes.title}>
+                            {t('Total entities')}
+                          </div>
+                          <div className={classes.icon}>
+                            <Database color="inherit" fontSize="large" />
+                          </div>
+                        </CardContent>
+                      );
+                    }
+                    return <Loader variant='inElement'/>;
+                  }}
+                />
+              </Card>
+              <Card raised={true}
+                classes={{ root: classes.card }}
+                style={{ height: 120 }}>
+                <QueryRenderer
+                  query={dashboardStixDomainEntitiesNumberQuery}
+                  variables={{ type: 'report', endDate: dayAgo() }}
+                  render={({ props }) => {
+                    if (props && props.stixDomainEntitiesNumber) {
+                      const { total } = props.stixDomainEntitiesNumber;
+                      const difference = total - props.stixDomainEntitiesNumber.count;
+                      return (
+                        <CardContent>
+                          <div className={classes.number}>{n(total)}</div>
+                          <ItemNumberDifference
+                            difference={difference}
+                            description="24h"
+                          />
+                          <div className="clearfix" />
+                          <div className={classes.title}>
+                            {t('Total reports')}
+                          </div>
+                          <div className={classes.icon}>
+                            <Assignment color="inherit" fontSize="large" />
+                          </div>
+                        </CardContent>
+                      );
+                    }
+                    return <Loader variant='inElement'/>;
+                  }}
+                />
+              </Card>
+            </Grid>
+            <Grid item={true} lg={3} xs={6}>
+              <Card raised={true}
+                classes={{ root: classes.card }}
+                style={{ height: 120 }}>
+                <QueryRenderer
+                  query={dashboardStixObservablesNumberQuery}
+                  variables={{ endDate: dayAgo() }}
+                  render={({ props }) => {
+                    if (props && props.stixObservablesNumber) {
+                      const { total } = props.stixObservablesNumber;
+                      const difference = total - props.stixObservablesNumber.count;
+                      return (
+                        <CardContent>
+                          <div className={classes.number}>{n(total)}</div>
+                          <ItemNumberDifference
+                            difference={difference}
+                            description="24h"
+                          />
+                          <div className="clearfix" />
+                          <div className={classes.title}>
+                            {t('Total observables')}
+                          </div>
+                          <div className={classes.icon}>
+                            <Layers color="inherit" fontSize="large" />
+                          </div>
+                        </CardContent>
+                      );
+                    }
+                    return <Loader variant='inElement'/>;
+                  }}
+                />
+              </Card>
+              <Card
+                raised={true}
+                classes={{ root: classes.card }}
+                style={{ height: 120 }}
+              >
+                <QueryRenderer
+                  query={dashboardStixDomainEntitiesNumberQuery}
+                  variables={{ type: 'workspace', endDate: dayAgo() }}
+                  render={({ props }) => {
+                    if (props && props.stixDomainEntitiesNumber) {
+                      const { total } = props.stixDomainEntitiesNumber;
+                      const difference = total - props.stixDomainEntitiesNumber.count;
+                      return (
+                        <CardContent>
+                          <div className={classes.number}>{n(total)}</div>
+                          <ItemNumberDifference
+                            difference={difference}
+                            description="24h"
+                          />
+                          <div className="clearfix" />
+                          <div className={classes.title}>
+                            {t('Total workspaces')}
+                          </div>
+                          <div className={classes.icon}>
+                            <Work color="inherit" fontSize="large" />
+                          </div>
+                        </CardContent>
+                      );
+                    }
+                    return <Loader variant='inElement'/>;
+                  }}
+                />
+              </Card>
+            </Grid>
+            <Grid item={true} lg={6} xs={12}>
+              <Card raised={true}
+                classes={{ root: classes.card }}
+                style={{ height: 260 }}>
+                <CardContent>
+                  <div className={classes.title}>{t('Ingested entities')}</div>
+                  <div className={classes.graphContainer}>
+                    <QueryRenderer
+                      query={dashboardStixDomainEntitiesTimeSeriesQuery}
+                      variables={stixDomainEntitiesTimeSeriesVariables}
+                      render={({ props }) => {
+                        if (props && props.stixDomainEntitiesTimeSeries) {
                           return (
-                            <ListItem
-                              key={report.id}
-                              dense={true}
-                              button={true}
-                              classes={{ root: classes.item }}
-                              divider={true}
-                              component={Link}
-                              to={`/dashboard/reports/all/${report.id}`}
-                            >
-                              <ListItemIcon
-                                classes={{ root: classes.itemIcon }}
+                            <ResponsiveContainer height={180} width="100%">
+                              <BarChart
+                                data={props.stixDomainEntitiesTimeSeries}
+                                margin={{
+                                  top: 5,
+                                  right: 5,
+                                  bottom: 25,
+                                  left: 5,
+                                }}
                               >
-                                <Description />
-                              </ListItemIcon>
-                              <ListItemText
-                                classes={{ root: classes.itemText }}
-                                primary={report.name}
-                                secondary={report.description}
-                              />
-                              <div style={{ minWidth: 100 }}>
-                                {markingDefinition ? (
-                                  <ItemMarking
-                                    key={markingDefinition.node.id}
-                                    label={markingDefinition.node.definition}
-                                  />
-                                ) : (
-                                  ''
-                                )}
-                              </div>
-                              <div style={inlineStyles.itemDate}>
-                                {nsd(report.published)}
-                              </div>
-                            </ListItem>
+                                <XAxis
+                                  dataKey="date"
+                                  stroke="#ffffff"
+                                  interval={15}
+                                  angle={-45}
+                                  textAnchor="end"
+                                  tickFormatter={nsd}
+                                />
+                                <YAxis stroke="#ffffff" />
+                                <CartesianGrid
+                                  strokeDasharray="2 2"
+                                  stroke="#0f181f"
+                                />
+                                <Tooltip
+                                  cursor={{
+                                    fill: 'rgba(0, 0, 0, 0.2)',
+                                    stroke: 'rgba(0, 0, 0, 0.2)',
+                                    strokeWidth: 2,
+                                  }}
+                                  contentStyle={{
+                                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                    fontSize: 12,
+                                    borderRadius: 10,
+                                  }}
+                                  labelFormatter={nsd}
+                                />
+                                <Bar
+                                  fill={Theme.palette.primary.main}
+                                  dataKey="value"
+                                  barSize={10}
+                                />
+                              </BarChart>
+                            </ResponsiveContainer>
                           );
-                        })}
-                      </List>
-                    );
-                  }
-                  return <Loader variant='inElement'/>;
-                }}
-              />
-            </Paper>
+                        }
+                        return <Loader variant='inElement'/>;
+                      }}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </Grid>
           </Grid>
-          <Grid item={true} lg={6} xs={12} style={{ marginBottom: 30 }}>
-            <Typography variant="h2" gutterBottom={true}>
-              {t('Last observables')}
-            </Typography>
-            <Paper classes={{ root: classes.paper }} elevation={2}>
-              <QueryRenderer
-                query={dashboardLastObservablesQuery}
-                variables={{
-                  first: 10,
-                  orderBy: 'created_at',
-                  orderMode: 'desc',
-                }}
-                render={({ props }) => {
-                  if (props && props.stixObservables) {
-                    return (
-                      <List>
-                        {props.stixObservables.edges.map((stixObservableEdge) => {
-                          const stixObservable = stixObservableEdge.node;
-                          const markingDefinition = head(
-                            pathOr(
-                              [],
-                              ['markingDefinitions', 'edges'],
-                              stixObservable,
-                            ),
-                          );
-                          return (
-                            <ListItem
-                              key={stixObservable.id}
-                              dense={true}
-                              button={true}
-                              classes={{ root: classes.item }}
-                              divider={true}
-                              component={Link}
-                              to={`/dashboard/signatures/observables/${stixObservable.id}`}
-                            >
-                              <ListItemIcon
-                                classes={{ root: classes.itemIcon }}
+          <Grid container={true} spacing={2}>
+            <Grid item={true} lg={6} xs={12} style={{ marginBottom: 30 }}>
+              <Typography variant="h2" gutterBottom={true}>
+                {t('Last reports')}
+              </Typography>
+              <Paper classes={{ root: classes.paper }} elevation={2}>
+                <QueryRenderer
+                  query={dashboardLastReportsQuery}
+                  variables={{
+                    first: 10,
+                    orderBy: 'published',
+                    orderMode: 'desc',
+                  }}
+                  render={({ props }) => {
+                    if (props && props.reports) {
+                      return (
+                        <List>
+                          {props.reports.edges.map((reportEdge) => {
+                            const report = reportEdge.node;
+                            const markingDefinition = head(
+                              pathOr([], ['markingDefinitions', 'edges'], report),
+                            );
+                            return (
+                              <ListItem
+                                key={report.id}
+                                dense={true}
+                                button={true}
+                                classes={{ root: classes.item }}
+                                divider={true}
+                                component={Link}
+                                to={`/dashboard/reports/all/${report.id}`}
                               >
-                                <HexagonOutline />
-                              </ListItemIcon>
-                              <ListItemText
-                                classes={{ root: classes.itemText }}
-                                primary={stixObservable.observable_value}
-                                secondary={t(
-                                  `observable_${stixObservable.entity_type}`,
-                                )}
-                              />
-                              <div style={{ minWidth: 100 }}>
-                                {markingDefinition ? (
-                                  <ItemMarking
-                                    key={markingDefinition.node.id}
-                                    label={markingDefinition.node.definition}
-                                  />
-                                ) : (
-                                  ''
-                                )}
-                              </div>
-                              <div style={inlineStyles.itemDate}>
-                                {nsd(stixObservable.created_at)}
-                              </div>
-                            </ListItem>
-                          );
-                        })}
-                      </List>
-                    );
-                  }
-                  return <Loader variant='inElement'/>;
-                }}
-              />
-            </Paper>
+                                <ListItemIcon
+                                  classes={{ root: classes.itemIcon }}
+                                >
+                                  <Description />
+                                </ListItemIcon>
+                                <ListItemText
+                                  classes={{ root: classes.itemText }}
+                                  primary={report.name}
+                                  secondary={report.description}
+                                />
+                                <div style={{ minWidth: 100 }}>
+                                  {markingDefinition ? (
+                                    <ItemMarking
+                                      key={markingDefinition.node.id}
+                                      label={markingDefinition.node.definition}
+                                    />
+                                  ) : (
+                                    ''
+                                  )}
+                                </div>
+                                <div style={inlineStyles.itemDate}>
+                                  {nsd(report.published)}
+                                </div>
+                              </ListItem>
+                            );
+                          })}
+                        </List>
+                      );
+                    }
+                    return <Loader variant='inElement'/>;
+                  }}
+                />
+              </Paper>
+            </Grid>
+            <Grid item={true} lg={6} xs={12} style={{ marginBottom: 30 }}>
+              <Typography variant="h2" gutterBottom={true}>
+                {t('Last observables')}
+              </Typography>
+              <Paper classes={{ root: classes.paper }} elevation={2}>
+                <QueryRenderer
+                  query={dashboardLastObservablesQuery}
+                  variables={{
+                    first: 10,
+                    orderBy: 'created_at',
+                    orderMode: 'desc',
+                  }}
+                  render={({ props }) => {
+                    if (props && props.stixObservables) {
+                      return (
+                        <List>
+                          {props.stixObservables.edges.map((stixObservableEdge) => {
+                            const stixObservable = stixObservableEdge.node;
+                            const markingDefinition = head(
+                              pathOr(
+                                [],
+                                ['markingDefinitions', 'edges'],
+                                stixObservable,
+                              ),
+                            );
+                            return (
+                              <ListItem
+                                key={stixObservable.id}
+                                dense={true}
+                                button={true}
+                                classes={{ root: classes.item }}
+                                divider={true}
+                                component={Link}
+                                to={`/dashboard/signatures/observables/${stixObservable.id}`}
+                              >
+                                <ListItemIcon
+                                  classes={{ root: classes.itemIcon }}
+                                >
+                                  <HexagonOutline />
+                                </ListItemIcon>
+                                <ListItemText
+                                  classes={{ root: classes.itemText }}
+                                  primary={stixObservable.observable_value}
+                                  secondary={t(
+                                    `observable_${stixObservable.entity_type}`,
+                                  )}
+                                />
+                                <div style={{ minWidth: 100 }}>
+                                  {markingDefinition ? (
+                                    <ItemMarking
+                                      key={markingDefinition.node.id}
+                                      label={markingDefinition.node.definition}
+                                    />
+                                  ) : (
+                                    ''
+                                  )}
+                                </div>
+                                <div style={inlineStyles.itemDate}>
+                                  {nsd(stixObservable.created_at)}
+                                </div>
+                              </ListItem>
+                            );
+                          })}
+                        </List>
+                      );
+                    }
+                    return <Loader variant='inElement'/>;
+                  }}
+                />
+              </Paper>
+            </Grid>
           </Grid>
-        </Grid>
+        </Security>
       </div>
     );
   }
