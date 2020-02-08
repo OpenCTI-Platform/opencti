@@ -4,7 +4,7 @@ exports[`User resolver standard behavior should user created 1`] = `
 Object {
   "data": Object {
     "userAdd": Object {
-      "email": "admin@opencti.io",
+      "user_email": "admin@opencti.io",
       "firstname": "Administrator",
       "lastname": "OpenCTI",
       "name": "admin",

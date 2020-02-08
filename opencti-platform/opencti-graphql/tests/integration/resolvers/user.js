@@ -24,7 +24,7 @@ describe('User resolver standard behavior', () => {
       input: {
         name: 'admin',
         password: 'admin',
-        email: 'admin@opencti.io',
+        user_email: 'admin@opencti.io',
         firstname: 'Administrator',
         lastname: 'OpenCTI'
       }
