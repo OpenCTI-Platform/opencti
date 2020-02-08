@@ -71,9 +71,11 @@ export const initializeSchema = async () => {
   logger.info(`[INIT] > Elasticsearch indexes loaded`);
 };
 
-const createReportsTypes = async () => {
+const createAttributesTypes = async () => {
   await addAttribute({ type: 'report_class', value: 'Threat Report' });
   await addAttribute({ type: 'report_class', value: 'Internal Report' });
+  await addAttribute({ type: 'role_played', value: 'C2 server' });
+  await addAttribute({ type: 'role_played', value: 'Relay node' });
 };
 
 const createMarkingDefinitions = async () => {
@@ -149,7 +151,7 @@ const initializeDefaultValues = async () => {
     platform_registration: false,
     platform_demo: false
   });
-  await createReportsTypes();
+  await createAttributesTypes();
   await createMarkingDefinitions();
   await createBasicRolesAndCapabilities();
 };
