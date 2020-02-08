@@ -1,25 +1,32 @@
 import React from 'react';
 import { KeyboardDatePicker } from '@material-ui/pickers';
 import { useFieldToKeyboardDatePicker } from 'formik-material-ui-pickers';
+import { parse } from '../utils/Time';
 
 const DatePickerField = (props) => {
   const customize = React.useCallback(
-    ([, , helpers]) => ({
+    ([field, , helpers]) => ({
+      onAccept: (date) => {
+        helpers.setTouched(true);
+        if (typeof props.onSubmit === 'function') {
+          props.onSubmit(field.name, date.toISOString());
+        }
+      },
       onChange: (date, value) => {
         helpers.setValue(value);
         if (typeof props.onChange === 'function') {
-          props.onChange(props.field.name, date);
+          props.onChange(field.name, date);
         }
       },
       onFocus: () => {
         if (typeof props.onFocus === 'function') {
-          props.onFocus(props.field.name);
+          props.onFocus(field.name);
         }
       },
       onBlur: (event) => {
         helpers.setTouched(true);
         if (typeof props.onSubmit === 'function') {
-          props.onSubmit(props.field.name, event.target.value);
+          props.onSubmit(field.name, parse(event.target.value).toISOString());
         }
       },
     }),
