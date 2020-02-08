@@ -164,9 +164,7 @@ class StixObservablePopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixObservableEditionContainer
-                    me={props.me}
-                    stixObservable={props.stixObservable}
+                  <StixObservableEditionContainer stixObservable={props.stixObservable}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

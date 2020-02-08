@@ -6,10 +6,40 @@ import applyMigration from './database/migration';
 import { initializeAdminUser } from './config/security';
 import { isStorageAlive } from './database/minio';
 import { checkPythonStix2 } from './database/utils';
-import { addMarkingDefinition, findById as markingById } from './domain/markingDefinition';
+import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings, getSettings } from './domain/settings';
+import { ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from './domain/user';
+import { addCapability, addRole } from './domain/grant';
 
 const fs = require('fs');
+
+// Platform capabilities definition
+const CAPABILITIES = [
+  { name: 'BYPASS', description: 'Bypass all capabilities' },
+  {
+    name: 'KNOWLEDGE',
+    description: 'Access knowledge',
+    dependencies: [
+      { name: 'KNCREATE', description: 'Create knowledge' },
+      { name: 'KNEDIT', description: 'Edit knowledge' },
+      { name: 'KNASKIMPORT', description: 'Import knowledge' },
+      { name: 'KNASKEXPORT', description: 'Export knowledge' }
+    ]
+  },
+  {
+    name: 'MODULES',
+    description: 'Access connectors',
+    dependencies: [
+      { name: 'MODMANAGE', description: 'Manage connector state' },
+      { name: 'MODEXPORT', description: 'Push export files through API' }
+    ]
+  },
+  {
+    name: 'SETTINGS',
+    description: 'Access administration',
+    dependencies: [{ name: 'SETACCESSES', description: 'Manage credentials' }]
+  }
+];
 
 // Check every dependencies
 export const checkSystemDependencies = async () => {
@@ -38,68 +68,94 @@ export const initializeSchema = async () => {
   logger.info(`[INIT] > Elasticsearch indexes loaded`);
 };
 
-const initMarkingDef = async marking => {
-  const getMarking = await markingById(marking.stix_id_key);
-  if (getMarking === null) {
-    await addMarkingDefinition({}, marking);
-    logger.info(`[INIT] > Marking ${marking.definition} injected`);
-  }
-};
-
-const initSettings = async () => {
-  const settings = await getSettings();
-  if (!settings) {
-    await addSettings(
-      {},
-      {
-        platform_title: 'Cyber threat intelligence platform',
-        platform_email: 'admin@opencti.io',
-        platform_url: '',
-        platform_language: 'auto',
-        platform_external_auth: true,
-        platform_registration: false,
-        platform_demo: false
-      }
-    );
-    logger.info(`[INIT] > Platform default settings initialized`);
-  }
-};
-
-const initializeDefaultValues = async () => {
-  await initMarkingDef({
+const createMarkingDefinitions = async () => {
+  // Create marking defs
+  await addMarkingDefinition(SYSTEM_USER, {
     stix_id_key: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9',
     definition_type: 'TLP',
     definition: 'TLP:WHITE',
     color: '#ffffff',
     level: 1
   });
-  await initMarkingDef({
+  await addMarkingDefinition(SYSTEM_USER, {
     stix_id_key: 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
     definition_type: 'TLP',
     definition: 'TLP:GREEN',
     color: '#2e7d32',
     level: 2
   });
-  await initMarkingDef({
+  await addMarkingDefinition(SYSTEM_USER, {
     stix_id_key: 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
     definition_type: 'TLP',
     definition: 'TLP:AMBER',
     color: '#d84315',
     level: 3
   });
-  await initMarkingDef({
+  await addMarkingDefinition(SYSTEM_USER, {
     stix_id_key: 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
     definition_type: 'TLP',
     definition: 'TLP:RED',
     color: '#c62828',
     level: 4
   });
-  await initSettings();
+};
+
+const createCapabilities = async (capabilities, parentName = '') => {
+  for (let i = 0; i < capabilities.length; i += 1) {
+    const capability = capabilities[i];
+    const { name, description } = capability;
+    const capabilityName = `${parentName}${name}`;
+    // eslint-disable-next-line no-await-in-loop
+    await addCapability({ name: capabilityName, description });
+    if (capability.dependencies && capability.dependencies.length > 0) {
+      // eslint-disable-next-line no-await-in-loop
+      await createCapabilities(capability.dependencies, `${capabilityName}_`);
+    }
+  }
+};
+
+export const createBasicRolesAndCapabilities = async () => {
+  // Create capabilities
+  await createCapabilities(CAPABILITIES);
+  // Create roles
+  await addRole({
+    name: ROLE_DEFAULT,
+    description: 'Default role associated to all users',
+    capabilities: ['KNOWLEDGE'],
+    default_assignation: true
+  });
+  await addRole({
+    name: ROLE_ADMINISTRATOR,
+    description: 'Administrator role that bypass every capabilities',
+    capabilities: ['BYPASS']
+  });
+  await addRole({
+    name: 'Analyst',
+    description: 'Role able to manage the platform knowledge',
+    capabilities: ['KNOWLEDGE_KNCREATE', 'KNOWLEDGE_KNEDIT', 'KNOWLEDGE_KNASKIMPORT', 'KNOWLEDGE_KNASKEXPORT']
+  });
+};
+
+const initializeDefaultValues = async () => {
+  await addSettings(SYSTEM_USER, {
+    platform_title: 'Cyber threat intelligence platform',
+    platform_email: 'admin@opencti.io',
+    platform_url: '',
+    platform_language: 'auto',
+    platform_external_auth: true,
+    platform_registration: false,
+    platform_demo: false
+  });
+  await createMarkingDefinitions();
+  await createBasicRolesAndCapabilities();
 };
 
 const initializeData = async () => {
+  // Init default values only if platform as no settings
+  const settings = await getSettings();
+  if (!settings) await initializeDefaultValues();
+  logger.info(`[INIT] > Platform default initialized`);
   await initializeAdminUser();
-  await initializeDefaultValues();
 };
 
 const init = async () => {

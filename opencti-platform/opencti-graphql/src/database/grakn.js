@@ -578,7 +578,7 @@ const getConcepts = async (
       const queryVarsToConcepts = await Promise.all(
         conceptQueryVars.map(async ({ alias, role, internalIdKey }) => {
           const concept = answer.map().get(alias);
-          if (concept.baseType === 'ATTRIBUTE') return undefined; // If specific attributes are used for filtering, ordering, ...
+          if (!concept || concept.baseType === 'ATTRIBUTE') return undefined; // If specific attributes are used for filtering, ordering, ...
           const types = await conceptTypes(concept);
           return { id: concept.id, data: { concept, alias, role, internalIdKey, types } };
         })
@@ -607,7 +607,7 @@ const getConcepts = async (
   const result = answers.map(answer => {
     const dataPerEntities = plainEntities.map(entity => {
       const concept = answer.map().get(entity);
-      const conceptData = conceptCache.get(concept.id);
+      const conceptData = concept && conceptCache.get(concept.id);
       return [entity, conceptData];
     });
     return fromPairs(dataPerEntities);
@@ -1712,12 +1712,12 @@ export const deleteRelationById = async relationId => {
 export const deleteRelationsByFromAndTo = async (fromId, toId, relationType = 'relation') => {
   const efromId = escapeString(fromId);
   const etoId = escapeString(toId);
-  const read = `match $from has internal_id_key "${efromId}"; $to has internal_id_key "${etoId}"; $rel($from, $to) isa ${relationType}; get;`;
+  const read = `match $from has internal_id_key "${efromId}"; 
+    $to has internal_id_key "${etoId}"; 
+    $rel($from, $to) isa ${relationType}; get;`;
   const relationsToDelete = await find(read, ['rel']);
   const relationsIds = map(r => r.rel.id, relationsToDelete);
-  for (const relationId of relationsIds) {
-    await deleteRelationById(relationId);
-  }
+  await Promise.all(map(id => deleteRelationById(id), relationsIds));
 };
 
 export const deleteAttributeById = async id => {

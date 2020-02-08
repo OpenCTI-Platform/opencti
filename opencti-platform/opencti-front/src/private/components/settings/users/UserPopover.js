@@ -56,9 +56,6 @@ const userEditionQuery = graphql`
     user(id: $id) {
       ...UserEdition_user
     }
-    me {
-      ...UserEdition_me
-    }
   }
 `;
 
@@ -125,40 +122,38 @@ class UserPopover extends Component {
   }
 
   render() {
-    const { classes, t, userId } = this.props;
+    const {
+      classes, t, userId, deletableUser,
+    } = this.props;
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
           <MoreVert />
         </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
+        <Menu anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}
-        >
+          style={{ marginTop: 50 }}>
           <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
             {t('Update')}
           </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
+          { deletableUser
+            && <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+              {t('Delete')}
+            </MenuItem>
+          }
         </Menu>
-        <Drawer
-          open={this.state.displayUpdate}
+        <Drawer open={this.state.displayUpdate}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseUpdate.bind(this)}
-        >
+          onClose={this.handleCloseUpdate.bind(this)}>
           <QueryRenderer
             query={userEditionQuery}
             variables={{ id: userId }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <UserEdition
-                    me={props.me}
-                    user={props.user}
+                  <UserEdition user={props.user}
                     handleClose={this.handleCloseUpdate.bind(this)}
                   />
                 );
@@ -167,12 +162,10 @@ class UserPopover extends Component {
             }}
           />
         </Drawer>
-        <Dialog
-          open={this.state.displayDelete}
+        <Dialog open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
-        >
+          onClose={this.handleCloseDelete.bind(this)}>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this user?')}
@@ -182,15 +175,13 @@ class UserPopover extends Component {
             <Button
               onClick={this.handleCloseDelete.bind(this)}
               color="primary"
-              disabled={this.state.deleting}
-            >
+              disabled={this.state.deleting}>
               {t('Cancel')}
             </Button>
             <Button
               onClick={this.submitDelete.bind(this)}
               color="primary"
-              disabled={this.state.deleting}
-            >
+              disabled={this.state.deleting}>
               {t('Delete')}
             </Button>
           </DialogActions>
@@ -202,6 +193,7 @@ class UserPopover extends Component {
 
 UserPopover.propTypes = {
   userId: PropTypes.string,
+  deletableUser: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

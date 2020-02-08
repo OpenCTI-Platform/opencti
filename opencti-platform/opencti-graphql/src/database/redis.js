@@ -84,7 +84,7 @@ export const delUserContext = user => {
  * @param input
  */
 export const setEditContext = (user, instanceId, input) => {
-  const data = assoc('name', user.email, input);
+  const data = assoc('name', user.user_email, input);
   if (isActive()) {
     client.set(
       `edit:${instanceId}:${user.id}`,
@@ -127,20 +127,25 @@ export const fetchEditContext = instanceId => {
 };
 
 // region cache for access token
-export const getAccessCache = async key => {
+export const getAccessCache = async tokenUUID => {
   if (isActive()) {
-    const data = await client.get(key);
+    // 0b23f787-d013-41a8-8078-97bee84cc99d
+    const data = await client.get(`token:cache:${tokenUUID}`);
     return data && JSON.parse(data);
   }
   return undefined;
 };
-
-export const storeAccessCache = async (tokenValue, access) => {
+export const storeAccessCache = async (tokenUUID, access) => {
   if (isActive()) {
     const val = JSON.stringify(access);
-    await client.set(tokenValue, val, 'ex', 90);
+    await client.set(`token:cache:${tokenUUID}`, val, 'ex', 90);
     return access;
   }
   return undefined;
+};
+export const clearAccessCache = async tokenUUID => {
+  if (isActive()) {
+    await client.del(`token:cache:${tokenUUID}`);
+  }
 };
 // endregion

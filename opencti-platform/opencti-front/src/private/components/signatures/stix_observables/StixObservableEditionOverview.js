@@ -279,9 +279,7 @@ class StixObservableEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, stixObservable, editUsers, me,
-    } = this.props;
+    const { t, stixObservable, context } = this.props;
     const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], stixObservable) === null
       ? ''
       : {
@@ -336,13 +334,7 @@ class StixObservableEditionOverviewComponent extends Component {
                   style={{ marginTop: 10 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="observable_value"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="observable_value"/>}
                 />
                 <Field
                   name="description"
@@ -354,13 +346,7 @@ class StixObservableEditionOverviewComponent extends Component {
                   style={{ marginTop: 10 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="description"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="description"/>}
                 />
                 <Field
                   name="createdByRef"
@@ -372,13 +358,7 @@ class StixObservableEditionOverviewComponent extends Component {
                   onInputChange={this.searchIdentities.bind(this)}
                   onChange={this.handleChangeCreatedByRef.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="createdByRef"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="createdByRef"/>}
                 />
                 <Field
                   name="markingDefinitions"
@@ -389,13 +369,7 @@ class StixObservableEditionOverviewComponent extends Component {
                   onInputChange={this.searchMarkingDefinitions.bind(this)}
                   onChange={this.handleChangeMarkingDefinition.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="markingDefinitions"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="markingDefinitions"/>}
                 />
               </Form>
               <IdentityCreation
@@ -427,8 +401,7 @@ StixObservableEditionOverviewComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   stixObservable: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
+  context: PropTypes.array,
 };
 
 const StixObservableEditionOverview = createFragmentContainer(

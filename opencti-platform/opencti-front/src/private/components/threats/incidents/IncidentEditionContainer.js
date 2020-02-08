@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import {
-  compose, insert, find, propEq,
-} from 'ramda';
+import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
@@ -17,7 +15,7 @@ import { SubscriptionAvatars } from '../../../../components/Subscription';
 import IncidentEditionOverview from './IncidentEditionOverview';
 import IncidentEditionDetails from './IncidentEditionDetails';
 
-const styles = theme => ({
+const styles = (theme) => ({
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
     padding: '20px 20px 20px 60px',
@@ -59,27 +57,22 @@ class IncidentEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, incident, me,
+      t, classes, handleClose, incident,
     } = this.props;
     const { editContext } = incident;
-    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe
-      ? insert(0, { name: me.email }, editContext)
-      : editContext;
     return (
       <div>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}
-          >
+            onClick={handleClose.bind(this)}>
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update an incident')}
           </Typography>
-          <SubscriptionAvatars users={editUsers} />
+          <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
@@ -93,18 +86,10 @@ class IncidentEditionContainer extends Component {
             </Tabs>
           </AppBar>
           {this.state.currentTab === 0 && (
-            <IncidentEditionOverview
-              incident={incident}
-              editUsers={editUsers}
-              me={me}
-            />
+            <IncidentEditionOverview incident={incident} context={editContext}/>
           )}
           {this.state.currentTab === 1 && (
-            <IncidentEditionDetails
-              incident={incident}
-              editUsers={editUsers}
-              me={me}
-            />
+            <IncidentEditionDetails incident={incident} context={editContext}/>
           )}
         </div>
       </div>
@@ -116,7 +101,6 @@ IncidentEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
   incident: PropTypes.object,
-  me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
@@ -133,11 +117,6 @@ const IncidentEditionContainerFragment = createFragmentContainer(
           name
           focusOn
         }
-      }
-    `,
-    me: graphql`
-      fragment IncidentEditionContainer_me on User {
-        email
       }
     `,
   },

@@ -2,22 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import {
-  compose,
-  insert,
-  find,
-  propEq,
-  pick,
-  pipe,
-  pathOr,
-  map,
-  assoc,
-  difference,
-  head,
-  union,
-  join,
-  split,
+  assoc, compose, difference, head, join, map, pathOr, pick, pipe, split, union,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -25,16 +12,9 @@ import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  fetchQuery,
-  requestSubscription,
-} from '../../../../relay/environment';
+import { commitMutation, fetchQuery, requestSubscription } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import {
-  SubscriptionAvatars,
-  SubscriptionFocus,
-} from '../../../../components/Subscription';
+import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
 import Autocomplete from '../../../../components/Autocomplete';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 
@@ -255,14 +235,9 @@ class StixDomainEntityEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, stixDomainEntity, me,
+      t, classes, handleClose, stixDomainEntity,
     } = this.props;
     const { editContext } = stixDomainEntity;
-    // Add current user to the context if is not available yet.
-    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe
-      ? insert(0, { name: me.email }, editContext)
-      : editContext;
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
       map((n) => ({
@@ -289,7 +264,7 @@ class StixDomainEntityEditionContainer extends Component {
           <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update an entity')}
           </Typography>
-          <SubscriptionAvatars users={editUsers} />
+          <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
@@ -307,11 +282,7 @@ class StixDomainEntityEditionContainer extends Component {
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="last_seen"
-                    />
+                    <SubscriptionFocus context={editContext} fieldName="last_seen"/>
                   }
                 />
                 <Field
@@ -323,11 +294,7 @@ class StixDomainEntityEditionContainer extends Component {
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="alias"
-                    />
+                    <SubscriptionFocus context={editContext} fieldName="alias"/>
                   }
                 />
                 <Field
@@ -341,11 +308,7 @@ class StixDomainEntityEditionContainer extends Component {
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="description"
-                    />
+                    <SubscriptionFocus context={editContext} fieldName="description"/>
                   }
                 />
                 <Field
@@ -358,11 +321,7 @@ class StixDomainEntityEditionContainer extends Component {
                   onChange={this.handleChangeMarkingDefinition.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="markingDefinitions"
-                    />
+                    <SubscriptionFocus context={editContext} fieldName="markingDefinitions"/>
                   }
                 />
               </Form>
@@ -378,7 +337,6 @@ StixDomainEntityEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
   stixDomainEntity: PropTypes.object,
-  me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
@@ -409,11 +367,6 @@ const StixDomainEntityEditionFragment = createFragmentContainer(
           name
           focusOn
         }
-      }
-    `,
-    me: graphql`
-      fragment StixDomainEntityEditionOverview_me on User {
-        email
       }
     `,
   },

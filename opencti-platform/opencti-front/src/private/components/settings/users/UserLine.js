@@ -7,7 +7,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { MoreVert, Person } from '@material-ui/icons';
+import { MoreVert, Person, PermIdentity } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import UserPopover from './UserPopover';
@@ -49,49 +49,36 @@ class UserLineComponent extends Component {
     const {
       fd, classes, dataColumns, node, paginationOptions,
     } = this.props;
+    const external = node.external === true;
     return (
       <ListItem classes={{ root: classes.item }} divider={true} button={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Person />
+          { external ? <PermIdentity /> : <Person /> }
         </ListItemIcon>
         <ListItemText
           primary={
             <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
                 {node.name}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.email.width }}
-              >
-                {node.email}
+              <div className={classes.bodyItem} style={{ width: dataColumns.email.width }}>
+                {node.user_email}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.firstname.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.firstname.width }}>
                 {node.firstname}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.lastname.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.lastname.width }}>
                 {node.lastname}
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.created.width }}>
                 {fd(node.created)}
               </div>
             </div>
           }
         />
         <ListItemSecondaryAction>
-          <UserPopover userId={node.id} paginationOptions={paginationOptions} />
+          <UserPopover userId={node.id} deletableUser={node.external !== true}
+          paginationOptions={paginationOptions} />
         </ListItemSecondaryAction>
       </ListItem>
     );
@@ -112,8 +99,9 @@ const UserLineFragment = createFragmentContainer(UserLineComponent, {
     fragment UserLine_node on User {
       id
       name
-      email
+      user_email
       firstname
+      external
       lastname
       created
     }
@@ -136,34 +124,19 @@ class UserLineDummyComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.email.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.email.width }}>
                 <div className="fakeItem" style={{ width: '70%' }} />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.firstname.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.firstname.width }}>
                 <div className="fakeItem" style={{ width: '60%' }} />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.lastname.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.lastname.width }}>
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.created.width }}>
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
             </div>

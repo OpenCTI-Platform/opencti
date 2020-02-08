@@ -15,6 +15,7 @@ import EntityIncidentsChart from '../incidents/EntityIncidentsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityCampaignsChart from '../campaigns/EntityCampaignsChart';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import Security, { KNOWLEDGE_KNEDIT } from '../../../../utils/Security';
 
 const styles = () => ({
   container: {
@@ -65,7 +66,9 @@ class ThreatActorComponent extends Component {
             <EntityReportsChart entityId={threatActor.id} />
           </Grid>
         </Grid>
-        <ThreatActorEdition threatActorId={threatActor.id} />
+        <Security roles={[KNOWLEDGE_KNEDIT]}>
+          <ThreatActorEdition threatActorId={threatActor.id} />
+        </Security>
       </div>
     );
   }

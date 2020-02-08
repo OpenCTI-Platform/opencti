@@ -164,9 +164,7 @@ class CampaignPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <CampaignEditionContainer
-                    me={props.me}
-                    campaign={props.campaign}
+                  <CampaignEditionContainer campaign={props.campaign}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

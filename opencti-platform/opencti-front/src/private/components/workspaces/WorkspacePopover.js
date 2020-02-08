@@ -164,9 +164,7 @@ class WorkspacePopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <WorkspaceEditionContainer
-                    me={props.me}
-                    workspace={props.workspace}
+                  <WorkspaceEditionContainer workspace={props.workspace}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

@@ -19,6 +19,7 @@ import { FileExportOutline } from 'mdi-material-ui';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainEntitiesExports from '../../private/components/common/stix_domain_entities/StixDomainEntitiesExports';
+import Security, { KNOWLEDGE_KNEXPORT } from '../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -187,18 +188,20 @@ class ListCards extends Component {
             ) : (
               ''
             )}
-            {typeof handleToggleExports === 'function' ? (
-              <Tooltip title={t('Exports panel')}>
-                <IconButton
-                  color={openExports ? 'secondary' : 'primary'}
-                  onClick={handleToggleExports.bind(this)}
-                >
-                  <FileExportOutline />
-                </IconButton>
-              </Tooltip>
-            ) : (
-              ''
-            )}
+            <Security roles={[KNOWLEDGE_KNEXPORT]}>
+              {typeof handleToggleExports === 'function' ? (
+                <Tooltip title={t('Exports panel')}>
+                  <IconButton
+                    color={openExports ? 'secondary' : 'primary'}
+                    onClick={handleToggleExports.bind(this)}
+                  >
+                    <FileExportOutline />
+                  </IconButton>
+                </Tooltip>
+              ) : (
+                ''
+              )}
+            </Security>
           </div>
         </div>
         <div className="clearfix" />

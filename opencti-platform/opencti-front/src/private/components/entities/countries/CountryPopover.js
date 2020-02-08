@@ -164,9 +164,7 @@ class CountryPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <CountryEditionContainer
-                    me={props.me}
-                    country={props.country}
+                  <CountryEditionContainer country={props.country}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

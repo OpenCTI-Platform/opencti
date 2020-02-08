@@ -165,9 +165,7 @@ class SectorPopover extends Component {
               if (props) {
                 // Done
                 return (
-                  <SectorEditionContainer
-                    me={props.me}
-                    sector={props.sector}
+                  <SectorEditionContainer sector={props.sector}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

@@ -164,9 +164,7 @@ class OrganizationPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <OrganizationEditionContainer
-                    me={props.me}
-                    organization={props.organization}
+                  <OrganizationEditionContainer organization={props.organization}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

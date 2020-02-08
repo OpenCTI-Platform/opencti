@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import {
-  compose, insert, find, propEq,
-} from 'ramda';
+import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
@@ -13,7 +11,7 @@ import inject18n from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import CountryEditionOverview from './CountryEditionOverview';
 
-const styles = theme => ({
+const styles = (theme) => ({
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
     padding: '20px 20px 20px 60px',
@@ -46,36 +44,26 @@ const styles = theme => ({
 class CountryEditionContainer extends Component {
   render() {
     const {
-      t, classes, handleClose, country, me,
+      t, classes, handleClose, country,
     } = this.props;
     const { editContext } = country;
-    // Add current user to the context if is not available yet.
-    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe
-      ? insert(0, { name: me.email }, editContext)
-      : editContext;
     return (
       <div>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}
-          >
+            onClick={handleClose.bind(this)}>
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update an country')}
           </Typography>
-          <SubscriptionAvatars users={editUsers} />
+          <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <CountryEditionOverview
-            country={this.props.country}
-            editUsers={editUsers}
-            me={me}
-          />
+          <CountryEditionOverview country={this.props.country} context={editContext}/>
         </div>
       </div>
     );
@@ -86,7 +74,6 @@ CountryEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
   country: PropTypes.object,
-  me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
@@ -102,11 +89,6 @@ const CountryEditionFragment = createFragmentContainer(
           name
           focusOn
         }
-      }
-    `,
-    me: graphql`
-      fragment CountryEditionContainer_me on User {
-        email
       }
     `,
   },

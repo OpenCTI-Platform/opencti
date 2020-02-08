@@ -38,7 +38,7 @@ const uploadJobImport = async (fileId, fileMime) => {
 };
 
 export const askJobImport = async (filename, user) => {
-  logger.debug(`Job > ask import for file ${filename} by ${user.email}`);
+  logger.debug(`Job > ask import for file ${filename} by ${user.user_email}`);
   const file = await loadFile(filename);
   await uploadJobImport(file.id, file.metaData.mimetype);
   return file;

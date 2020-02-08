@@ -29,9 +29,6 @@ const stixDomainEntityEditionQuery = graphql`
     stixDomainEntity(id: $id) {
       ...StixDomainEntityEditionOverview_stixDomainEntity
     }
-    me {
-      ...StixDomainEntityEditionOverview_me
-    }
   }
 `;
 
@@ -59,9 +56,7 @@ class StixDomainEntityEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixDomainEntityEditionOverview
-                    variant={variant}
-                    me={props.me}
+                  <StixDomainEntityEditionOverview variant={variant}
                     stixDomainEntity={props.stixDomainEntity}
                     handleClose={handleClose.bind(this)}
                     handleDelete={

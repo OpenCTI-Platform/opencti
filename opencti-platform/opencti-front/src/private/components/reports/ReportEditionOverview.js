@@ -279,9 +279,7 @@ class ReportEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, report, editUsers, me,
-    } = this.props;
+    const { t, report, context } = this.props;
     const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], report) === null
       ? ''
       : {
@@ -336,11 +334,7 @@ class ReportEditionOverviewComponent extends Component {
                           onFocus={this.handleChangeFocus.bind(this)}
                           onSubmit={this.handleSubmitField.bind(this)}
                           helperText={
-                            <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
-                              fieldName="name"
-                            />
+                            <SubscriptionFocus context={context} fieldName="name"/>
                           }
                         />
                         <Field
@@ -356,11 +350,7 @@ class ReportEditionOverviewComponent extends Component {
                           }}
                           containerstyle={{ marginTop: 10, width: '100%' }}
                           helpertext={
-                            <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
-                              fieldName="report_class"
-                            />
+                            <SubscriptionFocus context={context} fieldName="report_class"/>
                           }
                         >
                           {reportClassesEdges.map((reportClassEdge) => (
@@ -381,11 +371,7 @@ class ReportEditionOverviewComponent extends Component {
                           onFocus={this.handleChangeFocus.bind(this)}
                           onSubmit={this.handleSubmitField.bind(this)}
                           helperText={
-                            <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
-                              fieldName="published"
-                            />
+                            <SubscriptionFocus context={context} fieldName="published"/>
                           }
                         />
                         <Field
@@ -399,11 +385,7 @@ class ReportEditionOverviewComponent extends Component {
                           onFocus={this.handleChangeFocus.bind(this)}
                           onSubmit={this.handleSubmitField.bind(this)}
                           helperText={
-                            <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
-                              fieldName="description"
-                            />
+                            <SubscriptionFocus context={context} fieldName="description"/>
                           }
                         />
                         <Field
@@ -419,11 +401,7 @@ class ReportEditionOverviewComponent extends Component {
                           onChange={this.handleChangeCreatedByRef.bind(this)}
                           onFocus={this.handleChangeFocus.bind(this)}
                           helperText={
-                            <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
-                              fieldName="createdByRef"
-                            />
+                            <SubscriptionFocus context={context} fieldName="createdByRef"/>
                           }
                         />
                         <Field
@@ -440,11 +418,7 @@ class ReportEditionOverviewComponent extends Component {
                           )}
                           onFocus={this.handleChangeFocus.bind(this)}
                           helperText={
-                            <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
-                              fieldName="markingDefinitions"
-                            />
+                            <SubscriptionFocus context={context} fieldName="markingDefinitions"/>
                           }
                         />
                         <Field
@@ -460,11 +434,7 @@ class ReportEditionOverviewComponent extends Component {
                           }}
                           containerstyle={{ width: '100%', marginTop: 10 }}
                           helpertext={
-                            <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
-                              fieldName="object_status"
-                            />
+                            <SubscriptionFocus context={context} fieldName="object_status"/>
                           }
                         >
                           <MenuItem key="0" value="0">
@@ -493,11 +463,7 @@ class ReportEditionOverviewComponent extends Component {
                           }}
                           containerstyle={{ width: '100%', marginTop: 10 }}
                           helpertext={
-                            <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
-                              fieldName="source_confidence_level"
-                            />
+                            <SubscriptionFocus context={context} fieldName="source_confidence_level"/>
                           }
                         >
                           <MenuItem key="1" value="1">
@@ -550,8 +516,7 @@ ReportEditionOverviewComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   report: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
+  context: PropTypes.array,
 };
 
 const ReportEditionOverview = createFragmentContainer(

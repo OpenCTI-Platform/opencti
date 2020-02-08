@@ -285,9 +285,7 @@ class IndicatorEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, indicator, editUsers, me,
-    } = this.props;
+    const { t, indicator, context } = this.props;
     const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], indicator) === null
       ? ''
       : {
@@ -343,13 +341,7 @@ class IndicatorEditionOverviewComponent extends Component {
                   fullWidth={true}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="name"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="name"/>}
                 />
                 <Field
                   name="indicator_pattern"
@@ -361,13 +353,7 @@ class IndicatorEditionOverviewComponent extends Component {
                   style={{ marginTop: 10 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="indicator_pattern"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="indicator_pattern"/>}
                 />
                 <Field
                   name="valid_from"
@@ -377,13 +363,7 @@ class IndicatorEditionOverviewComponent extends Component {
                   style={{ marginTop: 10 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="valid_from"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="valid_from"/>}
                 />
                 <Field
                   name="valid_until"
@@ -393,13 +373,7 @@ class IndicatorEditionOverviewComponent extends Component {
                   style={{ marginTop: 10 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="valid_until"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="valid_until"/>}
                 />
                 <Field
                   name="score"
@@ -408,13 +382,7 @@ class IndicatorEditionOverviewComponent extends Component {
                   fullWidth={true}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="score"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="score"/>}
                 />
                 <Field
                   name="description"
@@ -426,13 +394,7 @@ class IndicatorEditionOverviewComponent extends Component {
                   style={{ marginTop: 10 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="description"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="description"/>}
                 />
                 <Field
                   name="createdByRef"
@@ -444,13 +406,7 @@ class IndicatorEditionOverviewComponent extends Component {
                   onInputChange={this.searchIdentities.bind(this)}
                   onChange={this.handleChangeCreatedByRef.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="createdByRef"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="createdByRef"/>}
                 />
                 <Field
                   name="markingDefinitions"
@@ -461,13 +417,7 @@ class IndicatorEditionOverviewComponent extends Component {
                   onInputChange={this.searchMarkingDefinitions.bind(this)}
                   onChange={this.handleChangeMarkingDefinition.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="markingDefinitions"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="markingDefinitions"/>}
                 />
               </Form>
               <IdentityCreation
@@ -499,8 +449,7 @@ IndicatorEditionOverviewComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   indicator: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
+  context: PropTypes.array,
 };
 
 const IndicatorEditionOverview = createFragmentContainer(

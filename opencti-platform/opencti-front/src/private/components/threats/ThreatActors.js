@@ -27,6 +27,7 @@ import ThreatActorsLines, {
   threatActorsLinesQuery,
 } from './threat_actors/ThreatActorsLines';
 import ThreatActorCreation from './threat_actors/ThreatActorCreation';
+import Security, { KNOWLEDGE_KNCREATE } from '../../../utils/Security';
 
 class ThreatActors extends Component {
   constructor(props) {
@@ -233,7 +234,9 @@ class ThreatActors extends Component {
       <div>
         {view === 'cards' ? this.renderCards(paginationOptions) : ''}
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <ThreatActorCreation paginationOptions={paginationOptions} />
+        <Security roles={[KNOWLEDGE_KNCREATE]}>
+          <ThreatActorCreation paginationOptions={paginationOptions} />
+        </Security>
       </div>
     );
   }

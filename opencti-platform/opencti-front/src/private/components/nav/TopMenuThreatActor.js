@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { withRouter, Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { ArrowForwardIos, Public } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
+import Security, { KNOWLEDGE_KNEXPORT, KNOWLEDGE_KNIMPORT } from '../../../utils/Security';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -140,23 +141,25 @@ class TopMenuThreatActor extends Component {
         >
           {t('Indicators')}
         </Button>
-        <Button
-            component={Link}
-            to={`/dashboard/threats/threat_actors/${threatActorId}/files`}
-            variant={
-                location.pathname === `/dashboard/threats/threat_actors/${threatActorId}/files`
-                  ? 'contained'
-                  : 'text'
-            }
-            size="small"
-            color={
-                location.pathname === `/dashboard/threats/threat_actors/${threatActorId}/files`
-                  ? 'primary'
-                  : 'inherit'
-            }
-            classes={{ root: classes.button }}>
-            {t('Files')}
-        </Button>
+        <Security roles={[KNOWLEDGE_KNIMPORT, KNOWLEDGE_KNEXPORT]}>
+          <Button
+              component={Link}
+              to={`/dashboard/threats/threat_actors/${threatActorId}/files`}
+              variant={
+                  location.pathname === `/dashboard/threats/threat_actors/${threatActorId}/files`
+                    ? 'contained'
+                    : 'text'
+              }
+              size="small"
+              color={
+                  location.pathname === `/dashboard/threats/threat_actors/${threatActorId}/files`
+                    ? 'primary'
+                    : 'inherit'
+              }
+              classes={{ root: classes.button }}>
+              {t('Files')}
+          </Button>
+        </Security>
       </div>
     );
   }

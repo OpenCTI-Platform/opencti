@@ -46,7 +46,8 @@ const dateFields = [
   'valid_until',
   'valid_until_day',
   'valid_until_month',
-  'observable_date'
+  'observable_date',
+  'default_assignation' // TODO @JRI Ask @Sam for this.
 ];
 const numberFields = ['object_status', 'phase_order', 'level', 'weight'];
 const virtualTypes = ['Identity', 'Email', 'File', 'Stix-Domain-Entity', 'Stix-Domain', 'Stix-Observable'];
@@ -529,7 +530,6 @@ export const elPaginate = async (indexName, options) => {
     after,
     types = null,
     filters = [],
-    isUser = null, // TODO @Sam refactor this to use filter
     search = null,
     orderBy = null,
     orderMode = 'asc',
@@ -583,9 +583,6 @@ export const elPaginate = async (indexName, options) => {
       })
     );
     must = append({ bool: { should, minimum_should_match: 1 } }, must);
-  }
-  if (isUser !== null && isUser === true) {
-    must = append({ exists: { field: 'email' } }, must);
   }
   const validFilters = filter(f => f && f.values.length > 0, filters || []);
   if (validFilters.length > 0) {

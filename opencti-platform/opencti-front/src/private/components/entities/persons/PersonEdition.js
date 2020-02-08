@@ -41,9 +41,6 @@ export const personEditionQuery = graphql`
     user(id: $id) {
       ...PersonEditionContainer_person
     }
-    me {
-      ...PersonEditionContainer_me
-    }
   }
 `;
 
@@ -74,29 +71,23 @@ class PersonEdition extends Component {
     const { classes, personId } = this.props;
     return (
       <div>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
+        <Fab onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Edit"
-          className={classes.editButton}
-        >
+          className={classes.editButton}>
           <Edit />
         </Fab>
-        <Drawer
-          open={this.state.open}
+        <Drawer open={this.state.open}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
+          onClose={this.handleClose.bind(this)}>
           <QueryRenderer
             query={personEditionQuery}
             variables={{ id: personId }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <PersonEditionContainer
-                    me={props.me}
-                    person={props.user}
+                  <PersonEditionContainer person={props.user}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );

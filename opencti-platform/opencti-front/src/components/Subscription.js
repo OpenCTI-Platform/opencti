@@ -1,11 +1,14 @@
-import React, { Component } from 'react';
+import React, { useContext } from 'react';
 import * as PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Tooltip from '@material-ui/core/Tooltip';
 import Avatar from '@material-ui/core/Avatar';
-import { compose, filter, pipe } from 'ramda';
+import {
+  compose, filter, find, insert, pipe, propEq,
+} from 'ramda';
 import inject18n from './i18n';
 import { stringToColour } from '../utils/Colors';
+import { UserContext } from '../utils/Security';
 
 const SubscriptionAvatarsStyles = () => ({
   avatars: {
@@ -31,33 +34,33 @@ const SubscriptionAvatarsFocusStyles = () => ({
   },
 });
 
-class SubscriptionAvatarsComponent extends Component {
-  render() {
-    const { classes, users, variant } = this.props;
-    return (
-      <div
-        className={
-          variant === 'inGraph' ? classes.avatarsGraph : classes.avatars
-        }
-      >
+const contextUsers = (me, context) => {
+  const missingMe = find(propEq('name', me.user_email))(context) === undefined;
+  return missingMe
+    ? insert(0, { name: me.user_email }, context)
+    : context;
+};
+
+const SubscriptionAvatarsComponent = ({ classes, context, variant }) => {
+  const me = useContext(UserContext);
+  const users = contextUsers(me, context);
+  return (
+      <div className={variant === 'inGraph' ? classes.avatarsGraph : classes.avatars}>
         {users.map((user, i) => (
           <Tooltip title={user.name} key={i}>
-            <Avatar
-              classes={{ root: classes.avatar }}
-              style={{ backgroundColor: stringToColour(user.name) }}
-            >
+            <Avatar classes={{ root: classes.avatar }}
+              style={{ backgroundColor: stringToColour(user.name) }}>
               {user.name.charAt(0)}
             </Avatar>
           </Tooltip>
         ))}
       </div>
-    );
-  }
-}
+  );
+};
 
 SubscriptionAvatarsComponent.propTypes = {
   classes: PropTypes.object.isRequired,
-  users: PropTypes.array,
+  context: PropTypes.array.isRequired,
   variant: PropTypes.string,
 };
 
@@ -65,20 +68,17 @@ export const SubscriptionAvatars = withStyles(SubscriptionAvatarsStyles)(
   SubscriptionAvatarsComponent,
 );
 
-class SubscriptionFocusComponent extends Component {
-  render() {
-    const {
-      t, me, users, fieldName,
-    } = this.props;
-    const focusedUsers = pipe(
-      filter((n) => n.name !== me.email),
-      filter((n) => n.focusOn === fieldName),
-    )(users);
-    if (focusedUsers.length === 0) {
-      return <span />;
-    }
-
-    return (
+const SubscriptionFocusComponent = ({
+  t, fieldName, context,
+}) => {
+  const me = useContext(UserContext);
+  const users = contextUsers(me, context);
+  const focusedUsers = pipe(
+    filter((n) => n.name !== me.email),
+    filter((n) => n.focusOn === fieldName),
+  )(users);
+  if (focusedUsers.length === 0) return <span />;
+  return (
       <span>
         {focusedUsers.map((user, i) => (
           <span key={i}>
@@ -90,14 +90,12 @@ class SubscriptionFocusComponent extends Component {
         ))}
         {focusedUsers.length > 1 ? t('are updating...') : t('is updating...')}
       </span>
-    );
-  }
-}
+  );
+};
 
 SubscriptionFocusComponent.propTypes = {
   classes: PropTypes.object.isRequired,
-  me: PropTypes.object,
-  users: PropTypes.array,
+  context: PropTypes.array,
   fieldName: PropTypes.string,
   t: PropTypes.func,
 };

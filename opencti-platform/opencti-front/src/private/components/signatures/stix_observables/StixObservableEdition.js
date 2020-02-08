@@ -41,9 +41,6 @@ export const stixObservableEditionQuery = graphql`
     stixObservable(id: $id) {
       ...StixObservableEditionContainer_stixObservable
     }
-    me {
-      ...StixObservableEditionContainer_me
-    }
   }
 `;
 
@@ -78,16 +75,14 @@ class StixObservableEdition extends Component {
           onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Edit"
-          className={classes.editButton}
-        >
+          className={classes.editButton}>
           <Edit />
         </Fab>
         <Drawer
           open={this.state.open}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
+          onClose={this.handleClose.bind(this)}>
           <QueryRenderer
             query={stixObservableEditionQuery}
             variables={{ id: stixObservableId }}
@@ -95,7 +90,6 @@ class StixObservableEdition extends Component {
               if (props) {
                 return (
                   <StixObservableEditionContainer
-                    me={props.me}
                     stixObservable={props.stixObservable}
                     handleClose={this.handleClose.bind(this)}
                   />
