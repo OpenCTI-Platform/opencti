@@ -15,7 +15,7 @@ import SelectField from '../../../../components/SelectField';
 import TextField from '../../../../components/TextField';
 import { resolveLink } from '../../../../utils/Entity';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '30%',
@@ -113,7 +113,8 @@ class StixRelationEditionInferred extends Component {
                 last_seen: '',
                 description: '',
               }}
-              render={() => (
+            >
+              {() => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
                     name="weight"
@@ -132,25 +133,22 @@ class StixRelationEditionInferred extends Component {
                     <MenuItem value="4">{t('High')}</MenuItem>
                     <MenuItem value="5">{t('Very high')}</MenuItem>
                   </Field>
-                  <Field
+                  <TextField
                     name="first_seen"
-                    component={TextField}
                     label={t('First seen')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                     disabled={true}
                   />
-                  <Field
+                  <TextField
                     name="last_seen"
-                    component={TextField}
                     label={t('Last seen')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                     disabled={true}
                   />
-                  <Field
+                  <TextField
                     name="description"
-                    component={TextField}
                     label={t('Description')}
                     fullWidth={true}
                     multiline={true}
@@ -160,7 +158,7 @@ class StixRelationEditionInferred extends Component {
                   />
                 </Form>
               )}
-            />
+            </Formik>
             {stixDomainEntity ? (
               <Button
                 variant="contained"

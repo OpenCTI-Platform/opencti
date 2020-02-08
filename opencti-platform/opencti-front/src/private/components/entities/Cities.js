@@ -82,7 +82,6 @@ class Cities extends Component {
     };
     return (
       <ListLines
-        secondaryAction={true}
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}

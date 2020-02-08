@@ -189,9 +189,8 @@ class StixDomainEntityHeader extends Component {
                   onSubmit={this.onSubmitCreateAlias.bind(this, 'main')}
                 >
                   <Form style={{ float: 'right' }}>
-                    <Field
+                    <TextField
                       name="new_alias"
-                      component={TextField}
                       autoFocus={true}
                       placeholder={t('New alias')}
                       className={classes.aliasInput}
@@ -216,18 +215,18 @@ class StixDomainEntityHeader extends Component {
             <Formik
               initialValues={{ new_alias: '' }}
               onSubmit={this.onSubmitCreateAlias.bind(this, 'dialog')}
-              render={() => (
+            >
+              {() => (
                 <Form style={{ float: 'right' }}>
-                  <Field
+                  <TextField
                     name="new_alias"
-                    component={TextField}
                     autoFocus={true}
                     placeholder={t('New alias')}
                     className={classes.aliasInput}
                   />
                 </Form>
               )}
-            />
+            </Formik>
           </DialogTitle>
           <DialogContent dividers={true}>
             <List>
@@ -256,11 +255,11 @@ class StixDomainEntityHeader extends Component {
               <Formik
                 initialValues={{ new_alias: '' }}
                 onSubmit={this.onSubmitCreateAlias.bind(this, 'dialog')}
-                render={() => (
+              >
+                {() => (
                   <Form>
-                    <Field
+                    <TextField
                       name="new_alias"
-                      component={TextField}
                       autoFocus={true}
                       fullWidth={true}
                       placeholder={t('New alias')}
@@ -268,7 +267,7 @@ class StixDomainEntityHeader extends Component {
                     />
                   </Form>
                 )}
-              />
+              </Formik>
             </div>
           </DialogContent>
           <DialogActions>

@@ -1,20 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Field, Form, Formik } from 'formik';
+import { Form, Formik } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  ascend,
   assoc,
   compose,
   head,
   includes,
   map,
-  path,
-  pathOr,
   pipe,
   pluck,
-  sortWith,
-  union,
   filter,
   isNil,
 } from 'ramda';
@@ -34,11 +29,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Fab from '@material-ui/core/Fab';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { ConnectionHandler } from 'relay-runtime';
-import {
-  commitMutation,
-  fetchQuery,
-  QueryRenderer,
-} from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { parse } from '../../../../utils/Time';
@@ -58,12 +49,12 @@ import StixRelationCreationFromEntityStixObservablesLines, {
 } from './StixRelationCreationFromEntityStixObservablesLines';
 import StixDomainEntityCreation from '../stix_domain_entities/StixDomainEntityCreation';
 import SearchInput from '../../../../components/SearchInput';
-import Autocomplete from '../../../../components/Autocomplete';
-import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
-import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
 import { truncate } from '../../../../utils/String';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
 import Loader from '../../../../components/Loader';
+import KillChainPhasesField from '../form/KillChainPhasesField';
+import CreatedByRefField from '../form/CreatedByRefField';
+import MarkingDefinitionsField from '../form/MarkingDefinitionsField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -272,8 +263,6 @@ class StixRelationCreationFromEntity extends Component {
       step: 0,
       targetEntity: null,
       search: '',
-      killChainPhases: [],
-      markingDefinitions: [],
     };
   }
 
@@ -283,36 +272,6 @@ class StixRelationCreationFromEntity extends Component {
 
   handleClose() {
     this.setState({ step: 0, targetEntity: null, open: false });
-  }
-
-  searchKillchainPhases(event) {
-    fetchQuery(killChainPhasesSearchQuery, {
-      search: event.target.value,
-    }).then((data) => {
-      const killChainPhases = pipe(
-        pathOr([], ['killChainPhases', 'edges']),
-        sortWith([ascend(path(['node', 'order']))]),
-        map((n) => ({
-          label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-          value: n.node.id,
-        })),
-      )(data);
-      this.setState({
-        killChainPhases: union(this.state.killChainPhases, killChainPhases),
-      });
-    });
-  }
-
-  searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsLinesSearchQuery, {
-      search: event.target.value,
-    }).then((data) => {
-      const markingDefinitions = pipe(
-        pathOr([], ['markingDefinitions', 'edges']),
-        map((n) => ({ label: n.node.definition, value: n.node.id })),
-      )(data);
-      this.setState({ markingDefinitions });
-    });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -398,7 +357,9 @@ class StixRelationCreationFromEntity extends Component {
     } = this.props;
     const stixDomainEntitiesPaginationOptions = {
       search: this.state.search,
-      types: targetEntityTypes ? filter((n) => n !== 'Stix-Observable', targetEntityTypes) : null,
+      types: targetEntityTypes
+        ? filter((n) => n !== 'Stix-Observable', targetEntityTypes)
+        : null,
       orderBy: 'created_at',
       orderMode: 'desc',
     };
@@ -540,8 +501,13 @@ class StixRelationCreationFromEntity extends Component {
                 validationSchema={stixRelationValidation(t)}
                 onSubmit={this.onSubmit.bind(this)}
                 onReset={this.handleClose.bind(this)}
-                render={({
-                  submitForm, handleReset, isSubmitting, values,
+              >
+                {({
+                  submitForm,
+                  handleReset,
+                  isSubmitting,
+                  setFieldValue,
+                  values,
                 }) => (
                   <Form>
                     <div className={classes.header}>
@@ -694,15 +660,10 @@ class StixRelationCreationFromEntity extends Component {
                           </div>
                         </div>
                       </div>
-                      <Field
+                      <SelectField
                         name="relationship_type"
-                        component={SelectField}
                         label={t('Relationship type')}
                         fullWidth={true}
-                        inputProps={{
-                          name: 'relationship_type',
-                          id: 'relationship_type',
-                        }}
                         containerstyle={{ marginTop: 20, width: '100%' }}
                       >
                         {map(
@@ -713,33 +674,23 @@ class StixRelationCreationFromEntity extends Component {
                           ),
                           relationshipTypes,
                         )}
-                      </Field>
-                      <Field
+                      </SelectField>
+                      <SelectField
                         name="weight"
-                        component={SelectField}
                         label={t('Confidence level')}
                         fullWidth={true}
-                        inputProps={{
-                          name: 'weight',
-                          id: 'weight',
-                        }}
                         containerstyle={{ marginTop: 20, width: '100%' }}
                       >
                         <MenuItem value={1}>{t('Low')}</MenuItem>
                         <MenuItem value={2}>{t('Moderate')}</MenuItem>
                         <MenuItem value={3}>{t('Good')}</MenuItem>
                         <MenuItem value={4}>{t('Strong')}</MenuItem>
-                      </Field>
+                      </SelectField>
                       {values.relationship_type === 'indicates' ? (
-                        <Field
+                        <SelectField
                           name="role_played"
-                          component={SelectField}
                           label={t('Played role')}
                           fullWidth={true}
-                          inputProps={{
-                            name: 'role_played',
-                            id: 'role_played',
-                          }}
                           containerstyle={{ marginTop: 20, width: '100%' }}
                         >
                           {rolesPlayedEdges.map((rolePlayedEdge) => (
@@ -750,48 +701,48 @@ class StixRelationCreationFromEntity extends Component {
                               {t(rolePlayedEdge.node.value)}
                             </MenuItem>
                           ))}
-                        </Field>
+                        </SelectField>
                       ) : (
                         ''
                       )}
-                      <Field
+                      <DatePickerField
                         name="first_seen"
-                        component={DatePickerField}
                         label={t('First seen')}
+                        invalidDateMessage={t(
+                          'The value must be a date (YYYY-MM-DD)',
+                        )}
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                       />
-                      <Field
+                      <DatePickerField
                         name="last_seen"
-                        component={DatePickerField}
                         label={t('Last seen')}
+                        invalidDateMessage={t(
+                          'The value must be a date (YYYY-MM-DD)',
+                        )}
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                       />
-                      <Field
+                      <TextField
                         name="description"
-                        component={TextField}
                         label={t('Description')}
                         fullWidth={true}
                         multiline={true}
                         rows="4"
                         style={{ marginTop: 20 }}
                       />
-                      <Field
+                      <KillChainPhasesField
                         name="killChainPhases"
-                        component={Autocomplete}
-                        multiple={true}
-                        label={t('Kill chain phases')}
-                        options={this.state.killChainPhases}
-                        onInputChange={this.searchKillchainPhases.bind(this)}
+                        style={{ marginTop: 20, width: '100%' }}
                       />
-                      <Field
+                      <CreatedByRefField
+                        name="createdByRef"
+                        style={{ marginTop: 20, width: '100%' }}
+                        setFieldValue={setFieldValue}
+                      />
+                      <MarkingDefinitionsField
                         name="markingDefinitions"
-                        component={Autocomplete}
-                        multiple={true}
-                        label={t('Marking')}
-                        options={this.state.markingDefinitions}
-                        onInputChange={this.searchMarkingDefinitions.bind(this)}
+                        style={{ marginTop: 20, width: '100%' }}
                       />
                       <div className={classes.buttonBack}>
                         <Button
@@ -824,7 +775,7 @@ class StixRelationCreationFromEntity extends Component {
                     </div>
                   </Form>
                 )}
-              />
+              </Formik>
             );
           }
           return <Loader variant="inElement" />;

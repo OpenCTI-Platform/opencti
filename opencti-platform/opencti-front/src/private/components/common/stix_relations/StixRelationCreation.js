@@ -1,19 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Field, Form } from 'formik';
+import { Formik, Form } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  compose,
-  map,
-  pathOr,
-  pipe,
-  pluck,
-  head,
-  assoc,
-  union,
-  sortWith,
-  ascend,
-  path,
+  compose, map, pipe, pluck, head, assoc,
 } from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
@@ -36,11 +26,11 @@ import {
 import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
-import Autocomplete from '../../../../components/Autocomplete';
 import DatePickerField from '../../../../components/DatePickerField';
-import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
-import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
 import { truncate } from '../../../../utils/String';
+import KillChainPhasesField from '../form/KillChainPhasesField';
+import CreatedByRefField from '../form/CreatedByRefField';
+import MarkingDefinitionsField from '../form/MarkingDefinitionsField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -198,44 +188,7 @@ class StixRelationCreation extends Component {
     this.state = {
       step: 0,
       existingRelations: [],
-      killChainPhases: [],
-      markingDefinitions: [],
     };
-  }
-
-  searchKillchainPhases(event) {
-    fetchQuery(killChainPhasesSearchQuery, {
-      search: event.target.value,
-    }).then((data) => {
-      const killChainPhases = pipe(
-        pathOr([], ['killChainPhases', 'edges']),
-        sortWith([ascend(path(['node', 'order']))]),
-        map((n) => ({
-          label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-          value: n.node.id,
-        })),
-      )(data);
-      this.setState({
-        killChainPhases: union(this.state.killChainPhases, killChainPhases),
-      });
-    });
-  }
-
-  searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsLinesSearchQuery, {
-      search: event.target.value,
-    }).then((data) => {
-      const markingDefinitions = pipe(
-        pathOr([], ['markingDefinitions', 'edges']),
-        map((n) => ({ label: n.node.definition, value: n.node.id })),
-      )(data);
-      this.setState({
-        markingDefinitions: union(
-          this.state.markingDefinitions,
-          markingDefinitions,
-        ),
-      });
-    });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -331,7 +284,8 @@ class StixRelationCreation extends Component {
         initialValues={initialValues}
         validationSchema={stixRelationValidation(t)}
         onSubmit={this.onSubmit.bind(this)}
-        render={({ submitForm, isSubmitting }) => (
+      >
+        {({ submitForm, isSubmitting, setFieldValue }) => (
           <Form>
             <div className={classes.header}>
               <IconButton
@@ -409,15 +363,10 @@ class StixRelationCreation extends Component {
                   </div>
                 </div>
               </div>
-              <Field
+              <SelectField
                 name="relationship_type"
-                component={SelectField}
                 label={t('Relationship type')}
                 fullWidth={true}
-                inputProps={{
-                  name: 'relationship_type',
-                  id: 'relationship_type',
-                }}
                 containerstyle={{ marginTop: 20, width: '100%' }}
               >
                 {map(
@@ -428,61 +377,52 @@ class StixRelationCreation extends Component {
                   ),
                   relationshipTypes,
                 )}
-              </Field>
-              <Field
+              </SelectField>
+              <SelectField
                 name="weight"
-                component={SelectField}
                 label={t('Confidence level')}
                 fullWidth={true}
-                inputProps={{
-                  name: 'weight',
-                  id: 'weight',
-                }}
                 containerstyle={{ marginTop: 20, width: '100%' }}
               >
                 <MenuItem value={1}>{t('Low')}</MenuItem>
                 <MenuItem value={2}>{t('Moderate')}</MenuItem>
                 <MenuItem value={3}>{t('Good')}</MenuItem>
                 <MenuItem value={4}>{t('Strong')}</MenuItem>
-              </Field>
-              <Field
+              </SelectField>
+              <DatePickerField
                 name="first_seen"
-                component={DatePickerField}
                 label={t('First seen')}
+                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
               />
-              <Field
+              <DatePickerField
                 name="last_seen"
-                component={DatePickerField}
                 label={t('Last seen')}
+                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
               />
-              <Field
+              <TextField
                 name="description"
-                component={TextField}
                 label={t('Description')}
                 fullWidth={true}
                 multiline={true}
                 rows="4"
                 style={{ marginTop: 20 }}
               />
-              <Field
+              <KillChainPhasesField
                 name="killChainPhases"
-                component={Autocomplete}
-                multiple={true}
-                label={t('Kill chain phases')}
-                options={this.state.killChainPhases}
-                onInputChange={this.searchKillchainPhases.bind(this)}
+                style={{ marginTop: 20, width: '100%' }}
               />
-              <Field
+              <CreatedByRefField
+                name="createdByRef"
+                style={{ marginTop: 20, width: '100%' }}
+                setFieldValue={setFieldValue}
+              />
+              <MarkingDefinitionsField
                 name="markingDefinitions"
-                component={Autocomplete}
-                multiple={true}
-                label={t('Marking')}
-                options={this.state.markingDefinitions}
-                onInputChange={this.searchMarkingDefinitions.bind(this)}
+                style={{ marginTop: 20, width: '100%' }}
               />
               <div className={classes.buttons}>
                 <Button
@@ -506,7 +446,7 @@ class StixRelationCreation extends Component {
             </div>
           </Form>
         )}
-      />
+      </Formik>
     );
   }
 

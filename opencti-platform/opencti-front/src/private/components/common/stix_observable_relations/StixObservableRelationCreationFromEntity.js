@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Field, Form } from 'formik';
+import { Formik, Form } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
 import {
   compose, map, pipe, head, assoc,
@@ -397,7 +397,8 @@ class StixObservableRelationCreationFromEntity extends Component {
                 validationSchema={stixObservableRelationValidation(t)}
                 onSubmit={this.onSubmit.bind(this)}
                 onReset={this.handleClose.bind(this)}
-                render={({ submitForm, handleReset, isSubmitting }) => (
+              >
+                {({ submitForm, handleReset, isSubmitting }) => (
                   <Form>
                     <div className={classes.header}>
                       <IconButton
@@ -490,15 +491,10 @@ class StixObservableRelationCreationFromEntity extends Component {
                           </div>
                         </div>
                       </div>
-                      <Field
+                      <SelectField
                         name="relationship_type"
-                        component={SelectField}
                         label={t('Relationship type')}
                         fullWidth={true}
-                        inputProps={{
-                          name: 'relationship_type',
-                          id: 'relationship_type',
-                        }}
                         containerstyle={{ marginTop: 20, width: '100%' }}
                       >
                         {map(
@@ -512,16 +508,11 @@ class StixObservableRelationCreationFromEntity extends Component {
                         <MenuItem value="linked">
                           {t('relation_linked')}
                         </MenuItem>
-                      </Field>
-                      <Field
+                      </SelectField>
+                      <SelectField
                         name="role_played"
-                        component={SelectField}
                         label={t('Played role')}
                         fullWidth={true}
-                        inputProps={{
-                          name: 'role_played',
-                          id: 'role_played',
-                        }}
                         containerstyle={{ marginTop: 20, width: '100%' }}
                       >
                         {rolesPlayedEdges.map((rolePlayedEdge) => (
@@ -532,18 +523,22 @@ class StixObservableRelationCreationFromEntity extends Component {
                             {t(rolePlayedEdge.node.value)}
                           </MenuItem>
                         ))}
-                      </Field>
-                      <Field
+                      </SelectField>
+                      <DatePickerField
                         name="first_seen"
-                        component={DatePickerField}
                         label={t('First seen')}
+                        invalidDateMessage={t(
+                          'The value must be a date (YYYY-MM-DD)',
+                        )}
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                       />
-                      <Field
+                      <DatePickerField
                         name="last_seen"
-                        component={DatePickerField}
                         label={t('Last seen')}
+                        invalidDateMessage={t(
+                          'The value must be a date (YYYY-MM-DD)',
+                        )}
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                       />
@@ -578,7 +573,7 @@ class StixObservableRelationCreationFromEntity extends Component {
                     </div>
                   </Form>
                 )}
-              />
+              </Formik>
             );
           }
           return <Loader variant="inElement" />;
