@@ -578,7 +578,7 @@ const getConcepts = async (
       const queryVarsToConcepts = await Promise.all(
         conceptQueryVars.map(async ({ alias, role, internalIdKey }) => {
           const concept = answer.map().get(alias);
-          if (concept.baseType === 'ATTRIBUTE') return undefined; // If specific attributes are used for filtering, ordering, ...
+          if (!concept || concept.baseType === 'ATTRIBUTE') return undefined; // If specific attributes are used for filtering, ordering, ...
           const types = await conceptTypes(concept);
           return { id: concept.id, data: { concept, alias, role, internalIdKey, types } };
         })
@@ -607,7 +607,7 @@ const getConcepts = async (
   const result = answers.map(answer => {
     const dataPerEntities = plainEntities.map(entity => {
       const concept = answer.map().get(entity);
-      const conceptData = conceptCache.get(concept.id);
+      const conceptData = concept && conceptCache.get(concept.id);
       return [entity, conceptData];
     });
     return fromPairs(dataPerEntities);
@@ -657,7 +657,7 @@ const listElements = async (baseQuery, first, offset, orderBy, orderMode, queryK
 };
 export const listEntities = async (entityTypes, searchFields, args) => {
   // filters contains potential relations like, mitigates, tagged ...
-  const { first = 200, after, orderBy, orderMode = 'asc', withCache = true } = args;
+  const { first = 1000, after, orderBy, orderMode = 'asc', withCache = true } = args;
   const { parentType = null, search, filters } = args;
   const offset = after ? cursorToOffset(after) : 0;
   const isRelationOrderBy = orderBy && includes('.', orderBy);
@@ -758,7 +758,7 @@ export const listEntities = async (entityTypes, searchFields, args) => {
 };
 export const listRelations = async (relationType, relationFilter, args) => {
   const searchFields = ['name', 'description'];
-  const { first = 200, after, orderBy, orderMode = 'asc', withCache = true, inferred = false } = args;
+  const { first = 1000, after, orderBy, orderMode = 'asc', withCache = true, inferred = false } = args;
   const { search, fromRole, fromId, toRole, toId, fromTypes = [], toTypes = [] } = args;
   const { firstSeenStart, firstSeenStop, lastSeenStart, lastSeenStop, weights = [] } = args;
   const offset = after ? cursorToOffset(after) : 0;

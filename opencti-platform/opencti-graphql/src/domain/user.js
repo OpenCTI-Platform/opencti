@@ -1,4 +1,4 @@
-import { assoc, head, isNil, pathOr, pipe, map, dissoc, append, flatten } from 'ramda';
+import { assoc, head, isNil, pathOr, pipe, map, dissoc, append, flatten, filter } from 'ramda';
 import uuid from 'uuid/v4';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
@@ -270,15 +270,21 @@ export const findByTokenUUID = async tokenValue => {
     const data = await find(
       `match $token isa Token, has uuid "${escapeString(tokenValue)}", has revoked false;
             (authorization:$token, client:$client) isa authorize;
-            (client: $client, position: $role) isa user_role; 
-            (position: $role, capability: $capability) isa role_capability; 
+            { (client: $client, position: $role) isa user_role; (position: $role, capability: $capability) isa role_capability; } or { not { (client: $client, position: $role) isa user_role; }; };
             get;`,
-      ['client', 'token', 'role', 'capability']
+      ['client', 'token', 'role', 'capability'],
+      { infer: true }
     );
     logger.debug(`Setting cache access for ${tokenValue}`);
     if (isNil(data) || data.length === 0) return undefined;
-    const roles = map(r => r.role, data);
-    const capabilities = map(r => r.capability, data);
+    const roles = filter(
+      dataRole => dataRole,
+      map(r => r.role, data)
+    );
+    const capabilities = filter(
+      dataCapa => dataCapa,
+      map(r => r.capability, data)
+    );
     const first = head(data);
     user = pipe(
       // Assign
