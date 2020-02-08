@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Field, Form } from 'formik';
+import { Formik, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -9,31 +9,18 @@ import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
-  compose,
-  pathOr,
-  pipe,
-  map,
-  pluck,
-  sortWith,
-  path,
-  ascend,
-  union,
-  assoc,
+  compose, pipe, pluck, assoc,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, fetchQuery } from '../../../../relay/environment';
-import Autocomplete from '../../../../components/Autocomplete';
-import AutocompleteCreate from '../../../../components/AutocompleteCreate';
+import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
-import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
-import IdentityCreation, {
-  identityCreationIdentitiesSearchQuery,
-} from '../../common/identities/IdentityCreation';
-import TagAutocompleteField from '../../common/form/TagsField';
+import KillChainPhasesField from '../../common/form/KillChainPhasesField';
+import CreatedByRefField from '../../common/form/CreatedByRefField';
+import TagsField from '../../common/form/TagsField';
+import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -107,14 +94,7 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 class AttackPatternCreation extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      open: false,
-      identities: [],
-      identityCreation: false,
-      identityInput: '',
-      killChainPhases: [],
-      markingDefinitions: [],
-    };
+    this.state = { open: false };
   }
 
   handleOpen() {
@@ -123,62 +103,6 @@ class AttackPatternCreation extends Component {
 
   handleClose() {
     this.setState({ open: false });
-  }
-
-  searchIdentities(event) {
-    fetchQuery(identityCreationIdentitiesSearchQuery, {
-      search: event.target.value,
-      first: 10,
-    }).then((data) => {
-      const identities = pipe(
-        pathOr([], ['identities', 'edges']),
-        map((n) => ({ label: n.node.name, value: n.node.id })),
-      )(data);
-      this.setState({ identities: union(this.state.identities, identities) });
-    });
-  }
-
-  handleOpenIdentityCreation(inputValue) {
-    this.setState({ identityCreation: true, identityInput: inputValue });
-  }
-
-  handleCloseIdentityCreation() {
-    this.setState({ identityCreation: false });
-  }
-
-  searchKillchainPhases(event) {
-    fetchQuery(killChainPhasesSearchQuery, {
-      search: event.target.value,
-    }).then((data) => {
-      const killChainPhases = pipe(
-        pathOr([], ['killChainPhases', 'edges']),
-        sortWith([ascend(path(['node', 'order']))]),
-        map((n) => ({
-          label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-          value: n.node.id,
-        })),
-      )(data);
-      this.setState({
-        killChainPhases: union(this.state.killChainPhases, killChainPhases),
-      });
-    });
-  }
-
-  searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsLinesSearchQuery, {
-      search: event.target.value,
-    }).then((data) => {
-      const markingDefinitions = pipe(
-        pathOr([], ['markingDefinitions', 'edges']),
-        map((n) => ({ label: n.node.definition, value: n.node.id })),
-      )(data);
-      this.setState({
-        markingDefinitions: union(
-          this.state.markingDefinitions,
-          markingDefinitions,
-        ),
-      });
-    });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -260,90 +184,65 @@ class AttackPatternCreation extends Component {
               validationSchema={attackPatternValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
-              render={({
+            >
+              {({
                 submitForm,
                 handleReset,
                 isSubmitting,
                 setFieldValue,
+                values,
               }) => (
-                <div>
-                  <Form style={{ margin: '20px 0 20px 0' }}>
-                    <Field
-                      name="name"
-                      component={TextField}
-                      label={t('Name')}
-                      fullWidth={true}
-                    />
-                    <Field
-                      name="description"
-                      component={TextField}
-                      label={t('Description')}
-                      fullWidth={true}
-                      multiline={true}
-                      rows="4"
-                      style={{ marginTop: 20 }}
-                    />
-                    <Field
-                      name="createdByRef"
-                      component={AutocompleteCreate}
-                      multiple={false}
-                      handleCreate={this.handleOpenIdentityCreation.bind(this)}
-                      label={t('Author')}
-                      options={this.state.identities}
-                      onInputChange={this.searchIdentities.bind(this)}
-                    />
-                    <Field
-                      name="killChainPhases"
-                      component={Autocomplete}
-                      multiple={true}
-                      label={t('Kill chain phases')}
-                      options={this.state.killChainPhases}
-                      onInputChange={this.searchKillchainPhases.bind(this)}
-                    />
-                    <Field
-                      name="markingDefinitions"
-                      component={Autocomplete}
-                      multiple={true}
-                      label={t('Marking')}
-                      options={this.state.markingDefinitions}
-                      onInputChange={this.searchMarkingDefinitions.bind(this)}
-                    />
-                    <TagAutocompleteField />
-                    <div className={classes.buttons}>
-                      <Button
-                        variant="contained"
-                        onClick={handleReset}
-                        disabled={isSubmitting}
-                        classes={{ root: classes.button }}
-                      >
-                        {t('Cancel')}
-                      </Button>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={submitForm}
-                        disabled={isSubmitting}
-                        classes={{ root: classes.button }}
-                      >
-                        {t('Create')}
-                      </Button>
-                    </div>
-                  </Form>
-                  <IdentityCreation
-                    contextual={true}
-                    inputValue={this.state.identityInput}
-                    open={this.state.identityCreation}
-                    handleClose={this.handleCloseIdentityCreation.bind(this)}
-                    creationCallback={(data) => {
-                      setFieldValue('createdByRef', {
-                        label: data.identityAdd.name,
-                        value: data.identityAdd.id,
-                      });
-                    }}
+                <Form style={{ margin: '20px 0 20px 0' }}>
+                  <TextField name="name" label={t('Name')} fullWidth={true} />
+                  <TextField
+                    name="description"
+                    label={t('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows="4"
+                    style={{ marginTop: 20 }}
                   />
-                </div>
+                  <KillChainPhasesField
+                    name="killChainPhases"
+                    style={{ marginTop: 20, width: '100%' }}
+                  />
+                  <CreatedByRefField
+                    name="createdByRef"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                  />
+                  <TagsField
+                    name="tags"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                    values={values.tags}
+                  />
+                  <MarkingDefinitionsField
+                    name="markingDefinitions"
+                    style={{ marginTop: 20, width: '100%' }}
+                  />
+                  <div className={classes.buttons}>
+                    <Button
+                      variant="contained"
+                      onClick={handleReset}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
+                    >
+                      {t('Cancel')}
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={submitForm}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
+                    >
+                      {t('Create')}
+                    </Button>
+                  </div>
+                </Form>
               )}
-            />
+            </Formik>
           </div>
         </Drawer>
       </div>

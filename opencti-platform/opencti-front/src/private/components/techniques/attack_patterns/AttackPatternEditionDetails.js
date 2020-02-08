@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
+import { Formik, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
   assoc, compose, pick, pipe, propOr,
@@ -13,9 +13,9 @@ import inject18n from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
 import SelectField from '../../../../components/SelectField';
-import TextField from "../../../../components/TextField";
+import TextField from '../../../../components/TextField';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -103,9 +103,7 @@ class AttackPatternEditionDetailsComponent extends Component {
   }
 
   render() {
-    const {
-      t, attackPattern, editUsers, me,
-    } = this.props;
+    const { t, attackPattern, context } = this.props;
     const initialValues = pipe(
       assoc('platform', propOr([], 'platform', attackPattern)),
       assoc(
@@ -116,85 +114,62 @@ class AttackPatternEditionDetailsComponent extends Component {
     )(attackPattern);
 
     return (
-      <div>
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={attackPatternValidation()}
-          onSubmit={() => true}
-          render={() => (
-            <div>
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  name="external_id"
-                  component={TextField}
-                  label={t('External ID')}
-                  fullWidth={true}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="external_id"
-                    />
-                  }
+      <Formik
+        enableReinitialize={true}
+        initialValues={initialValues}
+        validationSchema={attackPatternValidation()}
+        onSubmit={() => true}
+      >
+        {() => (
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <TextField
+              name="external_id"
+              label={t('External ID')}
+              fullWidth={true}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="external_id" />
+              }
+            />
+            <SelectField
+              name="platform"
+              multiple={true}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              label={t('Platforms')}
+              fullWidth={true}
+              containerstyle={{ marginTop: 20, width: '100%' }}
+              helpertext={
+                <SubscriptionFocus context={context} fieldName="platform" />
+              }
+            >
+              <MenuItem value="Android">{t('Android')}</MenuItem>
+              <MenuItem value="macOS">{t('macOS')}</MenuItem>
+              <MenuItem value="Linux">{t('Linux')}</MenuItem>
+              <MenuItem value="Windows">{t('Windows')}</MenuItem>
+            </SelectField>
+            <SelectField
+              name="required_permission"
+              multiple={true}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              label={t('Required permissions')}
+              fullWidth={true}
+              containerstyle={{ marginTop: 20, width: '100%' }}
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="required_permission"
                 />
-                <Field
-                  name="platform"
-                  component={SelectField}
-                  multiple={true}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
-                  label={t('Platforms')}
-                  fullWidth={true}
-                  inputProps={{
-                    name: 'platform',
-                    id: 'platform',
-                  }}
-                  containerstyle={{ marginTop: 20, width: '100%' }}
-                  helpertext={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="platform"
-                    />
-                  }
-                >
-                  <MenuItem value="Android">{t('Android')}</MenuItem>
-                  <MenuItem value="macOS">{t('macOS')}</MenuItem>
-                  <MenuItem value="Linux">{t('Linux')}</MenuItem>
-                  <MenuItem value="Windows">{t('Windows')}</MenuItem>
-                </Field>
-                <Field
-                  name="required_permission"
-                  component={SelectField}
-                  multiple={true}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
-                  label={t('Required permissions')}
-                  fullWidth={true}
-                  inputProps={{
-                    name: 'required_permission',
-                    id: 'required_permission',
-                  }}
-                  containerstyle={{ marginTop: 20, width: '100%' }}
-                  helpertext={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="required_permission"
-                    />
-                  }
-                >
-                  <MenuItem value="User">User</MenuItem>
-                  <MenuItem value="Administrator">Administrator</MenuItem>
-                </Field>
-              </Form>
-            </div>
-          )}
-        />
-      </div>
+              }
+            >
+              <MenuItem value="User">User</MenuItem>
+              <MenuItem value="Administrator">Administrator</MenuItem>
+            </SelectField>
+          </Form>
+        )}
+      </Formik>
     );
   }
 }
@@ -204,8 +179,7 @@ AttackPatternEditionDetailsComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   attackPattern: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
+  context: PropTypes.array,
 };
 
 const AttackPatternEditionDetails = createFragmentContainer(
