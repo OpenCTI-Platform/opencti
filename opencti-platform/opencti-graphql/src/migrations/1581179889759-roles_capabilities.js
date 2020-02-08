@@ -22,7 +22,7 @@ export const up = async next => {
   // -- Admin role for OPENCTI_ADMIN_UUID
   await assignRoleToUser(OPENCTI_ADMIN_UUID, ROLE_ADMINISTRATOR);
   // -- Default role for all (admin included)
-  const users = await findAllUsers();
+  const users = await findAllUsers({});
   await Promise.all(map(u => assignRoleToUser(u.id, ROLE_DEFAULT), users));
   // New field user_email
   await Promise.all(map(u => userEditField(SYSTEM_USER, u.id, { key: 'user_email', value: [u.email] }), users));

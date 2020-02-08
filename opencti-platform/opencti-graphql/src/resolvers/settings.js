@@ -1,5 +1,5 @@
 import { withFilter } from 'graphql-subscriptions';
-import { BUS_TOPICS, isAppRealTime } from '../config/conf';
+import { BUS_TOPICS } from '../config/conf';
 import {
   getSettings,
   settingsDelete,

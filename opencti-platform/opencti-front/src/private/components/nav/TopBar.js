@@ -339,15 +339,13 @@ const TopBar = ({
         </Security>
         <IconButton size="medium"
           classes={{ root: classes.menuButton }}
-          aria-owns={menuOpen ? 'menu-appbar' : null}
-          aria-haspopup="true"
           onClick={handleOpenMenu}
           color="inherit">
           <AccountCircle fontSize="large" />
         </IconButton>
         <Menu id="menu-appbar"
           style={{ marginTop: 40, zIndex: 2100 }}
-          anchorEl={menuOpen.anchorEl}
+          anchorEl={menuOpen && menuOpen.anchorEl}
           open={menuOpen.open}
           onClose={handleCloseMenu}>
           <MenuItem component={Link}

@@ -58,7 +58,7 @@ const Autocomplete = (props) => {
       />
       {typeof props.openCreate === 'function' ? (
         <IconButton
-          onClick={props.openCreate.bind(this)}
+          onClick={() => props.openCreate()}
           edge="end"
           style={{ position: 'absolute', top: 5, right: 35 }}
         >
