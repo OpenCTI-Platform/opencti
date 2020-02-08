@@ -152,6 +152,14 @@ export const addPerson = async (user, newUser) => {
   const created = await createEntity(newUser, 'User', { modelType: TYPE_STIX_DOMAIN_ENTITY, stixIdType: 'identity' });
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
+export const assignRoleToUser = (userId, roleName) => {
+  return createRelation(userId, {
+    fromRole: 'client',
+    toId: uuidv5(roleName, uuidv5.DNS),
+    toRole: 'position',
+    through: 'user_role'
+  });
+};
 export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken()) => {
   let userRoles = newUser.roles || []; // Expected roles name
   // Assign default roles to user
@@ -177,14 +185,7 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
   const input = { fromRole: 'client', toId: defaultToken.id, toRole: 'authorization', through: 'authorize' };
   await createRelation(userCreated.id, input, { indexable: false });
   // Link to the roles
-  const linkRoleCreate = role =>
-    createRelation(userCreated.id, {
-      fromRole: 'client',
-      toId: uuidv5(role, uuidv5.DNS),
-      toRole: 'position',
-      through: 'user_role'
-    });
-  await Promise.all(map(role => linkRoleCreate(role), userRoles));
+  await Promise.all(map(role => assignRoleToUser(userCreated.id, role), userRoles));
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, userCreated, user);
 };
 

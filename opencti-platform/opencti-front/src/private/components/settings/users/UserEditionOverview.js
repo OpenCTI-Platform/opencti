@@ -88,7 +88,7 @@ const userEditionOverviewDeleteRole = graphql`
 
 const userValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  email: Yup.string()
+  user_email: Yup.string()
     .required(t('This field is required'))
     .email(t('The value must be an email address')),
   firstname: Yup.string(),
@@ -186,7 +186,7 @@ class UserEditionOverviewComponent extends Component {
       pick([
         'name',
         'description',
-        'email',
+        'user_email',
         'firstname',
         'lastname',
         'language',
@@ -195,8 +195,7 @@ class UserEditionOverviewComponent extends Component {
     )(user);
     return (
       <div>
-        <Formik
-          enableReinitialize={true}
+        <Formik enableReinitialize={true}
           initialValues={initialValues}
           validationSchema={userValidation(t)}
           render={() => (
@@ -212,7 +211,7 @@ class UserEditionOverviewComponent extends Component {
                 helperText={<SubscriptionFocus context={context} fieldName="name"/>}
               />
               <Field
-                name="email"
+                name="user_email"
                 component={TextField}
                 disabled={external}
                 label={t('Email address')}
@@ -220,7 +219,7 @@ class UserEditionOverviewComponent extends Component {
                 style={{ marginTop: 10 }}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={<SubscriptionFocus context={context} fieldName="email"/>}
+                helperText={<SubscriptionFocus context={context} fieldName="user_email"/>}
               />
               <Field
                 name="firstname"

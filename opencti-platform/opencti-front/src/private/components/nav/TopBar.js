@@ -48,7 +48,7 @@ import TopMenuConnectors from './TopMenuConnectors';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuProfile from './TopMenuProfile';
 import { commitMutation } from '../../../relay/environment';
-import Security, { KNOWLEDGE_KNIMPORT } from '../../../utils/Security';
+import Security, { KNOWLEDGE, KNOWLEDGE_KNIMPORT } from '../../../utils/Security';
 
 const styles = (theme) => ({
   appBar: {
@@ -314,9 +314,11 @@ const TopBar = ({
             ''
           )}
         </div>
-        <div className={classes.searchContainer}>
-          <SearchInput onSubmit={handleSearch} keyword={keyword}/>
-        </div>
+        <Security roles={[KNOWLEDGE]}>
+          <div className={classes.searchContainer}>
+            <SearchInput onSubmit={handleSearch} keyword={keyword}/>
+          </div>
+        </Security>
         <Security roles={[KNOWLEDGE_KNIMPORT]}>
           <Tooltip title={t('Data import')}>
             <IconButton

@@ -10,14 +10,17 @@ import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings, getSettings } from './domain/settings';
 import { ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from './domain/user';
 import { addCapability, addRole } from './domain/grant';
+import { addAttribute } from './domain/attribute';
 
 const fs = require('fs');
 
 // Platform capabilities definition
+const BYPASS_CAPABILITY = 'BYPASS';
+const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
 const CAPABILITIES = [
-  { name: 'BYPASS', description: 'Bypass all capabilities' },
+  { name: BYPASS_CAPABILITY, description: 'Bypass all capabilities' },
   {
-    name: 'KNOWLEDGE',
+    name: KNOWLEDGE_CAPABILITY,
     description: 'Access knowledge',
     dependencies: [
       { name: 'KNCREATE', description: 'Create knowledge' },
@@ -66,6 +69,11 @@ export const initializeSchema = async () => {
   // Create default indexes
   await elCreateIndexes();
   logger.info(`[INIT] > Elasticsearch indexes loaded`);
+};
+
+const createReportsTypes = async () => {
+  await addAttribute({ type: 'report_class', value: 'Threat Report' });
+  await addAttribute({ type: 'report_class', value: 'Internal Report' });
 };
 
 const createMarkingDefinitions = async () => {
@@ -121,18 +129,13 @@ export const createBasicRolesAndCapabilities = async () => {
   await addRole({
     name: ROLE_DEFAULT,
     description: 'Default role associated to all users',
-    capabilities: ['KNOWLEDGE'],
+    capabilities: [KNOWLEDGE_CAPABILITY],
     default_assignation: true
   });
   await addRole({
     name: ROLE_ADMINISTRATOR,
     description: 'Administrator role that bypass every capabilities',
-    capabilities: ['BYPASS']
-  });
-  await addRole({
-    name: 'Analyst',
-    description: 'Role able to manage the platform knowledge',
-    capabilities: ['KNOWLEDGE_KNCREATE', 'KNOWLEDGE_KNEDIT', 'KNOWLEDGE_KNASKIMPORT', 'KNOWLEDGE_KNASKEXPORT']
+    capabilities: [BYPASS_CAPABILITY]
   });
 };
 
@@ -146,6 +149,7 @@ const initializeDefaultValues = async () => {
     platform_registration: false,
     platform_demo: false
   });
+  await createReportsTypes();
   await createMarkingDefinitions();
   await createBasicRolesAndCapabilities();
 };
