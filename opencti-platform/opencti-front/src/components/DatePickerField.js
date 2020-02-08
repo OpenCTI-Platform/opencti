@@ -12,8 +12,8 @@ const DatePickerField = (props) => {
           props.onSubmit(field.name, date.toISOString());
         }
       },
-      onChange: (date, value) => {
-        helpers.setValue(value);
+      onChange: (date) => {
+        helpers.setValue(date);
         if (typeof props.onChange === 'function') {
           props.onChange(field.name, date);
         }
