@@ -74,7 +74,7 @@ const SubscriptionFocusComponent = ({
   const me = useContext(UserContext);
   const users = contextUsers(me, context);
   const focusedUsers = pipe(
-    filter((n) => n.name !== me.email),
+    filter((n) => n.name !== me.user_email),
     filter((n) => n.focusOn === fieldName),
   )(users);
   if (focusedUsers.length === 0) return <span />;

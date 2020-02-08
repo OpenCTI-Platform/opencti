@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
+import { Formik, Form } from 'formik';
 import { compose, pick } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -143,14 +143,10 @@ class AttributeEditionContainer extends Component {
             initialValues={initialValues}
             validationSchema={attributeValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
-            render={({ submitForm, isSubmitting }) => (
+          >
+            {({ submitForm, isSubmitting }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  name="value"
-                  component={TextField}
-                  label={t('Type')}
-                  fullWidth={true}
-                />
+                <TextField name="value" label={t('Type')} fullWidth={true} />
                 <div className={classes.buttons}>
                   <Button
                     variant="contained"
@@ -164,7 +160,7 @@ class AttributeEditionContainer extends Component {
                 </div>
               </Form>
             )}
-          />
+          </Formik>
         </div>
       </div>
     );

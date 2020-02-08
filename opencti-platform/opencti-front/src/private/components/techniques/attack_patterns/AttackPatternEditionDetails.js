@@ -12,7 +12,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
-import Select from '../../../../components/Select';
+import SelectField from '../../../../components/SelectField';
 import TextField from "../../../../components/TextField";
 
 const styles = theme => ({
@@ -142,7 +142,7 @@ class AttackPatternEditionDetailsComponent extends Component {
                 />
                 <Field
                   name="platform"
-                  component={Select}
+                  component={SelectField}
                   multiple={true}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
@@ -152,7 +152,7 @@ class AttackPatternEditionDetailsComponent extends Component {
                     name: 'platform',
                     id: 'platform',
                   }}
-                  containerstyle={{ marginTop: 10, width: '100%' }}
+                  containerstyle={{ marginTop: 20, width: '100%' }}
                   helpertext={
                     <SubscriptionFocus
                       me={me}
@@ -168,7 +168,7 @@ class AttackPatternEditionDetailsComponent extends Component {
                 </Field>
                 <Field
                   name="required_permission"
-                  component={Select}
+                  component={SelectField}
                   multiple={true}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
@@ -178,7 +178,7 @@ class AttackPatternEditionDetailsComponent extends Component {
                     name: 'required_permission',
                     id: 'required_permission',
                   }}
-                  containerstyle={{ marginTop: 10, width: '100%' }}
+                  containerstyle={{ marginTop: 20, width: '100%' }}
                   helpertext={
                     <SubscriptionFocus
                       me={me}

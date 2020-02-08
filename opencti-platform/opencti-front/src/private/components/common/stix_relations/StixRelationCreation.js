@@ -35,7 +35,7 @@ import {
 } from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
-import Select from '../../../../components/Select';
+import SelectField from '../../../../components/SelectField';
 import Autocomplete from '../../../../components/Autocomplete';
 import DatePickerField from '../../../../components/DatePickerField';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
@@ -411,7 +411,7 @@ class StixRelationCreation extends Component {
               </div>
               <Field
                 name="relationship_type"
-                component={Select}
+                component={SelectField}
                 label={t('Relationship type')}
                 fullWidth={true}
                 inputProps={{
@@ -431,7 +431,7 @@ class StixRelationCreation extends Component {
               </Field>
               <Field
                 name="weight"
-                component={Select}
+                component={SelectField}
                 label={t('Confidence level')}
                 fullWidth={true}
                 inputProps={{

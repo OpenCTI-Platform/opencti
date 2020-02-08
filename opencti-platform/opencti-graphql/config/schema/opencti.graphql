@@ -1082,6 +1082,7 @@ enum OrganizationsOrdering {
   markingDefinitions
 }
 enum OrganizationsFilter {
+  name
   tags
   reliability
 }

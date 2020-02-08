@@ -14,7 +14,7 @@ import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
-import Select from '../../../components/Select';
+import SelectField from '../../../components/SelectField';
 import { stixDomainEntitiesLinesSearchQuery } from '../common/stix_domain_entities/StixDomainEntitiesLines';
 import { fetchQuery } from '../../../relay/environment';
 import Autocomplete from '../../../components/Autocomplete';
@@ -173,7 +173,7 @@ class ExploreUpdateWidget extends Component {
                   />
                   <Field
                     name="widget"
-                    component={Select}
+                    component={SelectField}
                     label={t('Widget')}
                     fullWidth={true}
                     inputProps={{
@@ -215,7 +215,7 @@ class ExploreUpdateWidget extends Component {
                   {victimology ? (
                     <Field
                       name="entity_type"
-                      component={Select}
+                      component={SelectField}
                       label={t('Entity type')}
                       fullWidth={true}
                       inputProps={{
@@ -237,7 +237,7 @@ class ExploreUpdateWidget extends Component {
                   {distribution ? (
                     <Field
                       name="graph_type"
-                      component={Select}
+                      component={SelectField}
                       label={t('Graph type')}
                       fullWidth={true}
                       inputProps={{
@@ -257,7 +257,7 @@ class ExploreUpdateWidget extends Component {
                   {timeseries ? (
                     <Field
                       name="graph_type"
-                      component={Select}
+                      component={SelectField}
                       label={t('Graph type')}
                       fullWidth={true}
                       inputProps={{

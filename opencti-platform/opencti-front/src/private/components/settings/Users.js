@@ -62,7 +62,7 @@ class Users extends Component {
         width: '20%',
         isSortable: true,
       },
-      email: {
+      user_email: {
         label: 'Email',
         width: '30%',
         isSortable: true,

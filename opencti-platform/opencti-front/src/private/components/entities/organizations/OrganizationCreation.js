@@ -20,12 +20,12 @@ import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import Autocomplete from '../../../../components/Autocomplete';
 import AutocompleteCreate from '../../../../components/AutocompleteCreate';
 import TextField from '../../../../components/TextField';
-import Select from '../../../../components/Select';
+import SelectField from '../../../../components/SelectField';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
-import TagAutocompleteField from '../../common/form/TagAutocompleteField';
+import TagAutocompleteField from '../../common/form/TagsField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -257,7 +257,7 @@ class OrganizationCreation extends Component {
                     />
                     <Field
                       name="organization_class"
-                      component={Select}
+                      component={SelectField}
                       label={t('Organization type')}
                       fullWidth={true}
                       inputProps={{
@@ -276,7 +276,7 @@ class OrganizationCreation extends Component {
                     </Field>
                     <Field
                       name="reliability"
-                      component={Select}
+                      component={SelectField}
                       label={t('Reliability')}
                       fullWidth={true}
                       inputProps={{

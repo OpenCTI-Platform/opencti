@@ -138,7 +138,7 @@ class IncidentEditionDetailsComponent extends Component {
                   component={DatePickerField}
                   label={t('Last seen')}
                   fullWidth={true}
-                  style={{ marginTop: 10 }}
+                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={<SubscriptionFocus context={context} fieldName="last_seen"/>}
@@ -150,7 +150,7 @@ class IncidentEditionDetailsComponent extends Component {
                   fullWidth={true}
                   multiline={true}
                   rows={4}
-                  style={{ marginTop: 10 }}
+                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={<SubscriptionFocus context={context} fieldName="objective"/>}

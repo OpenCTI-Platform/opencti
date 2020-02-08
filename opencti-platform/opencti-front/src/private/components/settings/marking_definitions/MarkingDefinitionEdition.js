@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
+import { Form, Formik } from 'formik';
 import { compose, pick } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -10,10 +10,17 @@ import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, requestSubscription, WS_ACTIVATED } from '../../../../relay/environment';
+import {
+  commitMutation,
+  requestSubscription,
+  WS_ACTIVATED,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
-import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
+import {
+  SubscriptionAvatars,
+  SubscriptionFocus,
+} from '../../../../components/Subscription';
 
 const styles = (theme) => ({
   header: {
@@ -146,7 +153,8 @@ class MarkingDefinitionEditionContainer extends Component {
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}>
+            onClick={handleClose.bind(this)}
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
@@ -160,47 +168,68 @@ class MarkingDefinitionEditionContainer extends Component {
             enableReinitialize={true}
             initialValues={initialValues}
             validationSchema={markingDefinitionValidation(t)}
-            render={() => (
+          >
+            {() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field name="definition_type"
-                  component={TextField}
+                <TextField
+                  name="definition_type"
                   label={t('Type')}
                   fullWidth={true}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={<SubscriptionFocus context={editContext} fieldName="definition_type"/>}
+                  helperText={
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="definition_type"
+                    />
+                  }
                 />
-                <Field name="definition"
-                  component={TextField}
+                <TextField
+                  name="definition"
                   label={t('Definition')}
                   fullWidth={true}
-                  style={{ marginTop: 10 }}
+                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={<SubscriptionFocus context={editContext} fieldName="definition"/>}
+                  helperText={
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="definition"
+                    />
+                  }
                 />
-                <Field name="color"
-                  component={ColorPickerField}
+                <ColorPickerField
+                  name="color"
                   label={t('Color')}
                   fullWidth={true}
-                  style={{ marginTop: 10 }}
+                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={<SubscriptionFocus context={editContext} fieldName="color"/>}
+                  helperText={
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="color"
+                    />
+                  }
                 />
-                <Field name="level"
-                  component={TextField}
+                <TextField
+                  name="level"
                   label={t('Level')}
                   fullWidth={true}
                   type="number"
-                  style={{ marginTop: 10 }}
+                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={<SubscriptionFocus context={editContext} fieldName="level"/>}
+                  helperText={
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="level"
+                    />
+                  }
                 />
               </Form>
             )}
-          />
+          </Formik>
         </div>
       </div>
     );

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Field, Form } from 'formik';
+import { Formik, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -16,7 +16,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -67,7 +67,7 @@ const killChainPhaseMutation = graphql`
   }
 `;
 
-const killChainPhaseValidation = t => Yup.object().shape({
+const killChainPhaseValidation = (t) => Yup.object().shape({
   kill_chain_name: Yup.string().required(t('This field is required')),
   phase_name: Yup.string().required(t('This field is required')),
 });
@@ -169,24 +169,22 @@ class KillChainPhaseCreation extends Component {
               validationSchema={killChainPhaseValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
-              render={({ submitForm, handleReset, isSubmitting }) => (
+            >
+              {({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
+                  <TextField
                     name="kill_chain_name"
-                    component={TextField}
                     label={t('Kill chain name')}
                     fullWidth={true}
                   />
-                  <Field
+                  <TextField
                     name="phase_name"
-                    component={TextField}
                     label={t('Phase name')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <Field
+                  <TextField
                     name="phase_order"
-                    component={TextField}
                     label={t('Order')}
                     fullWidth={true}
                     type="number"
@@ -213,7 +211,7 @@ class KillChainPhaseCreation extends Component {
                   </div>
                 </Form>
               )}
-            />
+            </Formik>
           </div>
         </Drawer>
       </div>

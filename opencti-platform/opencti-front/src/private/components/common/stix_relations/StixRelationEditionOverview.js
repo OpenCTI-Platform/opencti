@@ -22,7 +22,7 @@ import {
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
-import Select from '../../../../components/Select';
+import SelectField from '../../../../components/SelectField';
 import Autocomplete from '../../../../components/Autocomplete';
 import DatePickerField from '../../../../components/DatePickerField';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
@@ -235,7 +235,7 @@ const StixRelationEditionContainer = ({
       });
     }
   };
-  const handleChangeMarkingDefinition = (name, values) => {
+  const handleChangeMarkingDefinitions = (name, values) => {
     const currentMarkingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
       map((n) => ({
@@ -362,7 +362,7 @@ const StixRelationEditionContainer = ({
                       <Form style={{ margin: '20px 0 20px 0' }}>
                         <Field
                           name="weight"
-                          component={Select}
+                          component={SelectField}
                           onFocus={handleChangeFocus}
                           onChange={handleSubmitField}
                           label={t('Confidence level')}
@@ -383,7 +383,7 @@ const StixRelationEditionContainer = ({
                         {stixRelation.relationship_type === 'indicates' ? (
                           <Field
                             name="role_played"
-                            component={Select}
+                            component={SelectField}
                             onFocus={handleChangeFocus}
                             onChange={handleSubmitField}
                             label={t('Played role')}
@@ -392,7 +392,7 @@ const StixRelationEditionContainer = ({
                               name: 'role_played',
                               id: 'role_played',
                             }}
-                            containerstyle={{ marginTop: 10, width: '100%' }}
+                            containerstyle={{ marginTop: 20, width: '100%' }}
                             helpertext={
                               <SubscriptionFocus context={editContext} fieldName="role_played"/>
                             }>
@@ -412,7 +412,7 @@ const StixRelationEditionContainer = ({
                           component={DatePickerField}
                           label={t('First seen')}
                           fullWidth={true}
-                          style={{ marginTop: 10 }}
+                          style={{ marginTop: 20 }}
                           onFocus={handleChangeFocus}
                           onSubmit={handleSubmitField}
                           helperText={
@@ -424,7 +424,7 @@ const StixRelationEditionContainer = ({
                           component={DatePickerField}
                           label={t('Last seen')}
                           fullWidth={true}
-                          style={{ marginTop: 10 }}
+                          style={{ marginTop: 20 }}
                           onFocus={handleChangeFocus}
                           onSubmit={handleSubmitField}
                           helperText={
@@ -438,7 +438,7 @@ const StixRelationEditionContainer = ({
                           fullWidth={true}
                           multiline={true}
                           rows={4}
-                          style={{ marginTop: 10 }}
+                          style={{ marginTop: 20 }}
                           onFocus={handleChangeFocus}
                           onSubmit={handleSubmitField}
                           helperText={
@@ -465,7 +465,7 @@ const StixRelationEditionContainer = ({
                           label={t('Marking')}
                           options={markingDefs}
                           onInputChange={searchMarkingDefinitions}
-                          onChange={handleChangeMarkingDefinition}
+                          onChange={handleChangeMarkingDefinitions}
                           onFocus={handleChangeFocus}
                           helperText={
                             <SubscriptionFocus context={editContext} fieldName="markingDefinitions"/>

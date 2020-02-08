@@ -1,95 +1,40 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React from 'react';
 import { KeyboardDatePicker } from '@material-ui/pickers';
-import inject18n from './i18n';
-import { parse } from '../utils/Time';
+import { useFieldToKeyboardDatePicker } from 'formik-material-ui-pickers';
 
-class DatePickerField extends Component {
-  constructor(props) {
-    super(props);
-    this.currentDate = this.props.field.value;
-    this.state = { focused: false };
-  }
-
-  render() {
-    const {
-      t,
-      n,
-      fld,
-      fsd,
-      md,
-      fd,
-      yd,
-      nsd,
-      nsdt,
-      field,
-      form,
-      onFocus,
-      onSubmit,
-      ...other
-    } = this.props;
-    return (
-      <KeyboardDatePicker
-        variant="inline"
-        disableToolbar={false}
-        autoOk={true}
-        allowKeyboardControl={true}
-        name={field.name}
-        value={field.value}
-        onFocus={() => {
-          this.setState({ focused: true });
-          if (typeof onFocus === 'function') {
-            onFocus(field.name);
-          }
-        }}
-        onBlur={(event) => {
-          this.setState({ focused: false });
-          form.setFieldTouched(field.name, true, true);
-          if (
-            typeof onSubmit === 'function'
-            && this.currentDate !== event.target.value
-          ) {
-            onSubmit(field.name, parse(field.value).toISOString());
-            this.currentDate = field.value;
-          }
-        }}
-        onKeyPress={(event) => {
-          this.setState({ focused: true });
-          if (
-            typeof onSubmit === 'function'
-            && event.key === 'Enter'
-            && this.currentDate !== event.target.value
-          ) {
-            onSubmit(field.name, parse(event.target.value).toISOString());
-            this.currentDate = event.target.value;
-          }
-        }}
-        onChange={(date) => {
-          form.setFieldValue(field.name, date, true);
-          if (
-            this.state.focused === false
-            && typeof onSubmit === 'function'
-            && this.currentDate !== date
-          ) {
-            onSubmit(field.name, parse(date).toISOString());
-            this.currentDate = date;
-          }
-        }}
-        format="YYYY-MM-DD"
-        error={
-          form.errors[field.name] !== undefined && form.touched[field.name]
+const DatePickerField = (props) => {
+  const customize = React.useCallback(
+    ([, , helpers]) => ({
+      onChange: (date, value) => {
+        helpers.setValue(value);
+        if (typeof props.onChange === 'function') {
+          props.onChange(props.field.name, date);
         }
-        invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-        {...other}
-      />
-    );
-  }
-}
-
-DatePickerField.propTypes = {
-  t: PropTypes.func.isRequired,
-  field: PropTypes.object,
-  form: PropTypes.object,
+      },
+      onFocus: () => {
+        if (typeof props.onFocus === 'function') {
+          props.onFocus(props.field.name);
+        }
+      },
+      onBlur: (event) => {
+        helpers.setTouched(true);
+        if (typeof props.onSubmit === 'function') {
+          props.onSubmit(props.field.name, event.target.value);
+        }
+      },
+    }),
+    [props],
+  );
+  return (
+    <KeyboardDatePicker
+      variant="inline"
+      disableToolbar={false}
+      autoOk={true}
+      allowKeyboardControl={true}
+      format="YYYY-MM-DD"
+      {...useFieldToKeyboardDatePicker(props, customize)}
+    />
+  );
 };
 
-export default inject18n(DatePickerField);
+export default DatePickerField;

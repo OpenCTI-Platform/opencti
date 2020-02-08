@@ -48,7 +48,7 @@ import {
 } from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
-import Select from '../../../../components/Select';
+import SelectField from '../../../../components/SelectField';
 import DatePickerField from '../../../../components/DatePickerField';
 import StixRelationCreationFromEntityStixDomainEntitiesLines, {
   stixRelationCreationFromEntityStixDomainEntitiesLinesQuery,
@@ -696,7 +696,7 @@ class StixRelationCreationFromEntity extends Component {
                       </div>
                       <Field
                         name="relationship_type"
-                        component={Select}
+                        component={SelectField}
                         label={t('Relationship type')}
                         fullWidth={true}
                         inputProps={{
@@ -716,7 +716,7 @@ class StixRelationCreationFromEntity extends Component {
                       </Field>
                       <Field
                         name="weight"
-                        component={Select}
+                        component={SelectField}
                         label={t('Confidence level')}
                         fullWidth={true}
                         inputProps={{
@@ -733,7 +733,7 @@ class StixRelationCreationFromEntity extends Component {
                       {values.relationship_type === 'indicates' ? (
                         <Field
                           name="role_played"
-                          component={Select}
+                          component={SelectField}
                           label={t('Played role')}
                           fullWidth={true}
                           inputProps={{

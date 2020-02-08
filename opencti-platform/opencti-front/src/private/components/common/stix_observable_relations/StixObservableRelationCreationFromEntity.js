@@ -30,7 +30,7 @@ import {
   resolveRelationsTypes,
 } from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
-import Select from '../../../../components/Select';
+import SelectField from '../../../../components/SelectField';
 import DatePickerField from '../../../../components/DatePickerField';
 import StixObservableRelationCreationFromEntityLines, {
   stixObservableRelationCreationFromEntityLinesQuery,
@@ -492,7 +492,7 @@ class StixObservableRelationCreationFromEntity extends Component {
                       </div>
                       <Field
                         name="relationship_type"
-                        component={Select}
+                        component={SelectField}
                         label={t('Relationship type')}
                         fullWidth={true}
                         inputProps={{
@@ -515,7 +515,7 @@ class StixObservableRelationCreationFromEntity extends Component {
                       </Field>
                       <Field
                         name="role_played"
-                        component={Select}
+                        component={SelectField}
                         label={t('Played role')}
                         fullWidth={true}
                         inputProps={{

@@ -23,7 +23,7 @@ import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_defin
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
-import TagAutocompleteField from '../../common/form/TagAutocompleteField';
+import TagAutocompleteField from '../../common/form/TagsField';
 
 const styles = (theme) => ({
   drawerPaper: {

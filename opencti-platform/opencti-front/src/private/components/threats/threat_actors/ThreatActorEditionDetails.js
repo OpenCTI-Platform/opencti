@@ -2,18 +2,18 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
+import { Formik, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import Select from '../../../../components/Select';
+import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -64,7 +64,7 @@ const threatActorEditionDetailsFocus = graphql`
   }
 `;
 
-const threatActorValidation = t => Yup.object().shape({
+const threatActorValidation = (t) => Yup.object().shape({
   sophistication: Yup.string().required(t('This field is required')),
   resource_level: Yup.string().required(t('This field is required')),
   primary_motivation: Yup.string().required(t('This field is required')),
@@ -103,9 +103,7 @@ class ThreatActorEditionDetailsComponent extends Component {
   }
 
   render() {
-    const {
-      t, threatActor, editUsers, me,
-    } = this.props;
+    const { t, threatActor, context } = this.props;
     const initialValues = pick(
       [
         'sophistication',
@@ -124,25 +122,20 @@ class ThreatActorEditionDetailsComponent extends Component {
           initialValues={initialValues}
           validationSchema={threatActorValidation(t)}
           onSubmit={() => true}
-          render={() => (
+        >
+          {() => (
             <div>
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
+                <SelectField
                   name="sophistication"
-                  component={Select}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
                   label={t('Sophistication')}
                   fullWidth={true}
-                  inputProps={{
-                    name: 'sophistication',
-                    id: 'sophistication',
-                  }}
                   containerstyle={{ width: '100%' }}
                   helpertext={
                     <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
+                      context={context}
                       fieldName="sophistication"
                     />
                   }
@@ -168,23 +161,17 @@ class ThreatActorEditionDetailsComponent extends Component {
                   <MenuItem key="strategic" value="strategic">
                     {t('sophistication_strategic')}
                   </MenuItem>
-                </Field>
-                <Field
+                </SelectField>
+                <SelectField
                   name="resource_level"
-                  component={Select}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
                   label={t('Resource level')}
                   fullWidth={true}
-                  inputProps={{
-                    name: 'resource_level',
-                    id: 'resource_level',
-                  }}
-                  containerstyle={{ width: '100%' }}
+                  containerstyle={{ width: '100%', marginTop: 20 }}
                   helpertext={
                     <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
+                      context={context}
                       fieldName="resource_level"
                     />
                   }
@@ -210,23 +197,17 @@ class ThreatActorEditionDetailsComponent extends Component {
                   <MenuItem key="government" value="government">
                     {t('resource_government')}
                   </MenuItem>
-                </Field>
-                <Field
+                </SelectField>
+                <SelectField
                   name="primary_motivation"
-                  component={Select}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
                   label={t('Primary motivation')}
                   fullWidth={true}
-                  inputProps={{
-                    name: 'primary_motivation',
-                    id: 'primary_motivation',
-                  }}
-                  containerstyle={{ width: '100%' }}
+                  containerstyle={{ width: '100%', marginTop: 20 }}
                   helpertext={
                     <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
+                      context={context}
                       fieldName="primary_motivation"
                     />
                   }
@@ -270,23 +251,17 @@ class ThreatActorEditionDetailsComponent extends Component {
                   <MenuItem key="unpredictable" value="unpredictable">
                     {t('motivation_unpredictable')}
                   </MenuItem>
-                </Field>
-                <Field
+                </SelectField>
+                <SelectField
                   name="secondary_motivation"
-                  component={Select}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
                   label={t('Secondary motivation')}
                   fullWidth={true}
-                  inputProps={{
-                    name: 'secondary_motivation',
-                    id: 'secondary_motivation',
-                  }}
-                  containerstyle={{ width: '100%' }}
+                  containerstyle={{ width: '100%', marginTop: 20 }}
                   helpertext={
                     <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
+                      context={context}
                       fieldName="secondary_motivation"
                     />
                   }
@@ -330,29 +305,24 @@ class ThreatActorEditionDetailsComponent extends Component {
                   <MenuItem key="unpredictable" value="unpredictable">
                     {t('motivation_unpredictable')}
                   </MenuItem>
-                </Field>
-                <Field
+                </SelectField>
+                <TextField
                   name="goal"
-                  component={TextField}
                   label={t('Goal')}
                   fullWidth={true}
                   multiline={true}
                   rows="4"
-                  style={{ marginTop: 10 }}
+                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="goal"
-                    />
+                    <SubscriptionFocus context={context} fieldName="goal" />
                   }
                 />
               </Form>
             </div>
           )}
-        />
+        </Formik>
       </div>
     );
   }
@@ -363,8 +333,7 @@ ThreatActorEditionDetailsComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   threatActor: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
+  context: PropTypes.array,
 };
 
 const ThreatActorEditionDetails = createFragmentContainer(

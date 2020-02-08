@@ -33,7 +33,7 @@ import {
   QueryRenderer,
 } from '../../../../relay/environment';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
-import Select from '../../../../components/Select';
+import SelectField from '../../../../components/SelectField';
 import Loader from '../../../../components/Loader';
 
 const Transition = React.forwardRef((props, ref) => (
@@ -215,7 +215,7 @@ class StixDomainEntitiesExportCreationComponent extends Component {
                         <DialogContent>
                           <Field
                             name="format"
-                            component={Select}
+                            component={SelectField}
                             label={t('Export format')}
                             fullWidth={true}
                             inputProps={{
@@ -236,7 +236,7 @@ class StixDomainEntitiesExportCreationComponent extends Component {
                           </Field>
                           <Field
                             name="maxMarkingDefinition"
-                            component={Select}
+                            component={SelectField}
                             label={t('Max marking definition level')}
                             fullWidth={true}
                             inputProps={{

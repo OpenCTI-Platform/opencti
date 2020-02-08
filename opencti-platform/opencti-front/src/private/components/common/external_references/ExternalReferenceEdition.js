@@ -176,7 +176,7 @@ class ExternalReferenceEditionContainer extends Component {
                   component={TextField}
                   label={t('External ID')}
                   fullWidth={true}
-                  style={{ marginTop: 10 }}
+                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
@@ -188,7 +188,7 @@ class ExternalReferenceEditionContainer extends Component {
                   component={TextField}
                   label={t('URL')}
                   fullWidth={true}
-                  style={{ marginTop: 10 }}
+                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
@@ -202,7 +202,7 @@ class ExternalReferenceEditionContainer extends Component {
                   fullWidth={true}
                   multiline={true}
                   rows={4}
-                  style={{ marginTop: 10 }}
+                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={

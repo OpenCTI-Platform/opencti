@@ -24,13 +24,13 @@ import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import Autocomplete from '../../../../components/Autocomplete';
 import AutocompleteCreate from '../../../../components/AutocompleteCreate';
 import TextField from '../../../../components/TextField';
-import Switch from '../../../../components/Switch';
+import Switch from '../../../../components/SwitchField';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
-import Select from '../../../../components/Select';
-import TagAutocompleteField from '../../common/form/TagAutocompleteField';
+import SelectField from '../../../../components/SelectField';
+import TagAutocompleteField from '../../common/form/TagsField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -269,7 +269,7 @@ class StixObservableCreation extends Component {
                   <Form style={{ margin: '20px 0 20px 0' }}>
                     <Field
                       name="type"
-                      component={Select}
+                      component={SelectField}
                       label={t('Observable type')}
                       fullWidth={true}
                       inputProps={{
@@ -445,7 +445,7 @@ class StixObservableCreation extends Component {
                 <DialogContent>
                   <Field
                     name="type"
-                    component={Select}
+                    component={SelectField}
                     label={t('Observable type')}
                     fullWidth={true}
                     inputProps={{

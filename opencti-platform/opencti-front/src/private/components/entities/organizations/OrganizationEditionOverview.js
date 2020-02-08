@@ -20,7 +20,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../../../components/i18n';
 import Autocomplete from '../../../../components/Autocomplete';
 import TextField from '../../../../components/TextField';
-import Select from '../../../../components/Select';
+import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import {
   commitMutation,
@@ -244,7 +244,7 @@ class OrganizationEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeMarkingDefinition(name, values) {
+  handleChangeMarkingDefinitions(name, values) {
     const { organization } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
@@ -347,7 +347,7 @@ class OrganizationEditionOverviewComponent extends Component {
                   fullWidth={true}
                   multiline={true}
                   rows="4"
-                  style={{ marginTop: 10 }}
+                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
@@ -356,7 +356,7 @@ class OrganizationEditionOverviewComponent extends Component {
                 />
                 <Field
                   name="organization_class"
-                  component={Select}
+                  component={SelectField}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
                   label={t('Organization type')}
@@ -365,7 +365,7 @@ class OrganizationEditionOverviewComponent extends Component {
                     name: 'organization_class',
                     id: 'organization_class',
                   }}
-                  containerstyle={{ marginTop: 10, width: '100%' }}
+                  containerstyle={{ marginTop: 20, width: '100%' }}
                   helpertext={
                     <SubscriptionFocus context={context} fieldName="organization_class"/>
                   }
@@ -378,7 +378,7 @@ class OrganizationEditionOverviewComponent extends Component {
                 </Field>
                 <Field
                   name="reliability"
-                  component={Select}
+                  component={SelectField}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
                   label={t('Reliability')}
@@ -387,7 +387,7 @@ class OrganizationEditionOverviewComponent extends Component {
                     name: 'reliability',
                     id: 'reliability',
                   }}
-                  containerstyle={{ marginTop: 10, width: '100%' }}
+                  containerstyle={{ marginTop: 20, width: '100%' }}
                   helpertext={
                     <SubscriptionFocus
                       context={context}
@@ -423,7 +423,7 @@ class OrganizationEditionOverviewComponent extends Component {
                   label={t('Marking')}
                   options={this.state.markingDefinitions}
                   onInputChange={this.searchMarkingDefinitions.bind(this)}
-                  onChange={this.handleChangeMarkingDefinition.bind(this)}
+                  onChange={this.handleChangeMarkingDefinitions.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
                   helperText={
                     <SubscriptionFocus context={context} fieldName="markingDefinitions"/>

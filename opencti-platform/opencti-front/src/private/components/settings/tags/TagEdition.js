@@ -2,7 +2,7 @@ import React from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
+import { Form, Formik } from 'formik';
 import { compose, pick } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -10,10 +10,17 @@ import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, requestSubscription, WS_ACTIVATED } from '../../../../relay/environment';
+import {
+  commitMutation,
+  requestSubscription,
+  WS_ACTIVATED,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
-import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
+import {
+  SubscriptionAvatars,
+  SubscriptionFocus,
+} from '../../../../components/Subscription';
 
 const styles = (theme) => ({
   header: {
@@ -133,7 +140,8 @@ class TagEditionContainer {
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}>
+            onClick={handleClose.bind(this)}
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
@@ -147,46 +155,53 @@ class TagEditionContainer {
             enableReinitialize={true}
             initialValues={initialValues}
             validationSchema={tagValidation(t)}
-            render={() => (
+          >
+            {() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
+                <TextField
                   name="tag_type"
-                  component={TextField}
                   label={t('Type')}
                   fullWidth={true}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus context={editContext} fieldName="tag_type"/>
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="tag_type"
+                    />
                   }
                 />
-                <Field
+                <TextField
                   name="value"
-                  component={TextField}
                   label={t('Value')}
                   fullWidth={true}
-                  style={{ marginTop: 10 }}
+                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus context={editContext} fieldName="value"/>
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="value"
+                    />
                   }
                 />
-                <Field
+                <ColorPickerField
                   name="color"
-                  component={ColorPickerField}
                   label={t('Color')}
                   fullWidth={true}
-                  style={{ marginTop: 10 }}
+                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus context={editContext} fieldName="color"/>
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="color"
+                    />
                   }
                 />
               </Form>
             )}
-          />
+          </Formik>
         </div>
       </div>
     );

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
+import { Formik, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
   assoc,
@@ -15,16 +15,11 @@ import {
   head,
 } from 'ramda';
 import * as Yup from 'yup';
-import {
-  commitMutation,
-  fetchQuery,
-  WS_ACTIVATED,
-} from '../../../relay/environment';
+import { commitMutation, WS_ACTIVATED } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
-import Autocomplete from '../../../components/Autocomplete';
 import TextField from '../../../components/TextField';
 import { SubscriptionFocus } from '../../../components/Subscription';
-import { markingDefinitionsLinesSearchQuery } from '../settings/marking_definitions/MarkingDefinitionsLines';
+import MarkingDefinitionsField from '../common/form/MarkingDefinitionsField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -115,27 +110,6 @@ const workspaceValidation = (t) => Yup.object().shape({
 });
 
 class WorkspaceEditionOverviewComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      identityCreation: false,
-      identities: [],
-      markingDefinitions: [],
-    };
-  }
-
-  searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsLinesSearchQuery, {
-      search: event.target.value,
-    }).then((data) => {
-      const markingDefinitions = pipe(
-        pathOr([], ['markingDefinitions', 'edges']),
-        map((n) => ({ label: n.node.definition, value: n.node.id })),
-      )(data);
-      this.setState({ markingDefinitions });
-    });
-  }
-
   handleChangeFocus(name) {
     if (WS_ACTIVATED) {
       commitMutation({
@@ -165,7 +139,7 @@ class WorkspaceEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeMarkingDefinition(name, values) {
+  handleChangeMarkingDefinitions(name, values) {
     const { workspace } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
@@ -225,45 +199,51 @@ class WorkspaceEditionOverviewComponent extends Component {
           enableReinitialize={true}
           initialValues={initialValues}
           validationSchema={workspaceValidation(t)}
-          render={() => (
+        >
+          {() => (
             <div>
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
+                <TextField
                   name="name"
-                  component={TextField}
                   label={t('Name')}
                   fullWidth={true}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={<SubscriptionFocus context={context} fieldName="name"/>}
+                  helperText={
+                    <SubscriptionFocus context={context} fieldName="name" />
+                  }
                 />
-                <Field
+                <TextField
                   name="description"
-                  component={TextField}
                   label={t('Description')}
                   fullWidth={true}
                   multiline={true}
                   rows="4"
-                  style={{ marginTop: 10 }}
+                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={<SubscriptionFocus context={context} fieldName="description"/>}
+                  helperText={
+                    <SubscriptionFocus
+                      context={context}
+                      fieldName="description"
+                    />
+                  }
                 />
-                <Field
+                <MarkingDefinitionsField
                   name="markingDefinitions"
-                  component={Autocomplete}
-                  multiple={true}
-                  label={t('Marking')}
-                  options={this.state.markingDefinitions}
-                  onInputChange={this.searchMarkingDefinitions.bind(this)}
-                  onChange={this.handleChangeMarkingDefinition.bind(this)}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  helperText={<SubscriptionFocus context={context} fieldName="markingDefinitions"/>}
+                  style={{ marginTop: 20, width: '100%' }}
+                  helpertext={
+                    <SubscriptionFocus
+                      context={context}
+                      fieldName="markingDefinitions"
+                    />
+                  }
+                  onChange={this.handleChangeMarkingDefinitions.bind(this)}
                 />
               </Form>
             </div>
           )}
-        />
+        </Formik>
       </div>
     );
   }

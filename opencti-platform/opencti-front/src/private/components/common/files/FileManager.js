@@ -25,7 +25,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import FileExportViewer from './FileExportViewer';
 import FileImportViewer from './FileImportViewer';
-import Select from '../../../../components/Select';
+import SelectField from '../../../../components/SelectField';
 import {
   commitMutation,
   MESSAGING$,
@@ -189,7 +189,7 @@ const FileManager = ({
                         <DialogContent>
                           <Field
                             name="format"
-                            component={Select}
+                            component={SelectField}
                             label={t('Export format')}
                             fullWidth={true}
                             inputProps={{
@@ -210,7 +210,7 @@ const FileManager = ({
                           </Field>
                           <Field
                             name="type"
-                            component={Select}
+                            component={SelectField}
                             label={t('Export type')}
                             fullWidth={true}
                             inputProps={{
@@ -228,7 +228,7 @@ const FileManager = ({
                           </Field>
                           <Field
                             name="maxMarkingDefinition"
-                            component={Select}
+                            component={SelectField}
                             label={t('Max marking definition level')}
                             fullWidth={true}
                             inputProps={{

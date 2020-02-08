@@ -61,7 +61,7 @@ class UserLineComponent extends Component {
               <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
                 {node.name}
               </div>
-              <div className={classes.bodyItem} style={{ width: dataColumns.email.width }}>
+              <div className={classes.bodyItem} style={{ width: dataColumns.user_email.width }}>
                 {node.user_email}
               </div>
               <div className={classes.bodyItem} style={{ width: dataColumns.firstname.width }}>
@@ -127,7 +127,7 @@ class UserLineDummyComponent extends Component {
               <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              <div className={classes.bodyItem} style={{ width: dataColumns.email.width }}>
+              <div className={classes.bodyItem} style={{ width: dataColumns.user_email.width }}>
                 <div className="fakeItem" style={{ width: '70%' }} />
               </div>
               <div className={classes.bodyItem} style={{ width: dataColumns.firstname.width }}>

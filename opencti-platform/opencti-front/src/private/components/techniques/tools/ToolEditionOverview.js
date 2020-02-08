@@ -293,7 +293,7 @@ class ToolEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeMarkingDefinition(name, values) {
+  handleChangeMarkingDefinitions(name, values) {
     const { tool } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
@@ -396,7 +396,7 @@ class ToolEditionOverviewComponent extends Component {
                   fullWidth={true}
                   multiline={true}
                   rows="4"
-                  style={{ marginTop: 10 }}
+                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={<SubscriptionFocus context={context} fieldName="description"/>}
@@ -431,7 +431,7 @@ class ToolEditionOverviewComponent extends Component {
                   label={t('Marking')}
                   options={this.state.markingDefinitions}
                   onInputChange={this.searchMarkingDefinitions.bind(this)}
-                  onChange={this.handleChangeMarkingDefinition.bind(this)}
+                  onChange={this.handleChangeMarkingDefinitions.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
                   helperText={<SubscriptionFocus context={context} fieldName="markingDefinitions"/>}
                 />

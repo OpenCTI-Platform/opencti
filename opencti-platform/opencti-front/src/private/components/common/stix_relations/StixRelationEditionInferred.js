@@ -11,7 +11,7 @@ import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
-import Select from '../../../../components/Select';
+import SelectField from '../../../../components/SelectField';
 import TextField from '../../../../components/TextField';
 import { resolveLink } from '../../../../utils/Entity';
 
@@ -118,13 +118,13 @@ class StixRelationEditionInferred extends Component {
                   <Field
                     name="weight"
                     disabled={true}
-                    component={Select}
+                    component={SelectField}
                     label={t('Confidence level')}
                     inputProps={{
                       name: 'weight',
                       id: 'weight',
                     }}
-                    containerstyle={{ marginTop: 10, width: '100%' }}
+                    containerstyle={{ marginTop: 20, width: '100%' }}
                   >
                     <MenuItem value="1">{t('Very low')}</MenuItem>
                     <MenuItem value="2">{t('Low')}</MenuItem>
@@ -137,7 +137,7 @@ class StixRelationEditionInferred extends Component {
                     component={TextField}
                     label={t('First seen')}
                     fullWidth={true}
-                    style={{ marginTop: 10 }}
+                    style={{ marginTop: 20 }}
                     disabled={true}
                   />
                   <Field
@@ -145,7 +145,7 @@ class StixRelationEditionInferred extends Component {
                     component={TextField}
                     label={t('Last seen')}
                     fullWidth={true}
-                    style={{ marginTop: 10 }}
+                    style={{ marginTop: 20 }}
                     disabled={true}
                   />
                   <Field
@@ -155,7 +155,7 @@ class StixRelationEditionInferred extends Component {
                     fullWidth={true}
                     multiline={true}
                     rows={4}
-                    style={{ marginTop: 10 }}
+                    style={{ marginTop: 20 }}
                     disabled={true}
                   />
                 </Form>

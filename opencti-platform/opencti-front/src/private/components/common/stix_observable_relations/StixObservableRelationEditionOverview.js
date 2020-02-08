@@ -22,7 +22,7 @@ import {
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
-import Select from '../../../../components/Select';
+import SelectField from '../../../../components/SelectField';
 import Autocomplete from '../../../../components/Autocomplete';
 import DatePickerField from '../../../../components/DatePickerField';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
@@ -182,7 +182,7 @@ class StixObservableRelationEditionContainer extends Component {
     });
   }
 
-  handleChangeMarkingDefinition(name, values) {
+  handleChangeMarkingDefinitions(name, values) {
     const { stixObservableRelation } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
@@ -325,7 +325,7 @@ class StixObservableRelationEditionContainer extends Component {
                       <Form style={{ margin: '20px 0 20px 0' }}>
                         <Field
                           name="role_played"
-                          component={Select}
+                          component={SelectField}
                           onFocus={this.handleChangeFocus.bind(this)}
                           onChange={this.handleSubmitField.bind(this)}
                           label={t('Played role')}
@@ -334,7 +334,7 @@ class StixObservableRelationEditionContainer extends Component {
                             name: 'role_played',
                             id: 'role_played',
                           }}
-                          containerstyle={{ marginTop: 10, width: '100%' }}
+                          containerstyle={{ marginTop: 20, width: '100%' }}
                           helpertext={
                             <SubscriptionFocus context={editContext} fieldName="role_played"/>
                           }
@@ -353,7 +353,7 @@ class StixObservableRelationEditionContainer extends Component {
                           component={DatePickerField}
                           label={t('First seen')}
                           fullWidth={true}
-                          style={{ marginTop: 10 }}
+                          style={{ marginTop: 20 }}
                           onFocus={this.handleChangeFocus.bind(this)}
                           onSubmit={this.handleSubmitField.bind(this)}
                           helperText={
@@ -365,7 +365,7 @@ class StixObservableRelationEditionContainer extends Component {
                           component={DatePickerField}
                           label={t('Last seen')}
                           fullWidth={true}
-                          style={{ marginTop: 10 }}
+                          style={{ marginTop: 20 }}
                           onFocus={this.handleChangeFocus.bind(this)}
                           onSubmit={this.handleSubmitField.bind(this)}
                           helperText={
@@ -379,7 +379,7 @@ class StixObservableRelationEditionContainer extends Component {
                           fullWidth={true}
                           multiline={true}
                           rows={4}
-                          style={{ marginTop: 10 }}
+                          style={{ marginTop: 20 }}
                           onFocus={this.handleChangeFocus.bind(this)}
                           onSubmit={this.handleSubmitField.bind(this)}
                           helperText={
@@ -395,7 +395,7 @@ class StixObservableRelationEditionContainer extends Component {
                           onInputChange={this.searchMarkingDefinitions.bind(
                             this,
                           )}
-                          onChange={this.handleChangeMarkingDefinition.bind(
+                          onChange={this.handleChangeMarkingDefinitions.bind(
                             this,
                           )}
                           onFocus={this.handleChangeFocus.bind(this)}

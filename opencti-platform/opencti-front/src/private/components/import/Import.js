@@ -102,7 +102,7 @@ class ImportComponent extends Component {
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 10 }}
+          style={{ marginTop: 20 }}
         >
           <Grid item={true} xs={8}>
             <div style={{ height: '100%' }} className="break">

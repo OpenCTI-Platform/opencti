@@ -22,7 +22,7 @@ import { Add, Close } from '@material-ui/icons';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import Select from '../../../../components/Select';
+import SelectField from '../../../../components/SelectField';
 import Autocomplete from '../../../../components/Autocomplete';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 
@@ -167,7 +167,7 @@ class StixDomainEntityCreation extends Component {
     return (
       <Field
         name="type"
-        component={Select}
+        component={SelectField}
         label={t('Entity type')}
         fullWidth={true}
         inputProps={{

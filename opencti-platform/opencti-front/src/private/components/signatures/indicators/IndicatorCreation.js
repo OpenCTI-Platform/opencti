@@ -32,8 +32,8 @@ import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
 } from '../../common/identities/IdentityCreation';
 import DatePickerField from '../../../../components/DatePickerField';
-import Select from '../../../../components/Select';
-import TagAutocompleteField from '../../common/form/TagAutocompleteField';
+import SelectField from '../../../../components/SelectField';
+import TagAutocompleteField from '../../common/form/TagsField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -276,7 +276,7 @@ class IndicatorCreation extends Component {
                     />
                     <Field
                       name="pattern_type"
-                      component={Select}
+                      component={SelectField}
                       label={t('Pattern type')}
                       fullWidth={true}
                       inputProps={{
@@ -303,7 +303,7 @@ class IndicatorCreation extends Component {
                     />
                     <Field
                       name="main_observable_type"
-                      component={Select}
+                      component={SelectField}
                       label={t('Main observable type')}
                       fullWidth={true}
                       inputProps={{
