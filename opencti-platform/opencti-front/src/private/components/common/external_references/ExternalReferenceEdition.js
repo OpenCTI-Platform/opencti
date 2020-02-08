@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
+import { Form, Formik } from 'formik';
 import { compose, pick } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -10,9 +10,15 @@ import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, requestSubscription } from '../../../../relay/environment';
+import {
+  commitMutation,
+  requestSubscription,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
+import {
+  SubscriptionAvatars,
+  SubscriptionFocus,
+} from '../../../../components/Subscription';
 
 const styles = (theme) => ({
   header: {
@@ -158,46 +164,49 @@ class ExternalReferenceEditionContainer extends Component {
             enableReinitialize={true}
             initialValues={initialValues}
             validationSchema={externalReferenceValidation(t)}
-            render={() => (
+          >
+            {() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
+                <TextField
                   name="source_name"
-                  component={TextField}
                   label={t('Source name')}
                   fullWidth={true}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus context={editContext} fieldName="source_name"/>
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="source_name"
+                    />
                   }
                 />
-                <Field
+                <TextField
                   name="external_id"
-                  component={TextField}
                   label={t('External ID')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus context={editContext} fieldName="external_id"/>
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="external_id"
+                    />
                   }
                 />
-                <Field
+                <TextField
                   name="url"
-                  component={TextField}
                   label={t('URL')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus context={editContext} fieldName="url"/>
+                    <SubscriptionFocus context={editContext} fieldName="url" />
                   }
                 />
-                <Field
+                <TextField
                   name="description"
-                  component={TextField}
                   label={t('Description')}
                   fullWidth={true}
                   multiline={true}
@@ -206,12 +215,15 @@ class ExternalReferenceEditionContainer extends Component {
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus context={editContext} fieldName="description"/>
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="description"
+                    />
                   }
                 />
               </Form>
             )}
-          />
+          </Formik>
         </div>
       </div>
     );

@@ -134,7 +134,7 @@ class SectorEditionOverviewComponent extends Component {
 
   searchSubsector(event) {
     fetchQuery(sectorsSearchQuery, {
-      search: event.target.value,
+      search: event && event.target.value !== 0 ? event.target.value : '',
     }).then((data) => {
       const subsectors = pipe(
         pathOr([], ['sectors', 'edges']),
