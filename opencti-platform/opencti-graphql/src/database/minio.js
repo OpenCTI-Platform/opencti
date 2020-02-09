@@ -110,7 +110,7 @@ export const filesListing = async (first, category, entityType, entity = null, c
   const files = await rawFilesListing(`${category}${context ? `/${context}` : ''}/${name}`);
   let allFiles = files;
   if (category === 'export') {
-    const inExport = await loadExportWorksAsProgressFiles(entityType, entity ? entity.id : null);
+    const inExport = await loadExportWorksAsProgressFiles(entityType, entity ? entity.id : null, context);
     allFiles = concat(inExport, files);
   }
   const sortedFiles = sort((a, b) => b.lastModified - a.lastModified, allFiles);

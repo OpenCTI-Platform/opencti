@@ -74,6 +74,7 @@ export const StixDomainEntitiesExportCreationMutation = graphql`
     $format: String!
     $exportType: String!
     $maxMarkingDefinition: String
+    $context: String
     $search: String
     $orderBy: StixDomainEntitiesOrdering
     $orderMode: OrderingMode
@@ -84,6 +85,7 @@ export const StixDomainEntitiesExportCreationMutation = graphql`
       format: $format
       exportType: $exportType
       maxMarkingDefinition: $maxMarkingDefinition
+      context: $context
       search: $search
       orderBy: $orderBy
       orderMode: $orderMode
@@ -136,7 +138,7 @@ class StixDomainEntitiesExportCreationComponent extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const { paginationOptions } = this.props;
+    const { paginationOptions, context } = this.props;
     const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
       ? null
       : values.maxMarkingDefinition;
@@ -147,6 +149,7 @@ class StixDomainEntitiesExportCreationComponent extends Component {
         format: values.format,
         exportType: 'all',
         maxMarkingDefinition,
+        context,
         ...paginationOptions,
       },
       onCompleted: () => {
@@ -307,6 +310,7 @@ StixDomainEntitiesExportCreations.propTypes = {
   data: PropTypes.object,
   exportEntityType: PropTypes.string.isRequired,
   paginationOptions: PropTypes.object,
+  context: PropTypes.string,
 };
 
 export default compose(

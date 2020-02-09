@@ -8,10 +8,20 @@ import {
   EntityIndicatorLine,
   EntityIndicatorLineDummy,
 } from './EntityIndicatorLine';
+import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 25;
 
 class EntityIndicatorsLines extends Component {
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'stixRelations',
+      this.props.setNumberOfElements.bind(this),
+    );
+  }
+
   render() {
     const {
       initialLoading,
@@ -52,6 +62,7 @@ EntityIndicatorsLines.propTypes = {
   stixRelations: PropTypes.object,
   initialLoading: PropTypes.bool,
   entityLink: PropTypes.string,
+  setNumberOfElements: PropTypes.func,
 };
 
 export const entityIndicatorsLinesQuery = graphql`

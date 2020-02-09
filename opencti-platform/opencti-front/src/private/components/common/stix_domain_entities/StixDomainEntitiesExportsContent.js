@@ -71,6 +71,7 @@ class StixDomainEntitiesExportsContentComponent extends Component {
       exportEntityType,
       paginationOptions,
       handleToggle,
+      context,
     } = this.props;
     const stixDomainEntitiesExportFiles = pathOr(
       [],
@@ -86,6 +87,7 @@ class StixDomainEntitiesExportsContentComponent extends Component {
               data={data}
               exportEntityType={exportEntityType}
               paginationOptions={paginationOptions}
+              context={context}
             />
             <IconButton
               color="inherit"
@@ -120,9 +122,10 @@ export const stixDomainEntitiesExportsContentQuery = graphql`
   query StixDomainEntitiesExportsContentRefetchQuery(
     $count: Int!
     $type: String!
+    $context: String
   ) {
     ...StixDomainEntitiesExportsContent_data
-      @arguments(count: $count, type: $type)
+      @arguments(count: $count, type: $type, context: $context)
   }
 `;
 
@@ -134,9 +137,13 @@ const StixDomainEntitiesExportsContent = createRefetchContainer(
         @argumentDefinitions(
           count: { type: "Int", defaultValue: 25 }
           type: { type: "String!" }
+          context: { type: "String!" }
         ) {
-        stixDomainEntitiesExportFiles(first: $count, type: $type)
-          @connection(key: "Pagination_stixDomainEntitiesExportFiles") {
+        stixDomainEntitiesExportFiles(
+          first: $count
+          type: $type
+          context: $context
+        ) @connection(key: "Pagination_stixDomainEntitiesExportFiles") {
           edges {
             node {
               id
@@ -160,6 +167,7 @@ StixDomainEntitiesExportsContent.propTypes = {
   paginationOptions: PropTypes.object,
   handleApplyListArgs: PropTypes.func,
   isOpen: PropTypes.bool,
+  context: PropTypes.string,
 };
 
 export default compose(

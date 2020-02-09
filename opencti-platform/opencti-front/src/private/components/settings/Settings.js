@@ -14,7 +14,6 @@ import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
-import Switch from '../../../components/SwitchField';
 import SettingsMenu from './SettingsMenu';
 
 const styles = () => ({
@@ -130,7 +129,7 @@ class Settings extends Component {
                   'platform_title',
                   'platform_email',
                   'platform_url',
-                  'platform_language'
+                  'platform_language',
                 ],
                 settings,
               );
@@ -197,10 +196,6 @@ class Settings extends Component {
                               name="platform_language"
                               label={t('Language')}
                               fullWidth={true}
-                              inputProps={{
-                                name: 'platform_language',
-                                id: 'platform-language',
-                              }}
                               containerstyle={{ marginTop: 20, width: '100%' }}
                               onFocus={this.handleChangeFocus.bind(this, id)}
                               onChange={this.handleSubmitField.bind(this, id)}
@@ -266,7 +261,8 @@ class Settings extends Component {
                             >
                               {t('RabbitMQ')}
                             </Typography>
-                            {parameters.rabbitmq.hostname}:{parameters.rabbitmq.port}
+                            {parameters.rabbitmq.hostname}:
+                            {parameters.rabbitmq.port}
                           </Paper>
                         </Grid>
                       </Grid>

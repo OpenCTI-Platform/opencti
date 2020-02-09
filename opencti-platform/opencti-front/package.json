@@ -45,7 +45,6 @@
     "react-relay": "^7.1.0",
     "react-relay-network-modern": "^4.5.0",
     "react-router-dom": "^5.1.2",
-    "react-select": "^3.0.8",
     "react-swipeable-views": "^0.13.8",
     "react-virtualized": "^9.21.2",
     "react-window-dimensions": "^1.0.2",
