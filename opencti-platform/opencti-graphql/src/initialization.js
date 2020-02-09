@@ -18,29 +18,50 @@ const fs = require('fs');
 const BYPASS_CAPABILITY = 'BYPASS';
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
 const CAPABILITIES = [
-  { name: BYPASS_CAPABILITY, description: 'Bypass all capabilities' },
+  { name: BYPASS_CAPABILITY, description: 'Bypass all capabilities', ordering: 1 },
   {
     name: KNOWLEDGE_CAPABILITY,
     description: 'Access knowledge',
+    ordering: 100,
     dependencies: [
-      { name: 'KNCREATE', description: 'Create knowledge' },
-      { name: 'KNEDIT', description: 'Edit knowledge' },
-      { name: 'KNASKIMPORT', description: 'Import knowledge' },
-      { name: 'KNASKEXPORT', description: 'Export knowledge' }
+      { name: 'KNUPDATE', description: 'Create / Update knowledge', ordering: 200 },
+      { name: 'KNDELETE', description: 'Delete knowledge', ordering: 300 },
+      { name: 'KNUPLOAD', description: 'Upload knowledge files', ordering: 400 },
+      { name: 'KNASKIMPORT', description: 'Import knowledge', ordering: 500 },
+      { name: 'KNASKEXPORT', description: 'Generate knowledge export', ordering: 600 },
+      { name: 'KNGETEXPORT', description: 'Download knowledge export', ordering: 700 },
+      { name: 'KNENRICHMENT', description: 'Ask for knowledge enrichment', ordering: 800 }
+    ]
+  },
+  {
+    name: 'EXPLORE',
+    description: 'Access exploration',
+    ordering: 1000,
+    dependencies: [
+      { name: 'EXUPDATE', description: 'Create  / Update exploration', ordering: 1100 },
+      { name: 'EXDELETE', description: 'Delete exploration', ordering: 1200 }
     ]
   },
   {
     name: 'MODULES',
     description: 'Access connectors',
-    dependencies: [
-      { name: 'MODMANAGE', description: 'Manage connector state' },
-      { name: 'MODEXPORT', description: 'Push export files through API' }
-    ]
+    ordering: 2000,
+    dependencies: [{ name: 'MODMANAGE', description: 'Manage connector state', ordering: 2100 }]
   },
   {
     name: 'SETTINGS',
     description: 'Access administration',
-    dependencies: [{ name: 'SETACCESSES', description: 'Manage credentials' }]
+    ordering: 3000,
+    dependencies: [
+      { name: 'SETINFERENCES', description: 'Manage inference rules', ordering: 3100 },
+      { name: 'SETACCESSES', description: 'Manage credentials', ordering: 3200 },
+      { name: 'SETMARKINGS', description: 'Manage marking definitions', ordering: 3300 }
+    ]
+  },
+  {
+    name: 'CONNECTORAPI',
+    ordering: 4000,
+    description: 'Connectors API usage: register, ping, export push ...'
   }
 ];
 
@@ -113,10 +134,10 @@ const createMarkingDefinitions = async () => {
 const createCapabilities = async (capabilities, parentName = '') => {
   for (let i = 0; i < capabilities.length; i += 1) {
     const capability = capabilities[i];
-    const { name, description } = capability;
+    const { name, description, ordering } = capability;
     const capabilityName = `${parentName}${name}`;
     // eslint-disable-next-line no-await-in-loop
-    await addCapability({ name: capabilityName, description });
+    await addCapability({ name: capabilityName, description, ordering });
     if (capability.dependencies && capability.dependencies.length > 0) {
       // eslint-disable-next-line no-await-in-loop
       await createCapabilities(capability.dependencies, `${capabilityName}_`);
@@ -142,14 +163,12 @@ export const createBasicRolesAndCapabilities = async () => {
 };
 
 const initializeDefaultValues = async () => {
+  logger.info(`[INIT] > Initialization of settings and basic elements`);
   await addSettings(SYSTEM_USER, {
     platform_title: 'Cyber threat intelligence platform',
     platform_email: 'admin@opencti.io',
     platform_url: '',
-    platform_language: 'auto',
-    platform_external_auth: true,
-    platform_registration: false,
-    platform_demo: false
+    platform_language: 'auto'
   });
   await createAttributesTypes();
   await createMarkingDefinitions();

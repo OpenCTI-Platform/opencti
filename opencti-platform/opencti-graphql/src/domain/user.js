@@ -124,7 +124,7 @@ export const findRoles = args => {
   return listEntities(['Role'], ['name'], args);
 };
 export const findCapabilities = args => {
-  const finalArgs = assoc('orderBy', 'name', args);
+  const finalArgs = assoc('orderBy', 'ordering', args);
   return listEntities(['Capability'], ['description'], finalArgs);
 };
 

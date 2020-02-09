@@ -29,15 +29,13 @@ define
   platform_language sub attribute, datatype string;
   platform_email sub attribute, datatype string;
   platform_url sub attribute, datatype string;
-  platform_external_auth sub attribute, datatype boolean;
-  platform_registration sub attribute, datatype boolean;
-  platform_demo sub attribute, datatype boolean;
   graph_data sub attribute, datatype string;
   workspace_data sub attribute, datatype string;
   workspace_type sub attribute, datatype string;
   object_status sub attribute, datatype long;
   score sub attribute, datatype long;
   tag_type sub attribute, datatype string;
+  ordering sub attribute, datatype double;
 
   # STIX common properties
   stix_id_key sub attribute, datatype string;
@@ -476,9 +474,6 @@ define
     has platform_email,
     has platform_url,
     has platform_language,
-    has platform_external_auth,
-    has platform_registration,
-    has platform_demo,
     has created_at,
     has created_at_day,
     has created_at_month,
@@ -711,6 +706,7 @@ define
   Capability sub entity,
     key internal_id_key,
     key name,
+    has ordering,
     has entity_type,
     has description,
     has created_at,

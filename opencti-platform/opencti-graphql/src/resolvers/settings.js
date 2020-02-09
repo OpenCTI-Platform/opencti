@@ -1,5 +1,6 @@
 import { withFilter } from 'graphql-subscriptions';
-import { BUS_TOPICS, isAppRealTime } from '../config/conf';
+import nconf from 'nconf';
+import { BUS_TOPICS } from '../config/conf';
 import {
   getSettings,
   settingsDelete,
@@ -19,6 +20,7 @@ const settingsResolvers = {
   },
   Settings: {
     platform_providers: () => PROVIDERS,
+    platform_demo: () => nconf.get('app:platform_demo') || false,
     editContext: settings => fetchEditContext(settings.id)
   },
   Mutation: {

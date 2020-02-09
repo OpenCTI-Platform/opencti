@@ -6,6 +6,7 @@
     "reactive": true,
     "cookie_secure": false,
     "base_path" : "",
+    "platform_demo": false,
     "admin": {
       "email": "admin@opencti.io",
       "password": "ChangeMe",
