@@ -49,7 +49,7 @@ const dateFields = [
   'observable_date',
   'default_assignation' // TODO @JRI Ask @Sam for this.
 ];
-const numberFields = ['object_status', 'phase_order', 'level', 'weight'];
+const numberFields = ['object_status', 'phase_order', 'level', 'weight', 'ordering'];
 const virtualTypes = ['Identity', 'Email', 'File', 'Stix-Domain-Entity', 'Stix-Domain', 'Stix-Observable'];
 
 export const REL_INDEX_PREFIX = 'rel_';

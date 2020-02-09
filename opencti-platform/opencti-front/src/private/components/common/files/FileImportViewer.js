@@ -26,7 +26,7 @@ const styles = () => ({
 });
 
 const FileImportViewerBase = ({
-  entity, connectors, relay, t, classes,
+  entity, disableImport, connectors, relay, t, classes,
 }) => {
   const { id, importFiles } = entity;
   const { edges } = importFiles;
@@ -43,34 +43,27 @@ const FileImportViewerBase = ({
     <React.Fragment>
       <Grid item={true} xs={6}>
         <div style={{ height: '100%' }} className="break">
-          <Typography
-            variant="h4"
+          <Typography variant="h4"
             gutterBottom={true}
-            style={{ float: 'left' }}
-          >
+            style={{ float: 'left' }}>
             {t('Uploaded files')}
           </Typography>
           <div style={{ float: 'left', marginTop: -17 }}>
-            <FileUploader
-              entityId={id}
+            <FileUploader entityId={id}
               onUploadSuccess={() => relay.refetch({ id })}
             />
           </div>
           <div className="clearfix" />
-          <Paper
-            classes={{ root: classes.paper }}
-            elevation={2}
-          >
+          <Paper classes={{ root: classes.paper }} elevation={2}>
             {edges.length ? (
               <List>
                 {edges.map((file) => (
                   <FileLine
                     key={file.node.id}
                     dense={true}
+                    disableImport={disableImport}
                     file={file.node}
-                    connectors={
-                      connectors && connectors[file.node.metaData.mimetype]
-                    }
+                    connectors={connectors && connectors[file.node.metaData.mimetype]}
                   />
                 ))}
               </List>
@@ -122,6 +115,7 @@ const FileImportViewer = createRefetchContainer(
 
 FileImportViewer.propTypes = {
   entity: PropTypes.object,
+  disableImport: PropTypes.bool,
   connectors: PropTypes.array,
 };
 

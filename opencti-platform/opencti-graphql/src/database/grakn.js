@@ -655,7 +655,7 @@ const listElements = async (baseQuery, first, offset, orderBy, orderMode, queryK
     return buildPagination(first, offset, instances, globalCount);
   });
 };
-export const listEntities = async (entityTypes, searchFields, args) => {
+export const listEntities = async (entityTypes, searchFields, args = {}) => {
   // filters contains potential relations like, mitigates, tagged ...
   const { first = 1000, after, orderBy, orderMode = 'asc', withCache = true } = args;
   const { parentType = null, search, filters } = args;

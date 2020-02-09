@@ -102,6 +102,7 @@ const FileManager = ({
     flatten(map((c) => c.connector_scope, connectorsExport)),
   );
   const exportConnsPerFormat = scopesConn(connectorsExport);
+  // eslint-disable-next-line max-len
   const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
   const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
   const handleOpenExport = () => setOpenExport(true);
@@ -148,21 +149,17 @@ const FileManager = ({
 
   return (
     <div className={classes.container}>
-      <Grid
-        container={true}
+      <Grid container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
-      >
-        <FileImportViewer entity={entity} />
-        <FileExportViewer
-          entity={entity}
+        classes={{ container: classes.gridContainer }}>
+        <FileImportViewer entity={entity} disableImport={true} />
+        <FileExportViewer entity={entity}
           handleOpenExport={handleOpenExport}
           isExportPossible={isExportPossible}
         />
       </Grid>
       <div>
-        <Formik
-          enableReinitialize={true}
+        <Formik enableReinitialize={true}
           initialValues={{
             format: '',
             type: 'full',
@@ -174,12 +171,10 @@ const FileManager = ({
         >
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
-              <Dialog
-                open={openExport}
+              <Dialog open={openExport}
                 keepMounted={true}
                 onClose={handleCloseExport}
-                fullWidth={true}
-              >
+                fullWidth={true}>
                 <DialogTitle>{t('Generate an export')}</DialogTitle>
                 <QueryRenderer
                   query={markingDefinitionsLinesSearchQuery}
@@ -195,11 +190,9 @@ const FileManager = ({
                             containerstyle={{ width: '100%' }}
                           >
                             {exportScopes.map((value, i) => (
-                              <MenuItem
-                                key={i}
+                              <MenuItem key={i}
                                 value={value}
-                                disabled={!isExportActive(value)}
-                              >
+                                disabled={!isExportActive(value)}>
                                 {value}
                               </MenuItem>
                             ))}

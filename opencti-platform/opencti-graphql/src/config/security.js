@@ -3,6 +3,8 @@ import FacebookStrategy from 'passport-facebook';
 import GithubStrategy from 'passport-github';
 import LocalStrategy from 'passport-local';
 import LdapStrategy from 'passport-ldapauth';
+import SamlStrategy from 'passport-saml';
+import Auth0Strategy from 'passport-auth0';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import { head, anyPass, isNil, isEmpty } from 'ramda';
 import validator from 'validator';
@@ -72,6 +74,34 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       });
       passport.use('ldapauth', ldapStrategy);
       providers.push({ name: providerKeys[i], type: AUTH_FORM, provider: 'ldapauth' });
+    }
+    if (strategy === 'SamlStrategy') {
+      const samlStrategy = new SamlStrategy(config, (profile, done) => {
+        const userName = profile.nameID || profile.email;
+        loginFromProvider(profile.email, userName)
+          .then(token => {
+            done(null, token);
+          })
+          .catch(err => {
+            done(err);
+          });
+      });
+      passport.use('saml', samlStrategy);
+      providers.push({ name: providerKeys[i], type: AUTH_SSO, provider: 'saml' });
+    }
+    if (strategy === 'Auth0Strategy') {
+      const auth0Strategy = new Auth0Strategy(config, (accessToken, refreshToken, extraParams, profile, done) => {
+        const userName = profile.given_name || profile.email;
+        loginFromProvider(profile.email, userName)
+          .then(token => {
+            done(null, token);
+          })
+          .catch(err => {
+            done(err);
+          });
+      });
+      passport.use('auth0', auth0Strategy);
+      providers.push({ name: providerKeys[i], type: AUTH_SSO, provider: 'auth0' });
     }
     if (strategy === 'FacebookStrategy') {
       const specificConfig = { profileFields: ['id', 'emails', 'name'], scope: 'email' };

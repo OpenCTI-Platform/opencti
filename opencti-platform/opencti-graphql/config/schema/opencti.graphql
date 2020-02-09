@@ -31,17 +31,24 @@ enum Status {
   error
 }
 enum Capabilities {
-  BYPASS
+  CONNECTORAPI
   KNOWLEDGE
-  KNOWLEDGE_KNCREATE
-  KNOWLEDGE_KNEDIT
-  KNOWLEDGE_KNIMPORT
-  KNOWLEDGE_KNEXPORT
+  KNOWLEDGE_KNUPDATE
+  KNOWLEDGE_KNDELETE
+  KNOWLEDGE_KNUPLOAD
+  KNOWLEDGE_KNASKIMPORT
+  KNOWLEDGE_KNASKEXPORT
+  KNOWLEDGE_KNGETEXPORT
+  KNOWLEDGE_KNENRICHMENT
+  EXPLORE
+  EXPLORE_EXUPDATE
+  EXPLORE_EXDELETE
   MODULES
   MODULES_MODMANAGE
-  MODULES_MODEXPORT
   SETTINGS
+  SETTINGS_SETINFERENCES
   SETTINGS_SETACCESSES
+  SETTINGS_SETMARKINGS
 }
 
 ### Relations
@@ -183,6 +190,7 @@ type Settings {
   platform_url: String
   platform_providers: [Provider]
   platform_language: String
+  platform_demo: Boolean
   platform_parameters: String
   editContext: [EditUserContext]
   created_at: DateTime
@@ -3332,27 +3340,27 @@ type StixEntityEditMutations {
 
 # StixDomainEntity
 type StixDomainEntityEditMutations {
-  delete: ID
-  fieldPatch(input: EditInput): StixDomainEntity
-  contextPatch(input: EditContext): StixDomainEntity
-  contextClean: StixDomainEntity
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationsAdd(input: RelationsAddInput): StixEntity
-  relationDelete(relationId: ID, toId: String, relationType: String): StixEntity
-  importPush(file: Upload!): File @auth
-  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
-  exportPush(file: Upload!): Boolean @auth(for: MODULES_MODEXPORT)
+  delete: ID @auth(for: KNOWLEDGE_KNDELETE)
+  fieldPatch(input: EditInput): StixDomainEntity @auth(for: KNOWLEDGE_KNUPDATE)
+  contextPatch(input: EditContext): StixDomainEntity @auth(for: KNOWLEDGE_KNUPDATE)
+  contextClean: StixDomainEntity @auth(for: KNOWLEDGE_KNUPDATE)
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: KNOWLEDGE_KNUPDATE)
+  relationsAdd(input: RelationsAddInput): StixEntity @auth(for: KNOWLEDGE_KNUPDATE)
+  relationDelete(relationId: ID, toId: String, relationType: String): StixEntity @auth(for: KNOWLEDGE_KNUPDATE)
+  importPush(file: Upload!): File @auth(for: KNOWLEDGE_KNUPLOAD)
+  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File] @auth(for: KNOWLEDGE_KNASKEXPORT)
+  exportPush(file: Upload!): Boolean @auth(for: CONNECTORAPI)
 }
 
 # StixObservable
 type StixObservableEditMutations {
-  delete: ID
-  fieldPatch(input: EditInput): StixObservable
-  contextPatch(input: EditContext): StixObservable
-  contextClean: StixObservable
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): StixObservable
-  askEnrichment(connectorId: ID!): Work
+  delete: ID @auth(for: KNOWLEDGE_KNDELETE)
+  fieldPatch(input: EditInput): StixObservable @auth(for: KNOWLEDGE_KNUPDATE)
+  contextPatch(input: EditContext): StixObservable @auth(for: KNOWLEDGE_KNUPDATE)
+  contextClean: StixObservable @auth(for: KNOWLEDGE_KNUPDATE)
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: KNOWLEDGE_KNUPDATE)
+  relationDelete(relationId: ID!): StixObservable @auth(for: KNOWLEDGE_KNUPDATE)
+  askEnrichment(connectorId: ID!): Work @auth(for: KNOWLEDGE_KNENRICHMENT)
 }
 
 # StixRelation
@@ -3625,30 +3633,30 @@ type Mutation {
   # Settings
   settingsEdit(id: ID!): SettingsEditMutations @auth(for: SETTINGS)
   # Inferences
-  inferenceEnable(id: ID!): Inference
-  inferenceDisable(id: ID!): Inference
+  inferenceEnable(id: ID!): Inference @auth(for: SETTINGS_SETINFERENCES)
+  inferenceDisable(id: ID!): Inference @auth(for: SETTINGS_SETINFERENCES)
   # Attribute
   attributeAdd(input: AttributeAddInput): Attribute @auth(for: SETTINGS)
   attributeEdit(id: ID!): AttributeEditMutations @auth(for: SETTINGS)
   # Connector
-  pingConnector(id: ID!, state: String): Connector @auth(for: MODULES_MODMANAGE)
-  registerConnector(input: RegisterConnectorInput): Connector @auth(for: MODULES_MODMANAGE)
+  pingConnector(id: ID!, state: String): Connector @auth(for: CONNECTORAPI)
+  registerConnector(input: RegisterConnectorInput): Connector @auth(for: CONNECTORAPI)
   resetStateConnector(id: ID!): Connector @auth(for: MODULES_MODMANAGE)
   deleteWork(id: ID!): ID! @auth
-  initiateJob(workId: ID!): Job @auth
-  updateJob(jobId: ID!, status: Status!, messages: [String]): Job @auth
+  initiateJob(workId: ID!): Job @auth(for: CONNECTORAPI)
+  updateJob(jobId: ID!, status: Status!, messages: [String]): Job @auth(for: CONNECTORAPI)
   # File management
   deleteImport(fileName: String): Boolean @auth
-  uploadImport(file: Upload!): File @auth
-  askJobImport(fileName: ID!): File @auth
+  uploadImport(file: Upload!): File @auth(for: KNOWLEDGE_KNASKIMPORT)
+  askJobImport(fileName: ID!): File @auth(for: KNOWLEDGE_KNASKIMPORT)
   # Tag
-  tagAdd(input: TagAddInput): Tag
+  tagAdd(input: TagAddInput): Tag @auth(for: SETTINGS)
   tagEdit(id: ID!): TagEditMutations @auth(for: SETTINGS)
   # StixEntity
-  stixEntityEdit(id: ID!): StixEntityEditMutations @auth
+  stixEntityEdit(id: ID!): StixEntityEditMutations @auth(for: KNOWLEDGE_KNUPDATE)
   # StixDomainEntity
-  stixDomainEntityAdd(input: StixDomainEntityAddInput): StixDomainEntity @auth
-  stixDomainEntityEdit(id: ID!): StixDomainEntityEditMutations @auth
+  stixDomainEntityAdd(input: StixDomainEntityAddInput): StixDomainEntity @auth(for: KNOWLEDGE_KNUPDATE)
+  stixDomainEntityEdit(id: ID!): StixDomainEntityEditMutations
   stixDomainEntitiesExportAsk(
     type: String!
     format: String!
@@ -3660,10 +3668,10 @@ type Mutation {
     orderMode: OrderingMode
     filters: [StixDomainEntitiesFiltering]
     filterMode: FilterMode
-  ): FileConnection
-  stixDomainEntitiesExportPush(type: String!, file: Upload!, context: String, listArgs: String): Boolean @auth(for: MODULES_MODEXPORT)
+  ): FileConnection @auth(for: KNOWLEDGE_KNASKEXPORT)
+  stixDomainEntitiesExportPush(type: String!, file: Upload!, context: String, listArgs: String): Boolean @auth(for: CONNECTORAPI)
   # StixObservable
-  stixObservableAdd(input: StixObservableAddInput): StixObservable @auth
+  stixObservableAdd(input: StixObservableAddInput): StixObservable @auth(for: KNOWLEDGE_KNUPDATE)
   stixObservableEdit(id: ID!): StixObservableEditMutations @auth
   stixObservablesExportAsk(
     types: [String]!
@@ -3689,7 +3697,7 @@ type Mutation {
   identityEdit(id: ID!): IdentityEditMutations @auth
   # User
   userAdd(input: UserAddInput): User @auth(for: SETTINGS_SETACCESSES)
-  personAdd(input: PersonAddInput): User @auth
+  personAdd(input: PersonAddInput): User @auth (for: KNOWLEDGE_KNUPDATE)
   userEdit(id: ID!): UserEditMutations @auth(for: SETTINGS_SETACCESSES)
   meEdit(input: EditInput): User @auth
   logout: ID @auth
