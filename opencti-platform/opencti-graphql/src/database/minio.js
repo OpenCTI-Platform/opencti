@@ -105,9 +105,9 @@ const rawFilesListing = directory => {
   });
 };
 
-export const filesListing = async (first, category, entityType, entity = null) => {
+export const filesListing = async (first, category, entityType, entity = null, context = null) => {
   const name = extractName(entityType, entity ? entity.id : null);
-  const files = await rawFilesListing(`${category}/${name}`);
+  const files = await rawFilesListing(`${category}${context ? `/${context}` : ''}/${name}`);
   let allFiles = files;
   if (category === 'export') {
     const inExport = await loadExportWorksAsProgressFiles(entityType, entity ? entity.id : null);
@@ -118,13 +118,22 @@ export const filesListing = async (first, category, entityType, entity = null) =
   return buildPagination(first, 0, fileNodes, allFiles.length);
 };
 
-export const upload = async (user, category, file, entityType = null, entityId = null, listArgs = null) => {
+export const upload = async (
+  user,
+  category,
+  file,
+  entityType = null,
+  entityId = null,
+  context = null,
+  listArgs = null
+) => {
   const { createReadStream, filename, mimetype, encoding } = await file;
   const metadata = {
     filename: querystring.escape(filename),
     category,
     mimetype,
     encoding,
+    context,
     listArgs
   };
   let finalEntityType = entityType;
@@ -133,7 +142,7 @@ export const upload = async (user, category, file, entityType = null, entityId =
     finalEntityType = entity.entity_type;
   }
   // eslint-disable-next-line prettier/prettier
-  const fileDirName = `${category}/${extractName(finalEntityType, entityId, filename)}`;
+  const fileDirName = `${category}${context ? `/${context}` : ''}/${extractName(finalEntityType, entityId, filename)}`;
   logger.debug(`FileManager > upload file ${filename} to ${fileDirName} by ${user.user_email}`);
   // Upload the file in the storage
   return new Promise((resolve, reject) => {

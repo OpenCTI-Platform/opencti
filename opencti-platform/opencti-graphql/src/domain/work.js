@@ -115,7 +115,7 @@ export const initiateJob = workId => {
   });
 };
 
-export const createWork = async (connector, entityType = null, entityId = null, fileId = null) => {
+export const createWork = async (connector, entityType = null, entityId = null, context = null, fileId = null) => {
   // Create the work and a initial job
   const workInternalId = uuid();
   const createdWork = await elIndex(INDEX_WORK_JOBS, {
@@ -127,6 +127,7 @@ export const createWork = async (connector, entityType = null, entityId = null, 
     connector_id: connector.id,
     work_entity_type: entityType,
     work_entity: entityId,
+    work_context: context,
     work_file: fileId,
     work_type: connector.connector_type,
     created_at: now(),

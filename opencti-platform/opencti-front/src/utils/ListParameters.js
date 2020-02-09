@@ -1,4 +1,6 @@
-import { mergeLeft, dissoc, pipe } from 'ramda';
+import {
+  mergeLeft, dissoc, pipe, split,
+} from 'ramda';
 
 export const saveViewParameters = (
   history,
@@ -40,6 +42,15 @@ export const buildViewParamsFromUrlAndStorage = (
   }
   if (finalParams.orderAsc) {
     finalParams.orderAsc = finalParams.orderAsc.toString() === 'true';
+  }
+  if (
+    finalParams.stixDomainEntitiesTypes
+    && typeof finalParams.stixDomainEntitiesTypes === 'string'
+  ) {
+    finalParams.stixDomainEntitiesTypes = split(
+      ',',
+      finalParams.stixDomainEntitiesTypes,
+    );
   }
   saveViewParameters(history, location, localStorageKey, finalParams);
   return finalParams;

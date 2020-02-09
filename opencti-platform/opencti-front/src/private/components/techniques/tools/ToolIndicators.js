@@ -30,7 +30,13 @@ const styles = () => ({
 });
 
 class ToolIndicatorsComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { withPadding: false };
+  }
+
   render() {
+    const { withPadding } = this.state;
     const { classes, tool, location } = this.props;
     const link = `/dashboard/techniques/tools/${tool.id}/indicators`;
     return (

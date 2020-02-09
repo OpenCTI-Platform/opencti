@@ -327,6 +327,7 @@ class IndicatorEditionOverviewComponent extends Component {
               name="score"
               label={t('Score')}
               fullWidth={true}
+              style={{ marginTop: 20 }}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
               helperText={

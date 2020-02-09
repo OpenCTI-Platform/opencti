@@ -29,7 +29,7 @@ const stixDomainEntityResolvers = {
     stixDomainEntities: (_, args) => findAll(args),
     stixDomainEntitiesTimeSeries: (_, args) => stixDomainEntitiesTimeSeries(args),
     stixDomainEntitiesNumber: (_, args) => stixDomainEntitiesNumber(args),
-    stixDomainEntitiesExportFiles: (_, { type, first }) => filesListing(first, 'export', type)
+    stixDomainEntitiesExportFiles: (_, { type, first, context }) => filesListing(first, 'export', type, null, context)
   },
   StixDomainEntitiesOrdering: {
     markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
@@ -70,8 +70,8 @@ const stixDomainEntityResolvers = {
     }),
     stixDomainEntityAdd: (_, { input }, { user }) => addStixDomainEntity(user, input),
     stixDomainEntitiesExportAsk: (_, args) => stixDomainEntityExportAsk(args),
-    stixDomainEntitiesExportPush: (_, { type, file, listArgs }, { user }) =>
-      stixDomainEntityExportPush(user, type, null, file, listArgs)
+    stixDomainEntitiesExportPush: (_, { type, file, context, listArgs }, { user }) =>
+      stixDomainEntityExportPush(user, type, null, file, context, listArgs)
   },
   Subscription: {
     stixDomainEntity: {

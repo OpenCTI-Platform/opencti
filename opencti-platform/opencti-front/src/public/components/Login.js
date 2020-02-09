@@ -60,8 +60,6 @@ const styles = (theme) => ({
 const LoginQuery = graphql`
   query LoginQuery {
     settings {
-      platform_external_auth
-      platform_demo
       platform_providers {
         name
         type
@@ -72,16 +70,27 @@ const LoginQuery = graphql`
   }
 `;
 
-const LoginMessage = ({ message, sso, t }) => <div>
-  {t(message)}<br/>{sso && <a href='/login'>{t('Login with')}&nbsp;{sso.name}</a>}
-</div>;
+const LoginMessage = ({ message, sso, t }) => (
+  <div>
+    {t(message)}
+    <br />
+    {sso && (
+      <a href="/login">
+        {t('Login with')}&nbsp;{sso.name}
+      </a>
+    )}
+  </div>
+);
 const Message = inject18n(LoginMessage);
 
 const Login = ({ location, classes }) => {
   const query = new URLSearchParams(location.search);
   const message = query.get('message');
   // eslint-disable-next-line max-len
-  const [dimension, setDimension] = useState({ width: window.innerWidth, height: window.innerHeight });
+  const [dimension, setDimension] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
   const marginTop = dimension.height / 2 - loginHeight / 2 - 120;
 
   const updateWindowDimensions = () => {
@@ -92,23 +101,30 @@ const Login = ({ location, classes }) => {
     return () => window.removeEventListener('resize', updateWindowDimensions);
   });
 
-  const renderExternalAuth = (authButtons) => <React.Fragment>
-        <div style={{ marginTop: 20 }}>&nbsp;</div>
-        {authButtons.map((value, index) => <Button
-              key={`${value.provider}_${index}`}
-              type="submit"
-              variant="contained"
-              color="primary"
-              size="small"
-              style={{ marginRight: 10, minWidth: 100 }}
-              component="a"
-              href={`/auth/${value.provider}`}>
-            {value.name}
-          </Button>)}
-      </React.Fragment>;
+  const renderExternalAuth = (authButtons) => (
+    <React.Fragment>
+      <div style={{ marginTop: 20 }}>&nbsp;</div>
+      {authButtons.map((value, index) => (
+        <Button
+          key={`${value.provider}_${index}`}
+          type="submit"
+          variant="contained"
+          color="primary"
+          size="small"
+          style={{ marginRight: 10, minWidth: 100 }}
+          component="a"
+          href={`/auth/${value.provider}`}
+        >
+          {value.name}
+        </Button>
+      ))}
+    </React.Fragment>
+  );
 
   return (
-    <QueryRenderer query={LoginQuery} variables={{}}
+    <QueryRenderer
+      query={LoginQuery}
+      variables={{}}
       render={({ props }) => {
         if (props && props.settings) {
           const providers = props.settings.platform_providers;
@@ -126,12 +142,22 @@ const Login = ({ location, classes }) => {
             <ConnectedIntlProvider settings={props.settings}>
               <div className={classes.container} style={{ marginTop }}>
                 <img src={logo} alt="logo" className={classes.logo} />
-                { message && <Message message={message} sso={sso ? head(authSSOs) : null}/> }
-                { auto && <Loader /> }
-                { isAuthForm && !auto && <LoginForm demo={pathOr(false, ['settings', 'platform_demo'], props)} />}
-                { isAuthButtons && !auto && pathOr(false, ['settings', 'platform_external_auth'], props) === true
-                    && renderExternalAuth(authSSOs)}
-                { providers.length === 0 && <Message message={'No authentication providers available'} /> }
+                {message && (
+                  <Message
+                    message={message}
+                    sso={sso ? head(authSSOs) : null}
+                  />
+                )}
+                {auto && <Loader />}
+                {isAuthForm && !auto && (
+                  <LoginForm
+                    demo={pathOr(false, ['settings', 'platform_demo'], props)}
+                  />
+                )}
+                {isAuthButtons && !auto && renderExternalAuth(authSSOs)}
+                {providers.length === 0 && (
+                  <Message message={'No authentication providers available'} />
+                )}
               </div>
             </ConnectedIntlProvider>
           );
@@ -146,7 +172,4 @@ Login.propTypes = {
   classes: PropTypes.object,
 };
 
-export default compose(
-  withRouter,
-  withStyles(styles),
-)(Login);
+export default compose(withRouter, withStyles(styles))(Login);

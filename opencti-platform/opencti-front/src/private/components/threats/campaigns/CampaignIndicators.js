@@ -30,7 +30,13 @@ const styles = () => ({
 });
 
 class CampaignIndicatorsComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { withPadding: false };
+  }
+
   render() {
+    const { withPadding } = this.state;
     const { classes, campaign, location } = this.props;
     const link = `/dashboard/threats/campaigns/${campaign.id}/indicators`;
     return (

@@ -1,4 +1,4 @@
-import { head } from 'ramda';
+import { head, assoc, dissocPath } from 'ramda';
 import {
   createEntity,
   deleteEntityById,
@@ -9,7 +9,7 @@ import {
   TYPE_OPENCTI_INTERNAL,
   updateAttribute
 } from '../database/grakn';
-import { BUS_TOPICS } from '../config/conf';
+import conf, { BUS_TOPICS } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { elVersion } from '../database/elasticSearch';
 import { getRabbitMQVersion } from '../database/rabbitmq';
@@ -29,7 +29,8 @@ export const getApplicationInfo = () => ({
 
 export const getSettings = async () => {
   const data = await listEntities(['Settings'], ['platform_title'], {});
-  return data.edges.length > 0 ? head(data.edges).node : null;
+  const settings = data.edges.length > 0 ? head(data.edges).node : {};
+  return assoc('platform_parameters', JSON.stringify(dissocPath(['app', 'admin'], conf.get())), settings);
 };
 
 export const addSettings = async (user, settings) => {

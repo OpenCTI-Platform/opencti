@@ -340,6 +340,7 @@ class IndicatorsRightBar extends Component {
 }
 
 IndicatorsRightBar.propTypes = {
+  indicatorTypes: PropTypes.array,
   observableTypes: PropTypes.array,
   handleToggleIndicatorType: PropTypes.func,
   handleToggleObservableType: PropTypes.func,

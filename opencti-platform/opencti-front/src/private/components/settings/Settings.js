@@ -43,9 +43,7 @@ const settingsQuery = graphql`
       platform_email
       platform_url
       platform_language
-      platform_external_auth
-      platform_registration
-      platform_demo
+      platform_parameters
       editContext {
         name
         focusOn
@@ -63,9 +61,7 @@ const settingsMutationFieldPatch = graphql`
         platform_email
         platform_url
         platform_language
-        platform_external_auth
-        platform_registration
-        platform_demo
+        platform_parameters
       }
     }
   }
@@ -90,9 +86,6 @@ const settingsValidation = (t) => Yup.object().shape({
     .required(t('This field is required'))
     .url(t('The value must be an URL')),
   platform_language: Yup.string(),
-  platform_external_auth: Yup.boolean(),
-  platform_registration: Yup.boolean(),
-  platform_demo: Yup.boolean(),
 });
 
 class Settings extends Component {
@@ -137,13 +130,11 @@ class Settings extends Component {
                   'platform_title',
                   'platform_email',
                   'platform_url',
-                  'platform_language',
-                  'platform_external_auth',
-                  'platform_registration',
-                  'platform_demo',
+                  'platform_language'
                 ],
                 settings,
               );
+              const parameters = JSON.parse(settings.platform_parameters);
               return (
                 <Formik
                   enableReinitialize={true}
@@ -153,7 +144,7 @@ class Settings extends Component {
                   {() => (
                     <Form>
                       <Grid container={true} spacing={3}>
-                        <Grid item={true} xs={9}>
+                        <Grid item={true} xs={6}>
                           <Paper
                             classes={{ root: classes.paper }}
                             elevation={2}
@@ -228,29 +219,54 @@ class Settings extends Component {
                             </SelectField>
                           </Paper>
                         </Grid>
-                        <Grid item={true} xs={3}>
+                        <Grid item={true} xs={6}>
                           <Paper
                             classes={{ root: classes.paper }}
                             elevation={2}
                           >
                             <Typography variant="h1" gutterBottom={true}>
-                              {t('Options')}
+                              {t('Parameters')}
                             </Typography>
-                            <Switch
-                              name="platform_external_auth"
-                              label={t('External authentication')}
-                              onChange={this.handleSubmitField.bind(this, id)}
-                            />
-                            <Switch
-                              name="platform_registration"
-                              label={t('Registration')}
-                              onChange={this.handleSubmitField.bind(this, id)}
-                            />
-                            <Switch
-                              name="platform_demo"
-                              label={t('Demo credentials')}
-                              onChange={this.handleSubmitField.bind(this, id)}
-                            />
+                            <Typography
+                              variant="h3"
+                              gutterBottom={true}
+                              style={{ marginTop: 20 }}
+                            >
+                              {t('Grakn')}
+                            </Typography>
+                            {parameters.grakn.hostname}:{parameters.grakn.port}
+                            <Typography
+                              variant="h3"
+                              gutterBottom={true}
+                              style={{ marginTop: 20 }}
+                            >
+                              {t('ElasticSearch')}
+                            </Typography>
+                            {parameters.elasticsearch.url}
+                            <Typography
+                              variant="h3"
+                              gutterBottom={true}
+                              style={{ marginTop: 20 }}
+                            >
+                              {t('Minio')}
+                            </Typography>
+                            {parameters.minio.endpoint}:{parameters.minio.port}
+                            <Typography
+                              variant="h3"
+                              gutterBottom={true}
+                              style={{ marginTop: 20 }}
+                            >
+                              {t('Redis')}
+                            </Typography>
+                            {parameters.redis.hostname}:{parameters.redis.port}
+                            <Typography
+                              variant="h3"
+                              gutterBottom={true}
+                              style={{ marginTop: 20 }}
+                            >
+                              {t('RabbitMQ')}
+                            </Typography>
+                            {parameters.rabbitmq.hostname}:{parameters.rabbitmq.port}
                           </Paper>
                         </Grid>
                       </Grid>
@@ -261,17 +277,17 @@ class Settings extends Component {
             }
             return (
               <Grid container={true} spacing={3}>
-                <Grid item={true} xs={9}>
+                <Grid item={true} xs={6}>
                   <Paper classes={{ root: classes.paper }} elevation={2}>
                     <Typography variant="h1" gutterBottom={true}>
                       {t('Global')}
                     </Typography>
                   </Paper>
                 </Grid>
-                <Grid item={true} xs={3}>
+                <Grid item={true} xs={6}>
                   <Paper classes={{ root: classes.paper }} elevation={2}>
                     <Typography variant="h1" gutterBottom={true}>
-                      {t('Options')}
+                      {t('Parameters')}
                     </Typography>
                   </Paper>
                 </Grid>

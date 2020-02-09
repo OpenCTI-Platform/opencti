@@ -26,6 +26,10 @@ const stixRelationResolvers = {
     stixRelationsDistribution: async (_, args) => distributionRelations(args),
     stixRelationsNumber: (_, args) => stixRelationsNumber(args)
   },
+  StixRelationsFilter: {
+    toPatternType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.pattern_type`,
+    toMainObservableType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.main_observable_type`
+  },
   StixRelationsOrdering: {
     toName: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.name`,
     toValidFrom: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.valid_from`,
