@@ -339,7 +339,7 @@ const TopBar = ({
         </Security>
         <IconButton size="medium"
           classes={{ root: classes.menuButton }}
-          aria-owns={menuOpen ? 'menu-appbar' : null}
+          aria-owns={menuOpen.open ? 'menu-appbar' : null}
           aria-haspopup="true"
           onClick={handleOpenMenu}
           color="inherit">
