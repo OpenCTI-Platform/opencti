@@ -210,6 +210,7 @@ class Autocomplete extends Component {
         dirty, errors, touched, values, setFieldValue, isSubmitting,
       },
       options,
+      disabled,
       onInputChange,
       onChange,
       onFocus,
@@ -254,7 +255,7 @@ class Autocomplete extends Component {
           fullWidth
           error={hasError}
           required={required}
-          disabled={isSubmitting}
+          disabled={disabled || isSubmitting}
           style={{ marginTop: noMargin ? 0 : '20px' }}
         >
           <Select
@@ -289,7 +290,7 @@ class Autocomplete extends Component {
             openMenuOnClick={false}
             anchorEl={this.anchorEl}
             reverseMenu={reverseMenu}
-            isDisabled={isSubmitting}
+            isDisabled={disabled || isSubmitting}
             noOptionsMessage={() => (
               <span style={{ fontStyle: 'italic' }}>
                 {t('No available options')}
@@ -323,6 +324,7 @@ Autocomplete.propTypes = {
   helperText: PropTypes.node,
   multiple: PropTypes.bool,
   labelDisplay: PropTypes.bool,
+  disabled: PropTypes.bool,
   reverseMenu: PropTypes.bool,
   variant: PropTypes.string,
   noMargin: PropTypes.bool,

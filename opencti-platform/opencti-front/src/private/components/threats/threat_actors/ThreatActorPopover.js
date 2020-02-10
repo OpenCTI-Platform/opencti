@@ -170,9 +170,7 @@ class ThreatActorPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <ThreatActorEditionContainer
-                    me={props.me}
-                    threatActor={props.threatActor}
+                  <ThreatActorEditionContainer threatActor={props.threatActor}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

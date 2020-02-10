@@ -2,27 +2,19 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
-import {
-  compose, insert, find, propEq, pick,
-} from 'ramda';
+import { Field, Form, Formik } from 'formik';
+import { compose, pick } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  requestSubscription,
-} from '../../../../relay/environment';
+import { commitMutation, requestSubscription } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import {
-  SubscriptionAvatars,
-  SubscriptionFocus,
-} from '../../../../components/Subscription';
+import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
 
-const styles = theme => ({
+const styles = (theme) => ({
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
     padding: '20px 20px 20px 60px',
@@ -86,7 +78,7 @@ const externalReferenceEditionFocus = graphql`
   }
 `;
 
-const externalReferenceValidation = t => Yup.object().shape({
+const externalReferenceValidation = (t) => Yup.object().shape({
   source_name: Yup.string().required(t('This field is required')),
   external_id: Yup.string(),
   url: Yup.string().url(t('The value must be an URL')),
@@ -138,14 +130,9 @@ class ExternalReferenceEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, externalReference, me,
+      t, classes, handleClose, externalReference,
     } = this.props;
     const { editContext } = externalReference;
-    // Add current user to the context if is not available yet.
-    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe
-      ? insert(0, { name: me.email }, editContext)
-      : editContext;
     const initialValues = pick(
       ['source_name', 'external_id', 'url', 'description'],
       externalReference,
@@ -163,7 +150,7 @@ class ExternalReferenceEditionContainer extends Component {
           <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update an external reference')}
           </Typography>
-          <SubscriptionAvatars users={editUsers} />
+          <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
@@ -181,11 +168,7 @@ class ExternalReferenceEditionContainer extends Component {
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="source_name"
-                    />
+                    <SubscriptionFocus context={editContext} fieldName="source_name"/>
                   }
                 />
                 <Field
@@ -197,11 +180,7 @@ class ExternalReferenceEditionContainer extends Component {
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="external_id"
-                    />
+                    <SubscriptionFocus context={editContext} fieldName="external_id"/>
                   }
                 />
                 <Field
@@ -213,11 +192,7 @@ class ExternalReferenceEditionContainer extends Component {
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="url"
-                    />
+                    <SubscriptionFocus context={editContext} fieldName="url"/>
                   }
                 />
                 <Field
@@ -231,11 +206,7 @@ class ExternalReferenceEditionContainer extends Component {
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="description"
-                    />
+                    <SubscriptionFocus context={editContext} fieldName="description"/>
                   }
                 />
               </Form>
@@ -251,7 +222,6 @@ ExternalReferenceEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
   externalReference: PropTypes.object,
-  me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
@@ -270,11 +240,6 @@ const ExternalReferenceEditionFragment = createFragmentContainer(
           name
           focusOn
         }
-      }
-    `,
-    me: graphql`
-      fragment ExternalReferenceEdition_me on User {
-        email
       }
     `,
   },

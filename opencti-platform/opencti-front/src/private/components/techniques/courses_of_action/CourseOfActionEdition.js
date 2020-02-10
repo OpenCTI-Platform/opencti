@@ -41,9 +41,6 @@ export const courseOfActionEditionQuery = graphql`
     courseOfAction(id: $id) {
       ...CourseOfActionEditionContainer_courseOfAction
     }
-    me {
-      ...CourseOfActionEditionContainer_me
-    }
   }
 `;
 
@@ -94,11 +91,8 @@ class CourseOfActionEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <CourseOfActionEditionContainer
-                    me={props.me}
-                    courseOfAction={props.courseOfAction}
-                    handleClose={this.handleClose.bind(this)}
-                  />
+                  <CourseOfActionEditionContainer courseOfAction={props.courseOfAction}
+                    handleClose={this.handleClose.bind(this)}/>
                 );
               }
               return <Loader variant="inElement" />;

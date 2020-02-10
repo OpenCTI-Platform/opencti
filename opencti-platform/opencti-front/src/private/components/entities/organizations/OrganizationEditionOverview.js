@@ -286,7 +286,7 @@ class OrganizationEditionOverviewComponent extends Component {
 
   render() {
     const {
-      t, organization, editUsers, me,
+      t, organization, context,
     } = this.props;
     const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], organization) === null
       ? ''
@@ -337,11 +337,7 @@ class OrganizationEditionOverviewComponent extends Component {
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="name"
-                    />
+                    <SubscriptionFocus context={context} fieldName="name"/>
                   }
                 />
                 <Field
@@ -355,11 +351,7 @@ class OrganizationEditionOverviewComponent extends Component {
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="description"
-                    />
+                    <SubscriptionFocus context={context} fieldName="description"/>
                   }
                 />
                 <Field
@@ -375,11 +367,7 @@ class OrganizationEditionOverviewComponent extends Component {
                   }}
                   containerstyle={{ marginTop: 10, width: '100%' }}
                   helpertext={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="organization_class"
-                    />
+                    <SubscriptionFocus context={context} fieldName="organization_class"/>
                   }
                 >
                   <MenuItem value="constituent">{t('Constituent')}</MenuItem>
@@ -400,13 +388,7 @@ class OrganizationEditionOverviewComponent extends Component {
                     id: 'reliability',
                   }}
                   containerstyle={{ marginTop: 10, width: '100%' }}
-                  helpertext={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="reliability"
-                    />
-                  }
+                  helpertext={<SubscriptionFocus context={context} fieldName="reliability"/>}
                 >
                   <MenuItem value="A">{t('reliability_A')}</MenuItem>
                   <MenuItem value="B">{t('reliability_B')}</MenuItem>
@@ -426,11 +408,7 @@ class OrganizationEditionOverviewComponent extends Component {
                   onChange={this.handleChangeCreatedByRef.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="createdByRef"
-                    />
+                    <SubscriptionFocus context={context} fieldName="createdByRef"/>
                   }
                 />
                 <Field
@@ -443,11 +421,7 @@ class OrganizationEditionOverviewComponent extends Component {
                   onChange={this.handleChangeMarkingDefinition.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="markingDefinitions"
-                    />
+                    <SubscriptionFocus context={context} fieldName="markingDefinitions"/>
                   }
                 />
               </Form>
@@ -480,8 +454,7 @@ OrganizationEditionOverviewComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   organization: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
+  context: PropTypes.array,
 };
 
 const OrganizationEditionOverview = createFragmentContainer(

@@ -41,9 +41,6 @@ export const regionEditionQuery = graphql`
     region(id: $id) {
       ...RegionEditionContainer_region
     }
-    me {
-      ...RegionEditionContainer_me
-    }
   }
 `;
 
@@ -95,7 +92,6 @@ class RegionEdition extends Component {
               if (props) {
                 return (
                   <RegionEditionContainer
-                    me={props.me}
                     region={props.region}
                     handleClose={this.handleClose.bind(this)}
                   />

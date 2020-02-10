@@ -164,9 +164,7 @@ class CourseOfActionPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <CourseOfActionEditionContainer
-                    me={props.me}
-                    courseOfAction={props.courseOfAction}
+                  <CourseOfActionEditionContainer courseOfAction={props.courseOfAction}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

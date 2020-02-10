@@ -71,7 +71,7 @@ export const generateFileExportName = (
 };
 
 export const deleteFile = async (id, user) => {
-  logger.debug(`FileManager > delete file ${id} by ${user.email}`);
+  logger.debug(`FileManager > delete file ${id} by ${user.user_email}`);
   await minioClient.removeObject(bucketName, id);
   await deleteWorkForFile(id);
   return true;
@@ -134,7 +134,7 @@ export const upload = async (user, category, file, entityType = null, entityId =
   }
   // eslint-disable-next-line prettier/prettier
   const fileDirName = `${category}/${extractName(finalEntityType, entityId, filename)}`;
-  logger.debug(`FileManager > upload file ${filename} to ${fileDirName} by ${user.email}`);
+  logger.debug(`FileManager > upload file ${filename} to ${fileDirName} by ${user.user_email}`);
   // Upload the file in the storage
   return new Promise((resolve, reject) => {
     return minioClient.putObject(bucketName, fileDirName, createReadStream(), null, metadata, err => {

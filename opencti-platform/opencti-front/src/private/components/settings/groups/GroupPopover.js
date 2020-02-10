@@ -70,9 +70,6 @@ const groupEditionQuery = graphql`
     group(id: $id) {
       ...GroupEdition_group
     }
-    me {
-      ...GroupEdition_me
-    }
   }
 `;
 
@@ -176,11 +173,8 @@ class GroupPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <GroupEdition
-                    me={props.me}
-                    group={props.group}
-                    handleClose={this.handleCloseUpdate.bind(this)}
-                  />
+                  <GroupEdition group={props.group}
+                    handleClose={this.handleCloseUpdate.bind(this)}/>
                 );
               }
               return <Loader variant="inElement" />;

@@ -4,7 +4,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
-import { compose, pick, pluck } from 'ramda';
+import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
@@ -34,9 +34,9 @@ const profileOverviewFieldPatch = graphql`
   }
 `;
 
-const userValidation = t => Yup.object().shape({
+const userValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  email: Yup.string()
+  user_email: Yup.string()
     .required(t('This field is required'))
     .email(t('The value must be an email address')),
   firstname: Yup.string(),
@@ -45,7 +45,7 @@ const userValidation = t => Yup.object().shape({
   description: Yup.string(),
 });
 
-const passwordValidation = t => Yup.object().shape({
+const passwordValidation = (t) => Yup.object().shape({
   password: Yup.string().required(t('This field is required')),
   confirmation: Yup.string()
     .oneOf([Yup.ref('password'), null], t('The values do not match'))
@@ -54,16 +54,12 @@ const passwordValidation = t => Yup.object().shape({
 
 class ProfileOverviewComponent extends Component {
   handleSubmitField(name, value) {
-    let newValue = value;
-    if (name === 'grant') {
-      newValue = pluck('value', value);
-    }
     userValidation(this.props.t)
-      .validateAt(name, { [name]: newValue })
+      .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
           mutation: profileOverviewFieldPatch,
-          variables: { input: { key: name, value: newValue } },
+          variables: { input: { key: name, value } },
         });
       })
       .catch(() => false);
@@ -88,15 +84,16 @@ class ProfileOverviewComponent extends Component {
 
   render() {
     const { t, me, classes } = this.props;
+    const external = me.external === true;
     const initialValues = pick(
-      ['name', 'description', 'email', 'firstname', 'lastname', 'language'],
+      ['name', 'description', 'user_email', 'firstname', 'lastname', 'language'],
       me,
     );
     return (
       <div>
         <Paper classes={{ root: classes.panel }} elevation={2}>
           <Typography variant="h1" gutterBottom={true}>
-            {t('Profile')}
+            {t('Profile')} {external && `(${t('external')})`}
           </Typography>
           <Formik
             enableReinitialize={true}
@@ -107,13 +104,15 @@ class ProfileOverviewComponent extends Component {
                 <Field
                   name="name"
                   component={TextField}
+                  disabled={external}
                   label={t('Name')}
                   fullWidth={true}
                   onSubmit={this.handleSubmitField.bind(this)}
                 />
                 <Field
-                  name="email"
+                  name="user_email"
                   component={TextField}
+                  disabled={true}
                   label={t('Email address')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
@@ -197,7 +196,7 @@ class ProfileOverviewComponent extends Component {
             </Button>
           </div>
         </Paper>
-        <Paper classes={{ root: classes.panel }} elevation={2}>
+          {!external && <Paper classes={{ root: classes.panel }} elevation={2}>
           <Typography variant="h1" gutterBottom={true}>
             {t('Password')}
           </Typography>
@@ -238,7 +237,7 @@ class ProfileOverviewComponent extends Component {
               </Form>
             )}
           />
-        </Paper>
+        </Paper>}
       </div>
     );
   }
@@ -256,7 +255,8 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
     fragment ProfileOverview_me on User {
       name
       description
-      email
+      user_email
+      external 
       firstname
       lastname
       language

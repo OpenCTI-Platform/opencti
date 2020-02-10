@@ -275,9 +275,7 @@ class RegionEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, region, editUsers, me,
-    } = this.props;
+    const { t, region, context } = this.props;
     const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], region) === null
       ? ''
       : {
@@ -316,11 +314,7 @@ class RegionEditionOverviewComponent extends Component {
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="name"
-                    />
+                    <SubscriptionFocus context={context} fieldName="name"/>
                   }
                 />
                 <Field
@@ -334,11 +328,7 @@ class RegionEditionOverviewComponent extends Component {
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="description"
-                    />
+                    <SubscriptionFocus context={context} fieldName="description"/>
                   }
                 />
                 <Field
@@ -352,11 +342,7 @@ class RegionEditionOverviewComponent extends Component {
                   onChange={this.handleChangeCreatedByRef.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="createdByRef"
-                    />
+                    <SubscriptionFocus context={context} fieldName="createdByRef"/>
                   }
                 />
                 <Field
@@ -369,11 +355,7 @@ class RegionEditionOverviewComponent extends Component {
                   onChange={this.handleChangeMarkingDefinition.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="markingDefinitions"
-                    />
+                    <SubscriptionFocus context={context} fieldName="markingDefinitions"/>
                   }
                 />
               </Form>
@@ -406,8 +388,7 @@ RegionEditionOverviewComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   region: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
+  context: PropTypes.array,
 };
 
 const RegionEditionOverview = createFragmentContainer(

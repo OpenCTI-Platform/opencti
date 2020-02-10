@@ -119,8 +119,7 @@ class ReportEntitiesComponent extends Component {
           handleSort={this.handleSort.bind(this)}
           handleSearch={this.handleSearch.bind(this)}
           secondaryAction={true}
-          numberOfElements={numberOfElements}
-        >
+          numberOfElements={numberOfElements}>
           <QueryRenderer
             query={ReportEntitiesLinesQuery}
             variables={{ id: report.id, count: 25, ...paginationOptions }}

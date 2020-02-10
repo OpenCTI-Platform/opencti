@@ -2,27 +2,18 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
-import {
-  compose, insert, find, propEq, pick,
-} from 'ramda';
+import { Field, Form, Formik } from 'formik';
+import { compose, pick } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  requestSubscription,
-  WS_ACTIVATED,
-} from '../../../../relay/environment';
+import { commitMutation, requestSubscription, WS_ACTIVATED } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
-import {
-  SubscriptionAvatars,
-  SubscriptionFocus,
-} from '../../../../components/Subscription';
+import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
 
 const styles = (theme) => ({
   header: {
@@ -142,14 +133,9 @@ class MarkingDefinitionEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, markingDefinition, me,
+      t, classes, handleClose, markingDefinition,
     } = this.props;
     const { editContext } = markingDefinition;
-    // Add current user to the context if is not available yet.
-    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe
-      ? insert(0, { name: me.email }, editContext)
-      : editContext;
     const initialValues = pick(
       ['definition_type', 'definition', 'color', 'level'],
       markingDefinition,
@@ -160,14 +146,13 @@ class MarkingDefinitionEditionContainer extends Component {
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}
-          >
+            onClick={handleClose.bind(this)}>
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update a marking definition')}
           </Typography>
-          <SubscriptionAvatars users={editUsers} />
+          <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
@@ -177,55 +162,33 @@ class MarkingDefinitionEditionContainer extends Component {
             validationSchema={markingDefinitionValidation(t)}
             render={() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  name="definition_type"
+                <Field name="definition_type"
                   component={TextField}
                   label={t('Type')}
                   fullWidth={true}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="definition_type"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={editContext} fieldName="definition_type"/>}
                 />
-                <Field
-                  name="definition"
+                <Field name="definition"
                   component={TextField}
                   label={t('Definition')}
                   fullWidth={true}
                   style={{ marginTop: 10 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="definition"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={editContext} fieldName="definition"/>}
                 />
-                <Field
-                  name="color"
+                <Field name="color"
                   component={ColorPickerField}
                   label={t('Color')}
                   fullWidth={true}
                   style={{ marginTop: 10 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="color"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={editContext} fieldName="color"/>}
                 />
-                <Field
-                  name="level"
+                <Field name="level"
                   component={TextField}
                   label={t('Level')}
                   fullWidth={true}
@@ -233,13 +196,7 @@ class MarkingDefinitionEditionContainer extends Component {
                   style={{ marginTop: 10 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="level"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={editContext} fieldName="level"/>}
                 />
               </Form>
             )}
@@ -254,7 +211,6 @@ MarkingDefinitionEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
   markingDefinition: PropTypes.object,
-  me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
@@ -273,11 +229,6 @@ const MarkingDefinitionEditionFragment = createFragmentContainer(
           name
           focusOn
         }
-      }
-    `,
-    me: graphql`
-      fragment MarkingDefinitionEdition_me on User {
-        email
       }
     `,
   },

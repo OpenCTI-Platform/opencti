@@ -164,9 +164,7 @@ class IntrusionSetPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <IntrusionSetEditionContainer
-                    me={props.me}
-                    intrusionSet={props.intrusionSet}
+                  <IntrusionSetEditionContainer intrusionSet={props.intrusionSet}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

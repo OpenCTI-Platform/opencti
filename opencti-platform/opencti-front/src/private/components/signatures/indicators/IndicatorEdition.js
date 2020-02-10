@@ -41,9 +41,6 @@ export const indicatorEditionQuery = graphql`
     indicator(id: $id) {
       ...IndicatorEditionContainer_indicator
     }
-    me {
-      ...IndicatorEditionContainer_me
-    }
   }
 `;
 
@@ -74,29 +71,23 @@ class IndicatorEdition extends Component {
     const { classes, indicatorId } = this.props;
     return (
       <div>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
+        <Fab onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Edit"
-          className={classes.editButton}
-        >
+          className={classes.editButton}>
           <Edit />
         </Fab>
-        <Drawer
-          open={this.state.open}
+        <Drawer open={this.state.open}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
+          onClose={this.handleClose.bind(this)}>
           <QueryRenderer
             query={indicatorEditionQuery}
             variables={{ id: indicatorId }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <IndicatorEditionContainer
-                    me={props.me}
-                    indicator={props.indicator}
+                  <IndicatorEditionContainer indicator={props.indicator}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );

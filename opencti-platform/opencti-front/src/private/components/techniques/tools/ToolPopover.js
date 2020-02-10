@@ -164,9 +164,7 @@ class ToolPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <ToolEditionContainer
-                    me={props.me}
-                    tool={props.tool}
+                  <ToolEditionContainer tool={props.tool}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

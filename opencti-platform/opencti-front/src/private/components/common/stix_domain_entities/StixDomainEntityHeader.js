@@ -25,6 +25,7 @@ import { DialogTitle } from '@material-ui/core';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import inject18n from '../../../../components/i18n';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -133,11 +134,13 @@ class StixDomainEntityHeader extends Component {
         >
           {stixDomainEntity.name}
         </Typography>
-        <div className={classes.popover}>
-          {React.cloneElement(PopoverComponent, {
-            id: stixDomainEntity.id,
-          })}
-        </div>
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <div className={classes.popover}>
+            {React.cloneElement(PopoverComponent, {
+              id: stixDomainEntity.id,
+            })}
+          </div>
+        </Security>
         {variant !== 'noalias' ? (
           <div className={classes.aliases}>
             {take(5, alias).map((label) => (label.length > 0 ? (
@@ -150,28 +153,30 @@ class StixDomainEntityHeader extends Component {
             ) : (
               ''
             )))}
-            {alias.length > 5 ? (
-              <IconButton
-                color="primary"
-                aria-label="More"
-                onClick={this.handleToggleOpenAliases.bind(this)}
-              >
-                <More fontSize="small" />
-              </IconButton>
-            ) : (
-              <IconButton
-                style={{ float: 'left', marginTop: -5 }}
-                color="secondary"
-                aria-label="Alias"
-                onClick={this.handleToggleCreateAlias.bind(this)}
-              >
-                {this.state.openAlias ? (
-                  <Close fontSize="small" />
-                ) : (
-                  <Add fontSize="small" />
-                )}
-              </IconButton>
-            )}
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              {alias.length > 5 ? (
+                <IconButton
+                  color="primary"
+                  aria-label="More"
+                  onClick={this.handleToggleOpenAliases.bind(this)}
+                >
+                  <More fontSize="small" />
+                </IconButton>
+              ) : (
+                <IconButton
+                  style={{ float: 'left', marginTop: -5 }}
+                  color="secondary"
+                  aria-label="Alias"
+                  onClick={this.handleToggleCreateAlias.bind(this)}
+                >
+                  {this.state.openAlias ? (
+                    <Close fontSize="small" />
+                  ) : (
+                    <Add fontSize="small" />
+                  )}
+                </IconButton>
+              )}
+            </Security>
             <Slide
               direction="left"
               in={this.state.openAlias}

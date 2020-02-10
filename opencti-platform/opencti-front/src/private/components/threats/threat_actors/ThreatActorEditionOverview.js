@@ -282,9 +282,7 @@ class ThreatActorEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, threatActor, editUsers, me,
-    } = this.props;
+    const { t, threatActor, context } = this.props;
     const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], threatActor) === null
       ? ''
       : {
@@ -341,13 +339,7 @@ class ThreatActorEditionOverviewComponent extends Component {
                   fullWidth={true}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="name"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="name"/>}
                 />
                 <Field
                   name="description"
@@ -359,13 +351,7 @@ class ThreatActorEditionOverviewComponent extends Component {
                   style={{ marginTop: 10 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="description"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="description"/>}
                 />
                 <Field
                   name="createdByRef"
@@ -377,13 +363,7 @@ class ThreatActorEditionOverviewComponent extends Component {
                   onInputChange={this.searchIdentities.bind(this)}
                   onChange={this.handleChangeCreatedByRef.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="createdByRef"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="createdByRef"/>}
                 />
                 <Field
                   name="markingDefinitions"
@@ -394,13 +374,7 @@ class ThreatActorEditionOverviewComponent extends Component {
                   onInputChange={this.searchMarkingDefinitions.bind(this)}
                   onChange={this.handleChangeMarkingDefinition.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="markingDefinitions"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="markingDefinitions"/>}
                 />
               </Form>
               <IdentityCreation
@@ -432,8 +406,7 @@ ThreatActorEditionOverviewComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   threatActor: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
+  context: PropTypes.array,
 };
 
 const ThreatActorEditionOverview = createFragmentContainer(

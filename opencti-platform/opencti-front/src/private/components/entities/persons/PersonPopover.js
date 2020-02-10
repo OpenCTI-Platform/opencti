@@ -164,9 +164,7 @@ class PersonPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <PersonEditionContainer
-                    me={props.me}
-                    person={props.user}
+                  <PersonEditionContainer person={props.user}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

@@ -15,7 +15,7 @@ import {
 } from 'react-relay';
 import * as PropTypes from 'prop-types';
 import {
-  map, isEmpty, difference, filter, split, pathOr,
+  map, isEmpty, difference, filter, pathOr,
 } from 'ramda';
 import { urlMiddleware, RelayNetworkLayer } from 'react-relay-network-modern';
 import uploadMiddleware from './uploadMiddleware';
@@ -41,12 +41,6 @@ export class ApplicationError extends Error {
   }
 }
 
-// Get access providers from backend.
-export const ACCESS_PROVIDERS = split(
-  ',',
-  IN_DEV_MODE ? process.env.REACT_APP_ACCESS_PROVIDERS : window.ACCESS_PROVIDERS,
-);
-
 // Network
 const envBasePath = isEmpty(window.BASE_PATH) || window.BASE_PATH.startsWith('/')
   ? window.BASE_PATH
@@ -58,6 +52,7 @@ let networkSubscriptions = null;
 export const WS_ACTIVATED = IN_DEV_MODE
   ? process.env.REACT_APP_WS_ACTIVATED === 'true'
   : window.WS_ACTIVATED === 'true';
+
 if (WS_ACTIVATED) {
   const loc = window.location;
   const isSecure = loc.protocol === 'https:' ? 's' : '';
@@ -100,10 +95,8 @@ export class QueryRenderer extends Component {
       variables, query, render, managedErrorTypes,
     } = this.props;
     return (
-      <QR
-        environment={environment}
-        query={query}
-        variables={variables}
+      <QR environment={environment}
+        query={query} variables={variables}
         render={(data) => {
           const { error } = data;
           const types = error ? map((e) => e.name, error) : [];

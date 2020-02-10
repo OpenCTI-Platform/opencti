@@ -145,8 +145,6 @@ GroupEditionPermissionsComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   group: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
 };
 
 const GroupEditionPermissions = createFragmentContainer(

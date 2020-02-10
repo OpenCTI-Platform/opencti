@@ -9,10 +9,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
 import {
-  ArrowDropDown,
-  ArrowDropUp,
-  TableChart,
-  Dashboard,
+  ArrowDropDown, ArrowDropUp, Dashboard, TableChart,
 } from '@material-ui/icons';
 import Chip from '@material-ui/core/Chip';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -20,6 +17,7 @@ import { FileExportOutline } from 'mdi-material-ui';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainEntitiesExports from '../../private/components/common/stix_domain_entities/StixDomainEntitiesExports';
+import Security, { KNOWLEDGE_KNGETEXPORT } from '../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -205,18 +203,20 @@ class ListLines extends Component {
             ) : (
               ''
             )}
-            {typeof handleToggleExports === 'function' ? (
-              <Tooltip title={t('Exports panel')}>
-                <IconButton
-                  color={openExports ? 'secondary' : 'primary'}
-                  onClick={handleToggleExports.bind(this)}
-                >
-                  <FileExportOutline />
-                </IconButton>
-              </Tooltip>
-            ) : (
-              ''
-            )}
+            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+              {typeof handleToggleExports === 'function' ? (
+                <Tooltip title={t('Exports panel')}>
+                  <IconButton
+                    color={openExports ? 'secondary' : 'primary'}
+                    onClick={handleToggleExports.bind(this)}
+                  >
+                    <FileExportOutline />
+                  </IconButton>
+                </Tooltip>
+              ) : (
+                ''
+              )}
+            </Security>
           </div>
         </div>
         <div className="clearfix" />

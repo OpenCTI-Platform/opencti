@@ -339,9 +339,7 @@ class SectorEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, sector, editUsers, me,
-    } = this.props;
+    const { t, sector, context } = this.props;
     const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], sector) === null
       ? ''
       : {
@@ -395,11 +393,7 @@ class SectorEditionOverviewComponent extends Component {
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="name"
-                    />
+                    <SubscriptionFocus context={context} fieldName="name"/>
                   }
                 />
                 <Field
@@ -413,11 +407,7 @@ class SectorEditionOverviewComponent extends Component {
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="description"
-                    />
+                    <SubscriptionFocus context={context} fieldName="description"/>
                   }
                 />
                 <Field
@@ -431,11 +421,7 @@ class SectorEditionOverviewComponent extends Component {
                   onChange={this.handleChangeCreatedByRef.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="createdByRef"
-                    />
+                    <SubscriptionFocus context={context} fieldName="createdByRef"/>
                   }
                 />
                 {!sector.isSubsector ? (
@@ -449,11 +435,7 @@ class SectorEditionOverviewComponent extends Component {
                     onChange={this.handleChangeSubsectors.bind(this)}
                     onFocus={this.handleChangeFocus.bind(this)}
                     helperText={
-                      <SubscriptionFocus
-                        me={me}
-                        users={editUsers}
-                        fieldName="subsectors"
-                      />
+                      <SubscriptionFocus context={context} fieldName="subsectors"/>
                     }
                   />
                 ) : (
@@ -469,11 +451,7 @@ class SectorEditionOverviewComponent extends Component {
                   onChange={this.handleChangeMarkingDefinition.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
                   helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="markingDefinitions"
-                    />
+                    <SubscriptionFocus context={context} fieldName="markingDefinitions"/>
                   }
                 />
               </Form>
@@ -506,8 +484,7 @@ SectorEditionOverviewComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   sector: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
+  context: PropTypes.array,
 };
 
 const SectorEditionOverview = createFragmentContainer(

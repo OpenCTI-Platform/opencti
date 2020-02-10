@@ -278,9 +278,7 @@ class CampaignEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, campaign, editUsers, me,
-    } = this.props;
+    const { t, campaign, context } = this.props;
     const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], campaign) === null
       ? ''
       : {
@@ -333,13 +331,7 @@ class CampaignEditionOverviewComponent extends Component {
                   fullWidth={true}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="name"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="name"/>}
                 />
                 <Field
                   name="description"
@@ -351,13 +343,7 @@ class CampaignEditionOverviewComponent extends Component {
                   style={{ marginTop: 10 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="description"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="description"/>}
                 />
                 <Field
                   name="createdByRef"
@@ -369,13 +355,7 @@ class CampaignEditionOverviewComponent extends Component {
                   onInputChange={this.searchIdentities.bind(this)}
                   onChange={this.handleChangeCreatedByRef.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="createdByRef"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="createdByRef"/>}
                 />
                 <Field
                   name="markingDefinitions"
@@ -386,13 +366,7 @@ class CampaignEditionOverviewComponent extends Component {
                   onInputChange={this.searchMarkingDefinitions.bind(this)}
                   onChange={this.handleChangeMarkingDefinition.bind(this)}
                   onFocus={this.handleChangeFocus.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="markingDefinitions"
-                    />
-                  }
+                  helperText={<SubscriptionFocus context={context} fieldName="markingDefinitions"/>}
                 />
               </Form>
               <IdentityCreation
@@ -424,8 +398,7 @@ CampaignEditionOverviewComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   campaign: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
+  context: PropTypes.array,
 };
 
 const CampaignEditionOverview = createFragmentContainer(

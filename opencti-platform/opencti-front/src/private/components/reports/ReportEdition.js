@@ -41,9 +41,6 @@ export const reportEditionQuery = graphql`
     report(id: $id) {
       ...ReportEditionContainer_report
     }
-    me {
-      ...ReportEditionContainer_me
-    }
   }
 `;
 
@@ -74,29 +71,23 @@ class ReportEdition extends Component {
     const { classes, reportId } = this.props;
     return (
       <div>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
+        <Fab onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Edit"
-          className={classes.editButton}
-        >
+          className={classes.editButton}>
           <Edit />
         </Fab>
-        <Drawer
-          open={this.state.open}
+        <Drawer open={this.state.open}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
+          onClose={this.handleClose.bind(this)}>
           <QueryRenderer
             query={reportEditionQuery}
             variables={{ id: reportId }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <ReportEditionContainer
-                    me={props.me}
-                    report={props.report}
+                  <ReportEditionContainer report={props.report}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );

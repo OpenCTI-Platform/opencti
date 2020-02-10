@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import {
-  compose, insert, find, propEq,
-} from 'ramda';
+import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
@@ -59,52 +57,38 @@ class CampaignEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, campaign, me,
+      t, classes, handleClose, campaign,
     } = this.props;
     const { editContext } = campaign;
-    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe
-      ? insert(0, { name: me.email }, editContext)
-      : editContext;
     return (
       <div>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}
-          >
+            onClick={handleClose.bind(this)}>
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update a campaign')}
           </Typography>
-          <SubscriptionAvatars users={editUsers} />
+          <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
           <AppBar position="static" elevation={0} className={classes.appBar}>
             <Tabs
               value={this.state.currentTab}
-              onChange={this.handleChangeTab.bind(this)}
-            >
+              onChange={this.handleChangeTab.bind(this)}>
               <Tab label={t('Overview')} />
               <Tab label={t('Details')} />
             </Tabs>
           </AppBar>
           {this.state.currentTab === 0 && (
-            <CampaignEditionOverview
-              campaign={campaign}
-              editUsers={editUsers}
-              me={me}
-            />
+            <CampaignEditionOverview campaign={campaign} context={editContext}/>
           )}
           {this.state.currentTab === 1 && (
-            <CampaignEditionDetails
-              campaign={campaign}
-              editUsers={editUsers}
-              me={me}
-            />
+            <CampaignEditionDetails campaign={campaign} context={editContext}/>
           )}
         </div>
       </div>
@@ -116,7 +100,6 @@ CampaignEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
   campaign: PropTypes.object,
-  me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
@@ -133,11 +116,6 @@ const CampaignEditionFragment = createFragmentContainer(
           name
           focusOn
         }
-      }
-    `,
-    me: graphql`
-      fragment CampaignEditionContainer_me on User {
-        email
       }
     `,
   },
