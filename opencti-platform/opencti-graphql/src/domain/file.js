@@ -12,11 +12,7 @@ const uploadJobImport = async (fileId, fileMime, context = null) => {
     const workList = await Promise.all(
       map(
         connector =>
-<<<<<<< HEAD
           createWork(connector, null, null, context, fileId).then(({ work, job }) => ({
-=======
-          createWork(connector, null, null, null, fileId).then(({ work, job }) => ({
->>>>>>> 5ba7067697f91c862cd022a3ada7bd1cb945e2e2
             connector,
             work,
             job
@@ -42,11 +38,7 @@ const uploadJobImport = async (fileId, fileMime, context = null) => {
   }
 };
 
-<<<<<<< HEAD
 export const askJobImport = async (filename, context, user) => {
-=======
-export const askJobImport = async (filename, user) => {
->>>>>>> 5ba7067697f91c862cd022a3ada7bd1cb945e2e2
   logger.debug(`Job > ask import for file ${filename} by ${user.user_email}`);
   const file = await loadFile(filename);
   await uploadJobImport(file.id, file.metaData.mimetype, context);

@@ -152,28 +152,26 @@ const FileManager = ({
     });
   };
 
-  const importConnsPerFormat = connectorsImport ? scopesConn(connectorsImport) : {};
+  const importConnsPerFormat = connectorsImport
+    ? scopesConn(connectorsImport)
+    : {};
   return (
     <div className={classes.container}>
-      <Grid container={true}
+      <Grid
+        container={true}
         spacing={3}
-<<<<<<< HEAD
         classes={{ container: classes.gridContainer }}
       >
         <FileImportViewer entity={entity} connectors={importConnsPerFormat} />
         <FileExportViewer
           entity={entity}
-=======
-        classes={{ container: classes.gridContainer }}>
-        <FileImportViewer entity={entity} disableImport={true} />
-        <FileExportViewer entity={entity}
->>>>>>> 5ba7067697f91c862cd022a3ada7bd1cb945e2e2
           handleOpenExport={handleOpenExport}
           isExportPossible={isExportPossible}
         />
       </Grid>
       <div>
-        <Formik enableReinitialize={true}
+        <Formik
+          enableReinitialize={true}
           initialValues={{
             format: '',
             type: 'full',
@@ -185,10 +183,12 @@ const FileManager = ({
         >
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
-              <Dialog open={openExport}
+              <Dialog
+                open={openExport}
                 keepMounted={true}
                 onClose={handleCloseExport}
-                fullWidth={true}>
+                fullWidth={true}
+              >
                 <DialogTitle>{t('Generate an export')}</DialogTitle>
                 <QueryRenderer
                   query={markingDefinitionsLinesSearchQuery}
@@ -204,9 +204,11 @@ const FileManager = ({
                             containerstyle={{ width: '100%' }}
                           >
                             {exportScopes.map((value, i) => (
-                              <MenuItem key={i}
+                              <MenuItem
+                                key={i}
                                 value={value}
-                                disabled={!isExportActive(value)}>
+                                disabled={!isExportActive(value)}
+                              >
                                 {value}
                               </MenuItem>
                             ))}

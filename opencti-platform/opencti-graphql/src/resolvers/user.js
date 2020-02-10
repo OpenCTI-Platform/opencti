@@ -99,11 +99,7 @@ const userResolvers = {
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       removeCapability: ({ name }) => roleRemoveCapability(id, name)
     }),
-<<<<<<< HEAD
-    roleAdd: (_, { input } ) => addRole(input),
-=======
     roleAdd: (_, { input }) => addRole(input),
->>>>>>> 5ba7067697f91c862cd022a3ada7bd1cb945e2e2
     userEdit: (_, { id }, { user }) => ({
       delete: () => userDelete(id),
       fieldPatch: ({ input }) => userEditField(user, id, input),

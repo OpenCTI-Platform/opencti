@@ -26,16 +26,12 @@ const styles = () => ({
 });
 
 const FileImportViewerBase = ({
-<<<<<<< HEAD
   entity,
   disableImport,
   connectors,
   relay,
   t,
   classes,
-=======
-  entity, disableImport, connectors, relay, t, classes,
->>>>>>> 5ba7067697f91c862cd022a3ada7bd1cb945e2e2
 }) => {
   const { id, importFiles } = entity;
   const { edges } = importFiles;
@@ -52,13 +48,16 @@ const FileImportViewerBase = ({
     <React.Fragment>
       <Grid item={true} xs={6}>
         <div style={{ height: '100%' }} className="break">
-          <Typography variant="h4"
+          <Typography
+            variant="h4"
             gutterBottom={true}
-            style={{ float: 'left' }}>
+            style={{ float: 'left' }}
+          >
             {t('Uploaded files')}
           </Typography>
           <div style={{ float: 'left', marginTop: -17 }}>
-            <FileUploader entityId={id}
+            <FileUploader
+              entityId={id}
               onUploadSuccess={() => relay.refetch({ id })}
             />
           </div>
@@ -77,7 +76,9 @@ const FileImportViewerBase = ({
                     dense={true}
                     disableImport={disableImport}
                     file={file.node}
-                    connectors={connectors && connectors[file.node.metaData.mimetype]}
+                    connectors={
+                      connectors && connectors[file.node.metaData.mimetype]
+                    }
                   />
                 ))}
               </List>
