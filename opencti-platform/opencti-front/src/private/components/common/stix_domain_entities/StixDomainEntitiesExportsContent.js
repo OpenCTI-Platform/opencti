@@ -50,7 +50,9 @@ const styles = (theme) => ({
 class StixDomainEntitiesExportsContentComponent extends Component {
   componentDidMount() {
     this.subscription = interval$.subscribe(() => {
-      this.props.relay.refetch({ type: this.props.exportEntityType });
+      if (this.props.isOpen) {
+        this.props.relay.refetch({ type: this.props.exportEntityType });
+      }
     });
   }
 
@@ -154,6 +156,7 @@ StixDomainEntitiesExportsContent.propTypes = {
   exportEntityType: PropTypes.string.isRequired,
   paginationOptions: PropTypes.object,
   handleApplyListArgs: PropTypes.func,
+  isOpen: PropTypes.bool,
 };
 
 export default compose(

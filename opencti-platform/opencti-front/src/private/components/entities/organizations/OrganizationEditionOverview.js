@@ -119,6 +119,7 @@ const organizationValidation = (t) => Yup.object().shape({
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
   organization_class: Yup.string().required(t('This field is required')),
+  reliability: Yup.string().required(t('This field is required')),
 });
 
 class OrganizationEditionOverviewComponent extends Component {
@@ -313,6 +314,7 @@ class OrganizationEditionOverviewComponent extends Component {
         'name',
         'description',
         'organization_class',
+        'reliability',
         'createdByRef',
         'markingDefinitions',
       ]),
@@ -373,6 +375,33 @@ class OrganizationEditionOverviewComponent extends Component {
                   <MenuItem value="partner">{t('Partner')}</MenuItem>
                   <MenuItem value="vendor">{t('Vendor')}</MenuItem>
                   <MenuItem value="other">{t('Other')}</MenuItem>
+                </Field>
+                <Field
+                  name="reliability"
+                  component={Select}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onChange={this.handleSubmitField.bind(this)}
+                  label={t('Reliability')}
+                  fullWidth={true}
+                  inputProps={{
+                    name: 'reliability',
+                    id: 'reliability',
+                  }}
+                  containerstyle={{ marginTop: 10, width: '100%' }}
+                  helpertext={
+                    <SubscriptionFocus
+                      me={me}
+                      users={editUsers}
+                      fieldName="reliability"
+                    />
+                  }
+                >
+                  <MenuItem value="A">{t('reliability_A')}</MenuItem>
+                  <MenuItem value="B">{t('reliability_B')}</MenuItem>
+                  <MenuItem value="C">{t('reliability_C')}</MenuItem>
+                  <MenuItem value="D">{t('reliability_D')}</MenuItem>
+                  <MenuItem value="E">{t('reliability_E')}</MenuItem>
+                  <MenuItem value="F">{t('reliability_F')}</MenuItem>
                 </Field>
                 <Field
                   name="createdByRef"
@@ -443,6 +472,7 @@ const OrganizationEditionOverview = createFragmentContainer(
         name
         description
         organization_class
+        reliability
         createdByRef {
           node {
             id

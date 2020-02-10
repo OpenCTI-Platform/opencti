@@ -85,6 +85,7 @@ const organizationValidation = (t) => Yup.object().shape({
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
   organization_class: Yup.string().required(t('This field is required')),
+  reliability: Yup.string().required(t('This field is required')),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -272,6 +273,24 @@ class OrganizationCreation extends Component {
                       <MenuItem value="partner">{t('Partner')}</MenuItem>
                       <MenuItem value="vendor">{t('Vendor')}</MenuItem>
                       <MenuItem value="other">{t('Other')}</MenuItem>
+                    </Field>
+                    <Field
+                      name="reliability"
+                      component={Select}
+                      label={t('Reliability')}
+                      fullWidth={true}
+                      inputProps={{
+                        name: 'reliability',
+                        id: 'reliability',
+                      }}
+                      containerstyle={{ marginTop: 20, width: '100%' }}
+                    >
+                      <MenuItem value="A">{t('reliability_A')}</MenuItem>
+                      <MenuItem value="B">{t('reliability_B')}</MenuItem>
+                      <MenuItem value="C">{t('reliability_C')}</MenuItem>
+                      <MenuItem value="D">{t('reliability_D')}</MenuItem>
+                      <MenuItem value="E">{t('reliability_E')}</MenuItem>
+                      <MenuItem value="F">{t('reliability_F')}</MenuItem>
                     </Field>
                     <Field
                       name="createdByRef"

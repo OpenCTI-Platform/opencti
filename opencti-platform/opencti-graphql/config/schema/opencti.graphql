@@ -1084,11 +1084,13 @@ enum OrganizationsOrdering {
   modified
   created_at
   updated_at
+  reliability
   tags
   markingDefinitions
 }
 enum OrganizationsFilter {
   tags
+  reliability
 }
 input OrganizationsFiltering {
   key: OrganizationsFilter!
@@ -1102,6 +1104,14 @@ type OrganizationEdge {
   cursor: String!
   node: Organization!
 }
+enum OrganizationReliability {
+  A
+  B
+  C
+  D
+  E
+  F
+}
 type Organization implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
   internal_id_key: String!
@@ -1113,6 +1123,7 @@ type Organization implements GlobalObject & StixEntity & StixDomainEntity & Iden
   alias: [String]
   description: String
   organization_class: String
+  reliability: OrganizationReliability
   created: DateTime
   modified: DateTime
   revoked: Boolean
@@ -1153,6 +1164,7 @@ input OrganizationAddInput {
   name: String!
   description: String
   organization_class: String
+  reliability: OrganizationReliability
   alias: [String]
   createdByRef: String
   markingDefinitions: [String]
