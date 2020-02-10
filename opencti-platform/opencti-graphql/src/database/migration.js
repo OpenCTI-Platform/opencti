@@ -1,5 +1,5 @@
 import uuid from 'uuid/v4';
-import { filter, head, map } from 'ramda';
+import { filter, head, last, map } from 'ramda';
 import { MigrationSet } from 'migrate';
 import Migration from 'migrate/lib/migration';
 import { executeWrite, find, load, write } from './grakn';
@@ -31,7 +31,9 @@ const graknStateStorage = {
     if (!migration) {
       // If no migration found, initialize
       logger.info('[MIGRATION] > Fresh platform detected, creating migration structure');
-      const lastRunInit = `${new Date().getTime()}-init`;
+      const lastExistingMigration = last(retrieveMigrations());
+      const [time] = lastExistingMigration.title.split('-');
+      const lastRunInit = `${parseInt(time, 10) + 1}-init`;
       await write(`insert $x isa MigrationStatus, has lastRun "${lastRunInit}", has internal_id_key "${uuid()}";`);
       return fn(null, { lastRun: lastRunInit, migrations: [] });
     }
