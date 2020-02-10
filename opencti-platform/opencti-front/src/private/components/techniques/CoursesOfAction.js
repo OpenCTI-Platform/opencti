@@ -23,6 +23,7 @@ import CoursesOfActionLines, {
   coursesOfActionLinesQuery,
 } from './courses_of_action/CoursesOfActionLines';
 import CourseOfActionCreation from './courses_of_action/CourseOfActionCreation';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 class CoursesOfAction extends Component {
   constructor(props) {
@@ -147,11 +148,7 @@ class CoursesOfAction extends Component {
 
   render() {
     const {
-      view,
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
+      view, sortBy, orderAsc, searchTerm, filters,
     } = this.state;
     const buildQueryFilters = pipe(
       toPairs,
@@ -170,7 +167,9 @@ class CoursesOfAction extends Component {
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <CourseOfActionCreation paginationOptions={paginationOptions} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <CourseOfActionCreation paginationOptions={paginationOptions} />
+        </Security>
       </div>
     );
   }

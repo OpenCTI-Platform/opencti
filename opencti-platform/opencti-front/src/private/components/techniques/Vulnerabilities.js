@@ -23,6 +23,7 @@ import VulnerabilitiesLines, {
   vulnerabilitiesLinesQuery,
 } from './vulnerabilities/VulnerabilitiesLines';
 import VulnerabilityCreation from './vulnerabilities/VulnerabilityCreation';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 class Vulnerabilities extends Component {
   constructor(props) {
@@ -166,7 +167,9 @@ class Vulnerabilities extends Component {
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <VulnerabilityCreation paginationOptions={paginationOptions} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <VulnerabilityCreation paginationOptions={paginationOptions} />
+        </Security>
       </div>
     );
   }

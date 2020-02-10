@@ -21,6 +21,7 @@ import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import ToolsLines, { toolsLinesQuery } from './tools/ToolsLines';
 import ToolCreation from './tools/ToolCreation';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 class Tools extends Component {
   constructor(props) {
@@ -145,11 +146,7 @@ class Tools extends Component {
 
   render() {
     const {
-      view,
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
+      view, sortBy, orderAsc, searchTerm, filters,
     } = this.state;
     const buildQueryFilters = pipe(
       toPairs,
@@ -168,7 +165,9 @@ class Tools extends Component {
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <ToolCreation paginationOptions={paginationOptions} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ToolCreation paginationOptions={paginationOptions} />
+        </Security>
       </div>
     );
   }

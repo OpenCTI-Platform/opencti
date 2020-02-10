@@ -27,6 +27,7 @@ import IntrusionSetsLines, {
   intrusionSetsLinesQuery,
 } from './intrusion_sets/IntrusionSetsLines';
 import IntrusionSetCreation from './intrusion_sets/IntrusionSetCreation';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 class IntrusionSets extends Component {
   constructor(props) {
@@ -233,7 +234,9 @@ class IntrusionSets extends Component {
       <div>
         {view === 'cards' ? this.renderCards(paginationOptions) : ''}
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <IntrusionSetCreation paginationOptions={paginationOptions} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IntrusionSetCreation paginationOptions={paginationOptions} />
+        </Security>
       </div>
     );
   }

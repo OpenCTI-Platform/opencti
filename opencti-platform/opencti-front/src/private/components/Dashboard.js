@@ -211,12 +211,19 @@ class Dashboard extends Component {
     };
     return (
       <div className={classes.root}>
-        <Security needs={[KNOWLEDGE]} placeholder={t('You currently have no access to OpenCTI Knowledge')}>
+        <Security
+          needs={[KNOWLEDGE]}
+          placeholder={t(
+            'You do not have any access to the knowledge of this OpenCTI instance.',
+          )}
+        >
           <Grid container={true} spacing={2}>
             <Grid item={true} lg={3} xs={6}>
-              <Card raised={true}
+              <Card
+                raised={true}
                 classes={{ root: classes.card }}
-                style={{ height: 120 }}>
+                style={{ height: 120 }}
+              >
                 <QueryRenderer
                   query={dashboardStixDomainEntitiesNumberQuery}
                   variables={{ endDate: dayAgo() }}
@@ -241,13 +248,15 @@ class Dashboard extends Component {
                         </CardContent>
                       );
                     }
-                    return <Loader variant='inElement'/>;
+                    return <Loader variant="inElement" />;
                   }}
                 />
               </Card>
-              <Card raised={true}
+              <Card
+                raised={true}
                 classes={{ root: classes.card }}
-                style={{ height: 120 }}>
+                style={{ height: 120 }}
+              >
                 <QueryRenderer
                   query={dashboardStixDomainEntitiesNumberQuery}
                   variables={{ type: 'report', endDate: dayAgo() }}
@@ -272,15 +281,17 @@ class Dashboard extends Component {
                         </CardContent>
                       );
                     }
-                    return <Loader variant='inElement'/>;
+                    return <Loader variant="inElement" />;
                   }}
                 />
               </Card>
             </Grid>
             <Grid item={true} lg={3} xs={6}>
-              <Card raised={true}
+              <Card
+                raised={true}
                 classes={{ root: classes.card }}
-                style={{ height: 120 }}>
+                style={{ height: 120 }}
+              >
                 <QueryRenderer
                   query={dashboardStixObservablesNumberQuery}
                   variables={{ endDate: dayAgo() }}
@@ -305,7 +316,7 @@ class Dashboard extends Component {
                         </CardContent>
                       );
                     }
-                    return <Loader variant='inElement'/>;
+                    return <Loader variant="inElement" />;
                   }}
                 />
               </Card>
@@ -338,15 +349,17 @@ class Dashboard extends Component {
                         </CardContent>
                       );
                     }
-                    return <Loader variant='inElement'/>;
+                    return <Loader variant="inElement" />;
                   }}
                 />
               </Card>
             </Grid>
             <Grid item={true} lg={6} xs={12}>
-              <Card raised={true}
+              <Card
+                raised={true}
                 classes={{ root: classes.card }}
-                style={{ height: 260 }}>
+                style={{ height: 260 }}
+              >
                 <CardContent>
                   <div className={classes.title}>{t('Ingested entities')}</div>
                   <div className={classes.graphContainer}>
@@ -401,7 +414,7 @@ class Dashboard extends Component {
                             </ResponsiveContainer>
                           );
                         }
-                        return <Loader variant='inElement'/>;
+                        return <Loader variant="inElement" />;
                       }}
                     />
                   </div>
@@ -429,7 +442,11 @@ class Dashboard extends Component {
                           {props.reports.edges.map((reportEdge) => {
                             const report = reportEdge.node;
                             const markingDefinition = head(
-                              pathOr([], ['markingDefinitions', 'edges'], report),
+                              pathOr(
+                                [],
+                                ['markingDefinitions', 'edges'],
+                                report,
+                              ),
                             );
                             return (
                               <ListItem
@@ -470,7 +487,7 @@ class Dashboard extends Component {
                         </List>
                       );
                     }
-                    return <Loader variant='inElement'/>;
+                    return <Loader variant="inElement" />;
                   }}
                 />
               </Paper>
@@ -491,57 +508,61 @@ class Dashboard extends Component {
                     if (props && props.stixObservables) {
                       return (
                         <List>
-                          {props.stixObservables.edges.map((stixObservableEdge) => {
-                            const stixObservable = stixObservableEdge.node;
-                            const markingDefinition = head(
-                              pathOr(
-                                [],
-                                ['markingDefinitions', 'edges'],
-                                stixObservable,
-                              ),
-                            );
-                            return (
-                              <ListItem
-                                key={stixObservable.id}
-                                dense={true}
-                                button={true}
-                                classes={{ root: classes.item }}
-                                divider={true}
-                                component={Link}
-                                to={`/dashboard/signatures/observables/${stixObservable.id}`}
-                              >
-                                <ListItemIcon
-                                  classes={{ root: classes.itemIcon }}
+                          {props.stixObservables.edges.map(
+                            (stixObservableEdge) => {
+                              const stixObservable = stixObservableEdge.node;
+                              const markingDefinition = head(
+                                pathOr(
+                                  [],
+                                  ['markingDefinitions', 'edges'],
+                                  stixObservable,
+                                ),
+                              );
+                              return (
+                                <ListItem
+                                  key={stixObservable.id}
+                                  dense={true}
+                                  button={true}
+                                  classes={{ root: classes.item }}
+                                  divider={true}
+                                  component={Link}
+                                  to={`/dashboard/signatures/observables/${stixObservable.id}`}
                                 >
-                                  <HexagonOutline />
-                                </ListItemIcon>
-                                <ListItemText
-                                  classes={{ root: classes.itemText }}
-                                  primary={stixObservable.observable_value}
-                                  secondary={t(
-                                    `observable_${stixObservable.entity_type}`,
-                                  )}
-                                />
-                                <div style={{ minWidth: 100 }}>
-                                  {markingDefinition ? (
-                                    <ItemMarking
-                                      key={markingDefinition.node.id}
-                                      label={markingDefinition.node.definition}
-                                    />
-                                  ) : (
-                                    ''
-                                  )}
-                                </div>
-                                <div style={inlineStyles.itemDate}>
-                                  {nsd(stixObservable.created_at)}
-                                </div>
-                              </ListItem>
-                            );
-                          })}
+                                  <ListItemIcon
+                                    classes={{ root: classes.itemIcon }}
+                                  >
+                                    <HexagonOutline />
+                                  </ListItemIcon>
+                                  <ListItemText
+                                    classes={{ root: classes.itemText }}
+                                    primary={stixObservable.observable_value}
+                                    secondary={t(
+                                      `observable_${stixObservable.entity_type}`,
+                                    )}
+                                  />
+                                  <div style={{ minWidth: 100 }}>
+                                    {markingDefinition ? (
+                                      <ItemMarking
+                                        key={markingDefinition.node.id}
+                                        label={
+                                          markingDefinition.node.definition
+                                        }
+                                      />
+                                    ) : (
+                                      ''
+                                    )}
+                                  </div>
+                                  <div style={inlineStyles.itemDate}>
+                                    {nsd(stixObservable.created_at)}
+                                  </div>
+                                </ListItem>
+                              );
+                            },
+                          )}
                         </List>
                       );
                     }
-                    return <Loader variant='inElement'/>;
+                    return <Loader variant="inElement" />;
                   }}
                 />
               </Paper>
@@ -562,7 +583,4 @@ Dashboard.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(Dashboard);
+export default compose(inject18n, withStyles(styles))(Dashboard);

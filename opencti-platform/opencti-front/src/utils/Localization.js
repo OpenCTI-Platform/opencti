@@ -13,6 +13,8 @@ const i18n = {
       'You are not allowed to do this.':
         "Vous n'ête pas autorisés à faire cette action.",
       'You have successfully logged out.': 'Vous avez bien été déconnecté.',
+      'You do not have any access to the knowledge of this OpenCTI instance.':
+        "Vous n'avez aucun accès à la connaissance de cette instance OpenCTI.",
       // Dependencies
       Grakn: 'Grakn',
       Elasticsearch: 'Elasticsearch',

@@ -23,6 +23,7 @@ import AttackPatternsLines, {
   attackPatternsLinesQuery,
 } from './attack_patterns/AttackPatternsLines';
 import AttackPatternCreation from './attack_patterns/AttackPatternCreation';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 class AttackPatterns extends Component {
   constructor(props) {
@@ -171,7 +172,9 @@ class AttackPatterns extends Component {
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <AttackPatternCreation paginationOptions={paginationOptions} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <AttackPatternCreation paginationOptions={paginationOptions} />
+        </Security>
       </div>
     );
   }
