@@ -48,11 +48,7 @@ const styles = (theme) => ({
 class StixObservablesRightBar extends Component {
   render() {
     const {
-      classes,
-      t,
-      types,
-      handleToggle,
-      openExports
+      classes, t, types = [], handleToggle, openExports,
     } = this.props;
     return (
       <Drawer
@@ -76,7 +72,10 @@ class StixObservablesRightBar extends Component {
             onClick={handleToggle.bind(this, 'Autonomous-System')}
             classes={{ root: classes.item }}
           >
-            <Checkbox checked={types.includes('Autonomous-System')} disableRipple={true} />
+            <Checkbox
+              checked={types.includes('Autonomous-System')}
+              disableRipple={true}
+            />
             <ListItemText primary={t('Autonomous systems')} />
           </ListItem>
           <ListItem
@@ -178,7 +177,10 @@ class StixObservablesRightBar extends Component {
             onClick={handleToggle.bind(this, 'Registry-Key')}
             classes={{ root: classes.item }}
           >
-            <Checkbox checked={types.includes('Registry-Key')} disableRipple={true} />
+            <Checkbox
+              checked={types.includes('Registry-Key')}
+              disableRipple={true}
+            />
             <ListItemText primary={t('Registry')} />
           </ListItem>
           <ListItem
@@ -187,7 +189,10 @@ class StixObservablesRightBar extends Component {
             onClick={handleToggle.bind(this, 'PDB-Path')}
             classes={{ root: classes.item }}
           >
-            <Checkbox checked={types.includes('PDB-Path')} disableRipple={true} />
+            <Checkbox
+              checked={types.includes('PDB-Path')}
+              disableRipple={true}
+            />
             <ListItemText primary={t('PDB Path')} />
           </ListItem>
           <ListItem
@@ -196,7 +201,10 @@ class StixObservablesRightBar extends Component {
             onClick={handleToggle.bind(this, 'Windows-Service')}
             classes={{ root: classes.item }}
           >
-            <Checkbox checked={types.includes('Windows-Service')} disableRipple={true} />
+            <Checkbox
+              checked={types.includes('Windows-Service')}
+              disableRipple={true}
+            />
             <ListItemText primary={t('Windows services')} />
           </ListItem>
           <ListItem
@@ -205,7 +213,10 @@ class StixObservablesRightBar extends Component {
             onClick={handleToggle.bind(this, 'Windows-Scheduled-Task')}
             classes={{ root: classes.item }}
           >
-            <Checkbox checked={types.includes('Windows-Scheduled-Task')} disableRipple={true} />
+            <Checkbox
+              checked={types.includes('Windows-Scheduled-Task')}
+              disableRipple={true}
+            />
             <ListItemText primary={t('Windows scheduled tasks')} />
           </ListItem>
           <ListItem
@@ -214,7 +225,10 @@ class StixObservablesRightBar extends Component {
             onClick={handleToggle.bind(this, 'X509-Certificate')}
             classes={{ root: classes.item }}
           >
-            <Checkbox checked={types.includes('X509-Certificate')} disableRipple={true} />
+            <Checkbox
+              checked={types.includes('X509-Certificate')}
+              disableRipple={true}
+            />
             <ListItemText primary={t('X509 Certificates')} />
           </ListItem>
         </List>
@@ -231,7 +245,4 @@ StixObservablesRightBar.propTypes = {
   openExports: PropTypes.bool,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixObservablesRightBar);
+export default compose(inject18n, withStyles(styles))(StixObservablesRightBar);
