@@ -170,7 +170,7 @@ type TimeSeries {
 }
 type Distribution {
   label: String!
-  value: Int!
+  value: Int
 }
 type Number {
   total: Int!
@@ -190,9 +190,8 @@ type Settings {
   platform_url: String
   platform_providers: [Provider]
   platform_language: String
-  platform_external_auth: Boolean
-  platform_registration: Boolean
   platform_demo: Boolean
+  platform_parameters: String
   editContext: [EditUserContext]
   created_at: DateTime
   updated_at: DateTime
@@ -202,9 +201,6 @@ input SettingsAddInput {
   platform_email: String
   platform_url: String
   platform_language: String
-  platform_external_auth: Boolean
-  platform_registration: Boolean
-  platform_demo: Boolean
 }
 
 ### Inferences
@@ -416,6 +412,8 @@ interface StixEntity {
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -566,6 +564,8 @@ type StixObservable implements GlobalObject & StixEntity {
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection
   jobs(first: Int): [Work]
   connectors(onlyAlive: Boolean): [Connector]
@@ -602,6 +602,14 @@ enum StixRelationsOrdering {
   toValidUntil
   toPatternType
   toCreatedAt
+}
+enum StixRelationsFilter {
+  toPatternType
+  toMainObservableType
+}
+input StixRelationsFiltering {
+  key: StixRelationsFilter!
+  values: [String]
 }
 type StixRelationConnection {
   pageInfo: PageInfo!
@@ -661,6 +669,8 @@ type StixRelation implements GlobalObject & StixEntity {
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -752,6 +762,8 @@ type StixObservableRelation implements GlobalObject & StixEntity {
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -887,6 +899,8 @@ interface Identity {
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1036,6 +1050,8 @@ type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1089,6 +1105,7 @@ enum OrganizationsOrdering {
   markingDefinitions
 }
 enum OrganizationsFilter {
+  name
   tags
   reliability
 }
@@ -1154,6 +1171,8 @@ type Organization implements GlobalObject & StixEntity & StixDomainEntity & Iden
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1244,6 +1263,8 @@ type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1326,6 +1347,8 @@ type City implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1408,6 +1431,8 @@ type Country implements GlobalObject & StixEntity & StixDomainEntity & Identity 
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1490,6 +1515,8 @@ type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1795,6 +1822,8 @@ type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1886,6 +1915,8 @@ type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1979,6 +2010,8 @@ type ThreatActor implements GlobalObject & StixEntity & StixDomainEntity & Ident
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2078,6 +2111,8 @@ type IntrusionSet implements GlobalObject & StixEntity & StixDomainEntity {
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2177,6 +2212,8 @@ type Campaign implements GlobalObject & StixEntity & StixDomainEntity {
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2272,6 +2309,8 @@ type Incident implements GlobalObject & StixEntity & StixDomainEntity {
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2362,6 +2401,8 @@ type Malware implements GlobalObject & StixEntity & StixDomainEntity {
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2452,6 +2493,8 @@ type Tool implements GlobalObject & StixEntity & StixDomainEntity {
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2540,6 +2583,8 @@ type Vulnerability implements GlobalObject & StixEntity & StixDomainEntity {
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2644,7 +2689,7 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
     search: String
     types: [String]
   ): StixObservableConnection
-  relationRefs(relationType: String, knowledgeLevels: [String]): StixRelationConnection
+  relationRefs(first: Int, relationType: String, knowledgeLevels: [String]): StixRelationConnection
   stixRelations(
     first: Int
     after: ID
@@ -2663,6 +2708,8 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2772,6 +2819,8 @@ type Indicator implements GlobalObject & StixEntity & StixDomainEntity {
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2861,7 +2910,7 @@ type Query {
     filterMode: FilterMode
     search: String
   ): StixDomainEntityConnection  @auth(for: [KNOWLEDGE])
-  stixDomainEntitiesExportFiles(first: Int, type: String!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
+  stixDomainEntitiesExportFiles(first: Int, type: String!, context: String): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixDomainEntitiesTimeSeries(
     type: String
     field: String!
@@ -2905,6 +2954,8 @@ type Query {
     lastSeenStop: DateTime
     weights: [Int]
     search: String
+  filters: [StixRelationsFiltering]
+  filterMode: FilterMode
   ): StixRelationConnection @auth(for: [KNOWLEDGE])
   stixRelationsTimeSeries(
     fromId: String
@@ -3611,13 +3662,14 @@ type Mutation {
     format: String!
     exportType: String!
     maxMarkingDefinition: String
+    context: String
     search: String
     orderBy: StixDomainEntitiesOrdering
     orderMode: OrderingMode
     filters: [StixDomainEntitiesFiltering]
     filterMode: FilterMode
   ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
-  stixDomainEntitiesExportPush(type: String!, file: Upload!, listArgs: String): Boolean @auth(for: [CONNECTORAPI])
+  stixDomainEntitiesExportPush(type: String!, file: Upload!, context: String, listArgs: String): Boolean @auth(for: [CONNECTORAPI])
   # StixObservable
   stixObservableAdd(input: StixObservableAddInput): StixObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   stixObservableEdit(id: ID!): StixObservableEditMutations

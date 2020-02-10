@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
+import { Form, Formik } from 'formik';
 import {
   assoc, compose, pick, pipe,
 } from 'ramda';
@@ -10,7 +10,7 @@ import * as Yup from 'yup';
 import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../../../components/i18n';
 import DatePickerField from '../../../../components/DatePickerField';
-import Select from '../../../../components/Select';
+import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
 import { dateFormat } from '../../../../utils/Time';
@@ -101,218 +101,214 @@ class IntrusionSetEditionDetailsComponent extends Component {
     )(intrusionSet);
 
     return (
-      <div>
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={intrusionSetValidation(t)}
-          onSubmit={() => true}
-          render={() => (
-            <div>
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  name="first_seen"
-                  component={DatePickerField}
-                  label={t('First seen')}
-                  fullWidth={true}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={<SubscriptionFocus context={context} fieldName="first_seen"/>}
+      <Formik
+        enableReinitialize={true}
+        initialValues={initialValues}
+        validationSchema={intrusionSetValidation(t)}
+        onSubmit={() => true}
+      >
+        {() => (
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <DatePickerField
+              name="first_seen"
+              label={t('First seen')}
+              invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
+              fullWidth={true}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="first_seen" />
+              }
+            />
+            <DatePickerField
+              name="last_seen"
+              label={t('Last seen')}
+              invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="last_seen" />
+              }
+            />
+            <SelectField
+              name="sophistication"
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              label={t('Sophistication')}
+              fullWidth={true}
+              containerstyle={{ width: '100%', marginTop: 20 }}
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="sophistication"
                 />
-                <Field
-                  name="last_seen"
-                  component={DatePickerField}
-                  label={t('Last seen')}
-                  fullWidth={true}
-                  style={{ marginTop: 10 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={<SubscriptionFocus context={context} fieldName="last_seen"/>}
+              }
+            >
+              <MenuItem key="none" value="none">
+                {t('sophistication_none')}
+              </MenuItem>
+              <MenuItem key="minimal" value="minimal">
+                {t('sophistication_minimal')}
+              </MenuItem>
+              <MenuItem key="intermediate" value="intermediate">
+                {t('sophistication_intermediate')}
+              </MenuItem>
+              <MenuItem key="advanced" value="advanced">
+                {t('sophistication_advanced')}
+              </MenuItem>
+              <MenuItem key="expert" value="expert">
+                {t('sophistication_expert')}
+              </MenuItem>
+              <MenuItem key="innovator" value="innovator">
+                {t('sophistication_innovator')}
+              </MenuItem>
+              <MenuItem key="strategic" value="strategic">
+                {t('sophistication_strategic')}
+              </MenuItem>
+            </SelectField>
+            <SelectField
+              name="resource_level"
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              label={t('Resource level')}
+              fullWidth={true}
+              containerstyle={{ width: '100%', marginTop: 20 }}
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="resource_level"
                 />
-                <Field
-                  name="sophistication"
-                  component={Select}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
-                  label={t('Sophistication')}
-                  fullWidth={true}
-                  inputProps={{
-                    name: 'sophistication',
-                    id: 'sophistication',
-                  }}
-                  containerstyle={{ width: '100%' }}
-                  helpertext={<SubscriptionFocus context={context} fieldName="sophistication"/>}
-                >
-                  <MenuItem key="none" value="none">
-                    {t('sophistication_none')}
-                  </MenuItem>
-                  <MenuItem key="minimal" value="minimal">
-                    {t('sophistication_minimal')}
-                  </MenuItem>
-                  <MenuItem key="intermediate" value="intermediate">
-                    {t('sophistication_intermediate')}
-                  </MenuItem>
-                  <MenuItem key="advanced" value="advanced">
-                    {t('sophistication_advanced')}
-                  </MenuItem>
-                  <MenuItem key="expert" value="expert">
-                    {t('sophistication_expert')}
-                  </MenuItem>
-                  <MenuItem key="innovator" value="innovator">
-                    {t('sophistication_innovator')}
-                  </MenuItem>
-                  <MenuItem key="strategic" value="strategic">
-                    {t('sophistication_strategic')}
-                  </MenuItem>
-                </Field>
-                <Field
-                  name="resource_level"
-                  component={Select}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
-                  label={t('Resource level')}
-                  fullWidth={true}
-                  inputProps={{
-                    name: 'resource_level',
-                    id: 'resource_level',
-                  }}
-                  containerstyle={{ width: '100%' }}
-                  helpertext={<SubscriptionFocus context={context} fieldName="resource_level"/>}>
-                  <MenuItem key="none" value="">
-                    {t('None')}
-                  </MenuItem>
-                  <MenuItem key="individual" value="individual">
-                    {t('resource_individual')}
-                  </MenuItem>
-                  <MenuItem key="club" value="club">
-                    {t('resource_club')}
-                  </MenuItem>
-                  <MenuItem key="contest" value="contest">
-                    {t('resource_contest')}
-                  </MenuItem>
-                  <MenuItem key="team" value="team">
-                    {t('resource_team')}
-                  </MenuItem>
-                  <MenuItem key="organization" value="organization">
-                    {t('resource_organization')}
-                  </MenuItem>
-                  <MenuItem key="government" value="government">
-                    {t('resource_government')}
-                  </MenuItem>
-                </Field>
-                <Field
-                  name="primary_motivation"
-                  component={Select}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
-                  label={t('Primary motivation')}
-                  fullWidth={true}
-                  inputProps={{
-                    name: 'primary_motivation',
-                    id: 'primary_motivation',
-                  }}
-                  containerstyle={{ width: '100%' }}
-                  helpertext={<SubscriptionFocus context={context} fieldName="primary_motivation"/>}
-                >
-                  <MenuItem key="none" value="">
-                    {t('None')}
-                  </MenuItem>
-                  <MenuItem key="accidental" value="accidental">
-                    {t('motivation_accidental')}
-                  </MenuItem>
-                  <MenuItem key="coercion" value="coercion">
-                    {t('motivation_coercion')}
-                  </MenuItem>
-                  <MenuItem key="dominance" value="dominance">
-                    {t('motivation_dominance')}
-                  </MenuItem>
-                  <MenuItem key="ideology" value="ideology">
-                    {t('motivation_ideology')}
-                  </MenuItem>
-                  <MenuItem key="notoriety" value="notoriety">
-                    {t('motivation_notoriety')}
-                  </MenuItem>
-                  <MenuItem
-                    key="organizational-gain"
-                    value="organizational-gain"
-                  >
-                    {t('motivation_organizational-gain')}
-                  </MenuItem>
-                  <MenuItem key="personal-gain" value="personal-gain">
-                    {t('motivation_personal-gain')}
-                  </MenuItem>
-                  <MenuItem
-                    key="personal-satisfaction"
-                    value="personal-satisfaction"
-                  >
-                    {t('motivation_personal-satisfaction')}
-                  </MenuItem>
-                  <MenuItem key="revenge" value="revenge">
-                    {t('motivation_revenge')}
-                  </MenuItem>
-                  <MenuItem key="unpredictable" value="unpredictable">
-                    {t('motivation_unpredictable')}
-                  </MenuItem>
-                </Field>
-                <Field
-                  name="secondary_motivation"
-                  component={Select}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onChange={this.handleSubmitField.bind(this)}
-                  label={t('Secondary motivation')}
-                  fullWidth={true}
-                  inputProps={{
-                    name: 'secondary_motivation',
-                    id: 'secondary_motivation',
-                  }}
-                  containerstyle={{ width: '100%' }}
-                  helpertext={<SubscriptionFocus context={context} fieldName="secondary_motivation"/>}
-                >
-                  <MenuItem key="none" value="">
-                    {t('None')}
-                  </MenuItem>
-                  <MenuItem key="accidental" value="accidental">
-                    {t('motivation_accidental')}
-                  </MenuItem>
-                  <MenuItem key="coercion" value="coercion">
-                    {t('motivation_coercion')}
-                  </MenuItem>
-                  <MenuItem key="dominance" value="dominance">
-                    {t('motivation_dominance')}
-                  </MenuItem>
-                  <MenuItem key="ideology" value="ideology">
-                    {t('motivation_ideology')}
-                  </MenuItem>
-                  <MenuItem key="notoriety" value="notoriety">
-                    {t('motivation_notoriety')}
-                  </MenuItem>
-                  <MenuItem
-                    key="organizational-gain"
-                    value="organizational-gain"
-                  >
-                    {t('motivation_organizational-gain')}
-                  </MenuItem>
-                  <MenuItem key="personal-gain" value="personal-gain">
-                    {t('motivation_personal-gain')}
-                  </MenuItem>
-                  <MenuItem
-                    key="personal-satisfaction"
-                    value="personal-satisfaction"
-                  >
-                    {t('motivation_personal-satisfaction')}
-                  </MenuItem>
-                  <MenuItem key="revenge" value="revenge">
-                    {t('motivation_revenge')}
-                  </MenuItem>
-                  <MenuItem key="unpredictable" value="unpredictable">
-                    {t('motivation_unpredictable')}
-                  </MenuItem>
-                </Field>
-              </Form>
-            </div>
-          )}
-        />
-      </div>
+              }
+            >
+              <MenuItem key="none" value="">
+                {t('None')}
+              </MenuItem>
+              <MenuItem key="individual" value="individual">
+                {t('resource_individual')}
+              </MenuItem>
+              <MenuItem key="club" value="club">
+                {t('resource_club')}
+              </MenuItem>
+              <MenuItem key="contest" value="contest">
+                {t('resource_contest')}
+              </MenuItem>
+              <MenuItem key="team" value="team">
+                {t('resource_team')}
+              </MenuItem>
+              <MenuItem key="organization" value="organization">
+                {t('resource_organization')}
+              </MenuItem>
+              <MenuItem key="government" value="government">
+                {t('resource_government')}
+              </MenuItem>
+            </SelectField>
+            <SelectField
+              name="primary_motivation"
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              label={t('Primary motivation')}
+              fullWidth={true}
+              containerstyle={{ width: '100%', marginTop: 20 }}
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="primary_motivation"
+                />
+              }
+            >
+              <MenuItem key="none" value="">
+                {t('None')}
+              </MenuItem>
+              <MenuItem key="accidental" value="accidental">
+                {t('motivation_accidental')}
+              </MenuItem>
+              <MenuItem key="coercion" value="coercion">
+                {t('motivation_coercion')}
+              </MenuItem>
+              <MenuItem key="dominance" value="dominance">
+                {t('motivation_dominance')}
+              </MenuItem>
+              <MenuItem key="ideology" value="ideology">
+                {t('motivation_ideology')}
+              </MenuItem>
+              <MenuItem key="notoriety" value="notoriety">
+                {t('motivation_notoriety')}
+              </MenuItem>
+              <MenuItem key="organizational-gain" value="organizational-gain">
+                {t('motivation_organizational-gain')}
+              </MenuItem>
+              <MenuItem key="personal-gain" value="personal-gain">
+                {t('motivation_personal-gain')}
+              </MenuItem>
+              <MenuItem
+                key="personal-satisfaction"
+                value="personal-satisfaction"
+              >
+                {t('motivation_personal-satisfaction')}
+              </MenuItem>
+              <MenuItem key="revenge" value="revenge">
+                {t('motivation_revenge')}
+              </MenuItem>
+              <MenuItem key="unpredictable" value="unpredictable">
+                {t('motivation_unpredictable')}
+              </MenuItem>
+            </SelectField>
+            <SelectField
+              name="secondary_motivation"
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              label={t('Secondary motivation')}
+              fullWidth={true}
+              containerstyle={{ width: '100%', marginTop: 20 }}
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="secondary_motivation"
+                />
+              }
+            >
+              <MenuItem key="none" value="">
+                {t('None')}
+              </MenuItem>
+              <MenuItem key="accidental" value="accidental">
+                {t('motivation_accidental')}
+              </MenuItem>
+              <MenuItem key="coercion" value="coercion">
+                {t('motivation_coercion')}
+              </MenuItem>
+              <MenuItem key="dominance" value="dominance">
+                {t('motivation_dominance')}
+              </MenuItem>
+              <MenuItem key="ideology" value="ideology">
+                {t('motivation_ideology')}
+              </MenuItem>
+              <MenuItem key="notoriety" value="notoriety">
+                {t('motivation_notoriety')}
+              </MenuItem>
+              <MenuItem key="organizational-gain" value="organizational-gain">
+                {t('motivation_organizational-gain')}
+              </MenuItem>
+              <MenuItem key="personal-gain" value="personal-gain">
+                {t('motivation_personal-gain')}
+              </MenuItem>
+              <MenuItem
+                key="personal-satisfaction"
+                value="personal-satisfaction"
+              >
+                {t('motivation_personal-satisfaction')}
+              </MenuItem>
+              <MenuItem key="revenge" value="revenge">
+                {t('motivation_revenge')}
+              </MenuItem>
+              <MenuItem key="unpredictable" value="unpredictable">
+                {t('motivation_unpredictable')}
+              </MenuItem>
+            </SelectField>
+          </Form>
+        )}
+      </Formik>
     );
   }
 }

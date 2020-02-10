@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Field, Form } from 'formik';
+import { Formik, Form } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
 import { compose } from 'ramda';
 import * as Yup from 'yup';
@@ -185,31 +185,28 @@ class ExternalReferenceCreation extends Component {
               validationSchema={externalReferenceValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onResetClassic.bind(this)}
-              render={({ submitForm, handleReset, isSubmitting }) => (
+            >
+              {({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
+                  <TextField
                     name="source_name"
-                    component={TextField}
                     label={t('Source name')}
                     fullWidth={true}
                   />
-                  <Field
+                  <TextField
                     name="external_id"
-                    component={TextField}
                     label={t('External ID')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <Field
+                  <TextField
                     name="url"
-                    component={TextField}
                     label={t('URL')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <Field
+                  <TextField
                     name="description"
-                    component={TextField}
                     label={t('Description')}
                     fullWidth={true}
                     multiline={true}
@@ -237,7 +234,7 @@ class ExternalReferenceCreation extends Component {
                   </div>
                 </Form>
               )}
-            />
+            </Formik>
           </div>
         </Drawer>
       </div>
@@ -270,33 +267,30 @@ class ExternalReferenceCreation extends Component {
             validationSchema={externalReferenceValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onResetContextual.bind(this)}
-            render={({ submitForm, handleReset, isSubmitting }) => (
+          >
+            {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
                 <DialogTitle>{t('Create an external reference')}</DialogTitle>
                 <DialogContent>
-                  <Field
+                  <TextField
                     name="source_name"
-                    component={TextField}
                     label={t('Source name')}
                     fullWidth={true}
                   />
-                  <Field
+                  <TextField
                     name="external_id"
-                    component={TextField}
                     label={t('External ID')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <Field
+                  <TextField
                     name="url"
-                    component={TextField}
                     label={t('URL')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <Field
+                  <TextField
                     name="description"
-                    component={TextField}
                     label={t('Description')}
                     fullWidth={true}
                     multiline={true}
@@ -318,7 +312,7 @@ class ExternalReferenceCreation extends Component {
                 </DialogActions>
               </Form>
             )}
-          />
+          </Formik>
         </Dialog>
       </div>
     );

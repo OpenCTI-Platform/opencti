@@ -72,18 +72,18 @@ const stixDomainEntityMutationRelationDelete = graphql`
   ) {
     stixDomainEntityEdit(id: $id) {
       relationDelete(toId: $toId, relationType: $relationType) {
-          ... on StixEntity {
-            tags {
-              edges {
-                node {
-                  id
-                  tag_type
-                  value
-                  color
-                }
+        ... on StixEntity {
+          tags {
+            edges {
+              node {
+                id
+                tag_type
+                value
+                color
               }
             }
           }
+        }
       }
     }
   }
@@ -183,7 +183,8 @@ class StixDomainEntityTags extends Component {
             color="secondary"
             aria-label="Tag"
             onClick={this.handleOpenAdd.bind(this)}
-            style={{ float: 'left', margin: '-15px 0 0 -2px' }}>
+            style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+          >
             <Add fontSize="small" />
           </IconButton>
         </Security>

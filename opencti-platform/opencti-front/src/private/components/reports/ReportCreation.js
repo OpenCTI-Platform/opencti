@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Field, Form } from 'formik';
+import { Formik, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -10,43 +10,29 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
-  compose,
-  pathOr,
-  pipe,
-  map,
-  pluck,
-  union,
-  evolve,
-  path,
+  compose, pluck, evolve, path,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import { parse } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
-import {
-  QueryRenderer,
-  fetchQuery,
-  commitMutation,
-} from '../../../relay/environment';
-import Autocomplete from '../../../components/Autocomplete';
-import AutocompleteCreate from '../../../components/AutocompleteCreate';
+import { QueryRenderer, commitMutation } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import DatePickerField from '../../../components/DatePickerField';
-import Select from '../../../components/Select';
-import { markingDefinitionsLinesSearchQuery } from '../settings/marking_definitions/MarkingDefinitionsLines';
-import IdentityCreation, {
-  identityCreationIdentitiesSearchQuery,
-} from '../common/identities/IdentityCreation';
+import SelectField from '../../../components/SelectField';
+import MarkingDefinitionsField from '../common/form/MarkingDefinitionsField';
 import { attributesQuery } from '../settings/attributes/AttributesLines';
 import Loader from '../../../components/Loader';
-import TagAutocompleteField from '../common/form/TagAutocompleteField';
+import TagsField from '../common/form/TagsField';
+import CreatedByRefField from '../common/form/CreatedByRefField';
 
 const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
+    overflow: 'auto',
     backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
@@ -115,13 +101,7 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 class ReportCreation extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      open: false,
-      identities: [],
-      identityCreation: false,
-      identityInput: '',
-      markingDefinitions: [],
-    };
+    this.state = { open: false };
   }
 
   handleOpen() {
@@ -130,39 +110,6 @@ class ReportCreation extends Component {
 
   handleClose() {
     this.setState({ open: false });
-  }
-
-  searchIdentities(event) {
-    fetchQuery(identityCreationIdentitiesSearchQuery, {
-      search: event.target.value,
-      first: 10,
-    }).then((data) => {
-      const identities = pipe(
-        pathOr([], ['identities', 'edges']),
-        map((n) => ({ label: n.node.name, value: n.node.id })),
-      )(data);
-      this.setState({ identities: union(this.state.identities, identities) });
-    });
-  }
-
-  handleOpenIdentityCreation(inputValue) {
-    this.setState({ identityCreation: true, identityInput: inputValue });
-  }
-
-  handleCloseIdentityCreation() {
-    this.setState({ identityCreation: false });
-  }
-
-  searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsLinesSearchQuery, {
-      search: event.target.value,
-    }).then((data) => {
-      const markingDefinitions = pipe(
-        pathOr([], ['markingDefinitions', 'edges']),
-        map((n) => ({ label: n.node.definition, value: n.node.id })),
-      )(data);
-      this.setState({ markingDefinitions });
-    });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -222,68 +169,71 @@ class ReportCreation extends Component {
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
         >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
-            >
-              <Close fontSize="small" />
-            </IconButton>
-            <Typography variant="h6">{t('Create a report')}</Typography>
-          </div>
-          <div className={classes.container}>
-            <QueryRenderer
-              query={attributesQuery}
-              variables={{ type: 'report_class' }}
-              render={({ props }) => {
-                if (props && props.attributes) {
-                  const reportClassesEdges = props.attributes.edges;
-                  return (
-                    <Formik
-                      initialValues={{
-                        name: '',
-                        published: null,
-                        description: '',
-                        report_class: '',
-                        createdByRef: '',
-                        markingDefinitions: [],
-                        tags: [],
-                      }}
-                      validationSchema={reportValidation(t)}
-                      onSubmit={this.onSubmit.bind(this)}
-                      onReset={this.onReset.bind(this)}
-                      render={({
-                        submitForm,
-                        handleReset,
-                        isSubmitting,
-                        setFieldValue,
-                      }) => (
-                        <div>
+          <QueryRenderer
+            query={attributesQuery}
+            variables={{ type: 'report_class' }}
+            render={({ props }) => {
+              if (props && props.attributes) {
+                const reportClassesEdges = props.attributes.edges;
+                return (
+                  <div>
+                    <div className={classes.header}>
+                      <IconButton
+                        aria-label="Close"
+                        className={classes.closeButton}
+                        onClick={this.handleClose.bind(this)}
+                      >
+                        <Close fontSize="small" />
+                      </IconButton>
+                      <Typography variant="h6">
+                        {t('Create a report')}
+                      </Typography>
+                    </div>
+                    <div className={classes.container}>
+                      <Formik
+                        initialValues={{
+                          name: '',
+                          published: new Date(),
+                          description: '',
+                          report_class: '',
+                          createdByRef: '',
+                          markingDefinitions: [],
+                          tags: [],
+                        }}
+                        validationSchema={reportValidation(t)}
+                        onSubmit={this.onSubmit.bind(this)}
+                        onReset={this.onReset.bind(this)}
+                      >
+                        {({
+                          submitForm,
+                          handleReset,
+                          isSubmitting,
+                          setFieldValue,
+                          values,
+                        }) => (
                           <Form style={{ margin: '20px 0 20px 0' }}>
-                            <Field
+                            <TextField
                               name="name"
-                              component={TextField}
                               label={t('Name')}
                               fullWidth={true}
                             />
-                            <Field
+                            <DatePickerField
                               name="published"
-                              component={DatePickerField}
                               label={t('Publication date')}
+                              invalidDateMessage={t(
+                                'The value must be a date (YYYY-MM-DD)',
+                              )}
                               fullWidth={true}
                               style={{ marginTop: 20 }}
                             />
-                            <Field
+                            <SelectField
                               name="report_class"
-                              component={Select}
                               label={t('Report type')}
                               fullWidth={true}
-                              inputProps={{
-                                name: 'report_class',
-                                id: 'report_class',
+                              containerstyle={{
+                                marginTop: 20,
+                                width: '100%',
                               }}
-                              containerstyle={{ marginTop: 20, width: '100%' }}
                             >
                               {reportClassesEdges.map((reportClassEdge) => (
                                 <MenuItem
@@ -293,38 +243,30 @@ class ReportCreation extends Component {
                                   {reportClassEdge.node.value}
                                 </MenuItem>
                               ))}
-                            </Field>
-                            <Field
+                            </SelectField>
+                            <TextField
                               name="description"
-                              component={TextField}
                               label={t('Description')}
                               fullWidth={true}
                               multiline={true}
                               rows="4"
                               style={{ marginTop: 20 }}
                             />
-                            <Field
+                            <CreatedByRefField
                               name="createdByRef"
-                              component={AutocompleteCreate}
-                              multiple={false}
-                              handleCreate={this.handleOpenIdentityCreation.bind(
-                                this,
-                              )}
-                              label={t('Author')}
-                              options={this.state.identities}
-                              onInputChange={this.searchIdentities.bind(this)}
+                              style={{ marginTop: 20, width: '100%' }}
+                              setFieldValue={setFieldValue}
                             />
-                            <Field
+                            <TagsField
+                              name="tags"
+                              style={{ marginTop: 20, width: '100%' }}
+                              setFieldValue={setFieldValue}
+                              values={values.tags}
+                            />
+                            <MarkingDefinitionsField
                               name="markingDefinitions"
-                              component={Autocomplete}
-                              multiple={true}
-                              label={t('Marking')}
-                              options={this.state.markingDefinitions}
-                              onInputChange={this.searchMarkingDefinitions.bind(
-                                this,
-                              )}
+                              style={{ marginTop: 20, width: '100%' }}
                             />
-                            <TagAutocompleteField />
                             <div className={classes.buttons}>
                               <Button
                                 variant="contained"
@@ -345,29 +287,15 @@ class ReportCreation extends Component {
                               </Button>
                             </div>
                           </Form>
-                          <IdentityCreation
-                            contextual={true}
-                            inputValue={this.state.identityInput}
-                            open={this.state.identityCreation}
-                            handleClose={this.handleCloseIdentityCreation.bind(
-                              this,
-                            )}
-                            creationCallback={(data) => {
-                              setFieldValue('createdByRef', {
-                                label: data.identityAdd.name,
-                                value: data.identityAdd.id,
-                              });
-                            }}
-                          />
-                        </div>
-                      )}
-                    />
-                  );
-                }
-                return <Loader variant="inElement" />;
-              }}
-            />
-          </div>
+                        )}
+                      </Formik>
+                    </div>
+                  </div>
+                );
+              }
+              return <Loader variant="inElement" />;
+            }}
+          />
         </Drawer>
       </div>
     );

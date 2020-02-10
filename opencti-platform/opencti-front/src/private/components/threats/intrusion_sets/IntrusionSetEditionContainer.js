@@ -89,7 +89,7 @@ class IntrusionSetEditionContainer extends Component {
             <IntrusionSetEditionOverview intrusionSet={intrusionSet} context={editContext}/>
           )}
           {this.state.currentTab === 1 && (
-            <IntrusionSetEditionDetails intrusionSet={intrusionSet} econtext={editContext}/>
+            <IntrusionSetEditionDetails intrusionSet={intrusionSet} context={editContext}/>
           )}
         </div>
       </div>

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Field, Form, Formik } from 'formik';
+import { Form, Formik } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -107,9 +107,7 @@ class UserCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const finalValues = pipe(
-      omit(['confirmation']),
-    )(values);
+    const finalValues = pipe(omit(['confirmation']))(values);
     commitMutation({
       mutation: userMutation,
       variables: {
@@ -147,19 +145,22 @@ class UserCreation extends Component {
           onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Add"
-          className={classes.createButton}>
+          className={classes.createButton}
+        >
           <Add />
         </Fab>
         <Drawer
           open={this.state.open}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}>
+          onClose={this.handleClose.bind(this)}
+        >
           <div className={classes.header}>
             <IconButton
               aria-label="Close"
               className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}>
+              onClick={this.handleClose.bind(this)}
+            >
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6">{t('Create a user')}</Typography>
@@ -178,49 +179,40 @@ class UserCreation extends Component {
               validationSchema={userValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
-              render={({ submitForm, handleReset, isSubmitting }) => (
+            >
+              {({ submitForm, handleReset, isSubmitting }) => (
                 <Form>
                   <ListSubheader component="div" style={{ paddingLeft: 0 }}>
-                      {t('User will be created with default roles')}
+                    {t('User will be created with default roles')}
                   </ListSubheader>
-                  <Field
-                    name="name"
-                    component={TextField}
-                    label={t('Name')}
-                    fullWidth={true}
-                  />
-                  <Field
+                  <TextField name="name" label={t('Name')} fullWidth={true} />
+                  <TextField
                     name="user_email"
-                    component={TextField}
                     label={t('Email address')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <Field
+                  <TextField
                     name="firstname"
-                    component={TextField}
                     label={t('Firstname')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <Field
+                  <TextField
                     name="lastname"
-                    component={TextField}
                     label={t('Lastname')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <Field
+                  <TextField
                     name="password"
-                    component={TextField}
                     label={t('Password')}
                     type="password"
                     style={{ marginTop: 20 }}
                     fullWidth={true}
                   />
-                  <Field
+                  <TextField
                     name="confirmation"
-                    component={TextField}
                     label={t('Confirmation')}
                     type="password"
                     fullWidth={true}
@@ -231,7 +223,8 @@ class UserCreation extends Component {
                       variant="contained"
                       onClick={handleReset}
                       disabled={isSubmitting}
-                      classes={{ root: classes.button }}>
+                      classes={{ root: classes.button }}
+                    >
                       {t('Cancel')}
                     </Button>
                     <Button
@@ -239,13 +232,14 @@ class UserCreation extends Component {
                       color="primary"
                       onClick={submitForm}
                       disabled={isSubmitting}
-                      classes={{ root: classes.button }}>
+                      classes={{ root: classes.button }}
+                    >
                       {t('Create')}
                     </Button>
                   </div>
                 </Form>
               )}
-            />
+            </Formik>
           </div>
         </Drawer>
       </div>

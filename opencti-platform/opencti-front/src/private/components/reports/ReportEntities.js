@@ -5,6 +5,7 @@ import {
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
+import { withStyles } from '@material-ui/core';
 import { QueryRenderer } from '../../../relay/environment';
 import ReportHeader from './ReportHeader';
 import ListLines from '../../../components/list_lines/ListLines';
@@ -17,6 +18,14 @@ import {
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ReportAddObjectRefs from './ReportAddObjectRefs';
+import StixDomainEntitiesRightBar from '../common/stix_domain_entities/StixDomainEntitiesRightBar';
+
+const styles = () => ({
+  container: {
+    margin: 0,
+    padding: '0 260px 90px 0',
+  },
+});
 
 class ReportEntitiesComponent extends Component {
   constructor(props) {
@@ -30,6 +39,7 @@ class ReportEntitiesComponent extends Component {
       sortBy: propOr('name', 'sortBy', params),
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
+      stixDomainEntitiesTypes: propOr([], 'stixDomainEntitiesTypes', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
     };
@@ -56,6 +66,30 @@ class ReportEntitiesComponent extends Component {
     this.setState({ openExports: !this.state.openExports });
   }
 
+  handleToggleStixDomainEntityType(type) {
+    if (this.state.stixDomainEntitiesTypes.includes(type)) {
+      this.setState(
+        {
+          stixDomainEntitiesTypes: filter(
+            (t) => t !== type,
+            this.state.stixDomainEntitiesTypes,
+          ),
+        },
+        () => this.saveView(),
+      );
+    } else {
+      this.setState(
+        {
+          stixDomainEntitiesTypes: append(
+            type,
+            this.state.stixDomainEntitiesTypes,
+          ),
+        },
+        () => this.saveView(),
+      );
+    }
+  }
+
   handleToggle(type) {
     if (this.state.types.includes(type)) {
       this.setState({ types: filter((t) => t !== type, this.state.types) }, () => this.saveView());
@@ -69,11 +103,13 @@ class ReportEntitiesComponent extends Component {
   }
 
   render() {
-    const { report } = this.props;
+    const { report, classes } = this.props;
     const {
       sortBy,
       orderAsc,
       searchTerm,
+      stixDomainEntitiesTypes,
+      openExports,
       numberOfElements,
     } = this.state;
     const dataColumns = {
@@ -102,14 +138,17 @@ class ReportEntitiesComponent extends Component {
         isSortable: false,
       },
     };
+    const filters = [
+      { key: 'entity_type', values: stixDomainEntitiesTypes, operator: 'match' },
+    ];
     const paginationOptions = {
-      types: null,
+      filters,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div style={{ paddingBottom: 50 }}>
+      <div className={classes.container}>
         <ReportHeader report={report} />
         <br />
         <ListLines
@@ -138,6 +177,13 @@ class ReportEntitiesComponent extends Component {
           reportId={report.id}
           paginationOptions={paginationOptions}
         />
+        <StixDomainEntitiesRightBar
+          stixDomainEntitiesTypes={stixDomainEntitiesTypes}
+          handleToggleStixDomainEntityType={this.handleToggleStixDomainEntityType.bind(
+            this,
+          )}
+          openExports={openExports}
+        />
       </div>
     );
   }
@@ -160,4 +206,4 @@ const ReportEntities = createFragmentContainer(ReportEntitiesComponent, {
   `,
 });
 
-export default compose(inject18n)(ReportEntities);
+export default compose(inject18n, withStyles(styles))(ReportEntities);

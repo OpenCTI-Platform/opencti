@@ -17,7 +17,7 @@ import { withStyles } from '@material-ui/core';
 import { ConnectionHandler } from 'relay-runtime';
 import MenuItem from '@material-ui/core/MenuItem';
 import { createFragmentContainer } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
+import { Form, Formik } from 'formik';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -25,7 +25,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import FileExportViewer from './FileExportViewer';
 import FileImportViewer from './FileImportViewer';
-import Select from '../../../../components/Select';
+import SelectField from '../../../../components/SelectField';
 import {
   commitMutation,
   MESSAGING$,
@@ -168,7 +168,8 @@ const FileManager = ({
           validationSchema={exportValidation(t)}
           onSubmit={onSubmit}
           onReset={handleCloseExport}
-          render={({ submitForm, handleReset, isSubmitting }) => (
+        >
+          {({ submitForm, handleReset, isSubmitting }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog open={openExport}
                 keepMounted={true}
@@ -182,15 +183,12 @@ const FileManager = ({
                     if (props && props.markingDefinitions) {
                       return (
                         <DialogContent>
-                          <Field name="format"
-                            component={Select}
+                          <SelectField
+                            name="format"
                             label={t('Export format')}
                             fullWidth={true}
-                            inputProps={{
-                              name: 'format',
-                              id: 'format',
-                            }}
-                            containerstyle={{ width: '100%' }}>
+                            containerstyle={{ width: '100%' }}
+                          >
                             {exportScopes.map((value, i) => (
                               <MenuItem key={i}
                                 value={value}
@@ -198,16 +196,11 @@ const FileManager = ({
                                 {value}
                               </MenuItem>
                             ))}
-                          </Field>
-                          <Field
+                          </SelectField>
+                          <SelectField
                             name="type"
-                            component={Select}
                             label={t('Export type')}
                             fullWidth={true}
-                            inputProps={{
-                              name: 'type',
-                              id: 'type',
-                            }}
                             containerstyle={{ marginTop: 20, width: '100%' }}
                           >
                             <MenuItem value="simple">
@@ -216,16 +209,11 @@ const FileManager = ({
                             <MenuItem value="full">
                               {t('Full export (entity and first neighbours)')}
                             </MenuItem>
-                          </Field>
-                          <Field
+                          </SelectField>
+                          <SelectField
                             name="maxMarkingDefinition"
-                            component={Select}
                             label={t('Max marking definition level')}
                             fullWidth={true}
-                            inputProps={{
-                              name: 'maxMarkingDefinition',
-                              id: 'maxMarkingDefinition',
-                            }}
                             containerstyle={{ marginTop: 20, width: '100%' }}
                           >
                             <MenuItem value="none">{t('None')}</MenuItem>
@@ -240,7 +228,7 @@ const FileManager = ({
                               ),
                               props.markingDefinitions.edges,
                             )}
-                          </Field>
+                          </SelectField>
                         </DialogContent>
                       );
                     }
@@ -267,7 +255,7 @@ const FileManager = ({
               </Dialog>
             </Form>
           )}
-        />
+        </Formik>
       </div>
     </div>
   );

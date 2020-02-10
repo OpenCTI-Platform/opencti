@@ -16,7 +16,6 @@ import { QueryRenderer } from '../../../../relay/environment';
 const styles = (theme) => ({
   container: {
     marginTop: 15,
-    paddingBottom: 70,
   },
   bottomNav: {
     zIndex: 1000,

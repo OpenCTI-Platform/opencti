@@ -3,6 +3,10 @@
   font-family: "Roboto", sans-serif;
 }
 
+svg {
+  overflow: visible !important;
+}
+
 :focus {
   outline: 0;
 }

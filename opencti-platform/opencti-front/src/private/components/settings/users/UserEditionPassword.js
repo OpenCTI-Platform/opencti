@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
+import { Formik, Form } from 'formik';
 import { compose } from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
@@ -11,7 +11,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 
-const styles = theme => ({
+const styles = (theme) => ({
   buttons: {
     marginTop: 20,
     textAlign: 'right',
@@ -31,7 +31,7 @@ const userMutationFieldPatch = graphql`
   }
 `;
 
-const userValidation = t => Yup.object().shape({
+const userValidation = (t) => Yup.object().shape({
   password: Yup.string().required(t('This field is required')),
   confirmation: Yup.string()
     .oneOf([Yup.ref('password'), null], t('The values do not match'))
@@ -66,18 +66,17 @@ class UserEditionPasswordComponent extends Component {
           initialValues={initialValues}
           validationSchema={userValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
-          render={({ submitForm, isSubmitting }) => (
+        >
+          {({ submitForm, isSubmitting }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field
+              <TextField
                 name="password"
-                component={TextField}
                 label={t('Password')}
                 type="password"
                 fullWidth={true}
               />
-              <Field
+              <TextField
                 name="confirmation"
-                component={TextField}
                 label={t('Confirmation')}
                 type="password"
                 fullWidth={true}
@@ -96,7 +95,7 @@ class UserEditionPasswordComponent extends Component {
               </div>
             </Form>
           )}
-        />
+        </Formik>
       </div>
     );
   }

@@ -119,6 +119,7 @@ class FileLineComponent extends Component {
     const fileName = propOr('', 'name', file).includes('_')
       ? pipe(split('_'), drop(1), join('_'))(file.name)
       : file.name;
+    const toolTip = pathOr('', ['metaData', 'listargs'], file);
     return (
       <div>
         <ListItem
@@ -139,7 +140,7 @@ class FileLineComponent extends Component {
           <ListItemIcon>
             {isProgress ? <CircularProgress size={20} /> : <FileOutline />}
           </ListItemIcon>
-          <Tooltip title={pathOr('', ['metaData', 'listargs'], file)}>
+          <Tooltip title={toolTip !== 'null' ? toolTip : ''}>
             <ListItemText
               classes={{ root: classes.itemText }}
               primary={fileName}

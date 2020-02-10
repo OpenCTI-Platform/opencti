@@ -2,10 +2,18 @@ import React from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
+import { Form, Formik } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
-  compose, pick, includes, find, propEq, filter,
+  compose,
+  pick,
+  map,
+  pipe,
+  flatten,
+  uniq,
+  find,
+  propEq,
+  dropLast,
 } from 'ramda';
 import * as Yup from 'yup';
 import ListItem from '@material-ui/core/ListItem';
@@ -19,7 +27,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import inject18n from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
-import Switch from '../../../../components/Switch';
+import Switch from '../../../../components/SwitchField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -47,10 +55,7 @@ const styles = (theme) => ({
 });
 
 const roleMutationFieldPatch = graphql`
-  mutation RoleEditionOverviewFieldPatchMutation(
-    $id: ID!
-    $input: EditInput!
-  ) {
+  mutation RoleEditionOverviewFieldPatchMutation($id: ID!, $input: EditInput!) {
     roleEdit(id: $id) {
       fieldPatch(input: $input) {
         ...RoleEditionOverview_role
@@ -70,39 +75,42 @@ const roleEditionOverviewFocus = graphql`
 `;
 
 const roleEditionAddCapability = graphql`
-    mutation RoleEditionOverviewAddCapabilityMutation($id: ID!, $input: RelationAddInput!) {
-        roleEdit(id: $id) {
-            relationAdd(input: $input) {
-                from {
-                    ...RoleEditionOverview_role
-                }
-            }
+  mutation RoleEditionOverviewAddCapabilityMutation(
+    $id: ID!
+    $input: RelationAddInput!
+  ) {
+    roleEdit(id: $id) {
+      relationAdd(input: $input) {
+        from {
+          ...RoleEditionOverview_role
         }
+      }
     }
+  }
 `;
 
 const roleEditionRemoveCapability = graphql`
-    mutation RoleEditionOverviewDelCapabilityMutation($id: ID!, $name: String!) {
-        roleEdit(id: $id) {
-            removeCapability(name: $name) {
-                ...RoleEditionOverview_role
-            }
-        }
+  mutation RoleEditionOverviewDelCapabilityMutation($id: ID!, $name: String!) {
+    roleEdit(id: $id) {
+      removeCapability(name: $name) {
+        ...RoleEditionOverview_role
+      }
     }
+  }
 `;
 
 const roleEditionOverviewCapabilities = graphql`
-    query RoleEditionOverviewCapabilitiesQuery {
-        capabilities(first: 1000) {
-            edges {
-                node {
-                    id
-                    name
-                    description
-                }
-            }
+  query RoleEditionOverviewCapabilitiesQuery {
+    capabilities(first: 1000) {
+      edges {
+        node {
+          id
+          name
+          description
         }
+      }
     }
+  }
 `;
 
 const roleValidation = (t) => Yup.object().shape({
@@ -114,7 +122,10 @@ const roleValidation = (t) => Yup.object().shape({
 const RoleEditionOverviewComponent = ({
   t, role, context, classes,
 }) => {
-  const initialValues = pick(['name', 'description', 'default_assignation'], role);
+  const initialValues = pick(
+    ['name', 'description', 'default_assignation'],
+    role,
+  );
   const handleChangeFocus = (name) => {
     commitMutation({
       mutation: roleEditionOverviewFocus,
@@ -162,74 +173,118 @@ const RoleEditionOverviewComponent = ({
       });
     }
   };
-  // eslint-disable-next-line arrow-body-style
-  const inheritedCapability = (name, capabilities) => {
-    return filter((c) => name !== c.name && includes(name, c.name), capabilities).length > 0;
-  };
   return (
-      <div>
-        <Formik enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={roleValidation(t)}
-          onSubmit={() => true}
-          render={() => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field name="name"
-                component={TextField}
-                label={t('Name')}
-                fullWidth={true}
-                onFocus={handleChangeFocus}
-                onSubmit={handleSubmitField}
-                helperText={<SubscriptionFocus context={context} fieldName="name"/>}
-              />
-              <Field name="description"
-                component={TextField}
-                label={t('Description')}
-                fullWidth={true}
-                multiline={true}
-                rows={4}
-                style={{ marginTop: 10 }}
-                onFocus={handleChangeFocus}
-                onSubmit={handleSubmitField}
-                helperText={<SubscriptionFocus context={context} fieldName="description"/>}
-              />
-              <Field name="default_assignation"
-                  component={Switch}
-                  label={t('Assign at user creation')}
-                  onChange={handleSubmitField}
-              />
-              <QueryRenderer query={roleEditionOverviewCapabilities} variables={{}}
-                render={({ props }) => {
-                  if (props) {
-                    return <List dense={true} className={classes.root} subheader={
-                       <ListSubheader component="div" style={{ paddingLeft: 0 }}>
-                           {t('Capabilities')}
-                       </ListSubheader>}>
+    <div>
+      <Formik
+        enableReinitialize={true}
+        initialValues={initialValues}
+        validationSchema={roleValidation(t)}
+        onSubmit={() => true}
+      >
+        {() => (
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <TextField
+              name="name"
+              label={t('Name')}
+              fullWidth={true}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="name" />
+              }
+            />
+            <TextField
+              name="description"
+              label={t('Description')}
+              fullWidth={true}
+              multiline={true}
+              rows={4}
+              style={{ marginTop: 20 }}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="description" />
+              }
+            />
+            <Switch
+              name="default_assignation"
+              label={t('Assign at user creation')}
+              style={{ marginTop: 10 }}
+              onFocus={handleChangeFocus}
+              onSubmit={handleSubmitField}
+              helperText={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="default_assignation"
+                />
+              }
+            />
+            <QueryRenderer
+              query={roleEditionOverviewCapabilities}
+              variables={{}}
+              render={({ props }) => {
+                if (props) {
+                  // Compute every capabilities
+                  const inheritedCapabilities = pipe(
+                    map((n) => {
+                      const allCapabilities = n.name.split('_');
+                      if (allCapabilities.length === 1) return [];
+                      return dropLast(1, n.name.split('_'));
+                    }),
+                    flatten,
+                    uniq,
+                  )(role.capabilities);
+                  return (
+                    <List
+                      dense={true}
+                      className={classes.root}
+                      subheader={
+                        <ListSubheader
+                          component="div"
+                          style={{ paddingLeft: 0 }}
+                        >
+                          {t('Capabilities')}
+                        </ListSubheader>
+                      }
+                    >
                       {props.capabilities.edges.map((edge) => {
                         const capability = edge.node;
-                        const paddingLeft = (capability.name.split('_').length * 20) - 20;
-                        const roleCapability = find(propEq('name', capability.name))(role.capabilities);
-                        const isDisabled = inheritedCapability(capability.name, role.capabilities);
+                        const paddingLeft = capability.name.split('_').length * 20 - 20;
+                        const roleCapability = find(
+                          propEq('name', capability.name),
+                        )(role.capabilities);
+                        const isDisabled = inheritedCapabilities.includes(
+                          capability.name,
+                        );
                         const isChecked = roleCapability !== undefined;
                         return (
-                          <ListItem key={capability.name} divider={true} style={{ paddingLeft }}>
-                            <ListItemText primary={capability.description}/>
+                          <ListItem
+                            key={capability.name}
+                            divider={true}
+                            style={{ paddingLeft }}
+                          >
+                            <ListItemText primary={capability.description} />
                             <ListItemSecondaryAction>
-                              <Checkbox onChange={(event) => handleToggle(capability, event)}
-                                  checked={isChecked} disabled={isDisabled}
+                              <Checkbox
+                                onChange={(event) => handleToggle(capability, event)
+                                }
+                                checked={isChecked}
+                                disabled={isDisabled}
                               />
                             </ListItemSecondaryAction>
                           </ListItem>
                         );
                       })}
-                      </List>;
-                  }
-                  return <Loader variant="inElement" />;
-                }}/>
-            </Form>
-          )}
-        />
-      </div>
+                    </List>
+                  );
+                }
+                return <Loader variant="inElement" />;
+              }}
+            />
+          </Form>
+        )}
+      </Formik>
+    </div>
   );
 };
 

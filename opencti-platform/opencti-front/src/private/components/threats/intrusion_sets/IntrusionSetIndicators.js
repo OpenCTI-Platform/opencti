@@ -29,7 +29,13 @@ const styles = () => ({
 });
 
 class IntrusionSetIndicatorsComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { withPadding: false };
+  }
+
   render() {
+    const { withPadding } = this.state;
     const { classes, intrusionSet, location } = this.props;
     const link = `/dashboard/threats/intrusion_sets/${intrusionSet.id}/indicators`;
     return (

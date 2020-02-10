@@ -1,0 +1,87 @@
+import React, { Component } from 'react';
+import {
+  compose,
+  pathOr,
+  pipe,
+  map,
+  sortWith,
+  ascend,
+  path,
+  union,
+} from 'ramda';
+import { withStyles } from '@material-ui/core/styles';
+import { Launch } from 'mdi-material-ui';
+import { fetchQuery } from '../../../../relay/environment';
+import Autocomplete from '../../../../components/Autocomplete';
+import inject18n from '../../../../components/i18n';
+import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
+
+const styles = () => ({
+  icon: {
+    paddingTop: 4,
+    display: 'inline-block',
+  },
+  text: {
+    display: 'inline-block',
+    flexGrow: 1,
+    marginLeft: 10,
+  },
+});
+
+class KillChainPhasesField extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      killChainPhases: [],
+    };
+  }
+
+  searchKillChainPhases(event) {
+    fetchQuery(killChainPhasesSearchQuery, {
+      search: event.target.value,
+    }).then((data) => {
+      const killChainPhases = pipe(
+        pathOr([], ['killChainPhases', 'edges']),
+        sortWith([ascend(path(['node', 'order']))]),
+        map((n) => ({
+          label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+          value: n.node.id,
+        })),
+      )(data);
+      this.setState({
+        killChainPhases: union(this.state.killChainPhases, killChainPhases),
+      });
+    });
+  }
+
+  render() {
+    const {
+      t, name, style, classes, onChange, helpertext,
+    } = this.props;
+    return (
+      <Autocomplete
+        style={style}
+        name={name}
+        multiple={true}
+        textfieldprops={{
+          label: t('Kill chain phases'),
+          helperText: helpertext,
+        }}
+        noOptionsText={t('No available options')}
+        options={this.state.killChainPhases}
+        onInputChange={this.searchKillChainPhases.bind(this)}
+        onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
+        renderOption={(option) => (
+          <React.Fragment>
+            <div className={classes.icon} style={{ color: option.color }}>
+              <Launch />
+            </div>
+            <div className={classes.text}>{option.label}</div>
+          </React.Fragment>
+        )}
+      />
+    );
+  }
+}
+
+export default compose(inject18n, withStyles(styles))(KillChainPhasesField);

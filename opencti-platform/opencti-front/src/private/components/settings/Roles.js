@@ -11,8 +11,7 @@ import {
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
-import RolesLines, {rolesLinesQuery} from './roles/RolesLines';
-import GroupCreation from './groups/GroupCreation';
+import RolesLines, { rolesLinesQuery } from './roles/RolesLines';
 import AccessesMenu from './AccessesMenu';
 
 export const rolesSearchQuery = graphql`
@@ -134,7 +133,6 @@ class Roles extends Component {
       <div className={classes.container}>
         <AccessesMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <GroupCreation paginationOptions={paginationOptions} />
       </div>
     );
   }
@@ -147,8 +145,4 @@ Roles.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(Roles);
+export default compose(inject18n, withRouter, withStyles(styles))(Roles);

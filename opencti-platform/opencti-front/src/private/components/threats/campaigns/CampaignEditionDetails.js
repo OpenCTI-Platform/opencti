@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
+import { Form, Formik } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
   assoc, compose, pick, pipe,
@@ -54,10 +54,7 @@ const campaignMutationFieldPatch = graphql`
 `;
 
 const campaignEditionDetailsFocus = graphql`
-  mutation CampaignEditionDetailsFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation CampaignEditionDetailsFocusMutation($id: ID!, $input: EditContext!) {
     campaignEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -73,7 +70,7 @@ const campaignValidation = (t) => Yup.object().shape({
   last_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  objective: Yup.string().required(t('This field is required')),
+  objective: Yup.string(),
 });
 
 class CampaignEditionDetailsComponent extends Component {
@@ -115,52 +112,53 @@ class CampaignEditionDetailsComponent extends Component {
     )(campaign);
 
     return (
-      <div>
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={campaignValidation(t)}
-          onSubmit={() => true}
-          render={() => (
-            <div>
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  name="first_seen"
-                  component={DatePickerField}
-                  label={t('First seen')}
-                  fullWidth={true}
-                  style={{ marginTop: 10 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={<SubscriptionFocus context={context} fieldName="first_seen"/>}
-                />
-                <Field
-                  name="last_seen"
-                  component={DatePickerField}
-                  label={t('Last seen')}
-                  fullWidth={true}
-                  style={{ marginTop: 10 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={<SubscriptionFocus context={context} fieldName="last_seen"/>}
-                />
-                <Field
-                  name="objective"
-                  component={TextField}
-                  label={t('Objective')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows={4}
-                  style={{ marginTop: 10 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={<SubscriptionFocus context={context} fieldName="objective"/>}
-                />
-              </Form>
-            </div>
-          )}
-        />
-      </div>
+      <Formik
+        enableReinitialize={true}
+        initialValues={initialValues}
+        validationSchema={campaignValidation(t)}
+        onSubmit={() => true}
+      >
+        {() => (
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <DatePickerField
+              name="first_seen"
+              label={t('First seen')}
+              invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
+              fullWidth={true}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="first_seen" />
+              }
+            />
+            <DatePickerField
+              name="last_seen"
+              label={t('Last seen')}
+              invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="last_seen" />
+              }
+            />
+            <TextField
+              name="objective"
+              label={t('Objective')}
+              fullWidth={true}
+              multiline={true}
+              rows={4}
+              style={{ marginTop: 20 }}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="objective" />
+              }
+            />
+          </Form>
+        )}
+      </Formik>
     );
   }
 }

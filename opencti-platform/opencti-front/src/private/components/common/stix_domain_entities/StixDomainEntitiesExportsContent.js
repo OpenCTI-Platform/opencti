@@ -51,7 +51,10 @@ class StixDomainEntitiesExportsContentComponent extends Component {
   componentDidMount() {
     this.subscription = interval$.subscribe(() => {
       if (this.props.isOpen) {
-        this.props.relay.refetch({ type: this.props.exportEntityType });
+        this.props.relay.refetch({
+          type: this.props.exportEntityType,
+          count: 25,
+        });
       }
     });
   }

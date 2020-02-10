@@ -759,7 +759,7 @@ export const listEntities = async (entityTypes, searchFields, args = {}) => {
 export const listRelations = async (relationType, relationFilter, args) => {
   const searchFields = ['name', 'description'];
   const { first = 1000, after, orderBy, orderMode = 'asc', withCache = true, inferred = false } = args;
-  const { search, fromRole, fromId, toRole, toId, fromTypes = [], toTypes = [] } = args;
+  const { filters = [], search, fromRole, fromId, toRole, toId, fromTypes = [], toTypes = [] } = args;
   const { firstSeenStart, firstSeenStop, lastSeenStart, lastSeenStop, weights = [] } = args;
   const offset = after ? cursorToOffset(after) : 0;
   const isRelationOrderBy = orderBy && includes('.', orderBy);
@@ -767,30 +767,38 @@ export const listRelations = async (relationType, relationFilter, args) => {
   const relationToGet = relationType || 'stix_relation';
   // 0 - Check if we can support the query by Elastic
   const unsupportedOrdering = isRelationOrderBy && last(orderBy.split('.')) !== 'internal_id_key';
-  const supportedByCache = !unsupportedOrdering && !relationFilter && !inferred;
+  const unsupportedFilteringKeys = filter(
+    k => !k.includes('internal_id_key'),
+    map(f => f.key, filters)
+  );
+  const unsupportedFiltering = unsupportedFilteringKeys.length > 0;
+  const supportedByCache = !unsupportedOrdering && !unsupportedFiltering && !relationFilter && !inferred;
   const useCache = !forceNoCache() && withCache && supportedByCache;
   if (useCache) {
-    const filters = [];
+    const finalFilters = map(
+      f => ({ key: f.key, values: map(v => v.replace(REL_INDEX_PREFIX, ''), f.values) }),
+      filters
+    );
     const relationsMap = new Map();
     if (fromId) {
-      filters.push({ key: 'connections.internal_id_key', values: [fromId] });
+      finalFilters.push({ key: 'connections.internal_id_key', values: [fromId] });
       relationsMap.set(fromId, { alias: 'from', internalIdKey: fromId });
     }
     if (toId) {
-      filters.push({ key: 'connections.internal_id_key', values: [toId] });
+      finalFilters.push({ key: 'connections.internal_id_key', values: [toId] });
       relationsMap.set(toId, { alias: 'to', internalIdKey: toId });
     }
-    if (fromTypes && fromTypes.length > 0) filters.push({ key: 'connections.types', values: fromTypes });
-    if (toTypes && toTypes.length > 0) filters.push({ key: 'connections.types', values: toTypes });
-    if (firstSeenStart) filters.push({ key: 'first_seen', values: [firstSeenStart], operator: 'gt' });
-    if (firstSeenStop) filters.push({ key: 'first_seen', values: [firstSeenStop], operator: 'lt' });
-    if (lastSeenStart) filters.push({ key: 'last_seen', values: [lastSeenStart], operator: 'gt' });
-    if (lastSeenStop) filters.push({ key: 'last_seen', values: [lastSeenStop], operator: 'lt' });
-    if (lastSeenStop) filters.push({ key: 'last_seen', values: [lastSeenStop], operator: 'lt' });
-    if (weights && weights.length > 0) filters.push({ key: 'weight', values: [weights] });
+    if (fromTypes && fromTypes.length > 0) finalFilters.push({ key: 'connections.types', values: fromTypes });
+    if (toTypes && toTypes.length > 0) finalFilters.push({ key: 'connections.types', values: toTypes });
+    if (firstSeenStart) finalFilters.push({ key: 'first_seen', values: [firstSeenStart], operator: 'gt' });
+    if (firstSeenStop) finalFilters.push({ key: 'first_seen', values: [firstSeenStop], operator: 'lt' });
+    if (lastSeenStart) finalFilters.push({ key: 'last_seen', values: [lastSeenStart], operator: 'gt' });
+    if (lastSeenStop) finalFilters.push({ key: 'last_seen', values: [lastSeenStop], operator: 'lt' });
+    if (lastSeenStop) finalFilters.push({ key: 'last_seen', values: [lastSeenStop], operator: 'lt' });
+    if (weights && weights.length > 0) finalFilters.push({ key: 'weight', values: [weights] });
     const paginateArgs = pipe(
       assoc('types', [relationToGet]),
-      assoc('filters', filters),
+      assoc('filters', finalFilters),
       assoc('relationsMap', relationsMap)
     )(args);
     return elPaginate(INDEX_STIX_RELATIONS, paginateArgs);
@@ -873,6 +881,20 @@ export const listRelations = async (relationType, relationFilter, args) => {
     const pEid = escapeString(id);
     const relationQueryPart = `$${relationRef}(${fromRole}:$rel,${toRole}:$pointer) isa ${relation}; $pointer has internal_id_key "${pEid}";`;
     relationsFields.push(relationQueryPart);
+  }
+  if (filters.length > 0) {
+    for (const f of filters) {
+      const filterKey = f.key
+        .replace(REL_INDEX_PREFIX, '')
+        .replace(REL_CONNECTED_SUFFIX, '')
+        .split('.');
+      const queryFilters = pipe(
+        map(e => `{ $${filterKey[0]} has ${filterKey[1]} "${escapeString(e)}"; }`),
+        join(' or '),
+        concat(__, ';')
+      )(f.values);
+      attributesFilters.push(queryFilters);
+    }
   }
   // Build the query
   const queryAttributesFields = join(' ', attributesFields);

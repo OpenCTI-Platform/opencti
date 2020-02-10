@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Field, Form } from 'formik';
+import { Formik, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -8,15 +8,19 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { compose } from 'ramda';
+import {
+  assoc, compose, pipe, pluck,
+} from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
+import CreatedByRefField from '../../common/form/CreatedByRefField';
+import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -67,7 +71,7 @@ const cityMutation = graphql`
   }
 `;
 
-const cityValidation = t => Yup.object().shape({
+const cityValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string(),
 });
@@ -97,10 +101,14 @@ class CityCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
+    const finalValues = pipe(
+      assoc('createdByRef', values.createdByRef.value),
+      assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
+    )(values);
     commitMutation({
       mutation: cityMutation,
       variables: {
-        input: values,
+        input: finalValues,
       },
       updater: (store) => {
         const payload = store.getRootField('cityAdd');
@@ -156,26 +164,37 @@ class CityCreation extends Component {
           </div>
           <div className={classes.container}>
             <Formik
-              initialValues={{ name: '', description: '' }}
+              initialValues={{
+                name: '',
+                description: '',
+                createdByRef: '',
+                markingDefinitions: [],
+              }}
               validationSchema={cityValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
-              render={({ submitForm, handleReset, isSubmitting }) => (
+            >
+              {({
+                submitForm, handleReset, isSubmitting, setFieldValue,
+              }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
-                    name="name"
-                    component={TextField}
-                    label={t('Name')}
-                    fullWidth={true}
-                  />
-                  <Field
+                  <TextField name="name" label={t('Name')} fullWidth={true} />
+                  <TextField
                     name="description"
-                    component={TextField}
                     label={t('Description')}
                     fullWidth={true}
                     multiline={true}
                     rows={4}
                     style={{ marginTop: 20 }}
+                  />
+                  <CreatedByRefField
+                    name="createdByRef"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                  />
+                  <MarkingDefinitionsField
+                    name="markingDefinitions"
+                    style={{ marginTop: 20, width: '100%' }}
                   />
                   <div className={classes.buttons}>
                     <Button
@@ -198,7 +217,7 @@ class CityCreation extends Component {
                   </div>
                 </Form>
               )}
-            />
+            </Formik>
           </div>
         </Drawer>
       </div>

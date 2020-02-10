@@ -44,8 +44,12 @@ export const objectRefs = (reportId, args) => {
 };
 // Relation refs
 export const relationRefs = (reportId, args) => {
-  const pointingFilter = { relation: 'object_refs', fromRole: 'so', toRole: 'knowledge_aggregation', id: reportId };
-  return listRelations(args.relationType, pointingFilter, args);
+  const finalArgs = assoc(
+    'filters',
+    append({ key: `${REL_INDEX_PREFIX}object_refs.internal_id_key`, values: [reportId] }, propOr([], 'filters', args)),
+    args
+  );
+  return listRelations(args.relationType, null, finalArgs);
 };
 // Observable refs
 export const observableRefs = (reportId, args) => {
