@@ -60,6 +60,7 @@ const styles = (theme) => ({
 const LoginQuery = graphql`
   query LoginQuery {
     settings {
+      platform_demo
       platform_providers {
         name
         type
@@ -92,7 +93,6 @@ const Login = ({ location, classes }) => {
     height: window.innerHeight,
   });
   const marginTop = dimension.height / 2 - loginHeight / 2 - 120;
-
   const updateWindowDimensions = () => {
     setDimension({ width: window.innerWidth, height: window.innerHeight });
   };
@@ -103,20 +103,20 @@ const Login = ({ location, classes }) => {
 
   const renderExternalAuth = (authButtons) => (
     <React.Fragment>
-      <div style={{ marginTop: 20 }}>&nbsp;</div>
       {authButtons.map((value, index) => (
-        <Button
-          key={`${value.provider}_${index}`}
-          type="submit"
-          variant="contained"
-          color="primary"
-          size="small"
-          style={{ marginRight: 10, minWidth: 100 }}
-          component="a"
-          href={`/auth/${value.provider}`}
-        >
-          {value.name}
-        </Button>
+        <div key={`${value.provider}_${index}`}>
+          <Button
+            type="submit"
+            variant="outlined"
+            color="secondary"
+            size="small"
+            style={{ minWidth: 120, marginTop: 15 }}
+            component="a"
+            href={`/auth/${value.provider}`}
+          >
+            {value.name}
+          </Button>
+        </div>
       ))}
     </React.Fragment>
   );

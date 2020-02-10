@@ -28,8 +28,12 @@ const CAPABILITIES = [
       { name: 'KNDELETE', description: 'Delete knowledge', ordering: 300 },
       { name: 'KNUPLOAD', description: 'Upload knowledge files', ordering: 400 },
       { name: 'KNASKIMPORT', description: 'Import knowledge', ordering: 500 },
-      { name: 'KNASKEXPORT', description: 'Generate knowledge export', ordering: 600 },
-      { name: 'KNGETEXPORT', description: 'Download knowledge export', ordering: 700 },
+      {
+        name: 'KNGETEXPORT',
+        description: 'Download knowledge export',
+        ordering: 700,
+        dependencies: [{ name: 'KNASKEXPORT', description: 'Generate knowledge export', ordering: 710 }]
+      },
       { name: 'KNENRICHMENT', description: 'Ask for knowledge enrichment', ordering: 800 }
     ]
   },

@@ -211,7 +211,7 @@ class Dashboard extends Component {
     };
     return (
       <div className={classes.root}>
-        <Security roles={[KNOWLEDGE]} placeholder={t('You currently have no access to openCTI Knowledge')}>
+        <Security needs={[KNOWLEDGE]} placeholder={t('You currently have no access to OpenCTI Knowledge')}>
           <Grid container={true} spacing={2}>
             <Grid item={true} lg={3} xs={6}>
               <Card raised={true}
