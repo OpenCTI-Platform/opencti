@@ -134,7 +134,7 @@ class StixDomainEntityHeader extends Component {
         >
           {stixDomainEntity.name}
         </Typography>
-        <Security roles={[KNOWLEDGE_KNUPDATE]}>
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <div className={classes.popover}>
             {React.cloneElement(PopoverComponent, {
               id: stixDomainEntity.id,
@@ -153,7 +153,7 @@ class StixDomainEntityHeader extends Component {
             ) : (
               ''
             )))}
-            <Security roles={[KNOWLEDGE_KNUPDATE]}>
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
               {alias.length > 5 ? (
                 <IconButton
                   color="primary"

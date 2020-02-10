@@ -77,7 +77,7 @@ const LeftBar = ({ t, location, classes }) => {
                 <Dashboard />
               </ListItemIcon>
             </MenuItem>
-            <Security roles={[KNOWLEDGE]}>
+            <Security needs={[KNOWLEDGE]}>
               <MenuItem component={Link} to="/dashboard/threats"
                 selected={location.pathname.includes('/dashboard/threats')}
                 dense={false}
@@ -120,7 +120,7 @@ const LeftBar = ({ t, location, classes }) => {
               </MenuItem>
             </Security>
           </MenuList>
-          <Security roles={[EXPLORE]}>
+          <Security needs={[EXPLORE]}>
             <Divider />
             <MenuList component="nav">
               <MenuItem component={Link} to="/dashboard/explore"
@@ -150,7 +150,7 @@ const LeftBar = ({ t, location, classes }) => {
               </MenuItem>
             </MenuList>
           </Security>
-          <Security roles={[SETTINGS]}>
+          <Security needs={[SETTINGS]}>
             <Divider />
             <MenuList component="nav">
               <MenuItem component={Link}
@@ -303,7 +303,7 @@ const LeftBar = ({ t, location, classes }) => {
               <ListItemText primary={t('Correlate')} />
             </MenuItem>
           </MenuList>
-          <Security roles={[SETTINGS]}>
+          <Security needs={[SETTINGS]}>
             <Divider />
             <MenuList component="nav">
                 <MenuItem component={Link}

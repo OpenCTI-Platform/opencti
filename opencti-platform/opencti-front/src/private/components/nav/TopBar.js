@@ -314,12 +314,12 @@ const TopBar = ({
             ''
           )}
         </div>
-        <Security roles={[KNOWLEDGE]}>
+        <Security needs={[KNOWLEDGE]}>
           <div className={classes.searchContainer}>
             <SearchInput onSubmit={handleSearch} keyword={keyword}/>
           </div>
         </Security>
-        <Security roles={[KNOWLEDGE_KNASKIMPORT]}>
+        <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
           <Tooltip title={t('Data import')}>
             <IconButton
               component={Link}

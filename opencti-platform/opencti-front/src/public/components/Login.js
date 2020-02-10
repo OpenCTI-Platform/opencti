@@ -93,18 +93,17 @@ const Login = ({ location, classes }) => {
   });
 
   const renderExternalAuth = (authButtons) => <React.Fragment>
-        <div style={{ marginTop: 20 }}>&nbsp;</div>
-        {authButtons.map((value, index) => <Button
-              key={`${value.provider}_${index}`}
-              type="submit"
-              variant="contained"
-              color="primary"
+        {authButtons.map((value, index) => <div key={`${value.provider}_${index}`}>
+        <Button type="submit"
+              variant="outlined"
+              color="secondary"
               size="small"
-              style={{ marginRight: 10, minWidth: 100 }}
+              style={{ minWidth: 120, marginTop: 15 }}
               component="a"
               href={`/auth/${value.provider}`}>
             {value.name}
-          </Button>)}
+          </Button>
+        </div>)}
       </React.Fragment>;
 
   return (
@@ -129,8 +128,7 @@ const Login = ({ location, classes }) => {
                 { message && <Message message={message} sso={sso ? head(authSSOs) : null}/> }
                 { auto && <Loader /> }
                 { isAuthForm && !auto && <LoginForm demo={pathOr(false, ['settings', 'platform_demo'], props)} />}
-                { isAuthButtons && !auto && pathOr(false, ['settings', 'platform_external_auth'], props) === true
-                    && renderExternalAuth(authSSOs)}
+                { isAuthButtons && !auto && renderExternalAuth(authSSOs)}
                 { providers.length === 0 && <Message message={'No authentication providers available'} /> }
               </div>
             </ConnectedIntlProvider>

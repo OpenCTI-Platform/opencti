@@ -234,7 +234,7 @@ class ThreatActors extends Component {
       <div>
         {view === 'cards' ? this.renderCards(paginationOptions) : ''}
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <Security roles={[KNOWLEDGE_KNUPDATE]}>
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ThreatActorCreation paginationOptions={paginationOptions} />
         </Security>
       </div>

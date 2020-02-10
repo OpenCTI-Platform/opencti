@@ -25,7 +25,7 @@ export const SETTINGS_SETINFERENCES = 'SETTINGS_SETINFERENCES';
 export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SETMARKINGS = 'SETTINGS_SETMARKINGS';
 
-const granted = (me, roles, matchAll = false) => {
+const granted = (me, capabilities, matchAll = false) => {
   const userCapabilities = pipe(
     map((c) => c.name),
     map((name) => name.split('_')),
@@ -33,18 +33,18 @@ const granted = (me, roles, matchAll = false) => {
     uniq,
   )(me.capabilities);
   if (userCapabilities.includes(BYPASS)) return true;
-  if (!matchAll) return userCapabilities.some((r) => roles.includes(r));
-  for (let index = 0; index < roles.length; index += 1) {
-    const checkRole = roles[index];
-    if (!userCapabilities.includes(checkRole)) return false;
+  if (!matchAll) return userCapabilities.some((r) => capabilities.includes(r));
+  for (let index = 0; index < capabilities.length; index += 1) {
+    const checkCapability = capabilities[index];
+    if (!userCapabilities.includes(checkCapability)) return false;
   }
   return true;
 };
 
 const Security = ({
-  roles, matchAll, children, placeholder = <span/>,
+  needs, matchAll, children, placeholder = <span/>,
 }) => (<UserContext.Consumer>{ (me) => {
-  if (granted(me, roles, matchAll)) return children;
+  if (granted(me, needs, matchAll)) return children;
   return placeholder;
 }}</UserContext.Consumer>);
 

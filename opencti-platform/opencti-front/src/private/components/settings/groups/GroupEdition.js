@@ -74,10 +74,10 @@ const GroupEdition = ({
             </Tabs>
           </AppBar>
           {currentTab === 0 && (
-            <GroupEditionOverview group={this.props.group} context={editContext} />
+            <GroupEditionOverview group={group} context={editContext} />
           )}
           {currentTab === 1 && (
-            <GroupEditionPermissions group={this.props.group} />
+            <GroupEditionPermissions group={group} />
           )}
         </div>
       </div>

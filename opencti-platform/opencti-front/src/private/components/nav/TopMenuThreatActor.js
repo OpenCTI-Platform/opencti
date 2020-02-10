@@ -141,7 +141,7 @@ class TopMenuThreatActor extends Component {
         >
           {t('Indicators')}
         </Button>
-        <Security roles={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
+        <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
               component={Link}
               to={`/dashboard/threats/threat_actors/${threatActorId}/files`}

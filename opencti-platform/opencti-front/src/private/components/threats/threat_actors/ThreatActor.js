@@ -66,7 +66,7 @@ class ThreatActorComponent extends Component {
             <EntityReportsChart entityId={threatActor.id} />
           </Grid>
         </Grid>
-        <Security roles={[KNOWLEDGE_KNUPDATE]}>
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ThreatActorEdition threatActorId={threatActor.id} />
         </Security>
       </div>

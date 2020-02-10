@@ -188,7 +188,7 @@ class ListCards extends Component {
             ) : (
               ''
             )}
-            <Security roles={[KNOWLEDGE_KNGETEXPORT]}>
+            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
               {typeof handleToggleExports === 'function' ? (
                 <Tooltip title={t('Exports panel')}>
                   <IconButton
