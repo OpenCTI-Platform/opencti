@@ -37,9 +37,9 @@ class EntityIndicators extends Component {
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
-      indicatorTypes: propOr([], 'indicatorTypes', params),
-      observableTypes: propOr([], 'observableTypes', params),
       filters: {},
+      indicatorTypes: [],
+      observableTypes: [],
       openExports: false,
       inferred: false,
       numberOfElements: { number: 0, symbol: '' },
@@ -51,7 +51,7 @@ class EntityIndicators extends Component {
       this.props.history,
       this.props.location,
       `view-indicators-${this.props.entityId}`,
-      dissoc('filters', this.state),
+      this.state,
     );
   }
 
@@ -73,37 +73,25 @@ class EntityIndicators extends Component {
 
   handleToggleIndicatorType(type) {
     if (this.state.indicatorTypes.includes(type)) {
-      this.setState(
-        {
-          indicatorTypes: filter((t) => t !== type, this.state.indicatorTypes),
-        },
-        () => this.saveView(),
-      );
+      this.setState({
+        indicatorTypes: filter((t) => t !== type, this.state.indicatorTypes),
+      });
     } else {
-      this.setState(
-        {
-          indicatorTypes: append(type, this.state.indicatorTypes),
-        },
-        () => this.saveView(),
-      );
+      this.setState({
+        indicatorTypes: append(type, this.state.indicatorTypes),
+      });
     }
   }
 
   handleToggleObservableType(type) {
     if (this.state.observableTypes.includes(type)) {
-      this.setState(
-        {
-          observableTypes: filter((t) => t !== type, this.state.observableTypes),
-        },
-        () => this.saveView(),
-      );
+      this.setState({
+        observableTypes: filter((t) => t !== type, this.state.observableTypes),
+      });
     } else {
-      this.setState(
-        {
-          observableTypes: append(type, this.state.observableTypes),
-        },
-        () => this.saveView(),
-      );
+      this.setState({
+        observableTypes: append(type, this.state.observableTypes),
+      });
     }
   }
 
@@ -130,8 +118,6 @@ class EntityIndicators extends Component {
       searchTerm,
       openExports,
       numberOfElements,
-      indicatorTypes,
-      observableTypes,
     } = this.state;
     const { entityId, entityLink } = this.props;
     const dataColumns = {
@@ -172,11 +158,7 @@ class EntityIndicators extends Component {
       toValidUntil: 'valid_until',
     };
     const exportPaginationOptions = {
-      filters: [
-        { key: 'indicates', values: [entityId] },
-        { key: 'pattern_type', values: indicatorTypes },
-        { key: 'main_observable_type', values: observableTypes },
-      ],
+      filters: [{ key: 'indicates', values: [entityId] }],
       orderBy: orderByMapping[sortBy === 'first_seen' ? 'toValidFrom' : sortBy],
       orderMode: orderAsc ? 'asc' : 'desc',
       search: searchTerm,

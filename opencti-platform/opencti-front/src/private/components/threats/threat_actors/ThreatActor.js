@@ -57,16 +57,16 @@ class ThreatActorComponent extends Component {
           style={{ marginTop: 30 }}
         >
           <Grid item={true} xs={4}>
-            <EntityCampaignsChart entityId={threatActor.id} relationType='attributed-to' inferred={true} />
+            <EntityCampaignsChart entityId={threatActor.id} inferred={true} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityIncidentsChart entityId={threatActor.id} relationType='attributed-to' inferred={true} />
+            <EntityIncidentsChart entityId={threatActor.id} inferred={true} />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={threatActor.id} />
           </Grid>
         </Grid>
-        <Security roles={[KNOWLEDGE_KNUPDATE]}>
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ThreatActorEdition threatActorId={threatActor.id} />
         </Security>
       </div>
@@ -92,7 +92,4 @@ const ThreatActor = createFragmentContainer(ThreatActorComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(ThreatActor);
+export default compose(inject18n, withStyles(styles))(ThreatActor);

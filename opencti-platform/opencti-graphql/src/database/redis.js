@@ -129,8 +129,7 @@ export const fetchEditContext = instanceId => {
 // region cache for access token
 export const getAccessCache = async tokenUUID => {
   if (isActive()) {
-    // 0b23f787-d013-41a8-8078-97bee84cc99d
-    const data = await client.get(`token:cache:${tokenUUID}`);
+    const data = await client.get(tokenUUID);
     return data && JSON.parse(data);
   }
   return undefined;
@@ -138,14 +137,14 @@ export const getAccessCache = async tokenUUID => {
 export const storeAccessCache = async (tokenUUID, access) => {
   if (isActive()) {
     const val = JSON.stringify(access);
-    await client.set(`token:cache:${tokenUUID}`, val, 'ex', 90);
+    await client.set(tokenUUID, val, 'ex', 90);
     return access;
   }
   return undefined;
 };
 export const clearAccessCache = async tokenUUID => {
   if (isActive()) {
-    await client.del(`token:cache:${tokenUUID}`);
+    await client.del(tokenUUID);
   }
 };
 // endregion
