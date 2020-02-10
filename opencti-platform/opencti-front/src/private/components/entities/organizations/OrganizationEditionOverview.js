@@ -388,13 +388,7 @@ class OrganizationEditionOverviewComponent extends Component {
                     id: 'reliability',
                   }}
                   containerstyle={{ marginTop: 10, width: '100%' }}
-                  helpertext={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="reliability"
-                    />
-                  }
+                  helpertext={<SubscriptionFocus context={context} fieldName="reliability"/>}
                 >
                   <MenuItem value="A">{t('reliability_A')}</MenuItem>
                   <MenuItem value="B">{t('reliability_B')}</MenuItem>
