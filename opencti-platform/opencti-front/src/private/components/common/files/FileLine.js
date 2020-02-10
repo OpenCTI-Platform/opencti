@@ -54,8 +54,8 @@ const FileLineAskDeleteMutation = graphql`
 `;
 
 const FileLineImportAskJobMutation = graphql`
-  mutation FileLineImportAskJobMutation($fileName: ID!) {
-    askJobImport(fileName: $fileName) {
+  mutation FileLineImportAskJobMutation($fileName: ID!, $context: String) {
+    askJobImport(fileName: $fileName, context: $context) {
       ...FileLine_file
     }
   }
@@ -65,7 +65,7 @@ class FileLineComponent extends Component {
   askForImportJob() {
     commitMutation({
       mutation: FileLineImportAskJobMutation,
-      variables: { fileName: this.props.file.id },
+      variables: { fileName: this.props.file.id, context: this.props.context },
       onCompleted: () => {
         MESSAGING$.notifySuccess('Import successfully asked');
       },
@@ -219,6 +219,7 @@ FileLineComponent.propTypes = {
   dense: PropTypes.bool,
   disableImport: PropTypes.bool,
   directDownload: PropTypes.bool,
+  context: PropTypes.string,
 };
 
 const FileLine = createFragmentContainer(FileLineComponent, {

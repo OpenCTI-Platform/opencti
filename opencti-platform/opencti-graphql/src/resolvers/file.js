@@ -12,7 +12,7 @@ const fileResolvers = {
   Mutation: {
     uploadImport: (_, { file }, { user }) => uploadImport(file, user),
     deleteImport: (_, { fileName }, { user }) => deleteFile(fileName, user),
-    askJobImport: (_, { fileName }, { user }) => askJobImport(fileName, user)
+    askJobImport: (_, { fileName, context }, { user }) => askJobImport(fileName, context, user)
   }
 };
 

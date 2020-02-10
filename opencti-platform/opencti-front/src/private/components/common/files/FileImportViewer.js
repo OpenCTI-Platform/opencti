@@ -26,7 +26,12 @@ const styles = () => ({
 });
 
 const FileImportViewerBase = ({
-  entity, disableImport, connectors, relay, t, classes,
+  entity,
+  disableImport,
+  connectors,
+  relay,
+  t,
+  classes,
 }) => {
   const { id, importFiles } = entity;
   const { edges } = importFiles;
@@ -43,13 +48,16 @@ const FileImportViewerBase = ({
     <React.Fragment>
       <Grid item={true} xs={6}>
         <div style={{ height: '100%' }} className="break">
-          <Typography variant="h4"
+          <Typography
+            variant="h4"
             gutterBottom={true}
-            style={{ float: 'left' }}>
+            style={{ float: 'left' }}
+          >
             {t('Uploaded files')}
           </Typography>
           <div style={{ float: 'left', marginTop: -17 }}>
-            <FileUploader entityId={id}
+            <FileUploader
+              entityId={id}
               onUploadSuccess={() => relay.refetch({ id })}
             />
           </div>
@@ -60,10 +68,17 @@ const FileImportViewerBase = ({
                 {edges.map((file) => (
                   <FileLine
                     key={file.node.id}
+                    context={
+                      entity && entity.entity_type === 'report'
+                        ? entity.id
+                        : null
+                    }
                     dense={true}
                     disableImport={disableImport}
                     file={file.node}
-                    connectors={connectors && connectors[file.node.metaData.mimetype]}
+                    connectors={
+                      connectors && connectors[file.node.metaData.mimetype]
+                    }
                   />
                 ))}
               </List>
@@ -96,6 +111,7 @@ const FileImportViewer = createRefetchContainer(
     entity: graphql`
       fragment FileImportViewer_entity on StixDomainEntity {
         id
+        entity_type
         importFiles(first: 1000) @connection(key: "Pagination_importFiles") {
           edges {
             node {

@@ -95,7 +95,12 @@ const exportValidation = (t) => Yup.object().shape({
 });
 
 const FileManager = ({
-  id, entity, t, classes, connectorsExport,
+  id,
+  entity,
+  t,
+  classes,
+  connectorsExport,
+  connectorsImport,
 }) => {
   const [openExport, setOpenExport] = useState(false);
   const exportScopes = uniq(
@@ -147,19 +152,26 @@ const FileManager = ({
     });
   };
 
+  const importConnsPerFormat = connectorsImport
+    ? scopesConn(connectorsImport)
+    : {};
   return (
     <div className={classes.container}>
-      <Grid container={true}
+      <Grid
+        container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}>
-        <FileImportViewer entity={entity} disableImport={true} />
-        <FileExportViewer entity={entity}
+        classes={{ container: classes.gridContainer }}
+      >
+        <FileImportViewer entity={entity} connectors={importConnsPerFormat} />
+        <FileExportViewer
+          entity={entity}
           handleOpenExport={handleOpenExport}
           isExportPossible={isExportPossible}
         />
       </Grid>
       <div>
-        <Formik enableReinitialize={true}
+        <Formik
+          enableReinitialize={true}
           initialValues={{
             format: '',
             type: 'full',
@@ -171,10 +183,12 @@ const FileManager = ({
         >
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
-              <Dialog open={openExport}
+              <Dialog
+                open={openExport}
                 keepMounted={true}
                 onClose={handleCloseExport}
-                fullWidth={true}>
+                fullWidth={true}
+              >
                 <DialogTitle>{t('Generate an export')}</DialogTitle>
                 <QueryRenderer
                   query={markingDefinitionsLinesSearchQuery}
@@ -190,9 +204,11 @@ const FileManager = ({
                             containerstyle={{ width: '100%' }}
                           >
                             {exportScopes.map((value, i) => (
-                              <MenuItem key={i}
+                              <MenuItem
+                                key={i}
                                 value={value}
-                                disabled={!isExportActive(value)}>
+                                disabled={!isExportActive(value)}
+                              >
                                 {value}
                               </MenuItem>
                             ))}
@@ -266,11 +282,21 @@ FileManager.propTypes = {
   id: PropTypes.string.isRequired,
   entity: PropTypes.object.isRequired,
   connectorsExport: PropTypes.array.isRequired,
+  connectorsImport: PropTypes.array.isRequired,
 };
 
 const FileManagerFragment = createFragmentContainer(FileManager, {
   connectorsExport: graphql`
     fragment FileManager_connectorsExport on Connector @relay(plural: true) {
+      id
+      name
+      active
+      connector_scope
+      updated_at
+    }
+  `,
+  connectorsImport: graphql`
+    fragment FileManager_connectorsImport on Connector @relay(plural: true) {
       id
       name
       active
