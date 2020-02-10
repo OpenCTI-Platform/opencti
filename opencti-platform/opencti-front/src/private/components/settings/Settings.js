@@ -196,10 +196,6 @@ class Settings extends Component {
                               name="platform_language"
                               label={t('Language')}
                               fullWidth={true}
-                              inputProps={{
-                                name: 'platform_language',
-                                id: 'platform-language',
-                              }}
                               containerstyle={{ marginTop: 20, width: '100%' }}
                               onFocus={this.handleChangeFocus.bind(this, id)}
                               onChange={this.handleSubmitField.bind(this, id)}

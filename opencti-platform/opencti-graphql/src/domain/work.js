@@ -60,12 +60,16 @@ export const workForEntity = async (entityId, args) => {
 };
 
 export const workForEntityType = async (entityType, args) => {
-  return elPaginate(INDEX_WORK_JOBS, {
+  const options = {
     type: 'Work',
     connectionFormat: false,
     first: args.first,
     filters: [{ key: 'work_entity_type', values: [entityType] }]
-  });
+  };
+  if (args.context !== undefined) {
+    options.filters.push({ key: 'work_context', values: [args.context] });
+  }
+  return elPaginate(INDEX_WORK_JOBS, options);
 };
 
 export const loadFileWorks = async fileId => {
@@ -76,10 +80,10 @@ export const loadFileWorks = async fileId => {
   });
 };
 
-export const loadExportWorksAsProgressFiles = async (entityType, entityId) => {
+export const loadExportWorksAsProgressFiles = async (entityType, entityId, context) => {
   const works = entityId
     ? await workForEntity(entityId, { first: 200 })
-    : await workForEntityType(entityType.toLowerCase(), { first: 200 });
+    : await workForEntityType(entityType.toLowerCase(), { first: 200, context });
   // Filter if all jobs completed
   const worksWithStatus = await Promise.all(
     map(w => {

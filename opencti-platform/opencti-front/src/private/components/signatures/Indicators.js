@@ -30,8 +30,7 @@ import IndicatorsRightBar from './indicators/IndicatorsRightBar';
 
 const styles = () => ({
   container: {
-    margin: 0,
-    padding: '0 260px 0 0',
+    paddingRight: 250,
   },
 });
 
@@ -168,6 +167,7 @@ class Indicators extends Component {
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
         exportEntityType="Indicator"
+        exportContext={null}
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}

@@ -175,6 +175,7 @@ class EntityIndicators extends Component {
         noPadding={typeof this.props.onChangeOpenExports === 'function'}
         paginationOptions={exportPaginationOptions}
         exportEntityType="Indicator"
+        exportContext={`of-entity-${entityId}`}
         keyword={searchTerm}
         secondaryAction={true}
         numberOfElements={numberOfElements}

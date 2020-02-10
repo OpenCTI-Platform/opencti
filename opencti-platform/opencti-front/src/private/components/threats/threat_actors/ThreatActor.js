@@ -92,7 +92,4 @@ const ThreatActor = createFragmentContainer(ThreatActorComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(ThreatActor);
+export default compose(inject18n, withStyles(styles))(ThreatActor);

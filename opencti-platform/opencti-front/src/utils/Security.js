@@ -42,10 +42,14 @@ const granted = (me, capabilities, matchAll = false) => {
 };
 
 const Security = ({
-  needs, matchAll, children, placeholder = <span/>,
-}) => (<UserContext.Consumer>{ (me) => {
-  if (granted(me, needs, matchAll)) return children;
-  return placeholder;
-}}</UserContext.Consumer>);
+  needs, matchAll, children, placeholder = <span />,
+}) => (
+  <UserContext.Consumer>
+    {(me) => {
+      if (granted(me, needs, matchAll)) return children;
+      return placeholder;
+    }}
+  </UserContext.Consumer>
+);
 
 export default Security;

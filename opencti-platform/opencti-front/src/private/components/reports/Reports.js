@@ -91,6 +91,14 @@ class Reports extends Component {
       openExports,
       numberOfElements,
     } = this.state;
+    const { objectId, authorId } = this.props;
+    let exportContext = null;
+    if (objectId) {
+      exportContext = `of-entity-${objectId}`;
+    } else if (authorId) {
+      exportContext = `of-entity-${authorId}`;
+    }
+
     const dataColumns = {
       name: {
         label: 'Title',
@@ -135,6 +143,7 @@ class Reports extends Component {
         openExports={openExports}
         noPadding={typeof this.props.onChangeOpenExports === 'function'}
         exportEntityType="Report"
+        exportContext={exportContext}
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}

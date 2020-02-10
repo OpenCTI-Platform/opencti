@@ -25,7 +25,7 @@ const styles = (theme) => ({
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
     }),
-    paddingRight: 310,
+    paddingRight: 250,
   },
   containerWithPaddingExport: {
     flexGrow: 1,
@@ -33,7 +33,7 @@ const styles = (theme) => ({
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
     }),
-    paddingRight: 310,
+    paddingRight: 560,
   },
   paper: {
     height: '100%',
@@ -54,12 +54,19 @@ class ThreatActorIndicatorsComponent extends Component {
     const { withPadding } = this.state;
     const { classes, threatActor, location } = this.props;
     const link = `/dashboard/threats/threat_actors/${threatActor.id}/indicators`;
+    let className = classes.containerWithPadding;
+    if (
+      location.pathname.includes(
+        `/dashboard/threats/threat_actors/${threatActor.id}/indicators/relations/`,
+      )
+    ) {
+      className = classes.containerWithoutPadding;
+    } else if (withPadding) {
+      className = classes.containerWithPaddingExport;
+    }
+
     return (
-      <div
-        className={
-          withPadding ? classes.containerWithPadding : classes.container
-        }
-      >
+      <div className={className}>
         <StixDomainEntityHeader
           stixDomainEntity={threatActor}
           PopoverComponent={<ThreatActorPopover />}
@@ -68,10 +75,7 @@ class ThreatActorIndicatorsComponent extends Component {
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/indicators/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
-              entityId={threatActor.id}
-              {...routeProps}
-            />
+            <StixRelation entityId={threatActor.id} {...routeProps} />
           )}
         />
         <Route
@@ -80,7 +84,8 @@ class ThreatActorIndicatorsComponent extends Component {
           render={(routeProps) => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityIndicators
-                onChangeOpenExports={(openExports) => this.setState({ withPadding: openExports })}
+                onChangeOpenExports={(openExports) => this.setState({ withPadding: openExports })
+                }
                 entityId={threatActor.id}
                 relationType="indicates"
                 entityLink={link}

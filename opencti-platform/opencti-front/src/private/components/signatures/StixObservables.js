@@ -30,8 +30,7 @@ import {
 
 const styles = () => ({
   container: {
-    margin: 0,
-    padding: '0 250px 0 0',
+    paddingRight: 250,
   },
 });
 
@@ -143,6 +142,7 @@ class StixObservables extends Component {
         handleSearch={this.handleSearch.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         exportEntityType="Stix-Observable"
+        exportContext={null}
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}

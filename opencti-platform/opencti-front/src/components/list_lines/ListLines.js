@@ -9,7 +9,10 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
 import {
-  ArrowDropDown, ArrowDropUp, Dashboard, TableChart,
+  ArrowDropDown,
+  ArrowDropUp,
+  Dashboard,
+  TableChart,
 } from '@material-ui/icons';
 import Chip from '@material-ui/core/Chip';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -128,6 +131,7 @@ class ListLines extends Component {
       bottomNav,
       children,
       exportEntityType,
+      exportContext,
       numberOfElements,
     } = this.props;
     return (
@@ -269,6 +273,7 @@ class ListLines extends Component {
             handleToggle={handleToggleExports.bind(this)}
             paginationOptions={paginationOptions}
             exportEntityType={exportEntityType}
+            context={exportContext}
           />
         ) : (
           ''
@@ -291,6 +296,7 @@ ListLines.propTypes = {
   noPadding: PropTypes.bool,
   views: PropTypes.array,
   exportEntityType: PropTypes.string,
+  exportContext: PropTypes.string,
   keyword: PropTypes.string,
   filters: PropTypes.object,
   sortBy: PropTypes.string,
