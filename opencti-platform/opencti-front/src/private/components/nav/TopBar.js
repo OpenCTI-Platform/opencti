@@ -48,7 +48,10 @@ import TopMenuConnectors from './TopMenuConnectors';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuProfile from './TopMenuProfile';
 import { commitMutation } from '../../../relay/environment';
-import Security, { KNOWLEDGE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/Security';
+import Security, {
+  KNOWLEDGE,
+  KNOWLEDGE_KNASKIMPORT,
+} from '../../../utils/Security';
 
 const styles = (theme) => ({
   appBar: {
@@ -74,20 +77,17 @@ const styles = (theme) => ({
   menuContainer: {
     float: 'left',
   },
-  searchContainer: {
-    position: 'absolute',
-    right: 125,
-    top: 15,
-  },
-  button: {
-    position: 'absolute',
-    right: 55,
-    top: 2,
-  },
-  menuButton: {
+  barRight: {
     position: 'absolute',
     right: 5,
-    top: 2,
+  },
+  searchContainer: {
+    display: 'inline-block',
+    verticalAlign: 'middle',
+    marginRight: 20,
+  },
+  button: {
+    display: 'inline-block',
   },
 });
 
@@ -112,7 +112,7 @@ const TopBar = ({
     commitMutation({
       mutation: logoutMutation,
       variables: {},
-      onCompleted: () => history.push('/login?message=You have successfully logged out'),
+      onCompleted: () => history.push('/login?message=You have successfully logged out.'),
     });
   };
   const handleSearch = (searchKeyword) => {
@@ -131,7 +131,8 @@ const TopBar = ({
           color="inherit"
           aria-label="Menu"
           component={Link}
-          to="/dashboard">
+          to="/dashboard"
+        >
           <img src={logo} alt="logo" className={classes.logo} />
         </IconButton>
         <div className={classes.menuContainer}>
@@ -147,11 +148,7 @@ const TopBar = ({
           ) : (
             ''
           )}
-          {location.pathname === '/dashboard/explore' ? (
-            <TopMenuExplore />
-          ) : (
-            ''
-          )}
+          {location.pathname === '/dashboard/explore' ? <TopMenuExplore /> : ''}
           {location.pathname.includes('/dashboard/explore/') ? (
             <TopMenuExploreWorkspace />
           ) : (
@@ -178,13 +175,11 @@ const TopBar = ({
           ) : (
             ''
           )}
-          {location.pathname.includes(
-            '/dashboard/threats/intrusion_sets/',
-          ) ? (
+          {location.pathname.includes('/dashboard/threats/intrusion_sets/') ? (
             <TopMenuIntrusionSet />
-            ) : (
-              ''
-            )}
+          ) : (
+            ''
+          )}
           {location.pathname.includes('/dashboard/threats/campaigns/') ? (
             <TopMenuCampaign />
           ) : (
@@ -285,13 +280,11 @@ const TopBar = ({
           ) : (
             ''
           )}
-          {location.pathname.includes(
-            '/dashboard/entities/organizations/',
-          ) ? (
+          {location.pathname.includes('/dashboard/entities/organizations/') ? (
             <TopMenuOrganization />
-            ) : (
-              ''
-            )}
+          ) : (
+            ''
+          )}
           {location.pathname.includes('/dashboard/entities/persons/') ? (
             <TopMenuPerson />
           ) : (
@@ -308,57 +301,62 @@ const TopBar = ({
           ) : (
             ''
           )}
-          {location.pathname === '/dashboard/profile' ? (
-            <TopMenuProfile />
-          ) : (
-            ''
-          )}
+          {location.pathname === '/dashboard/profile' ? <TopMenuProfile /> : ''}
         </div>
-        <Security needs={[KNOWLEDGE]}>
-          <div className={classes.searchContainer}>
-            <SearchInput onSubmit={handleSearch} keyword={keyword}/>
-          </div>
-        </Security>
-        <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
-          <Tooltip title={t('Data import')}>
-            <IconButton
+        <div className={classes.barRight}>
+          <Security needs={[KNOWLEDGE]}>
+            <div className={classes.searchContainer}>
+              <SearchInput onSubmit={handleSearch} keyword={keyword} />
+            </div>
+          </Security>
+          <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
+            <Tooltip title={t('Data import')}>
+              <IconButton
+                component={Link}
+                to="/dashboard/import"
+                variant={
+                  location.pathname === '/dashboard/import'
+                    ? 'contained'
+                    : 'text'
+                }
+                color={
+                  location.pathname === '/dashboard/import'
+                    ? 'primary'
+                    : 'inherit'
+                }
+                classes={{ root: classes.button }}
+              >
+                <UploadNetworkOutline fontSize="large" />
+              </IconButton>
+            </Tooltip>
+          </Security>
+          <IconButton
+            size="medium"
+            classes={{ root: classes.button }}
+            aria-owns={menuOpen.open ? 'menu-appbar' : null}
+            aria-haspopup="true"
+            onClick={handleOpenMenu}
+            color="inherit"
+          >
+            <AccountCircle fontSize="large" />
+          </IconButton>
+          <Menu
+            id="menu-appbar"
+            style={{ marginTop: 40, zIndex: 2100 }}
+            anchorEl={menuOpen.anchorEl}
+            open={menuOpen.open}
+            onClose={handleCloseMenu}
+          >
+            <MenuItem
               component={Link}
-              to="/dashboard/import"
-              variant={
-                location.pathname === '/dashboard/import' ? 'contained' : 'text'
-              }
-              color={
-                location.pathname === '/dashboard/import'
-                  ? 'primary'
-                  : 'inherit'
-              }
-              classes={{ root: classes.button }}>
-              <UploadNetworkOutline fontSize="large" />
-            </IconButton>
-          </Tooltip>
-        </Security>
-        <IconButton size="medium"
-          classes={{ root: classes.menuButton }}
-          aria-owns={menuOpen.open ? 'menu-appbar' : null}
-          aria-haspopup="true"
-          onClick={handleOpenMenu}
-          color="inherit">
-          <AccountCircle fontSize="large" />
-        </IconButton>
-        <Menu id="menu-appbar"
-          style={{ marginTop: 40, zIndex: 2100 }}
-          anchorEl={menuOpen.anchorEl}
-          open={menuOpen.open}
-          onClose={handleCloseMenu}>
-          <MenuItem component={Link}
-            to="/dashboard/profile"
-            onClick={handleCloseMenu}>
-            {t('Profile')}
-          </MenuItem>
-          <MenuItem onClick={handleLogout}>
-            {t('Logout')}
-          </MenuItem>
-        </Menu>
+              to="/dashboard/profile"
+              onClick={handleCloseMenu}
+            >
+              {t('Profile')}
+            </MenuItem>
+            <MenuItem onClick={handleLogout}>{t('Logout')}</MenuItem>
+          </Menu>
+        </div>
       </Toolbar>
     </AppBar>
   );
@@ -372,8 +370,4 @@ TopBar.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(TopBar);
+export default compose(inject18n, withRouter, withStyles(styles))(TopBar);
