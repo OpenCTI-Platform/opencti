@@ -9,6 +9,7 @@ import Typography from '@material-ui/core/Typography';
 import Chip from '@material-ui/core/Chip';
 import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
 import inject18n from '../../../../components/i18n';
+import ItemReliability from '../../../../components/ItemReliability';
 
 const styles = () => ({
   paper: {
@@ -58,6 +59,17 @@ class OrganizationDetailsComponent extends Component {
                 : 'organization_other',
             )}
           />
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
+            {t('Reliability')}
+          </Typography>
+          <ItemReliability
+            reliability={organization.reliability}
+            label={t(`reliability_${organization.reliability}`)}
+          />
         </Paper>
       </div>
     );
@@ -77,6 +89,7 @@ const OrganizationDetails = createFragmentContainer(
     organization: graphql`
       fragment OrganizationDetails_organization on Organization {
         id
+        reliability
         organization_class
         tags {
           edges {

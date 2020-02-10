@@ -1,4 +1,4 @@
-import { assoc, append, propOr } from 'ramda';
+import { assoc, append, propOr, pipe } from 'ramda';
 import {
   createEntity,
   distributionEntities,
@@ -16,6 +16,7 @@ import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { notify } from '../database/redis';
 import { findAll as findAllStixObservables } from './stixObservable';
 import { findAll as findAllStixDomainEntities } from './stixDomainEntity';
+import { findById as findIdentityById } from './identity';
 
 export const STATUS_STATUS_NEW = 0;
 export const STATUS_STATUS_PROGRESS = 1;
@@ -125,9 +126,31 @@ export const reportsDistributionByEntity = async args => {
 
 // region mutations
 export const addReport = async (user, report) => {
-  // If no status in creation, just force STATUS_NEW
-  const reportWithStatus = report.object_status ? report : assoc('object_status', STATUS_STATUS_NEW, report);
-  const created = await createEntity(reportWithStatus, 'Report');
+  // Get the reliability of the author
+  let sourceConfidenceLevel = 1;
+  if (report.createdByRef) {
+    const identity = await findIdentityById(report.createdByRef);
+    if (identity.reliability) {
+      switch (identity.reliability) {
+        case 'A':
+          sourceConfidenceLevel = 4;
+          break;
+        case 'B':
+          sourceConfidenceLevel = 3;
+          break;
+        case 'C':
+          sourceConfidenceLevel = 2;
+          break;
+        default:
+          sourceConfidenceLevel = 1;
+      }
+    }
+  }
+  const finalReport = pipe(
+    assoc('object_status', propOr(STATUS_STATUS_NEW, 'object_status', report)),
+    assoc('source_confidence_level', propOr(sourceConfidenceLevel, 'source_confidence_level', report))
+  )(report);
+  const created = await createEntity(finalReport, 'Report');
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 // endregion
