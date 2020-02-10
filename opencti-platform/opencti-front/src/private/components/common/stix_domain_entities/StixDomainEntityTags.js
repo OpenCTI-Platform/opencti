@@ -191,7 +191,7 @@ class StixDomainEntityTags extends Component {
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
           {t('Tags')}
         </Typography>
-        <Security roles={[KNOWLEDGE_KNUPDATE]}>
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IconButton
             color="secondary"
             aria-label="Tag"

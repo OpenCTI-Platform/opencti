@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import fileDownload from 'js-file-download';
 import Markdown from 'react-markdown';
@@ -17,7 +18,7 @@ import {
   prop,
   values,
   sortWith,
-  ascend, take, pathOr,
+  ascend,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -28,7 +29,12 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Collapse from '@material-ui/core/Collapse';
-import { Launch, LockPattern, FileImageOutline } from 'mdi-material-ui';
+import {
+  Launch,
+  LockPattern,
+  FileImageOutline,
+  FilePdfOutline,
+} from 'mdi-material-ui';
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
 import { createRefetchContainer } from 'react-relay';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -38,7 +44,6 @@ import StixRelationPopover from '../stix_relations/StixRelationPopover';
 import StixRelationCreationFromEntity from '../stix_relations/StixRelationCreationFromEntity';
 import ItemYears from '../../../../components/ItemYears';
 import SearchInput from '../../../../components/SearchInput';
-import ItemMarking from '../../../../components/ItemMarking';
 
 const styles = (theme) => ({
   container: {
@@ -120,7 +125,7 @@ class StixDomainEntityKillChainLinesComponent extends Component {
     });
   }
 
-  /* exportPdf() {
+  exportPdf() {
     const container = document.getElementById('container');
     this.setInlineStyles(container);
     html2canvas(container, {
@@ -147,7 +152,7 @@ class StixDomainEntityKillChainLinesComponent extends Component {
       }
       doc.save('KillChain.pdf');
     });
-  } */
+  }
 
   render() {
     const {
@@ -202,6 +207,11 @@ class StixDomainEntityKillChainLinesComponent extends Component {
           <Tooltip title={t('Export as image')}>
             <IconButton color="primary" onClick={this.exportImage.bind(this)}>
               <FileImageOutline />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={t('Export as PDF')}>
+            <IconButton color="primary" onClick={this.exportPdf.bind(this)}>
+              <FilePdfOutline />
             </IconButton>
           </Tooltip>
         </div>
@@ -285,21 +295,6 @@ class StixDomainEntityKillChainLinesComponent extends Component {
                             }
                             disabled={attackPattern.inferred}
                           />
-                          {take(
-                            1,
-                            pathOr(
-                              [],
-                              ['markingDefinitions', 'edges'],
-                              attackPattern,
-                            ),
-                          ).map((markingDefinition) => (
-                            <ItemMarking
-                              key={markingDefinition.node.id}
-                              variant="inList"
-                              label={markingDefinition.node.definition}
-                              color={markingDefinition.node.color}
-                            />
-                          ))}
                           <ListItemSecondaryAction>
                             <StixRelationPopover
                               stixRelationId={attackPattern.id}
@@ -391,14 +386,6 @@ const StixDomainEntityKillChainLines = createRefetchContainer(
                     id
                     phase_name
                     phase_order
-                  }
-                }
-              }
-              markingDefinitions {
-                edges {
-                  node {
-                    id
-                    definition
                   }
                 }
               }

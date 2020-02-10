@@ -92,6 +92,7 @@ class ListCards extends Component {
       orderAsc,
       children,
       exportEntityType,
+      exportContext,
       numberOfElements,
     } = this.props;
     return (
@@ -188,7 +189,7 @@ class ListCards extends Component {
             ) : (
               ''
             )}
-            <Security roles={[KNOWLEDGE_KNGETEXPORT]}>
+            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
               {typeof handleToggleExports === 'function' ? (
                 <Tooltip title={t('Exports panel')}>
                   <IconButton
@@ -212,6 +213,7 @@ class ListCards extends Component {
             handleToggle={handleToggleExports.bind(this)}
             paginationOptions={paginationOptions}
             exportEntityType={exportEntityType}
+            context={exportContext}
           />
         ) : (
           ''
@@ -233,6 +235,7 @@ ListCards.propTypes = {
   openExports: PropTypes.bool,
   views: PropTypes.array,
   exportEntityType: PropTypes.string,
+  exportContext: PropTypes.string,
   keyword: PropTypes.string,
   filters: PropTypes.object,
   sortBy: PropTypes.string.isRequired,

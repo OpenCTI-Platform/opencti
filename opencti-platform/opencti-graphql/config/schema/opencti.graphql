@@ -3650,7 +3650,11 @@ type Mutation {
   # File management
   deleteImport(fileName: String): Boolean @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadImport(file: Upload!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
+<<<<<<< HEAD
   askJobImport(fileName: ID!, context: String): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
+=======
+  askJobImport(fileName: ID!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
+>>>>>>> 5ba7067697f91c862cd022a3ada7bd1cb945e2e2
   # Tag
   tagAdd(input: TagAddInput): Tag @auth(for: [KNOWLEDGE_KNUPDATE])
   tagEdit(id: ID!): TagEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
