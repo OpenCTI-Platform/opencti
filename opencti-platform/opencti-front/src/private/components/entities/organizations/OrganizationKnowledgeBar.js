@@ -8,11 +8,13 @@ import MenuList from '@material-ui/core/MenuList';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { Domain, Person, Map } from '@material-ui/icons';
-import { Gauge, SourcePull, TargetVariant } from "mdi-material-ui";
+import {
+  Domain, Person, Map, AccountBalance,
+} from '@material-ui/icons';
+import { Gauge, SourcePull, TargetVariant } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawer: {
     minHeight: '100vh',
     width: 260,
@@ -50,11 +52,13 @@ class OrganizationKnowledgeBar extends Component {
             dense={false}
             classes={{ root: classes.item }}
           >
-
             <ListItemIcon>
               <Gauge />
             </ListItemIcon>
-            <ListItemText primary={t('Overview')} secondary={t('Synthesis of knowledge')} />
+            <ListItemText
+              primary={t('Overview')}
+              secondary={t('Synthesis of knowledge')}
+            />
           </MenuItem>
           <MenuItem
             component={Link}
@@ -88,8 +92,26 @@ class OrganizationKnowledgeBar extends Component {
               <Map />
             </ListItemIcon>
             <ListItemText
-              primary={t('Localization')}
+              primary={t('Location')}
               secondary={t('Locations of this organization')}
+            />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/entities/organizations/${organizationId}/knowledge/organizations`}
+            selected={
+              location.pathname
+              === `/dashboard/entities/organizations/${organizationId}/knowledge/organizations`
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <AccountBalance />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Organizations')}
+              secondary={t('Related to this organization')}
             />
           </MenuItem>
           <MenuItem

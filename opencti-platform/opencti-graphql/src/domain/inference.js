@@ -70,8 +70,22 @@ const inferences = {
       '      (source: $entity, target: $location) isa targets;\n' +
       '    };',
     description:
-      'This rule can be used to infer the following fact: if an entity A targets an entity B through a relation X, and the relation X is localized in an entity C, then the entity A also targets the entity C.'
+      'This rule can be used to infer the following fact: if an entity A targets an entity B through a relation X, and the relation X is located in an entity C, then the entity A also targets the entity C.'
   },
+  '391d08b1-deb5-434f-9a5d-cc2441abd601': {
+    id: '391d08b1-deb5-434f-9a5d-cc2441abd601',
+    name: 'GatheringTargetsRule',
+    rule:
+      '    GatheringTargetsRule sub rule,\n' +
+      '    when {\n' +
+      '      $rel1_part-of_gather(gather: $parent, part_of: $entity) isa gathering;\n' +
+      '      $rel2_source_target(source: $source, target: $entity) isa targets;\n' +
+      '    }, then {\n' +
+      '      (source: $source, target: $parent) isa targets;\n' +
+      '    };\n',
+    description:
+      'This rule can be used to infer the following fact: if an entity A is part of an entity B, and the entity C targets the entity A, then the entity C targets the entity B.'
+  }
 };
 
 export const findAll = async () => {

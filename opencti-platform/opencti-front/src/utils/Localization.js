@@ -509,6 +509,7 @@ const i18n = {
       Region: 'Région',
       City: 'Ville',
       Locations: 'Localisations',
+      Location: 'Localisation',
       Signatures: 'Signatures',
       Person: 'Personne',
       Pattern: 'Motif',

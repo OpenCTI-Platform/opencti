@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import fileDownload from 'js-file-download';
 import Markdown from 'react-markdown';

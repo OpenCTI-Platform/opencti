@@ -1778,8 +1778,8 @@ export const getRelationInferredById = async id => {
       const explanationRelationKey = last(filter(n => n.includes(INFERRED_RELATION_KEY), explanationKeys));
       const [, from, to] = explanationRelationKey.split('_');
       const directedAlias = new Map([
-        [from, 'from'],
-        [to, 'to']
+        [from.replace('-', '_'), 'from'],
+        [to.replace('-', '_'), 'to']
       ]);
       // eslint-disable-next-line no-await-in-loop
       const explanationConcepts = await getConcepts([explanationAnswer], queryVars, [explanationRelationKey], {

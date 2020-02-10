@@ -179,84 +179,87 @@ const RoleEditionOverviewComponent = ({
       validationSchema={roleValidation(t)}
       onSubmit={() => true}
     >
-      () => (
-      <Form style={{ margin: '20px 0 20px 0' }}>
-        <TextField
-          name="name"
-          label={t('Name')}
-          fullWidth={true}
-          onFocus={handleChangeFocus}
-          onSubmit={handleSubmitField}
-          helperText={<SubscriptionFocus context={context} fieldName="name" />}
-        />
-        <TextField
-          name="description"
-          label={t('Description')}
-          fullWidth={true}
-          multiline={true}
-          rows={4}
-          style={{ marginTop: 10 }}
-          onFocus={handleChangeFocus}
-          onSubmit={handleSubmitField}
-          helperText={
-            <SubscriptionFocus context={context} fieldName="description" />
-          }
-        />
-        <Switch
-          name="default_assignation"
-          label={t('Assign at user creation')}
-          onChange={handleSubmitField}
-        />
-        <QueryRenderer
-          query={roleEditionOverviewCapabilities}
-          variables={{}}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <List
-                  dense={true}
-                  className={classes.root}
-                  subheader={
-                    <ListSubheader component="div" style={{ paddingLeft: 0 }}>
-                      {t('Capabilities')}
-                    </ListSubheader>
-                  }
-                >
-                  {props.capabilities.edges.map((edge) => {
-                    const capability = edge.node;
-                    const paddingLeft = capability.name.split('_').length * 20 - 20;
-                    const roleCapability = find(
-                      propEq('name', capability.name),
-                    )(role.capabilities);
-                    const isDisabled = inheritedCapability(
-                      capability.name,
-                      role.capabilities,
-                    );
-                    const isChecked = roleCapability !== undefined;
-                    return (
-                      <ListItem
-                        key={capability.name}
-                        divider={true}
-                        style={{ paddingLeft }}
-                      >
-                        <ListItemText primary={capability.description} />
-                        <ListItemSecondaryAction>
-                          <Checkbox
-                            onChange={(event) => handleToggle(capability, event)}
-                            checked={isChecked}
-                            disabled={isDisabled}
-                          />
-                        </ListItemSecondaryAction>
-                      </ListItem>
-                    );
-                  })}
-                </List>
-              );
+      {() => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <TextField
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="name" />
             }
-            return <Loader variant="inElement" />;
-          }}
-        />
-      </Form>
+          />
+          <TextField
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows={4}
+            style={{ marginTop: 10 }}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="description" />
+            }
+          />
+          <Switch
+            name="default_assignation"
+            label={t('Assign at user creation')}
+            onChange={handleSubmitField}
+          />
+          <QueryRenderer
+            query={roleEditionOverviewCapabilities}
+            variables={{}}
+            render={({ props }) => {
+              if (props) {
+                return (
+                  <List
+                    dense={true}
+                    className={classes.root}
+                    subheader={
+                      <ListSubheader component="div" style={{ paddingLeft: 0 }}>
+                        {t('Capabilities')}
+                      </ListSubheader>
+                    }
+                  >
+                    {props.capabilities.edges.map((edge) => {
+                      const capability = edge.node;
+                      const paddingLeft = capability.name.split('_').length * 20 - 20;
+                      const roleCapability = find(
+                        propEq('name', capability.name),
+                      )(role.capabilities);
+                      const isDisabled = inheritedCapability(
+                        capability.name,
+                        role.capabilities,
+                      );
+                      const isChecked = roleCapability !== undefined;
+                      return (
+                        <ListItem
+                          key={capability.name}
+                          divider={true}
+                          style={{ paddingLeft }}
+                        >
+                          <ListItemText primary={capability.description} />
+                          <ListItemSecondaryAction>
+                            <Checkbox
+                              onChange={(event) => handleToggle(capability, event)
+                              }
+                              checked={isChecked}
+                              disabled={isDisabled}
+                            />
+                          </ListItemSecondaryAction>
+                        </ListItem>
+                      );
+                    })}
+                  </List>
+                );
+              }
+              return <Loader variant="inElement" />;
+            }}
+          />
+        </Form>
       )}
     </Formik>
   );

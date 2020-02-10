@@ -65,6 +65,7 @@ const relationsTypesMapping = {
   organization_city: ['localization'],
   organization_region: ['localization'],
   organization_sector: ['gathering'],
+  organization_organization: ['gathering'],
   user_organization: ['gathering'],
   user_country: ['localization'],
   user_city: ['localization'],
