@@ -35,6 +35,11 @@ As OpenCTI has a dependency to ElasticSearch and Grakn, you have to set the `vm.
 $ sysctl -w vm.max_map_count=1048575
 ```
 
+To make this parameter persistent, please update your file `/etc/sysctl.conf` and add the line:
+```bash
+$ vm.max_map_count=1048575
+```
+
 ## Run
 
 In order to have the best experience with Docker, we recommend to use the Docker stack feature. In this mode we will have the capacity to easily scale your deployment.

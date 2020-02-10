@@ -8,8 +8,8 @@
     "Installation": [
       "installation/docker",
       "installation/manual",
+      "installation/configuration",
       "installation/connectors",
-      "installation/maintenance",
       "development/installation"
     ],
     "Usage": [
