@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import {
-  compose, insert, find, propEq,
-} from 'ramda';
+import { compose } from 'ramda';
 import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
@@ -59,27 +57,22 @@ class IntrusionSetEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, intrusionSet, me,
+      t, classes, handleClose, intrusionSet,
     } = this.props;
     const { editContext } = intrusionSet;
-    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe
-      ? insert(0, { name: me.email }, editContext)
-      : editContext;
     return (
       <div>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}
-          >
+            onClick={handleClose.bind(this)}>
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update an intrusion set')}
           </Typography>
-          <SubscriptionAvatars users={editUsers} />
+          <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
@@ -93,18 +86,10 @@ class IntrusionSetEditionContainer extends Component {
             </Tabs>
           </AppBar>
           {this.state.currentTab === 0 && (
-            <IntrusionSetEditionOverview
-              intrusionSet={intrusionSet}
-              editUsers={editUsers}
-              me={me}
-            />
+            <IntrusionSetEditionOverview intrusionSet={intrusionSet} context={editContext}/>
           )}
           {this.state.currentTab === 1 && (
-            <IntrusionSetEditionDetails
-              intrusionSet={intrusionSet}
-              editUsers={editUsers}
-              me={me}
-            />
+            <IntrusionSetEditionDetails intrusionSet={intrusionSet} context={editContext}/>
           )}
         </div>
       </div>
@@ -116,7 +101,6 @@ IntrusionSetEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
   intrusionSet: PropTypes.object,
-  me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
@@ -133,11 +117,6 @@ const IntrusionSetEditionFragment = createFragmentContainer(
           name
           focusOn
         }
-      }
-    `,
-    me: graphql`
-      fragment IntrusionSetEditionContainer_me on User {
-        email
       }
     `,
   },

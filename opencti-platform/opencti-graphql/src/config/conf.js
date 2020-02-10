@@ -4,8 +4,6 @@ import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
 
 const DEFAULT_ENV = 'production';
-export const ROLE_ADMIN = 'ROLE_ADMIN';
-export const ROLE_USER = 'ROLE_USER';
 export const OPENCTI_TOKEN = 'opencti_token';
 export const OPENCTI_WEB_TOKEN = 'Default';
 export const OPENCTI_ISSUER = 'OpenCTI';

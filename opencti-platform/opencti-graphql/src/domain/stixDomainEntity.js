@@ -61,6 +61,7 @@ const askJobExports = async (
   type = null,
   exportType = null,
   maxMarkingDefinition = null,
+  context = null,
   listArgs = null
 ) => {
   const connectors = await connectorsForExport(format, true);
@@ -80,11 +81,13 @@ const askJobExports = async (
         exportType,
         maxMarkingDefinitionEntity
       );
-      return createWork(connector, finalEntityType, entity ? entity.id : null, fileName).then(({ work, job }) => ({
-        connector,
-        job,
-        work
-      }));
+      return createWork(connector, finalEntityType, entity ? entity.id : null, context, fileName).then(
+        ({ work, job }) => ({
+          connector,
+          job,
+          work
+        })
+      );
     }, connectors)
   );
   let finalListArgs = listArgs;
@@ -122,6 +125,7 @@ const askJobExports = async (
         entity_type: entity ? entity.entity_type : type, // report, threat, ...
         entity_id: entity ? entity.id : null, // report(id), thread(id), ...
         list_args: finalListArgs,
+        file_context: work.work_context,
         file_name: work.work_file // Base path for the upload
       };
       return pushToConnector(connector, message);
@@ -138,18 +142,32 @@ const askJobExports = async (
  * @returns {*}
  */
 export const stixDomainEntityExportAsk = async args => {
-  const { format, type = null, stixDomainEntityId = null, exportType = null, maxMarkingDefinition = null } = args;
+  const {
+    format,
+    type = null,
+    stixDomainEntityId = null,
+    exportType = null,
+    maxMarkingDefinition = null,
+    context = null
+  } = args;
   const entity = stixDomainEntityId ? await loadEntityById(stixDomainEntityId) : null;
-  const workList = await askJobExports(format, entity, type, exportType, maxMarkingDefinition, args);
+  const workList = await askJobExports(format, entity, type, exportType, maxMarkingDefinition, context, args);
   // Return the work list to do
   return map(w => workToExportFile(w.work), workList);
 };
 export const stixDomainEntityImportPush = (user, entityType = null, entityId = null, file) => {
   return upload(user, 'import', file, entityType, entityId);
 };
-export const stixDomainEntityExportPush = async (user, entityType = null, entityId = null, file, listArgs = null) => {
+export const stixDomainEntityExportPush = async (
+  user,
+  entityType = null,
+  entityId = null,
+  file,
+  context = null,
+  listArgs = null
+) => {
   // Upload the document in minio
-  await upload(user, 'export', file, entityType, entityId, listArgs);
+  await upload(user, 'export', file, entityType, entityId, context, listArgs);
   return true;
 };
 export const addStixDomainEntity = async (user, stixDomainEntity) => {

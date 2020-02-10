@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
+import { Form, Formik } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
   assoc, compose, pick, pipe,
@@ -15,7 +15,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
 import { dateFormat } from '../../../../utils/Time';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -54,10 +54,7 @@ const incidentMutationFieldPatch = graphql`
 `;
 
 const incidentEditionDetailsFocus = graphql`
-  mutation IncidentEditionDetailsFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation IncidentEditionDetailsFocusMutation($id: ID!, $input: EditContext!) {
     incidentEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -66,7 +63,7 @@ const incidentEditionDetailsFocus = graphql`
   }
 `;
 
-const incidentValidation = t => Yup.object().shape({
+const incidentValidation = (t) => Yup.object().shape({
   first_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
@@ -107,9 +104,7 @@ class IncidentEditionDetailsComponent extends Component {
   }
 
   render() {
-    const {
-      t, incident, editUsers, me,
-    } = this.props;
+    const { t, incident, context } = this.props;
     const initialValues = pipe(
       assoc('first_seen', dateFormat(incident.first_seen)),
       assoc('last_seen', dateFormat(incident.last_seen)),
@@ -117,69 +112,53 @@ class IncidentEditionDetailsComponent extends Component {
     )(incident);
 
     return (
-      <div>
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={incidentValidation(t)}
-          onSubmit={() => true}
-          render={() => (
-            <div>
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  name="first_seen"
-                  component={DatePickerField}
-                  label={t('First seen')}
-                  fullWidth={true}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="first_seen"
-                    />
-                  }
-                />
-                <Field
-                  name="last_seen"
-                  component={DatePickerField}
-                  label={t('Last seen')}
-                  fullWidth={true}
-                  style={{ marginTop: 10 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="last_seen"
-                    />
-                  }
-                />
-                <Field
-                  name="objective"
-                  component={TextField}
-                  label={t('Objective')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows={4}
-                  style={{ marginTop: 10 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="objective"
-                    />
-                  }
-                />
-              </Form>
-            </div>
-          )}
-        />
-      </div>
+      <Formik
+        enableReinitialize={true}
+        initialValues={initialValues}
+        validationSchema={incidentValidation(t)}
+        onSubmit={() => true}
+      >
+        {() => (
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <DatePickerField
+              name="first_seen"
+              label={t('First seen')}
+              invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
+              fullWidth={true}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="first_seen" />
+              }
+            />
+            <DatePickerField
+              name="last_seen"
+              label={t('Last seen')}
+              invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="last_seen" />
+              }
+            />
+            <TextField
+              name="objective"
+              label={t('Objective')}
+              fullWidth={true}
+              multiline={true}
+              rows={4}
+              style={{ marginTop: 20 }}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="objective" />
+              }
+            />
+          </Form>
+        )}
+      </Formik>
     );
   }
 }
@@ -189,8 +168,7 @@ IncidentEditionDetailsComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   incident: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
+  context: PropTypes.array,
 };
 
 const IncidentEditionDetails = createFragmentContainer(

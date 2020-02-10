@@ -1,6 +1,6 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import { Field, Form, Formik } from 'formik';
+import { Form, Formik } from 'formik';
 import { TextField } from 'formik-material-ui';
 import Button from '@material-ui/core/Button';
 import graphql from 'babel-plugin-relay/macro';
@@ -62,43 +62,39 @@ const LoginForm = (props) => {
     });
   };
   return (
-      <div className={classes.login}>
-        <Formik
-          initialValues={{
-            email: demo ? 'demo@opencti.io' : '',
-            password: demo ? 'demo' : '',
-          }}
-          validationSchema={loginValidation(t)}
-          onSubmit={onSubmit}
-          render={({ submitForm, isSubmitting }) => (
-            <Form>
-              <Field
-                name="email"
-                component={TextField}
-                label={t('Email')}
-                fullWidth={true}
-              />
-              <Field
-                name="password"
-                component={TextField}
-                type="password"
-                label={t('Password')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-              />
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                disabled={isSubmitting}
-                onClick={submitForm}
-                style={{ marginTop: 30 }}>
-                {t('Sign in')}
-              </Button>
-            </Form>
-          )}
-        />
-      </div>
+    <div className={classes.login}>
+      <Formik
+        initialValues={{
+          email: demo ? 'demo@opencti.io' : '',
+          password: demo ? 'demo' : '',
+        }}
+        validationSchema={loginValidation(t)}
+        onSubmit={onSubmit}
+      >
+        {({ submitForm, isSubmitting }) => (
+          <Form>
+            <TextField name="email" label={t('Email')} fullWidth={true} />
+            <TextField
+              name="password"
+              label={t('Password')}
+              type="password"
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={isSubmitting}
+              onClick={submitForm}
+              style={{ marginTop: 30 }}
+            >
+              {t('Sign in')}
+            </Button>
+          </Form>
+        )}
+      </Formik>
+    </div>
   );
 };
 
@@ -109,8 +105,4 @@ LoginForm.propTypes = {
   demo: PropTypes.bool,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(LoginForm);
+export default compose(inject18n, withRouter, withStyles(styles))(LoginForm);

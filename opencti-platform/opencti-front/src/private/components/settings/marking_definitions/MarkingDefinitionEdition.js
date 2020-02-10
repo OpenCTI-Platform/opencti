@@ -2,10 +2,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
-import {
-  compose, insert, find, propEq, pick,
-} from 'ramda';
+import { Form, Formik } from 'formik';
+import { compose, pick } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
@@ -142,14 +140,9 @@ class MarkingDefinitionEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, markingDefinition, me,
+      t, classes, handleClose, markingDefinition,
     } = this.props;
     const { editContext } = markingDefinition;
-    // Add current user to the context if is not available yet.
-    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe
-      ? insert(0, { name: me.email }, editContext)
-      : editContext;
     const initialValues = pick(
       ['definition_type', 'definition', 'color', 'level'],
       markingDefinition,
@@ -167,7 +160,7 @@ class MarkingDefinitionEditionContainer extends Component {
           <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update a marking definition')}
           </Typography>
-          <SubscriptionAvatars users={editUsers} />
+          <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
@@ -175,75 +168,68 @@ class MarkingDefinitionEditionContainer extends Component {
             enableReinitialize={true}
             initialValues={initialValues}
             validationSchema={markingDefinitionValidation(t)}
-            render={() => (
+          >
+            {() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
+                <TextField
                   name="definition_type"
-                  component={TextField}
                   label={t('Type')}
                   fullWidth={true}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
                     <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
+                      context={editContext}
                       fieldName="definition_type"
                     />
                   }
                 />
-                <Field
+                <TextField
                   name="definition"
-                  component={TextField}
                   label={t('Definition')}
                   fullWidth={true}
-                  style={{ marginTop: 10 }}
+                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
                     <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
+                      context={editContext}
                       fieldName="definition"
                     />
                   }
                 />
-                <Field
+                <ColorPickerField
                   name="color"
-                  component={ColorPickerField}
                   label={t('Color')}
                   fullWidth={true}
-                  style={{ marginTop: 10 }}
+                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
                     <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
+                      context={editContext}
                       fieldName="color"
                     />
                   }
                 />
-                <Field
+                <TextField
                   name="level"
-                  component={TextField}
                   label={t('Level')}
                   fullWidth={true}
                   type="number"
-                  style={{ marginTop: 10 }}
+                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
                     <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
+                      context={editContext}
                       fieldName="level"
                     />
                   }
                 />
               </Form>
             )}
-          />
+          </Formik>
         </div>
       </div>
     );
@@ -254,7 +240,6 @@ MarkingDefinitionEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
   markingDefinition: PropTypes.object,
-  me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
@@ -273,11 +258,6 @@ const MarkingDefinitionEditionFragment = createFragmentContainer(
           name
           focusOn
         }
-      }
-    `,
-    me: graphql`
-      fragment MarkingDefinitionEdition_me on User {
-        email
       }
     `,
   },

@@ -1,4 +1,6 @@
-import { mergeLeft, dissoc, pipe } from 'ramda';
+import {
+  mergeLeft, dissoc, pipe, split,
+} from 'ramda';
 
 export const saveViewParameters = (
   history,
@@ -10,13 +12,10 @@ export const saveViewParameters = (
   const urlParams = pipe(
     dissoc('view'),
     dissoc('types'),
-    dissoc('indicatorTypes'),
-    dissoc('observableTypes'),
     dissoc('openExports'),
     dissoc('numberOfElements'),
     dissoc('lastSeenStart'),
     dissoc('lastSeenStop'),
-    dissoc('targetEntityTypes'),
     dissoc('inferred'),
   )(params);
   history.replace(
@@ -40,6 +39,27 @@ export const buildViewParamsFromUrlAndStorage = (
   }
   if (finalParams.orderAsc) {
     finalParams.orderAsc = finalParams.orderAsc.toString() === 'true';
+  }
+  if (
+    finalParams.stixDomainEntitiesTypes
+    && typeof finalParams.stixDomainEntitiesTypes === 'string'
+  ) {
+    finalParams.stixDomainEntitiesTypes = split(
+      ',',
+      finalParams.stixDomainEntitiesTypes,
+    );
+  }
+  if (
+    finalParams.indicatorTypes
+    && typeof finalParams.indicatorTypes === 'string'
+  ) {
+    finalParams.indicatorTypes = split(',', finalParams.indicatorTypes);
+  }
+  if (
+    finalParams.observableTypes
+    && typeof finalParams.observableTypes === 'string'
+  ) {
+    finalParams.observableTypes = split(',', finalParams.observableTypes);
   }
   saveViewParameters(history, location, localStorageKey, finalParams);
   return finalParams;

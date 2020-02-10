@@ -56,9 +56,6 @@ const tagEditionQuery = graphql`
     tag(id: $id) {
       ...TagEdition_tag
     }
-    me {
-      ...TagEdition_me
-    }
   }
 `;
 
@@ -157,9 +154,7 @@ class TagPopover extends Component {
               if (props) {
                 // Done
                 return (
-                  <TagEdition
-                    me={props.me}
-                    tag={props.tag}
+                  <TagEdition tag={props.tag}
                     handleClose={this.handleCloseUpdate.bind(this)}
                   />
                 );

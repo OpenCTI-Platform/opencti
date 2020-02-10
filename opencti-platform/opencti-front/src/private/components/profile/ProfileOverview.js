@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
+import { Formik, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
-import { compose, pick, pluck } from 'ramda';
+import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
@@ -12,7 +12,7 @@ import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
-import Select from '../../../components/Select';
+import SelectField from '../../../components/SelectField';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 
 const styles = () => ({
@@ -34,9 +34,9 @@ const profileOverviewFieldPatch = graphql`
   }
 `;
 
-const userValidation = t => Yup.object().shape({
+const userValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  email: Yup.string()
+  user_email: Yup.string()
     .required(t('This field is required'))
     .email(t('The value must be an email address')),
   firstname: Yup.string(),
@@ -45,7 +45,7 @@ const userValidation = t => Yup.object().shape({
   description: Yup.string(),
 });
 
-const passwordValidation = t => Yup.object().shape({
+const passwordValidation = (t) => Yup.object().shape({
   password: Yup.string().required(t('This field is required')),
   confirmation: Yup.string()
     .oneOf([Yup.ref('password'), null], t('The values do not match'))
@@ -54,16 +54,12 @@ const passwordValidation = t => Yup.object().shape({
 
 class ProfileOverviewComponent extends Component {
   handleSubmitField(name, value) {
-    let newValue = value;
-    if (name === 'grant') {
-      newValue = pluck('value', value);
-    }
     userValidation(this.props.t)
-      .validateAt(name, { [name]: newValue })
+      .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
           mutation: profileOverviewFieldPatch,
-          variables: { input: { key: name, value: newValue } },
+          variables: { input: { key: name, value } },
         });
       })
       .catch(() => false);
@@ -88,56 +84,62 @@ class ProfileOverviewComponent extends Component {
 
   render() {
     const { t, me, classes } = this.props;
+    const external = me.external === true;
     const initialValues = pick(
-      ['name', 'description', 'email', 'firstname', 'lastname', 'language'],
+      [
+        'name',
+        'description',
+        'user_email',
+        'firstname',
+        'lastname',
+        'language',
+      ],
       me,
     );
     return (
       <div>
         <Paper classes={{ root: classes.panel }} elevation={2}>
           <Typography variant="h1" gutterBottom={true}>
-            {t('Profile')}
+            {t('Profile')} {external && `(${t('external')})`}
           </Typography>
           <Formik
             enableReinitialize={true}
             initialValues={initialValues}
             validationSchema={userValidation(t)}
-            render={() => (
+          >
+            {() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
+                <TextField
                   name="name"
-                  component={TextField}
+                  disabled={external}
                   label={t('Name')}
                   fullWidth={true}
                   onSubmit={this.handleSubmitField.bind(this)}
                 />
-                <Field
-                  name="email"
-                  component={TextField}
+                <TextField
+                  name="user_email"
+                  disabled={true}
                   label={t('Email address')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                   onSubmit={this.handleSubmitField.bind(this)}
                 />
-                <Field
+                <TextField
                   name="firstname"
-                  component={TextField}
                   label={t('Firstname')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                   onSubmit={this.handleSubmitField.bind(this)}
                 />
-                <Field
+                <TextField
                   name="lastname"
-                  component={TextField}
                   label={t('Lastname')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                   onSubmit={this.handleSubmitField.bind(this)}
                 />
-                <Field
+                <SelectField
                   name="language"
-                  component={Select}
                   label={t('Language')}
                   fullWidth={true}
                   inputProps={{
@@ -152,10 +154,9 @@ class ProfileOverviewComponent extends Component {
                   </MenuItem>
                   <MenuItem value="en">English</MenuItem>
                   <MenuItem value="fr">Français</MenuItem>
-                </Field>
-                <Field
+                </SelectField>
+                <TextField
                   name="description"
-                  component={TextField}
                   label={t('Description')}
                   fullWidth={true}
                   multiline={true}
@@ -165,7 +166,7 @@ class ProfileOverviewComponent extends Component {
                 />
               </Form>
             )}
-          />
+          </Formik>
         </Paper>
         <Paper classes={{ root: classes.panel }} elevation={2}>
           <Typography variant="h1" gutterBottom={true}>
@@ -197,48 +198,49 @@ class ProfileOverviewComponent extends Component {
             </Button>
           </div>
         </Paper>
-        <Paper classes={{ root: classes.panel }} elevation={2}>
-          <Typography variant="h1" gutterBottom={true}>
-            {t('Password')}
-          </Typography>
-          <Formik
-            enableReinitialize={true}
-            initialValues={{ password: '', confirmation: '' }}
-            validationSchema={passwordValidation(t)}
-            onSubmit={this.handleSubmitPasswords.bind(this)}
-            render={({ submitForm, isSubmitting }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  name="password"
-                  component={TextField}
-                  label={t('Password')}
-                  type="password"
-                  fullWidth={true}
-                />
-                <Field
-                  name="confirmation"
-                  component={TextField}
-                  label={t('Confirmation')}
-                  type="password"
-                  fullWidth={true}
-                  style={{ marginTop: 20 }}
-                />
-                <div style={{ marginTop: 20 }}>
-                  <Button
-                    variant="contained"
-                    type="button"
-                    color="primary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Update')}
-                  </Button>
-                </div>
-              </Form>
-            )}
-          />
-        </Paper>
+        {!external && (
+          <Paper classes={{ root: classes.panel }} elevation={2}>
+            <Typography variant="h1" gutterBottom={true}>
+              {t('Password')}
+            </Typography>
+            <Formik
+              enableReinitialize={true}
+              initialValues={{ password: '', confirmation: '' }}
+              validationSchema={passwordValidation(t)}
+              onSubmit={this.handleSubmitPasswords.bind(this)}
+            >
+              {({ submitForm, isSubmitting }) => (
+                <Form style={{ margin: '20px 0 20px 0' }}>
+                  <TextField
+                    name="password"
+                    label={t('Password')}
+                    type="password"
+                    fullWidth={true}
+                  />
+                  <TextField
+                    name="confirmation"
+                    label={t('Confirmation')}
+                    type="password"
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <div style={{ marginTop: 20 }}>
+                    <Button
+                      variant="contained"
+                      type="button"
+                      color="primary"
+                      onClick={submitForm}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
+                    >
+                      {t('Update')}
+                    </Button>
+                  </div>
+                </Form>
+              )}
+            </Formik>
+          </Paper>
+        )}
       </div>
     );
   }
@@ -256,7 +258,8 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
     fragment ProfileOverview_me on User {
       name
       description
-      email
+      user_email
+      external
       firstname
       lastname
       language
@@ -265,7 +268,4 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(ProfileOverview);
+export default compose(inject18n, withStyles(styles))(ProfileOverview);

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
+import { Formik, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
   assoc,
@@ -13,23 +13,14 @@ import {
   pick,
   difference,
   head,
-  union,
 } from 'ramda';
 import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
-import Autocomplete from '../../../../components/Autocomplete';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import {
-  commitMutation,
-  fetchQuery,
-  WS_ACTIVATED,
-} from '../../../../relay/environment';
-import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
-import AutocompleteCreate from '../../../../components/AutocompleteCreate';
-import IdentityCreation, {
-  identityCreationIdentitiesSearchQuery,
-} from '../../common/identities/IdentityCreation';
+import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
+import CreatedByRefField from '../../common/form/CreatedByRefField';
+import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -119,54 +110,6 @@ const intrusionSetValidation = (t) => Yup.object().shape({
 });
 
 class IntrusionSetEditionOverviewComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      killChainPhases: [],
-      markingDefinitions: [],
-      identityCreation: false,
-      identities: [],
-    };
-  }
-
-  searchIdentities(event) {
-    fetchQuery(identityCreationIdentitiesSearchQuery, {
-      search: event.target.value,
-      first: 10,
-    }).then((data) => {
-      const identities = pipe(
-        pathOr([], ['identities', 'edges']),
-        map((n) => ({ label: n.node.name, value: n.node.id })),
-      )(data);
-      this.setState({ identities: union(this.state.identities, identities) });
-    });
-  }
-
-  handleOpenIdentityCreation(inputValue) {
-    this.setState({ identityCreation: true, identityInput: inputValue });
-  }
-
-  handleCloseIdentityCreation() {
-    this.setState({ identityCreation: false });
-  }
-
-  searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsLinesSearchQuery, {
-      search: event.target.value,
-    }).then((data) => {
-      const markingDefinitions = pipe(
-        pathOr([], ['markingDefinitions', 'edges']),
-        map((n) => ({ label: n.node.definition, value: n.node.id })),
-      )(data);
-      this.setState({
-        markingDefinitions: union(
-          this.state.markingDefinitions,
-          markingDefinitions,
-        ),
-      });
-    });
-  }
-
   handleChangeFocus(name) {
     if (WS_ACTIVATED) {
       commitMutation({
@@ -240,7 +183,7 @@ class IntrusionSetEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeMarkingDefinition(name, values) {
+  handleChangeMarkingDefinitions(name, values) {
     const { intrusionSet } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
@@ -280,9 +223,7 @@ class IntrusionSetEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, intrusionSet, editUsers, me,
-    } = this.props;
+    const { t, intrusionSet, context } = this.props;
     const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], intrusionSet) === null
       ? ''
       : {
@@ -323,104 +264,60 @@ class IntrusionSetEditionOverviewComponent extends Component {
       ]),
     )(intrusionSet);
     return (
-      <div>
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={intrusionSetValidation(t)}
-          onSubmit={() => true}
-          render={({ setFieldValue }) => (
-            <div>
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  name="name"
-                  component={TextField}
-                  label={t('Name')}
-                  fullWidth={true}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="name"
-                    />
-                  }
+      <Formik
+        enableReinitialize={true}
+        initialValues={initialValues}
+        validationSchema={intrusionSetValidation(t)}
+        onSubmit={() => true}
+      >
+        {({ setFieldValue }) => (
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <TextField
+              name="name"
+              label={t('Name')}
+              fullWidth={true}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="name" />
+              }
+            />
+            <TextField
+              name="description"
+              label={t('Description')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={{ marginTop: 20 }}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="description" />
+              }
+            />
+            <CreatedByRefField
+              name="createdByRef"
+              style={{ marginTop: 20, width: '100%' }}
+              setFieldValue={setFieldValue}
+              helpertext={
+                <SubscriptionFocus context={context} fieldName="createdByRef" />
+              }
+              onChange={this.handleChangeCreatedByRef.bind(this)}
+            />
+            <MarkingDefinitionsField
+              name="markingDefinitions"
+              style={{ marginTop: 20, width: '100%' }}
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="markingDefinitions"
                 />
-                <Field
-                  name="description"
-                  component={TextField}
-                  label={t('Description')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows="4"
-                  style={{ marginTop: 10 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="description"
-                    />
-                  }
-                />
-                <Field
-                  name="createdByRef"
-                  component={AutocompleteCreate}
-                  multiple={false}
-                  handleCreate={this.handleOpenIdentityCreation.bind(this)}
-                  label={t('Author')}
-                  options={this.state.identities}
-                  onInputChange={this.searchIdentities.bind(this)}
-                  onChange={this.handleChangeCreatedByRef.bind(this)}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="createdByRef"
-                    />
-                  }
-                />
-                <Field
-                  name="markingDefinitions"
-                  component={Autocomplete}
-                  multiple={true}
-                  label={t('Marking')}
-                  options={this.state.markingDefinitions}
-                  onInputChange={this.searchMarkingDefinitions.bind(this)}
-                  onChange={this.handleChangeMarkingDefinition.bind(this)}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
-                      fieldName="markingDefinitions"
-                    />
-                  }
-                />
-              </Form>
-              <IdentityCreation
-                contextual={true}
-                inputValue={this.state.identityInput}
-                open={this.state.identityCreation}
-                handleClose={this.handleCloseIdentityCreation.bind(this)}
-                creationCallback={(data) => {
-                  setFieldValue('createdByRef', {
-                    label: data.identityAdd.name,
-                    value: data.identityAdd.id,
-                  });
-                  this.handleChangeCreatedByRef('createdByRef', {
-                    label: data.identityAdd.name,
-                    value: data.identityAdd.id,
-                  });
-                }}
-              />
-            </div>
-          )}
-        />
-      </div>
+              }
+              onChange={this.handleChangeMarkingDefinitions.bind(this)}
+            />
+          </Form>
+        )}
+      </Formik>
     );
   }
 }
@@ -430,8 +327,7 @@ IntrusionSetEditionOverviewComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   intrusionSet: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
+  context: PropTypes.array,
 };
 
 const IntrusionSetEditionOverview = createFragmentContainer(

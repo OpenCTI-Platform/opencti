@@ -2,10 +2,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import { Formik, Field, Form } from 'formik';
-import {
-  compose, find, insert, pick, propEq,
-} from 'ramda';
+import { Form, Formik } from 'formik';
+import { compose, pick } from 'ramda';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -15,8 +13,7 @@ import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
-import Select from '../../../components/Select';
-import Switch from '../../../components/Switch';
+import SelectField from '../../../components/SelectField';
 import SettingsMenu from './SettingsMenu';
 
 const styles = () => ({
@@ -45,16 +42,11 @@ const settingsQuery = graphql`
       platform_email
       platform_url
       platform_language
-      platform_external_auth
-      platform_registration
-      platform_demo
+      platform_parameters
       editContext {
         name
         focusOn
       }
-    }
-    me {
-      email
     }
   }
 `;
@@ -68,9 +60,7 @@ const settingsMutationFieldPatch = graphql`
         platform_email
         platform_url
         platform_language
-        platform_external_auth
-        platform_registration
-        platform_demo
+        platform_parameters
       }
     }
   }
@@ -95,9 +85,6 @@ const settingsValidation = (t) => Yup.object().shape({
     .required(t('This field is required'))
     .url(t('The value must be an URL')),
   platform_language: Yup.string(),
-  platform_external_auth: Yup.boolean(),
-  platform_registration: Yup.boolean(),
-  platform_demo: Yup.boolean(),
 });
 
 class Settings extends Component {
@@ -134,35 +121,29 @@ class Settings extends Component {
         <QueryRenderer
           query={settingsQuery}
           render={({ props }) => {
-            if (props && props.settings && props.me) {
-              const { settings, me } = props;
+            if (props && props.settings) {
+              const { settings } = props;
               const { id, editContext } = settings;
-              // Add current group to the context if is not available yet.
-              const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-              const editUsers = missingMe
-                ? insert(0, { name: me.email }, editContext)
-                : editContext;
               const initialValues = pick(
                 [
                   'platform_title',
                   'platform_email',
                   'platform_url',
                   'platform_language',
-                  'platform_external_auth',
-                  'platform_registration',
-                  'platform_demo',
                 ],
                 settings,
               );
+              const parameters = JSON.parse(settings.platform_parameters);
               return (
                 <Formik
                   enableReinitialize={true}
                   initialValues={initialValues}
                   validationSchema={settingsValidation(t)}
-                  render={() => (
+                >
+                  {() => (
                     <Form>
                       <Grid container={true} spacing={3}>
-                        <Grid item={true} xs={9}>
+                        <Grid item={true} xs={6}>
                           <Paper
                             classes={{ root: classes.paper }}
                             elevation={2}
@@ -170,69 +151,57 @@ class Settings extends Component {
                             <Typography variant="h1" gutterBottom={true}>
                               {t('Global')}
                             </Typography>
-                            <Field
+                            <TextField
                               name="platform_title"
-                              component={TextField}
                               label={t('Name')}
                               fullWidth={true}
                               onFocus={this.handleChangeFocus.bind(this, id)}
                               onSubmit={this.handleSubmitField.bind(this, id)}
                               helperText={
                                 <SubscriptionFocus
-                                  me={me}
-                                  users={editUsers}
+                                  context={editContext}
                                   fieldName="platform_title"
                                 />
                               }
                             />
-                            <Field
+                            <TextField
                               name="platform_email"
-                              component={TextField}
                               label={t('Sender email address')}
                               fullWidth={true}
-                              style={{ marginTop: 10 }}
+                              style={{ marginTop: 20 }}
                               onFocus={this.handleChangeFocus.bind(this, id)}
                               onSubmit={this.handleSubmitField.bind(this, id)}
                               helperText={
                                 <SubscriptionFocus
-                                  me={me}
-                                  users={editUsers}
+                                  context={editContext}
                                   fieldName="platform_email"
                                 />
                               }
                             />
-                            <Field
+                            <TextField
                               name="platform_url"
-                              component={TextField}
                               label={t('Base URL')}
                               fullWidth={true}
-                              style={{ marginTop: 10 }}
+                              style={{ marginTop: 20 }}
                               onFocus={this.handleChangeFocus.bind(this, id)}
                               onSubmit={this.handleSubmitField.bind(this, id)}
                               helperText={
                                 <SubscriptionFocus
-                                  me={me}
-                                  users={editUsers}
+                                  context={editContext}
                                   fieldName="platform_email"
                                 />
                               }
                             />
-                            <Field
+                            <SelectField
                               name="platform_language"
-                              component={Select}
                               label={t('Language')}
                               fullWidth={true}
-                              inputProps={{
-                                name: 'platform_language',
-                                id: 'platform-language',
-                              }}
-                              containerstyle={{ marginTop: 10, width: '100%' }}
+                              containerstyle={{ marginTop: 20, width: '100%' }}
                               onFocus={this.handleChangeFocus.bind(this, id)}
                               onChange={this.handleSubmitField.bind(this, id)}
                               helpertext={
                                 <SubscriptionFocus
-                                  me={me}
-                                  users={editUsers}
+                                  context={editContext}
                                   fieldName="platform_language"
                                 />
                               }
@@ -242,56 +211,79 @@ class Settings extends Component {
                               </MenuItem>
                               <MenuItem value="en">English</MenuItem>
                               <MenuItem value="fr">Français</MenuItem>
-                            </Field>
+                            </SelectField>
                           </Paper>
                         </Grid>
-                        <Grid item={true} xs={3}>
+                        <Grid item={true} xs={6}>
                           <Paper
                             classes={{ root: classes.paper }}
                             elevation={2}
                           >
                             <Typography variant="h1" gutterBottom={true}>
-                              {t('Options')}
+                              {t('Parameters')}
                             </Typography>
-                            <Field
-                              name="platform_external_auth"
-                              component={Switch}
-                              label={t('External authentication')}
-                              onChange={this.handleSubmitField.bind(this, id)}
-                            />
-                            <Field
-                              name="platform_registration"
-                              component={Switch}
-                              label={t('Registration')}
-                              onChange={this.handleSubmitField.bind(this, id)}
-                            />
-                            <Field
-                              name="platform_demo"
-                              component={Switch}
-                              label={t('Demo credentials')}
-                              onChange={this.handleSubmitField.bind(this, id)}
-                            />
+                            <Typography
+                              variant="h3"
+                              gutterBottom={true}
+                              style={{ marginTop: 20 }}
+                            >
+                              {t('Grakn')}
+                            </Typography>
+                            {parameters.grakn.hostname}:{parameters.grakn.port}
+                            <Typography
+                              variant="h3"
+                              gutterBottom={true}
+                              style={{ marginTop: 20 }}
+                            >
+                              {t('ElasticSearch')}
+                            </Typography>
+                            {parameters.elasticsearch.url}
+                            <Typography
+                              variant="h3"
+                              gutterBottom={true}
+                              style={{ marginTop: 20 }}
+                            >
+                              {t('Minio')}
+                            </Typography>
+                            {parameters.minio.endpoint}:{parameters.minio.port}
+                            <Typography
+                              variant="h3"
+                              gutterBottom={true}
+                              style={{ marginTop: 20 }}
+                            >
+                              {t('Redis')}
+                            </Typography>
+                            {parameters.redis.hostname}:{parameters.redis.port}
+                            <Typography
+                              variant="h3"
+                              gutterBottom={true}
+                              style={{ marginTop: 20 }}
+                            >
+                              {t('RabbitMQ')}
+                            </Typography>
+                            {parameters.rabbitmq.hostname}:
+                            {parameters.rabbitmq.port}
                           </Paper>
                         </Grid>
                       </Grid>
                     </Form>
                   )}
-                />
+                </Formik>
               );
             }
             return (
               <Grid container={true} spacing={3}>
-                <Grid item={true} xs={9}>
+                <Grid item={true} xs={6}>
                   <Paper classes={{ root: classes.paper }} elevation={2}>
                     <Typography variant="h1" gutterBottom={true}>
                       {t('Global')}
                     </Typography>
                   </Paper>
                 </Grid>
-                <Grid item={true} xs={3}>
+                <Grid item={true} xs={6}>
                   <Paper classes={{ root: classes.paper }} elevation={2}>
                     <Typography variant="h1" gutterBottom={true}>
-                      {t('Options')}
+                      {t('Parameters')}
                     </Typography>
                   </Paper>
                 </Grid>
@@ -310,7 +302,4 @@ Settings.propTypes = {
   nsd: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(Settings);
+export default compose(inject18n, withStyles(styles))(Settings);

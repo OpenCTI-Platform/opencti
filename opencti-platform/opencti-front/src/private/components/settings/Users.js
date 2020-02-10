@@ -62,7 +62,7 @@ class Users extends Component {
         width: '20%',
         isSortable: true,
       },
-      email: {
+      user_email: {
         label: 'Email',
         width: '30%',
         isSortable: true,
@@ -84,22 +84,18 @@ class Users extends Component {
       },
     };
     return (
-      <ListLines
-        sortBy={sortBy}
+      <ListLines sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         displayImport={false}
         secondaryAction={true}
-        keyword={searchTerm}
-      >
-        <QueryRenderer
-          query={usersLinesQuery}
+        keyword={searchTerm}>
+        <QueryRenderer query={usersLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
-            <UsersLines
-              data={props}
+            <UsersLines data={props}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
@@ -116,7 +112,6 @@ class Users extends Component {
     } = this.state;
     const { classes } = this.props;
     const paginationOptions = {
-      isUser: true,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',

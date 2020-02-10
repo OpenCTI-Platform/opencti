@@ -61,6 +61,7 @@ const entityIncidentsTableTimeIncidentsTimeSeriesQuery = graphql`
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
+    $relationType: String!
   ) {
     incidentsTimeSeries(
       objectId: $objectId
@@ -69,6 +70,7 @@ const entityIncidentsTableTimeIncidentsTimeSeriesQuery = graphql`
       startDate: $startDate
       endDate: $endDate
       interval: $interval
+      relationType: $relationType
     ) {
       date
       value
@@ -92,6 +94,7 @@ class EntityIncidentsTableTime extends Component {
       md,
       yd,
       entityId,
+      relationType,
       variant,
       classes,
       startDate,
@@ -106,6 +109,7 @@ class EntityIncidentsTableTime extends Component {
       startDate: finalStartDate,
       endDate: variant === 'explore' && endDate ? endDate : now(),
       interval: this.state.interval,
+      relationType: relationType || 'targets',
     };
     return (
       <QueryRenderer
@@ -287,6 +291,7 @@ EntityIncidentsTableTime.propTypes = {
   yd: PropTypes.func,
   configuration: PropTypes.object,
   handleOpenConfig: PropTypes.func,
+  relationType: PropTypes.string,
 };
 
 export default compose(

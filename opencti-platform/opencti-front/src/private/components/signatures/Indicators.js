@@ -30,8 +30,7 @@ import IndicatorsRightBar from './indicators/IndicatorsRightBar';
 
 const styles = () => ({
   container: {
-    margin: 0,
-    padding: '0 260px 0 0',
+    paddingRight: 250,
   },
 });
 
@@ -48,9 +47,9 @@ class Indicators extends Component {
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
+      indicatorTypes: propOr([], 'indicatorTypes', params),
+      observableTypes: propOr([], 'observableTypes', params),
       filters: {},
-      indicatorTypes: [],
-      observableTypes: [],
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
     };
@@ -79,25 +78,37 @@ class Indicators extends Component {
 
   handleToggleIndicatorType(type) {
     if (this.state.indicatorTypes.includes(type)) {
-      this.setState({
-        indicatorTypes: filter((t) => t !== type, this.state.indicatorTypes),
-      });
+      this.setState(
+        {
+          indicatorTypes: filter((t) => t !== type, this.state.indicatorTypes),
+        },
+        () => this.saveView(),
+      );
     } else {
-      this.setState({
-        indicatorTypes: append(type, this.state.indicatorTypes),
-      });
+      this.setState(
+        {
+          indicatorTypes: append(type, this.state.indicatorTypes),
+        },
+        () => this.saveView(),
+      );
     }
   }
 
   handleToggleObservableType(type) {
     if (this.state.observableTypes.includes(type)) {
-      this.setState({
-        observableTypes: filter((t) => t !== type, this.state.observableTypes),
-      });
+      this.setState(
+        {
+          observableTypes: filter((t) => t !== type, this.state.observableTypes),
+        },
+        () => this.saveView(),
+      );
     } else {
-      this.setState({
-        observableTypes: append(type, this.state.observableTypes),
-      });
+      this.setState(
+        {
+          observableTypes: append(type, this.state.observableTypes),
+        },
+        () => this.saveView(),
+      );
     }
   }
 
@@ -168,6 +179,7 @@ class Indicators extends Component {
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
         exportEntityType="Indicator"
+        exportContext={null}
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}

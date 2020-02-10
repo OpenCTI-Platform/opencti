@@ -11,13 +11,28 @@ import StixRelation from '../../common/stix_relations/StixRelation';
 import EntityIndicators from '../../signatures/indicators/EntityIndicators';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
-const styles = () => ({
+const styles = (theme) => ({
   container: {
-    margin: 0,
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
   },
-  containerWithoutPadding: {
-    margin: 0,
-    padding: 0,
+  containerWithPadding: {
+    flexGrow: 1,
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    paddingRight: 250,
+  },
+  containerWithPaddingExport: {
+    flexGrow: 1,
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    paddingRight: 560,
   },
   paper: {
     height: '100%',
@@ -29,19 +44,27 @@ const styles = () => ({
 });
 
 class IntrusionSetIndicatorsComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { withPadding: false };
+  }
+
   render() {
+    const { withPadding } = this.state;
     const { classes, intrusionSet, location } = this.props;
     const link = `/dashboard/threats/intrusion_sets/${intrusionSet.id}/indicators`;
+    let className = classes.containerWithPadding;
+    if (
+      location.pathname.includes(
+        `/dashboard/threats/intrusion_sets/${intrusionSet.id}/indicators/relations/`,
+      )
+    ) {
+      className = classes.containerWithoutPadding;
+    } else if (withPadding) {
+      className = classes.containerWithPaddingExport;
+    }
     return (
-      <div
-        className={
-          location.pathname.includes(
-            `/dashboard/threats/intrusion_sets/${intrusionSet.id}/indicators/relations/`,
-          )
-            ? classes.containerWithoutPadding
-            : classes.container
-        }
-      >
+      <div className={className}>
         <StixDomainEntityHeader
           stixDomainEntity={intrusionSet}
           PopoverComponent={<IntrusionSetPopover />}
@@ -50,10 +73,7 @@ class IntrusionSetIndicatorsComponent extends Component {
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/indicators/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
-              entityId={intrusionSet.id}
-              {...routeProps}
-            />
+            <StixRelation entityId={intrusionSet.id} {...routeProps} />
           )}
         />
         <Route

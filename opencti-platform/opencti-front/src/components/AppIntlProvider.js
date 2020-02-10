@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import * as PropTypes from 'prop-types';
 import { IntlProvider } from 'react-intl';
 import MomentUtils from '@date-io/moment';
@@ -10,9 +10,11 @@ import { createFragmentContainer } from 'react-relay';
 import { pathOr } from 'ramda';
 import locale from '../utils/BrowserLanguage';
 import i18n from '../utils/Localization';
+import { UserContext } from '../utils/Security';
 
 const AppIntlProvider = (props) => {
   const { children } = props;
+  const me = useContext(UserContext);
   const intlError = (error) => {
     const matchingLocale = /for locale: "([a-z]+)"/gm;
     const regMatch = matchingLocale.exec(error);
@@ -24,12 +26,11 @@ const AppIntlProvider = (props) => {
     ['settings', 'platform_language'],
     props,
   );
-  const userLanguage = pathOr(null, ['me', 'language'], props);
   const platformLang = platformLanguage !== null && platformLanguage !== 'auto'
     ? props.settings.platform_language
     : locale;
-  const lang = userLanguage !== null && userLanguage !== 'auto'
-    ? props.me.language
+  const lang = me.language !== null && me.language !== 'auto'
+    ? me.language
     : platformLang;
   return (
       <IntlProvider locale={lang} onError={intlError} key={lang} messages={i18n.messages[lang]}>
@@ -45,16 +46,10 @@ const AppIntlProvider = (props) => {
 
 AppIntlProvider.propTypes = {
   children: PropTypes.node,
-  me: PropTypes.object,
   settings: PropTypes.object,
 };
 
 export const ConnectedIntlProvider = createFragmentContainer(AppIntlProvider, {
-  me: graphql`
-    fragment AppIntlProvider_me on User {
-      language
-    }
-  `,
   settings: graphql`
     fragment AppIntlProvider_settings on Settings {
       platform_language

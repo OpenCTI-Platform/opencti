@@ -41,9 +41,6 @@ export const incidentEditionQuery = graphql`
     incident(id: $id) {
       ...IncidentEditionContainer_incident
     }
-    me {
-      ...IncidentEditionContainer_me
-    }
   }
 `;
 
@@ -95,7 +92,6 @@ class IncidentEdition extends Component {
               if (props) {
                 return (
                   <IncidentEditionContainer
-                    me={props.me}
                     incident={props.incident}
                     handleClose={this.handleClose.bind(this)}
                   />

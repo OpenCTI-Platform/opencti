@@ -1,25 +1,18 @@
-import React, { Component } from 'react';
+import React, { useEffect } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
+import { Form, Formik } from 'formik';
 import {
-  compose,
-  insert,
-  find,
-  propEq,
-  pick,
   assoc,
-  pipe,
-  map,
-  pathOr,
+  compose,
   difference,
   head,
-  union,
-  sortWith,
-  ascend,
-  path,
+  map,
+  pathOr,
+  pick,
+  pipe,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -32,9 +25,8 @@ import { dateFormat } from '../../../../utils/Time';
 import { resolveLink } from '../../../../utils/Entity';
 import inject18n from '../../../../components/i18n';
 import {
-  QueryRenderer,
   commitMutation,
-  fetchQuery,
+  QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -42,13 +34,12 @@ import {
   SubscriptionAvatars,
   SubscriptionFocus,
 } from '../../../../components/Subscription';
-import Select from '../../../../components/Select';
-import Autocomplete from '../../../../components/Autocomplete';
+import SelectField from '../../../../components/SelectField';
 import DatePickerField from '../../../../components/DatePickerField';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
-import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
-import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
 import Loader from '../../../../components/Loader';
+import KillChainPhasesField from '../form/KillChainPhasesField';
+import MarkingDefinitionsField from '../form/MarkingDefinitionsField';
 
 const styles = (theme) => ({
   header: {
@@ -170,64 +161,27 @@ const stixRelationValidation = (t) => Yup.object().shape({
   role_played: Yup.string(),
 });
 
-class StixRelationEditionContainer extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { killChainPhases: [], markingDefinitions: [] };
-  }
-
-  componentDidMount() {
+const StixRelationEditionContainer = ({
+  t,
+  classes,
+  handleClose,
+  handleDelete,
+  stixRelation,
+  stixDomainEntity,
+}) => {
+  const { editContext } = stixRelation;
+  useEffect(() => {
     const sub = requestSubscription({
       subscription,
       variables: {
-        // eslint-disable-next-line
-        id: this.props.stixRelation.id
+        id: stixRelation.id,
       },
     });
-    this.setState({ sub });
-  }
-
-  componentWillUnmount() {
-    this.state.sub.dispose();
-  }
-
-  searchKillChainPhases(event) {
-    fetchQuery(killChainPhasesSearchQuery, {
-      search: event.target.value,
-    }).then((data) => {
-      const killChainPhases = pipe(
-        pathOr([], ['killChainPhases', 'edges']),
-        sortWith([ascend(path(['node', 'phase_order']))]),
-        map((n) => ({
-          label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-          value: n.node.id,
-        })),
-      )(data);
-      this.setState({
-        killChainPhases: union(this.state.killChainPhases, killChainPhases),
-      });
-    });
-  }
-
-  searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsLinesSearchQuery, {
-      search: event.target.value,
-    }).then((data) => {
-      const markingDefinitions = pipe(
-        pathOr([], ['markingDefinitions', 'edges']),
-        map((n) => ({ label: n.node.definition, value: n.node.id })),
-      )(data);
-      this.setState({
-        markingDefinitions: union(
-          this.state.markingDefinitions,
-          markingDefinitions,
-        ),
-      });
-    });
-  }
-
-  handleChangeKillChainPhases(name, values) {
-    const { stixRelation } = this.props;
+    return () => {
+      sub.dispose();
+    };
+  });
+  const handleChangeKillChainPhases = (name, values) => {
     const currentKillChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
       map((n) => ({
@@ -264,10 +218,8 @@ class StixRelationEditionContainer extends Component {
         },
       });
     }
-  }
-
-  handleChangeMarkingDefinition(name, values) {
-    const { stixRelation } = this.props;
+  };
+  const handleChangeMarkingDefinitions = (name, values) => {
     const currentMarkingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
       map((n) => ({
@@ -304,297 +256,253 @@ class StixRelationEditionContainer extends Component {
         },
       });
     }
-  }
-
-  handleChangeFocus(name) {
+  };
+  const handleChangeFocus = (name) => {
     commitMutation({
       mutation: stixRelationEditionFocus,
       variables: {
-        id: this.props.stixRelation.id,
+        id: stixRelation.id,
         input: {
           focusOn: name,
         },
       },
     });
-  }
-
-  handleSubmitField(name, value) {
-    stixRelationValidation(this.props.t)
+  };
+  const handleSubmitField = (name, value) => {
+    stixRelationValidation(t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
           mutation: stixRelationMutationFieldPatch,
           variables: {
-            id: this.props.stixRelation.id,
+            id: stixRelation.id,
             input: { key: name, value },
           },
         });
       })
       .catch(() => false);
-  }
+  };
 
-  render() {
-    const {
-      t,
-      classes,
-      handleClose,
-      handleDelete,
-      stixRelation,
-      me,
-      stixDomainEntity,
-    } = this.props;
-    const { editContext } = stixRelation;
-    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe
-      ? insert(0, { name: me.email }, editContext)
-      : editContext;
-    const killChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map((n) => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-        relationId: n.relation.id,
-      })),
-    )(stixRelation);
-    const markingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-        relationId: n.relation.id,
-      })),
-    )(stixRelation);
-    const initialValues = pipe(
-      assoc('first_seen', dateFormat(stixRelation.first_seen)),
-      assoc('last_seen', dateFormat(stixRelation.last_seen)),
-      assoc('killChainPhases', killChainPhases),
-      assoc('markingDefinitions', markingDefinitions),
-      pick([
-        'weight',
-        'first_seen',
-        'last_seen',
-        'description',
-        'role_played',
-        'killChainPhases',
-        'markingDefinitions',
-      ]),
-    )(stixRelation);
-    const link = stixDomainEntity
-      ? resolveLink(stixDomainEntity.entity_type)
-      : '';
-    return (
-      <div>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose.bind(this)}
-          >
-            <Close fontSize="small" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update a relationship')}
-          </Typography>
-          <SubscriptionAvatars users={editUsers} />
-          <div className="clearfix" />
-        </div>
-        <div className={classes.container}>
-          <QueryRenderer
-            query={attributesQuery}
-            variables={{ type: 'role_played' }}
-            render={({ props }) => {
-              if (props && props.attributes) {
-                const rolesPlayedEdges = props.attributes.edges;
-                return (
-                  <Formik
-                    enableReinitialize={true}
-                    initialValues={initialValues}
-                    validationSchema={stixRelationValidation(t)}
-                    render={() => (
-                      <Form style={{ margin: '20px 0 20px 0' }}>
-                        <Field
-                          name="weight"
-                          component={Select}
-                          onFocus={this.handleChangeFocus.bind(this)}
-                          onChange={this.handleSubmitField.bind(this)}
-                          label={t('Confidence level')}
+  const killChainPhases = pipe(
+    pathOr([], ['killChainPhases', 'edges']),
+    map((n) => ({
+      label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+      value: n.node.id,
+      relationId: n.relation.id,
+    })),
+  )(stixRelation);
+  const markingDefinitions = pipe(
+    pathOr([], ['markingDefinitions', 'edges']),
+    map((n) => ({
+      label: n.node.definition,
+      value: n.node.id,
+      relationId: n.relation.id,
+    })),
+  )(stixRelation);
+  const initialValues = pipe(
+    assoc('first_seen', dateFormat(stixRelation.first_seen)),
+    assoc('last_seen', dateFormat(stixRelation.last_seen)),
+    assoc('killChainPhases', killChainPhases),
+    assoc('markingDefinitions', markingDefinitions),
+    pick([
+      'weight',
+      'first_seen',
+      'last_seen',
+      'description',
+      'role_played',
+      'killChainPhases',
+      'markingDefinitions',
+    ]),
+  )(stixRelation);
+  const link = stixDomainEntity
+    ? resolveLink(stixDomainEntity.entity_type)
+    : '';
+  return (
+    <div>
+      <div className={classes.header}>
+        <IconButton
+          aria-label="Close"
+          className={classes.closeButton}
+          onClick={handleClose}
+        >
+          <Close fontSize="small" />
+        </IconButton>
+        <Typography variant="h6" classes={{ root: classes.title }}>
+          {t('Update a relationship')}
+        </Typography>
+        <SubscriptionAvatars context={editContext} />
+        <div className="clearfix" />
+      </div>
+      <div className={classes.container}>
+        <QueryRenderer
+          query={attributesQuery}
+          variables={{ type: 'role_played' }}
+          render={({ props }) => {
+            if (props && props.attributes) {
+              const rolesPlayedEdges = props.attributes.edges;
+              return (
+                <Formik
+                  enableReinitialize={true}
+                  initialValues={initialValues}
+                  validationSchema={stixRelationValidation(t)}
+                >
+                  {(setFieldValue) => (
+                    <Form style={{ margin: '20px 0 20px 0' }}>
+                      <SelectField
+                        name="weight"
+                        onFocus={handleChangeFocus}
+                        onChange={handleSubmitField}
+                        label={t('Confidence level')}
+                        fullWidth={true}
+                        containerstyle={{ width: '100%' }}
+                        helpertext={
+                          <SubscriptionFocus
+                            context={editContext}
+                            fieldName="weight"
+                          />
+                        }
+                      >
+                        <MenuItem value="1">{t('Low')}</MenuItem>
+                        <MenuItem value="2">{t('Moderate')}</MenuItem>
+                        <MenuItem value="3">{t('Good')}</MenuItem>
+                        <MenuItem value="4">{t('Strong')}</MenuItem>
+                      </SelectField>
+                      {stixRelation.relationship_type === 'indicates' ? (
+                        <SelectField
+                          name="role_played"
+                          onFocus={handleChangeFocus}
+                          onChange={handleSubmitField}
+                          label={t('Played role')}
                           fullWidth={true}
-                          inputProps={{
-                            name: 'weight',
-                            id: 'weight',
-                          }}
-                          containerstyle={{ width: '100%' }}
+                          containerstyle={{ marginTop: 20, width: '100%' }}
                           helpertext={
                             <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
-                              fieldName="weight"
+                              context={editContext}
+                              fieldName="role_played"
                             />
                           }
                         >
-                          <MenuItem value="1">{t('Low')}</MenuItem>
-                          <MenuItem value="2">{t('Moderate')}</MenuItem>
-                          <MenuItem value="3">{t('Good')}</MenuItem>
-                          <MenuItem value="4">{t('Strong')}</MenuItem>
-                        </Field>
-                        {stixRelation.relationship_type === 'indicates' ? (
-                          <Field
-                            name="role_played"
-                            component={Select}
-                            onFocus={this.handleChangeFocus.bind(this)}
-                            onChange={this.handleSubmitField.bind(this)}
-                            label={t('Played role')}
-                            fullWidth={true}
-                            inputProps={{
-                              name: 'role_played',
-                              id: 'role_played',
-                            }}
-                            containerstyle={{ marginTop: 10, width: '100%' }}
-                            helpertext={
-                              <SubscriptionFocus
-                                me={me}
-                                users={editUsers}
-                                fieldName="role_played"
-                              />
-                            }
-                          >
-                            {rolesPlayedEdges.map((rolePlayedEdge) => (
-                              <MenuItem
-                                key={rolePlayedEdge.node.value}
-                                value={rolePlayedEdge.node.value}
-                              >
-                                {t(rolePlayedEdge.node.value)}
-                              </MenuItem>
-                            ))}
-                          </Field>
-                        ) : (
-                          ''
+                          {rolesPlayedEdges.map((rolePlayedEdge) => (
+                            <MenuItem
+                              key={rolePlayedEdge.node.value}
+                              value={rolePlayedEdge.node.value}
+                            >
+                              {t(rolePlayedEdge.node.value)}
+                            </MenuItem>
+                          ))}
+                        </SelectField>
+                      ) : (
+                        ''
+                      )}
+                      <DatePickerField
+                        name="first_seen"
+                        label={t('First seen')}
+                        invalidDateMessage={t(
+                          'The value must be a date (YYYY-MM-DD)',
                         )}
-                        <Field
-                          name="first_seen"
-                          component={DatePickerField}
-                          label={t('First seen')}
-                          fullWidth={true}
-                          style={{ marginTop: 10 }}
-                          onFocus={this.handleChangeFocus.bind(this)}
-                          onSubmit={this.handleSubmitField.bind(this)}
-                          helperText={
-                            <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
-                              fieldName="first_seen"
-                            />
-                          }
-                        />
-                        <Field
-                          name="last_seen"
-                          component={DatePickerField}
-                          label={t('Last seen')}
-                          fullWidth={true}
-                          style={{ marginTop: 10 }}
-                          onFocus={this.handleChangeFocus.bind(this)}
-                          onSubmit={this.handleSubmitField.bind(this)}
-                          helperText={
-                            <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
-                              fieldName="last_seen"
-                            />
-                          }
-                        />
-                        <Field
-                          name="description"
-                          component={TextField}
-                          label={t('Description')}
-                          fullWidth={true}
-                          multiline={true}
-                          rows={4}
-                          style={{ marginTop: 10 }}
-                          onFocus={this.handleChangeFocus.bind(this)}
-                          onSubmit={this.handleSubmitField.bind(this)}
-                          helperText={
-                            <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
-                              fieldName="description"
-                            />
-                          }
-                        />
-                        <Field
-                          name="killChainPhases"
-                          component={Autocomplete}
-                          multiple={true}
-                          label={t('Kill chain phases')}
-                          options={this.state.killChainPhases}
-                          onInputChange={this.searchKillChainPhases.bind(this)}
-                          onChange={this.handleChangeKillChainPhases.bind(this)}
-                          onFocus={this.handleChangeFocus.bind(this)}
-                          helperText={
-                            <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
-                              fieldName="killChainPhases"
-                            />
-                          }
-                        />
-                        <Field
-                          name="markingDefinitions"
-                          component={Autocomplete}
-                          multiple={true}
-                          label={t('Marking')}
-                          options={this.state.markingDefinitions}
-                          onInputChange={this.searchMarkingDefinitions.bind(
-                            this,
-                          )}
-                          onChange={this.handleChangeMarkingDefinition.bind(
-                            this,
-                          )}
-                          onFocus={this.handleChangeFocus.bind(this)}
-                          helperText={
-                            <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
-                              fieldName="markingDefinitions"
-                            />
-                          }
-                        />
-                      </Form>
-                    )}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          />
-          {stixDomainEntity ? (
-            <Button
-              variant="contained"
-              color="primary"
-              component={Link}
-              to={`${link}/${stixDomainEntity.id}/knowledge/relations/${stixRelation.id}`}
-              classes={{ root: classes.buttonLeft }}
-            >
-              {t('Details')}
-            </Button>
-          ) : (
-            ''
-          )}
-          {typeof handleDelete === 'function' ? (
-            <Button
-              variant="contained"
-              onClick={handleDelete.bind(this)}
-              classes={{ root: classes.button }}
-            >
-              {t('Delete')}
-            </Button>
-          ) : (
-            ''
-          )}
-        </div>
+                        fullWidth={true}
+                        style={{ marginTop: 20 }}
+                        onFocus={handleChangeFocus}
+                        onSubmit={handleSubmitField}
+                        helperText={
+                          <SubscriptionFocus
+                            context={editContext}
+                            fieldName="first_seen"
+                          />
+                        }
+                      />
+                      <DatePickerField
+                        name="last_seen"
+                        label={t('Last seen')}
+                        invalidDateMessage={t(
+                          'The value must be a date (YYYY-MM-DD)',
+                        )}
+                        fullWidth={true}
+                        style={{ marginTop: 20 }}
+                        onFocus={handleChangeFocus}
+                        onSubmit={handleSubmitField}
+                        helperText={
+                          <SubscriptionFocus
+                            context={editContext}
+                            fieldName="last_seen"
+                          />
+                        }
+                      />
+                      <TextField
+                        name="description"
+                        label={t('Description')}
+                        fullWidth={true}
+                        multiline={true}
+                        rows={4}
+                        style={{ marginTop: 20 }}
+                        onFocus={handleChangeFocus}
+                        onSubmit={handleSubmitField}
+                        helperText={
+                          <SubscriptionFocus
+                            context={editContext}
+                            fieldName="description"
+                          />
+                        }
+                      />
+                      <KillChainPhasesField
+                        name="killChainPhases"
+                        style={{ marginTop: 20, width: '100%' }}
+                        setFieldValue={setFieldValue}
+                        helpertext={
+                          <SubscriptionFocus
+                            context={editContext}
+                            fieldName="killChainPhases"
+                          />
+                        }
+                        onChange={handleChangeKillChainPhases}
+                      />
+                      <MarkingDefinitionsField
+                        name="markingDefinitions"
+                        style={{ marginTop: 20, width: '100%' }}
+                        helpertext={
+                          <SubscriptionFocus
+                            context={editContext}
+                            fieldName="markingDefinitions"
+                          />
+                        }
+                        onChange={handleChangeMarkingDefinitions}
+                      />
+                    </Form>
+                  )}
+                </Formik>
+              );
+            }
+            return <Loader variant="inElement" />;
+          }}
+        />
+        {stixDomainEntity ? (
+          <Button
+            variant="contained"
+            color="primary"
+            component={Link}
+            to={`${link}/${stixDomainEntity.id}/knowledge/relations/${stixRelation.id}`}
+            classes={{ root: classes.buttonLeft }}
+          >
+            {t('Details')}
+          </Button>
+        ) : (
+          ''
+        )}
+        {typeof handleDelete === 'function' ? (
+          <Button
+            variant="contained"
+            onClick={() => handleDelete()}
+            classes={{ root: classes.button }}
+          >
+            {t('Delete')}
+          </Button>
+        ) : (
+          ''
+        )}
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
 StixRelationEditionContainer.propTypes = {
   handleClose: PropTypes.func,
@@ -602,7 +510,6 @@ StixRelationEditionContainer.propTypes = {
   classes: PropTypes.object,
   stixDomainEntity: PropTypes.object,
   stixRelation: PropTypes.object,
-  me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
@@ -648,11 +555,6 @@ const StixRelationEditionFragment = createFragmentContainer(
           name
           focusOn
         }
-      }
-    `,
-    me: graphql`
-      fragment StixRelationEditionOverview_me on User {
-        email
       }
     `,
   },

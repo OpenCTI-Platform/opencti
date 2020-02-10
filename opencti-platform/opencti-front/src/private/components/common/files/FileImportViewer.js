@@ -26,7 +26,12 @@ const styles = () => ({
 });
 
 const FileImportViewerBase = ({
-  entity, connectors, relay, t, classes,
+  entity,
+  disableImport,
+  connectors,
+  relay,
+  t,
+  classes,
 }) => {
   const { id, importFiles } = entity;
   const { edges } = importFiles;
@@ -57,16 +62,19 @@ const FileImportViewerBase = ({
             />
           </div>
           <div className="clearfix" />
-          <Paper
-            classes={{ root: classes.paper }}
-            elevation={2}
-          >
+          <Paper classes={{ root: classes.paper }} elevation={2}>
             {edges.length ? (
               <List>
                 {edges.map((file) => (
                   <FileLine
                     key={file.node.id}
+                    context={
+                      entity && entity.entity_type === 'report'
+                        ? entity.id
+                        : null
+                    }
                     dense={true}
+                    disableImport={disableImport}
                     file={file.node}
                     connectors={
                       connectors && connectors[file.node.metaData.mimetype]
@@ -103,6 +111,7 @@ const FileImportViewer = createRefetchContainer(
     entity: graphql`
       fragment FileImportViewer_entity on StixDomainEntity {
         id
+        entity_type
         importFiles(first: 1000) @connection(key: "Pagination_importFiles") {
           edges {
             node {
@@ -122,6 +131,7 @@ const FileImportViewer = createRefetchContainer(
 
 FileImportViewer.propTypes = {
   entity: PropTypes.object,
+  disableImport: PropTypes.bool,
   connectors: PropTypes.array,
 };
 

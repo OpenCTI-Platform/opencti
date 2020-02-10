@@ -54,8 +54,8 @@ const FileLineAskDeleteMutation = graphql`
 `;
 
 const FileLineImportAskJobMutation = graphql`
-  mutation FileLineImportAskJobMutation($fileName: ID!) {
-    askJobImport(fileName: $fileName) {
+  mutation FileLineImportAskJobMutation($fileName: ID!, $context: String) {
+    askJobImport(fileName: $fileName, context: $context) {
       ...FileLine_file
     }
   }
@@ -65,7 +65,7 @@ class FileLineComponent extends Component {
   askForImportJob() {
     commitMutation({
       mutation: FileLineImportAskJobMutation,
-      variables: { fileName: this.props.file.id },
+      variables: { fileName: this.props.file.id, context: this.props.context },
       onCompleted: () => {
         MESSAGING$.notifySuccess('Import successfully asked');
       },
@@ -119,6 +119,7 @@ class FileLineComponent extends Component {
     const fileName = propOr('', 'name', file).includes('_')
       ? pipe(split('_'), drop(1), join('_'))(file.name)
       : file.name;
+    const toolTip = pathOr('', ['metaData', 'listargs'], file);
     return (
       <div>
         <ListItem
@@ -139,7 +140,7 @@ class FileLineComponent extends Component {
           <ListItemIcon>
             {isProgress ? <CircularProgress size={20} /> : <FileOutline />}
           </ListItemIcon>
-          <Tooltip title={pathOr('', ['metaData', 'listargs'], file)}>
+          <Tooltip title={toolTip !== 'null' ? toolTip : ''}>
             <ListItemText
               classes={{ root: classes.itemText }}
               primary={fileName}
@@ -150,12 +151,10 @@ class FileLineComponent extends Component {
             {!disableImport ? (
               <Tooltip title={t('Launch an import of this file')}>
                 <span>
-                  <IconButton
-                    disabled={isProgress || !isImportActive()}
+                  <IconButton disabled={isProgress || !isImportActive()}
                     onClick={this.askForImportJob.bind(this)}
                     aria-haspopup="true"
-                    color="primary"
-                  >
+                    color="primary">
                     <ProgressUpload />
                   </IconButton>
                 </span>
@@ -220,6 +219,7 @@ FileLineComponent.propTypes = {
   dense: PropTypes.bool,
   disableImport: PropTypes.bool,
   directDownload: PropTypes.bool,
+  context: PropTypes.string,
 };
 
 const FileLine = createFragmentContainer(FileLineComponent, {

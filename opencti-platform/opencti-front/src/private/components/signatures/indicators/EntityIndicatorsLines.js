@@ -8,10 +8,20 @@ import {
   EntityIndicatorLine,
   EntityIndicatorLineDummy,
 } from './EntityIndicatorLine';
+import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 25;
 
 class EntityIndicatorsLines extends Component {
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'stixRelations',
+      this.props.setNumberOfElements.bind(this),
+    );
+  }
+
   render() {
     const {
       initialLoading,
@@ -52,6 +62,7 @@ EntityIndicatorsLines.propTypes = {
   stixRelations: PropTypes.object,
   initialLoading: PropTypes.bool,
   entityLink: PropTypes.string,
+  setNumberOfElements: PropTypes.func,
 };
 
 export const entityIndicatorsLinesQuery = graphql`
@@ -70,6 +81,7 @@ export const entityIndicatorsLinesQuery = graphql`
     $cursor: ID
     $orderBy: StixRelationsOrdering
     $orderMode: OrderingMode
+    $filters: [StixRelationsFiltering]
   ) {
     ...EntityIndicatorsLines_data
       @arguments(
@@ -87,6 +99,7 @@ export const entityIndicatorsLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -111,6 +124,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "StixRelationsOrdering", defaultValue: "first_seen" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          filters: { type: "[StixRelationsFiltering]" }
         ) {
         stixRelations(
           search: $search
@@ -127,6 +141,7 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_stixRelations") {
           edges {
             node {
@@ -169,6 +184,7 @@ export default createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: entityIndicatorsLinesQuery,

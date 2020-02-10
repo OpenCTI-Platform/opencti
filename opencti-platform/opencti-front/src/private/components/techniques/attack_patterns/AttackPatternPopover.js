@@ -164,9 +164,7 @@ class AttackPatternPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <AttackPatternEditionContainer
-                    me={props.me}
-                    attackPattern={props.attackPattern}
+                  <AttackPatternEditionContainer attackPattern={props.attackPattern}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

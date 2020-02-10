@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Field, Form } from 'formik';
+import { Formik, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -178,31 +178,28 @@ class MarkingDefinitionCreation extends Component {
               validationSchema={markingDefinitionValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
-              render={({ submitForm, handleReset, isSubmitting }) => (
+            >
+              {({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
+                  <TextField
                     name="definition_type"
-                    component={TextField}
                     label={t('Type')}
                     fullWidth={true}
                   />
-                  <Field
+                  <TextField
                     name="definition"
-                    component={TextField}
                     label={t('Definition')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <Field
+                  <ColorPickerField
                     name="color"
-                    component={ColorPickerField}
                     label={t('Color')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <Field
+                  <TextField
                     name="level"
-                    component={TextField}
                     label={t('Level')}
                     fullWidth={true}
                     type="number"
@@ -229,7 +226,7 @@ class MarkingDefinitionCreation extends Component {
                   </div>
                 </Form>
               )}
-            />
+            </Formik>
           </div>
         </Drawer>
       </div>

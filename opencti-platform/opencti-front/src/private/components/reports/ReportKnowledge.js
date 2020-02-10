@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, find, insert, propEq,
-} from 'ramda';
+import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { DiagramEngine } from 'storm-react-diagrams';
@@ -17,9 +15,7 @@ import GlobalLabelFactory from '../../../components/graph_node/GlobalLabelFactor
 import RelationNodeFactory from '../../../components/graph_node/RelationNodeFactory';
 import { SubscriptionAvatars } from '../../../components/Subscription';
 import ReportHeader from './ReportHeader';
-import ReportKnowledgeGraph, {
-  reportKnowledgeGraphQuery,
-} from './ReportKnowledgeGraph';
+import ReportKnowledgeGraph, { reportKnowledgeGraphQuery } from './ReportKnowledgeGraph';
 import Loader from '../../../components/Loader';
 
 const styles = (theme) => ({
@@ -52,23 +48,17 @@ class ReportKnowledgeComponent extends Component {
   }
 
   render() {
-    const { classes, report, me } = this.props;
+    const { classes, report } = this.props;
     const { editContext } = report;
-    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe
-      ? insert(0, { name: me.email }, editContext)
-      : editContext;
     return (
       <div className={classes.container}>
-        <Drawer
-          anchor="bottom"
+        <Drawer anchor="bottom"
           variant="permanent"
-          classes={{ paper: classes.bottomNav }}
-        >
+          classes={{ paper: classes.bottomNav }}>
           <div> &nbsp; </div>
         </Drawer>
         <ReportHeader report={report} variant="noMarking" />
-        <SubscriptionAvatars users={editUsers} variant="inGraph" />
+        <SubscriptionAvatars context={editContext} variant="inGraph" />
         <QueryRenderer
           query={reportKnowledgeGraphQuery}
           variables={{ id: report.id }}
@@ -91,7 +81,6 @@ class ReportKnowledgeComponent extends Component {
 
 ReportKnowledgeComponent.propTypes = {
   report: PropTypes.object,
-  me: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
@@ -105,11 +94,6 @@ const ReportKnowledge = createFragmentContainer(ReportKnowledgeComponent, {
         focusOn
       }
       ...ReportHeader_report
-    }
-  `,
-  me: graphql`
-    fragment ReportKnowledge_me on User {
-      email
     }
   `,
 });

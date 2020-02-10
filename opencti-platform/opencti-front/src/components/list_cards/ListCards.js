@@ -19,6 +19,7 @@ import { FileExportOutline } from 'mdi-material-ui';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainEntitiesExports from '../../private/components/common/stix_domain_entities/StixDomainEntitiesExports';
+import Security, { KNOWLEDGE_KNGETEXPORT } from '../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -91,6 +92,7 @@ class ListCards extends Component {
       orderAsc,
       children,
       exportEntityType,
+      exportContext,
       numberOfElements,
     } = this.props;
     return (
@@ -187,18 +189,20 @@ class ListCards extends Component {
             ) : (
               ''
             )}
-            {typeof handleToggleExports === 'function' ? (
-              <Tooltip title={t('Exports panel')}>
-                <IconButton
-                  color={openExports ? 'secondary' : 'primary'}
-                  onClick={handleToggleExports.bind(this)}
-                >
-                  <FileExportOutline />
-                </IconButton>
-              </Tooltip>
-            ) : (
-              ''
-            )}
+            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+              {typeof handleToggleExports === 'function' ? (
+                <Tooltip title={t('Exports panel')}>
+                  <IconButton
+                    color={openExports ? 'secondary' : 'primary'}
+                    onClick={handleToggleExports.bind(this)}
+                  >
+                    <FileExportOutline />
+                  </IconButton>
+                </Tooltip>
+              ) : (
+                ''
+              )}
+            </Security>
           </div>
         </div>
         <div className="clearfix" />
@@ -209,6 +213,7 @@ class ListCards extends Component {
             handleToggle={handleToggleExports.bind(this)}
             paginationOptions={paginationOptions}
             exportEntityType={exportEntityType}
+            context={exportContext}
           />
         ) : (
           ''
@@ -230,6 +235,7 @@ ListCards.propTypes = {
   openExports: PropTypes.bool,
   views: PropTypes.array,
   exportEntityType: PropTypes.string,
+  exportContext: PropTypes.string,
   keyword: PropTypes.string,
   filters: PropTypes.object,
   sortBy: PropTypes.string.isRequired,

@@ -41,9 +41,6 @@ export const countryEditionQuery = graphql`
     country(id: $id) {
       ...CountryEditionContainer_country
     }
-    me {
-      ...CountryEditionContainer_me
-    }
   }
 `;
 
@@ -78,16 +75,14 @@ class CountryEdition extends Component {
           onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Edit"
-          className={classes.editButton}
-        >
+          className={classes.editButton}>
           <Edit />
         </Fab>
         <Drawer
           open={this.state.open}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
+          onClose={this.handleClose.bind(this)}>
           <QueryRenderer
             query={countryEditionQuery}
             variables={{ id: countryId }}
@@ -95,7 +90,6 @@ class CountryEdition extends Component {
               if (props) {
                 return (
                   <CountryEditionContainer
-                    me={props.me}
                     country={props.country}
                     handleClose={this.handleClose.bind(this)}
                   />
@@ -112,7 +106,6 @@ class CountryEdition extends Component {
 
 CountryEdition.propTypes = {
   countryId: PropTypes.string,
-  me: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Field, Form } from 'formik';
+import { Formik, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -190,24 +190,22 @@ class TagCreation extends Component {
               validationSchema={tagValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onResetClassic.bind(this)}
-              render={({ submitForm, handleReset, isSubmitting }) => (
+            >
+              {({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
+                  <TextField
                     name="tag_type"
-                    component={TextField}
                     label={t('Type')}
                     fullWidth={true}
                   />
-                  <Field
+                  <TextField
                     name="value"
-                    component={TextField}
                     label={t('Value')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <Field
+                  <ColorPickerField
                     name="color"
-                    component={ColorPickerField}
                     label={t('Color')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
@@ -233,7 +231,7 @@ class TagCreation extends Component {
                   </div>
                 </Form>
               )}
-            />
+            </Formik>
           </div>
         </Drawer>
       </div>
@@ -256,7 +254,8 @@ class TagCreation extends Component {
           validationSchema={tagValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onResetContextual.bind(this)}
-          render={({ submitForm, handleReset, isSubmitting }) => (
+        >
+          {({ submitForm, handleReset, isSubmitting }) => (
             <Form>
               <Dialog
                 open={open}
@@ -265,22 +264,19 @@ class TagCreation extends Component {
               >
                 <DialogTitle>{t('Create a tag')}</DialogTitle>
                 <DialogContent>
-                  <Field
+                  <TextField
                     name="tag_type"
-                    component={TextField}
                     label={t('Type')}
                     fullWidth={true}
                   />
-                  <Field
+                  <TextField
                     name="value"
-                    component={TextField}
                     label={t('Value')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <Field
+                  <ColorPickerField
                     name="color"
-                    component={ColorPickerField}
                     label={t('Color')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
@@ -308,7 +304,7 @@ class TagCreation extends Component {
               </Dialog>
             </Form>
           )}
-        />
+        </Formik>
       </div>
     );
   }

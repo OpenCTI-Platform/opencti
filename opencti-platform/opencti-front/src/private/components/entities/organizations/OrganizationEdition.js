@@ -41,9 +41,6 @@ export const organizationEditionQuery = graphql`
     organization(id: $id) {
       ...OrganizationEditionContainer_organization
     }
-    me {
-      ...OrganizationEditionContainer_me
-    }
   }
 `;
 
@@ -95,7 +92,6 @@ class OrganizationEdition extends Component {
               if (props) {
                 return (
                   <OrganizationEditionContainer
-                    me={props.me}
                     organization={props.organization}
                     handleClose={this.handleClose.bind(this)}
                   />

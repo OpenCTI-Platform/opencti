@@ -165,9 +165,7 @@ class IncidentPopover extends Component {
               if (props) {
                 // Done
                 return (
-                  <IncidentEditionContainer
-                    me={props.me}
-                    incident={props.incident}
+                  <IncidentEditionContainer incident={props.incident}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

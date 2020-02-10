@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Field, Form } from 'formik';
+import { Form, Formik } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -8,21 +8,14 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import {
-  assoc, compose, pipe, pluck, omit,
-} from 'ramda';
+import { compose, omit, pipe } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
+import ListSubheader from '@material-ui/core/ListSubheader';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import Autocomplete from '../../../../components/Autocomplete';
-
-const roles = [
-  { label: 'ROLE_ROOT', value: 'ROLE_ROOT' },
-  { label: 'ROLE_ADMIN', value: 'ROLE_ADMIN' },
-];
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -77,13 +70,12 @@ const userMutation = graphql`
 
 const userValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  email: Yup.string()
+  user_email: Yup.string()
     .required(t('This field is required'))
     .email(t('The value must be an email address')),
   firstname: Yup.string(),
   lastname: Yup.string(),
   description: Yup.string(),
-  grant: Yup.array(),
   password: Yup.string().required(t('This field is required')),
   confirmation: Yup.string()
     .oneOf([Yup.ref('password'), null], t('The values do not match'))
@@ -115,10 +107,7 @@ class UserCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const finalValues = pipe(
-      assoc('grant', pluck('value', values.grant)),
-      omit(['confirmation']),
-    )(values);
+    const finalValues = pipe(omit(['confirmation']))(values);
     commitMutation({
       mutation: userMutation,
       variables: {
@@ -180,65 +169,50 @@ class UserCreation extends Component {
             <Formik
               initialValues={{
                 name: '',
-                email: '',
+                user_email: '',
                 firstname: '',
                 lastname: '',
                 description: '',
-                grant: [],
                 password: '',
                 confirmation: '',
               }}
               validationSchema={userValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
-              render={({ submitForm, handleReset, isSubmitting }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
-                    name="name"
-                    component={TextField}
-                    label={t('Name')}
-                    fullWidth={true}
-                  />
-                  <Field
-                    name="email"
-                    component={TextField}
+            >
+              {({ submitForm, handleReset, isSubmitting }) => (
+                <Form>
+                  <ListSubheader component="div" style={{ paddingLeft: 0 }}>
+                    {t('User will be created with default roles')}
+                  </ListSubheader>
+                  <TextField name="name" label={t('Name')} fullWidth={true} />
+                  <TextField
+                    name="user_email"
                     label={t('Email address')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <Field
+                  <TextField
                     name="firstname"
-                    component={TextField}
                     label={t('Firstname')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <Field
+                  <TextField
                     name="lastname"
-                    component={TextField}
                     label={t('Lastname')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <Field
-                    name="grant"
-                    component={Autocomplete}
-                    multiple={true}
-                    label={t('Roles')}
-                    options={roles}
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
+                  <TextField
                     name="password"
-                    component={TextField}
                     label={t('Password')}
                     type="password"
-                    fullWidth={true}
                     style={{ marginTop: 20 }}
+                    fullWidth={true}
                   />
-                  <Field
+                  <TextField
                     name="confirmation"
-                    component={TextField}
                     label={t('Confirmation')}
                     type="password"
                     fullWidth={true}
@@ -265,7 +239,7 @@ class UserCreation extends Component {
                   </div>
                 </Form>
               )}
-            />
+            </Formik>
           </div>
         </Drawer>
       </div>

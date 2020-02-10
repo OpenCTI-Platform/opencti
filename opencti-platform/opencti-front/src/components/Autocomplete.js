@@ -1,334 +1,74 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import classNames from 'classnames';
-import Select from 'react-select';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
+import React from 'react';
 import TextField from '@material-ui/core/TextField';
-import Popper from '@material-ui/core/Popper';
-import Paper from '@material-ui/core/Paper';
-import Chip from '@material-ui/core/Chip';
-import MenuItem from '@material-ui/core/MenuItem';
-import CancelIcon from '@material-ui/icons/Cancel';
-import { emphasize } from '@material-ui/core/styles/colorManipulator';
-import FormControl from '@material-ui/core/FormControl';
-import FormHelperText from '@material-ui/core/FormHelperText';
-import inject18n from './i18n';
+import IconButton from '@material-ui/core/IconButton';
+import { Add } from '@material-ui/icons';
+import MUIAutocomplete from '@material-ui/lab/Autocomplete';
+import { useFieldToTextField } from 'formik-material-ui';
+import { useField } from 'formik';
+import { isNil } from 'ramda';
 
-const styles = (theme) => ({
-  root: {
-    flexGrow: 1,
-  },
-  input: {
-    display: 'flex',
-    padding: 0,
-    minHeight: 40,
-  },
-  valueContainer: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    flex: 1,
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
-  chip: {
-    margin: `${theme.spacing(1) / 2}px ${theme.spacing(1) / 4}px`,
-  },
-  chipFocused: {
-    backgroundColor: emphasize(
-      theme.palette.type === 'light'
-        ? theme.palette.grey[300]
-        : theme.palette.grey[700],
-      0.08,
-    ),
-  },
-  noOptionsMessage: {
-    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
-  },
-  singleValue: {
-    fontSize: 16,
-  },
-  placeholder: {
-    position: 'absolute',
-    left: 2,
-    fontSize: 16,
-  },
-  popper: {
-    zIndex: theme.zIndex.modal + 200,
-    marginTop: theme.spacing(1),
-  },
-  divider: {
-    height: theme.spacing(2),
-  },
-});
-
-function NoOptionsMessage(props) {
-  return (
-    <Typography
-      color="textSecondary"
-      className={props.selectProps.classes.noOptionsMessage}
-      {...props.innerProps}
-    >
-      {props.children}
-    </Typography>
+const Autocomplete = (props) => {
+  const [, meta] = useField(props);
+  const customize = React.useCallback(
+    ([field, , helpers]) => ({
+      onChange: (_, value) => {
+        helpers.setValue(value);
+        if (typeof props.onChange === 'function') {
+          props.onChange(field.name, value);
+        }
+      },
+      onFocus: () => {
+        if (typeof props.onFocus === 'function') {
+          props.onFocus(field.name);
+        }
+      },
+      onBlur: (event) => {
+        helpers.setTouched(true);
+        if (typeof props.onSubmit === 'function') {
+          props.onSubmit(field.name, event.target.value);
+        }
+      },
+    }),
+    [props],
   );
-}
+  const fieldProps = useFieldToTextField(props, customize);
+  delete fieldProps.helperText;
+  delete fieldProps.openCreate;
 
-function inputComponent({ inputRef, ...props }) {
-  return <div ref={inputRef} {...props} />;
-}
-
-function Control(props) {
   return (
-    <TextField
-      fullWidth={true}
-      InputProps={{
-        inputComponent,
-        inputProps: {
-          disabled: props.isDisabled,
-          className: props.selectProps.classes.input,
-          inputRef: props.innerRef,
-          children: props.children,
-          ...props.innerProps,
-        },
-      }}
-      {...props.selectProps.textFieldProps}
-    />
-  );
-}
-
-function Option(props) {
-  return (
-    <MenuItem
-      buttonRef={props.innerRef}
-      selected={props.isFocused}
-      component="div"
-      style={{
-        fontWeight: props.isSelected ? 500 : 400,
-      }}
-      {...props.innerProps}
-    >
-      {props.children}
-    </MenuItem>
-  );
-}
-
-function Placeholder(props) {
-  return (
-    <Typography
-      color="textSecondary"
-      className={props.selectProps.classes.placeholder}
-      {...props.innerProps}
-    >
-      {props.children}
-    </Typography>
-  );
-}
-
-function SingleValue(props) {
-  return (
-    <Typography
-      className={props.selectProps.classes.singleValue}
-      {...props.innerProps}
-    >
-      {props.children}
-    </Typography>
-  );
-}
-
-function ValueContainer(props) {
-  return (
-    <div className={props.selectProps.classes.valueContainer}>
-      {props.children}
+    <div style={{ position: 'relative' }}>
+      <MUIAutocomplete
+        size="small"
+        selectOnFocus={true}
+        autoHighlight={true}
+        getOptionLabel={(option) => (option.label ? option.label : '')}
+        noOptionsText={props.noOptionsText}
+        renderOption={props.renderOption}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            {...props.textfieldprops}
+            name={props.name}
+            fullWidth={true}
+            error={meta.touched && !isNil(meta.error)}
+            helperText={meta.error || props.textfieldprops.helperText}
+          />
+        )}
+        {...fieldProps}
+      />
+      {typeof props.openCreate === 'function' ? (
+        <IconButton
+          onClick={() => props.openCreate()}
+          edge="end"
+          style={{ position: 'absolute', top: 5, right: 35 }}
+        >
+          <Add />
+        </IconButton>
+      ) : (
+        ''
+      )}
     </div>
   );
-}
-
-function MultiValue(props) {
-  return (
-    <Chip
-      tabIndex={-1}
-      label={props.children}
-      className={classNames(props.selectProps.classes.chip, {
-        [props.selectProps.classes.chipFocused]: props.isFocused,
-      })}
-      onDelete={props.removeProps.onClick}
-      deleteIcon={<CancelIcon {...props.removeProps} />}
-    />
-  );
-}
-
-function Menu(props) {
-  return (
-    <Popper
-      open={Boolean(props.children)}
-      anchorEl={props.selectProps.anchorEl.current}
-      className={props.selectProps.classes.popper}
-    >
-      <Paper
-        square
-        {...props.innerProps}
-        style={{
-          width: props.selectProps.anchorEl.current
-            ? props.selectProps.anchorEl.current.clientWidth
-            : null,
-        }}
-      >
-        {props.children}
-      </Paper>
-    </Popper>
-  );
-}
-
-const components = {
-  Control,
-  Menu,
-  MultiValue,
-  NoOptionsMessage,
-  Option,
-  Placeholder,
-  SingleValue,
-  ValueContainer,
 };
 
-class Autocomplete extends Component {
-  constructor(props) {
-    super(props);
-    this.anchorEl = React.createRef();
-  }
-
-  render() {
-    const {
-      required,
-      classes,
-      theme,
-      t,
-      label,
-      field,
-      form: {
-        dirty, errors, touched, values, setFieldValue, isSubmitting,
-      },
-      options,
-      onInputChange,
-      onChange,
-      onFocus,
-      helperText,
-      multiple,
-      labelDisplay,
-      reverseMenu,
-      variant,
-      noMargin,
-    } = this.props;
-    const errorText = errors[field.name];
-    const hasError = dirty && errorText !== undefined && touched[field.name] !== undefined;
-
-    const selectStyles = {
-      input: (base) => ({
-        ...base,
-        '& input': {
-          font: 'inherit',
-        },
-        color: theme.palette.text.main,
-      }),
-    };
-
-    let displayLabel = false;
-    if (labelDisplay !== null && labelDisplay !== undefined) {
-      displayLabel = labelDisplay;
-    } else if (
-      Array.isArray(values[field.name])
-      && values[field.name].length > 0
-    ) {
-      displayLabel = true;
-    } else if (
-      !Array.isArray(values[field.name])
-      && values[field.name] !== ''
-    ) {
-      displayLabel = true;
-    }
-
-    return (
-      <div className={classes.root} ref={this.anchorEl}>
-        <FormControl
-          fullWidth
-          error={hasError}
-          required={required}
-          disabled={isSubmitting}
-          style={{ marginTop: noMargin ? 0 : '20px' }}
-        >
-          <Select
-            classes={classes}
-            styles={selectStyles}
-            textFieldProps={{
-              onChange: onInputChange,
-              label: displayLabel ? label : ' ',
-              variant,
-              error: hasError,
-              InputLabelProps: {
-                shrink: true,
-              },
-              helperText,
-            }}
-            options={options}
-            components={components}
-            value={values[field.name]}
-            onChange={(changeValues) => {
-              setFieldValue(field.name, changeValues || []);
-              if (typeof onChange === 'function') {
-                onChange(field.name, changeValues || []);
-              }
-            }}
-            onFocus={() => {
-              if (typeof onFocus === 'function') {
-                onFocus(field.name);
-              }
-            }}
-            placeholder={label}
-            isMulti={multiple}
-            openMenuOnClick={false}
-            anchorEl={this.anchorEl}
-            reverseMenu={reverseMenu}
-            isDisabled={isSubmitting}
-            noOptionsMessage={() => (
-              <span style={{ fontStyle: 'italic' }}>
-                {t('No available options')}
-              </span>
-            )}
-          />
-          {hasError && <FormHelperText>{errorText}</FormHelperText>}
-        </FormControl>
-      </div>
-    );
-  }
-}
-
-Autocomplete.propTypes = {
-  required: PropTypes.bool,
-  classes: PropTypes.object.isRequired,
-  theme: PropTypes.object.isRequired,
-  t: PropTypes.func,
-  name: PropTypes.string,
-  label: PropTypes.string,
-  options: PropTypes.array,
-  field: PropTypes.object,
-  form: PropTypes.shape({
-    dirty: PropTypes.bool,
-    messages: PropTypes.object,
-    setFieldValue: PropTypes.func,
-  }),
-  onInputChange: PropTypes.func,
-  onChange: PropTypes.func,
-  onFocus: PropTypes.func,
-  helperText: PropTypes.node,
-  multiple: PropTypes.bool,
-  labelDisplay: PropTypes.bool,
-  reverseMenu: PropTypes.bool,
-  variant: PropTypes.string,
-  noMargin: PropTypes.bool,
-};
-
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(Autocomplete);
+export default Autocomplete;

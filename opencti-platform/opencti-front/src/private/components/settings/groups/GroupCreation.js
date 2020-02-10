@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Field, Form } from 'formik';
+import { Formik, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -160,17 +160,12 @@ class GroupCreation extends Component {
               validationSchema={groupValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
-              render={({ submitForm, handleReset, isSubmitting }) => (
+            >
+              {({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
-                    name="name"
-                    component={TextField}
-                    label={t('Name')}
-                    fullWidth={true}
-                  />
-                  <Field
+                  <TextField name="name" label={t('Name')} fullWidth={true} />
+                  <TextField
                     name="description"
-                    component={TextField}
                     label={t('Description')}
                     fullWidth={true}
                     multiline={true}
@@ -198,7 +193,7 @@ class GroupCreation extends Component {
                   </div>
                 </Form>
               )}
-            />
+            </Formik>
           </div>
         </Drawer>
       </div>

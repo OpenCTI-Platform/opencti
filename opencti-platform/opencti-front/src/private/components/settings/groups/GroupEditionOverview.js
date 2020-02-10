@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
+import { Form, Formik } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
@@ -11,7 +11,7 @@ import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -59,7 +59,7 @@ const groupEditionOverviewFocus = graphql`
   }
 `;
 
-const groupValidation = t => Yup.object().shape({
+const groupValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string(),
 });
@@ -90,9 +90,7 @@ class GroupEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, group, editUsers, me,
-    } = this.props;
+    const { t, group, context } = this.props;
     const initialValues = pick(['name', 'description'], group);
     return (
       <div>
@@ -101,44 +99,38 @@ class GroupEditionOverviewComponent extends Component {
           initialValues={initialValues}
           validationSchema={groupValidation(t)}
           onSubmit={() => true}
-          render={() => (
+        >
+          {() => (
             <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field
+              <TextField
                 name="name"
-                component={TextField}
                 label={t('Name')}
                 fullWidth={true}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
                 helperText={
-                  <SubscriptionFocus
-                    me={me}
-                    users={editUsers}
-                    fieldName="name"
-                  />
+                  <SubscriptionFocus context={context} fieldName="name" />
                 }
               />
-              <Field
+              <TextField
                 name="description"
-                component={TextField}
                 label={t('Description')}
                 fullWidth={true}
                 multiline={true}
                 rows={4}
-                style={{ marginTop: 10 }}
+                style={{ marginTop: 20 }}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
                 helperText={
                   <SubscriptionFocus
-                    me={me}
-                    users={editUsers}
+                    context={context}
                     fieldName="description"
                   />
                 }
               />
             </Form>
           )}
-        />
+        </Formik>
       </div>
     );
   }
@@ -149,8 +141,7 @@ GroupEditionOverviewComponent.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   group: PropTypes.object,
-  editUsers: PropTypes.array,
-  me: PropTypes.object,
+  context: PropTypes.array,
 };
 
 const GroupEditionOverview = createFragmentContainer(

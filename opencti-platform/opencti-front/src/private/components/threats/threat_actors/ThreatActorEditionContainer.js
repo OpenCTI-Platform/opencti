@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import {
-  compose, insert, find, propEq,
-} from 'ramda';
+import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
@@ -59,14 +57,9 @@ class ThreatActorEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, threatActor, me,
+      t, classes, handleClose, threatActor,
     } = this.props;
     const { editContext } = threatActor;
-    // Add current user to the context if is not available yet.
-    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe
-      ? insert(0, { name: me.email }, editContext)
-      : editContext;
     return (
       <div>
         <div className={classes.header}>
@@ -80,7 +73,7 @@ class ThreatActorEditionContainer extends Component {
           <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update a threat actor')}
           </Typography>
-          <SubscriptionAvatars users={editUsers} />
+          <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
@@ -94,18 +87,10 @@ class ThreatActorEditionContainer extends Component {
             </Tabs>
           </AppBar>
           {this.state.currentTab === 0 && (
-            <ThreatActorEditionOverview
-              threatActor={this.props.threatActor}
-              editUsers={editUsers}
-              me={me}
-            />
+            <ThreatActorEditionOverview threatActor={this.props.threatActor} context={editContext}/>
           )}
           {this.state.currentTab === 1 && (
-            <ThreatActorEditionDetails
-              threatActor={this.props.threatActor}
-              editUsers={editUsers}
-              me={me}
-            />
+            <ThreatActorEditionDetails threatActor={this.props.threatActor} context={editContext}/>
           )}
         </div>
       </div>
@@ -117,7 +102,6 @@ ThreatActorEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
   threatActor: PropTypes.object,
-  me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
@@ -134,11 +118,6 @@ const ThreatActorEditionFragment = createFragmentContainer(
           name
           focusOn
         }
-      }
-    `,
-    me: graphql`
-      fragment ThreatActorEditionContainer_me on User {
-        email
       }
     `,
   },

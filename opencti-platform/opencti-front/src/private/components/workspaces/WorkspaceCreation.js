@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Field, Form } from 'formik';
+import { Formik, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -9,16 +9,15 @@ import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
-  compose, pathOr, pipe, map, pluck, assoc,
+  compose, pipe, pluck, assoc,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../components/i18n';
-import { fetchQuery, commitMutation } from '../../../relay/environment';
-import Autocomplete from '../../../components/Autocomplete';
+import { commitMutation } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
-import { markingDefinitionsLinesSearchQuery } from '../settings/marking_definitions/MarkingDefinitionsLines';
+import MarkingDefinitionsField from '../common/form/MarkingDefinitionsField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -89,10 +88,7 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 class WorkspaceCreation extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      open: false,
-      markingDefinitions: [],
-    };
+    this.state = { open: false };
   }
 
   handleOpen() {
@@ -101,18 +97,6 @@ class WorkspaceCreation extends Component {
 
   handleClose() {
     this.setState({ open: false });
-  }
-
-  searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsLinesSearchQuery, {
-      search: event.target.value,
-    }).then((data) => {
-      const markingDefinitions = pipe(
-        pathOr([], ['markingDefinitions', 'edges']),
-        map((n) => ({ label: n.node.definition, value: n.node.id })),
-      )(data);
-      this.setState({ markingDefinitions });
-    });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -187,31 +171,22 @@ class WorkspaceCreation extends Component {
               validationSchema={workspaceValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
-              render={({ submitForm, handleReset, isSubmitting }) => (
+            >
+              {({ submitForm, handleReset, isSubmitting }) => (
                 <div>
                   <Form style={{ margin: '20px 0 20px 0' }}>
-                    <Field
-                      name="name"
-                      component={TextField}
-                      label={t('Name')}
-                      fullWidth={true}
-                    />
-                    <Field
+                    <TextField name="name" label={t('Name')} fullWidth={true} />
+                    <TextField
                       name="description"
-                      component={TextField}
                       label={t('Description')}
                       fullWidth={true}
                       multiline={true}
                       rows="4"
                       style={{ marginTop: 20 }}
                     />
-                    <Field
+                    <MarkingDefinitionsField
                       name="markingDefinitions"
-                      component={Autocomplete}
-                      multiple={true}
-                      label={t('Marking')}
-                      options={this.state.markingDefinitions}
-                      onInputChange={this.searchMarkingDefinitions.bind(this)}
+                      style={{ marginTop: 20, width: '100%' }}
                     />
                     <div className={classes.buttons}>
                       <Button
@@ -235,7 +210,7 @@ class WorkspaceCreation extends Component {
                   </Form>
                 </div>
               )}
-            />
+            </Formik>
           </div>
         </Drawer>
       </div>

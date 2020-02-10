@@ -34,6 +34,7 @@ class StixDomainEntitiesExports extends Component {
       paginationOptions,
       open,
       handleToggle,
+      context,
     } = this.props;
     return (
       <Drawer
@@ -46,13 +47,15 @@ class StixDomainEntitiesExports extends Component {
         <div className={classes.toolbar} />
         <QueryRenderer
           query={stixDomainEntitiesExportsContentQuery}
-          variables={{ count: 25, type: exportEntityType }}
+          variables={{ count: 25, type: exportEntityType, context }}
           render={({ props }) => (
             <StixDomainEntitiesExportsContent
               handleToggle={handleToggle.bind(this)}
               data={props}
               paginationOptions={paginationOptions}
               exportEntityType={exportEntityType}
+              isOpen={open}
+              context={context}
             />
           )}
         />
@@ -68,6 +71,7 @@ StixDomainEntitiesExports.propTypes = {
   exportEntityType: PropTypes.string.isRequired,
   paginationOptions: PropTypes.object,
   handleApplyListArgs: PropTypes.func,
+  context: PropTypes.string,
 };
 
 export default compose(withStyles(styles))(StixDomainEntitiesExports);

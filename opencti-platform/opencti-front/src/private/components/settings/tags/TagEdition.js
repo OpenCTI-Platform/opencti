@@ -1,11 +1,9 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
-import {
-  compose, insert, find, propEq, pick,
-} from 'ramda';
+import { Form, Formik } from 'formik';
+import { compose, pick } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
@@ -88,7 +86,7 @@ const tagValidation = (t) => Yup.object().shape({
   color: Yup.string().required(t('This field is required')),
 });
 
-class TagEditionContainer extends Component {
+class TagEditionContainer {
   componentDidMount() {
     const sub = requestSubscription({
       subscription,
@@ -132,14 +130,9 @@ class TagEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, tag, me,
+      t, classes, handleClose, tag,
     } = this.props;
     const { editContext } = tag;
-    // Add current user to the context if is not available yet.
-    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe
-      ? insert(0, { name: me.email }, editContext)
-      : editContext;
     const initialValues = pick(['tag_type', 'value', 'color'], tag);
     return (
       <div>
@@ -154,7 +147,7 @@ class TagEditionContainer extends Component {
           <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update a tag')}
           </Typography>
-          <SubscriptionAvatars users={editUsers} />
+          <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
@@ -162,58 +155,53 @@ class TagEditionContainer extends Component {
             enableReinitialize={true}
             initialValues={initialValues}
             validationSchema={tagValidation(t)}
-            render={() => (
+          >
+            {() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
+                <TextField
                   name="tag_type"
-                  component={TextField}
                   label={t('Type')}
                   fullWidth={true}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
                     <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
+                      context={editContext}
                       fieldName="tag_type"
                     />
                   }
                 />
-                <Field
+                <TextField
                   name="value"
-                  component={TextField}
                   label={t('Value')}
                   fullWidth={true}
-                  style={{ marginTop: 10 }}
+                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
                     <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
+                      context={editContext}
                       fieldName="value"
                     />
                   }
                 />
-                <Field
+                <ColorPickerField
                   name="color"
-                  component={ColorPickerField}
                   label={t('Color')}
                   fullWidth={true}
-                  style={{ marginTop: 10 }}
+                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
                     <SubscriptionFocus
-                      me={me}
-                      users={editUsers}
+                      context={editContext}
                       fieldName="color"
                     />
                   }
                 />
               </Form>
             )}
-          />
+          </Formik>
         </div>
       </div>
     );
@@ -224,7 +212,6 @@ TagEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
   tag: PropTypes.object,
-  me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
@@ -240,11 +227,6 @@ const TagEditionFragment = createFragmentContainer(TagEditionContainer, {
         name
         focusOn
       }
-    }
-  `,
-  me: graphql`
-    fragment TagEdition_me on User {
-      email
     }
   `,
 });

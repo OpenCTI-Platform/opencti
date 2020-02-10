@@ -29,9 +29,6 @@ const stixObservableRelationEditionQuery = graphql`
     stixObservableRelation(id: $id) {
       ...StixObservableRelationEditionOverview_stixObservableRelation
     }
-    me {
-      ...StixObservableRelationEditionOverview_me
-    }
   }
 `;
 
@@ -54,12 +51,10 @@ class StixObservableRelationEdition extends Component {
       handleDelete,
     } = this.props;
     return (
-      <Drawer
-        open={open}
+      <Drawer open={open}
         anchor="right"
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose.bind(this)}
-      >
+        onClose={handleClose.bind(this)}>
         {stixObservableRelationId ? (
           <QueryRenderer
             query={stixObservableRelationEditionQuery}
@@ -68,7 +63,6 @@ class StixObservableRelationEdition extends Component {
               if (props) {
                 return (
                   <StixObservableRelationEditionOverview
-                    me={props.me}
                     stixDomainEntity={stixDomainEntity}
                     stixObservableRelation={props.stixObservableRelation}
                     handleClose={handleClose.bind(this)}

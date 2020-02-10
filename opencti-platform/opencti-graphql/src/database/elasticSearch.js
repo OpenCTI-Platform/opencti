@@ -46,9 +46,10 @@ const dateFields = [
   'valid_until',
   'valid_until_day',
   'valid_until_month',
-  'observable_date'
+  'observable_date',
+  'default_assignation' // TODO @JRI Ask @Sam for this.
 ];
-const numberFields = ['object_status', 'phase_order', 'level', 'weight'];
+const numberFields = ['object_status', 'phase_order', 'level', 'weight', 'ordering'];
 const virtualTypes = ['Identity', 'Email', 'File', 'Stix-Domain-Entity', 'Stix-Domain', 'Stix-Observable'];
 
 export const REL_INDEX_PREFIX = 'rel_';
@@ -520,13 +521,15 @@ const elReconstructRelation = (concept, relationsMap = null) => {
 // endregion
 
 // region elastic common loader.
+const specialElasticCharsEscape = query => {
+  return query.replace(/([+|\-*()~={}:?\\])/g, '\\$1');
+};
 export const elPaginate = async (indexName, options) => {
   const {
     first = 200,
     after,
     types = null,
     filters = [],
-    isUser = null, // TODO @Sam refactor this to use filter
     search = null,
     orderBy = null,
     orderMode = 'asc',
@@ -545,16 +548,16 @@ export const elPaginate = async (indexName, options) => {
     } catch (e) {
       decodedSearch = search;
     }
-    const trimedSearch = decodedSearch.trim();
+    const cleanSearch = specialElasticCharsEscape(decodedSearch.trim());
     let finalSearch;
-    if (trimedSearch.startsWith('http://')) {
-      finalSearch = `"*${trimedSearch.replace('http://', '')}*"`;
-    } else if (trimedSearch.startsWith('https://')) {
-      finalSearch = `"*${trimedSearch.replace('https://', '')}*"`;
-    } else if (trimedSearch.startsWith('"')) {
-      finalSearch = `${trimedSearch}`;
+    if (cleanSearch.startsWith('http://')) {
+      finalSearch = `"*${cleanSearch.replace('http://', '')}*"`;
+    } else if (cleanSearch.startsWith('https://')) {
+      finalSearch = `"*${cleanSearch.replace('https://', '')}*"`;
+    } else if (cleanSearch.startsWith('"')) {
+      finalSearch = `${cleanSearch}`;
     } else {
-      const splitSearch = decodedSearch.split(/[\s/\\]+/);
+      const splitSearch = cleanSearch.split(/[\s]+/);
       finalSearch = pipe(
         map(n => `*${n}*`),
         join(' ')
@@ -563,7 +566,7 @@ export const elPaginate = async (indexName, options) => {
     must = append(
       {
         query_string: {
-          query: `${finalSearch}`,
+          query: finalSearch,
           analyze_wildcard: true,
           fields: ['name^5', '*']
         }
@@ -580,9 +583,6 @@ export const elPaginate = async (indexName, options) => {
       })
     );
     must = append({ bool: { should, minimum_should_match: 1 } }, must);
-  }
-  if (isUser !== null && isUser === true) {
-    must = append({ exists: { field: 'email' } }, must);
   }
   const validFilters = filter(f => f && f.values.length > 0, filters || []);
   if (validFilters.length > 0) {

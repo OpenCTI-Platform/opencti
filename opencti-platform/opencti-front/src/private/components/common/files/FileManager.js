@@ -17,7 +17,7 @@ import { withStyles } from '@material-ui/core';
 import { ConnectionHandler } from 'relay-runtime';
 import MenuItem from '@material-ui/core/MenuItem';
 import { createFragmentContainer } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
+import { Form, Formik } from 'formik';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -25,7 +25,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import FileExportViewer from './FileExportViewer';
 import FileImportViewer from './FileImportViewer';
-import Select from '../../../../components/Select';
+import SelectField from '../../../../components/SelectField';
 import {
   commitMutation,
   MESSAGING$,
@@ -95,13 +95,19 @@ const exportValidation = (t) => Yup.object().shape({
 });
 
 const FileManager = ({
-  id, entity, t, classes, connectorsExport,
+  id,
+  entity,
+  t,
+  classes,
+  connectorsExport,
+  connectorsImport,
 }) => {
   const [openExport, setOpenExport] = useState(false);
   const exportScopes = uniq(
     flatten(map((c) => c.connector_scope, connectorsExport)),
   );
   const exportConnsPerFormat = scopesConn(connectorsExport);
+  // eslint-disable-next-line max-len
   const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
   const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
   const handleOpenExport = () => setOpenExport(true);
@@ -146,6 +152,9 @@ const FileManager = ({
     });
   };
 
+  const importConnsPerFormat = connectorsImport
+    ? scopesConn(connectorsImport)
+    : {};
   return (
     <div className={classes.container}>
       <Grid
@@ -153,7 +162,7 @@ const FileManager = ({
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <FileImportViewer entity={entity} />
+        <FileImportViewer entity={entity} connectors={importConnsPerFormat} />
         <FileExportViewer
           entity={entity}
           handleOpenExport={handleOpenExport}
@@ -171,7 +180,8 @@ const FileManager = ({
           validationSchema={exportValidation(t)}
           onSubmit={onSubmit}
           onReset={handleCloseExport}
-          render={({ submitForm, handleReset, isSubmitting }) => (
+        >
+          {({ submitForm, handleReset, isSubmitting }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
                 open={openExport}
@@ -187,15 +197,10 @@ const FileManager = ({
                     if (props && props.markingDefinitions) {
                       return (
                         <DialogContent>
-                          <Field
+                          <SelectField
                             name="format"
-                            component={Select}
                             label={t('Export format')}
                             fullWidth={true}
-                            inputProps={{
-                              name: 'format',
-                              id: 'format',
-                            }}
                             containerstyle={{ width: '100%' }}
                           >
                             {exportScopes.map((value, i) => (
@@ -207,16 +212,11 @@ const FileManager = ({
                                 {value}
                               </MenuItem>
                             ))}
-                          </Field>
-                          <Field
+                          </SelectField>
+                          <SelectField
                             name="type"
-                            component={Select}
                             label={t('Export type')}
                             fullWidth={true}
-                            inputProps={{
-                              name: 'type',
-                              id: 'type',
-                            }}
                             containerstyle={{ marginTop: 20, width: '100%' }}
                           >
                             <MenuItem value="simple">
@@ -225,16 +225,11 @@ const FileManager = ({
                             <MenuItem value="full">
                               {t('Full export (entity and first neighbours)')}
                             </MenuItem>
-                          </Field>
-                          <Field
+                          </SelectField>
+                          <SelectField
                             name="maxMarkingDefinition"
-                            component={Select}
                             label={t('Max marking definition level')}
                             fullWidth={true}
-                            inputProps={{
-                              name: 'maxMarkingDefinition',
-                              id: 'maxMarkingDefinition',
-                            }}
                             containerstyle={{ marginTop: 20, width: '100%' }}
                           >
                             <MenuItem value="none">{t('None')}</MenuItem>
@@ -249,7 +244,7 @@ const FileManager = ({
                               ),
                               props.markingDefinitions.edges,
                             )}
-                          </Field>
+                          </SelectField>
                         </DialogContent>
                       );
                     }
@@ -276,7 +271,7 @@ const FileManager = ({
               </Dialog>
             </Form>
           )}
-        />
+        </Formik>
       </div>
     </div>
   );
@@ -287,11 +282,21 @@ FileManager.propTypes = {
   id: PropTypes.string.isRequired,
   entity: PropTypes.object.isRequired,
   connectorsExport: PropTypes.array.isRequired,
+  connectorsImport: PropTypes.array.isRequired,
 };
 
 const FileManagerFragment = createFragmentContainer(FileManager, {
   connectorsExport: graphql`
     fragment FileManager_connectorsExport on Connector @relay(plural: true) {
+      id
+      name
+      active
+      connector_scope
+      updated_at
+    }
+  `,
+  connectorsImport: graphql`
+    fragment FileManager_connectorsImport on Connector @relay(plural: true) {
       id
       name
       active

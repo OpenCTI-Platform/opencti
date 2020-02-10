@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { Route, withRouter } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
@@ -12,13 +12,28 @@ import StixRelation from '../../common/stix_relations/StixRelation';
 import EntityIndicators from '../../signatures/indicators/EntityIndicators';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
-const styles = () => ({
+const styles = (theme) => ({
   container: {
-    margin: 0,
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
   },
-  containerWithoutPadding: {
-    margin: 0,
-    padding: 0,
+  containerWithPadding: {
+    flexGrow: 1,
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    paddingRight: 250,
+  },
+  containerWithPaddingExport: {
+    flexGrow: 1,
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    paddingRight: 560,
   },
   paper: {
     height: '100%',
@@ -30,19 +45,27 @@ const styles = () => ({
 });
 
 class ToolIndicatorsComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { withPadding: false };
+  }
+
   render() {
+    const { withPadding } = this.state;
     const { classes, tool, location } = this.props;
     const link = `/dashboard/techniques/tools/${tool.id}/indicators`;
+    let className = classes.containerWithPadding;
+    if (
+      location.pathname.includes(
+        `/dashboard/threats/tools/${tool.id}/indicators/relations/`,
+      )
+    ) {
+      className = classes.containerWithoutPadding;
+    } else if (withPadding) {
+      className = classes.containerWithPaddingExport;
+    }
     return (
-      <div
-        className={
-          location.pathname.includes(
-            `/dashboard/techniques/tools/${tool.id}/indicators/relations/`,
-          )
-            ? classes.containerWithoutPadding
-            : classes.container
-        }
-      >
+      <div className={className}>
         <StixDomainEntityHeader
           stixDomainEntity={tool}
           PopoverComponent={<ToolPopover />}
@@ -51,10 +74,7 @@ class ToolIndicatorsComponent extends Component {
           exact
           path="/dashboard/techniques/tools/:toolId/indicators/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
-              entityId={tool.id}
-              {...routeProps}
-            />
+            <StixRelation entityId={tool.id} {...routeProps} />
           )}
         />
         <Route
@@ -83,18 +103,15 @@ ToolIndicatorsComponent.propTypes = {
   t: PropTypes.func,
 };
 
-const ToolIndicators = createFragmentContainer(
-  ToolIndicatorsComponent,
-  {
-    tool: graphql`
-      fragment ToolIndicators_tool on Tool {
-        id
-        name
-        alias
-      }
-    `,
-  },
-);
+const ToolIndicators = createFragmentContainer(ToolIndicatorsComponent, {
+  tool: graphql`
+    fragment ToolIndicators_tool on Tool {
+      id
+      name
+      alias
+    }
+  `,
+});
 
 export default compose(
   inject18n,

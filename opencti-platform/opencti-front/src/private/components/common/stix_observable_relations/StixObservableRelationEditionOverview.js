@@ -3,20 +3,9 @@ import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Field, Form } from 'formik';
+import { Form, Formik } from 'formik';
 import {
-  compose,
-  insert,
-  find,
-  propEq,
-  pick,
-  assoc,
-  pipe,
-  map,
-  pathOr,
-  difference,
-  head,
-  union,
+  assoc, compose, map, pathOr, pick, pipe,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -29,9 +18,8 @@ import { dateFormat } from '../../../../utils/Time';
 import { resolveLink } from '../../../../utils/Entity';
 import inject18n from '../../../../components/i18n';
 import {
-  QueryRenderer,
   commitMutation,
-  fetchQuery,
+  QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -39,11 +27,9 @@ import {
   SubscriptionAvatars,
   SubscriptionFocus,
 } from '../../../../components/Subscription';
-import Select from '../../../../components/Select';
-import Autocomplete from '../../../../components/Autocomplete';
+import SelectField from '../../../../components/SelectField';
 import DatePickerField from '../../../../components/DatePickerField';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
-import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
@@ -123,34 +109,6 @@ export const stixObservableRelationEditionFocus = graphql`
   }
 `;
 
-const stixObservableRelationMutationRelationAdd = graphql`
-  mutation StixObservableRelationEditionOverviewRelationAddMutation(
-    $id: ID!
-    $input: RelationAddInput!
-  ) {
-    stixObservableRelationEdit(id: $id) {
-      relationAdd(input: $input) {
-        from {
-          ...StixObservableRelationEditionOverview_stixObservableRelation
-        }
-      }
-    }
-  }
-`;
-
-const stixObservableRelationMutationRelationDelete = graphql`
-  mutation StixObservableRelationEditionOverviewRelationDeleteMutation(
-    $id: ID!
-    $relationId: ID!
-  ) {
-    stixObservableRelationEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
-        ...StixObservableRelationEditionOverview_stixObservableRelation
-      }
-    }
-  }
-`;
-
 const stixObservableRelationValidation = (t) => Yup.object().shape({
   first_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
@@ -162,11 +120,6 @@ const stixObservableRelationValidation = (t) => Yup.object().shape({
 });
 
 class StixObservableRelationEditionContainer extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { killChainPhases: [], markingDefinitions: [] };
-  }
-
   componentDidMount() {
     const sub = requestSubscription({
       subscription,
@@ -180,63 +133,6 @@ class StixObservableRelationEditionContainer extends Component {
 
   componentWillUnmount() {
     this.state.sub.dispose();
-  }
-
-  searchMarkingDefinitions(event) {
-    fetchQuery(markingDefinitionsLinesSearchQuery, {
-      search: event.target.value,
-    }).then((data) => {
-      const markingDefinitions = pipe(
-        pathOr([], ['markingDefinitions', 'edges']),
-        map((n) => ({ label: n.node.definition, value: n.node.id })),
-      )(data);
-      this.setState({
-        markingDefinitions: union(
-          this.state.markingDefinitions,
-          markingDefinitions,
-        ),
-      });
-    });
-  }
-
-  handleChangeMarkingDefinition(name, values) {
-    const { stixObservableRelation } = this.props;
-    const currentMarkingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-        relationId: n.relation.id,
-      })),
-    )(stixObservableRelation);
-
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
-
-    if (added.length > 0) {
-      commitMutation({
-        mutation: stixObservableRelationMutationRelationAdd,
-        variables: {
-          id: stixObservableRelation.id,
-          input: {
-            fromRole: 'so',
-            toId: head(added).value,
-            toRole: 'marking',
-            through: 'object_marking_refs',
-          },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: stixObservableRelationMutationRelationDelete,
-        variables: {
-          id: stixObservableRelation.id,
-          relationId: head(removed).relationId,
-        },
-      });
-    }
   }
 
   handleChangeFocus(name) {
@@ -273,14 +169,9 @@ class StixObservableRelationEditionContainer extends Component {
       handleClose,
       handleDelete,
       stixObservableRelation,
-      me,
       stixDomainEntity,
     } = this.props;
     const { editContext } = stixObservableRelation;
-    const missingMe = find(propEq('name', me.email))(editContext) === undefined;
-    const editUsers = missingMe
-      ? insert(0, { name: me.email }, editContext)
-      : editContext;
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
       map((n) => ({
@@ -328,7 +219,7 @@ class StixObservableRelationEditionContainer extends Component {
           <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update a relationship')}
           </Typography>
-          <SubscriptionAvatars users={editUsers} />
+          <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
@@ -345,22 +236,16 @@ class StixObservableRelationEditionContainer extends Component {
                     validationSchema={stixObservableRelationValidation(t)}
                     render={() => (
                       <Form style={{ margin: '20px 0 20px 0' }}>
-                        <Field
+                        <SelectField
                           name="role_played"
-                          component={Select}
                           onFocus={this.handleChangeFocus.bind(this)}
                           onChange={this.handleSubmitField.bind(this)}
                           label={t('Played role')}
                           fullWidth={true}
-                          inputProps={{
-                            name: 'role_played',
-                            id: 'role_played',
-                          }}
-                          containerstyle={{ marginTop: 10, width: '100%' }}
+                          containerstyle={{ width: '100%' }}
                           helpertext={
                             <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
+                              context={editContext}
                               fieldName="role_played"
                             />
                           }
@@ -373,75 +258,54 @@ class StixObservableRelationEditionContainer extends Component {
                               {rolePlayedEdge.node.value}
                             </MenuItem>
                           ))}
-                        </Field>
-                        <Field
+                        </SelectField>
+                        <DatePickerField
                           name="first_seen"
-                          component={DatePickerField}
                           label={t('First seen')}
+                          invalidDateMessage={t(
+                            'The value must be a date (YYYY-MM-DD)',
+                          )}
                           fullWidth={true}
-                          style={{ marginTop: 10 }}
+                          style={{ marginTop: 20 }}
                           onFocus={this.handleChangeFocus.bind(this)}
                           onSubmit={this.handleSubmitField.bind(this)}
                           helperText={
                             <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
+                              context={editContext}
                               fieldName="first_seen"
                             />
                           }
                         />
-                        <Field
+                        <DatePickerField
                           name="last_seen"
-                          component={DatePickerField}
                           label={t('Last seen')}
+                          invalidDateMessage={t(
+                            'The value must be a date (YYYY-MM-DD)',
+                          )}
                           fullWidth={true}
-                          style={{ marginTop: 10 }}
+                          style={{ marginTop: 20 }}
                           onFocus={this.handleChangeFocus.bind(this)}
                           onSubmit={this.handleSubmitField.bind(this)}
                           helperText={
                             <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
+                              context={editContext}
                               fieldName="last_seen"
                             />
                           }
                         />
-                        <Field
+                        <TextField
                           name="description"
-                          component={TextField}
                           label={t('Description')}
                           fullWidth={true}
                           multiline={true}
                           rows={4}
-                          style={{ marginTop: 10 }}
+                          style={{ marginTop: 20 }}
                           onFocus={this.handleChangeFocus.bind(this)}
                           onSubmit={this.handleSubmitField.bind(this)}
                           helperText={
                             <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
+                              context={editContext}
                               fieldName="description"
-                            />
-                          }
-                        />
-                        <Field
-                          name="markingDefinitions"
-                          component={Autocomplete}
-                          multiple={true}
-                          label={t('Marking')}
-                          options={this.state.markingDefinitions}
-                          onInputChange={this.searchMarkingDefinitions.bind(
-                            this,
-                          )}
-                          onChange={this.handleChangeMarkingDefinition.bind(
-                            this,
-                          )}
-                          onFocus={this.handleChangeFocus.bind(this)}
-                          helperText={
-                            <SubscriptionFocus
-                              me={me}
-                              users={editUsers}
-                              fieldName="markingDefinitions"
                             />
                           }
                         />
@@ -489,7 +353,6 @@ StixObservableRelationEditionContainer.propTypes = {
   classes: PropTypes.object,
   stixDomainEntity: PropTypes.object,
   stixObservableRelation: PropTypes.object,
-  me: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
@@ -522,11 +385,6 @@ const StixObservableRelationEditionFragment = createFragmentContainer(
           name
           focusOn
         }
-      }
-    `,
-    me: graphql`
-      fragment StixObservableRelationEditionOverview_me on User {
-        email
       }
     `,
   },

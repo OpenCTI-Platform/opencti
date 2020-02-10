@@ -30,8 +30,7 @@ import {
 
 const styles = () => ({
   container: {
-    margin: 0,
-    padding: '0 250px 0 0',
+    paddingRight: 250,
   },
 });
 
@@ -49,7 +48,7 @@ class StixObservables extends Component {
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
       filters: {},
-      types: [],
+      observableTypes: propOr([], 'observableTypes', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
     };
@@ -77,10 +76,18 @@ class StixObservables extends Component {
   }
 
   handleToggle(type) {
-    if (this.state.types.includes(type)) {
-      this.setState({ types: filter((t) => t !== type, this.state.types) }, () => this.saveView());
+    if (this.state.observableTypes.includes(type)) {
+      this.setState(
+        {
+          observableTypes: filter((t) => t !== type, this.state.observableTypes),
+        },
+        () => this.saveView(),
+      );
     } else {
-      this.setState({ types: append(type, this.state.types) }, () => this.saveView());
+      this.setState(
+        { observableTypes: append(type, this.state.observableTypes) },
+        () => this.saveView(),
+      );
     }
   }
 
@@ -143,6 +150,7 @@ class StixObservables extends Component {
         handleSearch={this.handleSearch.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         exportEntityType="Stix-Observable"
+        exportContext={null}
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -186,7 +194,10 @@ class StixObservables extends Component {
       }),
     )(filters);
     const paginationOptions = {
-      types: this.state.types.length > 0 ? this.state.types : null,
+      types:
+        this.state.observableTypes.length > 0
+          ? this.state.observableTypes
+          : null,
       search: searchTerm,
       filters: finalFilters,
       orderBy: sortBy,

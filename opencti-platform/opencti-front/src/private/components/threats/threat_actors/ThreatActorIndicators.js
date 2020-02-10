@@ -12,13 +12,28 @@ import StixRelation from '../../common/stix_relations/StixRelation';
 import EntityIndicators from '../../signatures/indicators/EntityIndicators';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 
-const styles = () => ({
+const styles = (theme) => ({
   container: {
-    margin: 0,
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
   },
-  containerWithoutPadding: {
-    margin: 0,
-    padding: 0,
+  containerWithPadding: {
+    flexGrow: 1,
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    paddingRight: 250,
+  },
+  containerWithPaddingExport: {
+    flexGrow: 1,
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    paddingRight: 560,
   },
   paper: {
     height: '100%',
@@ -30,18 +45,28 @@ const styles = () => ({
 });
 
 class ThreatActorIndicatorsComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { withPadding: false };
+  }
+
   render() {
+    const { withPadding } = this.state;
     const { classes, threatActor, location } = this.props;
     const link = `/dashboard/threats/threat_actors/${threatActor.id}/indicators`;
+    let className = classes.containerWithPadding;
+    if (
+      location.pathname.includes(
+        `/dashboard/threats/threat_actors/${threatActor.id}/indicators/relations/`,
+      )
+    ) {
+      className = classes.containerWithoutPadding;
+    } else if (withPadding) {
+      className = classes.containerWithPaddingExport;
+    }
+
     return (
-      <div
-        className={
-          location.pathname.includes(
-            `/dashboard/threats/threat_actors/${threatActor.id}/indicators/relations/`,
-          )
-            ? classes.containerWithoutPadding
-            : classes.container
-        }>
+      <div className={className}>
         <StixDomainEntityHeader
           stixDomainEntity={threatActor}
           PopoverComponent={<ThreatActorPopover />}
@@ -50,10 +75,7 @@ class ThreatActorIndicatorsComponent extends Component {
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/indicators/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
-              entityId={threatActor.id}
-              {...routeProps}
-            />
+            <StixRelation entityId={threatActor.id} {...routeProps} />
           )}
         />
         <Route
@@ -62,6 +84,8 @@ class ThreatActorIndicatorsComponent extends Component {
           render={(routeProps) => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityIndicators
+                onChangeOpenExports={(openExports) => this.setState({ withPadding: openExports })
+                }
                 entityId={threatActor.id}
                 relationType="indicates"
                 entityLink={link}

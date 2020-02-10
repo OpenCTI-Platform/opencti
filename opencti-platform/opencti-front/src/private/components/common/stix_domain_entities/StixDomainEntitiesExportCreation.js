@@ -21,7 +21,7 @@ import Button from '@material-ui/core/Button';
 import Slide from '@material-ui/core/Slide';
 import { Add } from '@material-ui/icons';
 import { createFragmentContainer } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
+import { Form, Formik } from 'formik';
 import MenuItem from '@material-ui/core/MenuItem';
 import IconButton from '@material-ui/core/IconButton';
 import * as Yup from 'yup';
@@ -33,7 +33,7 @@ import {
   QueryRenderer,
 } from '../../../../relay/environment';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
-import Select from '../../../../components/Select';
+import SelectField from '../../../../components/SelectField';
 import Loader from '../../../../components/Loader';
 
 const Transition = React.forwardRef((props, ref) => (
@@ -74,6 +74,7 @@ export const StixDomainEntitiesExportCreationMutation = graphql`
     $format: String!
     $exportType: String!
     $maxMarkingDefinition: String
+    $context: String
     $search: String
     $orderBy: StixDomainEntitiesOrdering
     $orderMode: OrderingMode
@@ -84,6 +85,7 @@ export const StixDomainEntitiesExportCreationMutation = graphql`
       format: $format
       exportType: $exportType
       maxMarkingDefinition: $maxMarkingDefinition
+      context: $context
       search: $search
       orderBy: $orderBy
       orderMode: $orderMode
@@ -136,7 +138,7 @@ class StixDomainEntitiesExportCreationComponent extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const { paginationOptions } = this.props;
+    const { paginationOptions, context } = this.props;
     const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
       ? null
       : values.maxMarkingDefinition;
@@ -147,6 +149,7 @@ class StixDomainEntitiesExportCreationComponent extends Component {
         format: values.format,
         exportType: 'all',
         maxMarkingDefinition,
+        context,
         ...paginationOptions,
       },
       onCompleted: () => {
@@ -198,7 +201,8 @@ class StixDomainEntitiesExportCreationComponent extends Component {
           validationSchema={exportValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.handleClose.bind(this)}
-          render={({ submitForm, handleReset, isSubmitting }) => (
+        >
+          {({ submitForm, handleReset, isSubmitting }) => (
             <Form>
               <Dialog
                 open={this.state.open}
@@ -213,15 +217,10 @@ class StixDomainEntitiesExportCreationComponent extends Component {
                     if (props && props.markingDefinitions) {
                       return (
                         <DialogContent>
-                          <Field
+                          <SelectField
                             name="format"
-                            component={Select}
                             label={t('Export format')}
                             fullWidth={true}
-                            inputProps={{
-                              name: 'format',
-                              id: 'format',
-                            }}
                             containerstyle={{ width: '100%' }}
                           >
                             {exportScopes.map((value, i) => (
@@ -233,16 +232,11 @@ class StixDomainEntitiesExportCreationComponent extends Component {
                                 {value}
                               </MenuItem>
                             ))}
-                          </Field>
-                          <Field
+                          </SelectField>
+                          <SelectField
                             name="maxMarkingDefinition"
-                            component={Select}
                             label={t('Max marking definition level')}
                             fullWidth={true}
-                            inputProps={{
-                              name: 'maxMarkingDefinition',
-                              id: 'maxMarkingDefinition',
-                            }}
                             containerstyle={{
                               marginTop: 20,
                               width: '100%',
@@ -260,7 +254,7 @@ class StixDomainEntitiesExportCreationComponent extends Component {
                               ),
                               props.markingDefinitions.edges,
                             )}
-                          </Field>
+                          </SelectField>
                         </DialogContent>
                       );
                     }
@@ -287,7 +281,7 @@ class StixDomainEntitiesExportCreationComponent extends Component {
               </Dialog>
             </Form>
           )}
-        />
+        </Formik>
       </div>
     );
   }
@@ -316,6 +310,7 @@ StixDomainEntitiesExportCreations.propTypes = {
   data: PropTypes.object,
   exportEntityType: PropTypes.string.isRequired,
   paginationOptions: PropTypes.object,
+  context: PropTypes.string,
 };
 
 export default compose(

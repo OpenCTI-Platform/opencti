@@ -41,9 +41,6 @@ export const threatActorEditionQuery = graphql`
     threatActor(id: $id) {
       ...ThreatActorEditionContainer_threatActor
     }
-    me {
-      ...ThreatActorEditionContainer_me
-    }
   }
 `;
 
@@ -74,20 +71,16 @@ class ThreatActorEdition extends Component {
     const { classes, threatActorId } = this.props;
     return (
       <div>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
+        <Fab onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Edit"
-          className={classes.editButton}
-        >
+          className={classes.editButton}>
           <Edit />
         </Fab>
-        <Drawer
-          open={this.state.open}
+        <Drawer open={this.state.open}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
+          onClose={this.handleClose.bind(this)}>
           <QueryRenderer
             query={threatActorEditionQuery}
             variables={{ id: threatActorId }}
@@ -95,7 +88,6 @@ class ThreatActorEdition extends Component {
               if (props) {
                 return (
                   <ThreatActorEditionContainer
-                    me={props.me}
                     threatActor={props.threatActor}
                     handleClose={this.handleClose.bind(this)}
                   />

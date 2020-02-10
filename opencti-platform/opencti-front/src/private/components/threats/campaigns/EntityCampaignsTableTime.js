@@ -61,6 +61,7 @@ const entityCampaignsTableTimeCampaignsTimeSeriesQuery = graphql`
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
+    $relationType: String!
   ) {
     campaignsTimeSeries(
       objectId: $objectId
@@ -69,6 +70,7 @@ const entityCampaignsTableTimeCampaignsTimeSeriesQuery = graphql`
       startDate: $startDate
       endDate: $endDate
       interval: $interval
+      relationType: $relationType
     ) {
       date
       value
@@ -92,13 +94,14 @@ class EntityCampaignsTableTime extends Component {
       md,
       yd,
       entityId,
+      relationType,
       variant,
       classes,
       startDate,
       endDate,
     } = this.props;
     const monthInterval = this.state.interval === 'month' ? monthsAgo(6) : monthsAgo(12 * 5);
-    const finalStartDate = (variant === 'explore' && startDate) ? startDate : monthInterval;
+    const finalStartDate = variant === 'explore' && startDate ? startDate : monthInterval;
     const campaignsTimeSeriesVariables = {
       objectId: entityId,
       field: 'first_seen',
@@ -106,6 +109,7 @@ class EntityCampaignsTableTime extends Component {
       startDate: finalStartDate,
       endDate: variant === 'explore' && endDate ? endDate : now(),
       interval: this.state.interval,
+      relationType: relationType || 'targets',
     };
     return (
       <QueryRenderer
@@ -287,9 +291,7 @@ EntityCampaignsTableTime.propTypes = {
   yd: PropTypes.func,
   configuration: PropTypes.object,
   handleOpenConfig: PropTypes.func,
+  relationType: PropTypes.string,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(EntityCampaignsTableTime);
+export default compose(inject18n, withStyles(styles))(EntityCampaignsTableTime);

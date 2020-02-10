@@ -39,11 +39,11 @@ const reportQuery = graphql`
       ...FileImportViewer_entity
       ...FileExportViewer_entity
     }
-    me {
-      ...ReportKnowledge_me
-    }
     connectorsForExport {
       ...FileManager_connectorsExport
+    }
+    connectorsForImport {
+      ...FileManager_connectorsImport
     }
   }
 `;
@@ -94,32 +94,21 @@ class RootReport extends Component {
                     exact
                     path="/dashboard/reports/all/:reportId/entities"
                     render={(routeProps) => (
-                      <ReportEntities
-                        {...routeProps}
-                        report={props.report}
-                        me={props.me}
-                      />
+                      <ReportEntities{...routeProps} report={props.report}/>
                     )}
                   />
                   <Route
                     exact
                     path="/dashboard/reports/all/:reportId/knowledge"
                     render={(routeProps) => (
-                      <ReportKnowledge
-                        {...routeProps}
-                        report={props.report}
-                        me={props.me}
-                      />
+                      <ReportKnowledge{...routeProps} report={props.report}/>
                     )}
                   />
                   <Route
                     exact
                     path="/dashboard/reports/all/:reportId/observables"
                     render={(routeProps) => (
-                      <ReportObservables
-                        {...routeProps}
-                        report={props.report}
-                      />
+                      <ReportObservables{...routeProps} report={props.report}/>
                     )}
                   />
                   <Route
@@ -132,6 +121,7 @@ class RootReport extends Component {
                           {...routeProps}
                           id={reportId}
                           connectorsExport={props.connectorsForExport}
+                          connectorsImport={props.connectorsForImport}
                           entity={props.report}
                         />
                       </React.Fragment>

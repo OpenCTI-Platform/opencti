@@ -52,8 +52,8 @@ class IndicatorsRightBar extends Component {
       t,
       indicatorTypes,
       observableTypes,
-      handleToggleIndicatorType,
-      handleToggleObservableType,
+      handleToggleIndicatorType = [],
+      handleToggleObservableType = [],
       openExports,
     } = this.props;
     return (
@@ -340,6 +340,7 @@ class IndicatorsRightBar extends Component {
 }
 
 IndicatorsRightBar.propTypes = {
+  indicatorTypes: PropTypes.array,
   observableTypes: PropTypes.array,
   handleToggleIndicatorType: PropTypes.func,
   handleToggleObservableType: PropTypes.func,
