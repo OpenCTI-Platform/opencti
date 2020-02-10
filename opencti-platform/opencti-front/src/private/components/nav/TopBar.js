@@ -48,7 +48,7 @@ import TopMenuConnectors from './TopMenuConnectors';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuProfile from './TopMenuProfile';
 import { commitMutation } from '../../../relay/environment';
-import Security, { KNOWLEDGE, KNOWLEDGE_KNIMPORT } from '../../../utils/Security';
+import Security, { KNOWLEDGE, KNOWLEDGE_KNASKIMPORT } from '../../../utils/Security';
 
 const styles = (theme) => ({
   appBar: {
@@ -314,12 +314,12 @@ const TopBar = ({
             ''
           )}
         </div>
-        <Security roles={[KNOWLEDGE]}>
+        <Security needs={[KNOWLEDGE]}>
           <div className={classes.searchContainer}>
             <SearchInput onSubmit={handleSearch} keyword={keyword}/>
           </div>
         </Security>
-        <Security roles={[KNOWLEDGE_KNIMPORT]}>
+        <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
           <Tooltip title={t('Data import')}>
             <IconButton
               component={Link}
@@ -339,6 +339,8 @@ const TopBar = ({
         </Security>
         <IconButton size="medium"
           classes={{ root: classes.menuButton }}
+          aria-owns={menuOpen.open ? 'menu-appbar' : null}
+          aria-haspopup="true"
           onClick={handleOpenMenu}
           color="inherit">
           <AccountCircle fontSize="large" />

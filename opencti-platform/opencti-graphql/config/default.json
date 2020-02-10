@@ -43,7 +43,6 @@
   },
   "providers": {
     "Local": {
-      "active": true,
       "strategy": "LocalStrategy"
     }
   }

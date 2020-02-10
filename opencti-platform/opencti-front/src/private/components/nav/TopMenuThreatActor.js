@@ -6,7 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { ArrowForwardIos, Public } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
-import Security, { KNOWLEDGE_KNEXPORT, KNOWLEDGE_KNIMPORT } from '../../../utils/Security';
+import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/Security';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -141,7 +141,7 @@ class TopMenuThreatActor extends Component {
         >
           {t('Indicators')}
         </Button>
-        <Security roles={[KNOWLEDGE_KNIMPORT, KNOWLEDGE_KNEXPORT]}>
+        <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
               component={Link}
               to={`/dashboard/threats/threat_actors/${threatActorId}/files`}

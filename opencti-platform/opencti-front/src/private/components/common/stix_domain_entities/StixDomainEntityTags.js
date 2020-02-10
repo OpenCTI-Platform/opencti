@@ -21,7 +21,7 @@ import inject18n from '../../../../components/i18n';
 import { tagsSearchQuery } from '../../settings/Tags';
 import AutocompleteCreate from '../../../../components/AutocompleteCreate';
 import TagCreation from '../../settings/tags/TagCreation';
-import Security, { KNOWLEDGE_KNEDIT } from '../../../../utils/Security';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -72,18 +72,18 @@ const stixDomainEntityMutationRelationDelete = graphql`
   ) {
     stixDomainEntityEdit(id: $id) {
       relationDelete(toId: $toId, relationType: $relationType) {
-          ... on StixEntity {
-            tags {
-              edges {
-                node {
-                  id
-                  tag_type
-                  value
-                  color
-                }
+        ... on StixEntity {
+          tags {
+            edges {
+              node {
+                id
+                tag_type
+                value
+                color
               }
             }
           }
+        }
       }
     }
   }
@@ -178,12 +178,13 @@ class StixDomainEntityTags extends Component {
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
           {t('Tags')}
         </Typography>
-        <Security roles={[KNOWLEDGE_KNEDIT]}>
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IconButton
             color="secondary"
             aria-label="Tag"
             onClick={this.handleOpenAdd.bind(this)}
-            style={{ float: 'left', margin: '-15px 0 0 -2px' }}>
+            style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+          >
             <Add fontSize="small" />
           </IconButton>
         </Security>

@@ -2,6 +2,7 @@ import express from 'express';
 import { readFileSync } from 'fs';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
+import session from 'express-session';
 import compression from 'compression';
 import helmet from 'helmet';
 import { isEmpty } from 'ramda';
@@ -15,6 +16,8 @@ import { downloadFile, loadFile } from './database/minio';
 const createApp = apolloServer => {
   // Init the http server
   const app = express();
+  const sessionSecret = nconf.get('app:session_secret') || nconf.get('app:admin:password');
+  app.use(session({ secret: sessionSecret, saveUninitialized: true, resave: true }));
   app.use(cookieParser());
   app.use(compression());
   app.use(helmet());

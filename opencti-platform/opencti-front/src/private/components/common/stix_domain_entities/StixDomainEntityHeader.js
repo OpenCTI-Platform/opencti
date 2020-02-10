@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form } from 'formik';
+import { Formik, Field, Form } from 'formik';
 import {
   compose, propOr, filter, append, take,
 } from 'ramda';
@@ -25,7 +25,7 @@ import { DialogTitle } from '@material-ui/core';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import inject18n from '../../../../components/i18n';
-import Security, { KNOWLEDGE_KNEDIT } from '../../../../utils/Security';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -134,7 +134,7 @@ class StixDomainEntityHeader extends Component {
         >
           {stixDomainEntity.name}
         </Typography>
-        <Security roles={[KNOWLEDGE_KNEDIT]}>
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <div className={classes.popover}>
             {React.cloneElement(PopoverComponent, {
               id: stixDomainEntity.id,
@@ -153,7 +153,7 @@ class StixDomainEntityHeader extends Component {
             ) : (
               ''
             )))}
-            <Security roles={[KNOWLEDGE_KNEDIT]}>
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
               {alias.length > 5 ? (
                 <IconButton
                   color="primary"
@@ -189,8 +189,9 @@ class StixDomainEntityHeader extends Component {
                   onSubmit={this.onSubmitCreateAlias.bind(this, 'main')}
                 >
                   <Form style={{ float: 'right' }}>
-                    <TextField
+                    <Field
                       name="new_alias"
+                      component={TextField}
                       autoFocus={true}
                       placeholder={t('New alias')}
                       className={classes.aliasInput}
@@ -215,18 +216,18 @@ class StixDomainEntityHeader extends Component {
             <Formik
               initialValues={{ new_alias: '' }}
               onSubmit={this.onSubmitCreateAlias.bind(this, 'dialog')}
-            >
-              {() => (
+              render={() => (
                 <Form style={{ float: 'right' }}>
-                  <TextField
+                  <Field
                     name="new_alias"
+                    component={TextField}
                     autoFocus={true}
                     placeholder={t('New alias')}
                     className={classes.aliasInput}
                   />
                 </Form>
               )}
-            </Formik>
+            />
           </DialogTitle>
           <DialogContent dividers={true}>
             <List>
@@ -255,11 +256,11 @@ class StixDomainEntityHeader extends Component {
               <Formik
                 initialValues={{ new_alias: '' }}
                 onSubmit={this.onSubmitCreateAlias.bind(this, 'dialog')}
-              >
-                {() => (
+                render={() => (
                   <Form>
-                    <TextField
+                    <Field
                       name="new_alias"
+                      component={TextField}
                       autoFocus={true}
                       fullWidth={true}
                       placeholder={t('New alias')}
@@ -267,7 +268,7 @@ class StixDomainEntityHeader extends Component {
                     />
                   </Form>
                 )}
-              </Formik>
+              />
             </div>
           </DialogContent>
           <DialogActions>
