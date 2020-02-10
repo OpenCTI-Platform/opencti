@@ -268,31 +268,17 @@ export const findByTokenUUID = async tokenValue => {
   // This method is call every time a user to a platform action
   let user = await getAccessCache(tokenValue);
   if (!user) {
-    const data = await find(
+    const data = await load(
       `match $token isa Token, has uuid "${escapeString(tokenValue)}", has revoked false;
-            (authorization:$token, client:$client) isa authorize;
-            { (client: $client, position: $role) isa user_role; (position: $role, capability: $capability) isa role_capability; } or { not { (client: $client, position: $role) isa user_role; }; };
-            get;`,
-      ['client', 'token', 'role', 'capability'],
-      { infer: true }
+            (authorization:$token, client:$client) isa authorize; get;`,
+      ['token', 'client']
     );
+    // eslint-disable-next-line no-shadow
+    const { client, token } = data;
+    if (!client) return undefined;
     logger.debug(`Setting cache access for ${tokenValue}`);
-    if (isNil(data) || data.length === 0) return undefined;
-    const roles = filter(
-      dataRole => dataRole,
-      map(r => r.role, data)
-    );
-    const capabilities = filter(
-      dataCapa => dataCapa,
-      map(r => r.capability, data)
-    );
-    const first = head(data);
-    user = pipe(
-      // Assign
-      assoc('token', first.token),
-      assoc('roles', roles),
-      assoc('capabilities', capabilities)
-    )(first.client);
+    const capabilities = await getCapabilities(client.id);
+    user = pipe(assoc('token', token), assoc('capabilities', capabilities))(client);
     await storeAccessCache(tokenValue, user);
   }
   const { created } = user.token;

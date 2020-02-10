@@ -5,7 +5,7 @@ import { createFragmentContainer } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
-  compose, pick, map, pipe, flatten, uniq, find, propEq, dropLast,
+  compose, pick, includes, find, propEq, filter,
 } from 'ramda';
 import * as Yup from 'yup';
 import ListItem from '@material-ui/core/ListItem';
@@ -162,6 +162,10 @@ const RoleEditionOverviewComponent = ({
       });
     }
   };
+  // eslint-disable-next-line arrow-body-style
+  const inheritedCapability = (name, capabilities) => {
+    return filter((c) => name !== c.name && includes(name, c.name), capabilities).length > 0;
+  };
   return (
       <div>
         <Formik enableReinitialize={true}
@@ -194,44 +198,34 @@ const RoleEditionOverviewComponent = ({
                   label={t('Assign at user creation')}
                   onChange={handleSubmitField}
               />
-              <QueryRenderer query={roleEditionOverviewCapabilities}
-                  variables={{}} render={({ props }) => {
-                    if (props) {
-                      // Compute every capabilities
-                      const inheritedCapabilities = pipe(
-                        map((n) => {
-                          const allCapabilities = n.name.split('_');
-                          if (allCapabilities.length === 1) return [];
-                          return dropLast(1, n.name.split('_'));
-                        }),
-                        flatten,
-                        uniq,
-                      )(role.capabilities);
-                      return <List dense={true} className={classes.root} subheader={
-                         <ListSubheader component="div" style={{ paddingLeft: 0 }}>
-                             {t('Capabilities')}
-                         </ListSubheader>}>
-                        {props.capabilities.edges.map((edge) => {
-                          const capability = edge.node;
-                          const paddingLeft = (capability.name.split('_').length * 20) - 20;
-                          const roleCapability = find(propEq('name', capability.name))(role.capabilities);
-                          const isDisabled = inheritedCapabilities.includes(capability.name);
-                          const isChecked = roleCapability !== undefined;
-                          return (
-                            <ListItem key={capability.name} divider={true} style={{ paddingLeft }}>
-                              <ListItemText primary={capability.description}/>
-                              <ListItemSecondaryAction>
-                                <Checkbox onChange={(event) => handleToggle(capability, event)}
-                                    checked={isChecked} disabled={isDisabled}
-                                />
-                              </ListItemSecondaryAction>
-                            </ListItem>
-                          );
-                        })}
-                        </List>;
-                    }
-                    return <Loader variant="inElement" />;
-                  }}/>
+              <QueryRenderer query={roleEditionOverviewCapabilities} variables={{}}
+                render={({ props }) => {
+                  if (props) {
+                    return <List dense={true} className={classes.root} subheader={
+                       <ListSubheader component="div" style={{ paddingLeft: 0 }}>
+                           {t('Capabilities')}
+                       </ListSubheader>}>
+                      {props.capabilities.edges.map((edge) => {
+                        const capability = edge.node;
+                        const paddingLeft = (capability.name.split('_').length * 20) - 20;
+                        const roleCapability = find(propEq('name', capability.name))(role.capabilities);
+                        const isDisabled = inheritedCapability(capability.name, role.capabilities);
+                        const isChecked = roleCapability !== undefined;
+                        return (
+                          <ListItem key={capability.name} divider={true} style={{ paddingLeft }}>
+                            <ListItemText primary={capability.description}/>
+                            <ListItemSecondaryAction>
+                              <Checkbox onChange={(event) => handleToggle(capability, event)}
+                                  checked={isChecked} disabled={isDisabled}
+                              />
+                            </ListItemSecondaryAction>
+                          </ListItem>
+                        );
+                      })}
+                      </List>;
+                  }
+                  return <Loader variant="inElement" />;
+                }}/>
             </Form>
           )}
         />

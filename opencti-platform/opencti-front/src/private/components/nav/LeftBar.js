@@ -26,7 +26,7 @@ import { Settings, Database, Binoculars } from 'mdi-material-ui';
 import { compose } from 'ramda';
 import logo from '../../../resources/images/logo_text.png';
 import inject18n from '../../../components/i18n';
-import Security, { KNOWLEDGE, SETTINGS } from '../../../utils/Security';
+import Security, { KNOWLEDGE, EXPLORE, SETTINGS } from '../../../utils/Security';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -120,7 +120,7 @@ const LeftBar = ({ t, location, classes }) => {
               </MenuItem>
             </Security>
           </MenuList>
-          <Security roles={[KNOWLEDGE]}>
+          <Security roles={[EXPLORE]}>
             <Divider />
             <MenuList component="nav">
               <MenuItem component={Link} to="/dashboard/explore"

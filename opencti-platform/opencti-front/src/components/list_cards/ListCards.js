@@ -19,7 +19,7 @@ import { FileExportOutline } from 'mdi-material-ui';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainEntitiesExports from '../../private/components/common/stix_domain_entities/StixDomainEntitiesExports';
-import Security, { KNOWLEDGE_KNEXPORT } from '../../utils/Security';
+import Security, { KNOWLEDGE_KNGETEXPORT } from '../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -188,7 +188,7 @@ class ListCards extends Component {
             ) : (
               ''
             )}
-            <Security roles={[KNOWLEDGE_KNEXPORT]}>
+            <Security roles={[KNOWLEDGE_KNGETEXPORT]}>
               {typeof handleToggleExports === 'function' ? (
                 <Tooltip title={t('Exports panel')}>
                   <IconButton

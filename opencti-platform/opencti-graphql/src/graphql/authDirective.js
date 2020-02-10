@@ -1,10 +1,11 @@
 /* eslint-disable no-underscore-dangle,no-param-reassign */
 import { SchemaDirectiveVisitor } from 'graphql-tools';
-import { includes, map, pipe, flatten } from 'ramda';
+import { includes, map, filter } from 'ramda';
 import { defaultFieldResolver } from 'graphql';
 import { AuthRequired, ForbiddenAccess } from '../config/errors';
-import {OPENCTI_ADMIN_UUID} from "../domain/user";
+import { OPENCTI_ADMIN_UUID } from '../domain/user';
 
+const BYPASS = 'BYPASS';
 export const AUTH_DIRECTIVE = 'auth';
 
 // Auth code get from https://www.apollographql.com/docs/graphql-tools/schema-directives.html
@@ -13,29 +14,36 @@ class AuthDirective extends SchemaDirectiveVisitor {
   visitObject(type) {
     this.ensureFieldsWrapped(type);
     // noinspection JSUndefinedPropertyAssignment
-    type._requiredCapability = this.args.for;
+    type._requiredCapabilities = this.args.for;
+    type._requiredAll = this.args.and;
   }
 
   visitFieldDefinition(field, details) {
     this.ensureFieldsWrapped(details.objectType);
-    field._requiredCapability = this.args.for;
+    field._requiredCapabilities = this.args.for;
+    field._requiredAll = this.args.and;
   }
 
   authenticationControl(func, args, objectType, field) {
     // Get the required Role from the field first, falling back
     // to the objectType if no Role is required by the field:
-    const requiredCapability = field._requiredCapability || objectType._requiredCapability;
+    const requiredCapabilities = field._requiredCapabilities || objectType._requiredCapabilities || [];
+    const requiredAll = field._requiredAll || objectType._requiredAll || false;
     // If a role is required
     const context = args[2];
     const { user } = context;
     if (!user) throw new AuthRequired(); // User must be authenticated.
-    const capabilities = pipe(
-      map(c => c.name.split('_')),
-      flatten()
-    )(user.capabilities);
+    // Start checking capabilities
+    if (requiredCapabilities.length === 0) return func.apply(this, args);
+    // Compute user capabilities
+    const userCapabilities = map(c => c.name, user.capabilities);
     // Accept everything if bypass capability or the system user (protection).
-    const shouldBypass = capabilities.includes('BYPASS') || user.id === OPENCTI_ADMIN_UUID;
-    if (requiredCapability && !shouldBypass && !includes(requiredCapability, capabilities)) throw new ForbiddenAccess();
+    const shouldBypass = userCapabilities.includes(BYPASS) || user.id === OPENCTI_ADMIN_UUID;
+    if (shouldBypass) return func.apply(this, args);
+    // Check the user capabilities
+    const matchingCapabilities = filter(r => includes(r, userCapabilities), requiredCapabilities);
+    if (matchingCapabilities.length === 0) throw new ForbiddenAccess();
+    if (requiredAll && matchingCapabilities.length !== requiredCapabilities.length) throw new ForbiddenAccess();
     return func.apply(this, args);
   }
 
