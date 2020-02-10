@@ -2954,8 +2954,8 @@ type Query {
     lastSeenStop: DateTime
     weights: [Int]
     search: String
-  filters: [StixRelationsFiltering]
-  filterMode: FilterMode
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
   ): StixRelationConnection @auth(for: [KNOWLEDGE])
   stixRelationsTimeSeries(
     fromId: String
@@ -3198,6 +3198,7 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
+    relationType: String!
     inferred: Boolean
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
   # Incidents
@@ -3218,6 +3219,7 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
+    relationType: String!
     inferred: Boolean
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
   # Malwares

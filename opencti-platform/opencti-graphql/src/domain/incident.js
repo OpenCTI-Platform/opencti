@@ -24,7 +24,7 @@ export const findAll = args => {
 
 // region time series
 export const incidentsTimeSeriesByEntity = async args => {
-  const filters = [{ isRelation: true, type: 'stix_relation', value: args.objectId }];
+  const filters = [{ isRelation: true, type: args.relationType, value: args.objectId }];
   return timeSeriesEntities('Incident', filters, args);
 };
 export const incidentsTimeSeries = args => {

@@ -56,7 +56,7 @@ class IntrusionSetComponent extends Component {
           style={{ marginTop: 30 }}
         >
           <Grid item={true} xs={4}>
-            <EntityCampaignsChart entityId={intrusionSet.id} />
+            <EntityCampaignsChart entityId={intrusionSet.id} relationType='attributed-to' />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityStixRelationsDonut

@@ -53,6 +53,7 @@ const entityIncidentsChartIncidentsTimeSeriesQuery = graphql`
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
+    $relationType: String!
     $inferred: Boolean
   ) {
     incidentsTimeSeries(
@@ -62,6 +63,7 @@ const entityIncidentsChartIncidentsTimeSeriesQuery = graphql`
       startDate: $startDate
       endDate: $endDate
       interval: $interval
+      relationType: $relationType
       inferred: $inferred
     ) {
       date
@@ -96,7 +98,7 @@ class EntityIncidentsChart extends Component {
 
   renderContent() {
     const {
-      t, md, entityId, variant, inferred,
+      t, md, entityId, relationType, variant, inferred,
     } = this.props;
     const incidentsTimeSeriesVariables = {
       objectId: entityId,
@@ -105,6 +107,7 @@ class EntityIncidentsChart extends Component {
       startDate: monthsAgo(this.state.period),
       endDate: now(),
       interval: 'month',
+      relationType: relationType || 'targets',
       inferred,
     };
     return (
@@ -266,6 +269,7 @@ EntityIncidentsChart.propTypes = {
   configuration: PropTypes.object,
   handleOpenConfig: PropTypes.func,
   inferred: PropTypes.bool,
+  relationType: PropTypes.string,
 };
 
 export default compose(inject18n, withStyles(styles))(EntityIncidentsChart);

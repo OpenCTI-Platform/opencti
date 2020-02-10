@@ -52,8 +52,8 @@ class IndicatorsRightBar extends Component {
       t,
       indicatorTypes,
       observableTypes,
-      handleToggleIndicatorType,
-      handleToggleObservableType,
+      handleToggleIndicatorType = [],
+      handleToggleObservableType = [],
       openExports,
     } = this.props;
     return (

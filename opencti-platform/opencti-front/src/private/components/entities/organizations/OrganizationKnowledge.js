@@ -83,6 +83,20 @@ class OrganizationKnowledgeComponent extends Component {
         />
         <Route
           exact
+          path="/dashboard/entities/organizations/:organizationId/knowledge/organizations"
+          render={(routeProps) => (
+            <EntityStixRelations
+              entityId={organization.id}
+              relationType="gathering"
+              targetEntityTypes={['Organization']}
+              entityLink={link}
+              creationIsFrom={false}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/persons"
           render={(routeProps) => (
             <EntityStixRelations
