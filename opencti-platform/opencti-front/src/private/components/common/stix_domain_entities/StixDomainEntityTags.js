@@ -22,7 +22,7 @@ import inject18n from '../../../../components/i18n';
 import { tagsSearchQuery } from '../../settings/Tags';
 import Autocomplete from '../../../../components/Autocomplete';
 import TagCreation from '../../settings/tags/TagCreation';
-import Security, { KNOWLEDGE_KNEDIT } from '../../../../utils/Security';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -191,7 +191,7 @@ class StixDomainEntityTags extends Component {
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
           {t('Tags')}
         </Typography>
-        <Security roles={[KNOWLEDGE_KNEDIT]}>
+        <Security roles={[KNOWLEDGE_KNUPDATE]}>
           <IconButton
             color="secondary"
             aria-label="Tag"

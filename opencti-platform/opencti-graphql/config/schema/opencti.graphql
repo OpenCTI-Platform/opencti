@@ -1,5 +1,5 @@
 ### Directives
-directive @auth(for: Capabilities = null) on OBJECT | FIELD_DEFINITION
+directive @auth(for: [Capabilities] = [], and: Boolean = false) on OBJECT | FIELD_DEFINITION
 directive @constraint(
   # String constraints
   minLength: Int
@@ -37,8 +37,8 @@ enum Capabilities {
   KNOWLEDGE_KNDELETE
   KNOWLEDGE_KNUPLOAD
   KNOWLEDGE_KNASKIMPORT
-  KNOWLEDGE_KNASKEXPORT
   KNOWLEDGE_KNGETEXPORT
+  KNOWLEDGE_KNGETEXPORT_KNASKEXPORT
   KNOWLEDGE_KNENRICHMENT
   EXPLORE
   EXPLORE_EXUPDATE
@@ -2868,10 +2868,10 @@ input RelationsAddInput {
 ### QUERIES
 type Query {
   # Technical
-  about: AppInfo @auth
   settings: Settings
-  inferences: [Inference] @auth
-  attribute(id: String): Attribute @auth
+  about: AppInfo @auth(for: [SETTINGS])
+  inferences: [Inference] @auth(for: [SETTINGS])
+  attribute(id: String): Attribute @auth(for: [KNOWLEDGE])
   attributes(
     first: Int
     after: ID
@@ -2879,9 +2879,9 @@ type Query {
     orderMode: OrderingMode
     type: String
     search: String
-  ): AttributeConnection @auth
+  ): AttributeConnection @auth(for: [KNOWLEDGE])
   # Tags
-  tag(id: String!): Tag @auth
+  tag(id: String!): Tag @auth(for: [KNOWLEDGE])
   tags(
     first: Int
     after: ID
@@ -2890,16 +2890,16 @@ type Query {
     filters: [TagsFiltering]
     filterMode: FilterMode
     search: String
-  ): TagConnection @auth
-  rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: MODULES)
-  connectors: [Connector] @auth
-  connectorsForExport: [Connector] @auth
-  connectorsForImport: [Connector] @auth
-  importFiles(first: Int): FileConnection @auth
+  ): TagConnection @auth(for: [KNOWLEDGE])
+  rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: [MODULES])
+  connectors: [Connector] @auth(for: [MODULES])
+  connectorsForExport: [Connector] @auth(for: [KNOWLEDGE_KNGETEXPORT])
+  connectorsForImport: [Connector] @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  importFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   # StixEntities
-  stixEntity(id: String): StixEntity @auth
+  stixEntity(id: String): StixEntity @auth(for: [KNOWLEDGE])
   # StixDomainEntities
-  stixDomainEntity(id: String): StixDomainEntity @auth
+  stixDomainEntity(id: String): StixDomainEntity @auth(for: [KNOWLEDGE])
   stixDomainEntities(
     first: Int
     after: ID
@@ -2909,8 +2909,8 @@ type Query {
     filters: [StixDomainEntitiesFiltering]
     filterMode: FilterMode
     search: String
-  ): StixDomainEntityConnection @auth
-  stixDomainEntitiesExportFiles(first: Int, type: String!, context: String): FileConnection @auth
+  ): StixDomainEntityConnection  @auth(for: [KNOWLEDGE])
+  stixDomainEntitiesExportFiles(first: Int, type: String!, context: String): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixDomainEntitiesTimeSeries(
     type: String
     field: String!
@@ -2918,10 +2918,10 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-  ): [TimeSeries] @auth
-  stixDomainEntitiesNumber(type: String, endDate: DateTime): Number @auth
+  ): [TimeSeries]  @auth(for: [KNOWLEDGE])
+  stixDomainEntitiesNumber(type: String, endDate: DateTime): Number  @auth(for: [KNOWLEDGE])
   # StixObservables
-  stixObservable(id: String): StixObservable @auth
+  stixObservable(id: String): StixObservable @auth(for: [KNOWLEDGE])
   stixObservables(
     first: Int
     after: ID
@@ -2931,12 +2931,12 @@ type Query {
     filters: [StixObservablesFiltering]
     filterMode: FilterMode
     search: String
-  ): StixObservableConnection @auth
-  stixObservablesNumber(type: String, endDate: DateTime): Number @auth
-  stixObservablesTimeSeries(type: String): [TimeSeries] @auth
-  stixObservablesDistribution(type: String): [Distribution] @auth
+  ): StixObservableConnection @auth(for: [KNOWLEDGE])
+  stixObservablesNumber(type: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
+  stixObservablesTimeSeries(type: String): [TimeSeries] @auth(for: [KNOWLEDGE])
+  stixObservablesDistribution(type: String): [Distribution] @auth(for: [KNOWLEDGE])
   # StixRelations
-  stixRelation(id: String!): StixRelation @auth
+  stixRelation(id: String!): StixRelation @auth(for: [KNOWLEDGE])
   stixRelations(
     first: Int
     after: ID
@@ -2956,7 +2956,7 @@ type Query {
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
-  ): StixRelationConnection @auth
+  ): StixRelationConnection @auth(for: [KNOWLEDGE])
   stixRelationsTimeSeries(
     fromId: String
     relationType: String
@@ -2968,7 +2968,7 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-  ): [TimeSeries] @auth
+  ): [TimeSeries] @auth(for: [KNOWLEDGE])
   stixRelationsDistribution(
     fromId: String
     relationType: String
@@ -2981,10 +2981,10 @@ type Query {
     operation: StatsOperation!
     limit: Int
     order: String
-  ): [Distribution] @auth
-  stixRelationsNumber(type: String, fromId: String, endDate: DateTime, inferred: Boolean): Number @auth
+  ): [Distribution] @auth(for: [KNOWLEDGE])
+  stixRelationsNumber(type: String, fromId: String, endDate: DateTime, inferred: Boolean): Number @auth(for: [KNOWLEDGE])
   # StixObservableRelations
-  stixObservableRelation(id: String!): StixObservableRelation @auth
+  stixObservableRelation(id: String!): StixObservableRelation @auth(for: [KNOWLEDGE])
   stixObservableRelations(
     first: Int
     after: ID
@@ -3003,9 +3003,9 @@ type Query {
     weights: [Int]
     search: String
     infrastructure: Boolean
-  ): StixObservableRelationConnection @auth
+  ): StixObservableRelationConnection @auth(for: [KNOWLEDGE])
   # Workspaces
-  workspace(id: String!): Workspace @auth
+  workspace(id: String!): Workspace @auth(for: [EXPLORE])
   workspaces(
     first: Int
     after: ID
@@ -3014,10 +3014,10 @@ type Query {
     search: String
     filters: [WorkspacesFiltering]
     filterMode: FilterMode
-  ): WorkspaceConnection @auth
-  workspacesNumber(endDate: DateTime): Number @auth
+  ): WorkspaceConnection @auth(for: [EXPLORE])
+  workspacesNumber(endDate: DateTime): Number @auth(for: [EXPLORE])
   # Identities
-  identity(id: String!): Identity @auth
+  identity(id: String!): Identity @auth(for: [KNOWLEDGE])
   identities(
     first: Int
     after: ID
@@ -3027,10 +3027,10 @@ type Query {
     search: String
     filters: [IdentitiesFiltering]
     filterMode: FilterMode
-  ): IdentityConnection @auth
+  ): IdentityConnection @auth(for: [KNOWLEDGE])
   # Users
   me: User @auth
-  user(id: String!): User @auth(for: SETTINGS_SETACCESSES)
+  user(id: String!): User @auth(for: [SETTINGS_SETACCESSES])
   users(
     first: Int
     after: ID
@@ -3040,10 +3040,10 @@ type Query {
     filterMode: FilterMode
     search: String
     isUser: Boolean
-  ): UserConnection @auth(for: SETTINGS_SETACCESSES)
-  role(id: String!): Role @auth(for: SETTINGS_SETACCESSES)
+  ): UserConnection @auth(for: [SETTINGS_SETACCESSES])
+  role(id: String!): Role @auth(for: [SETTINGS_SETACCESSES])
   # Organizations
-  organization(id: String!): Organization @auth
+  organization(id: String!): Organization @auth(for: [KNOWLEDGE])
   organizations(
     organizationClass: String
     first: Int
@@ -3053,9 +3053,9 @@ type Query {
     filters: [OrganizationsFiltering]
     filterMode: FilterMode
     search: String
-  ): OrganizationConnection @auth
+  ): OrganizationConnection @auth(for: [KNOWLEDGE])
   # Sectors
-  sector(id: String!): Sector @auth
+  sector(id: String!): Sector @auth(for: [KNOWLEDGE])
   sectors(
     first: Int
     after: ID
@@ -3064,9 +3064,9 @@ type Query {
     filters: [SectorsFiltering]
     filterMode: FilterMode
     search: String
-  ): SectorConnection @auth
+  ): SectorConnection @auth(for: [KNOWLEDGE])
   # Cities
-  city(id: String!): City @auth
+  city(id: String!): City @auth(for: [KNOWLEDGE])
   cities(
     first: Int
     after: ID
@@ -3075,9 +3075,9 @@ type Query {
     filters: [CitiesFiltering]
     filterMode: FilterMode
     search: String
-  ): CityConnection @auth
+  ): CityConnection @auth(for: [KNOWLEDGE])
   # Countries
-  country(id: String!): Country @auth
+  country(id: String!): Country @auth(for: [KNOWLEDGE])
   countries(
     first: Int
     after: ID
@@ -3086,9 +3086,9 @@ type Query {
     filters: [CountriesFiltering]
     filterMode: FilterMode
     search: String
-  ): CountryConnection @auth
+  ): CountryConnection @auth(for: [KNOWLEDGE])
   # Regions
-  region(id: String!): Region @auth
+  region(id: String!): Region @auth(for: [KNOWLEDGE])
   regions(
     first: Int
     after: ID
@@ -3097,14 +3097,14 @@ type Query {
     filters: [RegionsFiltering]
     filterMode: FilterMode
     search: String
-  ): RegionConnection @auth
+  ): RegionConnection @auth(for: [KNOWLEDGE])
   # Groups
-  group(id: String!): Group @auth
-  groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection @auth
-  roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection @auth
-  capabilities(first: Int): CapabilityConnection @auth
+  group(id: String!): Group @auth(for: [SETTINGS_SETACCESSES])
+  groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection @auth(for: [SETTINGS_SETACCESSES])
+  roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection @auth(for: [SETTINGS_SETACCESSES])
+  capabilities(first: Int): CapabilityConnection @auth(for: [SETTINGS_SETACCESSES])
   # MarkingDefinitions
-  markingDefinition(id: String!): MarkingDefinition @auth
+  markingDefinition(id: String!): MarkingDefinition @auth(for: [KNOWLEDGE])
   markingDefinitions(
     first: Int
     after: ID
@@ -3113,9 +3113,9 @@ type Query {
     filters: [MarkingDefinitionsFiltering]
     filterMode: FilterMode
     search: String
-  ): MarkingDefinitionConnection @auth
+  ): MarkingDefinitionConnection @auth(for: [KNOWLEDGE])
   # ExternalReferences
-  externalReference(id: String!): ExternalReference @auth
+  externalReference(id: String!): ExternalReference @auth(for: [KNOWLEDGE])
   externalReferences(
     first: Int
     after: ID
@@ -3124,9 +3124,9 @@ type Query {
     filters: [ExternalReferencesFiltering]
     filterMode: FilterMode
     search: String
-  ): ExternalReferenceConnection @auth
+  ): ExternalReferenceConnection @auth(for: [KNOWLEDGE])
   # KillChainPhases
-  killChainPhase(id: String!): KillChainPhase @auth
+  killChainPhase(id: String!): KillChainPhase @auth(for: [KNOWLEDGE])
   killChainPhases(
     first: Int
     after: ID
@@ -3135,9 +3135,9 @@ type Query {
     filters: [KillChainPhasesFiltering]
     filterMode: FilterMode
     search: String
-  ): KillChainPhaseConnection @auth
+  ): KillChainPhaseConnection @auth(for: [KNOWLEDGE])
   # AttackPatterns
-  attackPattern(id: String!): AttackPattern @auth
+  attackPattern(id: String!): AttackPattern @auth(for: [KNOWLEDGE])
   attackPatterns(
     first: Int
     after: ID
@@ -3146,9 +3146,9 @@ type Query {
     filters: [AttackPatternsFiltering]
     filterMode: FilterMode
     search: String
-  ): AttackPatternConnection @auth
+  ): AttackPatternConnection @auth(for: [KNOWLEDGE])
   # CoursesOfAction
-  courseOfAction(id: String!): CourseOfAction @auth
+  courseOfAction(id: String!): CourseOfAction @auth(for: [KNOWLEDGE])
   coursesOfAction(
     first: Int
     after: ID
@@ -3157,9 +3157,9 @@ type Query {
     filters: [CoursesOfActionFiltering]
     filterMode: FilterMode
     search: String
-  ): CourseOfActionConnection @auth
+  ): CourseOfActionConnection @auth(for: [KNOWLEDGE])
   # ThreatActors
-  threatActor(id: String!): ThreatActor @auth
+  threatActor(id: String!): ThreatActor @auth(for: [KNOWLEDGE])
   threatActors(
     first: Int
     after: ID
@@ -3168,9 +3168,9 @@ type Query {
     filters: [ThreatActorsFiltering]
     filterMode: FilterMode
     search: String
-  ): ThreatActorConnection @auth
+  ): ThreatActorConnection @auth(for: [KNOWLEDGE])
   # IntursionSets
-  intrusionSet(id: String!): IntrusionSet @auth
+  intrusionSet(id: String!): IntrusionSet @auth(for: [KNOWLEDGE])
   intrusionSets(
     first: Int
     after: ID
@@ -3179,9 +3179,9 @@ type Query {
     filters: [IntrusionSetsFiltering]
     filterMode: FilterMode
     search: String
-  ): IntrusionSetConnection @auth
+  ): IntrusionSetConnection @auth(for: [KNOWLEDGE])
   # Campaigns
-  campaign(id: String!): Campaign @auth
+  campaign(id: String!): Campaign @auth(for: [KNOWLEDGE])
   campaigns(
     first: Int
     after: ID
@@ -3190,7 +3190,7 @@ type Query {
     filters: [CampaignsFiltering]
     filterMode: FilterMode
     search: String
-  ): CampaignConnection @auth
+  ): CampaignConnection @auth(for: [KNOWLEDGE])
   campaignsTimeSeries(
     objectId: String
     field: String!
@@ -3199,9 +3199,9 @@ type Query {
     endDate: DateTime!
     interval: String!
     inferred: Boolean
-  ): [TimeSeries] @auth
+  ): [TimeSeries] @auth(for: [KNOWLEDGE])
   # Incidents
-  incident(id: String!): Incident @auth
+  incident(id: String!): Incident @auth(for: [KNOWLEDGE])
   incidents(
     first: Int
     after: ID
@@ -3210,7 +3210,7 @@ type Query {
     filters: [IncidentsFiltering]
     filterMode: FilterMode
     search: String
-  ): IncidentConnection @auth
+  ): IncidentConnection @auth(for: [KNOWLEDGE])
   incidentsTimeSeries(
     objectId: String
     field: String!
@@ -3219,9 +3219,9 @@ type Query {
     endDate: DateTime!
     interval: String!
     inferred: Boolean
-  ): [TimeSeries] @auth
+  ): [TimeSeries] @auth(for: [KNOWLEDGE])
   # Malwares
-  malware(id: String!): Malware @auth
+  malware(id: String!): Malware @auth(for: [KNOWLEDGE])
   malwares(
     first: Int
     after: ID
@@ -3230,9 +3230,9 @@ type Query {
     filters: [MalwaresFiltering]
     filterMode: FilterMode
     search: String
-  ): MalwareConnection @auth
+  ): MalwareConnection @auth(for: [KNOWLEDGE])
   # Tools
-  tool(id: String!): Tool @auth
+  tool(id: String!): Tool @auth(for: [KNOWLEDGE])
   tools(
     first: Int
     after: ID
@@ -3241,9 +3241,9 @@ type Query {
     filters: [ToolsFiltering]
     filterMode: FilterMode
     search: String
-  ): ToolConnection @auth
+  ): ToolConnection @auth(for: [KNOWLEDGE])
   # Vulnerabilities
-  vulnerability(id: String!): Vulnerability @auth
+  vulnerability(id: String!): Vulnerability @auth(for: [KNOWLEDGE])
   vulnerabilities(
     first: Int
     after: ID
@@ -3252,9 +3252,9 @@ type Query {
     filters: [VulnerabilitiesFiltering]
     filterMode: FilterMode
     search: String
-  ): VulnerabilityConnection @auth
+  ): VulnerabilityConnection @auth(for: [KNOWLEDGE])
   # Reports
-  report(id: String!): Report @auth
+  report(id: String!): Report @auth(for: [KNOWLEDGE])
   reports(
     first: Int
     after: ID
@@ -3263,7 +3263,7 @@ type Query {
     filters: [ReportsFiltering]
     filterMode: FilterMode
     search: String
-  ): ReportConnection @auth
+  ): ReportConnection @auth(for: [KNOWLEDGE])
   reportsTimeSeries(
     objectId: String
     authorId: String
@@ -3273,17 +3273,17 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-  ): [TimeSeries] @auth
-  reportsNumber(reportClass: String, objectId: String, endDate: DateTime): Number @auth
+  ): [TimeSeries] @auth(for: [KNOWLEDGE])
+  reportsNumber(reportClass: String, objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
   reportsDistribution(
     objectId: String
     field: String!
     operation: StatsOperation!
     limit: Int
     order: String
-  ): [Distribution] @auth
+  ): [Distribution] @auth(for: [KNOWLEDGE])
   # Indicators
-  indicator(id: String!): Indicator @auth
+  indicator(id: String!): Indicator @auth(for: [KNOWLEDGE])
   indicators(
     first: Int
     after: ID
@@ -3292,21 +3292,21 @@ type Query {
     filters: [IndicatorsFiltering]
     filterMode: FilterMode
     search: String
-  ): IndicatorConnection @auth
+  ): IndicatorConnection @auth(for: [KNOWLEDGE])
 }
 
 ### SUBSCRIPTIONS
 type Subscription {
-  settings(id: ID!): Settings @auth(for: SETTINGS)
-  tag(id: ID!): Tag @auth(for: SETTINGS)
-  markingDefinition(id: ID!): MarkingDefinition @auth(for: SETTINGS)
-  killChainPhase(id: ID!): KillChainPhase @auth(for: SETTINGS)
-  stixDomainEntity(id: ID!): StixDomainEntity @auth
-  stixObservable(id: ID!): StixObservable @auth
-  stixRelation(id: ID!): StixRelation @auth
-  stixObservableRelation(id: ID!): StixObservableRelation @auth
-  workspace(id: ID!): Workspace @auth
-  externalReference(id: ID!): ExternalReference @auth
+  settings(id: ID!): Settings @auth(for: [SETTINGS])
+  tag(id: ID!): Tag @auth(for: [SETTINGS])
+  markingDefinition(id: ID!): MarkingDefinition @auth(for: [SETTINGS])
+  killChainPhase(id: ID!): KillChainPhase @auth(for: [SETTINGS])
+  stixDomainEntity(id: ID!): StixDomainEntity @auth(for: [KNOWLEDGE])
+  stixObservable(id: ID!): StixObservable @auth(for: [KNOWLEDGE])
+  stixRelation(id: ID!): StixRelation @auth(for: [KNOWLEDGE])
+  stixObservableRelation(id: ID!): StixObservableRelation @auth(for: [KNOWLEDGE])
+  externalReference(id: ID!): ExternalReference @auth(for: [KNOWLEDGE])
+  workspace(id: ID!): Workspace @auth(for: [EXPLORE])
 }
 
 ### MUTATIONS
@@ -3340,27 +3340,27 @@ type StixEntityEditMutations {
 
 # StixDomainEntity
 type StixDomainEntityEditMutations {
-  delete: ID @auth(for: KNOWLEDGE_KNDELETE)
-  fieldPatch(input: EditInput): StixDomainEntity @auth(for: KNOWLEDGE_KNUPDATE)
-  contextPatch(input: EditContext): StixDomainEntity @auth(for: KNOWLEDGE_KNUPDATE)
-  contextClean: StixDomainEntity @auth(for: KNOWLEDGE_KNUPDATE)
-  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: KNOWLEDGE_KNUPDATE)
-  relationsAdd(input: RelationsAddInput): StixEntity @auth(for: KNOWLEDGE_KNUPDATE)
-  relationDelete(relationId: ID, toId: String, relationType: String): StixEntity @auth(for: KNOWLEDGE_KNUPDATE)
-  importPush(file: Upload!): File @auth(for: KNOWLEDGE_KNUPLOAD)
-  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File] @auth(for: KNOWLEDGE_KNASKEXPORT)
-  exportPush(file: Upload!): Boolean @auth(for: CONNECTORAPI)
+  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  fieldPatch(input: EditInput): StixDomainEntity @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): StixDomainEntity @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: StixDomainEntity @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationsAdd(input: RelationsAddInput): StixEntity @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID, toId: String, relationType: String): StixEntity @auth(for: [KNOWLEDGE_KNUPDATE])
+  importPush(file: Upload!): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
 }
 
 # StixObservable
 type StixObservableEditMutations {
-  delete: ID @auth(for: KNOWLEDGE_KNDELETE)
-  fieldPatch(input: EditInput): StixObservable @auth(for: KNOWLEDGE_KNUPDATE)
-  contextPatch(input: EditContext): StixObservable @auth(for: KNOWLEDGE_KNUPDATE)
-  contextClean: StixObservable @auth(for: KNOWLEDGE_KNUPDATE)
-  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: KNOWLEDGE_KNUPDATE)
-  relationDelete(relationId: ID!): StixObservable @auth(for: KNOWLEDGE_KNUPDATE)
-  askEnrichment(connectorId: ID!): Work @auth(for: KNOWLEDGE_KNENRICHMENT)
+  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  fieldPatch(input: EditInput): StixObservable @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): StixObservable @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: StixObservable @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): StixObservable @auth(for: [KNOWLEDGE_KNUPDATE])
+  askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
 }
 
 # StixRelation
@@ -3385,23 +3385,23 @@ type StixObservableRelationEditMutations {
 
 # Workspace
 type WorkspaceEditMutations {
-  delete: ID
-  fieldPatch(input: EditInput): Workspace
-  contextPatch(input: EditContext): Workspace
-  contextClean: Workspace
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationsAdd(input: RelationsAddInput): Workspace
-  relationDelete(relationId: ID!): Workspace
+  delete: ID  @auth(for: [EXPLORE_EXDELETE])
+  fieldPatch(input: EditInput): Workspace @auth(for: [EXPLORE_EXUPDATE])
+  contextPatch(input: EditContext): Workspace @auth(for: [EXPLORE_EXUPDATE])
+  contextClean: Workspace @auth(for: [EXPLORE_EXUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [EXPLORE_EXUPDATE])
+  relationsAdd(input: RelationsAddInput): Workspace @auth(for: [EXPLORE_EXUPDATE])
+  relationDelete(relationId: ID!): Workspace @auth(for: [EXPLORE_EXUPDATE])
 }
 
 # Identity
 type IdentityEditMutations {
-  delete: ID
-  fieldPatch(input: EditInput): Identity
-  contextPatch(input: EditContext): Identity
-  contextClean: Identity
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Identity
+  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  fieldPatch(input: EditInput): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Identity @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 # User
@@ -3418,52 +3418,52 @@ type UserEditMutations {
 
 # Organization
 type OrganizationEditMutations {
-  delete: ID
-  fieldPatch(input: EditInput): Organization
-  contextPatch(input: EditContext): Organization
-  contextClean: Organization
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Organization
+  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  fieldPatch(input: EditInput): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Organization @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 # Sector
 type SectorEditMutations {
-  delete: ID
-  fieldPatch(input: EditInput): Sector
-  contextPatch(input: EditContext): Sector
-  contextClean: Sector
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Sector
+  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  fieldPatch(input: EditInput): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Sector @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 # City
 type CityEditMutations {
-  delete: ID
-  fieldPatch(input: EditInput): City
-  contextPatch(input: EditContext): City
-  contextClean: City
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): City
+  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  fieldPatch(input: EditInput): City @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): City @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: City @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): City @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 # Country
 type CountryEditMutations {
-  delete: ID
-  fieldPatch(input: EditInput): Country
-  contextPatch(input: EditContext): Country
-  contextClean: Country
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Country
+  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  fieldPatch(input: EditInput): Country @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Country @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Country @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Country @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 # Region
 type RegionEditMutations {
-  delete: ID
-  fieldPatch(input: EditInput): Region
-  contextPatch(input: EditContext): Region
-  contextClean: Region
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Region
+  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  fieldPatch(input: EditInput): Region @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Region @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Region @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Region @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 # Role
@@ -3498,12 +3498,12 @@ type MarkingDefinitionEditMutations {
 
 # ExternalReference
 type ExternalReferenceEditMutations {
-  delete: ID
-  fieldPatch(input: EditInput): ExternalReference
-  contextPatch(input: EditContext): ExternalReference
-  contextClean: ExternalReference
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): ExternalReference
+  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  fieldPatch(input: EditInput): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 # KillChainPhase
@@ -3518,112 +3518,112 @@ type KillChainPhaseEditMutations {
 
 # AttackPattern
 type AttackPatternEditMutations {
-  delete: ID
-  fieldPatch(input: EditInput): AttackPattern
-  contextPatch(input: EditContext): AttackPattern
-  contextClean: AttackPattern
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): AttackPattern
+  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  fieldPatch(input: EditInput): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 # CourseOfAction
 type CourseOfActionEditMutations {
-  delete: ID
-  fieldPatch(input: EditInput): CourseOfAction
-  contextPatch(input: EditContext): CourseOfAction
-  contextClean: CourseOfAction
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): CourseOfAction
+  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  fieldPatch(input: EditInput): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 # ThreatActor
 type ThreatActorEditMutations {
-  delete: ID
-  fieldPatch(input: EditInput): ThreatActor
-  contextPatch(input: EditContext): ThreatActor
-  contextClean: ThreatActor
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): ThreatActor
+  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  fieldPatch(input: EditInput): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 # IntrusionSet
 type IntrusionSetEditMutations {
-  delete: ID
-  fieldPatch(input: EditInput): IntrusionSet
-  contextPatch(input: EditContext): IntrusionSet
-  contextClean: IntrusionSet
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): IntrusionSet
+  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  fieldPatch(input: EditInput): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 # Campaign
 type CampaignEditMutations {
-  delete: ID
-  fieldPatch(input: EditInput): Campaign
-  contextPatch(input: EditContext): Campaign
-  contextClean: Campaign
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Campaign
+  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  fieldPatch(input: EditInput): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 # Incident
 type IncidentEditMutations {
-  delete: ID
-  fieldPatch(input: EditInput): Incident
-  contextPatch(input: EditContext): Incident
-  contextClean: Incident
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Incident
+  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  fieldPatch(input: EditInput): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Incident @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 # Malware
 type MalwareEditMutations {
-  delete: ID
-  fieldPatch(input: EditInput): Malware
-  contextPatch(input: EditContext): Malware
-  contextClean: Malware
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Malware
+  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  fieldPatch(input: EditInput): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Malware @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 # Tool
 type ToolEditMutations {
-  delete: ID
-  fieldPatch(input: EditInput): Tool
-  contextPatch(input: EditContext): Tool
-  contextClean: Tool
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Tool
+  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  fieldPatch(input: EditInput): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Tool @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 # Vulnerability
 type VulnerabilityEditMutations {
-  delete: ID
-  fieldPatch(input: EditInput): Vulnerability
-  contextPatch(input: EditContext): Vulnerability
-  contextClean: Vulnerability
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Vulnerability
+  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  fieldPatch(input: EditInput): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 # Report
 type ReportEditMutations {
-  delete: ID
-  fieldPatch(input: EditInput): Report
-  contextPatch(input: EditContext): Report
-  contextClean: Report
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID, toId: String, relationType: String): Report
+  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  fieldPatch(input: EditInput): Report @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Report @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Report @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID, toId: String, relationType: String): Report @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 # Indicator
 type IndicatorEditMutations {
-  delete: ID
-  fieldPatch(input: EditInput): Indicator
-  contextPatch(input: EditContext): Indicator
-  contextClean: Indicator
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Indicator
+  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  fieldPatch(input: EditInput): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 # Mutations
@@ -3631,31 +3631,31 @@ type Mutation {
   # Login
   token(input: UserLoginInput): String
   # Settings
-  settingsEdit(id: ID!): SettingsEditMutations @auth(for: SETTINGS)
+  settingsEdit(id: ID!): SettingsEditMutations @auth(for: [SETTINGS])
   # Inferences
-  inferenceEnable(id: ID!): Inference @auth(for: SETTINGS_SETINFERENCES)
-  inferenceDisable(id: ID!): Inference @auth(for: SETTINGS_SETINFERENCES)
+  inferenceEnable(id: ID!): Inference @auth(for: [SETTINGS_SETINFERENCES])
+  inferenceDisable(id: ID!): Inference @auth(for: [SETTINGS_SETINFERENCES])
   # Attribute
-  attributeAdd(input: AttributeAddInput): Attribute @auth(for: SETTINGS)
-  attributeEdit(id: ID!): AttributeEditMutations @auth(for: SETTINGS)
+  attributeAdd(input: AttributeAddInput): Attribute @auth(for: [SETTINGS])
+  attributeEdit(id: ID!): AttributeEditMutations @auth(for: [SETTINGS])
   # Connector
-  pingConnector(id: ID!, state: String): Connector @auth(for: CONNECTORAPI)
-  registerConnector(input: RegisterConnectorInput): Connector @auth(for: CONNECTORAPI)
-  resetStateConnector(id: ID!): Connector @auth(for: MODULES_MODMANAGE)
-  deleteWork(id: ID!): ID! @auth
-  initiateJob(workId: ID!): Job @auth(for: CONNECTORAPI)
-  updateJob(jobId: ID!, status: Status!, messages: [String]): Job @auth(for: CONNECTORAPI)
+  pingConnector(id: ID!, state: String): Connector @auth(for: [CONNECTORAPI])
+  registerConnector(input: RegisterConnectorInput): Connector @auth(for: [CONNECTORAPI])
+  resetStateConnector(id: ID!): Connector @auth(for: [MODULES_MODMANAGE])
+  deleteWork(id: ID!): ID! @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  initiateJob(workId: ID!): Job @auth(for: [CONNECTORAPI])
+  updateJob(jobId: ID!, status: Status!, messages: [String]): Job @auth(for: [CONNECTORAPI])
   # File management
-  deleteImport(fileName: String): Boolean @auth
-  uploadImport(file: Upload!): File @auth(for: KNOWLEDGE_KNASKIMPORT)
-  askJobImport(fileName: ID!): File @auth(for: KNOWLEDGE_KNASKIMPORT)
+  deleteImport(fileName: String): Boolean @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  uploadImport(file: Upload!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  askJobImport(fileName: ID!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   # Tag
-  tagAdd(input: TagAddInput): Tag @auth(for: SETTINGS)
-  tagEdit(id: ID!): TagEditMutations @auth(for: SETTINGS)
+  tagAdd(input: TagAddInput): Tag @auth(for: [KNOWLEDGE_KNUPDATE])
+  tagEdit(id: ID!): TagEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
   # StixEntity
-  stixEntityEdit(id: ID!): StixEntityEditMutations @auth(for: KNOWLEDGE_KNUPDATE)
+  stixEntityEdit(id: ID!): StixEntityEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
   # StixDomainEntity
-  stixDomainEntityAdd(input: StixDomainEntityAddInput): StixDomainEntity @auth(for: KNOWLEDGE_KNUPDATE)
+  stixDomainEntityAdd(input: StixDomainEntityAddInput): StixDomainEntity @auth(for: [KNOWLEDGE_KNUPDATE])
   stixDomainEntityEdit(id: ID!): StixDomainEntityEditMutations
   stixDomainEntitiesExportAsk(
     type: String!
@@ -3668,11 +3668,11 @@ type Mutation {
     orderMode: OrderingMode
     filters: [StixDomainEntitiesFiltering]
     filterMode: FilterMode
-  ): FileConnection @auth(for: KNOWLEDGE_KNASKEXPORT)
-  stixDomainEntitiesExportPush(type: String!, file: Upload!, context: String, listArgs: String): Boolean @auth(for: CONNECTORAPI)
+  ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  stixDomainEntitiesExportPush(type: String!, file: Upload!, context: String, listArgs: String): Boolean @auth(for: [CONNECTORAPI])
   # StixObservable
-  stixObservableAdd(input: StixObservableAddInput): StixObservable @auth(for: KNOWLEDGE_KNUPDATE)
-  stixObservableEdit(id: ID!): StixObservableEditMutations @auth
+  stixObservableAdd(input: StixObservableAddInput): StixObservable @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixObservableEdit(id: ID!): StixObservableEditMutations
   stixObservablesExportAsk(
     types: [String]!
     format: String!
@@ -3682,86 +3682,86 @@ type Mutation {
     orderMode: OrderingMode
     filters: [StixObservablesFiltering]
     filterMode: FilterMode
-  ): FileConnection
+  ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   # StixRelation
-  stixRelationAdd(input: StixRelationAddInput, reversedReturn: Boolean): StixRelation @auth
-  stixRelationEdit(id: ID!): StixRelationEditMutations @auth
+  stixRelationAdd(input: StixRelationAddInput, reversedReturn: Boolean): StixRelation @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixRelationEdit(id: ID!): StixRelationEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
   # StixObservableRelation
-  stixObservableRelationAdd(input: StixObservableRelationAddInput): StixObservableRelation @auth
-  stixObservableRelationEdit(id: ID!): StixObservableRelationEditMutations @auth
+  stixObservableRelationAdd(input: StixObservableRelationAddInput): StixObservableRelation @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixObservableRelationEdit(id: ID!): StixObservableRelationEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
   # Workspace
-  workspaceAdd(input: WorkspaceAddInput): Workspace @auth
-  workspaceEdit(id: ID!): WorkspaceEditMutations @auth
+  workspaceAdd(input: WorkspaceAddInput): Workspace @auth(for: [EXPLORE_EXUPDATE])
+  workspaceEdit(id: ID!): WorkspaceEditMutations
   # Identity
-  identityAdd(input: IdentityAddInput): Identity @auth
-  identityEdit(id: ID!): IdentityEditMutations @auth
+  identityAdd(input: IdentityAddInput): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
+  identityEdit(id: ID!): IdentityEditMutations
   # User
-  userAdd(input: UserAddInput): User @auth(for: SETTINGS_SETACCESSES)
-  personAdd(input: PersonAddInput): User @auth (for: KNOWLEDGE_KNUPDATE)
-  userEdit(id: ID!): UserEditMutations @auth(for: SETTINGS_SETACCESSES)
+  userAdd(input: UserAddInput): User @auth(for: [SETTINGS_SETACCESSES])
+  personAdd(input: PersonAddInput): User @auth (for: [KNOWLEDGE_KNUPDATE])
+  userEdit(id: ID!): UserEditMutations @auth(for: [SETTINGS_SETACCESSES])
   meEdit(input: EditInput): User @auth
   logout: ID @auth
   # Role
-  roleAdd(input: RoleAddInput): Role @auth(for: SETTINGS_SETACCESSES)
-  roleEdit(id: ID!): RoleEditMutations @auth(for: SETTINGS_SETACCESSES)
+  roleAdd(input: RoleAddInput): Role @auth(for: [SETTINGS_SETACCESSES])
+  roleEdit(id: ID!): RoleEditMutations @auth(for: [SETTINGS_SETACCESSES])
   # Organization
-  organizationAdd(input: OrganizationAddInput): Organization @auth
-  organizationEdit(id: ID!): OrganizationEditMutations @auth
+  organizationAdd(input: OrganizationAddInput): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
+  organizationEdit(id: ID!): OrganizationEditMutations
   # Sector
-  sectorAdd(input: SectorAddInput): Sector @auth
-  sectorEdit(id: ID!): SectorEditMutations @auth
+  sectorAdd(input: SectorAddInput): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
+  sectorEdit(id: ID!): SectorEditMutations
   # City
-  cityAdd(input: CityAddInput): City @auth
-  cityEdit(id: ID!): CityEditMutations @auth
+  cityAdd(input: CityAddInput): City @auth(for: [KNOWLEDGE_KNUPDATE])
+  cityEdit(id: ID!): CityEditMutations
   # Country
-  countryAdd(input: CountryAddInput): Country @auth
-  countryEdit(id: ID!): CountryEditMutations @auth
+  countryAdd(input: CountryAddInput): Country @auth(for: [KNOWLEDGE_KNUPDATE])
+  countryEdit(id: ID!): CountryEditMutations
   # Region
-  regionAdd(input: RegionAddInput): Region @auth
-  regionEdit(id: ID!): RegionEditMutations @auth
+  regionAdd(input: RegionAddInput): Region @auth(for: [KNOWLEDGE_KNUPDATE])
+  regionEdit(id: ID!): RegionEditMutations
   # Group
-  groupAdd(input: GroupAddInput): Group @auth(for: SETTINGS_SETACCESSES)
-  groupEdit(id: ID!): GroupEditMutations @auth(for: SETTINGS_SETACCESSES)
+  groupAdd(input: GroupAddInput): Group @auth(for: [SETTINGS_SETACCESSES])
+  groupEdit(id: ID!): GroupEditMutations @auth(for: [SETTINGS_SETACCESSES])
   # MarkingDefinition
-  markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition @auth(for: SETTINGS)
-  markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations @auth(for: SETTINGS)
+  markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition @auth(for: [SETTINGS_SETMARKINGS])
+  markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations @auth(for: [SETTINGS_SETMARKINGS])
   # ExternalReference
-  externalReferenceAdd(input: ExternalReferenceAddInput): ExternalReference @auth
-  externalReferenceEdit(id: ID!): ExternalReferenceEditMutations @auth
+  externalReferenceAdd(input: ExternalReferenceAddInput): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
+  externalReferenceEdit(id: ID!): ExternalReferenceEditMutations
   # KillChainPhase
-  killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase @auth(for: SETTINGS)
-  killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations @auth(for: SETTINGS)
+  killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase @auth(for: [SETTINGS])
+  killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations @auth(for: [SETTINGS])
   # AttackPattern
-  attackPatternAdd(input: AttackPatternAddInput): AttackPattern @auth
-  attackPatternEdit(id: ID!): AttackPatternEditMutations @auth
+  attackPatternAdd(input: AttackPatternAddInput): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
+  attackPatternEdit(id: ID!): AttackPatternEditMutations
   # CourseOfAction
-  courseOfActionAdd(input: CourseOfActionAddInput): CourseOfAction @auth
-  courseOfActionEdit(id: ID!): CourseOfActionEditMutations @auth
+  courseOfActionAdd(input: CourseOfActionAddInput): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
+  courseOfActionEdit(id: ID!): CourseOfActionEditMutations
   # ThreatActor
-  threatActorAdd(input: ThreatActorAddInput): ThreatActor @auth
-  threatActorEdit(id: ID!): ThreatActorEditMutations @auth
+  threatActorAdd(input: ThreatActorAddInput): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
+  threatActorEdit(id: ID!): ThreatActorEditMutations
   # IntrusionSet
-  intrusionSetAdd(input: IntrusionSetAddInput): IntrusionSet @auth
-  intrusionSetEdit(id: ID!): IntrusionSetEditMutations @auth
+  intrusionSetAdd(input: IntrusionSetAddInput): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
+  intrusionSetEdit(id: ID!): IntrusionSetEditMutations
   # Campaign
-  campaignAdd(input: CampaignAddInput): Campaign @auth
-  campaignEdit(id: ID!): CampaignEditMutations @auth
+  campaignAdd(input: CampaignAddInput): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
+  campaignEdit(id: ID!): CampaignEditMutations
   # Incident
-  incidentAdd(input: IncidentAddInput): Incident @auth
-  incidentEdit(id: ID!): IncidentEditMutations @auth
+  incidentAdd(input: IncidentAddInput): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
+  incidentEdit(id: ID!): IncidentEditMutations
   # Malware
-  malwareAdd(input: MalwareAddInput): Malware @auth
-  malwareEdit(id: ID!): MalwareEditMutations @auth
+  malwareAdd(input: MalwareAddInput): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
+  malwareEdit(id: ID!): MalwareEditMutations
   # Tool
-  toolAdd(input: ToolAddInput): Tool @auth
-  toolEdit(id: ID!): ToolEditMutations @auth
+  toolAdd(input: ToolAddInput): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
+  toolEdit(id: ID!): ToolEditMutations
   # Vulnerability
-  vulnerabilityAdd(input: VulnerabilityAddInput): Vulnerability @auth
-  vulnerabilityEdit(id: ID!): VulnerabilityEditMutations @auth
+  vulnerabilityAdd(input: VulnerabilityAddInput): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
+  vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
   # Report
-  reportAdd(input: ReportAddInput): Report @auth
-  reportEdit(id: ID!): ReportEditMutations @auth
+  reportAdd(input: ReportAddInput): Report @auth(for: [KNOWLEDGE_KNUPDATE])
+  reportEdit(id: ID!): ReportEditMutations
   # Indicator
-  indicatorAdd(input: IndicatorAddInput): Indicator @auth
-  indicatorEdit(id: ID!): IndicatorEditMutations @auth
+  indicatorAdd(input: IndicatorAddInput): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorEdit(id: ID!): IndicatorEditMutations
 }

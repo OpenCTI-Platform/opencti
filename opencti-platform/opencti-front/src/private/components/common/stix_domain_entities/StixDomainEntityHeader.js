@@ -25,7 +25,7 @@ import { DialogTitle } from '@material-ui/core';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import inject18n from '../../../../components/i18n';
-import Security, { KNOWLEDGE_KNEDIT } from '../../../../utils/Security';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -134,7 +134,7 @@ class StixDomainEntityHeader extends Component {
         >
           {stixDomainEntity.name}
         </Typography>
-        <Security roles={[KNOWLEDGE_KNEDIT]}>
+        <Security roles={[KNOWLEDGE_KNUPDATE]}>
           <div className={classes.popover}>
             {React.cloneElement(PopoverComponent, {
               id: stixDomainEntity.id,
@@ -153,7 +153,7 @@ class StixDomainEntityHeader extends Component {
             ) : (
               ''
             )))}
-            <Security roles={[KNOWLEDGE_KNEDIT]}>
+            <Security roles={[KNOWLEDGE_KNUPDATE]}>
               {alias.length > 5 ? (
                 <IconButton
                   color="primary"
