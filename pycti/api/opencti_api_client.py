@@ -213,8 +213,10 @@ class OpenCTIApiClient:
         else:
             logging.info(r.text)
 
-    def fetch_opencti_file(self, fetch_uri):
+    def fetch_opencti_file(self, fetch_uri, binary = False):
         r = requests.get(fetch_uri, headers=self.request_headers)
+        if binary:
+            return r.content
         return r.text
 
     def log(self, level, message):
@@ -1813,12 +1815,16 @@ class OpenCTIApiClient:
                 }
             },
             "gathering": {
+                "threat-actor": {
+                    "organization": {"from_role": "part_of", "to_role": "gather"},
+                },
                 "sector": {
                     "sector": {"from_role": "part_of", "to_role": "gather"},
                     "organization": {"from_role": "part_of", "to_role": "gather"},
                 },
                 "organization": {
                     "sector": {"from_role": "part_of", "to_role": "gather"},
+                    "organization": {"from_role": "part_of", "to_role": "gather"},
                 },
                 "person": {
                     "organization": {"from_role": "part_of", "to_role": "gather"},
