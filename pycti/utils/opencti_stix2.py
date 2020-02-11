@@ -974,6 +974,9 @@ class OpenCTIStix2:
                     type=observable["type"],
                     observable_value=observable["value"],
                     id=observable["id"],
+                    createIndicator=stix_object[CustomProperties.CREATE_INDICATOR]
+                    if CustomProperties.CREATE_INDICATOR in stix_object
+                    else False,
                 )
                 stix_observables_mapping[observable["id"]] = observable_result["id"]
                 self.mapping_cache[stix_object["id"]].append(
