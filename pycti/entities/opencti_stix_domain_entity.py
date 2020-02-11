@@ -422,6 +422,7 @@ class StixDomainEntity:
         id = kwargs.get("id", None)
         key = kwargs.get("key", None)
         value = kwargs.get("value", None)
+        custom_attributes = kwargs.get("customAttributes", key)
         if id is not None and key is not None and value is not None:
             self.opencti.log(
                 "info", "Updating Stix-Domain-Entity {" + id + "} field {" + key + "}."
@@ -431,8 +432,12 @@ class StixDomainEntity:
                     mutation StixDomainEntityEdit($id: ID!, $input: EditInput!) {
                         stixDomainEntityEdit(id: $id) {
                             fieldPatch(input: $input) {
-                                """
-                + self.properties
+                        """
+                + (
+                    custom_attributes
+                    if custom_attributes is not None
+                    else self.properties
+                )
                 + """
                         }
                     }

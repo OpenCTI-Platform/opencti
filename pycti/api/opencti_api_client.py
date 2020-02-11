@@ -213,7 +213,7 @@ class OpenCTIApiClient:
         else:
             logging.info(r.text)
 
-    def fetch_opencti_file(self, fetch_uri, binary = False):
+    def fetch_opencti_file(self, fetch_uri, binary=False):
         r = requests.get(fetch_uri, headers=self.request_headers)
         if binary:
             return r.content
@@ -1856,6 +1856,14 @@ class OpenCTIApiClient:
                         "from_role": "belonging_to",
                         "to_role": "belonged_to",
                     }
+                },
+            },
+            "resolves": {
+                "ipv4-addr": {
+                    "domain": {"from_role": "resolving", "to_role": "resolved",}
+                },
+                "ipv6-addr": {
+                    "domain": {"from_role": "resolving", "to_role": "resolved",}
                 },
             },
             "corresponds": {

@@ -12,14 +12,6 @@ import datefinder
 import dateutil.parser
 import pytz
 
-import stix2
-from stix2.pattern_visitor import create_pattern_object
-from stix2 import (
-    ObjectPath,
-    ObservationExpression,
-    EqualityComparisonExpression,
-    HashConstant,
-)
 from pycti.utils.constants import (
     ObservableTypes,
     IdentityTypes,
@@ -230,6 +222,7 @@ class OpenCTIStix2:
         object_refs_ids = []
         if "object_refs" in stix_object:
             for object_ref in stix_object["object_refs"]:
+                object_ref_result = None
                 if object_ref in self.mapping_cache:
                     object_ref_result = self.mapping_cache[object_ref]
                 elif "relationship" in object_ref:
@@ -239,15 +232,18 @@ class OpenCTIStix2:
                             "id": object_ref_result["id"],
                             "type": object_ref_result["entity_type"],
                         }
-                else:
+                elif "observed-data" not in object_ref:
                     object_ref_result = self.opencti.stix_entity.read(id=object_ref)
                     if object_ref_result is not None:
                         self.mapping_cache[object_ref] = {
                             "id": object_ref_result["id"],
                             "type": object_ref_result["entity_type"],
                         }
-                if object_ref_result is not None:
-                    object_refs_ids.append(object_ref_result["id"])
+                if "observed-data" not in object_ref:
+                    if object_ref_result is not None:
+                        object_refs_ids.append(object_ref_result["id"])
+                else:
+                    object_refs_ids.append(object_ref)
 
         # External References
         reports = {}
@@ -498,23 +494,33 @@ class OpenCTIStix2:
                 )
             # Add object refs
             for object_refs_id in object_refs_ids:
-                self.opencti.report.add_stix_entity(
-                    id=stix_object_result["id"], entity_id=object_refs_id,
-                )
-                if (
-                    object_refs_id in self.mapping_cache
-                    and "observableRefs" in self.mapping_cache[object_refs_id]
-                    and self.mapping_cache[object_refs_id] is not None
-                    and self.mapping_cache[object_refs_id]["observableRefs"] is not None
-                    and len(self.mapping_cache[object_refs_id]["observableRefs"]) > 0
-                ):
-                    for observable_ref in self.mapping_cache[object_refs_id][
-                        "observableRefs"
-                    ]:
-                        self.opencti.report.add_stix_observable(
-                            id=stix_object_result["id"],
-                            stix_observable_id=observable_ref["id"],
-                        )
+                if "observed-data" in object_refs_id:
+                    if object_refs_id in self.mapping_cache:
+                        for observable in self.mapping_cache[object_refs_id]:
+                            self.opencti.report.add_stix_observable(
+                                id=stix_object_result["id"],
+                                stix_observable_id=observable["id"],
+                            )
+                else:
+                    self.opencti.report.add_stix_entity(
+                        id=stix_object_result["id"], entity_id=object_refs_id,
+                    )
+                    if (
+                        object_refs_id in self.mapping_cache
+                        and "observableRefs" in self.mapping_cache[object_refs_id]
+                        and self.mapping_cache[object_refs_id] is not None
+                        and self.mapping_cache[object_refs_id]["observableRefs"]
+                        is not None
+                        and len(self.mapping_cache[object_refs_id]["observableRefs"])
+                        > 0
+                    ):
+                        for observable_ref in self.mapping_cache[object_refs_id][
+                            "observableRefs"
+                        ]:
+                            self.opencti.report.add_stix_observable(
+                                id=stix_object_result["id"],
+                                stix_observable_id=observable_ref["id"],
+                            )
             # Add files
             if CustomProperties.FILES in stix_object:
                 for file in stix_object[CustomProperties.FILES]:
@@ -961,6 +967,7 @@ class OpenCTIStix2:
                                     )
 
         stix_observables_mapping = {}
+        self.mapping_cache[stix_object["id"]] = []
         for key, observable_to_create in observables_to_create.items():
             for observable in observable_to_create:
                 observable_result = self.opencti.stix_observable.create(
@@ -969,6 +976,12 @@ class OpenCTIStix2:
                     id=observable["id"],
                 )
                 stix_observables_mapping[observable["id"]] = observable_result["id"]
+                self.mapping_cache[stix_object["id"]].append(
+                    {
+                        "id": observable_result["id"],
+                        "type": observable_result["entity_type"],
+                    }
+                )
 
         stix_observable_relations_mapping = {}
         for relation_to_create in relations_to_create:
@@ -1163,7 +1176,6 @@ class OpenCTIStix2:
             return []
         result = []
         objects_to_get = []
-        observables_to_get = []
         relations_to_get = []
         if "createdByRef" in entity and entity["createdByRef"] is not None:
             entity_created_by_ref = entity["createdByRef"]
@@ -1301,14 +1313,19 @@ class OpenCTIStix2:
         for x in result:
             uuids.append(x["id"])
 
+        observables_stix_ids = []
+        observable_object_data = None
         if "observableRefs" in entity and len(entity["observableRefs"]) > 0:
             observable_object_data = self.export_stix_observables(entity)
             if observable_object_data is not None:
                 observable_object_bundle = self.filter_objects(
-                    uuids, observable_object_data
+                    uuids, [observable_object_data["observedData"]]
                 )
                 uuids = uuids + [x["id"] for x in observable_object_bundle]
                 result = result + observable_object_bundle
+                observables_stix_ids = (
+                    observables_stix_ids + observable_object_data["stixIds"]
+                )
 
         if mode == "simple":
             return result
@@ -1320,6 +1337,10 @@ class OpenCTIStix2:
                     max_marking_definition_entity, stix_relation["markingDefinitions"]
                 ):
                     objects_to_get.append(stix_relation["to"])
+                    if stix_relation["to"]["stix_id_key"] in observables_stix_ids:
+                        stix_relation["to"]["stix_id_key"] = observable_object_data[
+                            "observedData"
+                        ]["id"]
                     relation_object_data = self.opencti.stix_relation.to_stix2(
                         entity=stix_relation
                     )
@@ -1690,7 +1711,10 @@ class OpenCTIStix2:
         )
 
     def export_stix_observables(self, entity):
+        stix_ids = []
         observed_data = dict()
+        observed_data["id"] = "observed-data--" + str(uuid.uuid4())
+        observed_data["type"] = "observed-data"
         observed_data["number_observed"] = len(entity["observableRefs"])
         observed_data["objects"] = []
         for observable in entity["observableRefs"]:
@@ -1703,8 +1727,9 @@ class OpenCTIStix2:
             ]
             stix_observable["type"] = observable["entity_type"]
             observed_data["objects"].append(stix_observable)
+            stix_ids.append(observable["stix_id_key"])
 
-        return [observed_data]
+        return {"observedData": observed_data, "stixIds": stix_ids}
 
     def create_indicator(self, stix_object, update=False):
         return self.opencti.indicator.create(
@@ -1844,6 +1869,18 @@ class OpenCTIStix2:
             "info", "Objects imported in: %ssecs" % round(end_time - start_time)
         )
 
+        # StixCyberObservables
+        start_time = time.time()
+        for item in stix_bundle["objects"]:
+            if item["type"] == "observed-data" and (
+                len(types) == 0 or "observed-data" in types
+            ):
+                self.import_observables(item)
+        end_time = time.time()
+        self.opencti.log(
+            "info", "Observables imported in: %ssecs" % round(end_time - start_time)
+        )
+
         # StixRelationObjects
         start_time = time.time()
         for item in stix_bundle["objects"]:
@@ -1856,7 +1893,28 @@ class OpenCTIStix2:
                     CustomProperties.TARGET_REF not in item
                     or "relationship" not in item[CustomProperties.TARGET_REF]
                 ):
-                    self.import_relationship(item, update, types)
+                    source_ref = (
+                        item[CustomProperties.SOURCE_REF]
+                        if CustomProperties.SOURCE_REF in item
+                        else item["source_ref"]
+                    )
+                    target_ref = (
+                        item[CustomProperties.TARGET_REF]
+                        if CustomProperties.TARGET_REF in item
+                        else item["target_ref"]
+                    )
+                    if "observed-data" in source_ref:
+                        if source_ref in self.mapping_cache:
+                            for observable in self.mapping_cache[source_ref]:
+                                item[CustomProperties.SOURCE_REF] = observable["id"]
+                                self.import_relationship(item, update, types)
+                    elif "observed-data" in target_ref:
+                        if target_ref in self.mapping_cache:
+                            for observable in self.mapping_cache[target_ref]:
+                                item[CustomProperties.TARGET_REF] = observable["id"]
+                                self.import_relationship(item, update, types)
+                    else:
+                        self.import_relationship(item, update, types)
                     imported_elements.append({"id": item["id"], "type": item["type"]})
         end_time = time.time()
         self.opencti.log(
@@ -1881,18 +1939,6 @@ class OpenCTIStix2:
             "info",
             "Relationships to relationships imported in: %ssecs"
             % round(end_time - start_time),
-        )
-
-        # StixCyberObservables
-        start_time = time.time()
-        for item in stix_bundle["objects"]:
-            if item["type"] == "observed-data" and (
-                len(types) == 0 or "observed-data" in types
-            ):
-                self.import_observables(item)
-        end_time = time.time()
-        self.opencti.log(
-            "info", "Observables imported in: %ssecs" % round(end_time - start_time)
         )
 
         # Reports
