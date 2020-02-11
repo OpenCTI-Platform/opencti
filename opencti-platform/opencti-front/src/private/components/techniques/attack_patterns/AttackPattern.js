@@ -15,6 +15,7 @@ import AttackPatternCoursesOfAction from './AttackPatternCoursesOfAction';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityStixRelationsChart from '../../common/stix_relations/EntityStixRelationsChart';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   container: {
@@ -68,7 +69,9 @@ class AttackPatternComponent extends Component {
             <EntityReportsChart entityId={attackPattern.id} />
           </Grid>
         </Grid>
-        <AttackPatternEdition attackPatternId={attackPattern.id} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <AttackPatternEdition attackPatternId={attackPattern.id} />
+        </Security>
       </div>
     );
   }
@@ -93,7 +96,4 @@ const AttackPattern = createFragmentContainer(AttackPatternComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(AttackPattern);
+export default compose(inject18n, withStyles(styles))(AttackPattern);

@@ -6,6 +6,10 @@ import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { ArrowForwardIos, Domain } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
+import Security, {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/Security';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -116,26 +120,28 @@ class TopMenuSector extends Component {
         >
           {t('Knowledge')}
         </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/entities/sectors/${sectorId}/files`}
-          variant={
-            location.pathname
-            === `/dashboard/entities/sectors/${sectorId}/files`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname
-            === `/dashboard/entities/sectors/${sectorId}/files`
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Files')}
-        </Button>
+        <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
+          <Button
+            component={Link}
+            to={`/dashboard/entities/sectors/${sectorId}/files`}
+            variant={
+              location.pathname
+              === `/dashboard/entities/sectors/${sectorId}/files`
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname
+              === `/dashboard/entities/sectors/${sectorId}/files`
+                ? 'primary'
+                : 'inherit'
+            }
+            classes={{ root: classes.button }}
+          >
+            {t('Files')}
+          </Button>
+        </Security>
       </div>
     );
   }

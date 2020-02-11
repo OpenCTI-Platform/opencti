@@ -29,7 +29,7 @@ const AppIntlProvider = (props) => {
   const platformLang = platformLanguage !== null && platformLanguage !== 'auto'
     ? props.settings.platform_language
     : locale;
-  const lang = me.language !== null && me.language !== 'auto'
+  const lang = me.language !== null && me.language !== undefined && me.language !== 'auto'
     ? me.language
     : platformLang;
   return (

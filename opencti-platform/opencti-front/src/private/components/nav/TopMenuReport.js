@@ -6,8 +6,12 @@ import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { ArrowForwardIos, Description } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
+import Security, {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/Security';
 
-const styles = theme => ({
+const styles = (theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
     padding: '2px 5px 2px 5px',
@@ -126,26 +130,30 @@ class TopMenuReport extends Component {
               ? 'primary'
               : 'inherit'
           }
-          classes={{ root: classes.button }}>
+          classes={{ root: classes.button }}
+        >
           {t('Knowledge')}
         </Button>
-        <Button
+        <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
+          <Button
             component={Link}
             to={`/dashboard/reports/all/${reportId}/files`}
             variant={
-                location.pathname === `/dashboard/reports/all/${reportId}/files`
-                  ? 'contained'
-                  : 'text'
+              location.pathname === `/dashboard/reports/all/${reportId}/files`
+                ? 'contained'
+                : 'text'
             }
             size="small"
             color={
-                location.pathname === `/dashboard/reports/all/${reportId}/files`
-                  ? 'primary'
-                  : 'inherit'
+              location.pathname === `/dashboard/reports/all/${reportId}/files`
+                ? 'primary'
+                : 'inherit'
             }
-            classes={{ root: classes.button }}>
+            classes={{ root: classes.button }}
+          >
             {t('Files')}
-        </Button>
+          </Button>
+        </Security>
       </div>
     );
   }

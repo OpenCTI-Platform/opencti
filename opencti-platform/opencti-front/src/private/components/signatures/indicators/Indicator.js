@@ -12,6 +12,7 @@ import IndicatorDetails from './IndicatorDetails';
 import IndicatorEdition from './IndicatorEdition';
 import EntityLastReports from '../../reports/EntityLastReports';
 import IndicatorEntities from './IndicatorEntities';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   container: {
@@ -43,11 +44,10 @@ class IndicatorComponent extends Component {
             <EntityLastReports entityId={indicator.id} />
           </Grid>
         </Grid>
-        <IndicatorEntities
-          entityId={indicator.id}
-          relationType="indicates"
-        />
-        <IndicatorEdition indicatorId={indicator.id} />
+        <IndicatorEntities entityId={indicator.id} relationType="indicates" />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IndicatorEdition indicatorId={indicator.id} />
+        </Security>
       </div>
     );
   }
@@ -70,7 +70,4 @@ const Indicator = createFragmentContainer(IndicatorComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(Indicator);
+export default compose(inject18n, withStyles(styles))(Indicator);

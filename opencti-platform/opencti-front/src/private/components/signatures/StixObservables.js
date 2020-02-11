@@ -178,7 +178,7 @@ class StixObservables extends Component {
     const { classes } = this.props;
     const {
       view,
-      types,
+      observableTypes,
       sortBy,
       orderAsc,
       searchTerm,
@@ -194,10 +194,7 @@ class StixObservables extends Component {
       }),
     )(filters);
     const paginationOptions = {
-      types:
-        this.state.observableTypes.length > 0
-          ? this.state.observableTypes
-          : null,
+      types: observableTypes.length > 0 ? observableTypes : null,
       search: searchTerm,
       filters: finalFilters,
       orderBy: sortBy,
@@ -211,7 +208,7 @@ class StixObservables extends Component {
           openExports={openExports}
         />
         <StixObservablesRightBar
-          types={types}
+          types={observableTypes}
           handleToggle={this.handleToggle.bind(this)}
           openExports={openExports}
         />

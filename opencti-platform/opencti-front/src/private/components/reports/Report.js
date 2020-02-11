@@ -13,6 +13,7 @@ import ReportEdition from './ReportEdition';
 import EntityExternalReferences from '../common/external_references/EntityExternalReferences';
 import EntityStixRelationsDonut from '../common/stix_relations/EntityStixRelationsDonut';
 import EntityStixRelationsPie from '../common/stix_relations/EntityStixRelationsPie';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 const styles = () => ({
   container: {
@@ -67,7 +68,9 @@ class ReportComponent extends Component {
             />
           </Grid>
         </Grid>
-        <ReportEdition reportId={report.id} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ReportEdition reportId={report.id} />
+        </Security>
       </div>
     );
   }

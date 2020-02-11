@@ -27,6 +27,7 @@ import IncidentsLines, {
   incidentsLinesQuery,
 } from './incidents/IncidentsLines';
 import IncidentCreation from './incidents/IncidentCreation';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 class Incidents extends Component {
   constructor(props) {
@@ -233,7 +234,9 @@ class Incidents extends Component {
       <div>
         {view === 'cards' ? this.renderCards(paginationOptions) : ''}
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <IncidentCreation paginationOptions={paginationOptions} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IncidentCreation paginationOptions={paginationOptions} />
+        </Security>
       </div>
     );
   }

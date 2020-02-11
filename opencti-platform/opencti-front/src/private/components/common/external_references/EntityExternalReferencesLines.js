@@ -26,6 +26,7 @@ import { truncate } from '../../../../utils/String';
 import { commitMutation } from '../../../../relay/environment';
 import AddExternalReferences from './AddExternalReferences';
 import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   paper: {
@@ -113,10 +114,12 @@ class EntityExternalReferencesLinesContainer extends Component {
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('External references')}
         </Typography>
-        <AddExternalReferences
-          entityId={entityId}
-          entityExternalReferences={data.stixEntity.externalReferences.edges}
-        />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <AddExternalReferences
+            entityId={entityId}
+            entityExternalReferences={data.stixEntity.externalReferences.edges}
+          />
+        </Security>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <List>

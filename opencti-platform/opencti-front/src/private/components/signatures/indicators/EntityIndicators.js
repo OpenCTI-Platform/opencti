@@ -23,6 +23,7 @@ import {
   saveViewParameters,
 } from '../../../../utils/ListParameters';
 import IndicatorsRightBar from './IndicatorsRightBar';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 class EntityIndicators extends Component {
   constructor(props) {
@@ -250,13 +251,16 @@ class EntityIndicators extends Component {
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <StixRelationCreationFromEntity
-          entityId={entityId}
-          isFrom={false}
-          targetEntityTypes={['Indicator']}
-          paginationOptions={paginationOptions}
-          openExports={openExports}
-        />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <StixRelationCreationFromEntity
+            entityId={entityId}
+            isFrom={false}
+            targetEntityTypes={['Indicator']}
+            paginationOptions={paginationOptions}
+            openExports={openExports}
+            paddingRight={true}
+          />
+        </Security>
         <IndicatorsRightBar
           indicatorTypes={indicatorTypes}
           observableTypes={observableTypes}

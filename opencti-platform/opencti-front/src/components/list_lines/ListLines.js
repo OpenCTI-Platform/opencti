@@ -268,13 +268,15 @@ class ListLines extends Component {
           {children}
         </List>
         {typeof handleToggleExports === 'function' ? (
-          <StixDomainEntitiesExports
-            open={openExports}
-            handleToggle={handleToggleExports.bind(this)}
-            paginationOptions={paginationOptions}
-            exportEntityType={exportEntityType}
-            context={exportContext}
-          />
+          <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+            <StixDomainEntitiesExports
+              open={openExports}
+              handleToggle={handleToggleExports.bind(this)}
+              paginationOptions={paginationOptions}
+              exportEntityType={exportEntityType}
+              context={exportContext}
+            />
+          </Security>
         ) : (
           ''
         )}

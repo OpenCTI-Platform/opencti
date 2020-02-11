@@ -15,6 +15,7 @@ import EntityStixRelationsDonut from '../../common/stix_relations/EntityStixRela
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityIncidentsChart from '../incidents/EntityIncidentsChart';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   container: {
@@ -70,7 +71,9 @@ class CampaignComponent extends Component {
             <EntityReportsChart entityId={campaign.id} />
           </Grid>
         </Grid>
-        <CampaignEdition campaignId={campaign.id} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <CampaignEdition campaignId={campaign.id} />
+        </Security>
       </div>
     );
   }
@@ -94,7 +97,4 @@ const Campaign = createFragmentContainer(CampaignComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(Campaign);
+export default compose(inject18n, withStyles(styles))(Campaign);

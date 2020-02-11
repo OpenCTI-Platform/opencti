@@ -2893,8 +2893,8 @@ type Query {
   ): TagConnection @auth(for: [KNOWLEDGE])
   rabbitMQMetrics(prefix: String): RabbitMQMetrics @auth(for: [MODULES])
   connectors: [Connector] @auth(for: [MODULES])
-  connectorsForExport: [Connector] @auth(for: [KNOWLEDGE_KNGETEXPORT])
-  connectorsForImport: [Connector] @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  connectorsForExport: [Connector] @auth(for: [KNOWLEDGE])
+  connectorsForImport: [Connector] @auth(for: [KNOWLEDGE])
   importFiles(first: Int): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   # StixEntities
   stixEntity(id: String): StixEntity @auth(for: [KNOWLEDGE])
@@ -3030,7 +3030,7 @@ type Query {
   ): IdentityConnection @auth(for: [KNOWLEDGE])
   # Users
   me: User @auth
-  user(id: String!): User @auth(for: [SETTINGS_SETACCESSES])
+  user(id: String!): User @auth(for: [KNOWLEDGE])
   users(
     first: Int
     after: ID
@@ -3040,7 +3040,7 @@ type Query {
     filterMode: FilterMode
     search: String
     isUser: Boolean
-  ): UserConnection @auth(for: [SETTINGS_SETACCESSES])
+  ): UserConnection @auth(for: [KNOWLEDGE])
   role(id: String!): Role @auth(for: [SETTINGS_SETACCESSES])
   # Organizations
   organization(id: String!): Organization @auth(for: [KNOWLEDGE])

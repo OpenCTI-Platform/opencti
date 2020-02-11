@@ -14,6 +14,7 @@ import EntityLastReports from '../../reports/EntityLastReports';
 import EntityStixRelationsChart from '../../common/stix_relations/EntityStixRelationsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   container: {
@@ -61,7 +62,9 @@ class ToolComponent extends Component {
             <EntityReportsChart entityId={tool.id} />
           </Grid>
         </Grid>
-        <ToolEdition toolId={tool.id} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ToolEdition toolId={tool.id} />
+        </Security>
       </div>
     );
   }

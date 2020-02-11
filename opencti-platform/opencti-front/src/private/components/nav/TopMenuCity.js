@@ -7,6 +7,10 @@ import Button from '@material-ui/core/Button';
 import { ArrowForwardIos } from '@material-ui/icons';
 import { CityVariant } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
+import Security, {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/Security';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -79,15 +83,13 @@ class TopMenuCity extends Component {
           component={Link}
           to={`/dashboard/entities/cities/${cityId}/reports`}
           variant={
-            location.pathname
-            === `/dashboard/entities/cities/${cityId}/reports`
+            location.pathname === `/dashboard/entities/cities/${cityId}/reports`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname
-            === `/dashboard/entities/cities/${cityId}/reports`
+            location.pathname === `/dashboard/entities/cities/${cityId}/reports`
               ? 'primary'
               : 'inherit'
           }
@@ -139,26 +141,26 @@ class TopMenuCity extends Component {
         >
           {t('Observables')}
         </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/entities/cities/${cityId}/files`}
-          variant={
-            location.pathname
-            === `/dashboard/entities/cities/${cityId}/files`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname
-            === `/dashboard/entities/cities/${cityId}/files`
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Files')}
-        </Button>
+        <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
+          <Button
+            component={Link}
+            to={`/dashboard/entities/cities/${cityId}/files`}
+            variant={
+              location.pathname === `/dashboard/entities/cities/${cityId}/files`
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname === `/dashboard/entities/cities/${cityId}/files`
+                ? 'primary'
+                : 'inherit'
+            }
+            classes={{ root: classes.button }}
+          >
+            {t('Files')}
+          </Button>
+        </Security>
       </div>
     );
   }
@@ -172,8 +174,4 @@ TopMenuCity.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(TopMenuCity);
+export default compose(inject18n, withRouter, withStyles(styles))(TopMenuCity);

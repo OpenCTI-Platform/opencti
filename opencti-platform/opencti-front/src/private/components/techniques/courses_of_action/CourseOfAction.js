@@ -15,6 +15,7 @@ import EntityStixRelationsPie from '../../common/stix_relations/EntityStixRelati
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityStixRelationsChart from '../../common/stix_relations/EntityStixRelationsChart';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   container: {
@@ -72,7 +73,9 @@ class CourseOfActionComponent extends Component {
             <EntityReportsChart entityId={courseOfAction.id} />
           </Grid>
         </Grid>
-        <CourseOfActionEdition courseOfActionId={courseOfAction.id} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <CourseOfActionEdition courseOfActionId={courseOfAction.id} />
+        </Security>
       </div>
     );
   }
@@ -96,7 +99,4 @@ const CourseOfAction = createFragmentContainer(CourseOfActionComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(CourseOfAction);
+export default compose(inject18n, withStyles(styles))(CourseOfAction);

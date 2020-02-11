@@ -27,6 +27,7 @@ import CampaignsLines, {
   campaignsLinesQuery,
 } from './campaigns/CampaignsLines';
 import CampaignCreation from './campaigns/CampaignCreation';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 class Campaigns extends Component {
   constructor(props) {
@@ -234,7 +235,9 @@ class Campaigns extends Component {
       <div>
         {view === 'cards' ? this.renderCards(paginationOptions) : ''}
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <CampaignCreation paginationOptions={paginationOptions} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <CampaignCreation paginationOptions={paginationOptions} />
+        </Security>
       </div>
     );
   }

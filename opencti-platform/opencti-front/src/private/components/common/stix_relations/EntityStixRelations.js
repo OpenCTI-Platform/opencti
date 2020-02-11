@@ -17,6 +17,7 @@ import EntityStixRelationsLines, {
   entityStixRelationsLinesQuery,
 } from './EntityStixRelationsLines';
 import StixRelationCreationFromEntity from './StixRelationCreationFromEntity';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -319,14 +320,16 @@ class EntityStixRelations extends Component {
           </Grid>
         </Drawer>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <StixRelationCreationFromEntity
-          entityId={entityId}
-          isFrom={creationIsFrom}
-          paddingRight={true}
-          targetEntityTypes={targetEntityTypes}
-          allowedRelationshipTypes={[relationType]}
-          paginationOptions={paginationOptions}
-        />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <StixRelationCreationFromEntity
+            entityId={entityId}
+            isFrom={creationIsFrom}
+            paddingRight={true}
+            targetEntityTypes={targetEntityTypes}
+            allowedRelationshipTypes={[relationType]}
+            paginationOptions={paginationOptions}
+          />
+        </Security>
       </div>
     );
   }

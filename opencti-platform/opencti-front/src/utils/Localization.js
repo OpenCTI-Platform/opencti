@@ -12,6 +12,9 @@ const i18n = {
         'Vous devez être authentifié pour faire cette action.',
       'You are not allowed to do this.':
         "Vous n'ête pas autorisés à faire cette action.",
+      'You have successfully logged out.': 'Vous avez bien été déconnecté.',
+      'You do not have any access to the knowledge of this OpenCTI instance.':
+        "Vous n'avez aucun accès à la connaissance de cette instance OpenCTI.",
       // Dependencies
       Grakn: 'Grakn',
       Elasticsearch: 'Elasticsearch',
@@ -197,7 +200,8 @@ const i18n = {
       'Update an observable': 'Modifier un observable',
       'Create an indicator': 'Créer un indicateur',
       'Update an indicator': 'Modifier un indicateur',
-      'Create an indicator from this observable': 'Créer un indicateur à partir de cet observable',
+      'Create an indicator from this observable':
+        'Créer un indicateur à partir de cet observable',
       'Create a relationship': 'Créer une relation',
       'Update a relationship': 'Modifier une relation',
       'Select a relationship': 'Sélectionner une relation',
@@ -223,7 +227,8 @@ const i18n = {
       'No connectors are enabled on this platform.':
         "Aucun connecteur n'est actif sur cette plateforme",
       'Enabled import connectors': "Connecteurs d'import activés",
-      'No enrichment connectors on this platform': "Aucun connecteur d'enrichissement sur cette plateforme",
+      'No enrichment connectors on this platform':
+        "Aucun connecteur d'enrichissement sur cette plateforme",
       'Enrichment connectors': "Connecteurs d'enrichissement",
       'Registered connectors': 'Connecteurs enregistrés',
       Scope: 'Périmètre',

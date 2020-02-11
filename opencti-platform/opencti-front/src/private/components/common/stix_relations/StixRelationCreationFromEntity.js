@@ -843,7 +843,7 @@ class StixRelationCreationFromEntity extends Component {
             render={({ props }) => {
               if (props && props.stixEntity) {
                 return (
-                  <div>
+                  <div style={{ height: '100%' }}>
                     {step === 0 ? this.renderSelectEntity() : ''}
                     {step === 1 ? this.renderForm(props.stixEntity) : ''}
                   </div>
