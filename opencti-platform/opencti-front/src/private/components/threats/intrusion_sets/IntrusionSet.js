@@ -15,6 +15,7 @@ import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomain
 import EntityStixRelationsDonut from '../../common/stix_relations/EntityStixRelationsDonut';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityCampaignsChart from '../campaigns/EntityCampaignsChart';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   container: {
@@ -56,7 +57,10 @@ class IntrusionSetComponent extends Component {
           style={{ marginTop: 30 }}
         >
           <Grid item={true} xs={4}>
-            <EntityCampaignsChart entityId={intrusionSet.id} relationType='attributed-to' />
+            <EntityCampaignsChart
+              entityId={intrusionSet.id}
+              relationType="attributed-to"
+            />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityStixRelationsDonut
@@ -70,7 +74,9 @@ class IntrusionSetComponent extends Component {
             <EntityReportsChart entityId={intrusionSet.id} />
           </Grid>
         </Grid>
-        <IntrusionSetEdition intrusionSetId={intrusionSet.id} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IntrusionSetEdition intrusionSetId={intrusionSet.id} />
+        </Security>
       </div>
     );
   }

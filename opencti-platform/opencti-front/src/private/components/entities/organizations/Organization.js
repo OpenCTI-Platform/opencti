@@ -15,6 +15,7 @@ import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityIncidentsChart from '../../threats/incidents/EntityIncidentsChart';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   container: {
@@ -64,7 +65,9 @@ class OrganizationComponent extends Component {
               <EntityReportsChart authorId={organization.id} />
             </Grid>
           </Grid>
-          <OrganizationEdition organizationId={organization.id} />
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <OrganizationEdition organizationId={organization.id} />
+          </Security>
         </div>
       );
     }
@@ -105,7 +108,9 @@ class OrganizationComponent extends Component {
             <EntityReportsChart entityId={organization.id} />
           </Grid>
         </Grid>
-        <OrganizationEdition organizationId={organization.id} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <OrganizationEdition organizationId={organization.id} />
+        </Security>
       </div>
     );
   }
@@ -130,7 +135,4 @@ const Organization = createFragmentContainer(OrganizationComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(Organization);
+export default compose(inject18n, withStyles(styles))(Organization);

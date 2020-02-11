@@ -12,6 +12,7 @@ import StixObservableDetails from './StixObservableDetails';
 import StixObservableEdition from './StixObservableEdition';
 import EntityLastReports from '../../reports/EntityLastReports';
 import StixObservableIndicators from './StixObservableIndicators';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   container: {
@@ -44,7 +45,9 @@ class StixObservableComponent extends Component {
           </Grid>
         </Grid>
         <StixObservableIndicators stixObservable={stixObservable} />
-        <StixObservableEdition stixObservableId={stixObservable.id} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <StixObservableEdition stixObservableId={stixObservable.id} />
+        </Security>
       </div>
     );
   }

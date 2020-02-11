@@ -7,6 +7,10 @@ import Button from '@material-ui/core/Button';
 import { ArrowForwardIos } from '@material-ui/icons';
 import { Diamond } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
+import Security, {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/Security';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -141,26 +145,28 @@ class TopMenuIntrusionSet extends Component {
         >
           {t('Indicators')}
         </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/files`}
-          variant={
-            location.pathname
-            === `/dashboard/threats/intrusion_sets/${intrusionSetId}/files`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname
-            === `/dashboard/threats/intrusion_sets/${intrusionSetId}/files`
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Files')}
-        </Button>
+        <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
+          <Button
+            component={Link}
+            to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/files`}
+            variant={
+              location.pathname
+              === `/dashboard/threats/intrusion_sets/${intrusionSetId}/files`
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname
+              === `/dashboard/threats/intrusion_sets/${intrusionSetId}/files`
+                ? 'primary'
+                : 'inherit'
+            }
+            classes={{ root: classes.button }}
+          >
+            {t('Files')}
+          </Button>
+        </Security>
       </div>
     );
   }

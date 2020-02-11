@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import fileDownload from 'js-file-download';
 import Markdown from 'react-markdown';
@@ -19,6 +18,8 @@ import {
   values,
   sortWith,
   ascend,
+  take,
+  pathOr,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -29,12 +30,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Collapse from '@material-ui/core/Collapse';
-import {
-  Launch,
-  LockPattern,
-  FileImageOutline,
-  FilePdfOutline,
-} from 'mdi-material-ui';
+import { Launch, LockPattern, FileImageOutline } from 'mdi-material-ui';
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
 import { createRefetchContainer } from 'react-relay';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -44,6 +40,8 @@ import StixRelationPopover from '../stix_relations/StixRelationPopover';
 import StixRelationCreationFromEntity from '../stix_relations/StixRelationCreationFromEntity';
 import ItemYears from '../../../../components/ItemYears';
 import SearchInput from '../../../../components/SearchInput';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import ItemMarking from '../../../../components/ItemMarking';
 
 const styles = (theme) => ({
   container: {
@@ -125,35 +123,6 @@ class StixDomainEntityKillChainLinesComponent extends Component {
     });
   }
 
-  exportPdf() {
-    const container = document.getElementById('container');
-    this.setInlineStyles(container);
-    html2canvas(container, {
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#303030',
-      scale: 0.5,
-    }).then((canvas) => {
-      const imgData = canvas.toDataURL('image/png');
-      const imgWidth = 210;
-      const pageHeight = 295;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      const doc = new jsPDF('p', 'mm');
-      let position = 0;
-      doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        doc.addPage();
-        doc.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-      doc.save('KillChain.pdf');
-    });
-  }
-
   render() {
     const {
       t,
@@ -203,15 +172,10 @@ class StixDomainEntityKillChainLinesComponent extends Component {
             onSubmit={this.handleSearch.bind(this)}
           />
         </div>
-        <div style={{ float: 'right' }}>
+        <div style={{ float: 'right', paddingRight: 18 }}>
           <Tooltip title={t('Export as image')}>
             <IconButton color="primary" onClick={this.exportImage.bind(this)}>
               <FileImageOutline />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title={t('Export as PDF')}>
-            <IconButton color="primary" onClick={this.exportPdf.bind(this)}>
-              <FilePdfOutline />
             </IconButton>
           </Tooltip>
         </div>
@@ -286,6 +250,21 @@ class StixDomainEntityKillChainLinesComponent extends Component {
                                 )
                             }
                           />
+                          {take(
+                            1,
+                            pathOr(
+                              [],
+                              ['markingDefinitions', 'edges'],
+                              attackPattern,
+                            ),
+                          ).map((markingDefinition) => (
+                            <ItemMarking
+                              key={markingDefinition.node.id}
+                              variant="inList"
+                              label={markingDefinition.node.definition}
+                              color={markingDefinition.node.color}
+                            />
+                          ))}
                           <ItemYears
                             variant="inList"
                             years={
@@ -311,14 +290,16 @@ class StixDomainEntityKillChainLinesComponent extends Component {
             ))}
           </List>
         </div>
-        <StixRelationCreationFromEntity
-          entityId={stixDomainEntityId}
-          isFrom={true}
-          paddingRight={true}
-          onCreate={this.props.relay.refetch.bind(this)}
-          targetEntityTypes={['Attack-Pattern']}
-          paginationOptions={paginationOptions}
-        />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <StixRelationCreationFromEntity
+            entityId={stixDomainEntityId}
+            isFrom={true}
+            paddingRight={true}
+            onCreate={this.props.relay.refetch.bind(this)}
+            targetEntityTypes={['Attack-Pattern']}
+            paginationOptions={paginationOptions}
+          />
+        </Security>
       </div>
     );
   }
@@ -386,6 +367,15 @@ const StixDomainEntityKillChainLines = createRefetchContainer(
                     id
                     phase_name
                     phase_order
+                  }
+                }
+              }
+              markingDefinitions {
+                edges {
+                  node {
+                    id
+                    definition
+                    color
                   }
                 }
               }

@@ -14,6 +14,7 @@ import EntityLastReports from '../../reports/EntityLastReports';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityStixRelationsDonut from '../../common/stix_relations/EntityStixRelationsDonut';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   container: {
@@ -66,7 +67,9 @@ class IncidentComponent extends Component {
             <EntityReportsChart entityId={incident.id} />
           </Grid>
         </Grid>
-        <IncidentEdition incidentId={incident.id} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IncidentEdition incidentId={incident.id} />
+        </Security>
       </div>
     );
   }

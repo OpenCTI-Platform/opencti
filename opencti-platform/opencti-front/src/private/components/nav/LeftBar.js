@@ -307,6 +307,7 @@ const LeftBar = ({ t, location, classes }) => {
           <MenuItem
             component={Link}
             to="/dashboard/entities"
+            onClick={toggle}
             selected={location.pathname.includes('/dashboard/entities')}
             dense={false}
             classes={{ root: classes.menuItem }}

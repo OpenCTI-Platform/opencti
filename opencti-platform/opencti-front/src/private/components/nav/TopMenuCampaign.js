@@ -7,6 +7,10 @@ import Button from '@material-ui/core/Button';
 import { ArrowForwardIos } from '@material-ui/icons';
 import { ChessKnight } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
+import Security, {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/Security';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -139,26 +143,28 @@ class TopMenuCampaign extends Component {
         >
           {t('Indicators')}
         </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/threats/campaigns/${campaignId}/files`}
-          variant={
-            location.pathname
-            === `/dashboard/threats/campaigns/${campaignId}/files`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname
-            === `/dashboard/threats/campaigns/${campaignId}/files`
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Files')}
-        </Button>
+        <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
+          <Button
+            component={Link}
+            to={`/dashboard/threats/campaigns/${campaignId}/files`}
+            variant={
+              location.pathname
+              === `/dashboard/threats/campaigns/${campaignId}/files`
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname
+              === `/dashboard/threats/campaigns/${campaignId}/files`
+                ? 'primary'
+                : 'inherit'
+            }
+            classes={{ root: classes.button }}
+          >
+            {t('Files')}
+          </Button>
+        </Security>
       </div>
     );
   }
