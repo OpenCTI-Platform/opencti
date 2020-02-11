@@ -224,7 +224,12 @@ class StixObservable:
 
         if type is not None and observable_value is not None:
             self.opencti.log(
-                "info", "Creating Stix-Observable {" + observable_value + "}."
+                "info",
+                "Creating Stix-Observable {"
+                + observable_value
+                + "} with indicator at "
+                + str(create_indicator)
+                + ".",
             )
             query = (
                 """
