@@ -194,6 +194,7 @@ class Report:
     def read(self, **kwargs):
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
+        custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
             self.opencti.log("info", "Reading Report {" + id + "}.")
             query = (
@@ -201,7 +202,11 @@ class Report:
                 query Report($id: String!) {
                     report(id: $id) {
                         """
-                + self.properties
+                + (
+                    custom_attributes
+                    if custom_attributes is not None
+                    else self.properties
+                )
                 + """
                     }
                 }
@@ -438,7 +443,27 @@ class Report:
         entity_id = kwargs.get("entity_id", None)
         if id is not None and entity_id is not None:
             if report is None:
-                report = self.read(id=id)
+                custom_attributes = """
+                    id
+                    objectRefs {
+                        edges {
+                            node {
+                                id
+                                stix_id_key
+                                entity_type
+                            }
+                        }
+                    }
+                    relationRefs {
+                        edges {
+                            node {
+                                id
+                                stix_id_key
+                            }
+                        }
+                    }
+                """
+                report = self.read(id=id, customAttributes=custom_attributes)
             if report is None:
                 self.opencti.log(
                     "error", "[opencti_report] Cannot add Object Ref, report not found"
@@ -496,7 +521,20 @@ class Report:
         stix_observable_id = kwargs.get("stix_observable_id", None)
         if id is not None and stix_observable_id is not None:
             if report is None:
-                report = self.read(id=id)
+                custom_attributes = """
+                    id
+                    observableRefs {
+                        edges {
+                            node {
+                                id
+                                stix_id_key
+                                entity_type
+                                observable_value
+                            }
+                        }
+                    }
+                """
+                report = self.read(id=id, customAttributes=custom_attributes)
             if report is None:
                 self.opencti.log(
                     "error", "[opencti_report] Cannot add Object Ref, report not found"

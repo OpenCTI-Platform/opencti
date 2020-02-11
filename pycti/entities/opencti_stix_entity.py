@@ -282,6 +282,7 @@ class StixEntity:
 
     def read(self, **kwargs):
         id = kwargs.get("id", None)
+        custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
             self.opencti.log("info", "Reading Stix-Entity {" + id + "}.")
             query = (
@@ -289,7 +290,11 @@ class StixEntity:
                 query StixEntity($id: String!) {
                     stixEntity(id: $id) {
                         """
-                + self.properties
+                + (
+                    custom_attributes
+                    if custom_attributes is not None
+                    else self.properties
+                )
                 + """
                     }
                 }
@@ -315,7 +320,29 @@ class StixEntity:
         identity_id = kwargs.get("identity_id", None)
         if id is not None and identity_id is not None:
             if stix_entity is None:
-                stix_entity = self.read(id=id)
+                custom_attributes = """
+                    id
+                    createdByRef {
+                        node {
+                            id
+                            entity_type
+                            stix_id_key
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                            ... on Organization {
+                                organization_class
+                            }
+                        }
+                        relation {
+                            id
+                        }
+                    }    
+                """
+                stix_entity = self.read(id=id, customAttributes=custom_attributes)
             if stix_entity is None:
                 self.opencti.log(
                     "error", "Cannot update created_by_ref, entity not found"
@@ -326,7 +353,6 @@ class StixEntity:
             if stix_entity["createdByRef"] is not None:
                 current_identity_id = stix_entity["createdByRef"]["id"]
                 current_relation_id = stix_entity["createdByRef"]["remote_relation_id"]
-
             # Current identity is the same
             if current_identity_id == identity_id:
                 return True
@@ -392,7 +418,28 @@ class StixEntity:
         marking_definition_id = kwargs.get("marking_definition_id", None)
         if id is not None and marking_definition_id is not None:
             if stix_entity is None:
-                stix_entity = self.read(id=id)
+                custom_attributes = """
+                    id
+                    markingDefinitions {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id_key
+                                definition_type
+                                definition
+                                level
+                                color
+                                created
+                                modified
+                            }
+                            relation {
+                                id
+                            }
+                        }
+                    }
+                """
+                stix_entity = self.read(id=id, customAttributes=custom_attributes)
             if stix_entity is None:
                 self.opencti.log(
                     "error", "Cannot add Marking-Definition, entity not found"
@@ -451,7 +498,23 @@ class StixEntity:
         tag_id = kwargs.get("tag_id", None)
         if id is not None and tag_id is not None:
             if stix_entity is None:
-                stix_entity = self.read(id=id)
+                custom_attributes = """
+                    id
+                    tags {
+                        edges {
+                            node {
+                                id
+                                tag_type
+                                value
+                                color
+                            }
+                            relation {
+                                id
+                            }
+                        }
+                    }
+                """
+                stix_entity = self.read(id=id, customAttributes=custom_attributes)
             if stix_entity is None:
                 self.opencti.log("error", "Cannot add Tag, entity not found")
                 return False
@@ -501,7 +564,29 @@ class StixEntity:
         external_reference_id = kwargs.get("external_reference_id", None)
         if id is not None and external_reference_id is not None:
             if stix_entity is None:
-                stix_entity = self.read(id=id)
+                custom_attributes = """
+                    id
+                    externalReferences {
+                        edges {
+                            node {
+                                id
+                                entity_type
+                                stix_id_key
+                                source_name
+                                description
+                                url
+                                hash
+                                external_id
+                                created
+                                modified
+                            }
+                            relation {
+                                id
+                            }
+                        }
+                    }
+                """
+                stix_entity = self.read(id=id, customAttributes=custom_attributes)
             if stix_entity is None:
                 self.opencti.log(
                     "error", "Cannot add External-Reference, entity not found"

@@ -364,7 +364,6 @@ class Incident:
                     "[opencti_incident] Cannot add Object Ref, incident not found",
                 )
                 return False
-            print(incident)
             if stix_observable_id in incident["observableRefsIds"]:
                 return True
             else:
