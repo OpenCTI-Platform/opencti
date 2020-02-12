@@ -23,6 +23,7 @@ class StixRelation:
             modified
             created_at
             updated_at
+            fromRole
             from {
                 id
                 stix_id_key
@@ -32,6 +33,7 @@ class StixRelation:
                     description
                 }
             }
+            toRole
             to {
                 id
                 stix_id_key
@@ -625,16 +627,26 @@ class StixRelation:
         if id is not None and entity is None:
             entity = self.read(id=id)
         if entity is not None:
+            roles = self.opencti.resolve_role(entity["relationship_type"], entity["from"]["entity_type"], entity["to"]["entity_type"])
+            if roles is not None:
+                final_from_id = entity["from"]["stix_id_key"]
+                final_to_id = entity["to"]["stix_id_key"]
+            else:
+                roles = self.opencti.resolve_role(entity["relationship_type"], entity["to"]["entity_type"], entity["from"]["entity_type"])
+                if roles is not None:
+                    final_from_id = entity["to"]["stix_id_key"]
+                    final_to_id = entity["from"]["stix_id_key"]
+
             stix_relation = dict()
             stix_relation["id"] = entity["stix_id_key"]
             stix_relation["type"] = "relationship"
             stix_relation["relationship_type"] = entity["relationship_type"]
             if self.opencti.not_empty(entity["description"]):
                 stix_relation["description"] = entity["description"]
-            stix_relation["source_ref"] = entity["from"]["stix_id_key"]
-            stix_relation["target_ref"] = entity["to"]["stix_id_key"]
-            stix_relation[CustomProperties.SOURCE_REF] = entity["from"]["stix_id_key"]
-            stix_relation[CustomProperties.TARGET_REF] = entity["to"]["stix_id_key"]
+            stix_relation["source_ref"] = final_from_id
+            stix_relation["target_ref"] = final_to_id
+            stix_relation[CustomProperties.SOURCE_REF] = final_from_id
+            stix_relation[CustomProperties.TARGET_REF] = final_to_id
             stix_relation["created"] = self.opencti.stix2.format_date(entity["created"])
             stix_relation["modified"] = self.opencti.stix2.format_date(
                 entity["modified"]
