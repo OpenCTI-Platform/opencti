@@ -28,6 +28,7 @@ const styles = (theme) => ({
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
+    padding: '0 0 50px 0',
   },
   containerOpenExports: {
     flexGrow: 1,
@@ -35,7 +36,7 @@ const styles = (theme) => ({
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
     }),
-    paddingRight: 310,
+    padding: '0 310px 50px 0',
   },
   parameters: {
     float: 'left',

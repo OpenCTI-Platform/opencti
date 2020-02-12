@@ -12,7 +12,7 @@ import { compose, omit, pipe } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
-import ListSubheader from '@material-ui/core/ListSubheader';
+import Alert from '@material-ui/lab/Alert';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -166,6 +166,7 @@ class UserCreation extends Component {
             <Typography variant="h6">{t('Create a user')}</Typography>
           </div>
           <div className={classes.container}>
+            <Alert severity="info">{t('User will be created with default roles.')}</Alert>
             <Formik
               initialValues={{
                 name: '',
@@ -182,9 +183,6 @@ class UserCreation extends Component {
             >
               {({ submitForm, handleReset, isSubmitting }) => (
                 <Form>
-                  <ListSubheader component="div" style={{ paddingLeft: 0 }}>
-                    {t('User will be created with default roles')}
-                  </ListSubheader>
                   <TextField name="name" label={t('Name')} fullWidth={true} />
                   <TextField
                     name="user_email"

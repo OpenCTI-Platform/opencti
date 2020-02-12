@@ -5,6 +5,7 @@ const i18n = {
       'OpenCTI - Cyber threat intelligence platform':
         "OpenCTI - Plateforme d'analyse de la cybermenace",
       // Errors
+      Error: 'Erreur',
       'Wrong name or password': "Nom d'utilisateur ou mot de passe incorrect",
       'An unknown error has occurred!  Please try again later.':
         'Une erreur est survenue ! Merci de rééssayer plus tard.',
@@ -230,6 +231,8 @@ const i18n = {
       'Export as image': 'Exporter comme image',
       'Export as PDF': 'Exporter comme PDF',
       'Demo credentials': 'Identifiants de démo',
+      'User will be created with default roles.':
+        "L'utilisateur sera créé avec les rôles par défaut.",
       'No connectors are enabled on this platform.':
         "Aucun connecteur n'est actif sur cette plateforme",
       'Enabled import connectors': "Connecteurs d'import activés",
@@ -503,6 +506,8 @@ const i18n = {
       'Kill chain': 'Kill chain',
       'This feature is not available yet.':
         "Cette fonctionnalité n'est pas encore disponible.",
+      'This page is not found on this OpenCTI application.':
+        'Cette page est introuvable sur cette application OpenCTI.',
       'Phase name': "Nom de l'étape",
       'Kill chain name': 'Nom de la kill chain',
       Order: 'Ordre',

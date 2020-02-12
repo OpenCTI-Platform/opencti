@@ -200,6 +200,7 @@ class StixRelationCreation extends Component {
       assoc('toRole', roles.toRole),
       assoc('first_seen', parse(values.first_seen).format()),
       assoc('last_seen', parse(values.last_seen).format()),
+      assoc('createdByRef', values.createdByRef.value),
       assoc('killChainPhases', pluck('value', values.killChainPhases)),
       assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
     )(values);
@@ -256,7 +257,15 @@ class StixRelationCreation extends Component {
 
   renderForm() {
     const {
-      t, classes, from, to, weight, firstSeen, lastSeen,
+      t,
+      classes,
+      from,
+      to,
+      weight,
+      firstSeen,
+      lastSeen,
+      defaultCreatedByRef,
+      defaultMarkingDefinition,
     } = this.props;
     const relationshipTypes = resolveRelationsTypes(from.type, to.type);
     // eslint-disable-next-line no-nested-ternary
@@ -276,7 +285,22 @@ class StixRelationCreation extends Component {
       last_seen: defaultLastSeen,
       description: '',
       killChainPhases: [],
-      markingDefinitions: [],
+      createdByRef: defaultCreatedByRef
+        ? {
+          label: defaultCreatedByRef.name,
+          value: defaultCreatedByRef.id,
+          type: defaultCreatedByRef.entity_type,
+        }
+        : '',
+      markingDefinitions: defaultMarkingDefinition
+        ? [
+          {
+            label: defaultMarkingDefinition.definition,
+            value: defaultMarkingDefinition.id,
+            color: defaultMarkingDefinition.color,
+          },
+        ]
+        : [],
     };
     return (
       <Formik
@@ -680,6 +704,8 @@ StixRelationCreation.propTypes = {
   firstSeen: PropTypes.string,
   lastSeen: PropTypes.string,
   weight: PropTypes.number,
+  defaultCreatedByRef: PropTypes.object,
+  defaultMarkingDefinition: PropTypes.object,
 };
 
 export default compose(inject18n, withStyles(styles))(StixRelationCreation);

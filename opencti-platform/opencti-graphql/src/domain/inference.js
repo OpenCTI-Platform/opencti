@@ -85,6 +85,22 @@ const inferences = {
       '    };\n',
     description:
       'This rule can be used to infer the following fact: if an entity A is part of an entity B, and the entity C targets the entity A, then the entity C targets the entity B.'
+  },
+  'ca789b78-775d-4a84-bc3e-ffd88d1c35c5': {
+    id: 'ca789b78-775d-4a84-bc3e-ffd88d1c35c5',
+    name: 'MalwareUsageTargetsRule',
+    rule:
+      '    MalwareUsageTargetsRule sub rule,\n' +
+      '    when {\n' +
+      '      $malware isa Malware;\n' +
+      '      $user isa Incident;\n' +
+      '      $rel1_source_target(source: $user, target: $target) isa targets;\n' +
+      '      $rel2_user_usage(user: $user, usage: $malware) isa uses;\n' +
+      '    }, then {\n' +
+      '      (source: $malware, target: $target) isa targets;\n' +
+      '    };\n',
+    description:
+      'This rule can be used to infer the following fact: if an entity A is an Incident and targets an entity B, and the entity A uses a malware C, then the malware C targets the entity B.'
   }
 };
 

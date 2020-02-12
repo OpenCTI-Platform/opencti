@@ -34,13 +34,13 @@ class IndicatorComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={3}>
+          <Grid item={true} xs={2}>
             <IndicatorOverview indicator={indicator} />
           </Grid>
-          <Grid item={true} xs={3}>
+          <Grid item={true} xs={5}>
             <IndicatorDetails indicator={indicator} />
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={5}>
             <EntityLastReports entityId={indicator.id} />
           </Grid>
         </Grid>

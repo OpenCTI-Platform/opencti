@@ -33,6 +33,12 @@ const styles = (theme) => ({
     right: 30,
     zIndex: 1100,
   },
+  createButtonWithPadding: {
+    position: 'fixed',
+    bottom: 30,
+    right: 280,
+    zIndex: 1100,
+  },
   title: {
     float: 'left',
   },
@@ -82,7 +88,13 @@ class ReportAddObjectRefs extends Component {
 
   render() {
     const {
-      t, classes, reportId, knowledgeGraph,
+      t,
+      classes,
+      reportId,
+      knowledgeGraph,
+      withPadding,
+      defaultCreatedByRef,
+      defaultMarkingDefinition,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
@@ -95,7 +107,9 @@ class ReportAddObjectRefs extends Component {
           onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Add"
-          className={classes.createButton}
+          className={
+            withPadding ? classes.createButtonWithPadding : classes.createButton
+          }
         >
           <Add />
         </Fab>
@@ -181,6 +195,8 @@ class ReportAddObjectRefs extends Component {
           contextual={true}
           inputValue={this.state.search}
           paginationOptions={paginationOptions}
+          defaultCreatedByRef={defaultCreatedByRef}
+          defaultMarkingDefinition={defaultMarkingDefinition}
         />
       </div>
     );
@@ -194,6 +210,9 @@ ReportAddObjectRefs.propTypes = {
   fld: PropTypes.func,
   paginationOptions: PropTypes.object,
   knowledgeGraph: PropTypes.bool,
+  withPadding: PropTypes.bool,
+  defaultCreatedByRef: PropTypes.object,
+  defaultMarkingDefinition: PropTypes.object,
 };
 
 export default compose(inject18n, withStyles(styles))(ReportAddObjectRefs);

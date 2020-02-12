@@ -2,6 +2,8 @@ import React from 'react';
 import { compose, includes, map } from 'ramda';
 import * as PropTypes from 'prop-types';
 import { Redirect, Route, withRouter } from 'react-router-dom';
+import Alert from '@material-ui/lab/Alert';
+import AlertTitle from '@material-ui/lab/AlertTitle';
 import { ApplicationError, IN_DEV_MODE } from '../../relay/environment';
 import ErrorNotFound from '../../components/ErrorNotFound';
 
@@ -24,7 +26,9 @@ class ErrorBoundaryComponent extends React.Component {
         if (includes('ForbiddenAccess', types)) return <Redirect to="/login" />;
         // If user not authenticated, redirect to login with encoded path
         if (includes('AuthRequired', types)) {
-          const redirectUrl = `/login?redirectLogin=${btoa(window.location.pathname + window.location.search)}`;
+          const redirectUrl = `/login?redirectLogin=${btoa(
+            window.location.pathname + window.location.search,
+          )}`;
           return <Redirect to={redirectUrl} />;
         }
         // Return the error display element.
@@ -62,4 +66,9 @@ BoundaryRoute.propTypes = {
 export const NoMatch = () => <ErrorNotFound />;
 
 // Really simple error display
-export const SimpleError = () => <div>ERROR</div>;
+export const SimpleError = () => (
+  <Alert severity="error">
+    <AlertTitle>Error</AlertTitle>
+    An unknown error occurred. Please contact your administrator or the OpenCTI maintainers.
+  </Alert>
+);

@@ -117,7 +117,11 @@ export const reportKnowledgeGraphtMutationRelationDelete = graphql`
     $relationId: ID
   ) {
     reportEdit(id: $id) {
-      relationDelete(relationId: $relationId, toId: $toId, relationType: $relationType) {
+      relationDelete(
+        relationId: $relationId
+        toId: $toId
+        relationType: $relationType
+      ) {
         ...ReportKnowledgeGraph_report
       }
     }
@@ -807,6 +811,12 @@ class ReportKnowledgeGraphComponent extends Component {
           reportId={report.id}
           reportObjectRefs={report.objectRefs.edges}
           knowledgeGraph={true}
+          defaultCreatedByRef={pathOr(null, ['createdByRef', 'node'], report)}
+          defaultMarkingDefinition={
+            pathOr([], ['markingDefinitions', 'edges'], report).length > 0
+              ? pathOr([], ['markingDefinitions', 'edges'], report)[0].node
+              : null
+          }
         />
         <StixRelationCreation
           open={openCreateRelation}
@@ -817,6 +827,12 @@ class ReportKnowledgeGraphComponent extends Component {
           weight={report.source_confidence_level}
           handleClose={this.handleCloseRelationCreation.bind(this)}
           handleResult={this.handleResultRelationCreation.bind(this)}
+          defaultCreatedByRef={pathOr(null, ['createdByRef', 'node'], report)}
+          defaultMarkingDefinition={
+            pathOr([], ['markingDefinitions', 'edges'], report).length > 0
+              ? pathOr([], ['markingDefinitions', 'edges'], report)[0].node
+              : null
+          }
         />
         <StixRelationEdition
           open={openEditRelation}
@@ -850,6 +866,21 @@ const ReportKnowledgeGraph = createFragmentContainer(
         graph_data
         published
         source_confidence_level
+        createdByRef {
+          node {
+            id
+            name
+            entity_type
+          }
+        }
+        markingDefinitions {
+          edges {
+            node {
+              id
+              definition
+            }
+          }
+        }
         objectRefs {
           edges {
             node {

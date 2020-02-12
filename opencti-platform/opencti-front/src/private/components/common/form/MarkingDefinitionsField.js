@@ -24,8 +24,17 @@ const styles = () => ({
 class MarkingDefinitionsField extends Component {
   constructor(props) {
     super(props);
+    const { defaultMarkingDefinition } = props;
     this.state = {
-      markingDefinitions: [],
+      markingDefinitions: defaultMarkingDefinition
+        ? [
+          {
+            label: defaultMarkingDefinition.definition,
+            value: defaultMarkingDefinition.id,
+            color: defaultMarkingDefinition.color,
+          },
+        ]
+        : [],
     };
   }
 

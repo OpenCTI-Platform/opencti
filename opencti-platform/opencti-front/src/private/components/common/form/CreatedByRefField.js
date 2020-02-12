@@ -30,7 +30,20 @@ const styles = (theme) => ({
 class CreatedByRefField extends Component {
   constructor(props) {
     super(props);
-    this.state = { identityCreation: false, identityInput: '', identities: [] };
+    const { defaultCreatedByRef } = props;
+    this.state = {
+      identityCreation: false,
+      identityInput: '',
+      identities: defaultCreatedByRef
+        ? [
+          {
+            label: defaultCreatedByRef.name,
+            value: defaultCreatedByRef.id,
+            type: defaultCreatedByRef.entity_type,
+          },
+        ]
+        : [],
+    };
   }
 
   handleOpenIdentityCreation() {
@@ -63,7 +76,13 @@ class CreatedByRefField extends Component {
 
   render() {
     const {
-      t, name, style, classes, setFieldValue, onChange, helpertext
+      t,
+      name,
+      style,
+      classes,
+      setFieldValue,
+      onChange,
+      helpertext,
     } = this.props;
     return (
       <div>
