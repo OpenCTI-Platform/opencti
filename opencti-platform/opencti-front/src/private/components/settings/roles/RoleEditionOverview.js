@@ -208,10 +208,9 @@ const RoleEditionOverviewComponent = ({
             />
             <Switch
               name="default_assignation"
-              label={t('Assign at user creation')}
-              style={{ marginTop: 10 }}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
+              label={t('Granted by default at user creation')}
+              containerstyle={{ marginTop: 20 }}
+              onChange={handleSubmitField}
               helperText={
                 <SubscriptionFocus
                   context={context}

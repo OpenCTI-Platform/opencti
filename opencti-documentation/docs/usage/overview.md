@@ -36,9 +36,9 @@ This tab allows the user to look among all the Techniques, Tactics and Procedure
 
 ![TTPs](assets/usage/ttps.png "TTPs")
 
-#### Observables
+#### Signatures
 
-The observable tab contains all the technical observables which may have been seen during an attack, such as infrastructure or file hashes. Only a few categories are available today, but the list is bound to expand. If you wish to contribute to this part, click [here](https://github.com/OpenCTI-Platform/opencti/blob/master/CONTRIBUTING.md).
+The signatures  tab contains all the technical observables and indicators which may have been seen during an attack, such as infrastructure or file hashes. Only a few categories are available today, but the list is bound to expand. If you wish to contribute to this part, click [here](https://github.com/OpenCTI-Platform/opencti/blob/master/CONTRIBUTING.md).
 
 ![Observables](assets/usage/observables.png "Observables")
 

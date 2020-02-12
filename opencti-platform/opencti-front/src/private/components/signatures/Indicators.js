@@ -27,6 +27,7 @@ import IndicatorsLines, {
 } from './indicators/IndicatorsLines';
 import IndicatorCreation from './indicators/IndicatorCreation';
 import IndicatorsRightBar from './indicators/IndicatorsRightBar';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 const styles = () => ({
   container: {
@@ -248,10 +249,12 @@ class Indicators extends Component {
     return (
       <div className={classes.container}>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <IndicatorCreation
-          paginationOptions={paginationOptions}
-          openExports={openExports}
-        />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IndicatorCreation
+            paginationOptions={paginationOptions}
+            openExports={openExports}
+          />
+        </Security>
         <IndicatorsRightBar
           indicatorTypes={indicatorTypes}
           observableTypes={observableTypes}

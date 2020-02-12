@@ -27,6 +27,7 @@ import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
 } from '../../../utils/ListParameters';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 const styles = () => ({
   container: {
@@ -203,10 +204,12 @@ class StixObservables extends Component {
     return (
       <div className={classes.container}>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <StixObservableCreation
-          paginationOptions={paginationOptions}
-          openExports={openExports}
-        />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <StixObservableCreation
+            paginationOptions={paginationOptions}
+            openExports={openExports}
+          />
+        </Security>
         <StixObservablesRightBar
           types={observableTypes}
           handleToggle={this.handleToggle.bind(this)}
