@@ -627,12 +627,20 @@ class StixRelation:
         if id is not None and entity is None:
             entity = self.read(id=id)
         if entity is not None:
-            roles = self.opencti.resolve_role(entity["relationship_type"], entity["from"]["entity_type"], entity["to"]["entity_type"])
+            roles = self.opencti.resolve_role(
+                entity["relationship_type"],
+                entity["from"]["entity_type"],
+                entity["to"]["entity_type"],
+            )
             if roles is not None:
                 final_from_id = entity["from"]["stix_id_key"]
                 final_to_id = entity["to"]["stix_id_key"]
             else:
-                roles = self.opencti.resolve_role(entity["relationship_type"], entity["to"]["entity_type"], entity["from"]["entity_type"])
+                roles = self.opencti.resolve_role(
+                    entity["relationship_type"],
+                    entity["to"]["entity_type"],
+                    entity["from"]["entity_type"],
+                )
                 if roles is not None:
                     final_from_id = entity["to"]["stix_id_key"]
                     final_to_id = entity["from"]["stix_id_key"]
