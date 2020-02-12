@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Chip from '@material-ui/core/Chip';
+import { truncate } from '../utils/String';
 
 const styles = () => ({
   chip: {
@@ -38,17 +39,20 @@ const inlineStyles = {
 
 class ItemMarking extends Component {
   render() {
-    const { classes, variant } = this.props;
+    const {
+      classes, variant, label, color,
+    } = this.props;
+    const tuncatedLabel = truncate(label, 20);
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
     if (this.props.color) {
       return (
         <Chip
           classes={{ root: style }}
           style={{
-            backgroundColor: this.props.color,
-            color: this.props.color === '#ffffff' ? '#2b2b2b' : 'inherit',
+            backgroundColor: color,
+            color: color === '#ffffff' ? '#2b2b2b' : 'inherit',
           }}
-          label={this.props.label}
+          label={tuncatedLabel}
         />
       );
     }
@@ -63,7 +67,7 @@ class ItemMarking extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.red}
-            label={this.props.label}
+            label={tuncatedLabel}
           />
         );
       case 'TLP:AMBER':
@@ -71,7 +75,7 @@ class ItemMarking extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.orange}
-            label={this.props.label}
+            label={tuncatedLabel}
           />
         );
       case 'NP':
@@ -80,7 +84,7 @@ class ItemMarking extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.green}
-            label={this.props.label}
+            label={tuncatedLabel}
           />
         );
       case 'TLP:WHITE':
@@ -88,7 +92,7 @@ class ItemMarking extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.white}
-            label={this.props.label}
+            label={tuncatedLabel}
           />
         );
       case 'SF':
@@ -96,7 +100,7 @@ class ItemMarking extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.blue}
-            label={this.props.label}
+            label={tuncatedLabel}
           />
         );
       default:
@@ -104,7 +108,7 @@ class ItemMarking extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.white}
-            label={this.props.label}
+            label={tuncatedLabel}
           />
         );
     }

@@ -235,7 +235,7 @@ class StixDomainEntityTags extends Component {
               fullWidth={true}
             >
               <DialogTitle>{t('Add new tags')}</DialogTitle>
-              <DialogContent>
+              <DialogContent style={{ overflowY: 'hidden' }}>
                 <Form>
                   <Autocomplete
                     name="new_tags"

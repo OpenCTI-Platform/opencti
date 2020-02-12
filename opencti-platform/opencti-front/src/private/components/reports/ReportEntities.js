@@ -120,7 +120,7 @@ class ReportEntitiesComponent extends Component {
       },
       name: {
         label: 'Name',
-        width: '35%',
+        width: '30%',
         isSortable: true,
       },
       createdByRef: {

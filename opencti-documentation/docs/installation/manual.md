@@ -6,15 +6,16 @@ sidebar_label: Manual deployment
 
 ## Prerequisites
 
-| Component     | Version               | Link                                                      |
-| ------------- |-----------------------| ----------------------------------------------------------|
-| NodeJS        | `>= 12.* && < 13.0.0` | https://nodejs.org/en/download                            |
-| Python        | `>= 3.6`              | https://www.python.org/downloads                          |
-| Grakn Core    | `=== 1.6.1`           | https://grakn.ai/download#core                            |
-| ElasticSearch | `>= 7.5`              | https://www.elastic.co/downloads/elasticsearch            |
-| MinIO         | `>= 20191012`         | https://min.io/download                                   |
-| Redis         | `>= 3.0`              | https://redis.io/download                                 |
-| RabbitMQ      | `>= 3.7`              | https://www.rabbitmq.com/download.html                    |
+| Component                   | Version               | Link                                                      |
+| ----------------------------|-----------------------| ----------------------------------------------------------|
+| NodeJS                      | `>= 12.* && < 13.0.0` | https://nodejs.org/en/download                            |
+| Python                      | `>= 3.6`              | https://www.python.org/downloads                          |
+| Grakn Core                  | `=== 1.6.1`           | https://grakn.ai/download#core                            |
+| ElasticSearch               | `>= 7.5`              | https://www.elastic.co/downloads/elasticsearch            |
+| MinIO                       | `>= 20191012`         | https://min.io/download                                   |
+| Redis                       | `>= 3.0`              | https://redis.io/download                                 |
+| RabbitMQ                    | `>= 3.7`              | https://www.rabbitmq.com/download.html                    |
+| RabbitMQ Management plugin  | `>= 3.7`              | https://www.rabbitmq.com/management.html                  |
 
 ## Prepare the installation
 

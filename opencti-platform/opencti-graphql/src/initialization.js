@@ -181,7 +181,7 @@ const initializeDefaultValues = async () => {
 
 const initializeData = async () => {
   // Init default values only if platform as no settings
-  const settings = await getSettings();
+  const settings = await getSettings(false);
   if (!settings) await initializeDefaultValues();
   logger.info(`[INIT] > Platform default initialized`);
   await initializeAdminUser();

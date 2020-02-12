@@ -17,6 +17,7 @@ import {
 } from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@material-ui/core/MenuItem';
+import { Security } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
@@ -24,18 +25,15 @@ import Autocomplete from '../../../../components/Autocomplete';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
+const styles = () => ({
+  icon: {
+    paddingTop: 4,
+    display: 'inline-block',
+  },
+  text: {
+    display: 'inline-block',
+    flexGrow: 1,
+    marginLeft: 10,
   },
 });
 
@@ -186,7 +184,9 @@ class UserEditionOverviewComponent extends Component {
   }
 
   render() {
-    const { t, user, context } = this.props;
+    const {
+      t, user, context, classes,
+    } = this.props;
     const external = user.external === true;
     const userRoles = pipe(map((n) => ({ label: n.name, value: n.id })))(
       user.roles,
@@ -288,6 +288,14 @@ class UserEditionOverviewComponent extends Component {
                 options={this.state.roles}
                 onInputChange={this.searchRoles.bind(this)}
                 onChange={this.handleChangeRole.bind(this)}
+                renderOption={(option) => (
+                  <React.Fragment>
+                    <div className={classes.icon}>
+                      <Security />
+                    </div>
+                    <div className={classes.text}>{option.label}</div>
+                  </React.Fragment>
+                )}
                 style={{ marginTop: 20, width: '100%' }}
               />
               <TextField

@@ -28,6 +28,8 @@ Tool sub Stix-Domain-Entity,
 
 This allow database query to select all `Stix-Domain-Entity` instances if needed, or just `Tool` instances.
 
+> If you are looking for the whole OpenCTI data model (entities, properties), please refer to the [dedicated documentation](../reference/entities).
+
 ### Relations
 
 Entities could be linked by some relations. A relation is a connection between any number of entities, identified with specific `roles` that defined a relation:
@@ -53,9 +55,4 @@ This means that you can have this relation:
 | ------------------------------- | -------------------- | ------------------------------------- |
 | Intrusion Set (*attribution*)   | **attributed-to**    | Threat Actor (*origin*)               |
 
-To know more about available relations, please read the [dedicated section](../reference/relations).
-
-### 
-
-
-
+> If you are looking for the available relations, please refer to the [dedicated documentation](../reference/relations).

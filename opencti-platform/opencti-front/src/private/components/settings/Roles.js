@@ -13,6 +13,7 @@ import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import RolesLines, { rolesLinesQuery } from './roles/RolesLines';
 import AccessesMenu from './AccessesMenu';
+import RoleCreation from './roles/RoleCreation';
 
 export const rolesSearchQuery = graphql`
   query RolesSearchQuery($search: String) {
@@ -77,7 +78,7 @@ class Roles extends Component {
         isSortable: true,
       },
       default_assignation: {
-        label: 'Creation assign',
+        label: 'Granted by default',
         width: '15%',
         isSortable: true,
       },
@@ -133,6 +134,7 @@ class Roles extends Component {
       <div className={classes.container}>
         <AccessesMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+        <RoleCreation paginationOptions={paginationOptions} />
       </div>
     );
   }
