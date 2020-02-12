@@ -431,3 +431,15 @@ class OpenCTIConnectorHelper:
             "objects": items,
         }
         return json.dumps(bundle)
+
+    @staticmethod
+    def check_max_tlp(tlp, max_tlp):
+        allowed_tlps = ["TLP:WHITE"]
+        if max_tlp == "TLP:RED":
+            allowed_tlps = ["TLP:WHITE", "TLP:GREEN", "TLP:AMBER", "TLP:RED"]
+        elif max_tlp == "TLP:AMBER":
+            allowed_tlps = ["TLP:WHITE", "TLP:GREEN", "TLP:AMBER"]
+        elif max_tlp == "TLP:GREEN":
+            allowed_tlps = ["TLP:WHITE", "TLP:GREEN"]
+
+        return tlp in allowed_tlps
