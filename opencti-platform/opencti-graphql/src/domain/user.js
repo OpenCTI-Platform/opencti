@@ -66,7 +66,7 @@ export const findById = async (userId, args) => {
   }
   return loadEntityById(userId, args);
 };
-export const findAll = args => {
+export const findAll = (args = {}) => {
   const filters = propOr([], 'filters', args);
   return listEntities(
     ['User'],
