@@ -649,7 +649,10 @@ export const elPaginate = async (indexName, options) => {
     })
     .catch(err => {
       logger.error(`[ELASTICSEARCH] Paginate fail > ${err}`);
-      return buildPagination(0, 0, [], 0);
+      if (connectionFormat) {
+        return buildPagination(0, 0, [], 0);
+      }
+      return [];
     });
 };
 export const elLoadByTerms = async (terms, relationsMap, indices = PLATFORM_INDICES) => {
