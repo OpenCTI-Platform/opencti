@@ -84,6 +84,7 @@ class CustomProperties:
     REPORT_CLASS = "x_opencti_report_class"
 
     # use with observed_data and indicators
+    INDICATOR_PATTERN = "x_opencti_indicator_pattern"
     PATTERN_TYPE = "x_opencti_pattern_type"
     OBSERVABLE_TYPE = "x_opencti_observable_type"
     OBSERVABLE_VALUE = "x_opencti_observable_value"
