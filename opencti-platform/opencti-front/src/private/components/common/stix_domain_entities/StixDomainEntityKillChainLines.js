@@ -134,9 +134,12 @@ class StixDomainEntityKillChainLinesComponent extends Component {
     } = this.props;
     // Extract all kill chain phases
     const killChainPhases = pipe(
+      // eslint-disable-next-line no-nested-ternary
       map((n) => (n.node.killChainPhases.edges.length > 0
         ? n.node.killChainPhases.edges[0].node
-        : n.node.to.killChainPhases.edges[0].node)),
+        : n.node.to.killChainPhases.edges.length > 0
+          ? n.node.to.killChainPhases.edges[0].node
+          : { id: 'unknown', phase_name: t('Unknown'), phase_order: 99 })),
       uniq,
       indexBy(prop('id')),
     )(data.stixRelations.edges);
@@ -153,9 +156,12 @@ class StixDomainEntityKillChainLinesComponent extends Component {
       )),
       map((n) => assoc(
         'killChainPhase',
+        // eslint-disable-next-line no-nested-ternary
         n.killChainPhases.edges.length > 0
           ? n.killChainPhases.edges[0].node
-          : n.to.killChainPhases.edges[0].node,
+          : n.to.killChainPhases.edges.length > 0
+            ? n.to.killChainPhases.edges[0].node
+            : { id: 'unknown', phase_name: t('Unknown'), phase_order: 99 },
         n,
       )),
       sortWith([ascend(prop('years'))]),

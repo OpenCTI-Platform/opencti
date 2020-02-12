@@ -592,6 +592,9 @@ export const elPaginate = async (indexName, options) => {
       for (let i = 0; i < values.length; i += 1) {
         if (values[i] === null) {
           mustnot = append({ exists: { field: key } }, mustnot);
+        }
+        if (values[i] === 'EXISTS') {
+          valuesFiltering.push({ exists: { field: key } });
         } else if (operator === 'eq' || operator === 'match') {
           valuesFiltering.push({
             match_phrase: {
@@ -646,7 +649,10 @@ export const elPaginate = async (indexName, options) => {
     })
     .catch(err => {
       logger.error(`[ELASTICSEARCH] Paginate fail > ${err}`);
-      return buildPagination(0, 0, [], 0);
+      if (connectionFormat) {
+        return buildPagination(0, 0, [], 0);
+      }
+      return [];
     });
 };
 export const elLoadByTerms = async (terms, relationsMap, indices = PLATFORM_INDICES) => {

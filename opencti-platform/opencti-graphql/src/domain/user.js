@@ -1,4 +1,4 @@
-import { assoc, head, isNil, pathOr, pipe, map, dissoc, append, flatten } from 'ramda';
+import { assoc, head, isNil, pathOr, pipe, map, dissoc, append, flatten, propOr } from 'ramda';
 import uuid from 'uuid/v4';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
@@ -66,8 +66,13 @@ export const findById = async (userId, args) => {
   }
   return loadEntityById(userId, args);
 };
-export const findAll = args => {
-  return listEntities(['User'], ['user_email', 'firstname', 'lastname'], args);
+export const findAll = (args = {}) => {
+  const filters = propOr([], 'filters', args);
+  return listEntities(
+    ['User'],
+    ['user_email', 'firstname', 'lastname'],
+    assoc('filters', args.isUser ? append({ key: 'external', values: ['EXISTS'] }, filters) : filters, args)
+  );
 };
 export const token = (userId, args, context) => {
   if (userId !== context.user.id) {
@@ -149,7 +154,10 @@ export const roleRemoveCapability = async (roleId, capabilityName) => {
   return loadEntityById(roleId);
 };
 export const addPerson = async (user, newUser) => {
-  const created = await createEntity(newUser, 'User', { modelType: TYPE_STIX_DOMAIN_ENTITY, stixIdType: 'identity' });
+  const created = await createEntity(newUser, 'User', {
+    modelType: TYPE_STIX_DOMAIN_ENTITY,
+    stixIdType: 'identity'
+  });
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 export const assignRoleToUser = (userId, roleName) => {

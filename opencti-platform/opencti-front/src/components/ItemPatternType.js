@@ -18,21 +18,23 @@ const styles = () => ({
 });
 
 const inlineStyles = {
-  white: {
-    backgroundColor: '#ffffff',
-    color: '#2b2b2b',
-  },
-  green: {
-    backgroundColor: '#2e7d32',
-  },
-  blue: {
+  stix: {
     backgroundColor: '#283593',
   },
-  red: {
-    backgroundColor: '#c62828',
+  pcre: {
+    backgroundColor: '#4527a0',
   },
-  orange: {
-    backgroundColor: '#d84315',
+  sigma: {
+    backgroundColor: '#2e7d32',
+  },
+  snort: {
+    backgroundColor: '#4e342e',
+  },
+  suricata: {
+    backgroundColor: '#00695c',
+  },
+  yara: {
+    backgroundColor: '#c62828',
   },
 };
 
@@ -58,7 +60,7 @@ class ItemPatternType extends Component {
         return (
           <Chip
             classes={{ root: style }}
-            style={inlineStyles.blue}
+            style={inlineStyles.stix}
             label={this.props.label}
           />
         );
@@ -66,7 +68,7 @@ class ItemPatternType extends Component {
         return (
           <Chip
             classes={{ root: style }}
-            style={inlineStyles.orange}
+            style={inlineStyles.pcre}
             label={this.props.label}
           />
         );
@@ -74,7 +76,7 @@ class ItemPatternType extends Component {
         return (
           <Chip
             classes={{ root: style }}
-            style={inlineStyles.green}
+            style={inlineStyles.sigma}
             label={this.props.label}
           />
         );
@@ -82,7 +84,7 @@ class ItemPatternType extends Component {
         return (
           <Chip
             classes={{ root: style }}
-            style={inlineStyles.white}
+            style={inlineStyles.snort}
             label={this.props.label}
           />
         );
@@ -90,7 +92,7 @@ class ItemPatternType extends Component {
         return (
           <Chip
             classes={{ root: style }}
-            style={inlineStyles.blue}
+            style={inlineStyles.suricata}
             label={this.props.label}
           />
         );
@@ -98,7 +100,7 @@ class ItemPatternType extends Component {
         return (
           <Chip
             classes={{ root: style }}
-            style={inlineStyles.blue}
+            style={inlineStyles.yara}
             label={this.props.label}
           />
         );
@@ -106,7 +108,7 @@ class ItemPatternType extends Component {
         return (
           <Chip
             classes={{ root: style }}
-            style={inlineStyles.white}
+            style={inlineStyles.stix}
             label={this.props.label}
           />
         );

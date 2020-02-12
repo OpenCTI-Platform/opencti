@@ -19,6 +19,7 @@ import {
 import inject18n from '../../../components/i18n';
 import ReportAddObjectRefs from './ReportAddObjectRefs';
 import StixDomainEntitiesRightBar from '../common/stix_domain_entities/StixDomainEntitiesRightBar';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 const styles = () => ({
   container: {
@@ -158,7 +159,8 @@ class ReportEntitiesComponent extends Component {
           handleSort={this.handleSort.bind(this)}
           handleSearch={this.handleSearch.bind(this)}
           secondaryAction={true}
-          numberOfElements={numberOfElements}>
+          numberOfElements={numberOfElements}
+        >
           <QueryRenderer
             query={ReportEntitiesLinesQuery}
             variables={{ id: report.id, count: 25, ...paginationOptions }}
@@ -173,10 +175,13 @@ class ReportEntitiesComponent extends Component {
             )}
           />
         </ListLines>
-        <ReportAddObjectRefs
-          reportId={report.id}
-          paginationOptions={paginationOptions}
-        />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ReportAddObjectRefs
+            reportId={report.id}
+            paginationOptions={paginationOptions}
+            withPadding={true}
+          />
+        </Security>
         <StixDomainEntitiesRightBar
           stixDomainEntitiesTypes={stixDomainEntitiesTypes}
           handleToggleStixDomainEntityType={this.handleToggleStixDomainEntityType.bind(

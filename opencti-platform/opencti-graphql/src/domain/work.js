@@ -69,6 +69,7 @@ export const workForEntityType = async (entityType, args) => {
   if (args.context !== undefined) {
     options.filters.push({ key: 'work_context', values: [args.context] });
   }
+  console.log(options);
   return elPaginate(INDEX_WORK_JOBS, options);
 };
 
@@ -84,6 +85,7 @@ export const loadExportWorksAsProgressFiles = async (entityType, entityId, conte
   const works = entityId
     ? await workForEntity(entityId, { first: 200 })
     : await workForEntityType(entityType.toLowerCase(), { first: 200, context });
+  console.log(works);
   // Filter if all jobs completed
   const worksWithStatus = await Promise.all(
     map(w => {

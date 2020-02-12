@@ -86,7 +86,6 @@ class ImportComponent extends Component {
       relay,
     } = this.props;
     const { edges } = importFiles;
-    console.log(connectorsImport);
     const importConnsPerFormat = scopesConn(connectorsImport);
 
     return (

@@ -84,18 +84,22 @@ class Users extends Component {
       },
     };
     return (
-      <ListLines sortBy={sortBy}
+      <ListLines
+        sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         displayImport={false}
         secondaryAction={true}
-        keyword={searchTerm}>
-        <QueryRenderer query={usersLinesQuery}
+        keyword={searchTerm}
+      >
+        <QueryRenderer
+          query={usersLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
-            <UsersLines data={props}
+            <UsersLines
+              data={props}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
@@ -115,6 +119,7 @@ class Users extends Component {
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
+      isUser: true,
     };
     return (
       <div className={classes.container}>
@@ -133,8 +138,4 @@ Users.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(Users);
+export default compose(inject18n, withRouter, withStyles(styles))(Users);

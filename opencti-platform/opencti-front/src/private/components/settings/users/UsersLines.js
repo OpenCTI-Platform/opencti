@@ -55,6 +55,7 @@ export const usersLinesQuery = graphql`
     $cursor: ID
     $orderBy: UsersOrdering
     $orderMode: OrderingMode
+    $isUser: Boolean
   ) {
     ...UsersLines_data
       @arguments(
@@ -63,6 +64,7 @@ export const usersLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        isUser: $isUser
       )
   }
 `;
@@ -78,6 +80,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "UsersOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          isUser: { type: "Boolean", defaultValue: true }
         ) {
         users(
           search: $search
@@ -85,6 +88,7 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          isUser: $isUser
         ) @connection(key: "Pagination_users") {
           edges {
             node {
@@ -122,6 +126,7 @@ export default createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        isUser: fragmentVariables.isUser,
       };
     },
     query: usersLinesQuery,

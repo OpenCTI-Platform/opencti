@@ -373,7 +373,12 @@ class StixDomainEntityCreation extends Component {
 
   renderContextual() {
     const {
-      t, classes, inputValue, display,
+      t,
+      classes,
+      inputValue,
+      display,
+      defaultCreatedByRef,
+      defaultMarkingDefinition,
     } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
@@ -392,9 +397,23 @@ class StixDomainEntityCreation extends Component {
             name: inputValue,
             description: '',
             alias: '',
-            createdByRef: '',
+            createdByRef: defaultCreatedByRef
+              ? {
+                label: defaultCreatedByRef.name,
+                value: defaultCreatedByRef.id,
+                type: defaultCreatedByRef.entity_type,
+              }
+              : '',
             tags: [],
-            markingDefinitions: [],
+            markingDefinitions: defaultMarkingDefinition
+              ? [
+                {
+                  label: defaultMarkingDefinition.definition,
+                  value: defaultMarkingDefinition.id,
+                  color: defaultMarkingDefinition.color,
+                },
+              ]
+              : [],
           }}
           validationSchema={stixDomainEntityValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
@@ -440,6 +459,7 @@ class StixDomainEntityCreation extends Component {
                     name="createdByRef"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
+                    defaultCreatedByRef={defaultCreatedByRef}
                   />
                   <TagsField
                     name="tags"
@@ -450,6 +470,7 @@ class StixDomainEntityCreation extends Component {
                   <MarkingDefinitionsField
                     name="markingDefinitions"
                     style={{ marginTop: 20, width: '100%' }}
+                    defaultMarkingDefinition={defaultMarkingDefinition}
                   />
                 </DialogContent>
                 <DialogActions>
@@ -490,6 +511,8 @@ StixDomainEntityCreation.propTypes = {
   contextual: PropTypes.bool,
   display: PropTypes.bool,
   inputValue: PropTypes.string,
+  defaultCreatedByRef: PropTypes.object,
+  defaultMarkingDefinition: PropTypes.object,
 };
 
 export default compose(

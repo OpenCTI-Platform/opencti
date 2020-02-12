@@ -1,8 +1,24 @@
 ---
-id: docker
-title: Docker installation
-sidebar_label: Using Docker
+id: auto
+title: Automatic installation
+sidebar_label: Automatic installation
 ---
+
+
+# Virtual machine template
+
+OpenCTI could be deployed for **testing purposes** with a provided OVA file.
+
+## Download the OVA file
+
+```bash
+$ mkdir /path/to/your/app && cd /path/to/your/app
+$ wget https://github.com/OpenCTI-Platform/opencti/releases/download/{RELEASE_VERSION}/opencti-release-{RELEASE_VERSION}.ova
+```
+
+Then open the OVA file with VirtualBox or convert the OVA to another type of virtual machine image.
+
+# Using Docker
 
 OpenCTI could be deployed using the *docker-compose* command.
 
@@ -44,18 +60,21 @@ $ vm.max_map_count=1048575
 
 In order to have the best experience with Docker, we recommend to use the Docker stack feature. In this mode we will have the capacity to easily scale your deployment.
 
-### In Swarm or Kubernetes
-
 ```bash
 $ docker stack deploy -c docker-compose.yml opencti
 ```
 
-### In standard Docker
-```bash
-$ docker-compose --compatibility up
-```
+> In some configuration, Grakn could fail to start with the following error: `Starting Storage.....FAILED!`
+> You can restart it by using the command `$ docker service update --force opencti_grakn`.
 
 You can now go to http://localhost:8080 and log in with the credentials configured in your environment variables.
+
+### Update the stack or delete the stack
+
+```bash
+$ docker service update --force service_name
+$ docker stack rm opencti
+```
 
 ### Behind a reverse proxy
 
