@@ -27,12 +27,13 @@ export const getApplicationInfo = () => ({
   ]
 });
 
-export const getSettings = async (withParameters = true) => {
+export const getSettings = async () => {
   const data = await listEntities(['Settings'], ['platform_title'], {});
-  const settings = data.edges.length > 0 ? head(data.edges).node : {};
-  if (withParameters)
-    return assoc('platform_parameters', JSON.stringify(dissocPath(['app', 'admin'], conf.get())), settings);
-  return settings;
+  const settings = data.edges.length > 0 ? head(data.edges).node : null;
+  if( settings === null ) {
+    return null;
+  }
+  return assoc('platform_parameters', JSON.stringify(dissocPath(['app', 'admin'], conf.get())), settings);
 };
 
 export const addSettings = async (user, settings) => {
