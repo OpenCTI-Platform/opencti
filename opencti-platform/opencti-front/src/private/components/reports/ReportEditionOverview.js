@@ -175,18 +175,20 @@ class ReportEditionOverviewComponent extends Component {
           relationId: currentCreatedByRef.relation,
         },
       });
-      commitMutation({
-        mutation: reportMutationRelationAdd,
-        variables: {
-          id: this.props.report.id,
-          input: {
-            fromRole: 'so',
-            toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+      if (value.value) {
+        commitMutation({
+          mutation: reportMutationRelationAdd,
+          variables: {
+            id: this.props.report.id,
+            input: {
+              fromRole: 'so',
+              toId: value.value,
+              toRole: 'creator',
+              through: 'created_by_ref',
+            },
           },
-        },
-      });
+        });
+      }
     }
   }
 

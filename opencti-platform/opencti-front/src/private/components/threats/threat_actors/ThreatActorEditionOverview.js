@@ -168,18 +168,20 @@ class ThreatActorEditionOverviewComponent extends Component {
           relationId: currentCreatedByRef.relation,
         },
       });
-      commitMutation({
-        mutation: threatActorMutationRelationAdd,
-        variables: {
-          id: this.props.threatActor.id,
-          input: {
-            fromRole: 'so',
-            toRole: 'creator',
-            toId: value.value,
-            through: 'created_by_ref',
+      if (value.value) {
+        commitMutation({
+          mutation: threatActorMutationRelationAdd,
+          variables: {
+            id: this.props.threatActor.id,
+            input: {
+              fromRole: 'so',
+              toRole: 'creator',
+              toId: value.value,
+              through: 'created_by_ref',
+            },
           },
-        },
-      });
+        });
+      }
     }
   }
 

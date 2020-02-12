@@ -162,18 +162,20 @@ class RegionEditionOverviewComponent extends Component {
           relationId: currentCreatedByRef.relation,
         },
       });
-      commitMutation({
-        mutation: regionMutationRelationAdd,
-        variables: {
-          id: this.props.region.id,
-          input: {
-            fromRole: 'so',
-            toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+      if (value.value) {
+        commitMutation({
+          mutation: regionMutationRelationAdd,
+          variables: {
+            id: this.props.region.id,
+            input: {
+              fromRole: 'so',
+              toId: value.value,
+              toRole: 'creator',
+              through: 'created_by_ref',
+            },
           },
-        },
-      });
+        });
+      }
     }
   }
 

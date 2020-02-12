@@ -162,18 +162,20 @@ class PersonEditionOverviewComponent extends Component {
           relationId: currentCreatedByRef.relation,
         },
       });
-      commitMutation({
-        mutation: personMutationRelationAdd,
-        variables: {
-          id: this.props.person.id,
-          input: {
-            fromRole: 'so',
-            toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+      if (value.value) {
+        commitMutation({
+          mutation: personMutationRelationAdd,
+          variables: {
+            id: this.props.person.id,
+            input: {
+              fromRole: 'so',
+              toId: value.value,
+              toRole: 'creator',
+              through: 'created_by_ref',
+            },
           },
-        },
-      });
+        });
+      }
     }
   }
 

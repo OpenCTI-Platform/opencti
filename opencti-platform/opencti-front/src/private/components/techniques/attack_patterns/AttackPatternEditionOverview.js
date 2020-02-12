@@ -169,18 +169,20 @@ class AttackPatternEditionOverviewComponent extends Component {
           relationId: currentCreatedByRef.relation,
         },
       });
-      commitMutation({
-        mutation: attackPatternMutationRelationAdd,
-        variables: {
-          id: this.props.attackPattern.id,
-          input: {
-            fromRole: 'so',
-            toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+      if (value.value) {
+        commitMutation({
+          mutation: attackPatternMutationRelationAdd,
+          variables: {
+            id: this.props.attackPattern.id,
+            input: {
+              fromRole: 'so',
+              toId: value.value,
+              toRole: 'creator',
+              through: 'created_by_ref',
+            },
           },
-        },
-      });
+        });
+      }
     }
   }
 

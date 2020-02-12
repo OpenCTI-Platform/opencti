@@ -14,18 +14,12 @@ const Autocomplete = (props) => {
       onChange: (_, value) => {
         helpers.setValue(value);
         if (typeof props.onChange === 'function') {
-          props.onChange(field.name, value);
+          props.onChange(field.name, value || '');
         }
       },
       onFocus: () => {
         if (typeof props.onFocus === 'function') {
           props.onFocus(field.name);
-        }
-      },
-      onBlur: (event) => {
-        helpers.setTouched(true);
-        if (typeof props.onSubmit === 'function') {
-          props.onSubmit(field.name, event.target.value);
         }
       },
     }),
