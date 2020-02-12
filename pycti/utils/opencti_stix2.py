@@ -1740,7 +1740,9 @@ class OpenCTIStix2:
             description=self.convert_markdown(stix_object["description"])
             if "description" in stix_object
             else "",
-            indicator_pattern=stix_object["pattern"],
+            indicator_pattern=stix_object[CustomProperties.INDICATOR_PATTERN]
+            if CustomProperties.INDICATOR_PATTERN in stix_object
+            else stix_object["pattern"],
             main_observable_type=stix_object[CustomProperties.OBSERVABLE_TYPE]
             if CustomProperties.OBSERVABLE_TYPE in stix_object
             else "Unknown",
