@@ -30,7 +30,7 @@ export const getApplicationInfo = () => ({
 export const getSettings = async () => {
   const data = await listEntities(['Settings'], ['platform_title'], {});
   const settings = data.edges.length > 0 ? head(data.edges).node : null;
-  if( settings === null ) {
+  if (settings === null) {
     return null;
   }
   return assoc('platform_parameters', JSON.stringify(dissocPath(['app', 'admin'], conf.get())), settings);
