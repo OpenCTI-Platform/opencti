@@ -168,18 +168,20 @@ class IntrusionSetEditionOverviewComponent extends Component {
           relationId: currentCreatedByRef.relation,
         },
       });
-      commitMutation({
-        mutation: intrusionSetMutationRelationAdd,
-        variables: {
-          id: this.props.intrusionSet.id,
-          input: {
-            fromRole: 'so',
-            toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+      if (value.value) {
+        commitMutation({
+          mutation: intrusionSetMutationRelationAdd,
+          variables: {
+            id: this.props.intrusionSet.id,
+            input: {
+              fromRole: 'so',
+              toId: value.value,
+              toRole: 'creator',
+              through: 'created_by_ref',
+            },
           },
-        },
-      });
+        });
+      }
     }
   }
 

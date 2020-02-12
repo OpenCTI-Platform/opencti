@@ -131,7 +131,7 @@ class RootPerson extends Component {
                 </div>
               );
             }
-            return <Loader variant="inElement" />;
+            return <Loader />;
           }}
         />
       </div>

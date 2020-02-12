@@ -189,18 +189,20 @@ class StixDomainEntityEditionContainer extends Component {
           relationId: currentCreatedByRef.relation,
         },
       });
-      commitMutation({
-        mutation: stixDomainEntityMutationRelationAdd,
-        variables: {
-          id: stixDomainEntity.id,
-          input: {
-            fromRole: 'so',
-            toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+      if (value.value) {
+        commitMutation({
+          mutation: stixDomainEntityMutationRelationAdd,
+          variables: {
+            id: stixDomainEntity.id,
+            input: {
+              fromRole: 'so',
+              toId: value.value,
+              toRole: 'creator',
+              through: 'created_by_ref',
+            },
           },
-        },
-      });
+        });
+      }
     }
   }
 
