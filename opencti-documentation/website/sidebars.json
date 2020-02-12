@@ -6,7 +6,7 @@
       "getting-started/requirements"
     ],
     "Installation": [
-      "installation/docker",
+      "installation/auto",
       "installation/manual",
       "installation/configuration",
       "installation/connectors",
