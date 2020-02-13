@@ -7,7 +7,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
 import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
-import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
+import StixDomainEntityThreatKnowledge from '../../common/stix_domain_entities/StixDomainEntityThreatKnowledge';
 import StixRelation from '../../common/stix_relations/StixRelation';
 import IncidentPopover from './IncidentPopover';
 import IncidentKnowledgeBar from './IncidentKnowledgeBar';
@@ -47,7 +47,7 @@ class IncidentKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/incidents/:incidentId/knowledge/overview"
           render={(routeProps) => (
-            <StixDomainEntityKnowledge
+            <StixDomainEntityThreatKnowledge
               stixDomainEntityId={incident.id}
               stixDomainEntityType="incident"
               {...routeProps}

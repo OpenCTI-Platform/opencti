@@ -2,6 +2,7 @@ import { assoc, append, propOr, pipe } from 'ramda';
 import {
   createEntity,
   distributionEntities,
+  distributionEntitiesThroughRelations,
   escapeString,
   getSingleValueNumber,
   listEntities,
@@ -122,7 +123,17 @@ export const reportsNumberByEntity = args => ({
   )
 });
 export const reportsDistributionByEntity = async args => {
-  const { objectId } = args;
+  const { objectId, field } = args;
+  if (field.includes('.')) {
+    const options = pipe(
+      assoc('relationType', 'object_refs'),
+      assoc('toType', 'Report'),
+      assoc('field', field.split('.')[1]),
+      assoc('remoteRelationType', field.split('.')[0]),
+      assoc('fromId', objectId)
+    )(args);
+    return distributionEntitiesThroughRelations(options);
+  }
   const filters = [{ isRelation: true, from: 'knowledge_aggregation', to: 'so', type: 'object_refs', value: objectId }];
   return distributionEntities('Report', filters, args);
 };

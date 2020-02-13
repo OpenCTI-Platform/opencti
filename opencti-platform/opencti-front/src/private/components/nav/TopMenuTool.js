@@ -81,26 +81,6 @@ class TopMenuTool extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/techniques/tools/${toolId}/reports`}
-          variant={
-            location.pathname
-            === `/dashboard/techniques/tools/${toolId}/reports`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname
-            === `/dashboard/techniques/tools/${toolId}/reports`
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Reports')}
-        </Button>
-        <Button
-          component={Link}
           to={`/dashboard/techniques/tools/${toolId}/knowledge`}
           variant={
             location.pathname.includes(
@@ -120,6 +100,26 @@ class TopMenuTool extends Component {
           classes={{ root: classes.button }}
         >
           {t('Knowledge')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/techniques/tools/${toolId}/reports`}
+          variant={
+            location.pathname
+            === `/dashboard/techniques/tools/${toolId}/reports`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/techniques/tools/${toolId}/reports`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Reports')}
         </Button>
         <Button
           component={Link}

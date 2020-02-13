@@ -69,10 +69,12 @@ const entityReportsPieReportsDistributionQuery = graphql`
 
 class EntityReportsPie extends Component {
   render() {
-    const { t, classes, entityId } = this.props;
+    const {
+      t, classes, entityId, field,
+    } = this.props;
     const reportsDistributionVariables = {
       objectId: entityId,
-      field: 'report_class',
+      field: field || 'report_class',
       operation: 'count',
     };
     return (
@@ -165,11 +167,9 @@ class EntityReportsPie extends Component {
 
 EntityReportsPie.propTypes = {
   entityId: PropTypes.string,
+  field: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(EntityReportsPie);
+export default compose(inject18n, withStyles(styles))(EntityReportsPie);

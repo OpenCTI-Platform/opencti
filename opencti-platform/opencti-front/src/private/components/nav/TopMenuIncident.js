@@ -81,26 +81,6 @@ class TopMenuIncident extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/threats/incidents/${incidentId}/reports`}
-          variant={
-            location.pathname
-            === `/dashboard/threats/incidents/${incidentId}/reports`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname
-            === `/dashboard/threats/incidents/${incidentId}/reports`
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Reports')}
-        </Button>
-        <Button
-          component={Link}
           to={`/dashboard/threats/incidents/${incidentId}/knowledge`}
           variant={
             location.pathname.includes(
@@ -120,6 +100,26 @@ class TopMenuIncident extends Component {
           classes={{ root: classes.button }}
         >
           {t('Knowledge')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/threats/incidents/${incidentId}/reports`}
+          variant={
+            location.pathname
+            === `/dashboard/threats/incidents/${incidentId}/reports`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/threats/incidents/${incidentId}/reports`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Reports')}
         </Button>
         <Button
           component={Link}

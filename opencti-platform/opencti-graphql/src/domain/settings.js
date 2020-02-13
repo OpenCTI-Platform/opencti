@@ -1,4 +1,4 @@
-import { head, assoc, dissocPath } from 'ramda';
+import { head, assoc, dissocPath, pipe } from 'ramda';
 import {
   createEntity,
   deleteEntityById,
@@ -33,7 +33,18 @@ export const getSettings = async () => {
   if (settings === null) {
     return null;
   }
-  return assoc('platform_parameters', JSON.stringify(dissocPath(['app', 'admin'], conf.get())), settings);
+  const config = pipe(
+    dissocPath(['app', 'admin']),
+    dissocPath(['rabbitmq', 'password']),
+    dissocPath(['minio', 'secret_key']),
+    dissocPath(['jwt']),
+    dissocPath(['providers', 'ldap', 'config', 'bind_credentials']),
+    dissocPath(['providers', 'google', 'config', 'client_secret']),
+    dissocPath(['providers', 'facebook', 'config', 'client_secret']),
+    dissocPath(['providers', 'github', 'config', 'client_secret']),
+    dissocPath(['providers', 'openid', 'config', 'client_secret'])
+  )(conf.get());
+  return assoc('platform_parameters', JSON.stringify(config), settings);
 };
 
 export const addSettings = async (user, settings) => {

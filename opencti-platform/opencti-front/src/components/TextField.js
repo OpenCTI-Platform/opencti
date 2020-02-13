@@ -21,7 +21,7 @@ const TextField = (props) => {
         const { value } = event.target;
         helpers.setTouched(true);
         if (typeof props.onSubmit === 'function') {
-          props.onSubmit(field.name, value);
+          props.onSubmit(field.name, value || '');
         }
       },
     }),

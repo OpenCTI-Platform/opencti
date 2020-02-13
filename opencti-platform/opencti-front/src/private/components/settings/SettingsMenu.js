@@ -40,7 +40,7 @@ class SettingsMenu extends Component {
             }
             dense={false}
           >
-            <ListItemText primary={t('General')} />
+            <ListItemText primary={t('Configuration')} />
           </MenuItem>
           <MenuItem
             component={Link}
@@ -51,17 +51,6 @@ class SettingsMenu extends Component {
             dense={false}
           >
             <ListItemText primary={t('Inferences')} />
-          </MenuItem>
-          <MenuItem
-            component={Link}
-            to={'/dashboard/settings/about'}
-            selected={
-              location.pathname
-              === '/dashboard/settings/about'
-            }
-            dense={false}
-          >
-            <ListItemText primary={t('About')} />
           </MenuItem>
         </MenuList>
       </Drawer>

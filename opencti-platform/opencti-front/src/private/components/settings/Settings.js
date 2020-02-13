@@ -3,18 +3,25 @@ import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import { Form, Formik } from 'formik';
-import { compose, pick } from 'ramda';
+import { compose, pick, values } from 'ramda';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import MenuItem from '@material-ui/core/MenuItem';
 import * as Yup from 'yup';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import Chip from '@material-ui/core/Chip';
+import Avatar from '@material-ui/core/Avatar';
+import { ListItemAvatar } from '@material-ui/core';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
 import SettingsMenu from './SettingsMenu';
+import Loader from '../../../components/Loader';
 
 const styles = () => ({
   container: {
@@ -60,7 +67,6 @@ const settingsMutationFieldPatch = graphql`
         platform_email
         platform_url
         platform_language
-        platform_parameters
       }
     }
   }
@@ -71,6 +77,18 @@ const settingsFocus = graphql`
     settingsEdit(id: $id) {
       contextPatch(input: $input) {
         id
+      }
+    }
+  }
+`;
+
+const settingsAboutQuery = graphql`
+  query SettingsAboutQuery {
+    about {
+      version
+      dependencies {
+        name
+        version
       }
     }
   }
@@ -113,6 +131,40 @@ class Settings extends Component {
       .catch(() => false);
   }
 
+  getConfig(parameters, service) {
+    switch (service) {
+      case 'grakn':
+        return `${parameters.grakn.hostname}:${parameters.grakn.port}`;
+      case 'elasticsearch':
+        return parameters.elasticsearch.url;
+      case 'redis':
+        return `${parameters.redis.hostname}:${parameters.redis.port}`;
+      case 'minio':
+        return `${parameters.minio.endpoint}:${parameters.minio.port}`;
+      case 'rabbitmq':
+        return `${parameters.rabbitmq.hostname}:${parameters.rabbitmq.port}`;
+      default:
+        return 'Unknown';
+    }
+  }
+
+  getProviderConfig(provider) {
+    switch (provider.strategy) {
+      case 'LocalStrategy':
+        return '';
+      case 'LdapStrategy':
+        return provider.config.url;
+      case 'FacebookStrategy':
+        return provider.config.callback_url;
+      case 'GoogleStrategy':
+        return provider.config.callback_url;
+      case 'GithubStrategy':
+        return provider.config.callback_url;
+      default:
+        return 'Unknown';
+    }
+  }
+
   render() {
     const { t, classes } = this.props;
     return (
@@ -134,161 +186,189 @@ class Settings extends Component {
                 settings,
               );
               const parameters = JSON.parse(settings.platform_parameters);
+              const authProviders = values(parameters.providers);
+              let i = 0;
               return (
-                <Formik
-                  enableReinitialize={true}
-                  initialValues={initialValues}
-                  validationSchema={settingsValidation(t)}
-                >
-                  {() => (
-                    <Form>
-                      <Grid container={true} spacing={3}>
-                        <Grid item={true} xs={6}>
-                          <Paper
-                            classes={{ root: classes.paper }}
-                            elevation={2}
-                          >
-                            <Typography variant="h1" gutterBottom={true}>
-                              {t('Global')}
-                            </Typography>
-                            <TextField
-                              name="platform_title"
-                              label={t('Name')}
-                              fullWidth={true}
-                              onFocus={this.handleChangeFocus.bind(this, id)}
-                              onSubmit={this.handleSubmitField.bind(this, id)}
-                              helperText={
-                                <SubscriptionFocus
-                                  context={editContext}
-                                  fieldName="platform_title"
+                <div>
+                  <Grid container={true} spacing={3}>
+                    <Grid item={true} xs={6}>
+                      <Paper classes={{ root: classes.paper }} elevation={2}>
+                        <Formik
+                          enableReinitialize={true}
+                          initialValues={initialValues}
+                          validationSchema={settingsValidation(t)}
+                        >
+                          {() => (
+                            <div>
+                              <Typography variant="h1" gutterBottom={true}>
+                                {t('Configuration')}
+                              </Typography>
+                              <Form style={{ marginTop: 20 }}>
+                                <TextField
+                                  name="platform_title"
+                                  label={t('Name')}
+                                  fullWidth={true}
+                                  onFocus={this.handleChangeFocus.bind(
+                                    this,
+                                    id,
+                                  )}
+                                  onSubmit={this.handleSubmitField.bind(
+                                    this,
+                                    id,
+                                  )}
+                                  helperText={
+                                    <SubscriptionFocus
+                                      context={editContext}
+                                      fieldName="platform_title"
+                                    />
+                                  }
                                 />
-                              }
-                            />
-                            <TextField
-                              name="platform_email"
-                              label={t('Sender email address')}
-                              fullWidth={true}
-                              style={{ marginTop: 20 }}
-                              onFocus={this.handleChangeFocus.bind(this, id)}
-                              onSubmit={this.handleSubmitField.bind(this, id)}
-                              helperText={
-                                <SubscriptionFocus
-                                  context={editContext}
-                                  fieldName="platform_email"
+                                <TextField
+                                  name="platform_email"
+                                  label={t('Sender email address')}
+                                  fullWidth={true}
+                                  style={{ marginTop: 20 }}
+                                  onFocus={this.handleChangeFocus.bind(
+                                    this,
+                                    id,
+                                  )}
+                                  onSubmit={this.handleSubmitField.bind(
+                                    this,
+                                    id,
+                                  )}
+                                  helperText={
+                                    <SubscriptionFocus
+                                      context={editContext}
+                                      fieldName="platform_email"
+                                    />
+                                  }
                                 />
-                              }
-                            />
-                            <TextField
-                              name="platform_url"
-                              label={t('Base URL')}
-                              fullWidth={true}
-                              style={{ marginTop: 20 }}
-                              onFocus={this.handleChangeFocus.bind(this, id)}
-                              onSubmit={this.handleSubmitField.bind(this, id)}
-                              helperText={
-                                <SubscriptionFocus
-                                  context={editContext}
-                                  fieldName="platform_email"
+                                <TextField
+                                  name="platform_url"
+                                  label={t('Base URL')}
+                                  fullWidth={true}
+                                  style={{ marginTop: 20 }}
+                                  onFocus={this.handleChangeFocus.bind(
+                                    this,
+                                    id,
+                                  )}
+                                  onSubmit={this.handleSubmitField.bind(
+                                    this,
+                                    id,
+                                  )}
+                                  helperText={
+                                    <SubscriptionFocus
+                                      context={editContext}
+                                      fieldName="platform_email"
+                                    />
+                                  }
                                 />
-                              }
-                            />
-                            <SelectField
-                              name="platform_language"
-                              label={t('Language')}
-                              fullWidth={true}
-                              containerstyle={{ marginTop: 20, width: '100%' }}
-                              onFocus={this.handleChangeFocus.bind(this, id)}
-                              onChange={this.handleSubmitField.bind(this, id)}
-                              helpertext={
-                                <SubscriptionFocus
-                                  context={editContext}
-                                  fieldName="platform_language"
+                                <SelectField
+                                  name="platform_language"
+                                  label={t('Language')}
+                                  fullWidth={true}
+                                  containerstyle={{
+                                    marginTop: 20,
+                                    width: '100%',
+                                  }}
+                                  onFocus={this.handleChangeFocus.bind(
+                                    this,
+                                    id,
+                                  )}
+                                  onChange={this.handleSubmitField.bind(
+                                    this,
+                                    id,
+                                  )}
+                                  helpertext={
+                                    <SubscriptionFocus
+                                      context={editContext}
+                                      fieldName="platform_language"
+                                    />
+                                  }
+                                >
+                                  <MenuItem value="auto">
+                                    <em>{t('Automatic')}</em>
+                                  </MenuItem>
+                                  <MenuItem value="en">English</MenuItem>
+                                  <MenuItem value="fr">Français</MenuItem>
+                                </SelectField>
+                              </Form>
+                            </div>
+                          )}
+                        </Formik>
+                      </Paper>
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <Paper classes={{ root: classes.paper }} elevation={2}>
+                        <Typography variant="h1" gutterBottom={true}>
+                          {t('Authentication strategies')}
+                        </Typography>
+                        <List>
+                          {authProviders.map((provider) => {
+                            i += 1;
+                            return (
+                              <ListItem key={provider.strategy} divider={true}>
+                                <ListItemAvatar>
+                                  <Avatar>{i}</Avatar>
+                                </ListItemAvatar>
+                                <ListItemText
+                                  primary={t(provider.strategy)}
+                                  secondary={this.getProviderConfig(provider)}
                                 />
-                              }
-                            >
-                              <MenuItem value="auto">
-                                <em>{t('Automatic')}</em>
-                              </MenuItem>
-                              <MenuItem value="en">English</MenuItem>
-                              <MenuItem value="fr">Français</MenuItem>
-                            </SelectField>
-                          </Paper>
-                        </Grid>
-                        <Grid item={true} xs={6}>
-                          <Paper
-                            classes={{ root: classes.paper }}
-                            elevation={2}
-                          >
-                            <Typography variant="h1" gutterBottom={true}>
-                              {t('Parameters')}
-                            </Typography>
-                            <Typography
-                              variant="h3"
-                              gutterBottom={true}
-                              style={{ marginTop: 20 }}
-                            >
-                              {t('Grakn')}
-                            </Typography>
-                            {parameters.grakn.hostname}:{parameters.grakn.port}
-                            <Typography
-                              variant="h3"
-                              gutterBottom={true}
-                              style={{ marginTop: 20 }}
-                            >
-                              {t('ElasticSearch')}
-                            </Typography>
-                            {parameters.elasticsearch.url}
-                            <Typography
-                              variant="h3"
-                              gutterBottom={true}
-                              style={{ marginTop: 20 }}
-                            >
-                              {t('Minio')}
-                            </Typography>
-                            {parameters.minio.endpoint}:{parameters.minio.port}
-                            <Typography
-                              variant="h3"
-                              gutterBottom={true}
-                              style={{ marginTop: 20 }}
-                            >
-                              {t('Redis')}
-                            </Typography>
-                            {parameters.redis.hostname}:{parameters.redis.port}
-                            <Typography
-                              variant="h3"
-                              gutterBottom={true}
-                              style={{ marginTop: 20 }}
-                            >
-                              {t('RabbitMQ')}
-                            </Typography>
-                            {parameters.rabbitmq.hostname}:
-                            {parameters.rabbitmq.port}
-                          </Paper>
-                        </Grid>
-                      </Grid>
-                    </Form>
-                  )}
-                </Formik>
+                              </ListItem>
+                            );
+                          })}
+                        </List>
+                      </Paper>
+                    </Grid>
+                  </Grid>
+                  <Grid container={true} spacing={3} style={{ marginTop: 20 }}>
+                    <Grid item={true} xs={12}>
+                      <Paper classes={{ root: classes.paper }} elevation={2}>
+                        <QueryRenderer
+                          query={settingsAboutQuery}
+                          render={({ props }) => {
+                            if (props) {
+                              const { version, dependencies } = props.about;
+                              return (
+                                <div>
+                                  <Typography variant="h1" gutterBottom={true}>
+                                    {t('Tools versions')}
+                                  </Typography>
+                                  <List>
+                                    <ListItem divider={true}>
+                                      <ListItemText
+                                        primary={'OpenCTI'}
+                                        secondary={`0.0.0.0:${parameters.app.port}`}
+                                      />
+                                      <Chip label={version} />
+                                    </ListItem>
+                                    {dependencies.map((dep) => (
+                                      <ListItem key={dep.name} divider={true}>
+                                        <ListItemText
+                                          primary={t(dep.name)}
+                                          secondary={this.getConfig(
+                                            parameters,
+                                            dep.name.toLowerCase(),
+                                          )}
+                                        />
+                                        <Chip label={dep.version} />
+                                      </ListItem>
+                                    ))}
+                                  </List>
+                                </div>
+                              );
+                            }
+                            return <Loader variant="inElement" />;
+                          }}
+                        />
+                      </Paper>
+                    </Grid>
+                  </Grid>
+                </div>
               );
             }
-            return (
-              <Grid container={true} spacing={3}>
-                <Grid item={true} xs={6}>
-                  <Paper classes={{ root: classes.paper }} elevation={2}>
-                    <Typography variant="h1" gutterBottom={true}>
-                      {t('Global')}
-                    </Typography>
-                  </Paper>
-                </Grid>
-                <Grid item={true} xs={6}>
-                  <Paper classes={{ root: classes.paper }} elevation={2}>
-                    <Typography variant="h1" gutterBottom={true}>
-                      {t('Parameters')}
-                    </Typography>
-                  </Paper>
-                </Grid>
-              </Grid>
-            );
+            return <Loader />;
           }}
         />
       </div>

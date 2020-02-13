@@ -25,9 +25,7 @@ const loginMutation = graphql`
 `;
 
 const loginValidation = (t) => Yup.object().shape({
-  email: Yup.string()
-    .email(t('The value must be an email address'))
-    .required(t('This field is required')),
+  email: Yup.string().required(t('This field is required')),
   password: Yup.string().required(t('This field is required')),
 });
 

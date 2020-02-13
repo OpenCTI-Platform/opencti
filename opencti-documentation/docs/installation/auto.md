@@ -18,6 +18,8 @@ $ wget https://github.com/OpenCTI-Platform/opencti/releases/download/{RELEASE_VE
 
 Then open the OVA file with VirtualBox or convert the OVA to another type of virtual machine image.
 
+> This virtual machine image includes an SSH Server, default login is `opencti` and default password `opencti`.
+
 # Using Docker
 
 OpenCTI could be deployed using the *docker-compose* command.
@@ -61,11 +63,17 @@ $ vm.max_map_count=1048575
 In order to have the best experience with Docker, we recommend to use the Docker stack feature. In this mode we will have the capacity to easily scale your deployment.
 
 ```bash
-$ docker stack deploy -c docker-compose.yml opencti
+$ env $(cat .env | grep ^[A-Z] | xargs) docker stack deploy --compose-file docker-compose.yml opencti
 ```
 
 > In some configuration, Grakn could fail to start with the following error: `Starting Storage.....FAILED!`
 > You can restart it by using the command `$ docker service update --force opencti_grakn`.
+
+You can also deploy with the standard Docker command:
+
+```bash
+$ docker-compose --compatibility up
+```
 
 You can now go to http://localhost:8080 and log in with the credentials configured in your environment variables.
 

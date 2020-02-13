@@ -1247,9 +1247,20 @@ export const distributionRelations = async options => {
         ? `$rel has first_seen $fs; $fs > ${prepareDate(startDate)}; $fs < ${prepareDate(endDate)};`
         : ''
     }
-      $to has ${field} $g; get; group $g; ${operation};`;
+      $to has ${escape(field)} $g; get; group $g; ${escape(operation)};`;
     distributionData = await graknTimeSeries(query, 'label', 'value', inferred);
   }
+  // Take a maximum amount of distribution depending on the ordering.
+  const orderingFunction = order === 'asc' ? ascend : descend;
+  return take(limit, sortWith([orderingFunction(prop('value'))])(distributionData));
+};
+export const distributionEntitiesThroughRelations = async options => {
+  const { limit = 10, order, inferred = false } = options;
+  const { relationType, remoteRelationType, toType, fromId, field, operation } = options;
+  const query = `match $rel($from, $to) isa ${relationType}; $to isa ${toType}; $from has internal_id_key "${escapeString(
+    fromId
+  )}"; $rel2($to, $to2) isa ${remoteRelationType}; $to2 has ${escape(field)} $g; get; group $g; ${escape(operation)};`;
+  const distributionData = await graknTimeSeries(query, 'label', 'value', inferred);
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? ascend : descend;
   return take(limit, sortWith([orderingFunction(prop('value'))])(distributionData));

@@ -56,47 +56,60 @@ class SimpleEntityStixRelationsLinesContainer extends Component {
           {t('Related entities (generic relation "related-to")')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <List>
-            {data.stixRelations.edges.map((stixRelationEdge) => {
-              const stixRelation = stixRelationEdge.node;
-              const stixDomainEntity = stixRelation.to;
-              const stixDomainEntityFrom = stixRelation.from;
-              let link = `${entityLink}/relations/${stixRelation.id}`;
-              if (stixDomainEntityFrom.id !== entityId) {
-                link = `${resolveLink(stixDomainEntityFrom.entity_type)}/${
-                  stixDomainEntityFrom.id
-                }/knowledge/relations/${stixRelation.id}`;
-              }
-
-              return (
-                <ListItem
-                  key={stixRelation.id}
-                  dense={true}
-                  divider={true}
-                  button={true}
-                  component={Link}
-                  to={link}
-                >
-                  <ListItemIcon>
-                    <Avatar classes={{ root: classes.avatar }}>
-                      {stixDomainEntity.name.substring(0, 1)}
-                    </Avatar>
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={stixDomainEntity.name}
-                    secondary={t(`entity_${stixDomainEntity.entity_type}`)}
-                  />
-                  <ListItemSecondaryAction>
-                    <StixRelationPopover
-                      stixRelationId={stixRelation.id}
-                      paginationOptions={paginationOptions}
-                      disabled={stixRelation.inferred}
+          {data.stixRelations.edges.length > 0 ? (
+            <List>
+              {data.stixRelations.edges.map((stixRelationEdge) => {
+                const stixRelation = stixRelationEdge.node;
+                const stixDomainEntity = stixRelation.to;
+                const stixDomainEntityFrom = stixRelation.from;
+                let link = `${entityLink}/relations/${stixRelation.id}`;
+                if (stixDomainEntityFrom.id !== entityId) {
+                  link = `${resolveLink(stixDomainEntityFrom.entity_type)}/${
+                    stixDomainEntityFrom.id
+                  }/knowledge/relations/${stixRelation.id}`;
+                }
+                return (
+                  <ListItem
+                    key={stixRelation.id}
+                    dense={true}
+                    divider={true}
+                    button={true}
+                    component={Link}
+                    to={link}
+                  >
+                    <ListItemIcon>
+                      <Avatar classes={{ root: classes.avatar }}>
+                        {stixDomainEntity.name.substring(0, 1)}
+                      </Avatar>
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={stixDomainEntity.name}
+                      secondary={t(`entity_${stixDomainEntity.entity_type}`)}
                     />
-                  </ListItemSecondaryAction>
-                </ListItem>
-              );
-            })}
-          </List>
+                    <ListItemSecondaryAction>
+                      <StixRelationPopover
+                        stixRelationId={stixRelation.id}
+                        paginationOptions={paginationOptions}
+                        disabled={stixRelation.inferred}
+                      />
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                );
+              })}
+            </List>
+          ) : (
+            <div style={{ display: 'table', height: '100%', width: '100%' }}>
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                {t('No entities of this type has been found.')}
+              </span>
+            </div>
+          )}
         </Paper>
       </div>
     );
