@@ -80,26 +80,6 @@ class TopMenuPerson extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/persons/${personId}/reports`}
-          variant={
-            location.pathname
-            === `/dashboard/entities/persons/${personId}/reports`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname
-            === `/dashboard/entities/persons/${personId}/reports`
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Reports')}
-        </Button>
-        <Button
-          component={Link}
           to={`/dashboard/entities/persons/${personId}/knowledge`}
           variant={
             location.pathname.includes(
@@ -119,6 +99,26 @@ class TopMenuPerson extends Component {
           classes={{ root: classes.button }}
         >
           {t('Knowledge')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/entities/persons/${personId}/reports`}
+          variant={
+            location.pathname
+            === `/dashboard/entities/persons/${personId}/reports`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/entities/persons/${personId}/reports`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Reports')}
         </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button

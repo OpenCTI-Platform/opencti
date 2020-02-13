@@ -79,26 +79,6 @@ class TopMenuAttackPattern extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/techniques/attack_patterns/${attackPatternId}/reports`}
-          variant={
-            location.pathname
-            === `/dashboard/techniques/attack_patterns/${attackPatternId}/reports`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname
-            === `/dashboard/techniques/attack_patterns/${attackPatternId}/reports`
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Reports')}
-        </Button>
-        <Button
-          component={Link}
           to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`}
           variant={
             location.pathname.includes(
@@ -118,6 +98,26 @@ class TopMenuAttackPattern extends Component {
           classes={{ root: classes.button }}
         >
           {t('Knowledge')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/techniques/attack_patterns/${attackPatternId}/reports`}
+          variant={
+            location.pathname
+            === `/dashboard/techniques/attack_patterns/${attackPatternId}/reports`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/techniques/attack_patterns/${attackPatternId}/reports`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Reports')}
         </Button>
       </div>
     );

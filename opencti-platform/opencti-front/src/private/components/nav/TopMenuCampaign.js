@@ -81,26 +81,6 @@ class TopMenuCampaign extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/threats/campaigns/${campaignId}/reports`}
-          variant={
-            location.pathname
-            === `/dashboard/threats/campaigns/${campaignId}/reports`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname
-            === `/dashboard/threats/campaigns/${campaignId}/reports`
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Reports')}
-        </Button>
-        <Button
-          component={Link}
           to={`/dashboard/threats/campaigns/${campaignId}/knowledge`}
           variant={
             location.pathname.includes(
@@ -120,6 +100,26 @@ class TopMenuCampaign extends Component {
           classes={{ root: classes.button }}
         >
           {t('Knowledge')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/threats/campaigns/${campaignId}/reports`}
+          variant={
+            location.pathname
+            === `/dashboard/threats/campaigns/${campaignId}/reports`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/threats/campaigns/${campaignId}/reports`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Reports')}
         </Button>
         <Button
           component={Link}

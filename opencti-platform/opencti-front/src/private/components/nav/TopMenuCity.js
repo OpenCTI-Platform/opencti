@@ -81,24 +81,6 @@ class TopMenuCity extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/cities/${cityId}/reports`}
-          variant={
-            location.pathname === `/dashboard/entities/cities/${cityId}/reports`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === `/dashboard/entities/cities/${cityId}/reports`
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Reports')}
-        </Button>
-        <Button
-          component={Link}
           to={`/dashboard/entities/cities/${cityId}/knowledge`}
           variant={
             location.pathname.includes(
@@ -118,6 +100,24 @@ class TopMenuCity extends Component {
           classes={{ root: classes.button }}
         >
           {t('Knowledge')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/entities/cities/${cityId}/reports`}
+          variant={
+            location.pathname === `/dashboard/entities/cities/${cityId}/reports`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === `/dashboard/entities/cities/${cityId}/reports`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Reports')}
         </Button>
         <Button
           component={Link}

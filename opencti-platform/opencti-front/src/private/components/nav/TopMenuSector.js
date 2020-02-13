@@ -80,26 +80,6 @@ class TopMenuSector extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/sectors/${sectorId}/reports`}
-          variant={
-            location.pathname
-            === `/dashboard/entities/sectors/${sectorId}/reports`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname
-            === `/dashboard/entities/sectors/${sectorId}/reports`
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Reports')}
-        </Button>
-        <Button
-          component={Link}
           to={`/dashboard/entities/sectors/${sectorId}/knowledge`}
           variant={
             location.pathname.includes(
@@ -119,6 +99,26 @@ class TopMenuSector extends Component {
           classes={{ root: classes.button }}
         >
           {t('Knowledge')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/entities/sectors/${sectorId}/reports`}
+          variant={
+            location.pathname
+            === `/dashboard/entities/sectors/${sectorId}/reports`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/entities/sectors/${sectorId}/reports`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Reports')}
         </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button

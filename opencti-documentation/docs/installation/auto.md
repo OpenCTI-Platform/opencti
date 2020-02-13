@@ -61,7 +61,7 @@ $ vm.max_map_count=1048575
 In order to have the best experience with Docker, we recommend to use the Docker stack feature. In this mode we will have the capacity to easily scale your deployment.
 
 ```bash
-$ docker stack deploy -c docker-compose.yml opencti
+$ env $(cat .env | grep ^[A-Z] | xargs) docker stack deploy --compose-file docker-compose.yml opencti
 ```
 
 > In some configuration, Grakn could fail to start with the following error: `Starting Storage.....FAILED!`

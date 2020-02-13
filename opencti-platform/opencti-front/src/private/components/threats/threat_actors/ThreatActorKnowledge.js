@@ -7,12 +7,12 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
 import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
-import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
 import StixRelation from '../../common/stix_relations/StixRelation';
 import ThreatActorPopover from './ThreatActorPopover';
 import ThreatActorKnowledgeBar from './ThreatActorKnowledgeBar';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import StixDomainEntityKillChain from '../../common/stix_domain_entities/StixDomainEntityKillChain';
+import StixDomainEntityThreatKnowledge from '../../common/stix_domain_entities/StixDomainEntityThreatKnowledge';
 
 const styles = () => ({
   container: {
@@ -47,7 +47,7 @@ class ThreatActorKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/overview"
           render={(routeProps) => (
-            <StixDomainEntityKnowledge
+            <StixDomainEntityThreatKnowledge
               stixDomainEntityId={threatActor.id}
               stixDomainEntityType="threat-actor"
               {...routeProps}

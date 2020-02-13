@@ -82,26 +82,6 @@ class TopMenuOrganization extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/organizations/${organizationId}/reports`}
-          variant={
-            location.pathname
-            === `/dashboard/entities/organizations/${organizationId}/reports`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname
-            === `/dashboard/entities/organizations/${organizationId}/reports`
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Reports')}
-        </Button>
-        <Button
-          component={Link}
           to={`/dashboard/entities/organizations/${organizationId}/knowledge`}
           variant={
             location.pathname.includes(
@@ -121,6 +101,26 @@ class TopMenuOrganization extends Component {
           classes={{ root: classes.button }}
         >
           {t('Knowledge')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/entities/organizations/${organizationId}/reports`}
+          variant={
+            location.pathname
+            === `/dashboard/entities/organizations/${organizationId}/reports`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/entities/organizations/${organizationId}/reports`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Reports')}
         </Button>
         <Button
           component={Link}

@@ -9,7 +9,7 @@ import inject18n from '../../../../components/i18n';
 import IntrusionSetPopover from './IntrusionSetPopover';
 import IntrusionSetKnowledgeBar from './IntrusionSetKnowledgeBar';
 import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
-import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
+import StixDomainEntityThreatKnowledge from '../../common/stix_domain_entities/StixDomainEntityThreatKnowledge';
 import StixRelation from '../../common/stix_relations/StixRelation';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import StixDomainEntityKillChain from '../../common/stix_domain_entities/StixDomainEntityKillChain';
@@ -47,7 +47,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/overview"
           render={(routeProps) => (
-            <StixDomainEntityKnowledge
+            <StixDomainEntityThreatKnowledge
               stixDomainEntityId={intrusionSet.id}
               stixDomainEntityType="intrusion-set"
               {...routeProps}

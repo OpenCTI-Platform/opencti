@@ -30,6 +30,7 @@ class StixDomainEntityKillChain extends Component {
     super(props);
     this.state = {
       inferred: false,
+      searchTerm: '',
     };
   }
 
@@ -39,8 +40,12 @@ class StixDomainEntityKillChain extends Component {
     });
   }
 
+  handleSearch(value) {
+    this.setState({ searchTerm: value });
+  }
+
   render() {
-    const { inferred } = this.state;
+    const { inferred, searchTerm } = this.state;
     const {
       classes, stixDomainEntityId, entityLink, t,
     } = this.props;
@@ -49,6 +54,7 @@ class StixDomainEntityKillChain extends Component {
       toTypes: ['Attack-Pattern'],
       relationType: 'uses',
       inferred,
+      search: searchTerm,
     };
     return (
       <div className={classes.container}>
@@ -82,6 +88,7 @@ class StixDomainEntityKillChain extends Component {
                 <StixDomainEntityKillChainLines
                   data={props}
                   entityLink={entityLink}
+                  handleSearch={this.handleSearch.bind(this)}
                   paginationOptions={paginationOptions}
                   stixDomainEntityId={stixDomainEntityId}
                 />
