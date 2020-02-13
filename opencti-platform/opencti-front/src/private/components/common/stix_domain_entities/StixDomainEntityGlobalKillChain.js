@@ -126,9 +126,10 @@ class StixDomainEntityGlobalKillChainComponent extends Component {
     // Extract all kill chain phases
     const killChainPhases = pipe(
       // eslint-disable-next-line no-nested-ternary
-      map((n) => (n.node.killChainPhases.edges.length > 0
+      map((n) => (n.node.killChainPhases && n.node.killChainPhases.edges.length > 0
         ? n.node.killChainPhases.edges[0].node
-        : n.node.to.killChainPhases.edges.length > 0
+        : n.node.to.killChainPhases
+            && n.node.to.killChainPhases.edges.length > 0
           ? n.node.to.killChainPhases.edges[0].node
           : { id: 'unknown', phase_name: t('Unknown'), phase_order: 99 })),
       uniq,
@@ -148,9 +149,9 @@ class StixDomainEntityGlobalKillChainComponent extends Component {
       map((n) => assoc(
         'killChainPhase',
         // eslint-disable-next-line no-nested-ternary
-        n.killChainPhases.edges.length > 0
+        n.killChainPhases && n.killChainPhases.edges.length > 0
           ? n.killChainPhases.edges[0].node
-          : n.to.killChainPhases.edges.length > 0
+          : n.to.killChainPhases && n.to.killChainPhases.edges.length > 0
             ? n.to.killChainPhases.edges[0].node
             : { id: 'unknown', phase_name: t('Unknown'), phase_order: 99 },
         n,

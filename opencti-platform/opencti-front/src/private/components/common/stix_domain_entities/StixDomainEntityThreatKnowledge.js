@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, filter } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Grid from '@material-ui/core/Grid';
 import { withStyles } from '@material-ui/core/styles';
+import { ShieldSearch } from 'mdi-material-ui';
 import { Assignment, DeviceHub } from '@material-ui/icons';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -123,9 +124,10 @@ class StixDomainEntityThreatKnowledge extends Component {
     const link = `${resolveLink(
       stixDomainEntityType,
     )}/${stixDomainEntityId}/knowledge`;
+    const toTypes = ['Attack-Pattern', 'Malware', 'Tool', 'Vulnerability'];
     const killChainPaginationOptions = {
       fromId: stixDomainEntityId,
-      toTypes: ['Attack-Pattern', 'Malware', 'Tool', 'Vulnerability'],
+      toTypes: filter((n) => n.toLowerCase() !== stixDomainEntityType, toTypes),
       relationType: 'stix_relation',
       inferred,
     };
@@ -225,7 +227,7 @@ class StixDomainEntityThreatKnowledge extends Component {
                           {t('Total indicators')}
                         </div>
                         <div className={classes.icon}>
-                          <DeviceHub color="inherit" fontSize="large" />
+                          <ShieldSearch color="inherit" fontSize="large" />
                         </div>
                       </CardContent>
                     );

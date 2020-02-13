@@ -94,6 +94,7 @@ const i18n = {
       'Last modified entities': 'Dernières entités modifiées',
       'Global parameters': 'Paramètres généraux',
       'External authentication': 'Authentification externe',
+      'Authentication strategies': "Stratégies d'authentification",
       'Granted by default': 'Alloué par défaut',
       'Granted by default at user creation':
         "Alloué par défaut à la création d'un utilisateur",
@@ -271,7 +272,7 @@ const i18n = {
       Tags: 'Tags',
       Tag: 'Tag',
       Accesses: 'Accès',
-      Dependencies: 'Dépendances',
+      'Tools versions': 'Versions des outils',
       'OpenCTI version': 'OpenCTI version',
       'No tag': 'Aucun tag',
       'Add new tags': 'Ajouter des tags',

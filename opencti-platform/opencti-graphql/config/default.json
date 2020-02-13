@@ -42,7 +42,7 @@
     "password": "guest"
   },
   "providers": {
-    "Local": {
+    "local": {
       "strategy": "LocalStrategy"
     }
   }

@@ -46,9 +46,75 @@ In this section, we learn how to configure OpenCTI to have it tailored to our pr
 | rabbitmq:username           | RABBITMQ__USERNAME          | guest                                 | RabbitMQ user                                             |
 | rabbitmq:password           | RABBITMQ__PASSWORD          | guest                                 | RabbitMQ password                                         |
 
+
+### Authentication
+
+OpenCTI supports several authentication providers. If you configure multiple strategies, they will be tested in the order you declared them.
+
+Here are one example for the `production.json` file:
+
+```yaml
+"providers": {
+    "local": {
+      "strategy": "LocalStrategy"
+    },
+    "ldap": {
+      "strategy": "LdapStrategy",
+      "config": {
+        "url": "ldap://mydc.limeo.org:389",
+        "bind_dn": "cn=Administrator,cn=Users,dc=limeo,dc=org",
+        "bind_credentials": "XXXXXXXXXX",
+        "search_base": "cn=Users,dc=limeo,dc=org",
+        "search_filter": "(cn={{username}})",
+        "email_attribute": "userPrincipalName",
+        "account_attribute": "name"
+      }
+    },
+    "facebook": {
+      "strategy": "FacebookStrategy",
+      "config": {
+        "client_id": "XXXXXXXXXXXXXXXXXX",
+        "client_secret": "XXXXXXXXXXXXXXXXXX",
+        "callback_url": "https://demo.opencti.io/auth/facebook/callback"
+      }
+    },
+    "google": {
+      "strategy": "GoogleStrategy",
+      "config": {
+        "client_id": "XXXXXXXXXXXXXXXXXX",
+        "client_secret": "XXXXXXXXXXXXXXXXXX",
+        "callback_url": "https://demo.opencti.io/auth/google/callback"
+      }
+    },
+    "github": {
+      "strategy": "GithubStrategy",
+      "config": {
+        "client_id": "XXXXXXXXXXXXXXXXXX",
+        "client_secret": "XXXXXXXXXXXXXXXXXX",
+        "callback_url": "https://demo.opencti.io/auth/github/callback"
+      }
+    }
+  }
+```
+
+An other example for the LDAP Strategy with `docker-compose.yml`:
+
+```yaml
+- PROVIDERS__LDAP__STRATEGY=LdapStrategy
+- PROVIDERS__LDAP__CONFIG__URL=ldap://mydc.limeo.org:389
+- PROVIDERS__LDAP__CONFIG__BIND_DN=cn=Administrator,cn=Users,dc=limeo,dc=org
+- PROVIDERS__LDAP__CONFIG__BIND_CREDENTIALS=XXXXXXXXXX
+- PROVIDERS__LDAP__CONFIG__SEARCH_BASE=cn=Users,dc=limeo,dc=org
+- PROVIDERS__LDAP__CONFIG__SEARCH_FILTER=(cn={{username}})
+- PROVIDERS__LDAP__CONFIG__EMAIL_ATTRIBUTE=userPrincipalName
+- PROVIDERS__LDAP__CONFIG__ACCOUNT_ATTRIBUTE=name
+```
+
 ## Maintenance
 
-### Reindexing ElasticSearch from Grakn
+### Reindexing ElasticSearch
+
+If you need to reindex your data in ElasticSearch, we provide a command to run:
 
 ```bash
 $ yarn index

@@ -59,11 +59,19 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     providers.push({ name: providerKeys[i], type: AUTH_FORM, provider: 'local' });
   }
   if (strategy === 'LdapStrategy') {
-    const specificConfig = { searchFilter: '(mail={{username}})' };
-    const ldapConfig = { ...config, ...specificConfig };
-    const ldapOptions = { server: ldapConfig };
+    const ldapOptions = {
+      server: {
+        url: conf.get('providers:ldap:config:url'),
+        bindDN: conf.get('providers:ldap:config:bind_dn'),
+        bindCredentials: conf.get('providers:ldap:config:bind_credentials'),
+        searchBase: conf.get('providers:ldap:config:search_base'),
+        searchFilter: conf.get('providers:ldap:config:search_filter')
+      }
+    };
     const ldapStrategy = new LdapStrategy(ldapOptions, (user, done) => {
-      loginFromProvider(user.mail, user.givenName)
+      const userMail = config.email_attribute ? user[config.email_attribute] : user.mail;
+      const userName = config.account_attribute ? user[config.account_attribute] : user.givenName;
+      loginFromProvider(userMail, userName)
         .then(token => {
           done(null, token);
         })
@@ -76,8 +84,13 @@ for (let i = 0; i < providerKeys.length; i += 1) {
   }
   if (strategy === 'OpenIDConnectStrategy') {
     OpenIDIssuer.discover(config.issuer).then(issuer => {
+      const openIdOptions = {
+        clientID: conf.get('providers:openid:config:client_id'),
+        clientSecret: conf.get('providers:openid:config:client_secret'),
+        callbackURL: conf.get('providers:openid:config:callback_url')
+      };
       const { Client } = issuer;
-      const client = new Client(config);
+      const client = new Client(openIdOptions);
       const options = { client, params: { scope: 'openid email profile' } };
       const openIDStrategy = new OpenIDStrategy(options, (tokenset, userinfo, done) => {
         const { email, name } = userinfo;
@@ -94,8 +107,13 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     });
   }
   if (strategy === 'FacebookStrategy') {
-    const specificConfig = { profileFields: ['id', 'emails', 'name'], scope: 'email' };
-    const facebookOptions = { ...config, ...specificConfig };
+    const facebookOptions = {
+      clientID: conf.get('providers:facebook:config:client_id'),
+      clientSecret: conf.get('providers:facebook:config:client_secret'),
+      callbackURL: conf.get('providers:facebook:config:callback_url'),
+      profileFields: ['id', 'emails', 'name'],
+      scope: 'email'
+    };
     const facebookStrategy = new FacebookStrategy(facebookOptions, (accessToken, refreshToken, profile, done) => {
       // eslint-disable-next-line no-underscore-dangle
       const data = profile._json;
@@ -113,8 +131,12 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     providers.push({ name: providerKeys[i], type: AUTH_SSO, provider: 'facebook' });
   }
   if (strategy === 'GoogleStrategy') {
-    const specificConfig = { scope: 'email' };
-    const googleOptions = { ...config, ...specificConfig };
+    const googleOptions = {
+      clientID: conf.get('providers:google:config:client_id'),
+      clientSecret: conf.get('providers:google:config:client_secret'),
+      callbackURL: conf.get('providers:google:config:callback_url'),
+      scope: 'email'
+    };
     const googleStrategy = new GoogleStrategy(googleOptions, (token, tokenSecret, profile, done) => {
       const email = head(profile.emails).value;
       const name = profile.displayName || email;
@@ -131,13 +153,17 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     providers.push({ name: providerKeys[i], type: AUTH_SSO, provider: 'google' });
   }
   if (strategy === 'GithubStrategy') {
-    const specificConfig = { scope: 'user:email' };
-    const githubOptions = { ...config, ...specificConfig };
+    const githubOptions = {
+      clientID: conf.get('providers:github:config:client_id'),
+      clientSecret: conf.get('providers:github:config:client_secret'),
+      callbackURL: conf.get('providers:github:config:callback_url'),
+      scope: 'user:email'
+    };
     const githubStrategy = new GithubStrategy(githubOptions, (token, tokenSecret, profile, done) => {
-      const { name } = profile;
+      const { displayName } = profile;
       const email = head(profile.emails).value;
       // let picture = profile.avatar_url;
-      loginFromProvider(email, name)
+      loginFromProvider(email, displayName)
         .then(loggedToken => {
           done(null, loggedToken);
         })
@@ -149,7 +175,13 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     providers.push({ name: providerKeys[i], type: AUTH_SSO, provider: 'github' });
   }
   if (strategy === 'Auth0Strategy') {
-    const auth0Strategy = new Auth0Strategy(config, (accessToken, refreshToken, extraParams, profile, done) => {
+    const auth0Options = {
+      clientID: conf.get('providers:auth0:config:client_id'),
+      clientSecret: conf.get('providers:auth0:config:client_secret'),
+      callbackURL: conf.get('providers:auth0:config:callback_url'),
+      scope: 'email'
+    };
+    const auth0Strategy = new Auth0Strategy(auth0Options, (accessToken, refreshToken, extraParams, profile, done) => {
       const userName = profile.displayName;
       const email = head(profile.emails).value;
       loginFromProvider(email, userName)
