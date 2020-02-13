@@ -1,4 +1,4 @@
-import { assoc, dissoc, map, pipe } from 'ramda';
+import { assoc, dissoc, map, propOr, pipe } from 'ramda';
 import uuidv5 from 'uuid/v5';
 import { createEntity, createRelation, deleteEntityById, TYPE_OPENCTI_INTERNAL } from '../database/grakn';
 
@@ -8,7 +8,7 @@ export const addCapability = async capability => {
 };
 
 export const addRole = async role => {
-  const { capabilities } = role;
+  const capabilities = propOr([], 'capabilities', role);
   const roleToCreate = pipe(
     assoc('internal_id_key', uuidv5(role.name, uuidv5.DNS)),
     assoc('description', role.description ? role.description : ''),
