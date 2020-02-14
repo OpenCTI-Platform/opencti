@@ -71,7 +71,7 @@ const LoginForm = (props) => {
       >
         {({ submitForm, isSubmitting }) => (
           <Form>
-            <TextField name="email" label={t('Email')} fullWidth={true} />
+            <TextField name="email" label={t('Login')} fullWidth={true} />
             <TextField
               name="password"
               label={t('Password')}

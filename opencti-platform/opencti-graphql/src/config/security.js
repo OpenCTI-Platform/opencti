@@ -37,6 +37,38 @@ export const initializeAdminUser = async () => {
   }
 };
 
+// Map every configuration that required camelCase
+// This is due to env variables that doesnt not support case
+const configurationMapping = {
+  // Generic for google / facebook / github and auth0
+  client_id: 'clientID',
+  client_secret: 'clientSecret',
+  callback_url: 'callbackURL',
+  // LDAP
+  bind_dn: 'bindDN',
+  bind_credentials: 'bindCredentials',
+  search_base: 'searchBase',
+  search_filter: 'searchFilter',
+  search_attributes: 'searchAttributes',
+  tls_options: 'tlsOptions',
+  username_field: 'usernameField',
+  password_field: 'passwordField',
+  credentials_lookup: 'credentialsLookup'
+  // OpenID Client - everything is already in snake case
+};
+const configRemapping = config => {
+  if (!config) return config;
+  if (typeof config === 'object') {
+    const n = {};
+    Object.keys(config).forEach(key => {
+      const remapKey = configurationMapping[key] ? configurationMapping[key] : key;
+      n[remapKey] = configRemapping(config[key]);
+    });
+    return n;
+  }
+  return config;
+};
+
 // Providers definition
 const AUTH_SSO = 'SSO';
 const AUTH_FORM = 'FORM';
@@ -45,8 +77,10 @@ const providers = [];
 const confProviders = conf.get('providers');
 const providerKeys = Object.keys(confProviders);
 for (let i = 0; i < providerKeys.length; i += 1) {
-  const provider = confProviders[providerKeys[i]];
+  const providerIdent = providerKeys[i];
+  const provider = confProviders[providerIdent];
   const { strategy, config } = provider;
+  const mappedConfig = configRemapping(config);
   if (strategy === 'LocalStrategy') {
     const localStrategy = new LocalStrategy((username, password, done) => {
       return login(username, password)
@@ -56,25 +90,13 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         .catch(() => done(null, false));
     });
     passport.use('local', localStrategy);
-    providers.push({ name: providerKeys[i], type: AUTH_FORM, provider: 'local' });
+    providers.push({ name: providerIdent, type: AUTH_FORM, provider: 'local' });
   }
   if (strategy === 'LdapStrategy') {
-    const ldapOptions = {
-      server: {
-        url: conf.get('providers:ldap:config:url'),
-        bindDN: conf.get('providers:ldap:config:bind_dn'),
-        bindCredentials: conf.get('providers:ldap:config:bind_credentials'),
-        searchBase: conf.get('providers:ldap:config:search_base'),
-        searchFilter: conf.get('providers:ldap:config:search_filter')
-      }
-    };
+    const ldapOptions = { server: mappedConfig };
     const ldapStrategy = new LdapStrategy(ldapOptions, (user, done) => {
-      const userMail = conf.get('providers:ldap:config:mail_attribute')
-        ? conf.get('providers:ldap:config:mail_attribute')
-        : user.mail;
-      const userName = conf.get('providers:ldap:config:account_attribute')
-        ? conf.get('providers:ldap:config:account_attribute')
-        : user.givenName;
+      const userMail = mappedConfig.mail_attribute ? user[mappedConfig.mail_attribute] : user.mail;
+      const userName = mappedConfig.account_attribute ? user[mappedConfig.account_attribute] : user.givenName;
       logger.debug(`[LDAP_AUTH] Successfully logged with ${userMail} and ${userName}`);
       loginFromProvider(userMail, userName)
         .then(token => {
@@ -85,17 +107,14 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         });
     });
     passport.use('ldapauth', ldapStrategy);
-    providers.push({ name: providerKeys[i], type: AUTH_FORM, provider: 'ldapauth' });
+    providers.push({ name: providerIdent, type: AUTH_FORM, provider: 'ldapauth' });
   }
   if (strategy === 'OpenIDConnectStrategy') {
+    // Here we use directly the config and not the mapped one.
+    // All config of openid lib use snake case.
     OpenIDIssuer.discover(config.issuer).then(issuer => {
-      const openIdOptions = {
-        clientID: conf.get('providers:openid:config:client_id'),
-        clientSecret: conf.get('providers:openid:config:client_secret'),
-        callbackURL: conf.get('providers:openid:config:callback_url')
-      };
       const { Client } = issuer;
-      const client = new Client(openIdOptions);
+      const client = new Client(config);
       const options = { client, params: { scope: 'openid email profile' } };
       const openIDStrategy = new OpenIDStrategy(options, (tokenset, userinfo, done) => {
         const { email, name } = userinfo;
@@ -108,17 +127,12 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           });
       });
       passport.use('oic', openIDStrategy);
-      providers.push({ name: providerKeys[i], type: AUTH_SSO, provider: 'oic' });
+      providers.push({ name: providerIdent, type: AUTH_SSO, provider: 'oic' });
     });
   }
   if (strategy === 'FacebookStrategy') {
-    const facebookOptions = {
-      clientID: conf.get('providers:facebook:config:client_id'),
-      clientSecret: conf.get('providers:facebook:config:client_secret'),
-      callbackURL: conf.get('providers:facebook:config:callback_url'),
-      profileFields: ['id', 'emails', 'name'],
-      scope: 'email'
-    };
+    const specificConfig = { profileFields: ['id', 'emails', 'name'], scope: 'email' };
+    const facebookOptions = { ...mappedConfig, ...specificConfig };
     const facebookStrategy = new FacebookStrategy(facebookOptions, (accessToken, refreshToken, profile, done) => {
       // eslint-disable-next-line no-underscore-dangle
       const data = profile._json;
@@ -133,15 +147,11 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         });
     });
     passport.use('facebook', facebookStrategy);
-    providers.push({ name: providerKeys[i], type: AUTH_SSO, provider: 'facebook' });
+    providers.push({ name: providerIdent, type: AUTH_SSO, provider: 'facebook' });
   }
   if (strategy === 'GoogleStrategy') {
-    const googleOptions = {
-      clientID: conf.get('providers:google:config:client_id'),
-      clientSecret: conf.get('providers:google:config:client_secret'),
-      callbackURL: conf.get('providers:google:config:callback_url'),
-      scope: 'email'
-    };
+    const specificConfig = { scope: 'email' };
+    const googleOptions = { ...mappedConfig, ...specificConfig };
     const googleStrategy = new GoogleStrategy(googleOptions, (token, tokenSecret, profile, done) => {
       const email = head(profile.emails).value;
       const name = profile.displayName || email;
@@ -155,15 +165,11 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         });
     });
     passport.use(googleStrategy);
-    providers.push({ name: providerKeys[i], type: AUTH_SSO, provider: 'google' });
+    providers.push({ name: providerIdent, type: AUTH_SSO, provider: 'google' });
   }
   if (strategy === 'GithubStrategy') {
-    const githubOptions = {
-      clientID: conf.get('providers:github:config:client_id'),
-      clientSecret: conf.get('providers:github:config:client_secret'),
-      callbackURL: conf.get('providers:github:config:callback_url'),
-      scope: 'user:email'
-    };
+    const specificConfig = { scope: 'user:email' };
+    const githubOptions = { ...mappedConfig, ...specificConfig };
     const githubStrategy = new GithubStrategy(githubOptions, (token, tokenSecret, profile, done) => {
       const { displayName } = profile;
       const email = head(profile.emails).value;
@@ -177,16 +183,10 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         });
     });
     passport.use('github', githubStrategy);
-    providers.push({ name: providerKeys[i], type: AUTH_SSO, provider: 'github' });
+    providers.push({ name: providerIdent, type: AUTH_SSO, provider: 'github' });
   }
   if (strategy === 'Auth0Strategy') {
-    const auth0Options = {
-      clientID: conf.get('providers:auth0:config:client_id'),
-      clientSecret: conf.get('providers:auth0:config:client_secret'),
-      callbackURL: conf.get('providers:auth0:config:callback_url'),
-      scope: 'email'
-    };
-    const auth0Strategy = new Auth0Strategy(auth0Options, (accessToken, refreshToken, extraParams, profile, done) => {
+    const auth0Strategy = new Auth0Strategy(mappedConfig, (accessToken, refreshToken, extraParams, profile, done) => {
       const userName = profile.displayName;
       const email = head(profile.emails).value;
       loginFromProvider(email, userName)
@@ -198,7 +198,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         });
     });
     passport.use('auth0', auth0Strategy);
-    providers.push({ name: providerKeys[i], type: AUTH_SSO, provider: 'auth0' });
+    providers.push({ name: providerIdent, type: AUTH_SSO, provider: 'auth0' });
   }
 }
 
