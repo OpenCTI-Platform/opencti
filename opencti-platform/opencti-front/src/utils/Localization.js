@@ -23,6 +23,7 @@ const i18n = {
       Redis: 'Redis',
       MinIO: 'MinIO',
       // Interface
+      Login: "Nom d'utilisateur",
       Search: 'Rechercher',
       'Search for a threat...': 'Rechercher une menace...',
       'Do you want to delete this user?':

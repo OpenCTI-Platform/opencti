@@ -1,4 +1,4 @@
-import { assoc, head, isNil, pathOr, pipe, map, dissoc, append, flatten, propOr } from 'ramda';
+import { assoc, find as rFind, head, isNil, pathOr, pipe, map, dissoc, append, flatten, propOr, propEq } from 'ramda';
 import uuid from 'uuid/v4';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
@@ -35,6 +35,7 @@ import { stixDomainEntityDelete } from './stixDomainEntity';
 import { buildPagination } from '../database/utils';
 
 // region utils
+export const BYPASS = 'BYPASS';
 export const generateOpenCTIWebToken = (tokenValue = uuid()) => ({
   uuid: tokenValue,
   name: OPENCTI_WEB_TOKEN,
@@ -124,7 +125,12 @@ export const getCapabilities = async userId => {
             get;`,
     ['capability']
   );
-  return map(r => r.capability, data);
+  const capabilities = map(r => r.capability, data);
+  if (userId === OPENCTI_ADMIN_UUID && !rFind(propEq('name', BYPASS))(capabilities)) {
+    const id = uuidv5(BYPASS, uuidv5.DNS);
+    capabilities.push({ id, internal_id_key: id, name: BYPASS });
+  }
+  return capabilities;
 };
 export const getRoleCapabilities = async roleId => {
   const data = await find(
@@ -343,13 +349,13 @@ export const initAdmin = async (email, password, tokenValue) => {
     const userToCreate = {
       internal_id_key: OPENCTI_ADMIN_UUID,
       stix_id_key: `identity--${OPENCTI_ADMIN_UUID}`,
+      external: true,
       user_email: email.toLowerCase(),
       name: 'admin',
       firstname: 'Admin',
       lastname: 'OpenCTI',
       description: 'Principal admin account',
-      password,
-      roles: [ROLE_ADMINISTRATOR]
+      password
     };
     await addUser(SYSTEM_USER, userToCreate, tokenAdmin);
   }

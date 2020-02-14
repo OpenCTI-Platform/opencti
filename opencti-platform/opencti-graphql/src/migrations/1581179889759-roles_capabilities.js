@@ -1,16 +1,8 @@
 import uuid from 'uuid/v4';
-import { map, find, propEq } from 'ramda';
+import { map } from 'ramda';
 import { executeWrite } from '../database/grakn';
 import { createBasicRolesAndCapabilities } from '../initialization';
-import {
-  assignRoleToUser,
-  findAll as findAllUsers,
-  OPENCTI_ADMIN_UUID,
-  ROLE_ADMINISTRATOR,
-  ROLE_DEFAULT,
-  SYSTEM_USER,
-  userEditField
-} from '../domain/user';
+import { assignRoleToUser, findAll as findAllUsers, ROLE_DEFAULT, SYSTEM_USER, userEditField } from '../domain/user';
 import { logger } from '../config/conf';
 
 export const up = async next => {
@@ -31,11 +23,6 @@ export const up = async next => {
     // -- Default role for all (admin included)
     const data = await findAllUsers();
     const users = data && map(e => e.node, data.edges);
-    const adminExist = find(propEq('id', OPENCTI_ADMIN_UUID))(users || []) !== undefined;
-    if (adminExist) {
-      // -- Admin role for OPENCTI_ADMIN_UUID
-      await assignRoleToUser(OPENCTI_ADMIN_UUID, ROLE_ADMINISTRATOR);
-    }
     await Promise.all(map(u => assignRoleToUser(u.id, ROLE_DEFAULT), users));
     // New field user_email
     await Promise.all(
