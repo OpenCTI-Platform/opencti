@@ -69,8 +69,13 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       }
     };
     const ldapStrategy = new LdapStrategy(ldapOptions, (user, done) => {
-      const userMail = config.email_attribute ? user[config.email_attribute] : user.mail;
-      const userName = config.account_attribute ? user[config.account_attribute] : user.givenName;
+      const userMail = conf.get('providers:ldap:config:mail_attribute')
+        ? conf.get('providers:ldap:config:mail_attribute')
+        : user.mail;
+      const userName = conf.get('providers:ldap:config:account_attribute')
+        ? conf.get('providers:ldap:config:account_attribute')
+        : user.givenName;
+      logger.debug(`[LDAP_AUTH] Successfully logged with ${userMail} and ${userName}`);
       loginFromProvider(userMail, userName)
         .then(token => {
           done(null, token);
