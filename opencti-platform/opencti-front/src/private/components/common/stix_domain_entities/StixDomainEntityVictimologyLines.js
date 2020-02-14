@@ -30,19 +30,23 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Collapse from '@material-ui/core/Collapse';
-import { Launch, FileImageOutline } from 'mdi-material-ui';
+import { Launch, LockPattern, FileImageOutline } from 'mdi-material-ui';
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
 import { createRefetchContainer } from 'react-relay';
 import Tooltip from '@material-ui/core/Tooltip';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import StixRelationPopover from '../stix_relations/StixRelationPopover';
+import StixRelationCreationFromEntity from '../stix_relations/StixRelationCreationFromEntity';
 import ItemYears from '../../../../components/ItemYears';
 import SearchInput from '../../../../components/SearchInput';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import ItemMarking from '../../../../components/ItemMarking';
-import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
+  container: {
+    paddingBottom: 70,
+  },
   itemIcon: {
     color: theme.palette.primary.main,
   },
@@ -51,7 +55,7 @@ const styles = (theme) => ({
   },
 });
 
-class StixDomainEntityGlobalKillChainComponent extends Component {
+class StixDomainEntityVictimologyLinesComponent extends Component {
   constructor(props) {
     super(props);
     this.state = { expandedLines: {}, searchTerm: '' };
@@ -116,24 +120,26 @@ class StixDomainEntityGlobalKillChainComponent extends Component {
       backgroundColor: '#303030',
     }).then((canvas) => {
       canvas.toBlob((blob) => {
-        fileDownload(blob, 'KillChain.png', 'image/png');
+        fileDownload(blob, 'Victimology.png', 'image/png');
       });
     });
   }
 
   render() {
     const {
-      t, classes, data, entityLink, paginationOptions,
+      t,
+      classes,
+      data,
+      entityLink,
+      paginationOptions,
+      stixDomainEntityId,
     } = this.props;
-    // Extract all kill chain phases
-    const killChainPhases = pipe(
-      // eslint-disable-next-line no-nested-ternary
-      map((n) => (n.node.killChainPhases && n.node.killChainPhases.edges.length > 0
-        ? n.node.killChainPhases.edges[0].node
-        : n.node.to.killChainPhases
-            && n.node.to.killChainPhases.edges.length > 0
-          ? n.node.to.killChainPhases.edges[0].node
-          : { id: 'unknown', phase_name: t('Unknown'), phase_order: 99 })),
+
+    // Organizations / sectors
+    const sectors = pipe(
+      map((n) => (n.node.to.sectors && n.node.to.sectors.edges.length > 0
+        ? n.node.to.sectors.edges[0].node
+        : { id: 'unknown', name: t('Unknown') })),
       uniq,
       indexBy(prop('id')),
     )(data.stixRelations.edges);
@@ -149,21 +155,20 @@ class StixDomainEntityGlobalKillChainComponent extends Component {
         n,
       )),
       map((n) => assoc(
-        'killChainPhase',
+        'sector',
         // eslint-disable-next-line no-nested-ternary
-        n.killChainPhases && n.killChainPhases.edges.length > 0
-          ? n.killChainPhases.edges[0].node
-          : n.to.killChainPhases && n.to.killChainPhases.edges.length > 0
-            ? n.to.killChainPhases.edges[0].node
-            : { id: 'unknown', phase_name: t('Unknown'), phase_order: 99 },
+        n.node.to.sectors && n.node.to.sectors.edges.length > 0
+          ? n.node.to.sectors.edges[0].node
+          : { id: 'unknown', name: t('Unknown') },
         n,
       )),
       sortWith([ascend(prop('years'))]),
-      groupBy(path(['killChainPhase', 'id'])),
-      mapObjIndexed((value, key) => assoc('stixDomainEntities', value, killChainPhases[key])),
+      groupBy(path(['sector', 'id'])),
+      mapObjIndexed((value, key) => assoc('victims', value, sectors[key])),
       values,
-      sortWith([ascend(prop('phase_order'))]),
+      sortWith([ascend(prop('name'))]),
     )(data.stixRelations.edges);
+    console.log(stixRelations);
     return (
       <div>
         <div style={{ float: 'left' }}>
@@ -172,7 +177,7 @@ class StixDomainEntityGlobalKillChainComponent extends Component {
             onSubmit={this.handleSearch.bind(this)}
           />
         </div>
-        <div style={{ float: 'right', marginTop: -4, paddingRight: 15 }}>
+        <div style={{ float: 'right', paddingRight: 18 }}>
           <Tooltip title={t('Export as image')}>
             <IconButton color="primary" onClick={this.exportImage.bind(this)}>
               <FileImageOutline />
@@ -180,7 +185,7 @@ class StixDomainEntityGlobalKillChainComponent extends Component {
           </Tooltip>
         </div>
         <div className="clearfix" />
-        <div id="container">
+        <div className={classes.container} id="container">
           <List id="test">
             {stixRelations.map((stixRelation) => (
               <div key={stixRelation.id}>
@@ -213,11 +218,11 @@ class StixDomainEntityGlobalKillChainComponent extends Component {
                   in={this.state.expandedLines[stixRelation.id] !== false}
                 >
                   <List>
-                    {stixRelation.stixDomainEntities.map((stixDomainEntity) => {
-                      const link = `${entityLink}/relations/${stixDomainEntity.id}`;
+                    {stixRelation.attackPatterns.map((attackPattern) => {
+                      const link = `${entityLink}/relations/${attackPattern.id}`;
                       return (
                         <ListItem
-                          key={stixDomainEntity.id}
+                          key={attackPattern.id}
                           classes={{ root: classes.nested }}
                           divider={true}
                           button={true}
@@ -226,31 +231,24 @@ class StixDomainEntityGlobalKillChainComponent extends Component {
                           to={link}
                         >
                           <ListItemIcon>
-                            <ItemIcon type={stixDomainEntity.to.entity_type} />
+                            <LockPattern color="primary" role="img" />
                           </ListItemIcon>
                           <ListItemText
                             primary={
-                              stixDomainEntity.to.entity_type
-                              === 'attack-pattern' ? (
-                                <span>
-                                  <strong>
-                                    {stixDomainEntity.to.external_id}
-                                  </strong>{' '}
-                                  - {stixDomainEntity.to.name}
-                                </span>
-                                ) : (
-                                <span>{stixDomainEntity.to.name}</span>
-                                )
+                              <span>
+                                <strong>{attackPattern.to.external_id}</strong>{' '}
+                                - {attackPattern.to.name}
+                              </span>
                             }
                             secondary={
                               // eslint-disable-next-line no-nested-ternary
-                              stixDomainEntity.description
-                              && stixDomainEntity.description.length > 0 ? (
+                              attackPattern.description
+                              && attackPattern.description.length > 0 ? (
                                 <Markdown
                                   className="markdown"
-                                  source={stixDomainEntity.description}
+                                  source={attackPattern.description}
                                 />
-                                ) : stixDomainEntity.inferred ? (
+                                ) : attackPattern.inferred ? (
                                 <i>{t('This relation is inferred')}</i>
                                 ) : (
                                   t('No description of this usage')
@@ -262,7 +260,7 @@ class StixDomainEntityGlobalKillChainComponent extends Component {
                             pathOr(
                               [],
                               ['markingDefinitions', 'edges'],
-                              stixDomainEntity,
+                              attackPattern,
                             ),
                           ).map((markingDefinition) => (
                             <ItemMarking
@@ -275,15 +273,15 @@ class StixDomainEntityGlobalKillChainComponent extends Component {
                           <ItemYears
                             variant="inList"
                             years={
-                              stixDomainEntity.inferred
+                              attackPattern.inferred
                                 ? t('Inferred')
-                                : stixDomainEntity.years
+                                : attackPattern.years
                             }
-                            disabled={stixDomainEntity.inferred}
+                            disabled={attackPattern.inferred}
                           />
                           <ListItemSecondaryAction>
                             <StixRelationPopover
-                              stixRelationId={stixDomainEntity.id}
+                              stixRelationId={attackPattern.id}
                               paginationOptions={paginationOptions}
                               onDelete={this.props.relay.refetch.bind(this)}
                             />
@@ -297,12 +295,22 @@ class StixDomainEntityGlobalKillChainComponent extends Component {
             ))}
           </List>
         </div>
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <StixRelationCreationFromEntity
+            entityId={stixDomainEntityId}
+            isFrom={true}
+            paddingRight={true}
+            onCreate={this.props.relay.refetch.bind(this)}
+            targetEntityTypes={['Attack-Pattern']}
+            paginationOptions={paginationOptions}
+          />
+        </Security>
       </div>
     );
   }
 }
 
-StixDomainEntityGlobalKillChainComponent.propTypes = {
+StixDomainEntityVictimologyLinesComponent.propTypes = {
   stixDomainEntityId: PropTypes.string,
   data: PropTypes.object,
   entityLink: PropTypes.string,
@@ -311,23 +319,23 @@ StixDomainEntityGlobalKillChainComponent.propTypes = {
   t: PropTypes.func,
 };
 
-export const stixDomainEntityGlobalKillChainStixRelationsQuery = graphql`
-  query StixDomainEntityGlobalKillChainStixRelationsQuery(
+export const stixDomainEntityVictimologyLinesStixRelationsQuery = graphql`
+  query StixDomainEntityVictimologyLinesStixRelationsQuery(
     $fromId: String
     $toTypes: [String]
     $relationType: String
     $inferred: Boolean
     $first: Int
   ) {
-    ...StixDomainEntityGlobalKillChain_data
+    ...StixDomainEntityVictimologyLines_data
   }
 `;
 
-const StixDomainEntityGlobalKillChain = createRefetchContainer(
-  StixDomainEntityGlobalKillChainComponent,
+const StixDomainEntityVictimologyLines = createRefetchContainer(
+  StixDomainEntityVictimologyLinesComponent,
   {
     data: graphql`
-      fragment StixDomainEntityGlobalKillChain_data on Query {
+      fragment StixDomainEntityVictimologyLines_data on Query {
         stixRelations(
           fromId: $fromId
           toTypes: $toTypes
@@ -345,48 +353,32 @@ const StixDomainEntityGlobalKillChain = createRefetchContainer(
               to {
                 id
                 name
-                entity_type
-                ... on AttackPattern {
-                  external_id
-                  killChainPhases {
+                ... on City {
+                  country {
+                    name
+                  }
+                }
+                ... on Country {
+                  region {
+                    name
+                  }
+                }
+                ... on Organization {
+                  sectors {
                     edges {
                       node {
-                        id
-                        phase_name
-                        phase_order
+                        name
                       }
                     }
                   }
                 }
-                ... on Malware {
-                  killChainPhases {
+                ... on Sector {
+                  parentSectors {
                     edges {
                       node {
-                        id
-                        phase_name
-                        phase_order
+                        name
                       }
                     }
-                  }
-                }
-                ... on Tool {
-                  killChainPhases {
-                    edges {
-                      node {
-                        id
-                        phase_name
-                        phase_order
-                      }
-                    }
-                  }
-                }
-              }
-              killChainPhases {
-                edges {
-                  node {
-                    id
-                    phase_name
-                    phase_order
                   }
                 }
               }
@@ -405,10 +397,10 @@ const StixDomainEntityGlobalKillChain = createRefetchContainer(
       }
     `,
   },
-  stixDomainEntityGlobalKillChainStixRelationsQuery,
+  stixDomainEntityVictimologyLinesStixRelationsQuery,
 );
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixDomainEntityGlobalKillChain);
+)(StixDomainEntityVictimologyLines);

@@ -1,4 +1,4 @@
-import { addSector, findAll, findById, isSubsector, subsectors } from '../domain/sector';
+import { addSector, findAll, findById, isSubSector, subSectors, parentSectors } from '../domain/sector';
 import {
   stixDomainEntityAddRelation,
   stixDomainEntityCleanContext,
@@ -15,8 +15,9 @@ const sectorResolvers = {
     sectors: (_, args) => findAll(args)
   },
   Sector: {
-    subsectors: sector => subsectors(sector.id),
-    isSubsector: (sector, args) => isSubsector(sector.id, args)
+    parentSectors: sector => parentSectors(sector.id),
+    subSectors: sector => subSectors(sector.id),
+    isSubSector: (sector, args) => isSubSector(sector.id, args)
   },
   SectorsFilter: {
     gatheredBy: `${REL_INDEX_PREFIX}gathering.internal_id_key`

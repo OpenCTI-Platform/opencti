@@ -37,21 +37,21 @@ class SectorSubsectorsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <List classes={{ root: classes.list }}>
-            {sector.subsectors.edges.map((subsectorEdge) => {
-              const subsector = subsectorEdge.node;
+            {sector.subSectors.edges.map((subsectorEdge) => {
+              const subSector = subsectorEdge.node;
               return (
                 <ListItem
-                  key={subsector.id}
+                  key={subSector.id}
                   dense={true}
                   divider={true}
                   button={true}
                   component={Link}
-                  to={`/dashboard/entities/sectors/${subsector.id}`}
+                  to={`/dashboard/entities/sectors/${subSector.id}`}
                 >
                   <ListItemIcon>
                     <Domain />
                   </ListItemIcon>
-                  <ListItemText primary={subsector.name} />
+                  <ListItemText primary={subSector.name} />
                 </ListItem>
               );
             })}
@@ -73,7 +73,7 @@ const SectorSubsectors = createFragmentContainer(SectorSubsectorsComponent, {
   sector: graphql`
     fragment SectorSubsectors_sector on Sector {
       id
-      subsectors {
+      subSectors {
         edges {
           node {
             id

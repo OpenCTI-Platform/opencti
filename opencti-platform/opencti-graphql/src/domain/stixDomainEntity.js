@@ -23,6 +23,8 @@ import { connectorsForExport } from './connector';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import stixDomainEntityResolvers from '../resolvers/stixDomainEntity';
+import { OPENCTI_ADMIN_UUID } from './user';
+import { ForbiddenAccess } from '../config/errors';
 
 export const findAll = args => {
   const noTypes = !args.types || args.types.length === 0;
@@ -177,6 +179,9 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 export const stixDomainEntityDelete = async stixDomainEntityId => {
+  if (stixDomainEntityId === OPENCTI_ADMIN_UUID) {
+    throw new ForbiddenAccess();
+  }
   return deleteEntityById(stixDomainEntityId);
 };
 export const stixDomainEntityAddRelation = async (user, stixDomainEntityId, input) => {

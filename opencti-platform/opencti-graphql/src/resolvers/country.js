@@ -1,4 +1,4 @@
-import { addCountry, findAll, findById } from '../domain/country';
+import { addCountry, findAll, findById, region } from '../domain/country';
 import {
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
@@ -12,6 +12,9 @@ const countryResolvers = {
   Query: {
     country: (_, { id }) => findById(id),
     countries: (_, args) => findAll(args)
+  },
+  Country: {
+    region: country => region(country.id)
   },
   Mutation: {
     countryEdit: (_, { id }, { user }) => ({

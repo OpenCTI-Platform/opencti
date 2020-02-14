@@ -1,5 +1,7 @@
 import {
   createEntity,
+  escapeString,
+  findWithConnectedRelations,
   listEntities,
   loadEntityById,
   loadEntityByStixId,
@@ -7,6 +9,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
+import { buildPagination } from '../database/utils';
 
 export const findById = organizationId => {
   if (organizationId.match(/[a-z-]+--[\w-]{36}/g)) {
@@ -16,6 +19,14 @@ export const findById = organizationId => {
 };
 export const findAll = args => {
   return listEntities(['Organization'], ['name', 'alias'], args);
+};
+export const sectors = organizationId => {
+  return findWithConnectedRelations(
+    `match $to isa Sector; $rel(part_of:$from, gather:$to) isa gathering;
+     $from has internal_id_key "${escapeString(organizationId)}"; get;`,
+    'to',
+    'rel'
+  ).then(data => buildPagination(0, 0, data, data.length));
 };
 
 export const addOrganization = async (user, organization) => {

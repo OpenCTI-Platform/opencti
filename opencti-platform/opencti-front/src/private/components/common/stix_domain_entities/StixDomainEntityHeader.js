@@ -43,7 +43,6 @@ const styles = () => ({
   },
   aliases: {
     float: 'right',
-    overflowX: 'hidden',
     marginTop: '-5px',
   },
   alias: {

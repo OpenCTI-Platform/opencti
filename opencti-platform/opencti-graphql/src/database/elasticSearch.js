@@ -592,8 +592,7 @@ export const elPaginate = async (indexName, options) => {
       for (let i = 0; i < values.length; i += 1) {
         if (values[i] === null) {
           mustnot = append({ exists: { field: key } }, mustnot);
-        }
-        if (values[i] === 'EXISTS') {
+        } else if (values[i] === 'EXISTS') {
           valuesFiltering.push({ exists: { field: key } });
         } else if (operator === 'eq' || operator === 'match') {
           valuesFiltering.push({

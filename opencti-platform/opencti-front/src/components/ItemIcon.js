@@ -46,41 +46,41 @@ const iconSelector = (type, variant, fontSize, color) => {
 
   switch (type) {
     case 'region':
-      return <Map style={style} fontSize={fontSize} />;
+      return <Map style={style} fontSize={fontSize} role="img" />;
     case 'country':
-      return <Flag style={style} fontSize={fontSize} />;
+      return <Flag style={style} fontSize={fontSize} role="img" />;
     case 'sector':
-      return <Domain style={style} fontSize={fontSize} />;
+      return <Domain style={style} fontSize={fontSize} role="img" />;
     case 'city':
-      return <CityVariant style={style} fontSize={fontSize} />;
+      return <CityVariant style={style} fontSize={fontSize} role="img" />;
     case 'threat-actor':
-      return <Public style={style} fontSize={fontSize} />;
+      return <Public style={style} fontSize={fontSize} role="img" />;
     case 'intrusion-set':
-      return <Diamond style={style} fontSize={fontSize} />;
+      return <Diamond style={style} fontSize={fontSize} role="img" />;
     case 'campaign':
-      return <ChessKnight style={style} fontSize={fontSize} />;
+      return <ChessKnight style={style} fontSize={fontSize} role="img" />;
     case 'incident':
-      return <Fire style={style} fontSize={fontSize} />;
+      return <Fire style={style} fontSize={fontSize} role="img" />;
     case 'user':
-      return <Person style={style} fontSize={fontSize} />;
+      return <Person style={style} fontSize={fontSize} role="img" />;
     case 'organization':
-      return <AccountBalance style={style} fontSize={fontSize} />;
+      return <AccountBalance style={style} fontSize={fontSize} role="img" />;
     case 'attack-pattern':
-      return <LockPattern style={style} fontSize={fontSize} />;
+      return <LockPattern style={style} fontSize={fontSize} role="img" />;
     case 'course-of-action':
-      return <ProgressWrench style={style} fontSize={fontSize} />;
+      return <ProgressWrench style={style} fontSize={fontSize} role="img" />;
     case 'malware':
-      return <Biohazard style={style} fontSize={fontSize} />;
+      return <Biohazard style={style} fontSize={fontSize} role="img" />;
     case 'tool':
-      return <Application style={style} fontSize={fontSize} />;
+      return <Application style={style} fontSize={fontSize} role="img" />;
     case 'vulnerability':
-      return <BugReport style={style} fontSize={fontSize} />;
+      return <BugReport style={style} fontSize={fontSize} role="img" />;
     case 'report':
-      return <Description style={style} fontSize={fontSize} />;
+      return <Description style={style} fontSize={fontSize} role="img" />;
     case 'indicator':
-      return <ShieldSearch style={style} fontSize={fontSize} />;
+      return <ShieldSearch style={style} fontSize={fontSize} role="img" />;
     case 'tag':
-      return <Tag style={style} fontSize={fontSize} />;
+      return <Tag style={style} fontSize={fontSize} role="img" />;
     case 'autonomous-system':
     case 'domain':
     case 'ipv4-addr':
@@ -103,7 +103,7 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'windows-scheduled-task':
     case 'x509-certificate-issuer':
     case 'x509-certificate-serial-number':
-      return <HexagonOutline style={style} fontSize={fontSize} />;
+      return <HexagonOutline style={style} fontSize={fontSize} role="img" />;
     case 'stix_relation':
     case 'stix-relation':
     case 'targets':
@@ -118,9 +118,9 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'localization':
     case 'gathering':
     case 'drops':
-      return <VectorRadius style={style} fontSize={fontSize} />;
+      return <VectorRadius style={style} fontSize={fontSize} role="img" />;
     default:
-      return <Help style={style} fontSize={fontSize} />;
+      return <Help style={style} fontSize={fontSize} role="img" />;
   }
 };
 

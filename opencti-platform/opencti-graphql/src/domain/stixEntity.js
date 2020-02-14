@@ -20,7 +20,7 @@ export const findById = stixEntityId => {
   return loadEntityById(stixEntityId);
 };
 
-export const createdByRef = async stixEntityId => {
+export const createdByRef = stixEntityId => {
   return loadWithConnectedRelations(
     `match $to isa Identity; $rel(creator:$to, so:$from) isa created_by_ref;
    $from has internal_id_key "${escapeString(stixEntityId)}"; get; offset 0; limit 1;`,
@@ -37,7 +37,7 @@ export const reports = stixEntityId => {
     'rel'
   ).then(data => buildPagination(0, 0, data, data.length));
 };
-export const tags = async stixEntityId => {
+export const tags = stixEntityId => {
   return findWithConnectedRelations(
     `match $to isa Tag; $rel(tagging:$to, so:$from) isa tagged;
    $from has internal_id_key "${escapeString(stixEntityId)}";
@@ -46,7 +46,7 @@ export const tags = async stixEntityId => {
     'rel'
   ).then(data => buildPagination(0, 0, data, data.length));
 };
-export const markingDefinitions = async stixEntityId => {
+export const markingDefinitions = stixEntityId => {
   return findWithConnectedRelations(
     `match $to isa Marking-Definition; $rel(marking:$to, so:$from) isa object_marking_refs;
    $from has internal_id_key "${escapeString(stixEntityId)}"; get;`,
@@ -54,7 +54,7 @@ export const markingDefinitions = async stixEntityId => {
     'rel'
   ).then(data => buildPagination(0, 0, data, data.length));
 };
-export const killChainPhases = async stixDomainEntityId => {
+export const killChainPhases = stixDomainEntityId => {
   return findWithConnectedRelations(
     `match $to isa Kill-Chain-Phase; $rel(kill_chain_phase:$to, phase_belonging:$from) isa kill_chain_phases;
     $from has internal_id_key "${escapeString(stixDomainEntityId)}"; get;`,
@@ -62,7 +62,7 @@ export const killChainPhases = async stixDomainEntityId => {
     'rel'
   ).then(data => buildPagination(0, 0, data, data.length));
 };
-export const externalReferences = async stixDomainEntityId => {
+export const externalReferences = stixDomainEntityId => {
   return findWithConnectedRelations(
     `match $to isa External-Reference; $rel(external_reference:$to, so:$from) isa external_references;
     $from has internal_id_key "${escapeString(stixDomainEntityId)}"; get;`,
@@ -76,7 +76,7 @@ export const stixRelations = (stixEntityId, args) => {
   return relationFindAll(finalArgs);
 };
 
-export const stixEntityAddRelation = async (user, stixEntityId, input) => {
+export const stixEntityAddRelation = (user, stixEntityId, input) => {
   return createRelation(stixEntityId, input);
 };
 

@@ -17,7 +17,8 @@ import {
   token,
   userDelete,
   userEditField,
-  userRenewToken
+  userRenewToken,
+  organizations,
 } from '../domain/user';
 import { logger } from '../config/conf';
 import {
@@ -52,6 +53,7 @@ const userResolvers = {
     tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`
   },
   User: {
+    organizations: user => organizations(user.id),
     groups: user => groups(user.id),
     roles: user => getRoles(user.id),
     capabilities: user => getCapabilities(user.id),

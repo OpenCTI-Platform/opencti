@@ -1,4 +1,4 @@
-import { addOrganization, findAll, findById } from '../domain/organization';
+import { addOrganization, findAll, findById, sectors } from '../domain/organization';
 import {
   stixDomainEntityAddRelation,
   stixDomainEntityCleanContext,
@@ -13,6 +13,9 @@ const organizationResolvers = {
   Query: {
     organization: (_, { id }) => findById(id),
     organizations: (_, args) => findAll(args)
+  },
+  Organization: {
+    sectors: organization => sectors(organization.id)
   },
   OrganizationsOrdering: {
     markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,

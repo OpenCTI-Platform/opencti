@@ -35,7 +35,7 @@ class SectorsLinesComponent extends Component {
         prop('name'),
       ),
     );
-    const filterSubsector = (n) => n.isSubsector === false;
+    const filterSubsector = (n) => n.isSubSector === false;
     const filterByKeyword = (n) => keyword === ''
       || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
       || n.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
@@ -50,7 +50,7 @@ class SectorsLinesComponent extends Component {
         pipe(
           map((o) => `${o.node.name} ${o.node.description}`),
           join(' | '),
-        )(pathOr([], ['subsectors', 'edges'], n)),
+        )(pathOr([], ['subSectors', 'edges'], n)),
         n,
       )),
       filter(filterSubsector),
@@ -65,8 +65,8 @@ class SectorsLinesComponent extends Component {
       >
         {data
           ? map((sector) => {
-            const subsectors = pipe(
-              pathOr([], ['subsectors', 'edges']),
+            const subSectors = pipe(
+              pathOr([], ['subSectors', 'edges']),
               map((n) => n.node),
               filter(filterByKeyword),
               sortByNameCaseInsensitive,
@@ -75,7 +75,7 @@ class SectorsLinesComponent extends Component {
                 <SectorLine
                   key={sector.id}
                   node={sector}
-                  subsectors={subsectors}
+                  subSectors={subSectors}
                 />
             );
           }, sectors)
@@ -113,8 +113,8 @@ const SectorsLinesFragment = createPaginationContainer(
               id
               name
               description
-              isSubsector
-              subsectors {
+              isSubSector
+              subSectors {
                 edges {
                   node {
                     id

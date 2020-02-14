@@ -20,6 +20,7 @@ import {
   escapeString,
   executeWrite,
   find,
+  findWithConnectedRelations,
   listEntities,
   load,
   loadEntityById,
@@ -31,6 +32,7 @@ import {
   updateAttribute
 } from '../database/grakn';
 import { stixDomainEntityDelete } from './stixDomainEntity';
+import { buildPagination } from '../database/utils';
 
 // region utils
 export const generateOpenCTIWebToken = (tokenValue = uuid()) => ({
@@ -74,6 +76,15 @@ export const findAll = (args = {}) => {
     assoc('filters', args.isUser ? append({ key: 'external', values: ['EXISTS'] }, filters) : filters, args)
   );
 };
+export const organizations = userId => {
+  return findWithConnectedRelations(
+    `match $to isa Organization; $rel(part_of:$from, gather:$to) isa gathering;
+     $from has internal_id_key "${escapeString(userId)}"; get;`,
+    'to',
+    'rel'
+  ).then(data => buildPagination(0, 0, data, data.length));
+};
+
 export const token = (userId, args, context) => {
   if (userId !== context.user.id) {
     throw new ForbiddenAccess();
@@ -214,10 +225,11 @@ export const meEditField = (user, userId, input) => {
 };
 export const userDelete = async userId => {
   const tokenId = await getTokenId(userId);
+  await stixDomainEntityDelete(userId);
   if (tokenId) {
     await deleteEntityById(tokenId);
   }
-  return stixDomainEntityDelete(userId);
+  return userId;
 };
 
 export const loginFromProvider = async (email, name) => {

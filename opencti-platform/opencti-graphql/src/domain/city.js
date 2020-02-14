@@ -1,8 +1,10 @@
 import {
   createEntity,
+  escapeString,
   listEntities,
   loadEntityById,
   loadEntityByStixId,
+  loadWithConnectedRelations,
   TYPE_STIX_DOMAIN_ENTITY
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -16,6 +18,14 @@ export const findById = cityId => {
 };
 export const findAll = args => {
   return listEntities(['City'], ['name', 'alias'], args);
+};
+export const country = cityId => {
+  return loadWithConnectedRelations(
+    `match $to isa Country; $rel(localized:$from, location:$to) isa localization;
+   $from has internal_id_key "${escapeString(cityId)}"; get; offset 0; limit 1;`,
+    'to',
+    'rel'
+  );
 };
 
 export const addCity = async (user, city) => {

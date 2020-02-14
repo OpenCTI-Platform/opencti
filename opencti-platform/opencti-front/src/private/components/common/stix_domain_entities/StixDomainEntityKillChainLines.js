@@ -97,15 +97,17 @@ class StixDomainEntityKillChainLinesComponent extends Component {
       }
     }
     for (const svgElement of svgElems) {
-      recurseElementChildren(svgElement);
-      svgElement.setAttribute(
-        'width',
-        svgElement.getBoundingClientRect().width,
-      );
-      svgElement.setAttribute(
-        'height',
-        svgElement.getBoundingClientRect().height,
-      );
+      if (svgElement.getAttribute('role') === 'img') {
+        recurseElementChildren(svgElement);
+        svgElement.setAttribute(
+          'width',
+          svgElement.getBoundingClientRect().width,
+        );
+        svgElement.setAttribute(
+          'height',
+          svgElement.getBoundingClientRect().height,
+        );
+      }
     }
   }
 
@@ -196,7 +198,7 @@ class StixDomainEntityKillChainLinesComponent extends Component {
                   onClick={this.handleToggleLine.bind(this, stixRelation.id)}
                 >
                   <ListItemIcon>
-                    <Launch color="primary" ari-hidden="false" />
+                    <Launch color="primary" role="img" />
                   </ListItemIcon>
                   <ListItemText primary={stixRelation.phase_name} />
                   <ListItemSecondaryAction>
@@ -232,7 +234,7 @@ class StixDomainEntityKillChainLinesComponent extends Component {
                           to={link}
                         >
                           <ListItemIcon>
-                            <LockPattern color="primary" />
+                            <LockPattern color="primary" role="img" />
                           </ListItemIcon>
                           <ListItemText
                             primary={
