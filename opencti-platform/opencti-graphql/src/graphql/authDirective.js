@@ -3,9 +3,8 @@ import { SchemaDirectiveVisitor } from 'graphql-tools';
 import { includes, map, filter } from 'ramda';
 import { defaultFieldResolver } from 'graphql';
 import { AuthRequired, ForbiddenAccess } from '../config/errors';
-import { OPENCTI_ADMIN_UUID } from '../domain/user';
+import { BYPASS, OPENCTI_ADMIN_UUID } from '../domain/user';
 
-const BYPASS = 'BYPASS';
 export const AUTH_DIRECTIVE = 'auth';
 
 // Auth code get from https://www.apollographql.com/docs/graphql-tools/schema-directives.html

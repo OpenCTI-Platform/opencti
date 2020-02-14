@@ -8,17 +8,16 @@ import { isStorageAlive } from './database/minio';
 import { checkPythonStix2 } from './database/utils';
 import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings, getSettings } from './domain/settings';
-import { ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from './domain/user';
+import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from './domain/user';
 import { addCapability, addRole } from './domain/grant';
 import { addAttribute } from './domain/attribute';
 
 const fs = require('fs');
 
 // Platform capabilities definition
-const BYPASS_CAPABILITY = 'BYPASS';
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
 const CAPABILITIES = [
-  { name: BYPASS_CAPABILITY, description: 'Bypass all capabilities', ordering: 1 },
+  { name: BYPASS, description: 'Bypass all capabilities', ordering: 1 },
   {
     name: KNOWLEDGE_CAPABILITY,
     description: 'Access knowledge',
@@ -162,7 +161,7 @@ export const createBasicRolesAndCapabilities = async () => {
   await addRole({
     name: ROLE_ADMINISTRATOR,
     description: 'Administrator role that bypass every capabilities',
-    capabilities: [BYPASS_CAPABILITY]
+    capabilities: [BYPASS]
   });
 };
 
