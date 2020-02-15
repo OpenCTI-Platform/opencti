@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { withRouter, Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import inject18n from '../../../components/i18n';
+import Security, { SETTINGS_SETACCESSES, SETTINGS_SETMARKINGS } from '../../../utils/Security';
 
 const styles = (theme) => ({
   button: {
@@ -24,9 +25,7 @@ class TopMenuSettings extends Component {
     const { t, location, classes } = this.props;
     return (
       <div>
-        <Button
-          component={Link}
-          to="/dashboard/settings"
+        <Button component={Link} to="/dashboard/settings"
           variant={
             location.pathname === '/dashboard/settings'
             || location.pathname === '/dashboard/settings/about'
@@ -42,46 +41,43 @@ class TopMenuSettings extends Component {
               ? 'primary'
               : 'inherit'
           }
-          classes={{ root: classes.button }}
-        >
+          classes={{ root: classes.button }}>
           {t('Parameters')}
         </Button>
-        <Button
-          component={Link}
-          to="/dashboard/settings/accesses"
-          variant={
-            location.pathname.includes('/dashboard/settings/accesses')
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes('/dashboard/settings/accesses')
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Accesses')}
-        </Button>
-        <Button
-          component={Link}
-          to="/dashboard/settings/marking"
-          variant={
-            location.pathname.includes('/dashboard/settings/marking')
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/dashboard/settings/marking'
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Marking')}
-        </Button>
+        <Security needs={[SETTINGS_SETACCESSES]}>
+            <Button component={Link} to="/dashboard/settings/accesses"
+              variant={
+                location.pathname.includes('/dashboard/settings/accesses')
+                  ? 'contained'
+                  : 'text'
+              }
+              size="small"
+              color={
+                location.pathname.includes('/dashboard/settings/accesses')
+                  ? 'primary'
+                  : 'inherit'
+              }
+              classes={{ root: classes.button }}>
+              {t('Accesses')}
+            </Button>
+        </Security>
+        <Security needs={[SETTINGS_SETMARKINGS]}>
+            <Button component={Link} to="/dashboard/settings/marking"
+              variant={
+                location.pathname.includes('/dashboard/settings/marking')
+                  ? 'contained'
+                  : 'text'
+              }
+              size="small"
+              color={
+                location.pathname === '/dashboard/settings/marking'
+                  ? 'primary'
+                  : 'inherit'
+              }
+              classes={{ root: classes.button }}>
+              {t('Marking')}
+            </Button>
+        </Security>
         <Button
           component={Link}
           to="/dashboard/settings/killchains"

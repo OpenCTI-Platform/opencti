@@ -11,6 +11,7 @@ import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import WorkspacesLines, { workspacesLinesQuery } from './WorkspacesLines';
 import WorkspaceCreation from './WorkspaceCreation';
+import Security, { EXPLORE_EXUPDATE } from '../../../utils/Security';
 
 class Workspaces extends Component {
   constructor(props) {
@@ -109,10 +110,12 @@ class Workspaces extends Component {
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <WorkspaceCreation
-          paginationOptions={paginationOptions}
-          workspaceType={workspaceType}
-        />
+        <Security needs={[EXPLORE_EXUPDATE]}>
+          <WorkspaceCreation
+            paginationOptions={paginationOptions}
+            workspaceType={workspaceType}
+          />
+        </Security>
       </div>
     );
   }

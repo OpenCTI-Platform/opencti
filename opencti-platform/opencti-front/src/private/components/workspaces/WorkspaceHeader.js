@@ -8,6 +8,7 @@ import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
 import WorkspacePopover from './WorkspacePopover';
+import Security, { EXPLORE_EXUPDATE } from '../../../utils/Security';
 
 const styles = () => ({
   title: {
@@ -44,14 +45,14 @@ class WorkspaceHeaderComponent extends Component {
           {workspace.name}
         </Typography>
         <div className={classes.popover}>
-          <WorkspacePopover
-            workspaceId={workspace.id}
-            workspaceType={workspace.workspace_type}
-          />
+          <Security needs={[EXPLORE_EXUPDATE]}>
+            <WorkspacePopover workspaceId={workspace.id}
+              workspaceType={workspace.workspace_type}/>
+          </Security>
         </div>
         <div className={classes.marking}>
           {pathOr([], ['markingDefinitions', 'edges'], workspace).map(
-            markingDefinition => (
+            (markingDefinition) => (
               <ItemMarking
                 key={markingDefinition.node.id}
                 label={markingDefinition.node.definition}

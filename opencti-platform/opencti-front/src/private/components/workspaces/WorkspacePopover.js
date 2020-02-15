@@ -16,10 +16,11 @@ import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../components/i18n';
-import { QueryRenderer, commitMutation } from '../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import { workspaceEditionQuery } from './WorkspaceEdition';
 import WorkspaceEditionContainer from './WorkspaceEditionContainer';
 import Loader from '../../../components/Loader';
+import Security, { EXPLORE_EXUPDATE_EXDELETE } from '../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -111,43 +112,37 @@ class WorkspacePopover extends Component {
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
           <MoreVert />
         </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
+        <Menu anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}
-        >
+          style={{ marginTop: 50 }}>
           <MenuItem onClick={this.handleOpenEdit.bind(this)}>
             {t('Update')}
           </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
+          <Security needs={[EXPLORE_EXUPDATE_EXDELETE]}>
+            <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+              {t('Delete')}
+            </MenuItem>
+          </Security>
         </Menu>
-        <Dialog
-          open={this.state.displayDelete}
+        <Dialog open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
-        >
+          onClose={this.handleCloseDelete.bind(this)}>
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this workspace?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button
-              onClick={this.handleCloseDelete.bind(this)}
+            <Button onClick={this.handleCloseDelete.bind(this)}
               color="primary"
-              disabled={this.state.deleting}
-            >
+              disabled={this.state.deleting}>
               {t('Cancel')}
             </Button>
-            <Button
-              onClick={this.submitDelete.bind(this)}
+            <Button onClick={this.submitDelete.bind(this)}
               color="primary"
-              disabled={this.state.deleting}
-            >
+              disabled={this.state.deleting}>
               {t('Delete')}
             </Button>
           </DialogActions>

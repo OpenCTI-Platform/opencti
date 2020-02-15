@@ -6,11 +6,7 @@ import graphql from 'babel-plugin-relay/macro';
 import Tooltip from '@material-ui/core/Tooltip';
 import IconButton from '@material-ui/core/IconButton';
 import {
-  Refresh,
-  Extension,
-  Warning,
-  CheckCircle,
-  Delete,
+  CheckCircle, Delete, Extension, Refresh, Warning,
 } from '@material-ui/icons';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
@@ -28,6 +24,7 @@ import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import StixObservableHeader from './StixObservableHeader';
 import StixObservableKnowledgeEntities from './StixObservableKnowledgeEntities';
+import Security, { KNOWLEDGE_KNENRICHMENT } from '../../../../utils/Security';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -107,11 +104,9 @@ const StixObservableKnowledge = (props) => {
   return (
     <div className={classes.container}>
       <StixObservableHeader stixObservable={stixObservable} />
-      <Grid
-        container={true}
+      <Grid container={true}
         spacing={3}
-        classes={{ container: classes.gridContainer }}
-      >
+        classes={{ container: classes.gridContainer }}>
         <Grid item={true} xs={9}>
           <StixObservableKnowledgeEntities entityId={stixObservable.id} />
         </Grid>
@@ -150,20 +145,18 @@ const StixObservableKnowledge = (props) => {
                           </ListItemIcon>
                         </Tooltip>
                         <ListItemText primary={connector.name} />
-                        <ListItemSecondaryAction style={{ right: 0 }}>
-                          <Tooltip
-                            title={t(
+                        <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+                          <ListItemSecondaryAction style={{ right: 0 }}>
+                            <Tooltip title={t(
                               'Refresh the knowledge using this connector',
-                            )}
-                          >
-                            <IconButton
-                              disabled={!connector.active || isRefreshing}
-                              onClick={() => askEnrich(connector.id)}
-                            >
-                              <Refresh />
-                            </IconButton>
-                          </Tooltip>
-                        </ListItemSecondaryAction>
+                            )}>
+                              <IconButton disabled={!connector.active || isRefreshing}
+                                onClick={() => askEnrich(connector.id)}>
+                                <Refresh />
+                              </IconButton>
+                            </Tooltip>
+                          </ListItemSecondaryAction>
+                        </Security>
                       </ListItem>
                       <List component="div" disablePadding={true}>
                         {stixObservable.jobs

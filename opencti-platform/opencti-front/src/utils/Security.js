@@ -1,7 +1,5 @@
 import React from 'react';
-import {
-  flatten, map, pipe, uniq,
-} from 'ramda';
+import { filter, includes, map } from 'ramda';
 
 export const UserContext = React.createContext({});
 
@@ -25,19 +23,16 @@ export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SETMARKINGS = 'SETTINGS_SETMARKINGS';
 
 const granted = (me, capabilities, matchAll = false) => {
-  const userCapabilities = pipe(
-    map((c) => c.name),
-    map((name) => name.split('_')),
-    flatten,
-    uniq,
-  )(me.capabilities);
+  const userCapabilities = map((c) => c.name, me.capabilities);
   if (userCapabilities.includes(BYPASS)) return true;
-  if (!matchAll) return userCapabilities.some((r) => capabilities.includes(r));
+  const availableCapabilities = [];
   for (let index = 0; index < capabilities.length; index += 1) {
     const checkCapability = capabilities[index];
-    if (!userCapabilities.includes(checkCapability)) return false;
+    const matchingCapabilities = filter((r) => includes(checkCapability, r), userCapabilities);
+    if (matchingCapabilities.length > 0) availableCapabilities.push(checkCapability);
   }
-  return true;
+  if (matchAll) return availableCapabilities.length === capabilities.length;
+  return availableCapabilities.length > 0;
 };
 
 const Security = ({

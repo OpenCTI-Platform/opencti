@@ -18,7 +18,7 @@ import {
   userDelete,
   userEditField,
   userRenewToken,
-  organizations,
+  organizations
 } from '../domain/user';
 import { logger } from '../config/conf';
 import {

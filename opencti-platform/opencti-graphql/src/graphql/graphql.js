@@ -1,12 +1,12 @@
 import { ApolloServer } from 'apollo-server-express';
 import { formatError as apolloFormatError } from 'apollo-errors';
 import { GraphQLError } from 'graphql';
-import { dissocPath, filter, isEmpty, map, not, pathOr, pipe } from 'ramda';
+import { dissocPath, pathOr } from 'ramda';
 import cookie from 'cookie';
 import createSchema from './schema';
 import { DEV_MODE, logger, OPENCTI_TOKEN } from '../config/conf';
 import { authentication } from '../domain/user';
-import { buildValidationError, LEVEL_ERROR, LEVEL_WARNING, TYPE_AUTH, Unknown } from '../config/errors';
+import { buildValidationError, LEVEL_ERROR, LEVEL_WARNING, Unknown } from '../config/errors';
 
 const extractTokenFromBearer = bearer => (bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null);
 const createApolloServer = () => {
@@ -46,20 +46,6 @@ const createApolloServer = () => {
       }
       // Remove the exception stack in production.
       return DEV_MODE ? e : dissocPath(['extensions', 'exception'], e);
-    },
-    // After formatError
-    formatResponse: (response, { context }) => {
-      // If we have a auth failure, clear the user cookie
-      const isAuthFailure = response.errors
-        ? pipe(
-            map(e => apolloFormatError(e)),
-            filter(e => e.data && e.data.type === TYPE_AUTH),
-            isEmpty,
-            not
-          )(response.errors)
-        : false;
-      if (isAuthFailure) context.res.clearCookie(OPENCTI_TOKEN);
-      return response;
     },
     subscriptions: {
       // https://www.apollographql.com/docs/apollo-server/features/subscriptions.html

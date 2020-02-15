@@ -15,6 +15,7 @@ import { SettingsInputComponent } from '@material-ui/icons';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
+import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   paper: {
@@ -245,14 +246,15 @@ class EntityStixRelationsDonut extends Component {
             style={{ float: 'left', padding: '10px 0 0 10px' }}>
             {title || `${t('Distribution:')} ${t(`entity_${entityType}`)}`}
           </Typography>
-          <IconButton
-            color="secondary"
-            aria-label="Update"
-            size="small"
-            classes={{ root: classes.updateButton }}
-            onClick={handleOpenConfig.bind(this, configuration)}>
-            <SettingsInputComponent fontSize="inherit" />
-          </IconButton>
+          <Security needs={[EXPLORE_EXUPDATE]}>
+            <IconButton color="secondary"
+              aria-label="Update"
+              size="small"
+              classes={{ root: classes.updateButton }}
+              onClick={handleOpenConfig.bind(this, configuration)}>
+              <SettingsInputComponent fontSize="inherit" />
+            </IconButton>
+          </Security>
           <div className="clearfix" />
           {this.renderContent()}
         </Paper>

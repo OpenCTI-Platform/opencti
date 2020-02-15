@@ -20,6 +20,7 @@ import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { campaignEditionQuery } from './CampaignEdition';
 import CampaignEditionContainer from './CampaignEditionContainer';
 import Loader from '../../../../components/Loader';
+import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -120,9 +121,11 @@ class CampaignPopover extends Component {
           <MenuItem onClick={this.handleOpenEdit.bind(this)}>
             {t('Update')}
           </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
+          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+            <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+              {t('Delete')}
+            </MenuItem>
+          </Security>
         </Menu>
         <Dialog
           open={this.state.displayDelete}

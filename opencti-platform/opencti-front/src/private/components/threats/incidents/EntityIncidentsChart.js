@@ -19,6 +19,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo, now } from '../../../../utils/Time';
 import Theme from '../../../../components/Theme';
 import inject18n from '../../../../components/i18n';
+import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   paper: {
@@ -201,15 +202,15 @@ class EntityIncidentsChart extends Component {
           >
             {title || t('Incidents')}
           </Typography>
-          <IconButton
-            color="secondary"
-            aria-label="Update"
-            size="small"
-            classes={{ root: classes.updateButton }}
-            onClick={handleOpenConfig.bind(this, configuration)}
-          >
-            <SettingsInputComponent fontSize="inherit" />
-          </IconButton>
+          <Security needs={[EXPLORE_EXUPDATE]}>
+              <IconButton color="secondary"
+                aria-label="Update"
+                size="small"
+                classes={{ root: classes.updateButton }}
+                onClick={handleOpenConfig.bind(this, configuration)}>
+                <SettingsInputComponent fontSize="inherit" />
+              </IconButton>
+          </Security>
           <div className="clearfix" />
           {this.renderContent()}
         </Paper>

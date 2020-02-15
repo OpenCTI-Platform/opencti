@@ -4,7 +4,7 @@ import * as PropTypes from 'prop-types';
 import { Redirect, Route, withRouter } from 'react-router-dom';
 import Alert from '@material-ui/lab/Alert';
 import AlertTitle from '@material-ui/lab/AlertTitle';
-import { ApplicationError, IN_DEV_MODE } from '../../relay/environment';
+import { ApplicationError, IN_DEV_MODE, MESSAGING$ } from '../../relay/environment';
 import ErrorNotFound from '../../components/ErrorNotFound';
 
 class ErrorBoundaryComponent extends React.Component {
@@ -21,9 +21,11 @@ class ErrorBoundaryComponent extends React.Component {
     if (this.state.stack) {
       if (this.state.error instanceof ApplicationError) {
         const types = map((e) => e.name, this.state.error.data.res.errors);
-        // Auth problem is always handled by a login redirect
-        // If access is forbidden, just redirect to login screen
-        if (includes('ForbiddenAccess', types)) return <Redirect to="/login" />;
+        // If access is forbidden, just redirect to home page
+        if (includes('ForbiddenAccess', types)) {
+          MESSAGING$.notifyError('Unauthorized action');
+          return <Redirect to="/dashboard" />;
+        }
         // If user not authenticated, redirect to login with encoded path
         if (includes('AuthRequired', types)) {
           const redirectUrl = `/login?redirectLogin=${btoa(

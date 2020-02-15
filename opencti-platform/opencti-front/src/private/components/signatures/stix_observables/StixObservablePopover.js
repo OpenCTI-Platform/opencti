@@ -20,6 +20,7 @@ import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { stixObservableEditionQuery } from './StixObservableEdition';
 import StixObservableEditionContainer from './StixObservableEditionContainer';
 import Loader from '../../../../components/Loader';
+import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -120,9 +121,11 @@ class StixObservablePopover extends Component {
           <MenuItem onClick={this.handleOpenEdit.bind(this)}>
             {t('Update')}
           </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
+          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+            <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+              {t('Delete')}
+            </MenuItem>
+          </Security>
         </Menu>
         <Dialog
           open={this.state.displayDelete}

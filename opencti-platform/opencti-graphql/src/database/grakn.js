@@ -883,6 +883,7 @@ export const listRelations = async (relationType, relationFilter, args) => {
     relationsFields.push(relationQueryPart);
   }
   if (filters.length > 0) {
+    // eslint-disable-next-line
     for (const f of filters) {
       const filterKey = f.key
         .replace(REL_INDEX_PREFIX, '')

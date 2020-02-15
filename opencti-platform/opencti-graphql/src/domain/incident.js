@@ -1,6 +1,8 @@
 import { assoc, pipe } from 'ramda';
 import {
-  createEntity, escapeString, findWithConnectedRelations,
+  createEntity,
+  escapeString,
+  findWithConnectedRelations,
   listEntities,
   loadEntityById,
   loadEntityByStixId,

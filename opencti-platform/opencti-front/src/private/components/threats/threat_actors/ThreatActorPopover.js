@@ -16,10 +16,11 @@ import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
-import { QueryRenderer, commitMutation } from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { threatActorEditionQuery } from './ThreatActorEdition';
 import ThreatActorEditionContainer from './ThreatActorEditionContainer';
 import Loader from '../../../../components/Loader';
+import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -126,9 +127,11 @@ class ThreatActorPopover extends Component {
           <MenuItem onClick={this.handleOpenEdit.bind(this)}>
             {t('Update')}
           </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
+          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+            <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+              {t('Delete')}
+            </MenuItem>
+          </Security>
         </Menu>
         <Dialog
           open={this.state.displayDelete}
