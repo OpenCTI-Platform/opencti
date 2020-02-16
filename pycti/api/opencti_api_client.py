@@ -1735,6 +1735,9 @@ class OpenCTIApiClient:
                     "organization": {"from_role": "source", "to_role": "target"},
                     "vulnerability": {"from_role": "source", "to_role": "target"},
                 },
+                "attack-pattern": {
+                    "vulnerability": {"from_role": "source", "to_role": "target"},
+                },
             },
             "attributed-to": {
                 "threat-actor": {
