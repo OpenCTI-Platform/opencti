@@ -1,4 +1,4 @@
-import { includes, isNil, propOr } from 'ramda';
+import { includes, propOr } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createRelation,
@@ -17,7 +17,6 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
-import { OPENCTI_ADMIN_UUID } from './user';
 
 export const findAll = async args => {
   return listRelations(propOr('stix_relation', 'relationType', args), null, args);

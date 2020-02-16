@@ -12,7 +12,6 @@ import {
   updateAttribute
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { ForbiddenAccess } from '../config/errors';
 
 export const findById = tagId => {
   return loadEntityById(tagId, 'Tag');

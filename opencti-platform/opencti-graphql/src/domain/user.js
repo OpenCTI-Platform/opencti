@@ -33,7 +33,6 @@ import {
   TYPE_STIX_DOMAIN_ENTITY,
   updateAttribute
 } from '../database/grakn';
-import { stixDomainEntityDelete } from './stixDomainEntity';
 import { buildPagination } from '../database/utils';
 
 // region utils
@@ -308,7 +307,7 @@ export const personDelete = async userId => {
     throw new ForbiddenAccess();
   }
   const tokenId = await getTokenId(userId);
-  await stixDomainEntityDelete(userId, 'User');
+  await deleteEntityById(userId, 'User');
   if (tokenId) {
     await deleteEntityById(tokenId, 'Token');
   }
