@@ -165,7 +165,31 @@ class StixObservable:
                 "orderMode": order_mode,
             },
         )
-        return self.opencti.process_multiple(result["data"]["stixObservables"])
+
+        if get_all:
+            final_data = []
+            data = self.opencti.process_multiple(result["data"]["stixObservables"])
+            final_data = final_data + data
+            while result["data"]["stixObservables"]["pageInfo"]["hasNextPage"]:
+                after = result["data"]["stixObservables"]["pageInfo"]["endCursor"]
+                self.opencti.log("info", "Listing StixObservables after " + after)
+                result = self.opencti.query(
+                    query,
+                    {
+                        "types": types,
+                        "filters": filters,
+                        "search": search,
+                        "first": first,
+                        "after": after,
+                        "orderBy": order_by,
+                        "orderMode": order_mode,
+                    },
+                )
+                data = self.opencti.process_multiple(result["data"]["stixObservables"])
+                final_data = final_data + data
+            return final_data
+        else:
+            return self.opencti.process_multiple(result["data"]["stixObservables"])
 
     """
         Read a StixObservable object
