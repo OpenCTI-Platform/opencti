@@ -152,7 +152,6 @@ class TagPopover extends Component {
             variables={{ id: tagId }}
             render={({ props }) => {
               if (props) {
-                // Done
                 return (
                   <TagEdition tag={props.tag}
                     handleClose={this.handleCloseUpdate.bind(this)}
@@ -171,7 +170,7 @@ class TagPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this marking definition?')}
+              {t('Do you want to delete this tag?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>

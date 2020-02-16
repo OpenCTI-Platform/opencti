@@ -22,7 +22,7 @@ export const workToExportFile = work => {
 // endregion
 
 export const connectorForWork = async id => {
-  const work = await elLoadById(id, null, INDEX_WORK_JOBS);
+  const work = await elLoadById(id, null, null, INDEX_WORK_JOBS);
   if (work) return loadConnectorById(work.connector_id);
   return null;
 };
@@ -142,7 +142,7 @@ export const createWork = async (connector, entityType = null, entityId = null, 
 };
 
 export const updateJob = async (jobId, status, messages) => {
-  const job = await elLoadById(jobId, null, INDEX_WORK_JOBS);
+  const job = await elLoadById(jobId, null, null, INDEX_WORK_JOBS);
   const updatedJob = pipe(assoc('job_status', status), assoc('messages', messages), assoc('updated_at', now()))(job);
   await elIndex(INDEX_WORK_JOBS, updatedJob);
   return updatedJob;

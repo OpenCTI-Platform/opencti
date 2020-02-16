@@ -50,6 +50,11 @@ enum Capabilities {
   SETTINGS_SETACCESSES
   SETTINGS_SETMARKINGS
 }
+enum StixRelations {
+  stix_relation
+  stix_relation_embedded
+  stix_observable_relation
+}
 
 ### Relations
 type RelationEmbedded {
@@ -3036,7 +3041,8 @@ type Query {
   ): IdentityConnection @auth(for: [KNOWLEDGE])
   # Users
   me: User @auth
-  user(id: String!): User @auth(for: [KNOWLEDGE])
+  user(id: String!): User @auth(for: [SETTINGS_SETACCESSES])
+  person(id: String!): User @auth(for: [KNOWLEDGE])
   users(
     first: Int
     after: ID
@@ -3045,7 +3051,15 @@ type Query {
     filters: [UsersFiltering]
     filterMode: FilterMode
     search: String
-    isUser: Boolean
+  ): UserConnection @auth(for: [SETTINGS_SETACCESSES])
+  persons(
+    first: Int
+    after: ID
+    orderBy: UsersOrdering
+    orderMode: OrderingMode
+    filters: [UsersFiltering]
+    filterMode: FilterMode
+    search: String
   ): UserConnection @auth(for: [KNOWLEDGE])
   role(id: String!): Role @auth(for: [SETTINGS_SETACCESSES])
   # Organizations
@@ -3423,6 +3437,16 @@ type UserEditMutations {
   removeRole(name: String!): User
   relationDelete(relationId: ID!): User
 }
+type PersonEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): User
+  contextPatch(input: EditContext): User
+  contextClean: User
+  tokenRenew: User
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  removeRole(name: String!): User
+  relationDelete(relationId: ID!): User
+}
 
 # Organization
 type OrganizationEditMutations {
@@ -3705,8 +3729,9 @@ type Mutation {
   identityEdit(id: ID!): IdentityEditMutations
   # User
   userAdd(input: UserAddInput): User @auth(for: [SETTINGS_SETACCESSES])
-  personAdd(input: PersonAddInput): User @auth (for: [KNOWLEDGE_KNUPDATE])
   userEdit(id: ID!): UserEditMutations @auth(for: [SETTINGS_SETACCESSES])
+  personAdd(input: PersonAddInput): User @auth (for: [KNOWLEDGE_KNUPDATE])
+  personEdit(id: ID!): PersonEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
   meEdit(input: EditInput): User @auth
   logout: ID @auth
   # Role

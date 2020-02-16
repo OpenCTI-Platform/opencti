@@ -119,7 +119,6 @@ class Users extends Component {
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
-      isUser: true,
     };
     return (
       <div className={classes.container}>

@@ -26,9 +26,9 @@ export const STATUS_STATUS_CLOSED = 3;
 
 export const findById = reportId => {
   if (reportId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(reportId);
+    return loadEntityByStixId(reportId, 'Report');
   }
-  return loadEntityById(reportId);
+  return loadEntityById(reportId, 'Report');
 };
 export const findAll = async args => {
   return listEntities(['Report'], ['name', 'description'], args);

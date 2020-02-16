@@ -1,4 +1,4 @@
-import { assoc } from 'ramda';
+import { assoc, dissoc, isNil, pipe } from 'ramda';
 import {
   createRelation,
   deleteRelationById,
@@ -12,12 +12,20 @@ import { findAll as relationFindAll } from './stixRelation';
 import { buildPagination } from '../database/utils';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
+import { ForbiddenAccess } from '../config/errors';
 
-export const findById = stixEntityId => {
+export const findById = async stixEntityId => {
+  let data = null;
   if (stixEntityId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(stixEntityId);
+    data = await loadEntityByStixId(stixEntityId);
+  } else {
+    data = await loadEntityById(stixEntityId);
   }
-  return loadEntityById(stixEntityId);
+  if (!data.parent_types.includes('Stix-Domain-Entity') && !data.parent_types.includes('stix_relation')) {
+    throw new ForbiddenAccess();
+  }
+  data = pipe(dissoc('user_email'), dissoc('password'))(data);
+  return data;
 };
 
 export const createdByRef = stixEntityId => {
@@ -76,12 +84,25 @@ export const stixRelations = (stixEntityId, args) => {
   return relationFindAll(finalArgs);
 };
 
-export const stixEntityAddRelation = (user, stixEntityId, input) => {
+export const stixEntityAddRelation = async (user, stixEntityId, input) => {
+  const data = await loadEntityById(stixEntityId);
+  if (
+    (data.entity_type === 'user' &&
+      !isNil(data.external) &&
+      !['tagged', 'created_by_ref', 'object_marking_refs'].includes(input.through)) ||
+    (!data.parent_types.includes('Stix-Domain-Entity') && !data.parent_types.includes('stix_relation')) ||
+    !input.through
+  ) {
+    throw new ForbiddenAccess();
+  }
   return createRelation(stixEntityId, input);
 };
 
 export const stixEntityDeleteRelation = async (user, stixEntityId, relationId) => {
-  await deleteRelationById(relationId);
+  await deleteRelationById(relationId, 'stix_relation_embedded');
   const data = await loadEntityById(stixEntityId);
+  if (!data.parent_types.includes('Stix-Domain-Entity') && !data.parent_types.includes('stix_relation')) {
+    throw new ForbiddenAccess();
+  }
   return notify(BUS_TOPICS.StixEntity.EDIT_TOPIC, data, user);
 };

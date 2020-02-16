@@ -52,7 +52,7 @@ const personMutationFieldPatch = graphql`
     $id: ID!
     $input: EditInput!
   ) {
-    userEdit(id: $id) {
+    personEdit(id: $id) {
       fieldPatch(input: $input) {
         ...PersonEditionOverview_person
       }
@@ -62,7 +62,7 @@ const personMutationFieldPatch = graphql`
 
 export const personEditionOverviewFocus = graphql`
   mutation PersonEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
-    userEdit(id: $id) {
+    personEdit(id: $id) {
       contextPatch(input: $input) {
         id
       }
@@ -75,7 +75,7 @@ const personMutationRelationAdd = graphql`
     $id: ID!
     $input: RelationAddInput!
   ) {
-    userEdit(id: $id) {
+    personEdit(id: $id) {
       relationAdd(input: $input) {
         from {
           ...PersonEditionOverview_person
@@ -90,7 +90,7 @@ const personMutationRelationDelete = graphql`
     $id: ID!
     $relationId: ID!
   ) {
-    userEdit(id: $id) {
+    personEdit(id: $id) {
       relationDelete(relationId: $relationId) {
         ...PersonEditionOverview_person
       }

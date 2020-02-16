@@ -12,6 +12,7 @@ export const up = async next => {
           return executeWrite(wTx => {
             return updateAttribute(
               entity.x.id,
+              null,
               {
                 key: 'stix_id_key',
                 value: [entity.x.stix_id_key.replace(entityType, 'indicator')]

@@ -9,6 +9,7 @@ const updateRelation = async stixObservableRelation => {
     return executeWrite(wTx => {
       return updateAttribute(
         stixObservableRelation.id,
+        null,
         {
           key: 'entity_type',
           value: ['stix_observable_relation']

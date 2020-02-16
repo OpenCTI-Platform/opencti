@@ -5,9 +5,9 @@ import { notify } from '../database/redis';
 
 export const findById = intrusionSetId => {
   if (intrusionSetId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(intrusionSetId);
+    return loadEntityByStixId(intrusionSetId, 'Intrusion-Set');
   }
-  return loadEntityById(intrusionSetId);
+  return loadEntityById(intrusionSetId, 'Intrusion-Set');
 };
 export const findAll = args => {
   return listEntities(['Intrusion-Set'], ['name', 'alias'], args);

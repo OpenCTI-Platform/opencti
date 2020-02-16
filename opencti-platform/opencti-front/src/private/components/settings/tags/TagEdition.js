@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
@@ -82,11 +82,11 @@ const tagEditionFocus = graphql`
 
 const tagValidation = (t) => Yup.object().shape({
   tag_type: Yup.string().required(t('This field is required')),
+  definition: Yup.string().required(t('This field is required')),
   value: Yup.string().required(t('This field is required')),
-  color: Yup.string().required(t('This field is required')),
 });
 
-class TagEditionContainer {
+class TagEditionContainer extends Component {
   componentDidMount() {
     const sub = requestSubscription({
       subscription,
@@ -231,7 +231,4 @@ const TagEditionFragment = createFragmentContainer(TagEditionContainer, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(TagEditionFragment);
+export default compose(inject18n, withStyles(styles))(TagEditionFragment);

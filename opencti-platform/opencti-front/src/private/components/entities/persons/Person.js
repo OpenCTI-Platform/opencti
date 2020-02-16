@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, isNil } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -33,7 +33,9 @@ class PersonComponent extends Component {
       <div className={classes.container}>
         <StixDomainEntityHeader
           stixDomainEntity={person}
-          PopoverComponent={<PersonPopover />}
+          PopoverComponent={
+            isNil(person.external) ? <PersonPopover /> : <div />
+          }
         />
         <Grid
           container={true}
@@ -66,9 +68,13 @@ class PersonComponent extends Component {
             <EntityReportsChart entityId={person.id} />
           </Grid>
         </Grid>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <PersonEdition personId={person.id} />
-        </Security>
+        {isNil(person.external) ? (
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <PersonEdition personId={person.id} />
+          </Security>
+        ) : (
+          ''
+        )}
       </div>
     );
   }
@@ -86,6 +92,7 @@ const Person = createFragmentContainer(PersonComponent, {
       id
       name
       alias
+      external
       ...PersonOverview_person
       ...PersonDetails_person
     }

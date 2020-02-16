@@ -30,7 +30,7 @@ const subscription = graphql`
 
 const personQuery = graphql`
   query RootPersonQuery($id: String!) {
-    user(id: $id) {
+    person(id: $id) {
       id
       name
       alias
@@ -78,21 +78,21 @@ class RootPerson extends Component {
           query={personQuery}
           variables={{ id: personId }}
           render={({ props }) => {
-            if (props && props.user) {
+            if (props && props.person) {
               return (
                 <div>
                   <Route
                     exact
                     path="/dashboard/entities/persons/:personId"
                     render={(routeProps) => (
-                      <Person {...routeProps} person={props.user} />
+                      <Person {...routeProps} person={props.person} />
                     )}
                   />
                   <Route
                     exact
                     path="/dashboard/entities/persons/:personId/reports"
                     render={(routeProps) => (
-                      <PersonReports {...routeProps} person={props.user} />
+                      <PersonReports {...routeProps} person={props.person} />
                     )}
                   />
                   <Route
@@ -107,7 +107,7 @@ class RootPerson extends Component {
                   <Route
                     path="/dashboard/entities/persons/:personId/knowledge"
                     render={(routeProps) => (
-                      <PersonKnowledge {...routeProps} person={props.user} />
+                      <PersonKnowledge {...routeProps} person={props.person} />
                     )}
                   />
                   <Route
@@ -116,14 +116,14 @@ class RootPerson extends Component {
                     render={(routeProps) => (
                       <React.Fragment>
                         <StixDomainEntityHeader
-                          stixDomainEntity={props.user}
+                          stixDomainEntity={props.person}
                           PopoverComponent={<PersonPopover />}
                         />
                         <FileManager
                           {...routeProps}
                           id={personId}
                           connectorsExport={props.connectorsForExport}
-                          entity={props.user}
+                          entity={props.person}
                         />
                       </React.Fragment>
                     )}

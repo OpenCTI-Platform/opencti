@@ -1,8 +1,7 @@
-import { addGroup, groupDelete, findAll, findById, members, permissions } from '../domain/group';
+import { addGroup, groupDelete, findAll, findById, members, permissions, groupEditField } from '../domain/group';
 import {
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
-  stixDomainEntityEditField,
   stixDomainEntityAddRelation,
   stixDomainEntityDeleteRelation
 } from '../domain/stixDomainEntity';
@@ -21,7 +20,7 @@ const groupResolvers = {
   Mutation: {
     groupEdit: (_, { id }, { user }) => ({
       delete: () => groupDelete(id),
-      fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
+      fieldPatch: ({ input }) => groupEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),

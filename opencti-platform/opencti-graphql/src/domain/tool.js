@@ -10,9 +10,9 @@ import { notify } from '../database/redis';
 
 export const findById = toolId => {
   if (toolId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(toolId);
+    return loadEntityByStixId(toolId, 'Tool');
   }
-  return loadEntityById(toolId);
+  return loadEntityById(toolId, 'Tool');
 };
 export const findAll = args => {
   return listEntities(['Tool'], ['name', 'alias'], args);

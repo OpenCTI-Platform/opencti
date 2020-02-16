@@ -18,15 +18,21 @@ export const addRole = async role => {
   const roleEntity = await createEntity(roleToCreate, 'Role', { modelType: TYPE_OPENCTI_INTERNAL });
   const relationPromises = map(
     capabilityName =>
-      createRelation(roleEntity.id, {
-        toId: uuidv5(capabilityName, uuidv5.DNS),
-        fromRole: 'position',
-        toRole: 'capability',
-        through: 'role_capability'
-      }),
+      createRelation(
+        roleEntity.id,
+        {
+          toId: uuidv5(capabilityName, uuidv5.DNS),
+          fromRole: 'position',
+          toRole: 'capability',
+          through: 'role_capability'
+        },
+        {},
+        'Role',
+        'Capability'
+      ),
     capabilities
   );
   await Promise.all(relationPromises);
   return roleEntity;
 };
-export const roleDelete = roleId => deleteEntityById(roleId);
+export const roleDelete = roleId => deleteEntityById(roleId, 'Role');

@@ -51,8 +51,8 @@ class StixDomainEntityVictimology extends Component {
     } = this.props;
     const paginationOptions = {
       fromId: stixDomainEntityId,
-      toTypes: ['Attack-Pattern'],
-      relationType: 'uses',
+      toTypes: ['Identity'],
+      relationType: 'targets',
       inferred,
       search: searchTerm,
     };

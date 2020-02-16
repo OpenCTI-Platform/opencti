@@ -18,10 +18,11 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { findAll as findAllStixDomains } from './stixDomainEntity';
+import { ForbiddenAccess } from '../config/errors';
 
 // region grakn fetch
 export const findById = workspaceId => {
-  return loadEntityById(workspaceId);
+  return loadEntityById(workspaceId, 'Workspace');
 };
 export const findAll = args => {
   return listEntities(['Workspace'], ['name', 'description'], args);
@@ -62,14 +63,20 @@ export const addWorkspace = async (user, workspace) => {
   const created = await createEntity(workspaceToCreate, 'Workspace', { modelType: TYPE_OPENCTI_INTERNAL });
   return notify(BUS_TOPICS.Workspace.ADDED_TOPIC, created, user);
 };
-export const workspaceDelete = workspaceId => deleteEntityById(workspaceId);
+export const workspaceDelete = workspaceId => deleteEntityById(workspaceId, 'Workspace');
 export const workspaceAddRelation = (user, workspaceId, input) => {
-  return createRelation(workspaceId, input).then(relationData => {
+  if (!input.through) {
+    throw new ForbiddenAccess();
+  }
+  return createRelation(workspaceId, input, {}, 'Workspace', null).then(relationData => {
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
 export const workspaceAddRelations = async (user, workspaceId, input) => {
+  if (!input.through) {
+    throw new ForbiddenAccess();
+  }
   const finalInputs = map(
     n => ({
       toId: n,
@@ -79,20 +86,22 @@ export const workspaceAddRelations = async (user, workspaceId, input) => {
     }),
     input.toIds
   );
-  await createRelations(workspaceId, finalInputs);
-  return loadEntityById(workspaceId).then(workspace => notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user));
+  await createRelations(workspaceId, finalInputs, {}, 'Workspace', null);
+  return loadEntityById(workspaceId, 'Workspace').then(workspace =>
+    notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
+  );
 };
 export const workspaceEditField = (user, workspaceId, input) => {
   return executeWrite(wTx => {
-    return updateAttribute(workspaceId, input, wTx);
+    return updateAttribute(workspaceId, 'Workspace', input, wTx);
   }).then(async () => {
-    const workspace = await loadEntityById(workspaceId);
+    const workspace = await loadEntityById(workspaceId, 'Workspace');
     return notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user);
   });
 };
 export const workspaceDeleteRelation = async (user, workspaceId, relationId) => {
-  await deleteRelationById(relationId);
-  const data = await loadEntityById(workspaceId);
+  await deleteRelationById(relationId, 'stix_relation');
+  const data = await loadEntityById(workspaceId, 'Workspace');
   return notify(BUS_TOPICS.Workspace.EDIT_TOPIC, data, user);
 };
 // endregion
@@ -100,10 +109,14 @@ export const workspaceDeleteRelation = async (user, workspaceId, relationId) => 
 // region context
 export const workspaceCleanContext = (user, workspaceId) => {
   delEditContext(user, workspaceId);
-  return loadEntityById(workspaceId).then(workspace => notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user));
+  return loadEntityById(workspaceId, 'Workspace').then(workspace =>
+    notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
+  );
 };
 export const workspaceEditContext = (user, workspaceId, input) => {
   setEditContext(user, workspaceId, input);
-  return loadEntityById(workspaceId).then(workspace => notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user));
+  return loadEntityById(workspaceId, 'Workspace').then(workspace =>
+    notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
+  );
 };
 // endregion

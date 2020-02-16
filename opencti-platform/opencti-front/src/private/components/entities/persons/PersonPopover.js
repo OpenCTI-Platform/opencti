@@ -47,7 +47,7 @@ Transition.displayName = 'TransitionSlide';
 
 const PersonPopoverDeletionMutation = graphql`
   mutation PersonPopoverDeletionMutation($id: ID!) {
-    userEdit(id: $id) {
+    personEdit(id: $id) {
       delete
     }
   }
@@ -167,7 +167,7 @@ class PersonPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <PersonEditionContainer person={props.user}
+                  <PersonEditionContainer person={props.person}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

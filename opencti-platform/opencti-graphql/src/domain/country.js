@@ -12,9 +12,9 @@ import { notify } from '../database/redis';
 
 export const findById = countryId => {
   if (countryId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(countryId);
+    return loadEntityByStixId(countryId, 'Country');
   }
-  return loadEntityById(countryId);
+  return loadEntityById(countryId, 'Country');
 };
 export const findAll = args => {
   return listEntities(['Country'], ['name', 'alias'], args);

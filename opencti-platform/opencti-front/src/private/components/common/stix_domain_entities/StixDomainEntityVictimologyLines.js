@@ -134,7 +134,6 @@ class StixDomainEntityVictimologyLinesComponent extends Component {
       paginationOptions,
       stixDomainEntityId,
     } = this.props;
-
     // Organizations / sectors
     const sectors = pipe(
       map((n) => (n.node.to.sectors && n.node.to.sectors.edges.length > 0
@@ -157,8 +156,8 @@ class StixDomainEntityVictimologyLinesComponent extends Component {
       map((n) => assoc(
         'sector',
         // eslint-disable-next-line no-nested-ternary
-        n.node.to.sectors && n.node.to.sectors.edges.length > 0
-          ? n.node.to.sectors.edges[0].node
+        n.to.sectors && n.to.sectors.edges.length > 0
+          ? n.to.sectors.edges[0].node
           : { id: 'unknown', name: t('Unknown') },
         n,
       )),
@@ -168,7 +167,6 @@ class StixDomainEntityVictimologyLinesComponent extends Component {
       values,
       sortWith([ascend(prop('name'))]),
     )(data.stixRelations.edges);
-    console.log(stixRelations);
     return (
       <div>
         <div style={{ float: 'left' }}>
@@ -218,11 +216,11 @@ class StixDomainEntityVictimologyLinesComponent extends Component {
                   in={this.state.expandedLines[stixRelation.id] !== false}
                 >
                   <List>
-                    {stixRelation.attackPatterns.map((attackPattern) => {
-                      const link = `${entityLink}/relations/${attackPattern.id}`;
+                    {stixRelation.victims.map((victim) => {
+                      const link = `${entityLink}/relations/${victim.id}`;
                       return (
                         <ListItem
-                          key={attackPattern.id}
+                          key={victim.id}
                           classes={{ root: classes.nested }}
                           divider={true}
                           button={true}
@@ -236,19 +234,19 @@ class StixDomainEntityVictimologyLinesComponent extends Component {
                           <ListItemText
                             primary={
                               <span>
-                                <strong>{attackPattern.to.external_id}</strong>{' '}
-                                - {attackPattern.to.name}
+                                <strong>{victim.to.external_id}</strong> -{' '}
+                                {victim.to.name}
                               </span>
                             }
                             secondary={
                               // eslint-disable-next-line no-nested-ternary
-                              attackPattern.description
-                              && attackPattern.description.length > 0 ? (
+                              victim.description
+                              && victim.description.length > 0 ? (
                                 <Markdown
                                   className="markdown"
-                                  source={attackPattern.description}
+                                  source={victim.description}
                                 />
-                                ) : attackPattern.inferred ? (
+                                ) : victim.inferred ? (
                                 <i>{t('This relation is inferred')}</i>
                                 ) : (
                                   t('No description of this usage')
@@ -257,11 +255,7 @@ class StixDomainEntityVictimologyLinesComponent extends Component {
                           />
                           {take(
                             1,
-                            pathOr(
-                              [],
-                              ['markingDefinitions', 'edges'],
-                              attackPattern,
-                            ),
+                            pathOr([], ['markingDefinitions', 'edges'], victim),
                           ).map((markingDefinition) => (
                             <ItemMarking
                               key={markingDefinition.node.id}
@@ -273,15 +267,13 @@ class StixDomainEntityVictimologyLinesComponent extends Component {
                           <ItemYears
                             variant="inList"
                             years={
-                              attackPattern.inferred
-                                ? t('Inferred')
-                                : attackPattern.years
+                              victim.inferred ? t('Inferred') : victim.years
                             }
-                            disabled={attackPattern.inferred}
+                            disabled={victim.inferred}
                           />
                           <ListItemSecondaryAction>
                             <StixRelationPopover
-                              stixRelationId={attackPattern.id}
+                              stixRelationId={victim.id}
                               paginationOptions={paginationOptions}
                               onDelete={this.props.relay.refetch.bind(this)}
                             />

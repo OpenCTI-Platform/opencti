@@ -10,9 +10,9 @@ import { notify } from '../database/redis';
 
 export const findById = threatActorId => {
   if (threatActorId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(threatActorId);
+    return loadEntityByStixId(threatActorId, 'Threat-Actor');
   }
-  return loadEntityById(threatActorId);
+  return loadEntityById(threatActorId, 'Threat-Actor');
 };
 export const findAll = args => {
   return listEntities(['Threat-Actor'], ['name', 'alias'], args);

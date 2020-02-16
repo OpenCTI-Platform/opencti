@@ -46,6 +46,7 @@ class PersonEditionContainer extends Component {
     const {
       t, classes, handleClose, person,
     } = this.props;
+    console.log(person);
     const { editContext } = person;
     return (
       <div>

@@ -265,5 +265,5 @@ const MarkingDefinitionEditionFragment = createFragmentContainer(
 
 export default compose(
   inject18n,
-  withStyles(styles, { withTheme: true }),
+  withStyles(styles),
 )(MarkingDefinitionEditionFragment);

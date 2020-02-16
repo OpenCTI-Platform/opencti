@@ -1,3 +1,4 @@
+import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
@@ -15,9 +16,9 @@ import { BUS_TOPICS } from '../config/conf';
 
 export const findById = markingDefinitionId => {
   if (markingDefinitionId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(markingDefinitionId);
+    return loadEntityByStixId(markingDefinitionId, 'Marking-Definition');
   }
-  return loadEntityById(markingDefinitionId);
+  return loadEntityById(markingDefinitionId, 'Marking-Definition');
 };
 
 export const findAll = args => {
@@ -29,36 +30,43 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
   return notify(BUS_TOPICS.MarkingDefinition.ADDED_TOPIC, created, user);
 };
 
-export const markingDefinitionDelete = markingDefinitionId => deleteEntityById(markingDefinitionId);
+export const markingDefinitionDelete = markingDefinitionId =>
+  deleteEntityById(markingDefinitionId, 'Marking-Definition');
 export const markingDefinitionAddRelation = (user, markingDefinitionId, input) => {
-  return createRelation(markingDefinitionId, input).then(relationData => {
+  return createRelation(
+    markingDefinitionId,
+    assoc('through', 'object_marking_refs', input),
+    {},
+    'Marking-Definition',
+    null
+  ).then(relationData => {
     notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
 export const markingDefinitionDeleteRelation = async (user, markingDefinitionId, relationId) => {
-  await deleteRelationById(relationId);
-  const data = await loadEntityById(markingDefinitionId);
+  await deleteRelationById(relationId, 'stix_relation_embedded');
+  const data = await loadEntityById(markingDefinitionId, 'Marking-Definition');
   return notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, data, user);
 };
 export const markingDefinitionEditField = (user, markingDefinitionId, input) => {
   return executeWrite(wTx => {
-    return updateAttribute(markingDefinitionId, input, wTx);
+    return updateAttribute(markingDefinitionId, 'Marking-Definition', input, wTx);
   }).then(async () => {
-    const markingDefinition = await loadEntityById(markingDefinitionId);
+    const markingDefinition = await loadEntityById(markingDefinitionId, 'Marking-Definition');
     return notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user);
   });
 };
 
 export const markingDefinitionCleanContext = (user, markingDefinitionId) => {
   delEditContext(user, markingDefinitionId);
-  return loadEntityById(markingDefinitionId).then(markingDefinition =>
+  return loadEntityById(markingDefinitionId, 'Marking-Definition').then(markingDefinition =>
     notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user)
   );
 };
 export const markingDefinitionEditContext = (user, markingDefinitionId, input) => {
   setEditContext(user, markingDefinitionId, input);
-  return loadEntityById(markingDefinitionId).then(markingDefinition =>
+  return loadEntityById(markingDefinitionId, 'Marking-Definition').then(markingDefinition =>
     notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user)
   );
 };

@@ -5,9 +5,9 @@ import { notify } from '../database/redis';
 
 export const findById = identityId => {
   if (identityId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(identityId);
+    return loadEntityByStixId(identityId, 'Identity');
   }
-  return loadEntityById(identityId);
+  return loadEntityById(identityId, 'Identity');
 };
 export const findAll = args => {
   const noTypes = !args.types || args.types.length === 0;

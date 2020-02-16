@@ -38,7 +38,7 @@ const styles = (theme) => ({
 
 export const personEditionQuery = graphql`
   query PersonEditionContainerQuery($id: String!) {
-    user(id: $id) {
+    person(id: $id) {
       ...PersonEditionContainer_person
     }
   }
@@ -87,7 +87,7 @@ class PersonEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <PersonEditionContainer person={props.user}
+                  <PersonEditionContainer person={props.person}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );
