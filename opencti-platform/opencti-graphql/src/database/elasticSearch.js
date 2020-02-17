@@ -353,7 +353,7 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) =
   const query = {
     index: INDEX_STIX_RELATIONS,
     body: {
-      size: 500,
+      size: 10000,
       query: {
         bool: {
           must: filters,

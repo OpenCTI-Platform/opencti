@@ -265,7 +265,10 @@ export const roleEditField = (user, roleId, input) => {
     return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
   });
 };
-
+export const roleAddRelation = async (user, userId, input) => {
+  const data = await createRelation(userId, assoc('through', 'role_capability', input), {}, 'Role', null);
+  return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
+};
 // User related
 export const userEditField = (user, userId, input) => {
   const { key } = input;

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, filter } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
 import RadarChart from 'recharts/lib/chart/RadarChart';
@@ -109,7 +109,10 @@ class EntityStixRelationsRadar extends Component {
               >
                 <RadarChart
                   outerRadius={110}
-                  data={props.stixRelationsDistribution}
+                  data={filter(
+                    (n) => n.label !== 'indicator',
+                    props.stixRelationsDistribution,
+                  )}
                 >
                   <PolarGrid />
                   <PolarAngleAxis dataKey="label" stroke="#ffffff" />
@@ -183,7 +186,8 @@ class EntityStixRelationsRadar extends Component {
               aria-label="Update"
               size="small"
               classes={{ root: classes.updateButton }}
-              onClick={handleOpenConfig.bind(this, configuration)}>
+              onClick={handleOpenConfig.bind(this, configuration)}
+            >
               <SettingsInputComponent fontSize="inherit" />
             </IconButton>
           </Security>

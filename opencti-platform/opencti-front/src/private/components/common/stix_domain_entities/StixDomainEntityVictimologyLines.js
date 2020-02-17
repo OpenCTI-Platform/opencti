@@ -30,8 +30,8 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Collapse from '@material-ui/core/Collapse';
-import { Launch, LockPattern, FileImageOutline } from 'mdi-material-ui';
-import { ExpandLess, ExpandMore } from '@material-ui/icons';
+import { LockPattern, FileImageOutline } from 'mdi-material-ui';
+import { Domain, ExpandLess, ExpandMore } from '@material-ui/icons';
 import { createRefetchContainer } from 'react-relay';
 import Tooltip from '@material-ui/core/Tooltip';
 import { yearFormat } from '../../../../utils/Time';
@@ -136,9 +136,12 @@ class StixDomainEntityVictimologyLinesComponent extends Component {
     } = this.props;
     // Organizations / sectors
     const sectors = pipe(
-      map((n) => (n.node.to.sectors && n.node.to.sectors.edges.length > 0
-        ? n.node.to.sectors.edges[0].node
-        : { id: 'unknown', name: t('Unknown') })),
+      // eslint-disable-next-line no-nested-ternary
+      map((n) => (n.node.to.parentSectors && n.node.to.parentSectors.edges.length > 0
+        ? n.node.to.parentSectors.edges[0].node
+        : n.node.to.sectors && n.node.to.sectors.edges.length > 0
+          ? n.node.to.sectors.edges[0].node
+          : { id: 'unknown', name: t('Unknown') })),
       uniq,
       indexBy(prop('id')),
     )(data.stixRelations.edges);
@@ -156,9 +159,11 @@ class StixDomainEntityVictimologyLinesComponent extends Component {
       map((n) => assoc(
         'sector',
         // eslint-disable-next-line no-nested-ternary
-        n.to.sectors && n.to.sectors.edges.length > 0
-          ? n.to.sectors.edges[0].node
-          : { id: 'unknown', name: t('Unknown') },
+        n.to.parentSectors && n.to.parentSectors.edges.length > 0
+          ? n.to.parentSectors.edges[0].node
+          : n.to.sectors && n.to.sectors.edges.length > 0
+            ? n.to.sectors.edges[0].node
+            : { id: 'unknown', name: t('Unknown') },
         n,
       )),
       sortWith([ascend(prop('years'))]),
@@ -193,9 +198,9 @@ class StixDomainEntityVictimologyLinesComponent extends Component {
                   onClick={this.handleToggleLine.bind(this, stixRelation.id)}
                 >
                   <ListItemIcon>
-                    <Launch color="primary" role="img" />
+                    <Domain color="primary" role="img" />
                   </ListItemIcon>
-                  <ListItemText primary={stixRelation.phase_name} />
+                  <ListItemText primary={stixRelation.name} />
                   <ListItemSecondaryAction>
                     <IconButton
                       onClick={this.handleToggleLine.bind(
@@ -352,6 +357,7 @@ const StixDomainEntityVictimologyLines = createRefetchContainer(
                 }
                 ... on Country {
                   region {
+                    id
                     name
                   }
                 }
@@ -359,6 +365,7 @@ const StixDomainEntityVictimologyLines = createRefetchContainer(
                   sectors {
                     edges {
                       node {
+                        id
                         name
                       }
                     }
@@ -368,6 +375,7 @@ const StixDomainEntityVictimologyLines = createRefetchContainer(
                   parentSectors {
                     edges {
                       node {
+                        id
                         name
                       }
                     }

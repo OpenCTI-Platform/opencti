@@ -1235,7 +1235,7 @@ export const distributionEntities = async (entityType, filters, options) => {
   return take(limit, sortWith([orderingFunction(prop('value'))])(distributionData));
 };
 export const distributionRelations = async options => {
-  const { limit = 10, order, inferred = false } = options;
+  const { limit = 50, order, inferred = false } = options;
   const { startDate, endDate, relationType, toTypes, fromId, field, operation } = options;
   let distributionData;
   const entityType = relationType ? escape(relationType) : 'stix_relation';
@@ -1738,16 +1738,18 @@ export const deleteEntityById = async (id, type) => {
     return id;
   });
 };
-export const deleteRelationById = async (relationId, type) => {
+export const deleteRelationById = async (relationId, type = null) => {
   const eid = escapeString(relationId);
   // 00. Load everything we need to remove in elastic
-  const read = `match $from isa ${type}, has internal_id_key "${eid}"; $rel($from, $to) isa relation; get;`;
+  const read = `match $from ${
+    type ? `isa ${type},` : ''
+  } has internal_id_key "${eid}"; $rel($from, $to) isa relation; get;`;
   const relationsToDeIndex = await find(read, ['rel']);
   const answers = map(r => r.rel.id, relationsToDeIndex);
   const relationsIds = filter(r => r, answers); // Because of relation to attributes
   // 01. Execute the delete in grakn and elastic
   return executeWrite(async wTx => {
-    const query = `match $x isa ${type}, has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
+    const query = `match $x ${type ? `isa ${type},` : ''} has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
     logger.debug(`[GRAKN - infer: false] deleteRelationById > ${query}`);
     await wTx.tx.query(query, { infer: false });
   }).then(async () => {

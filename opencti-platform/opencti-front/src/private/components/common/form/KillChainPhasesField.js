@@ -38,7 +38,7 @@ class KillChainPhasesField extends Component {
 
   searchKillChainPhases(event) {
     fetchQuery(killChainPhasesSearchQuery, {
-      search: event.target.value,
+      search: event && event.target.value,
     }).then((data) => {
       const killChainPhases = pipe(
         pathOr([], ['killChainPhases', 'edges']),

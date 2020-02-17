@@ -40,26 +40,23 @@ export const buildViewParamsFromUrlAndStorage = (
   if (finalParams.orderAsc) {
     finalParams.orderAsc = finalParams.orderAsc.toString() === 'true';
   }
-  if (
-    finalParams.stixDomainEntitiesTypes
-    && typeof finalParams.stixDomainEntitiesTypes === 'string'
-  ) {
-    finalParams.stixDomainEntitiesTypes = split(
-      ',',
-      finalParams.stixDomainEntitiesTypes,
-    );
+  if (typeof finalParams.stixDomainEntitiesTypes === 'string') {
+    finalParams.stixDomainEntitiesTypes = finalParams.stixDomainEntitiesTypes
+      ? (finalParams.stixDomainEntitiesTypes = split(
+        ',',
+        finalParams.stixDomainEntitiesTypes,
+      ))
+      : [];
   }
-  if (
-    finalParams.indicatorTypes
-    && typeof finalParams.indicatorTypes === 'string'
-  ) {
-    finalParams.indicatorTypes = split(',', finalParams.indicatorTypes);
+  if (typeof finalParams.indicatorTypes === 'string') {
+    finalParams.indicatorTypes = finalParams.stixDomainEntitiesTypes
+      ? split(',', finalParams.indicatorTypes)
+      : [];
   }
-  if (
-    finalParams.observableTypes
-    && typeof finalParams.observableTypes === 'string'
-  ) {
-    finalParams.observableTypes = split(',', finalParams.observableTypes);
+  if (typeof finalParams.observableTypes === 'string') {
+    finalParams.observableTypes = finalParams.observableTypes
+      ? split(',', finalParams.observableTypes)
+      : '';
   }
   saveViewParameters(history, location, localStorageKey, finalParams);
   return finalParams;

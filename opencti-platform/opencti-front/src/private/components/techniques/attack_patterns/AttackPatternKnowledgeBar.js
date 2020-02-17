@@ -11,9 +11,10 @@ import ListItemText from '@material-ui/core/ListItemText';
 import {
   Gauge, ChessKnight, Fire, Diamond, Biohazard,
 } from 'mdi-material-ui';
+import { BugReport } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawer: {
     minHeight: '100vh',
     width: 260,
@@ -51,11 +52,13 @@ class AttackPatternKnowledgeBar extends Component {
             dense={false}
             classes={{ root: classes.item }}
           >
-
             <ListItemIcon>
               <Gauge />
             </ListItemIcon>
-            <ListItemText primary={t('Overview')} secondary={t('Synthesis of knowledge')} />
+            <ListItemText
+              primary={t('Overview')}
+              secondary={t('Synthesis of knowledge')}
+            />
           </MenuItem>
           <MenuItem
             component={Link}
@@ -127,6 +130,42 @@ class AttackPatternKnowledgeBar extends Component {
             <ListItemText
               primary={t('Malwares')}
               secondary={t('Using this TTP')}
+            />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/tools`}
+            selected={
+              location.pathname
+              === `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/tools`
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <Biohazard />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Tools')}
+              secondary={t('Using this TTP')}
+            />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/vulnerabilities`}
+            selected={
+              location.pathname
+              === `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/vulnerabilities`
+            }
+            dense={false}
+            classes={{ root: classes.item }}
+          >
+            <ListItemIcon>
+              <BugReport />
+            </ListItemIcon>
+            <ListItemText
+              primary={t('Vulnerabilities')}
+              secondary={t('Targeted by this TTP')}
             />
           </MenuItem>
         </MenuList>

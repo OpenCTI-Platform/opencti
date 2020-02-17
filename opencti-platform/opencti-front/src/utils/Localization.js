@@ -404,6 +404,7 @@ const i18n = {
       'Used by this malware': 'Utilisé par ce code',
       'This malware has been used': 'Ce code a été utilisé',
       'Using this TTP': 'Utilisant cette TTP',
+      'Targeted by this TTP': 'Ciblées par cette TTP',
       'Using this tool': 'Utilisant cet outil',
       'Tool usage': 'Utilisation de cet outil',
       'Targeting this vulnerability': 'Ciblant cette vulnérabilité',

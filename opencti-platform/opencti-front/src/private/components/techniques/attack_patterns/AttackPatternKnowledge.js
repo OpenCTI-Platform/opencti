@@ -113,9 +113,23 @@ class AttackPatternKnowledgeComponent extends Component {
             <EntityStixRelations
               entityId={attackPattern.id}
               relationType="uses"
-              targetEntityTypes={['Tools']}
+              targetEntityTypes={['Tool']}
               entityLink={link}
               creationIsFrom={false}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/vulnerabilities"
+          render={(routeProps) => (
+            <EntityStixRelations
+              entityId={attackPattern.id}
+              relationType="targets"
+              targetEntityTypes={['Vulnerability']}
+              entityLink={link}
+              creationIsFrom={true}
               {...routeProps}
             />
           )}

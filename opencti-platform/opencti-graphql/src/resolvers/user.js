@@ -22,6 +22,7 @@ import {
   personDelete,
   userEditField,
   personEditField,
+  roleAddRelation,
   userAddRelation,
   personAddRelation,
   userDeleteRelation,
@@ -32,7 +33,6 @@ import {
 } from '../domain/user';
 import { logger } from '../config/conf';
 import {
-  stixDomainEntityAddRelation,
   stixDomainEntityCleanContext,
   stixDomainEntityEditContext,
 } from '../domain/stixDomainEntity';
@@ -106,7 +106,7 @@ const userResolvers = {
       fieldPatch: ({ input }) => roleEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
+      relationAdd: ({ input }) => roleAddRelation(user, id, input),
       removeCapability: ({ name }) => roleRemoveCapability(id, name)
     }),
     roleAdd: (_, { input }) => addRole(input),
