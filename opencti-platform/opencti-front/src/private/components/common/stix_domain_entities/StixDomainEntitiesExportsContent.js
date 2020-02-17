@@ -14,6 +14,7 @@ import StixDomainEntitiesExportCreation from './StixDomainEntitiesExportCreation
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import FileLine from '../files/FileLine';
 import inject18n from '../../../../components/i18n';
+import Security, { KNOWLEDGE_KNGETEXPORT_KNASKEXPORT } from '../../../../utils/Security';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -83,17 +84,17 @@ class StixDomainEntitiesExportsContentComponent extends Component {
         subheader={
           <ListSubheader component="div">
             <div style={{ float: 'left' }}>{t('Exports list')}</div>
-            <StixDomainEntitiesExportCreation
-              data={data}
-              exportEntityType={exportEntityType}
-              paginationOptions={paginationOptions}
-              context={context}
-            />
-            <IconButton
-              color="inherit"
+            <Security needs={[KNOWLEDGE_KNGETEXPORT_KNASKEXPORT]}>
+              <StixDomainEntitiesExportCreation
+                data={data}
+                exportEntityType={exportEntityType}
+                paginationOptions={paginationOptions}
+                context={context}
+              />
+            </Security>
+            <IconButton color="inherit"
               classes={{ root: classes.buttonClose }}
-              onClick={handleToggle.bind(this)}
-            >
+              onClick={handleToggle.bind(this)}>
               <Close />
             </IconButton>
             <div className="clearfix" />

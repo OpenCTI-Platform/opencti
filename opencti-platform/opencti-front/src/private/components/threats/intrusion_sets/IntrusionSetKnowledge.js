@@ -70,6 +70,28 @@ class IntrusionSetKnowledgeComponent extends Component {
         />
         <Route
           exact
+          path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/victimology"
+          render={(routeProps) => (
+            <EntityStixRelations
+              entityId={intrusionSet.id}
+              relationType="targets"
+              targetEntityTypes={[
+                'Organization',
+                'Sector',
+                'City',
+                'Country',
+                'Region',
+                'User',
+              ]}
+              entityLink={link}
+              exploreLink={`/dashboard/explore/victimology/${intrusionSet.id}`}
+              creationIsFrom={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/campaigns"
           render={(routeProps) => (
             <EntityStixRelations
@@ -105,21 +127,6 @@ class IntrusionSetKnowledgeComponent extends Component {
               relationType="uses"
               targetEntityTypes={['Malware']}
               entityLink={link}
-              creationIsFrom={true}
-              {...routeProps}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/victimology"
-          render={(routeProps) => (
-            <EntityStixRelations
-              entityId={intrusionSet.id}
-              relationType="targets"
-              targetEntityTypes={['Identity']}
-              entityLink={link}
-              exploreLink={`/dashboard/explore/victimology/${intrusionSet.id}`}
               creationIsFrom={true}
               {...routeProps}
             />

@@ -1,3 +1,4 @@
+import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
@@ -13,7 +14,7 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 
 export const findById = externalReferenceId => {
-  return loadEntityById(externalReferenceId);
+  return loadEntityById(externalReferenceId, 'External-Reference');
 };
 export const findAll = args => {
   return listEntities(['External-Reference'], ['source_name', 'description'], args);
@@ -25,37 +26,43 @@ export const addExternalReference = async (user, externalReference) => {
 };
 
 export const externalReferenceDelete = async externalReferenceId => {
-  return deleteEntityById(externalReferenceId);
+  return deleteEntityById(externalReferenceId, 'External-Reference');
 };
 export const externalReferenceAddRelation = (user, externalReferenceId, input) => {
-  return createRelation(externalReferenceId, input).then(relationData => {
+  return createRelation(
+    externalReferenceId,
+    assoc('through', 'external_references', input),
+    {},
+    'External-Reference',
+    null
+  ).then(relationData => {
     notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
 export const externalReferenceDeleteRelation = async (user, externalReferenceId, relationId) => {
-  await deleteRelationById(relationId);
-  const data = await loadEntityById(externalReferenceId);
+  await deleteRelationById(relationId, 'stix_relation_embedded');
+  const data = await loadEntityById(externalReferenceId, 'External-Reference');
   return notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, data, user);
 };
 export const externalReferenceEditField = (user, externalReferenceId, input) => {
   return executeWrite(wTx => {
-    return updateAttribute(externalReferenceId, input, wTx);
+    return updateAttribute(externalReferenceId, 'External-Reference', input, wTx);
   }).then(async () => {
-    const externalReference = await loadEntityById(externalReferenceId);
+    const externalReference = await loadEntityById(externalReferenceId, 'External-Reference');
     return notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference, user);
   });
 };
 
 export const externalReferenceCleanContext = (user, externalReferenceId) => {
   delEditContext(user, externalReferenceId);
-  return loadEntityById(externalReferenceId).then(externalReference =>
+  return loadEntityById(externalReferenceId, 'External-Reference').then(externalReference =>
     notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference, user)
   );
 };
 export const externalReferenceEditContext = (user, externalReferenceId, input) => {
   setEditContext(user, externalReferenceId, input);
-  return loadEntityById(externalReferenceId).then(externalReference =>
+  return loadEntityById(externalReferenceId, 'External-Reference').then(externalReference =>
     notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference, user)
   );
 };

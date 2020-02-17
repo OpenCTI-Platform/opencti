@@ -34,7 +34,7 @@ enum Capabilities {
   CONNECTORAPI
   KNOWLEDGE
   KNOWLEDGE_KNUPDATE
-  KNOWLEDGE_KNDELETE
+  KNOWLEDGE_KNUPDATE_KNDELETE
   KNOWLEDGE_KNUPLOAD
   KNOWLEDGE_KNASKIMPORT
   KNOWLEDGE_KNGETEXPORT
@@ -42,13 +42,18 @@ enum Capabilities {
   KNOWLEDGE_KNENRICHMENT
   EXPLORE
   EXPLORE_EXUPDATE
-  EXPLORE_EXDELETE
+  EXPLORE_EXUPDATE_EXDELETE
   MODULES
   MODULES_MODMANAGE
   SETTINGS
   SETTINGS_SETINFERENCES
   SETTINGS_SETACCESSES
   SETTINGS_SETMARKINGS
+}
+enum StixRelations {
+  stix_relation
+  stix_relation_embedded
+  stix_observable_relation
 }
 
 ### Relations
@@ -1033,6 +1038,7 @@ type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   token: String
   groups: GroupConnection
   reports: ReportConnection
+  organizations: OrganizationConnection
   stixRelations(
     first: Int
     after: ID
@@ -1154,6 +1160,7 @@ type Organization implements GlobalObject & StixEntity & StixDomainEntity & Iden
   exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  sectors: SectorConnection
   stixRelations(
     first: Int
     after: ID
@@ -1236,8 +1243,9 @@ type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   modified: DateTime
   revoked: Boolean
   graph_data: String
-  subsectors: SectorConnection
-  isSubsector: Boolean
+  parentSectors: SectorConnection
+  subSectors: SectorConnection
+  isSubSector: Boolean
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
@@ -1330,6 +1338,7 @@ type City implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  country: Country
   stixRelations(
     first: Int
     after: ID
@@ -1414,6 +1423,7 @@ type Country implements GlobalObject & StixEntity & StixDomainEntity & Identity 
   exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  region: Region
   stixRelations(
     first: Int
     after: ID
@@ -3031,7 +3041,8 @@ type Query {
   ): IdentityConnection @auth(for: [KNOWLEDGE])
   # Users
   me: User @auth
-  user(id: String!): User @auth(for: [KNOWLEDGE])
+  user(id: String!): User @auth(for: [SETTINGS_SETACCESSES])
+  person(id: String!): User @auth(for: [KNOWLEDGE])
   users(
     first: Int
     after: ID
@@ -3040,7 +3051,15 @@ type Query {
     filters: [UsersFiltering]
     filterMode: FilterMode
     search: String
-    isUser: Boolean
+  ): UserConnection @auth(for: [SETTINGS_SETACCESSES])
+  persons(
+    first: Int
+    after: ID
+    orderBy: UsersOrdering
+    orderMode: OrderingMode
+    filters: [UsersFiltering]
+    filterMode: FilterMode
+    search: String
   ): UserConnection @auth(for: [KNOWLEDGE])
   role(id: String!): Role @auth(for: [SETTINGS_SETACCESSES])
   # Organizations
@@ -3343,7 +3362,7 @@ type StixEntityEditMutations {
 
 # StixDomainEntity
 type StixDomainEntityEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: EditInput): StixDomainEntity @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): StixDomainEntity @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: StixDomainEntity @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -3357,7 +3376,7 @@ type StixDomainEntityEditMutations {
 
 # StixObservable
 type StixObservableEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: EditInput): StixObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): StixObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: StixObservable @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -3388,7 +3407,7 @@ type StixObservableRelationEditMutations {
 
 # Workspace
 type WorkspaceEditMutations {
-  delete: ID  @auth(for: [EXPLORE_EXDELETE])
+  delete: ID  @auth(for: [EXPLORE_EXUPDATE_EXDELETE])
   fieldPatch(input: EditInput): Workspace @auth(for: [EXPLORE_EXUPDATE])
   contextPatch(input: EditContext): Workspace @auth(for: [EXPLORE_EXUPDATE])
   contextClean: Workspace @auth(for: [EXPLORE_EXUPDATE])
@@ -3399,7 +3418,7 @@ type WorkspaceEditMutations {
 
 # Identity
 type IdentityEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: EditInput): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Identity @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -3418,10 +3437,20 @@ type UserEditMutations {
   removeRole(name: String!): User
   relationDelete(relationId: ID!): User
 }
+type PersonEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): User
+  contextPatch(input: EditContext): User
+  contextClean: User
+  tokenRenew: User
+  relationAdd(input: RelationAddInput): RelationEmbedded
+  removeRole(name: String!): User
+  relationDelete(relationId: ID!): User
+}
 
 # Organization
 type OrganizationEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: EditInput): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Organization @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -3431,7 +3460,7 @@ type OrganizationEditMutations {
 
 # Sector
 type SectorEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: EditInput): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Sector @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -3441,7 +3470,7 @@ type SectorEditMutations {
 
 # City
 type CityEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: EditInput): City @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): City @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: City @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -3451,7 +3480,7 @@ type CityEditMutations {
 
 # Country
 type CountryEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: EditInput): Country @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Country @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Country @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -3461,7 +3490,7 @@ type CountryEditMutations {
 
 # Region
 type RegionEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: EditInput): Region @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Region @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Region @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -3501,7 +3530,7 @@ type MarkingDefinitionEditMutations {
 
 # ExternalReference
 type ExternalReferenceEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: EditInput): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -3521,7 +3550,7 @@ type KillChainPhaseEditMutations {
 
 # AttackPattern
 type AttackPatternEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: EditInput): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -3531,7 +3560,7 @@ type AttackPatternEditMutations {
 
 # CourseOfAction
 type CourseOfActionEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: EditInput): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -3541,7 +3570,7 @@ type CourseOfActionEditMutations {
 
 # ThreatActor
 type ThreatActorEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: EditInput): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -3551,7 +3580,7 @@ type ThreatActorEditMutations {
 
 # IntrusionSet
 type IntrusionSetEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: EditInput): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -3561,7 +3590,7 @@ type IntrusionSetEditMutations {
 
 # Campaign
 type CampaignEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: EditInput): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -3571,7 +3600,7 @@ type CampaignEditMutations {
 
 # Incident
 type IncidentEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: EditInput): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Incident @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -3581,7 +3610,7 @@ type IncidentEditMutations {
 
 # Malware
 type MalwareEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: EditInput): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Malware @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -3591,7 +3620,7 @@ type MalwareEditMutations {
 
 # Tool
 type ToolEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: EditInput): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Tool @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -3601,7 +3630,7 @@ type ToolEditMutations {
 
 # Vulnerability
 type VulnerabilityEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: EditInput): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -3611,7 +3640,7 @@ type VulnerabilityEditMutations {
 
 # Report
 type ReportEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: EditInput): Report @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Report @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Report @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -3621,7 +3650,7 @@ type ReportEditMutations {
 
 # Indicator
 type IndicatorEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNDELETE])
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: EditInput): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -3700,8 +3729,9 @@ type Mutation {
   identityEdit(id: ID!): IdentityEditMutations
   # User
   userAdd(input: UserAddInput): User @auth(for: [SETTINGS_SETACCESSES])
-  personAdd(input: PersonAddInput): User @auth (for: [KNOWLEDGE_KNUPDATE])
   userEdit(id: ID!): UserEditMutations @auth(for: [SETTINGS_SETACCESSES])
+  personAdd(input: PersonAddInput): User @auth (for: [KNOWLEDGE_KNUPDATE])
+  personEdit(id: ID!): PersonEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
   meEdit(input: EditInput): User @auth
   logout: ID @auth
   # Role

@@ -14,7 +14,7 @@ class PersonsLines extends Component {
     setNumberOfElements(
       prevProps,
       this.props,
-      'users',
+      'persons',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -33,10 +33,10 @@ class PersonsLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['users', 'edges'], this.props.data)}
+        dataList={pathOr([], ['persons', 'edges'], this.props.data)}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['users', 'pageInfo', 'globalCount'],
+          ['persons', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
         LineComponent={<PersonLine />}
@@ -95,14 +95,14 @@ export default createPaginationContainer(
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
           filters: { type: "[UsersFiltering]" }
         ) {
-        users(
+        persons(
           search: $search
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
           filters: $filters
-        ) @connection(key: "Pagination_users") {
+        ) @connection(key: "Pagination_persons") {
           edges {
             node {
               id

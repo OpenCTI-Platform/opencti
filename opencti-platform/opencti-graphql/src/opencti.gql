@@ -606,6 +606,7 @@ define
     has required_permission,
     has external_id,
     plays phase_belonging,
+    plays source,
     plays user,
     plays usage,
     plays problem,

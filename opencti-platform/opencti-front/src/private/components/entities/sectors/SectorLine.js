@@ -55,32 +55,32 @@ const styles = (theme) => ({
 class SectorLineComponent extends Component {
   render() {
     const {
-      classes, subsectors, node, isSubsector, t,
+      classes, subSectors, node, isSubSector, t,
     } = this.props;
     return (
       <div>
         <ListItem
-          classes={{ root: isSubsector ? classes.itemNested : classes.item }}
+          classes={{ root: isSubSector ? classes.itemNested : classes.item }}
           divider={true}
           button={true}
           component={Link}
           to={`/dashboard/entities/sectors/${node.id}`}
         >
           <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <Domain fontSize={isSubsector ? 'small' : 'default'} />
+            <Domain fontSize={isSubSector ? 'small' : 'default'} />
           </ListItemIcon>
           <ListItemText
             primary={
               <div>
                 <div
                   className={classes.name}
-                  style={{ fontSize: isSubsector ? 11 : 13 }}
+                  style={{ fontSize: isSubSector ? 11 : 13 }}
                 >
                   {node.name}
                 </div>
                 <div
                   className={classes.description}
-                  style={{ fontSize: isSubsector ? 11 : 13 }}
+                  style={{ fontSize: isSubSector ? 11 : 13 }}
                 >
                   {node.description.length > 0
                     ? node.description
@@ -93,17 +93,17 @@ class SectorLineComponent extends Component {
             <KeyboardArrowRight />
           </ListItemIcon>
         </ListItem>
-        {subsectors ? (
+        {subSectors ? (
           <List disablePadding={true}>
             {map(
-              (subsector) => (
+              (subSector) => (
                 <SectorLine
-                  key={subsector.id}
-                  node={subsector}
-                  isSubsector={true}
+                  key={subSector.id}
+                  node={subSector}
+                  isSubSector={true}
                 />
               ),
-              subsectors,
+              subSectors,
             )}
           </List>
         ) : (
@@ -116,8 +116,8 @@ class SectorLineComponent extends Component {
 
 SectorLineComponent.propTypes = {
   node: PropTypes.object,
-  isSubsector: PropTypes.bool,
-  subsectors: PropTypes.array,
+  isSubSector: PropTypes.bool,
+  subSectors: PropTypes.array,
   classes: PropTypes.object,
   fd: PropTypes.func,
 };

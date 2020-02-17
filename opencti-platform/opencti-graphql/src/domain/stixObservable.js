@@ -23,9 +23,10 @@ import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { addIndicator } from './indicator';
 import { askEnrich } from './enrichment';
+import { ForbiddenAccess } from '../config/errors';
 
 export const findById = stixObservableId => {
-  return loadEntityById(stixObservableId);
+  return loadEntityById(stixObservableId, 'Stix-Observable');
 };
 export const findAll = async args => {
   const noTypes = !args.types || args.types.length === 0;
@@ -55,7 +56,7 @@ export const stixObservablesTimeSeries = args => {
 
 // region mutations
 export const stixObservableAskEnrichment = async (id, connectorId) => {
-  const connector = await loadEntityById(connectorId);
+  const connector = await loadEntityById(connectorId, 'Stix-Observable');
   const { job, work } = await createWork(connector, 'Stix-Observable', id);
   const message = {
     work_id: work.internal_id_key,
@@ -113,25 +114,28 @@ export const addStixObservable = async (user, stixObservable) => {
   return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user);
 };
 export const stixObservableDelete = async stixObservableId => {
-  return deleteEntityById(stixObservableId);
+  return deleteEntityById(stixObservableId, 'Stix-Observable');
 };
 export const stixObservableAddRelation = (user, stixObservableId, input) => {
-  return createRelation(stixObservableId, input).then(relationData => {
+  if (!input.through) {
+    throw new ForbiddenAccess();
+  }
+  return createRelation(stixObservableId, input, {}, 'Stix-Observable', null).then(relationData => {
     notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
 export const stixObservableEditField = (user, stixObservableId, input) => {
   return executeWrite(wTx => {
-    return updateAttribute(stixObservableId, input, wTx);
+    return updateAttribute(stixObservableId, 'Stix-Observable', input, wTx);
   }).then(async () => {
-    const stixObservable = await loadEntityById(stixObservableId);
+    const stixObservable = await loadEntityById(stixObservableId, 'Stix-Observable');
     return notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, stixObservable, user);
   });
 };
 export const stixObservableDeleteRelation = async (user, stixObservableId, relationId) => {
-  await deleteRelationById(relationId);
-  const data = await loadEntityById(stixObservableId);
+  await deleteRelationById(relationId, 'stix_relation_embedded');
+  const data = await loadEntityById(stixObservableId, 'Stix-Observable');
   return notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, data, user);
 };
 // endregion
@@ -139,13 +143,13 @@ export const stixObservableDeleteRelation = async (user, stixObservableId, relat
 // region context
 export const stixObservableCleanContext = (user, stixObservableId) => {
   delEditContext(user, stixObservableId);
-  return loadEntityById(stixObservableId).then(stixObservable =>
+  return loadEntityById(stixObservableId, 'Stix-Observable').then(stixObservable =>
     notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, stixObservable, user)
   );
 };
 export const stixObservableEditContext = (user, stixObservableId, input) => {
   setEditContext(user, stixObservableId, input);
-  return loadEntityById(stixObservableId).then(stixObservable =>
+  return loadEntityById(stixObservableId, 'Stix-Observable').then(stixObservable =>
     notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, stixObservable, user)
   );
 };

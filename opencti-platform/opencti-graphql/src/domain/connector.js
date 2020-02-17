@@ -25,7 +25,7 @@ const completeConnector = connector => {
 // endregion
 
 // region grakn fetch
-export const loadConnectorById = id => loadEntityById(id);
+export const loadConnectorById = id => loadEntityById(id, 'Connector');
 export const connectors = () => {
   const query = `match $c isa Connector; get;`;
   return find(query, ['c']).then(elements => map(conn => completeConnector(conn.c), elements));
@@ -36,7 +36,14 @@ export const connectorsFor = async (type, scope, onlyAlive = false) => {
     filter(c => c.connector_type === type),
     filter(c => (onlyAlive ? c.active === true : true)),
     // eslint-disable-next-line prettier/prettier
-    filter(c => (scope ? includes(scope.toLowerCase(), map(s => s.toLowerCase(), c.connector_scope)) : true))
+    filter(c =>
+      scope
+        ? includes(
+            scope.toLowerCase(),
+            map(s => s.toLowerCase(), c.connector_scope)
+          )
+        : true
+    )
   )(connects);
 };
 export const connectorsForExport = async (scope, onlyAlive = false) =>
@@ -48,46 +55,46 @@ export const connectorsForImport = async (scope, onlyAlive = false) =>
 // region mutations
 export const pingConnector = async (id, state) => {
   const creation = now();
-  const connector = await loadEntityById(id);
+  const connector = await loadEntityById(id, 'Connector');
   if (connector.connector_state_reset === true) {
     await executeWrite(async wTx => {
       const stateInput = { key: 'connector_state_reset', value: [false] };
-      await updateAttribute(id, stateInput, wTx);
+      await updateAttribute(id, 'Connector', stateInput, wTx);
     });
   } else {
     await executeWrite(async wTx => {
       const updateInput = { key: 'updated_at', value: [creation] };
-      await updateAttribute(id, updateInput, wTx);
+      await updateAttribute(id, 'Connector', updateInput, wTx);
       const stateInput = { key: 'connector_state', value: [state] };
-      await updateAttribute(id, stateInput, wTx);
+      await updateAttribute(id, 'Connector', stateInput, wTx);
     });
   }
-  return loadEntityById(id).then(data => completeConnector(data));
+  return loadEntityById(id, 'Connector').then(data => completeConnector(data));
 };
 export const resetStateConnector = async id => {
   await executeWrite(async wTx => {
     const stateInput = { key: 'connector_state', value: [''] };
-    await updateAttribute(id, stateInput, wTx);
+    await updateAttribute(id, 'Connector', stateInput, wTx);
     const stateResetInput = { key: 'connector_state_reset', value: [true] };
-    await updateAttribute(id, stateResetInput, wTx);
+    await updateAttribute(id, 'Connector', stateResetInput, wTx);
   });
-  return loadEntityById(id).then(data => completeConnector(data));
+  return loadEntityById(id, 'Connector').then(data => completeConnector(data));
 };
 export const registerConnector = async ({ id, name, type, scope }) => {
-  const connector = await loadEntityById(id);
+  const connector = await loadEntityById(id, 'Connector');
   // Register queues
   await registerConnectorQueues(id, name, type, scope);
   if (connector) {
     // Simple connector update
     await executeWrite(async wTx => {
       const inputName = { key: 'name', value: [name] };
-      await updateAttribute(id, inputName, wTx);
+      await updateAttribute(id, 'Connector', inputName, wTx);
       const updatedInput = { key: 'updated_at', value: [now()] };
-      await updateAttribute(id, updatedInput, wTx);
+      await updateAttribute(id, 'Connector', updatedInput, wTx);
       const scopeInput = { key: 'connector_scope', value: [scope.join(',')] };
-      await updateAttribute(id, scopeInput, wTx);
+      await updateAttribute(id, 'Connector', scopeInput, wTx);
     });
-    return loadEntityById(id).then(data => completeConnector(data));
+    return loadEntityById(id, 'Connector').then(data => completeConnector(data));
   }
   // Need to create the connector
   const connectorToCreate = { internal_id_key: id, name, connector_type: type, connector_scope: scope.join(',') };

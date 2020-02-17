@@ -12,7 +12,7 @@ import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
 
-const styles = theme => ({
+const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
@@ -85,7 +85,7 @@ class WorkspaceLineComponent extends Component {
                 style={{ width: dataColumns.marking.width }}
               >
                 {take(1, pathOr([], ['markingDefinitions', 'edges'], node)).map(
-                  markingDefinition => (
+                  (markingDefinition) => (
                     <ItemMarking
                       key={markingDefinition.node.id}
                       variant="inList"

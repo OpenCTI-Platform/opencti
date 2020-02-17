@@ -353,7 +353,7 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) =
   const query = {
     index: INDEX_STIX_RELATIONS,
     body: {
-      size: 500,
+      size: 10000,
       query: {
         bool: {
           must: filters,
@@ -592,8 +592,7 @@ export const elPaginate = async (indexName, options) => {
       for (let i = 0; i < values.length; i += 1) {
         if (values[i] === null) {
           mustnot = append({ exists: { field: key } }, mustnot);
-        }
-        if (values[i] === 'EXISTS') {
+        } else if (values[i] === 'EXISTS') {
           valuesFiltering.push({ exists: { field: key } });
         } else if (operator === 'eq' || operator === 'match') {
           valuesFiltering.push({
@@ -662,11 +661,12 @@ export const elLoadByTerms = async (terms, relationsMap, indices = PLATFORM_INDI
     body: {
       query: {
         bool: {
-          should: map(x => ({ term: x }), terms)
+          must: map(x => ({ term: x }), terms)
         }
       }
     }
   };
+  logger.debug(`[ELASTICSEARCH] loadByTerms > ${JSON.stringify(query)}`);
   const data = await el.search(query).catch(err => {
     logger.error(`[ELASTICSEARCH] Load term fail > ${err}`);
   });
@@ -684,14 +684,26 @@ export const elLoadByTerms = async (terms, relationsMap, indices = PLATFORM_INDI
 };
 // endregion
 
-export const elLoadById = (id, relationsMap, indices = PLATFORM_INDICES) => {
-  return elLoadByTerms([{ 'internal_id_key.keyword': id }], relationsMap, indices);
+export const elLoadById = (id, type = null, relationsMap = null, indices = PLATFORM_INDICES) => {
+  const terms = [{ 'internal_id_key.keyword': id }];
+  if (type) {
+    terms.push({ 'parent_types.keyword': type });
+  }
+  return elLoadByTerms(terms, relationsMap, indices);
 };
-export const elLoadByStixId = (id, relationsMap, indices = PLATFORM_INDICES) => {
-  return elLoadByTerms([{ 'stix_id_key.keyword': id }], relationsMap, indices);
+export const elLoadByStixId = (id, type = null, relationsMap = null, indices = PLATFORM_INDICES) => {
+  const terms = [{ 'stix_id_key.keyword': id }];
+  if (type) {
+    terms.push({ 'parent_types.keyword': type });
+  }
+  return elLoadByTerms(terms, relationsMap, indices);
 };
-export const elLoadByGraknId = (id, relationsMap, indices = PLATFORM_INDICES) => {
-  return elLoadByTerms([{ 'grakn_id.keyword': id }], relationsMap, indices);
+export const elLoadByGraknId = (id, type = null, relationsMap = null, indices = PLATFORM_INDICES) => {
+  const terms = [{ 'grakn_id.keyword': id }];
+  if (type) {
+    terms.push({ 'parent_types.keyword': type });
+  }
+  return elLoadByTerms(terms, relationsMap, indices);
 };
 
 export const elBulk = async args => {

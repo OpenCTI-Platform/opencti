@@ -20,6 +20,7 @@ import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { personEditionQuery } from './PersonEdition';
 import PersonEditionContainer from './PersonEditionContainer';
 import Loader from '../../../../components/Loader';
+import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -46,7 +47,7 @@ Transition.displayName = 'TransitionSlide';
 
 const PersonPopoverDeletionMutation = graphql`
   mutation PersonPopoverDeletionMutation($id: ID!) {
-    userEdit(id: $id) {
+    personEdit(id: $id) {
       delete
     }
   }
@@ -120,9 +121,11 @@ class PersonPopover extends Component {
           <MenuItem onClick={this.handleOpenEdit.bind(this)}>
             {t('Update')}
           </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
-          </MenuItem>
+          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+            <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+              {t('Delete')}
+            </MenuItem>
+          </Security>
         </Menu>
         <Dialog
           open={this.state.displayDelete}
@@ -164,7 +167,7 @@ class PersonPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <PersonEditionContainer person={props.user}
+                  <PersonEditionContainer person={props.person}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

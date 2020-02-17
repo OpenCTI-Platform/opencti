@@ -14,7 +14,7 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 
 export const findById = killChainPhaseId => {
-  return loadEntityById(killChainPhaseId);
+  return loadEntityById(killChainPhaseId, 'Kill-Chain-Phase');
 };
 
 export const findAll = args => {
@@ -32,37 +32,43 @@ export const addKillChainPhase = async (user, killChainPhase) => {
 };
 
 export const killChainPhaseDelete = killChainPhaseId => {
-  return deleteEntityById(killChainPhaseId);
+  return deleteEntityById(killChainPhaseId, 'Kill-Chain-Phase');
 };
 export const killChainPhaseAddRelation = (user, killChainPhaseId, input) => {
-  return createRelation(killChainPhaseId, input).then(relationData => {
+  return createRelation(
+    killChainPhaseId,
+    assoc('through', 'kill_chain_phases', input),
+    {},
+    'Kill-Chain-Phase',
+    null
+  ).then(relationData => {
     notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
 export const killChainPhaseDeleteRelation = async (user, killChainPhaseId, relationId) => {
   await deleteRelationById(relationId);
-  const data = await loadEntityById(killChainPhaseId);
+  const data = await loadEntityById(killChainPhaseId, 'stix_relation_embedded');
   return notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, data, user);
 };
 export const killChainPhaseEditField = (user, killChainPhaseId, input) => {
   return executeWrite(wTx => {
-    return updateAttribute(killChainPhaseId, input, wTx);
+    return updateAttribute(killChainPhaseId, 'Kill-Chain-Phase', input, wTx);
   }).then(async () => {
-    const killChainPhase = await loadEntityById(killChainPhaseId);
+    const killChainPhase = await loadEntityById(killChainPhaseId, 'Kill-Chain-Phase');
     return notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase, user);
   });
 };
 
 export const killChainPhaseCleanContext = (user, killChainPhaseId) => {
   delEditContext(user, killChainPhaseId);
-  return loadEntityById(killChainPhaseId).then(killChainPhase =>
+  return loadEntityById(killChainPhaseId, 'Kill-Chain-Phase').then(killChainPhase =>
     notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase, user)
   );
 };
 export const killChainPhaseEditContext = (user, killChainPhaseId, input) => {
   setEditContext(user, killChainPhaseId, input);
-  return loadEntityById(killChainPhaseId).then(killChainPhase =>
+  return loadEntityById(killChainPhaseId, 'Kill-Chain-Phase').then(killChainPhase =>
     notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase, user)
   );
 };

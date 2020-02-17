@@ -14,14 +14,22 @@ import { buildPagination } from '../database/utils';
 
 export const findById = sectorId => {
   if (sectorId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(sectorId);
+    return loadEntityByStixId(sectorId, 'Sector');
   }
-  return loadEntityById(sectorId);
+  return loadEntityById(sectorId, 'Sector');
 };
 export const findAll = args => {
   return listEntities(['Sector'], ['name', 'alias'], args);
 };
-export const subsectors = sectorId => {
+export const parentSectors = sectorId => {
+  return findWithConnectedRelations(
+    `match $to isa Sector; $rel(part_of:$from, gather:$to) isa gathering;
+     $from has internal_id_key "${escapeString(sectorId)}"; get;`,
+    'to',
+    'rel'
+  ).then(data => buildPagination(0, 0, data, data.length));
+};
+export const subSectors = sectorId => {
   return findWithConnectedRelations(
     `match $to isa Sector; $rel(gather:$from, part_of:$to) isa gathering;
      $from has internal_id_key "${escapeString(sectorId)}"; get;`,
@@ -36,7 +44,7 @@ export const addSector = async (user, sector) => {
 };
 
 // region metrics and counting
-export const isSubsector = async (sectorId, args) => {
+export const isSubSector = async (sectorId, args) => {
   const numberOfParents = await getSingleValueNumber(
     `match $parent isa Sector; 
     $rel(gather:$parent, part_of:$subsector) isa gathering; 

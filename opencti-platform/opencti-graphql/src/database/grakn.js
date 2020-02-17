@@ -419,7 +419,7 @@ const loadConcept = async (concept, args = {}) => {
   // 01. Return the data in elastic if not explicitly asked in grakn
   // Very useful for getting every entities through relation query.
   if (infer === false && noCache === false && !forceNoCache()) {
-    const conceptFromCache = await elLoadByGraknId(id, relationsMap, [index]);
+    const conceptFromCache = await elLoadByGraknId(id, null, relationsMap, [index]);
     if (!conceptFromCache) {
       logger.debug(`[GRAKN] Cache warning: ${id} should be available in cache`);
     } else {
@@ -883,6 +883,7 @@ export const listRelations = async (relationType, relationFilter, args) => {
     relationsFields.push(relationQueryPart);
   }
   if (filters.length > 0) {
+    // eslint-disable-next-line
     for (const f of filters) {
       const filterKey = f.key
         .replace(REL_INDEX_PREFIX, '')
@@ -914,24 +915,24 @@ export const load = async (query, entities, { infer, noCache } = findOpts) => {
   const data = await find(query, entities, { infer, noCache });
   return head(data);
 };
-export const loadEntityById = async (id, args = {}) => {
+export const loadEntityById = async (id, type = null, args = {}) => {
   const { noCache = false } = args;
   if (!noCache && !forceNoCache()) {
     // [ELASTIC] From cache
-    const fromCache = await elLoadById(id);
+    const fromCache = await elLoadById(id, type);
     if (fromCache) return fromCache;
   }
-  const query = `match $x isa entity; $x has internal_id_key "${escapeString(id)}"; get;`;
+  const query = `match $x ${type ? `isa ${type},` : ''} has internal_id_key "${escapeString(id)}"; get;`;
   const element = await load(query, ['x'], { noCache });
   return element ? element.x : null;
 };
-export const loadEntityByStixId = async id => {
+export const loadEntityByStixId = async (id, type = null) => {
   if (!forceNoCache()) {
     // [ELASTIC] From cache
-    const fromCache = await elLoadByStixId(id);
+    const fromCache = await elLoadByStixId(id, type);
     if (fromCache) return fromCache;
   }
-  const query = `match $x isa entity; $x has stix_id_key "${escapeString(id)}"; get;`;
+  const query = `match $x ${type ? `isa ${type},` : ''} has stix_id_key "${escapeString(id)}"; get;`;
   const element = await load(query, ['x']);
   return element ? element.x : null;
 };
@@ -946,26 +947,26 @@ export const loadEntityByGraknId = async (graknId, args = {}) => {
   const element = await load(query, ['x']);
   return element.x;
 };
-export const loadRelationById = async (id, args = {}) => {
+export const loadRelationById = async (id, type = null, args = {}) => {
   const { noCache = false } = args;
   if (!noCache && !forceNoCache()) {
     // [ELASTIC] From cache
-    const fromCache = await elLoadById(id);
+    const fromCache = await elLoadById(id, type);
     if (fromCache) return fromCache;
   }
   const eid = escapeString(id);
-  const query = `match $rel($from, $to) isa relation; $rel has internal_id_key "${eid}"; get;`;
+  const query = `match $rel($from, $to) ${type ? `isa ${type},` : ''} has internal_id_key "${eid}"; get;`;
   const element = await load(query, ['rel']);
   return element ? element.rel : null;
 };
-export const loadRelationByStixId = async id => {
+export const loadRelationByStixId = async (id, type = null) => {
   if (!forceNoCache()) {
     // [ELASTIC] From cache
-    const fromCache = await elLoadByStixId(id);
+    const fromCache = await elLoadByStixId(id, type);
     if (fromCache) return fromCache;
   }
   const eid = escapeString(id);
-  const query = `match $rel($from, $to) isa relation; $rel has stix_id_key "${eid}"; get;`;
+  const query = `match $rel($from, $to) isa ${type ? `isa ${type},` : ''} has stix_id_key "${eid}"; get;`;
   const element = await load(query, ['rel']);
   return element ? element.rel : null;
 };
@@ -1120,10 +1121,17 @@ export const reindexByQuery = async (query, entities) => {
   )(entities);
   return indexElements(innerElements);
 };
-export const reindexByAttribute = (type, value) => {
+export const reindexEntityByAttribute = (type, value) => {
   const eType = escape(type);
   const eVal = escapeString(value);
   const readQuery = `match $x isa entity, has ${eType} $a; $a "${eVal}"; get;`;
+  logger.debug(`[GRAKN - infer: false] attributeUpdate > ${readQuery}`);
+  return reindexByQuery(readQuery, ['x']);
+};
+export const reindexRelationByAttribute = (type, value) => {
+  const eType = escape(type);
+  const eVal = escapeString(value);
+  const readQuery = `match $x isa relation, has ${eType} $a; $a "${eVal}"; get;`;
   logger.debug(`[GRAKN - infer: false] attributeUpdate > ${readQuery}`);
   return reindexByQuery(readQuery, ['x']);
 };
@@ -1227,7 +1235,7 @@ export const distributionEntities = async (entityType, filters, options) => {
   return take(limit, sortWith([orderingFunction(prop('value'))])(distributionData));
 };
 export const distributionRelations = async options => {
-  const { limit = 10, order, inferred = false } = options;
+  const { limit = 50, order, inferred = false } = options;
   const { startDate, endDate, relationType, toTypes, fromId, field, operation } = options;
   let distributionData;
   const entityType = relationType ? escape(relationType) : 'stix_relation';
@@ -1301,7 +1309,7 @@ const flatAttributesForObject = data => {
 // endregion
 
 // region mutation relation
-const createRelationRaw = async (fromInternalId, input, opts = {}) => {
+const createRelationRaw = async (fromInternalId, input, opts = {}, fromType = null, toType = null) => {
   const { indexable = true, reversedReturn = false, isStixObservableRelation = false } = opts;
   // 01. First fix the direction of the relation
   const isStixRelation = includes('stix_id_key', Object.keys(input)) || input.relationship_type;
@@ -1362,8 +1370,8 @@ const createRelationRaw = async (fromInternalId, input, opts = {}) => {
   }
   // 02. Create the relation
   const graknRelation = await executeWrite(async wTx => {
-    let query = `match $from has internal_id_key "${fromInternalId}";
-      $to has internal_id_key "${input.toId}";
+    let query = `match $from ${fromType ? `isa ${fromType},` : ''} has internal_id_key "${fromInternalId}";
+      $to ${toType ? `isa ${toType},` : ''} has internal_id_key "${input.toId}";
       insert $rel(${input.fromRole}: $from, ${input.toRole}: $to) isa ${relationshipType},`;
     const queryElements = flatAttributesForObject(relationAttributes);
     const nbElements = queryElements.length;
@@ -1426,17 +1434,17 @@ const createRelationRaw = async (fromInternalId, input, opts = {}) => {
 const addOwner = async (fromInternalId, createdByOwnerId, opts = {}) => {
   if (!createdByOwnerId) return undefined;
   const input = { fromRole: 'so', toId: createdByOwnerId, toRole: 'owner', through: 'owned_by' };
-  return createRelationRaw(fromInternalId, input, opts);
+  return createRelationRaw(fromInternalId, input, opts, null, 'Identity');
 };
 const addCreatedByRef = async (fromInternalId, createdByRefId, opts = {}) => {
   if (!createdByRefId) return undefined;
   const input = { fromRole: 'so', toId: createdByRefId, toRole: 'creator', through: 'created_by_ref' };
-  return createRelationRaw(fromInternalId, input, opts);
+  return createRelationRaw(fromInternalId, input, opts, null, 'Identity');
 };
 const addMarkingDef = async (fromInternalId, markingDefId, opts = {}) => {
   if (!markingDefId) return undefined;
   const input = { fromRole: 'so', toId: markingDefId, toRole: 'marking', through: 'object_marking_refs' };
-  return createRelationRaw(fromInternalId, input, opts);
+  return createRelationRaw(fromInternalId, input, opts, null, 'Marking-Definition');
 };
 const addMarkingDefs = async (internalId, markingDefIds, opts = {}) => {
   if (!markingDefIds || isEmpty(markingDefIds)) return undefined;
@@ -1452,7 +1460,7 @@ const addMarkingDefs = async (internalId, markingDefIds, opts = {}) => {
 const addTag = async (fromInternalId, tagId, opts = {}) => {
   if (!tagId) return undefined;
   const input = { fromRole: 'so', toId: tagId, toRole: 'tagging', through: 'tagged' };
-  return createRelationRaw(fromInternalId, input, opts);
+  return createRelationRaw(fromInternalId, input, opts, null, 'Tag');
 };
 const addTags = async (internalId, tagsIds, opts = {}) => {
   if (!tagsIds || isEmpty(tagsIds)) return undefined;
@@ -1473,7 +1481,7 @@ const addKillChain = async (fromInternalId, killChainId, opts = {}) => {
     toRole: 'kill_chain_phase',
     through: 'kill_chain_phases'
   };
-  return createRelationRaw(fromInternalId, input, opts);
+  return createRelationRaw(fromInternalId, input, opts, null, 'Kill-Chain-Phase');
 };
 const addKillChains = async (internalId, killChainIds, opts = {}) => {
   if (!killChainIds || isEmpty(killChainIds)) return undefined;
@@ -1494,7 +1502,7 @@ const addObservableRef = async (fromInternalId, observableId, opts = {}) => {
     toRole: 'soo',
     through: 'observable_refs'
   };
-  return createRelationRaw(fromInternalId, input, opts);
+  return createRelationRaw(fromInternalId, input, opts, null, 'Stix-Observable');
 };
 const addObservableRefs = async (internalId, observableIds, opts = {}) => {
   if (!observableIds || isEmpty(observableIds)) return undefined;
@@ -1507,8 +1515,8 @@ const addObservableRefs = async (internalId, observableIds, opts = {}) => {
   }
   return observableRefs;
 };
-export const createRelation = async (fromInternalId, input, opts = {}) => {
-  const created = await createRelationRaw(fromInternalId, input, opts);
+export const createRelation = async (fromInternalId, input, opts = {}, fromType = null, toType = null) => {
+  const created = await createRelationRaw(fromInternalId, input, opts, fromType, toType);
   if (created) {
     // 05. Complete with eventual relations (will eventually update the index)
     await addOwner(created.id, input.createdByOwner, opts);
@@ -1518,13 +1526,13 @@ export const createRelation = async (fromInternalId, input, opts = {}) => {
   }
   return created;
 };
-export const createRelations = async (fromInternalId, inputs, opts = {}) => {
+export const createRelations = async (fromInternalId, inputs, opts = {}, fromType = null, toType = null) => {
   const createdRelations = [];
   // Relations cannot be created in parallel. (Concurrent indexing on same key)
   // Could be improve by grouping and indexing in one shot.
   for (let i = 0; i < inputs.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
-    const relation = await createRelation(fromInternalId, inputs[i], opts);
+    const relation = await createRelation(fromInternalId, inputs[i], opts, fromType, toType);
     createdRelations.push(relation);
   }
   return createdRelations;
@@ -1632,14 +1640,14 @@ export const createEntity = async (entity, type, opts = {}) => {
 // endregion
 
 // region mutation update
-export const updateAttribute = async (id, input, wTx) => {
+export const updateAttribute = async (id, type = null, input, wTx) => {
   const { key, value } = input; // value can be multi valued
   if (includes(key, readOnlyAttributes)) {
     throw new DatabaseError({ data: { details: `The field ${key} cannot be modified` } });
   }
   // --- 00 Need update?
   const val = includes(key, multipleAttributes) ? value : head(value);
-  const currentInstanceData = await loadEntityById(id);
+  const currentInstanceData = await loadEntityById(id, type);
   if (equals(currentInstanceData[key], val)) {
     return id;
   }
@@ -1660,7 +1668,9 @@ export const updateAttribute = async (id, input, wTx) => {
   }, value);
   // --- Delete the old attribute
   const entityId = `${escapeString(id)}`;
-  const deleteQuery = `match $x has internal_id_key "${entityId}", has ${escapedKey} $del via $d; delete $d;`;
+  const deleteQuery = `match $x ${
+    type ? `isa ${type},` : ''
+  } has internal_id_key "${entityId}", has ${escapedKey} $del via $d; delete $d;`;
   // eslint-disable-next-line prettier/prettier
   logger.debug(`[GRAKN - infer: false] updateAttribute - delete > ${deleteQuery}`);
   await wTx.tx.query(deleteQuery);
@@ -1674,7 +1684,9 @@ export const updateAttribute = async (id, input, wTx) => {
         map(gVal => `has ${escapedKey} ${gVal},`, tail(typedValues))
       )} has ${escapedKey} ${head(typedValues)}`;
     }
-    const createQuery = `match $m has internal_id_key "${escapeString(id)}"; insert $m ${graknValues};`;
+    const createQuery = `match $x ${
+      type ? `isa ${type},` : ''
+    } has internal_id_key "${entityId}"; insert $x ${graknValues};`;
     logger.debug(`[GRAKN - infer: false] updateAttribute - insert > ${createQuery}`);
     await wTx.tx.query(createQuery);
   }
@@ -1684,17 +1696,17 @@ export const updateAttribute = async (id, input, wTx) => {
     const monthValue = monthFormat(head(value));
     const yearValue = yearFormat(head(value));
     const dayInput = { key: `${key}_day`, value: [dayValue] };
-    await updateAttribute(id, dayInput, wTx);
+    await updateAttribute(id, type, dayInput, wTx);
     const monthInput = { key: `${key}_month`, value: [monthValue] };
-    await updateAttribute(id, monthInput, wTx);
+    await updateAttribute(id, type, monthInput, wTx);
     const yearInput = { key: `${key}_year`, value: [yearValue] };
-    await updateAttribute(id, yearInput, wTx);
+    await updateAttribute(id, type, yearInput, wTx);
   }
   // Update modified / updated_at
   if (currentInstanceData.parent_types.includes(TYPE_STIX_DOMAIN) && key !== 'modified' && key !== 'updated_at') {
     const today = now();
-    await updateAttribute(id, { key: 'updated_at', value: [today] }, wTx);
-    await updateAttribute(id, { key: 'modified', value: [today] }, wTx);
+    await updateAttribute(id, type, { key: 'updated_at', value: [today] }, wTx);
+    await updateAttribute(id, type, { key: 'modified', value: [today] }, wTx);
   }
 
   // Update elasticsearch
@@ -1708,17 +1720,17 @@ export const updateAttribute = async (id, input, wTx) => {
 // endregion
 
 // region mutation deletion
-export const deleteEntityById = async id => {
+export const deleteEntityById = async (id, type) => {
   const eid = escapeString(id);
   // 00. Load everything we need to remove in elastic
-  const read = `match $from has internal_id_key "${eid}"; $rel($from, $to) isa relation; get;`;
+  const read = `match $from isa ${type}, has internal_id_key "${eid}"; $rel($from, $to) isa relation; get;`;
   const relationsToDeIndex = await find(read, ['rel']);
   const answers = map(r => r.rel.id, relationsToDeIndex);
   const relationsIds = filter(r => r, answers); // Because of relation to attributes
   // 01. Execute the delete in grakn and elastic
   return executeWrite(async wTx => {
-    const query = `match $x has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
-    logger.debug(`[GRAKN - infer: false] deleteEntityById > ${query}`);
+    const query = `match $x isa ${type}, has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
+    logger.debug(`[GRAKN - infer: false] deleteTypedEntityById > ${query}`);
     await wTx.tx.query(query, { infer: false });
   }).then(async () => {
     // [ELASTIC] Delete entity and relations connected to
@@ -1726,16 +1738,18 @@ export const deleteEntityById = async id => {
     return id;
   });
 };
-export const deleteRelationById = async relationId => {
+export const deleteRelationById = async (relationId, type = null) => {
   const eid = escapeString(relationId);
   // 00. Load everything we need to remove in elastic
-  const read = `match $from has internal_id_key "${eid}"; $rel($from, $to) isa relation; get;`;
+  const read = `match $from ${
+    type ? `isa ${type},` : ''
+  } has internal_id_key "${eid}"; $rel($from, $to) isa relation; get;`;
   const relationsToDeIndex = await find(read, ['rel']);
   const answers = map(r => r.rel.id, relationsToDeIndex);
   const relationsIds = filter(r => r, answers); // Because of relation to attributes
   // 01. Execute the delete in grakn and elastic
   return executeWrite(async wTx => {
-    const query = `match $x has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
+    const query = `match $x ${type ? `isa ${type},` : ''} has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
     logger.debug(`[GRAKN - infer: false] deleteRelationById > ${query}`);
     await wTx.tx.query(query, { infer: false });
   }).then(async () => {
@@ -1753,7 +1767,7 @@ export const deleteRelationsByFromAndTo = async (fromId, toId, relationType = 'r
     $rel($from, $to) isa ${relationType}; get;`;
   const relationsToDelete = await find(read, ['rel']);
   const relationsIds = map(r => r.rel.id, relationsToDelete);
-  await Promise.all(map(id => deleteRelationById(id), relationsIds));
+  await Promise.all(map(id => deleteRelationById(id, relationType), relationsIds));
 };
 
 export const deleteAttributeById = async id => {

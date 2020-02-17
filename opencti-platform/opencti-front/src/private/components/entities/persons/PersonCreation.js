@@ -84,7 +84,7 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
-    'Pagination_users',
+    'Pagination_persons',
     paginationOptions,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);

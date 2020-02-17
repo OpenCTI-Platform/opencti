@@ -7,7 +7,7 @@ import { logger } from '../config/conf';
 export const fillTimeSeries = (startDate, endDate, interval, data) => {
   const startDateParsed = moment(startDate);
   const endDateParsed = moment(endDate);
-  let dateFormat = null;
+  let dateFormat;
 
   switch (interval) {
     case 'year':
@@ -87,6 +87,7 @@ export const execPython3 = async (scriptPath, scriptName, args) => {
         try {
           let result = results[0];
           if (result.includes('ANTLR')) {
+            // eslint-disable-next-line prefer-destructuring
             result = results[2];
           }
           result = JSON.parse(result);

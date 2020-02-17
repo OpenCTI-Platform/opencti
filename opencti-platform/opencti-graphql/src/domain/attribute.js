@@ -4,7 +4,8 @@ import {
   executeWrite,
   queryAttributeValueById,
   queryAttributeValues,
-  reindexByAttribute
+  reindexEntityByAttribute,
+  reindexRelationByAttribute
 } from '../database/grakn';
 import { logger } from '../config/conf';
 
@@ -45,10 +46,19 @@ export const attributeUpdate = async (id, input) => {
     logger.debug(`[GRAKN - infer: false] attributeUpdate > ${writeQuery}`);
     await wTx.tx.query(writeQuery);
   });
+  // Link new attribute to every relations
+  await executeWrite(async wTx => {
+    const writeQuery = `match $e isa relation, has ${escape(input.type)} $a; $a "${escapeString(
+      input.value
+    )}"; insert $e has ${escape(input.type)} $attribute; $attribute "${escapeString(input.newValue)}";`;
+    logger.debug(`[GRAKN - infer: false] attributeUpdate > ${writeQuery}`);
+    await wTx.tx.query(writeQuery);
+  });
   // Delete old attribute
   await deleteAttributeById(id);
   // Reindex all entities using this attribute
-  await reindexByAttribute(input.type, input.newValue);
+  await reindexEntityByAttribute(input.type, input.newValue);
+  await reindexRelationByAttribute(input.type, input.newValue);
   // Return the new attribute
   return newAttribute;
 };

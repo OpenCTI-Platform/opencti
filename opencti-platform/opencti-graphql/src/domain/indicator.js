@@ -105,9 +105,9 @@ const computeValidUntil = async indicator => {
 
 export const findById = indicatorId => {
   if (indicatorId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(indicatorId);
+    return loadEntityByStixId(indicatorId, 'Indicator');
   }
-  return loadEntityById(indicatorId);
+  return loadEntityById(indicatorId, 'Indicator');
 };
 export const findAll = args => {
   return listEntities(['Indicator'], ['name', 'alias'], args);

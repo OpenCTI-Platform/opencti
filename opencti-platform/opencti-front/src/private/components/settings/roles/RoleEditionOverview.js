@@ -5,15 +5,7 @@ import { createFragmentContainer } from 'react-relay';
 import { Form, Formik } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
-  compose,
-  pick,
-  map,
-  pipe,
-  flatten,
-  uniq,
-  find,
-  propEq,
-  dropLast,
+  compose, filter, find, includes, pick, propEq,
 } from 'ramda';
 import * as Yup from 'yup';
 import ListItem from '@material-ui/core/ListItem';
@@ -223,50 +215,31 @@ const RoleEditionOverviewComponent = ({
               variables={{}}
               render={({ props }) => {
                 if (props) {
-                  // Compute every capabilities
-                  const inheritedCapabilities = pipe(
-                    map((n) => {
-                      const allCapabilities = n.name.split('_');
-                      if (allCapabilities.length === 1) return [];
-                      return dropLast(1, n.name.split('_'));
-                    }),
-                    flatten,
-                    uniq,
-                  )(role.capabilities);
                   return (
-                    <List
-                      dense={true}
+                    <List dense={true}
                       className={classes.root}
                       subheader={
-                        <ListSubheader
-                          component="div"
-                          style={{ paddingLeft: 0 }}
-                        >
+                        <ListSubheader component="div" style={{ paddingLeft: 0 }}>
                           {t('Capabilities')}
                         </ListSubheader>
-                      }
-                    >
+                      }>
                       {props.capabilities.edges.map((edge) => {
                         const capability = edge.node;
                         const paddingLeft = capability.name.split('_').length * 20 - 20;
                         const roleCapability = find(
                           propEq('name', capability.name),
                         )(role.capabilities);
-                        const isDisabled = inheritedCapabilities.includes(
-                          capability.name,
-                        );
-                        const isChecked = roleCapability !== undefined;
+                        const matchingCapabilities = filter((r) => capability.name !== r.name
+                          && includes(capability.name, r.name), role.capabilities);
+                        const isDisabled = matchingCapabilities.length > 0;
+                        const isChecked = isDisabled || roleCapability !== undefined;
                         return (
-                          <ListItem
-                            key={capability.name}
+                          <ListItem key={capability.name}
                             divider={true}
-                            style={{ paddingLeft }}
-                          >
+                            style={{ paddingLeft }}>
                             <ListItemText primary={capability.description} />
                             <ListItemSecondaryAction>
-                              <Checkbox
-                                onChange={(event) => handleToggle(capability, event)
-                                }
+                              <Checkbox onChange={(event) => handleToggle(capability, event)}
                                 checked={isChecked}
                                 disabled={isDisabled}
                               />

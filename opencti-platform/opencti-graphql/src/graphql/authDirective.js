@@ -40,9 +40,14 @@ class AuthDirective extends SchemaDirectiveVisitor {
     const shouldBypass = userCapabilities.includes(BYPASS) || user.id === OPENCTI_ADMIN_UUID;
     if (shouldBypass) return func.apply(this, args);
     // Check the user capabilities
-    const matchingCapabilities = filter(r => includes(r, userCapabilities), requiredCapabilities);
-    if (matchingCapabilities.length === 0) throw new ForbiddenAccess();
-    if (requiredAll && matchingCapabilities.length !== requiredCapabilities.length) throw new ForbiddenAccess();
+    const availableCapabilities = [];
+    for (let index = 0; index < requiredCapabilities.length; index += 1) {
+      const checkCapability = requiredCapabilities[index];
+      const matchingCapabilities = filter(r => includes(checkCapability, r), userCapabilities);
+      if (matchingCapabilities.length > 0) availableCapabilities.push(checkCapability);
+    }
+    if (availableCapabilities.length === 0) throw new ForbiddenAccess();
+    if (requiredAll && availableCapabilities.length !== requiredCapabilities.length) throw new ForbiddenAccess();
     return func.apply(this, args);
   }
 

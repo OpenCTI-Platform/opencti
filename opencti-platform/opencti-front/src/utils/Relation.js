@@ -1,6 +1,7 @@
 import { append } from 'ramda';
 
 const relationsTypesMapping = {
+  'attack-pattern_vulnerability': ['targets'],
   'threat-actor_attack-pattern': ['uses'],
   'threat-actor_region': ['targets', 'localization'],
   'threat-actor_country': ['targets', 'localization'],

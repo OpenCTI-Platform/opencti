@@ -69,8 +69,8 @@ const sectorMutation = graphql`
       id
       name
       description
-      isSubsector
-      subsectors {
+      isSubSector
+      subSectors {
         edges {
           node {
             id

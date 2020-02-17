@@ -163,19 +163,22 @@ class StixDomainEntityCreation extends Component {
         containerstyle={{ width: '100%' }}
       >
         {targetEntityTypes === undefined
-        || targetEntityTypes.includes('Organization') ? (
+        || targetEntityTypes.includes('Organization')
+        || targetEntityTypes.includes('Identity') ? (
           <MenuItem value="Organization">{t('Organization')}</MenuItem>
           ) : (
             ''
           )}
         {targetEntityTypes === undefined
-        || targetEntityTypes.includes('Sector') ? (
+        || targetEntityTypes.includes('Sector')
+        || targetEntityTypes.includes('Identity') ? (
           <MenuItem value="Sector">{t('Sector')}</MenuItem>
           ) : (
             ''
           )}
         {targetEntityTypes === undefined
-        || targetEntityTypes.includes('User') ? (
+        || targetEntityTypes.includes('User')
+        || targetEntityTypes.includes('Identity') ? (
           <MenuItem value="User">{t('Person')}</MenuItem>
           ) : (
             ''
@@ -235,19 +238,22 @@ class StixDomainEntityCreation extends Component {
             ''
           )}
         {targetEntityTypes === undefined
-        || targetEntityTypes.includes('City') ? (
+        || targetEntityTypes.includes('City')
+        || targetEntityTypes.includes('Identity') ? (
           <MenuItem value="City">{t('City')}</MenuItem>
           ) : (
             ''
           )}
         {targetEntityTypes === undefined
-        || targetEntityTypes.includes('Country') ? (
+        || targetEntityTypes.includes('Country')
+        || targetEntityTypes.includes('Identity') ? (
           <MenuItem value="Country">{t('Country')}</MenuItem>
           ) : (
             ''
           )}
         {targetEntityTypes === undefined
-        || targetEntityTypes.includes('Region') ? (
+        || targetEntityTypes.includes('Region')
+        || targetEntityTypes.includes('Identity') ? (
           <MenuItem value="Region">{t('Region')}</MenuItem>
           ) : (
             ''

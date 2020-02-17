@@ -12,9 +12,9 @@ import { buildPagination } from '../database/utils';
 
 export const findById = courseOfActionId => {
   if (courseOfActionId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(courseOfActionId);
+    return loadEntityByStixId(courseOfActionId, 'Course-Of-Action');
   }
-  return loadEntityById(courseOfActionId);
+  return loadEntityById(courseOfActionId, 'Course-Of-Action');
 };
 export const findAll = args => {
   return listEntities(['Course-Of-Action'], ['name', 'alias'], args);

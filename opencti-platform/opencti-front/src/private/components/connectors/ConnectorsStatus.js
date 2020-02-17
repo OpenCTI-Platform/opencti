@@ -23,6 +23,7 @@ import IconButton from '@material-ui/core/IconButton';
 import { FIVE_SECONDS } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
+import Security, { MODULES_MODMANAGE } from '../../../utils/Security';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -253,17 +254,11 @@ class ConnectorsStatusComponent extends Component {
               <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
             </ListItem>
             {sortedConnectors.map((connector) => (
-              <ListItem
-                key={connector.id}
+              <ListItem key={connector.id}
                 classes={{ root: classes.item }}
                 divider={true}
-                button={true}
-              >
-                <ListItemIcon
-                  style={{
-                    color: connector.active ? '#4caf50' : '#f44336',
-                  }}
-                >
+                button={true}>
+                <ListItemIcon style={{ color: connector.active ? '#4caf50' : '#f44336' }}>
                   <Extension />
                 </ListItemIcon>
                 <ListItemText
@@ -303,15 +298,15 @@ class ConnectorsStatusComponent extends Component {
                   }
                 />
                 <ListItemSecondaryAction>
-                  <Tooltip title={t('Reset the connector state')}>
-                    <IconButton
-                      onClick={this.handleResetState.bind(this, connector.id)}
-                      aria-haspopup="true"
-                      color="primary"
-                    >
-                      <RotateLeft />
-                    </IconButton>
-                  </Tooltip>
+                  <Security needs={[MODULES_MODMANAGE]}>
+                    <Tooltip title={t('Reset the connector state')}>
+                      <IconButton onClick={this.handleResetState.bind(this, connector.id)}
+                        aria-haspopup="true"
+                        color="primary">
+                        <RotateLeft />
+                      </IconButton>
+                    </Tooltip>
+                  </Security>
                 </ListItemSecondaryAction>
               </ListItem>
             ))}

@@ -29,7 +29,7 @@ import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE,
   EXPLORE,
-  SETTINGS,
+  SETTINGS, MODULES,
 } from '../../../utils/Security';
 
 const styles = (theme) => ({
@@ -181,32 +181,32 @@ const LeftBar = ({ t, location, classes }) => {
             </MenuItem>
           </MenuList>
         </Security>
-        <Security needs={[SETTINGS]}>
+        <Security needs={[MODULES, SETTINGS]}>
           <Divider />
           <MenuList component="nav">
-            <MenuItem
-              component={Link}
-              to="/dashboard/connectors"
-              selected={location.pathname.includes('/dashboard/connectors')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon>
-                <Extension />
-              </ListItemIcon>
-            </MenuItem>
-            <MenuItem
-              component={Link}
-              to="/dashboard/settings"
-              selected={location.pathname.includes('/dashboard/settings')}
-              dense={false}
-              style={{ marginBottom: 50 }}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon>
-                <Settings />
-              </ListItemIcon>
-            </MenuItem>
+            <Security needs={[MODULES]}>
+              <MenuItem component={Link}
+                to="/dashboard/connectors"
+                selected={location.pathname.includes('/dashboard/connectors')}
+                dense={false}
+                classes={{ root: classes.menuItem }}>
+                <ListItemIcon>
+                  <Extension />
+                </ListItemIcon>
+              </MenuItem>
+            </Security>
+            <Security needs={[SETTINGS]}>
+              <MenuItem component={Link}
+                to="/dashboard/settings"
+                selected={location.pathname.includes('/dashboard/settings')}
+                dense={false}
+                style={{ marginBottom: 50 }}
+                classes={{ root: classes.menuItem }}>
+                <ListItemIcon>
+                  <Settings />
+                </ListItemIcon>
+              </MenuItem>
+            </Security>
           </MenuList>
         </Security>
         <MenuList component="nav" classes={{ root: classes.menuList }}>

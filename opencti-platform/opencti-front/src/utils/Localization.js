@@ -84,6 +84,8 @@ const i18n = {
         'Souhaitez-vous supprimer cette référence externe ?',
       'Do you want to remove the observable from this indicator?':
         'Souhaitez-vous supprimer cet observable de cet indicateur ?',
+      'Do you want to delete this role?': 'Souhaitez-vous supprimer ce rôle ?',
+      'Do you want to delete this tag?': 'Souhaitez-vous supprimer ce tag ?',
       'Confirmation required': 'Confirmation requise',
       Information: 'Informations',
       'Last reports': 'Derniers rapports',
@@ -99,6 +101,7 @@ const i18n = {
       'Granted by default': 'Alloué par défaut',
       'Granted by default at user creation':
         "Alloué par défaut à la création d'un utilisateur",
+      'Unauthorized action': 'Action non autorisée',
       Capabilities: 'Capacités',
       Title: 'Titre',
       'Sender email address': "Adresse mail d'expédition",
@@ -401,6 +404,7 @@ const i18n = {
       'Used by this malware': 'Utilisé par ce code',
       'This malware has been used': 'Ce code a été utilisé',
       'Using this TTP': 'Utilisant cette TTP',
+      'Targeted by this TTP': 'Ciblées par cette TTP',
       'Using this tool': 'Utilisant cet outil',
       'Tool usage': 'Utilisation de cet outil',
       'Targeting this vulnerability': 'Ciblant cette vulnérabilité',

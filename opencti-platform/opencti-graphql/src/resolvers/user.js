@@ -6,6 +6,7 @@ import {
   findById,
   findCapabilities,
   findRoles,
+  findRoleById,
   getCapabilities,
   getRoleCapabilities,
   getRoles,
@@ -15,20 +16,26 @@ import {
   roleRemoveCapability,
   setAuthenticationCookie,
   token,
+  roleEditField,
+  roleDelete,
   userDelete,
+  personDelete,
   userEditField,
-  userRenewToken
+  personEditField,
+  roleAddRelation,
+  userAddRelation,
+  personAddRelation,
+  userDeleteRelation,
+  personDeleteRelation,
+  userRenewToken,
+  organizations,
+  groups
 } from '../domain/user';
 import { logger } from '../config/conf';
 import {
-  stixDomainEntityAddRelation,
   stixDomainEntityCleanContext,
-  stixDomainEntityDelete,
-  stixDomainEntityDeleteRelation,
   stixDomainEntityEditContext,
-  stixDomainEntityEditField
 } from '../domain/stixDomainEntity';
-import { groups } from '../domain/group';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import passport, { PROVIDERS } from '../config/security';
 import { AuthenticationFailure } from '../config/errors';
@@ -37,12 +44,14 @@ import { fetchEditContext } from '../database/redis';
 
 const userResolvers = {
   Query: {
-    user: (_, { id }) => findById(id),
-    users: (_, args) => findAll(args),
-    role: (_, { id }) => findById(id),
+    user: (_, { id }) => findById(id, {}, true),
+    users: (_, args) => findAll(args, true),
+    person: (_, { id }) => findById(id),
+    persons: (_, args) => findAll(args),
+    role: (_, { id }) => findRoleById(id),
     roles: (_, args) => findRoles(args),
     capabilities: (_, args) => findCapabilities(args),
-    me: (_, args, { user }) => findById(user.id)
+    me: (_, args, { user }) => findById(user.id, {}, true)
   },
   UsersOrdering: {
     markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
@@ -52,6 +61,7 @@ const userResolvers = {
     tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`
   },
   User: {
+    organizations: user => organizations(user.id),
     groups: user => groups(user.id),
     roles: user => getRoles(user.id),
     capabilities: user => getCapabilities(user.id),
@@ -92,11 +102,11 @@ const userResolvers = {
     },
     logout: (_, args, context) => logout(context.user, context.res),
     roleEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainEntityDelete(id),
-      fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
+      delete: () => roleDelete(id),
+      fieldPatch: ({ input }) => roleEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
+      relationAdd: ({ input }) => roleAddRelation(user, id, input),
       removeCapability: ({ name }) => roleRemoveCapability(id, name)
     }),
     roleAdd: (_, { input }) => addRole(input),
@@ -107,8 +117,18 @@ const userResolvers = {
       contextClean: () => stixDomainEntityCleanContext(user, id),
       tokenRenew: () => userRenewToken(id),
       removeRole: ({ name }) => removeRole(id, name),
-      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
+      relationAdd: ({ input }) => userAddRelation(user, id, input),
+      relationDelete: ({ relationId }) => userDeleteRelation(user, id, relationId)
+    }),
+    personEdit: (_, { id }, { user }) => ({
+      delete: () => personDelete(id),
+      fieldPatch: ({ input }) => personEditField(user, id, input),
+      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
+      contextClean: () => stixDomainEntityCleanContext(user, id),
+      tokenRenew: () => userRenewToken(id),
+      removeRole: ({ name }) => removeRole(id, name),
+      relationAdd: ({ input }) => personAddRelation(user, id, input),
+      relationDelete: ({ relationId }) => personDeleteRelation(user, id, relationId)
     }),
     meEdit: (_, { input }, { user }) => meEditField(user, user.id, input),
     personAdd: (_, { input }, { user }) => addPerson(user, input),

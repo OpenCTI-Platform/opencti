@@ -17,6 +17,7 @@ import { SettingsInputComponent } from '@material-ui/icons';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
+import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   paper: {
@@ -236,15 +237,15 @@ class EntityStixRelationsTableTime extends Component {
           >
             {title || t('Entity usage')}
           </Typography>
-          <IconButton
-            color="secondary"
-            aria-label="Update"
-            size="small"
-            classes={{ root: classes.updateButton }}
-            onClick={handleOpenConfig.bind(this, configuration)}
-          >
-            <SettingsInputComponent fontSize="inherit" />
-          </IconButton>
+          <Security needs={[EXPLORE_EXUPDATE]}>
+            <IconButton color="secondary"
+              aria-label="Update"
+              size="small"
+              classes={{ root: classes.updateButton }}
+              onClick={handleOpenConfig.bind(this, configuration)}>
+              <SettingsInputComponent fontSize="inherit" />
+            </IconButton>
+          </Security>
           <div style={{ float: 'right', padding: '8px 10px 0 0' }}>
             <Chip
               classes={{ root: classes.chip }}

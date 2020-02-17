@@ -1,18 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose,
-  map,
-  values,
-  assoc,
-  dissoc,
-  indexBy,
-  prop,
-  propOr,
+  assoc, compose, dissoc, indexBy, map, prop, propOr, values,
 } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { WidthProvider, Responsive } from 'react-grid-layout';
+import { Responsive, WidthProvider } from 'react-grid-layout';
 import { withStyles } from '@material-ui/core/styles';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
@@ -30,8 +23,9 @@ import VictimologyTimeseries from './VictimologyTimeseries';
 import CampaignsTimeseries from './CampaignsTimeseries';
 import IncidentsTimeseries from './IncidentsTimeseries';
 import AttackPatternsDistribution from './AttackPatternsDistribution';
+import Security, { EXPLORE_EXUPDATE } from '../../../utils/Security';
 
-const styles = theme => ({
+const styles = (theme) => ({
   container: {
     margin: '0 0 80px 0',
     padding: 0,
@@ -124,11 +118,12 @@ class WorkspaceExploreSpaceComponent extends Component {
   }
 
   onLayoutChange(layouts) {
+    // TODO @SAM / @JRI Find a way to not trigger that on first display...
     const workspaceData = this.decodeWorkspaceData();
     const layoutsObject = indexBy(prop('i'), layouts);
     const finalWorkspaceData = assoc(
       'widgets',
-      map(n => assoc('layout', layoutsObject[n.id], n), workspaceData.widgets),
+      map((n) => assoc('layout', layoutsObject[n.id], n), workspaceData.widgets),
       workspaceData,
     );
     this.saveWorkspace(finalWorkspaceData);
@@ -167,11 +162,9 @@ class WorkspaceExploreSpaceComponent extends Component {
     const workspaceData = this.decodeWorkspaceData();
     return (
       <div className={classes.container}>
-        <Drawer
-          anchor="bottom"
+        <Drawer anchor="bottom"
           variant="permanent"
-          classes={{ paper: classes.bottomNav }}
-        >
+          classes={{ paper: classes.bottomNav }}>
           <Grid container={true} spacing={1}>
             <Grid item={true} xs="auto">
               <DatePicker
@@ -215,15 +208,12 @@ class WorkspaceExploreSpaceComponent extends Component {
         <ResponsiveReactGridLayout
           className="layout"
           cols={{
-            lg: 12,
-            md: 10,
-            sm: 6,
-            xs: 4,
-            xxs: 2,
+            lg: 12, md: 10, sm: 6, xs: 4, xxs: 2,
           }}
           rowHeight={100}
-          onLayoutChange={this.onLayoutChange.bind(this)}
-        >
+          isDraggable={false}
+          isResizable={false}
+          onLayoutChange={this.onLayoutChange.bind(this)}>
           {map((widget) => {
             switch (widget.widget) {
               case 'VictimologyDistribution':
@@ -298,7 +288,9 @@ class WorkspaceExploreSpaceComponent extends Component {
           handleUpdate={this.handleUpdateWidget.bind(this)}
           handleDelete={this.handleDeleteWidget.bind(this)}
         />
-        <ExploreAddWidget onAdd={this.handleAddWidget.bind(this)} />
+        <Security needs={[EXPLORE_EXUPDATE]}>
+          <ExploreAddWidget onAdd={this.handleAddWidget.bind(this)} />
+        </Security>
       </div>
     );
   }

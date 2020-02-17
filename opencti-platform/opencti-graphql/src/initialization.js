@@ -16,15 +16,19 @@ const fs = require('fs');
 
 // Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
-const CAPABILITIES = [
+export const CAPABILITIES = [
   { name: BYPASS, description: 'Bypass all capabilities', ordering: 1 },
   {
     name: KNOWLEDGE_CAPABILITY,
     description: 'Access knowledge',
     ordering: 100,
     dependencies: [
-      { name: 'KNUPDATE', description: 'Create / Update knowledge', ordering: 200 },
-      { name: 'KNDELETE', description: 'Delete knowledge', ordering: 300 },
+      {
+        name: 'KNUPDATE',
+        description: 'Create / Update knowledge',
+        ordering: 200,
+        dependencies: [{ name: 'KNDELETE', description: 'Delete knowledge', ordering: 300 }]
+      },
       { name: 'KNUPLOAD', description: 'Upload knowledge files', ordering: 400 },
       { name: 'KNASKIMPORT', description: 'Import knowledge', ordering: 500 },
       {
@@ -41,8 +45,12 @@ const CAPABILITIES = [
     description: 'Access exploration',
     ordering: 1000,
     dependencies: [
-      { name: 'EXUPDATE', description: 'Create  / Update exploration', ordering: 1100 },
-      { name: 'EXDELETE', description: 'Delete exploration', ordering: 1200 }
+      {
+        name: 'EXUPDATE',
+        description: 'Create  / Update exploration',
+        ordering: 1100,
+        dependencies: [{ name: 'EXDELETE', description: 'Delete exploration', ordering: 1200 }]
+      }
     ]
   },
   {
@@ -134,7 +142,7 @@ const createMarkingDefinitions = async () => {
   });
 };
 
-const createCapabilities = async (capabilities, parentName = '') => {
+export const createCapabilities = async (capabilities, parentName = '') => {
   for (let i = 0; i < capabilities.length; i += 1) {
     const capability = capabilities[i];
     const { name, description, ordering } = capability;

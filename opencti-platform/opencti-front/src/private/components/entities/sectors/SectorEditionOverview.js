@@ -129,21 +129,21 @@ const sectorValidation = (t) => Yup.object().shape({
 class SectorEditionOverviewComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { subsectors: [] };
+    this.state = { subSectors: [] };
   }
 
   searchSubsector(event) {
     fetchQuery(sectorsSearchQuery, {
       search: event && event.target.value !== 0 ? event.target.value : '',
     }).then((data) => {
-      const subsectors = pipe(
+      const subSectors = pipe(
         pathOr([], ['sectors', 'edges']),
         map((n) => ({ label: n.node.name, value: n.node.id })),
       )(data);
       this.setState({
-        subsectors: union(
-          this.state.subsectors,
-          filter((n) => n.value !== this.props.sector.id, subsectors),
+        subSectors: union(
+          this.state.subSectors,
+          filter((n) => n.value !== this.props.sector.id, subSectors),
         ),
       });
     });
@@ -264,7 +264,7 @@ class SectorEditionOverviewComponent extends Component {
   handleChangeSubsectors(name, values) {
     const { sector } = this.props;
     const currentSubsectors = pipe(
-      pathOr([], ['subsectors', 'edges']),
+      pathOr([], ['subSectors', 'edges']),
       map((n) => ({
         label: n.node.name,
         value: n.node.id,
@@ -316,8 +316,8 @@ class SectorEditionOverviewComponent extends Component {
         value: pathOr(null, ['createdByRef', 'node', 'id'], sector),
         relation: pathOr(null, ['createdByRef', 'relation', 'id'], sector),
       };
-    const subsectors = pipe(
-      pathOr([], ['subsectors', 'edges']),
+    const subSectors = pipe(
+      pathOr([], ['subSectors', 'edges']),
       map((n) => ({
         label: n.node.name,
         value: n.node.id,
@@ -334,13 +334,13 @@ class SectorEditionOverviewComponent extends Component {
     )(sector);
     const initialValues = pipe(
       assoc('createdByRef', createdByRef),
-      assoc('subsectors', subsectors),
+      assoc('subSectors', subSectors),
       assoc('markingDefinitions', markingDefinitions),
       pick([
         'name',
         'description',
         'createdByRef',
-        'subsectors',
+        'subSectors',
         'markingDefinitions',
       ]),
     )(sector);
@@ -376,22 +376,22 @@ class SectorEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
-            {!sector.isSubsector ? (
+            {!sector.isSubSector ? (
               <Autocomplete
                 style={{ marginTop: 20, width: '100%' }}
-                name="subsectors"
+                name="subSectors"
                 multiple={true}
                 textfieldprops={{
                   label: t('Subsectors'),
                   helperText: (
                     <SubscriptionFocus
                       context={context}
-                      fieldName="subsectors"
+                      fieldName="subSectors"
                     />
                   ),
                 }}
                 noOptionsText={t('No available options')}
-                options={this.state.subsectors}
+                options={this.state.subSectors}
                 onInputChange={this.searchSubsector.bind(this)}
                 onChange={this.handleChangeSubsectors.bind(this)}
                 onFocus={this.handleChangeFocus.bind(this)}
@@ -450,7 +450,7 @@ const SectorEditionOverview = createFragmentContainer(
         id
         name
         description
-        isSubsector
+        isSubSector
         createdByRef {
           node {
             id
@@ -461,7 +461,7 @@ const SectorEditionOverview = createFragmentContainer(
             id
           }
         }
-        subsectors {
+        subSectors {
           edges {
             node {
               id

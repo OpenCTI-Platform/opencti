@@ -40,10 +40,10 @@ class SectorComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={sector.subsectors.edges.length > 0 ? 3 : 6}>
+          <Grid item={true} xs={sector.subSectors.edges.length > 0 ? 3 : 6}>
             <SectorOverview sector={sector} />
           </Grid>
-          {sector.subsectors.edges.length > 0 ? (
+          {sector.subSectors.edges.length > 0 ? (
             <Grid item={true} xs={3}>
               <SectorSubsectors sector={sector} />
             </Grid>
@@ -88,7 +88,7 @@ const Sector = createFragmentContainer(SectorComponent, {
   sector: graphql`
     fragment Sector_sector on Sector {
       id
-      subsectors {
+      subSectors {
         edges {
           node {
             id

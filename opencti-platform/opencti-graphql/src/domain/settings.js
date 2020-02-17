@@ -53,24 +53,28 @@ export const addSettings = async (user, settings) => {
 };
 
 export const settingsDelete = settingsId => {
-  return deleteEntityById(settingsId);
+  return deleteEntityById(settingsId, 'Settings');
 };
 
 export const settingsCleanContext = (user, settingsId) => {
   delEditContext(user, settingsId);
-  return loadEntityById(settingsId).then(settings => notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user));
+  return loadEntityById(settingsId, 'Settings').then(settings =>
+    notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
+  );
 };
 
 export const settingsEditContext = (user, settingsId, input) => {
   setEditContext(user, settingsId, input);
-  return loadEntityById(settingsId).then(settings => notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user));
+  return loadEntityById(settingsId, 'Settings').then(settings =>
+    notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
+  );
 };
 
 export const settingsEditField = (user, settingsId, input) => {
   return executeWrite(wTx => {
-    return updateAttribute(settingsId, input, wTx);
+    return updateAttribute(settingsId, 'Settings', input, wTx);
   }).then(async () => {
-    const settings = await loadEntityById(settingsId);
+    const settings = await loadEntityById(settingsId, 'Settings');
     return notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user);
   });
 };
