@@ -134,6 +134,7 @@ class StixDomainEntityVictimologyLinesComponent extends Component {
       paginationOptions,
       stixDomainEntityId,
     } = this.props;
+
     // Organizations / sectors
     const sectors = pipe(
       // eslint-disable-next-line no-nested-ternary

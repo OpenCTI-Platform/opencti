@@ -13,7 +13,6 @@ import StixDomainEntityThreatKnowledge from '../../common/stix_domain_entities/S
 import StixRelation from '../../common/stix_relations/StixRelation';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import StixDomainEntityKillChain from '../../common/stix_domain_entities/StixDomainEntityKillChain';
-import StixDomainEntityVictimology from '../../common/stix_domain_entities/StixDomainEntityVictimology';
 
 const styles = () => ({
   container: {
@@ -73,9 +72,19 @@ class IntrusionSetKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/victimology"
           render={(routeProps) => (
-            <StixDomainEntityVictimology
-              stixDomainEntityId={intrusionSet.id}
+            <EntityStixRelations
+              entityId={intrusionSet.id}
+              relationType="targets"
+              targetEntityTypes={[
+                'Organization',
+                'Sector',
+                'City',
+                'Country',
+                'Region',
+                'User',
+              ]}
               entityLink={link}
+              exploreLink={`/dashboard/explore/victimology/${intrusionSet.id}`}
               creationIsFrom={true}
               {...routeProps}
             />
