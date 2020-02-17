@@ -62,6 +62,9 @@ const styles = (theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
+  dialog: {
+    overflow: 'hidden',
+  },
 });
 
 const tagMutation = graphql`
@@ -263,7 +266,7 @@ class TagCreation extends Component {
                 fullWidth={true}
               >
                 <DialogTitle>{t('Create a tag')}</DialogTitle>
-                <DialogContent>
+                <DialogContent classes={{ root: classes.dialog }}>
                   <TextField
                     name="tag_type"
                     label={t('Type')}

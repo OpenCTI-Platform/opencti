@@ -121,8 +121,8 @@ class StixDomainEntityTags extends Component {
     this.setState({ openAdd: false });
   }
 
-  handleOpenCreate(inputValue) {
-    this.setState({ openCreate: true, tagInput: inputValue });
+  handleOpenCreate() {
+    this.setState({ openCreate: true });
   }
 
   handleCloseCreate() {
@@ -130,8 +130,11 @@ class StixDomainEntityTags extends Component {
   }
 
   searchTags(event) {
+    this.setState({
+      tagInput: event && event.target.value !== 0 ? event.target.value : '',
+    });
     fetchQuery(tagsSearchQuery, {
-      search: event.target.value,
+      search: event && event.target.value !== 0 ? event.target.value : '',
     }).then((data) => {
       const tags = pipe(
         pathOr([], ['tags', 'edges']),
