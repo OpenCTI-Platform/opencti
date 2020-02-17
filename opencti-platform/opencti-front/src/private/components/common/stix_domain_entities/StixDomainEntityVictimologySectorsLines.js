@@ -19,7 +19,9 @@ import {
   sortWith,
   ascend,
   take,
+  filter,
   pathOr,
+  assocPath,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -30,7 +32,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Collapse from '@material-ui/core/Collapse';
-import { LockPattern, FileImageOutline } from 'mdi-material-ui';
+import { FileImageOutline } from 'mdi-material-ui';
 import { Domain, ExpandLess, ExpandMore } from '@material-ui/icons';
 import { createRefetchContainer } from 'react-relay';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -42,6 +44,7 @@ import ItemYears from '../../../../components/ItemYears';
 import SearchInput from '../../../../components/SearchInput';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import ItemMarking from '../../../../components/ItemMarking';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   container: {
@@ -55,7 +58,7 @@ const styles = (theme) => ({
   },
 });
 
-class StixDomainEntityVictimologyLinesComponent extends Component {
+class StixDomainEntityVictimologySectorsLinesComponent extends Component {
   constructor(props) {
     super(props);
     this.state = { expandedLines: {}, searchTerm: '' };
@@ -135,44 +138,24 @@ class StixDomainEntityVictimologyLinesComponent extends Component {
       stixDomainEntityId,
     } = this.props;
 
-    // Organizations / sectors
-    const sectors = pipe(
-      // eslint-disable-next-line no-nested-ternary
-      map((n) => (n.node.to.parentSectors && n.node.to.parentSectors.edges.length > 0
-        ? n.node.to.parentSectors.edges[0].node
-        : n.node.to.sectors && n.node.to.sectors.edges.length > 0
-          ? n.node.to.sectors.edges[0].node
-          : { id: 'unknown', name: t('Unknown') })),
-      uniq,
-      indexBy(prop('id')),
-    )(data.stixRelations.edges);
-    const stixRelations = pipe(
+    // Sectors
+    const sectorsRelations = pipe(
       map((n) => n.node),
-      map((n) => assoc('firstSeenYear', yearFormat(n.first_seen), n)),
-      map((n) => assoc('lastSeenYear', yearFormat(n.last_seen), n)),
-      map((n) => assoc(
-        'years',
-        n.firstSeenYear === n.lastSeenYear
-          ? n.firstSeenYear
-          : `${n.firstSeenYear} - ${n.lastSeenYear}`,
+      filter((n) => n.to.entity_type === 'sector'),
+      map((n) => assocPath(
+        ['to', 'parentSectors'],
+        map((o) => o.node, n.to.parentSectors.edges),
         n,
       )),
-      map((n) => assoc(
-        'sector',
-        // eslint-disable-next-line no-nested-ternary
-        n.to.parentSectors && n.to.parentSectors.edges.length > 0
-          ? n.to.parentSectors.edges[0].node
-          : n.to.sectors && n.to.sectors.edges.length > 0
-            ? n.to.sectors.edges[0].node
-            : { id: 'unknown', name: t('Unknown') },
-        n,
-      )),
-      sortWith([ascend(prop('years'))]),
-      groupBy(path(['sector', 'id'])),
-      mapObjIndexed((value, key) => assoc('victims', value, sectors[key])),
-      values,
-      sortWith([ascend(prop('name'))]),
     )(data.stixRelations.edges);
+
+    // Add parent sectors
+
+
+    console.log(sectorsRelations);
+    // Insert organizations in sector
+
+    const stixRelations = [];
     return (
       <div>
         <div style={{ float: 'left' }}>
@@ -234,16 +217,11 @@ class StixDomainEntityVictimologyLinesComponent extends Component {
                           component={Link}
                           to={link}
                         >
-                          <ListItemIcon>
-                            <LockPattern color="primary" role="img" />
+                          <ListItemIcon className={classes.itemIcon}>
+                            <ItemIcon type={victim.to.entity_type} />
                           </ListItemIcon>
                           <ListItemText
-                            primary={
-                              <span>
-                                <strong>{victim.to.external_id}</strong> -{' '}
-                                {victim.to.name}
-                              </span>
-                            }
+                            primary={victim.to.name}
                             secondary={
                               // eslint-disable-next-line no-nested-ternary
                               victim.description
@@ -299,7 +277,7 @@ class StixDomainEntityVictimologyLinesComponent extends Component {
             isFrom={true}
             paddingRight={true}
             onCreate={this.props.relay.refetch.bind(this)}
-            targetEntityTypes={['Attack-Pattern']}
+            targetEntityTypes={['Identity']}
             paginationOptions={paginationOptions}
           />
         </Security>
@@ -308,7 +286,7 @@ class StixDomainEntityVictimologyLinesComponent extends Component {
   }
 }
 
-StixDomainEntityVictimologyLinesComponent.propTypes = {
+StixDomainEntityVictimologySectorsLinesComponent.propTypes = {
   stixDomainEntityId: PropTypes.string,
   data: PropTypes.object,
   entityLink: PropTypes.string,
@@ -317,23 +295,23 @@ StixDomainEntityVictimologyLinesComponent.propTypes = {
   t: PropTypes.func,
 };
 
-export const stixDomainEntityVictimologyLinesStixRelationsQuery = graphql`
-  query StixDomainEntityVictimologyLinesStixRelationsQuery(
+export const stixDomainEntityVictimologySectorsLinesStixRelationsQuery = graphql`
+  query StixDomainEntityVictimologySectorsLinesStixRelationsQuery(
     $fromId: String
     $toTypes: [String]
     $relationType: String
     $inferred: Boolean
     $first: Int
   ) {
-    ...StixDomainEntityVictimologyLines_data
+    ...StixDomainEntityVictimologySectorsLines_data
   }
 `;
 
-const StixDomainEntityVictimologyLines = createRefetchContainer(
-  StixDomainEntityVictimologyLinesComponent,
+const StixDomainEntityVictimologySectorsSectorLines = createRefetchContainer(
+  StixDomainEntityVictimologySectorsLinesComponent,
   {
     data: graphql`
-      fragment StixDomainEntityVictimologyLines_data on Query {
+      fragment StixDomainEntityVictimologySectorsLines_data on Query {
         stixRelations(
           fromId: $fromId
           toTypes: $toTypes
@@ -351,17 +329,7 @@ const StixDomainEntityVictimologyLines = createRefetchContainer(
               to {
                 id
                 name
-                ... on City {
-                  country {
-                    name
-                  }
-                }
-                ... on Country {
-                  region {
-                    id
-                    name
-                  }
-                }
+                entity_type
                 ... on Organization {
                   sectors {
                     edges {
@@ -398,10 +366,10 @@ const StixDomainEntityVictimologyLines = createRefetchContainer(
       }
     `,
   },
-  stixDomainEntityVictimologyLinesStixRelationsQuery,
+  stixDomainEntityVictimologySectorsLinesStixRelationsQuery,
 );
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixDomainEntityVictimologyLines);
+)(StixDomainEntityVictimologySectorsSectorLines);

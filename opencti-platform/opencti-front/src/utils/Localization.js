@@ -258,6 +258,9 @@ const i18n = {
         "L'état du connecteur a été réinitialisé",
       'Refresh the knowledge using this connector':
         'Actualiser la connaissance en utilisant ce connecteur',
+      'Sectors, organizations and persons':
+        'Secteurs, organisations et personnes',
+      'Regions, countries and cities': 'Régions, pays et villes',
       // Menu
       Dashboard: 'Tableau de bord',
       Visualization: 'Visualisation',

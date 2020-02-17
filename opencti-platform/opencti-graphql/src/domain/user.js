@@ -330,7 +330,7 @@ export const userDeleteRelation = async (
   if (relationId) {
     await deleteRelationById(relationId, 'stix_relation_embedded');
   } else if (toId) {
-    await deleteRelationsByFromAndTo(userId, toId, relationType);
+    await deleteRelationsByFromAndTo(userId, toId, relationType, 'stix_relation_embedded');
   } else {
     throw new Error('Cannot delete the relation, missing relationId or toId');
   }
@@ -352,16 +352,9 @@ export const personDeleteRelation = async (
   relationType = 'stix_relation_embedded'
 ) => {
   if (relationId) {
-    const data = await loadEntityById(relationId, 'stix_relation_embedded');
-    if (!['tagged', 'created_by_ref', 'object_marking_refs'].includes(data.relationship_type)) {
-      throw new ForbiddenAccess();
-    }
     await deleteRelationById(relationId, 'stix_relation_embedded');
   } else if (toId) {
-    if (!['tagged', 'created_by_ref', 'object_marking_refs'].includes(relationType)) {
-      throw new ForbiddenAccess();
-    }
-    await deleteRelationsByFromAndTo(userId, toId, relationType);
+    await deleteRelationsByFromAndTo(userId, toId, relationType, 'stix_relation_embedded');
   } else {
     throw new Error('Cannot delete the relation, missing relationId or toId');
   }
