@@ -50,6 +50,10 @@ class ThreatActorIndicatorsComponent extends Component {
     this.state = { withPadding: false };
   }
 
+  handleChangeOpenExport(openExport) {
+    this.setState({ withPadding: openExport });
+  }
+
   render() {
     const { withPadding } = this.state;
     const { classes, threatActor, location } = this.props;
@@ -89,6 +93,7 @@ class ThreatActorIndicatorsComponent extends Component {
                 entityId={threatActor.id}
                 relationType="indicates"
                 entityLink={link}
+                onChangeOpenExports={this.handleChangeOpenExport.bind(this)}
                 {...routeProps}
               />
             </Paper>

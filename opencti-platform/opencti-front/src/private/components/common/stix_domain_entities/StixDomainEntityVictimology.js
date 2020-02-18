@@ -10,9 +10,9 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Drawer from '@material-ui/core/Drawer';
 import { Domain, Map } from '@material-ui/icons';
 import Loader from '../../../../components/Loader';
-import StixDomainEntityVictimologySectorsLines, {
-  stixDomainEntityVictimologySectorsLinesStixRelationsQuery,
-} from './StixDomainEntityVictimologySectorsLines';
+import StixDomainEntityVictimologySectors, {
+  stixDomainEntityVictimologySectorsStixRelationsQuery,
+} from './StixDomainEntityVictimologySectors';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 
@@ -32,7 +32,7 @@ class StixDomainEntityVictimology extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      inferred: true,
+      inferred: false,
       searchTerm: '',
       toTypes: ['Sector', 'Organization', 'User'],
     };
@@ -116,13 +116,13 @@ class StixDomainEntityVictimology extends Component {
           </Grid>
         </Drawer>
         <QueryRenderer
-          query={stixDomainEntityVictimologySectorsLinesStixRelationsQuery}
+          query={stixDomainEntityVictimologySectorsStixRelationsQuery}
           variables={{ first: 500, ...paginationOptions }}
           render={({ props }) => {
             if (props) {
               if (toTypes.includes('Sector')) {
                 return (
-                  <StixDomainEntityVictimologySectorsLines
+                  <StixDomainEntityVictimologySectors
                     data={props}
                     entityLink={entityLink}
                     handleSearch={this.handleSearch.bind(this)}
@@ -132,7 +132,7 @@ class StixDomainEntityVictimology extends Component {
                 );
               }
               return (
-                <StixDomainEntityVictimologySectorsLines
+                <StixDomainEntityVictimologySectors
                   data={props}
                   entityLink={entityLink}
                   handleSearch={this.handleSearch.bind(this)}

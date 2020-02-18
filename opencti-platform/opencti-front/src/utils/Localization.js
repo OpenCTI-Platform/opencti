@@ -152,6 +152,7 @@ const i18n = {
       'The values do not match': 'Les valeurs ne correspondent pas',
       'No available options': 'Aucune option disponible',
       'No description of this usage': 'Aucune description de cet usage',
+      'No description of this targeting': 'Aucune description de ce ciblage',
       'Create a workspace': 'Créer un espace de travail',
       'Update a workspace': 'Modifier un espace de travail',
       'Add a widget': 'Ajouter un widget',
@@ -261,6 +262,7 @@ const i18n = {
       'Sectors, organizations and persons':
         'Secteurs, organisations et personnes',
       'Regions, countries and cities': 'Régions, pays et villes',
+      'Direct targeting of this sector': 'Ciblage direct de ce secteur',
       // Menu
       Dashboard: 'Tableau de bord',
       Visualization: 'Visualisation',

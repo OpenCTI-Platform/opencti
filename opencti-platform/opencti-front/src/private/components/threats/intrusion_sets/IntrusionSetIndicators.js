@@ -49,6 +49,10 @@ class IntrusionSetIndicatorsComponent extends Component {
     this.state = { withPadding: false };
   }
 
+  handleChangeOpenExport(openExport) {
+    this.setState({ withPadding: openExport });
+  }
+
   render() {
     const { withPadding } = this.state;
     const { classes, intrusionSet, location } = this.props;
@@ -85,6 +89,7 @@ class IntrusionSetIndicatorsComponent extends Component {
                 entityId={intrusionSet.id}
                 relationType="indicates"
                 entityLink={link}
+                onChangeOpenExports={this.handleChangeOpenExport.bind(this)}
                 {...routeProps}
               />
             </Paper>

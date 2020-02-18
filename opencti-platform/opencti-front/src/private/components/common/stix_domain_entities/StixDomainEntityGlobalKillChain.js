@@ -225,7 +225,7 @@ class StixDomainEntityGlobalKillChainComponent extends Component {
                           component={Link}
                           to={link}
                         >
-                          <ListItemIcon>
+                          <ListItemIcon className={classes.itemIcon}>
                             <ItemIcon type={stixDomainEntity.to.entity_type} />
                           </ListItemIcon>
                           <ListItemText

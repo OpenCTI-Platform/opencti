@@ -4,8 +4,8 @@ import {
   deleteRelationById,
   escapeString,
   findWithConnectedRelations,
-  loadEntityById,
-  loadEntityByStixId,
+  internalLoadEntityById,
+  internalLoadEntityByStixId,
   loadWithConnectedRelations
 } from '../database/grakn';
 import { findAll as relationFindAll } from './stixRelation';
@@ -17,9 +17,9 @@ import { ForbiddenAccess } from '../config/errors';
 export const findById = async stixEntityId => {
   let data = null;
   if (stixEntityId.match(/[a-z-]+--[\w-]{36}/g)) {
-    data = await loadEntityByStixId(stixEntityId);
+    data = await internalLoadEntityByStixId(stixEntityId);
   } else {
-    data = await loadEntityById(stixEntityId);
+    data = await internalLoadEntityById(stixEntityId);
   }
   if (!data.parent_types.includes('Stix-Domain-Entity') && !data.parent_types.includes('stix_relation')) {
     throw new ForbiddenAccess();
@@ -85,7 +85,7 @@ export const stixRelations = (stixEntityId, args) => {
 };
 
 export const stixEntityAddRelation = async (user, stixEntityId, input) => {
-  const data = await loadEntityById(stixEntityId);
+  const data = await internalLoadEntityById(stixEntityId);
   if (
     (data.entity_type === 'user' &&
       !isNil(data.external) &&
@@ -99,10 +99,20 @@ export const stixEntityAddRelation = async (user, stixEntityId, input) => {
 };
 
 export const stixEntityDeleteRelation = async (user, stixEntityId, relationId) => {
-  await deleteRelationById(relationId, 'stix_relation_embedded');
-  const data = await loadEntityById(stixEntityId);
-  if (!data.parent_types.includes('Stix-Domain-Entity') && !data.parent_types.includes('stix_relation')) {
+  const stixDomainEntity = await internalLoadEntityById(stixEntityId);
+  const data = await internalLoadEntityById(relationId);
+  if (
+    (data.entity_type !== 'stix_relation' && data.entity_type !== 'relation_embedded') ||
+    (stixDomainEntity.entity_type === 'user' &&
+      !isNil(stixDomainEntity.external) &&
+      !['tagged', 'created_by_ref', 'object_marking_refs'].includes(data.relationship_type))
+  ) {
     throw new ForbiddenAccess();
   }
-  return notify(BUS_TOPICS.StixEntity.EDIT_TOPIC, data, user);
+  await deleteRelationById(relationId, 'stix_relation_embedded');
+  const entity = await internalLoadEntityById(stixEntityId);
+  if (!entity.parent_types.includes('Stix-Domain-Entity') && !entity.parent_types.includes('stix_relation')) {
+    throw new ForbiddenAccess();
+  }
+  return notify(BUS_TOPICS.StixEntity.EDIT_TOPIC, entity, user);
 };
