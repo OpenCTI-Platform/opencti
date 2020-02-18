@@ -29,6 +29,7 @@ import { UserContext } from '../utils/Security';
 
 const useStyles = makeStyles((theme) => ({
   root: {
+    minWidth: 1280,
     height: '100%',
   },
   content: {
@@ -70,7 +71,9 @@ const Root = () => {
   const paddingRight = 24;
   const classes = useStyles();
   return (
-    <QueryRenderer query={rootQuery} variables={{}}
+    <QueryRenderer
+      query={rootQuery}
+      variables={{}}
       render={({ props }) => {
         if (props) {
           return (

@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import uuidv4 from 'uuid/v4';
 import { Link } from 'react-router-dom';
 import html2canvas from 'html2canvas';
 import fileDownload from 'js-file-download';
@@ -76,7 +75,7 @@ class StixDomainEntityVictimologySectorsComponent extends Component {
         lineKey,
         this.state.expandedLines[lineKey] !== undefined
           ? !this.state.expandedLines[lineKey]
-          : false,
+          : true,
         this.state.expandedLines,
       ),
     });
@@ -140,7 +139,7 @@ class StixDomainEntityVictimologySectorsComponent extends Component {
       stixDomainEntityId,
     } = this.props;
 
-    const unknownSectorId = uuidv4();
+    const unknownSectorId = 'a8c03ed6-cc9e-444d-9146-66c64220fff9';
     const concatAll = reduce(concat, []);
 
     // Extract all sectors
@@ -316,15 +315,15 @@ class StixDomainEntityVictimologySectorsComponent extends Component {
                       onClick={this.handleToggleLine.bind(this, sector.id)}
                       aria-haspopup="true"
                     >
-                      {this.state.expandedLines[sector.id] === false ? (
-                        <ExpandMore />
-                      ) : (
+                      {this.state.expandedLines[sector.id] === true ? (
                         <ExpandLess />
+                      ) : (
+                        <ExpandMore />
                       )}
                     </IconButton>
                   </ListItemSecondaryAction>
                 </ListItem>
-                <Collapse in={this.state.expandedLines[sector.id] !== false}>
+                <Collapse in={this.state.expandedLines[sector.id] === true}>
                   <List>
                     {values(sector.relations).map((stixRelation) => {
                       const link = `${entityLink}/relations/${stixRelation.id}`;
@@ -422,16 +421,16 @@ class StixDomainEntityVictimologySectorsComponent extends Component {
                               aria-haspopup="true"
                             >
                               {this.state.expandedLines[subsector.id]
-                              === false ? (
-                                <ExpandMore />
-                                ) : (
+                              === true ? (
                                 <ExpandLess />
+                                ) : (
+                                <ExpandMore />
                                 )}
                             </IconButton>
                           </ListItemSecondaryAction>
                         </ListItem>
                         <Collapse
-                          in={this.state.expandedLines[subsector.id] !== false}
+                          in={this.state.expandedLines[subsector.id] === true}
                         >
                           <List>
                             {values(subsector.relations).map((stixRelation) => {

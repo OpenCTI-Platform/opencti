@@ -8,16 +8,15 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import Avatar from '@material-ui/core/Avatar';
 import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
-import { LinkOff } from '@material-ui/icons';
+import { Domain, LinkOff } from '@material-ui/icons';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { truncate } from '../../../../utils/String';
-import AddCoursesOfAction from './AddCoursesOfAction';
-import { addCoursesOfActionMutationRelationDelete } from './AddCoursesOfActionLines';
+import AddSubSector from './AddSubSector';
+import { addSubSectorsMutationRelationDelete } from './AddSubSectorsLines';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 
@@ -45,57 +44,52 @@ const styles = (theme) => ({
   },
 });
 
-class AttackPatternCoursesOfActionComponent extends Component {
-  removeCourseOfAction(courseOfActionEdge) {
+class SectorSubSectorsComponent extends Component {
+  removeSubSector(subSectorEdge) {
     commitMutation({
-      mutation: addCoursesOfActionMutationRelationDelete,
+      mutation: addSubSectorsMutationRelationDelete,
       variables: {
-        id: courseOfActionEdge.relation.id,
+        id: subSectorEdge.relation.id,
       },
     });
   }
 
   render() {
-    const { t, classes, attackPattern } = this.props;
+    const { t, classes, sector } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Courses of action')}
+          {t('Subsectors')}
         </Typography>
-        <AddCoursesOfAction
-          attackPatternId={attackPattern.id}
-          attackPatternCoursesOfAction={attackPattern.coursesOfAction.edges}
+        <AddSubSector
+          sectorId={sector.id}
+          sectorSubSectors={sector.subSectors.edges}
         />
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <List>
-            {attackPattern.coursesOfAction.edges.map((courseOfActionEdge) => {
-              const courseOfAction = courseOfActionEdge.node;
+            {sector.subSectors.edges.map((subSectorEdge) => {
+              const subSector = subSectorEdge.node;
               return (
                 <ListItem
-                  key={courseOfAction.id}
+                  key={subSector.id}
                   dense={true}
                   divider={true}
                   button={true}
                   component={Link}
-                  to={`/dashboard/techniques/courses_of_action/${courseOfAction.id}`}
+                  to={`/dashboard/entities/sectors/${subSector.id}`}
                 >
                   <ListItemIcon>
-                    <Avatar classes={{ root: classes.avatar }}>
-                      {courseOfAction.name.substring(0, 1)}
-                    </Avatar>
+                    <Domain color="primary" />
                   </ListItemIcon>
                   <ListItemText
-                    primary={courseOfAction.name}
-                    secondary={truncate(courseOfAction.description, 60)}
+                    primary={subSector.name}
+                    secondary={truncate(subSector.description, 50)}
                   />
                   <ListItemSecondaryAction>
                     <IconButton
                       aria-label="Remove"
-                      onClick={this.removeCourseOfAction.bind(
-                        this,
-                        courseOfActionEdge,
-                      )}
+                      onClick={this.removeSubSector.bind(this, subSectorEdge)}
                     >
                       <LinkOff />
                     </IconButton>
@@ -110,37 +104,31 @@ class AttackPatternCoursesOfActionComponent extends Component {
   }
 }
 
-AttackPatternCoursesOfActionComponent.propTypes = {
+SectorSubSectorsComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
   attackPattern: PropTypes.object,
 };
 
-const AttackPatternCoursesOfAction = createFragmentContainer(
-  AttackPatternCoursesOfActionComponent,
-  {
-    attackPattern: graphql`
-      fragment AttackPatternCoursesOfAction_attackPattern on AttackPattern {
-        id
-        coursesOfAction {
-          edges {
-            node {
-              id
-              name
-              description
-            }
-            relation {
-              id
-            }
+const SectorSubSectors = createFragmentContainer(SectorSubSectorsComponent, {
+  sector: graphql`
+    fragment SectorSubSectors_sector on Sector {
+      id
+      subSectors {
+        edges {
+          node {
+            id
+            name
+            description
+          }
+          relation {
+            id
           }
         }
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(AttackPatternCoursesOfAction);
+export default compose(inject18n, withStyles(styles))(SectorSubSectors);

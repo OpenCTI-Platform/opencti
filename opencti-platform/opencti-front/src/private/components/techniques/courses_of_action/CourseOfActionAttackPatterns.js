@@ -45,8 +45,7 @@ class CourseOfActionAttackPatternComponent extends Component {
     commitMutation({
       mutation: addAttackPatternsLinesMutationRelationDelete,
       variables: {
-        id: this.props.courseOfAction.id,
-        relationId: attackPatternEdge.relation.id,
+        id: attackPatternEdge.relation.id,
       },
     });
   }

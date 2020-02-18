@@ -28,39 +28,27 @@ const styles = (theme) => ({
 
 const addAattackPatternsLinesMutationRelationAdd = graphql`
   mutation AddAttackPatternsLinesRelationAddMutation(
-    $id: ID!
-    $input: RelationAddInput!
+    $input: StixRelationAddInput!
   ) {
-    courseOfActionEdit(id: $id) {
-      relationAdd(input: $input) {
-        id
-        from {
-          ...CourseOfActionAttackPatterns_courseOfAction
-        }
-      }
-    }
-  }
-`;
-
-export const addAttackPatternsLinesMutationRelationDelete = graphql`
-  mutation AddAttackPatternsLinesRelationDeleteMutation(
-    $id: ID!
-    $relationId: ID!
-  ) {
-    courseOfActionEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+    stixRelationAdd(input: $input) {
+      from {
         ...CourseOfActionAttackPatterns_courseOfAction
       }
     }
   }
 `;
 
+export const addAttackPatternsLinesMutationRelationDelete = graphql`
+  mutation AddAttackPatternsLinesRelationDeleteMutation($id: ID!) {
+    stixRelationEdit(id: $id) {
+      delete
+    }
+  }
+`;
+
 class AddAttackPatternsLinesContainer extends Component {
   toggleAttackPattern(attackPattern) {
-    const {
-      courseOfActionId,
-      courseOfActionAttackPatterns,
-    } = this.props;
+    const { courseOfActionId, courseOfActionAttackPatterns } = this.props;
     const entityCoursesOfActionIds = map(
       (n) => n.node.id,
       courseOfActionAttackPatterns,
@@ -77,24 +65,20 @@ class AddAttackPatternsLinesContainer extends Component {
       commitMutation({
         mutation: addAttackPatternsLinesMutationRelationDelete,
         variables: {
-          id: courseOfActionId,
-          relationId: existingCourseOfAction.relation.id,
+          id: existingCourseOfAction.relation.id,
         },
       });
     } else {
       const input = {
+        relationship_type: 'mitigates',
+        fromId: courseOfActionId,
         fromRole: 'mitigation',
         toId: attackPattern.id,
         toRole: 'problem',
-        through: 'mitigates',
-        stix_id_key: 'create',
       };
       commitMutation({
         mutation: addAattackPatternsLinesMutationRelationAdd,
-        variables: {
-          id: courseOfActionId,
-          input,
-        },
+        variables: { input },
       });
     }
   }
@@ -205,7 +189,4 @@ const AddAttackPatternsLines = createPaginationContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(AddAttackPatternsLines);
+export default compose(inject18n, withStyles(styles))(AddAttackPatternsLines);
