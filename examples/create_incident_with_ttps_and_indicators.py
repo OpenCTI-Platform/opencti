@@ -6,7 +6,7 @@ from dateutil.parser import parse
 from pycti import OpenCTIApiClient
 
 # Variables
-api_url = "https://reference.opencti.io"
+api_url = "https://demo.opencti.io"
 api_token = "2b4f29e3-5ea8-4890-8cf5-a76f61f1e2b2"
 
 # OpenCTI initialization
