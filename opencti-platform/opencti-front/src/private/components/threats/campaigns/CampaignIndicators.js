@@ -50,10 +50,6 @@ class CampaignIndicatorsComponent extends Component {
     this.state = { withPadding: false };
   }
 
-  handleChangeOpenExport(openExport) {
-    this.setState({ withPadding: openExport });
-  }
-
   render() {
     const { withPadding } = this.state;
     const { classes, campaign, location } = this.props;
@@ -90,7 +86,8 @@ class CampaignIndicatorsComponent extends Component {
                 entityId={campaign.id}
                 relationType="indicates"
                 entityLink={link}
-                onChangeOpenExports={this.handleChangeOpenExport.bind(this)}
+                onChangeOpenExports={(openExports) => this.setState({ withPadding: openExports })
+                }
                 {...routeProps}
               />
             </Paper>
