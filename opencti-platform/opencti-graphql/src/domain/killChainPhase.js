@@ -47,8 +47,8 @@ export const killChainPhaseAddRelation = (user, killChainPhaseId, input) => {
   });
 };
 export const killChainPhaseDeleteRelation = async (user, killChainPhaseId, relationId) => {
-  await deleteRelationById(relationId);
-  const data = await loadEntityById(killChainPhaseId, 'stix_relation_embedded');
+  await deleteRelationById(relationId, 'stix_relation_embedded');
+  const data = await loadEntityById(killChainPhaseId, 'Kill-Chain-Phase');
   return notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, data, user);
 };
 export const killChainPhaseEditField = (user, killChainPhaseId, input) => {

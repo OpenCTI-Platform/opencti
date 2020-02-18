@@ -110,6 +110,7 @@ const i18n = {
       Automatic: 'Automatique',
       Roles: 'Rôles',
       Subsectors: 'Sous-secteurs',
+      'Parent sectors': 'Secteurs parents',
       Registration: 'Inscription',
       'are updating...': 'modifient actuellement...',
       'is updating...': 'modifie actuellement...',
@@ -152,6 +153,7 @@ const i18n = {
       'The values do not match': 'Les valeurs ne correspondent pas',
       'No available options': 'Aucune option disponible',
       'No description of this usage': 'Aucune description de cet usage',
+      'No description of this targeting': 'Aucune description de ce ciblage',
       'Create a workspace': 'Créer un espace de travail',
       'Update a workspace': 'Modifier un espace de travail',
       'Add a widget': 'Ajouter un widget',
@@ -221,6 +223,7 @@ const i18n = {
       'Update a role': 'Modifier un rôle',
       'Add external references': 'Ajouter des références externes',
       'Add courses of action': 'Ajouter des conduites à suivre',
+      'Add subsectors': 'Ajouter des sous-secteurs',
       'Add attack patterns': 'Ajouter des TTPs',
       'Add entities': 'Ajouter des entités',
       'Add observables': 'Ajouter des observables',
@@ -258,6 +261,12 @@ const i18n = {
         "L'état du connecteur a été réinitialisé",
       'Refresh the knowledge using this connector':
         'Actualiser la connaissance en utilisant ce connecteur',
+      'Sectors, organizations and persons':
+        'Secteurs, organisations et personnes',
+      'Regions, countries and cities': 'Régions, pays et villes',
+      'Direct targeting of this sector': 'Ciblage direct de ce secteur',
+      'Direct targeting of this region': 'Ciblage direct de cette région',
+      'Direct targeting of this country': 'Ciblage direct de ce pays',
       // Menu
       Dashboard: 'Tableau de bord',
       Visualization: 'Visualisation',

@@ -84,11 +84,11 @@ class ThreatActorIndicatorsComponent extends Component {
           render={(routeProps) => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityIndicators
-                onChangeOpenExports={(openExports) => this.setState({ withPadding: openExports })
-                }
                 entityId={threatActor.id}
                 relationType="indicates"
                 entityLink={link}
+                onChangeOpenExports={(openExports) => this.setState({ withPadding: openExports })
+                }
                 {...routeProps}
               />
             </Paper>

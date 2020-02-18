@@ -7,7 +7,8 @@ import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
 import SectorOverview from './SectorOverview';
-import SectorSubsectors from './SectorSubsectors';
+import SectorSubSectors from './SectorSubSectors';
+import SectorParentSectors from './SectorParentSectors';
 import SectorEdition from './SectorEdition';
 import SectorPopover from './SectorPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
@@ -40,16 +41,16 @@ class SectorComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={sector.subSectors.edges.length > 0 ? 3 : 6}>
+          <Grid item={true} xs={3}>
             <SectorOverview sector={sector} />
           </Grid>
-          {sector.subSectors.edges.length > 0 ? (
-            <Grid item={true} xs={3}>
-              <SectorSubsectors sector={sector} />
-            </Grid>
-          ) : (
-            ''
-          )}
+          <Grid item={true} xs={3}>
+            {sector.isSubSector ? (
+              <SectorParentSectors sector={sector} />
+            ) : (
+              <SectorSubSectors sector={sector} />
+            )}
+          </Grid>
           <Grid item={true} xs={6}>
             <EntityLastReports entityId={sector.id} />
           </Grid>
@@ -88,6 +89,7 @@ const Sector = createFragmentContainer(SectorComponent, {
   sector: graphql`
     fragment Sector_sector on Sector {
       id
+      isSubSector
       subSectors {
         edges {
           node {
@@ -98,7 +100,8 @@ const Sector = createFragmentContainer(SectorComponent, {
       name
       alias
       ...SectorOverview_sector
-      ...SectorSubsectors_sector
+      ...SectorSubSectors_sector
+      ...SectorParentSectors_sector
     }
   `,
 });

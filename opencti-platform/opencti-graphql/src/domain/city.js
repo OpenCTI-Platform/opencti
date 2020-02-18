@@ -25,7 +25,7 @@ export const country = cityId => {
    $from has internal_id_key "${escapeString(cityId)}"; get; offset 0; limit 1;`,
     'to',
     'rel'
-  );
+  ).then(data => (data ? data.node : undefined));
 };
 
 export const addCity = async (user, city) => {

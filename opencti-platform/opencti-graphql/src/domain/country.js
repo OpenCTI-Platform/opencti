@@ -21,11 +21,11 @@ export const findAll = args => {
 };
 export const region = countryId => {
   return loadWithConnectedRelations(
-    `match $to isa Country; $rel(localized:$from, location:$to) isa localization;
+    `match $to isa Region; $rel(localized:$from, location:$to) isa localization;
    $from has internal_id_key "${escapeString(countryId)}"; get; offset 0; limit 1;`,
     'to',
     'rel'
-  );
+  ).then(data => (data ? data.node : undefined));
 };
 
 export const addCountry = async (user, country) => {

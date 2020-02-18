@@ -85,6 +85,8 @@ class IntrusionSetIndicatorsComponent extends Component {
                 entityId={intrusionSet.id}
                 relationType="indicates"
                 entityLink={link}
+                onChangeOpenExports={(openExports) => this.setState({ withPadding: openExports })
+                }
                 {...routeProps}
               />
             </Paper>

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, filter } from "ramda";
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
@@ -45,8 +45,17 @@ class CourseOfActionAttackPatternComponent extends Component {
     commitMutation({
       mutation: addAttackPatternsLinesMutationRelationDelete,
       variables: {
-        id: this.props.courseOfAction.id,
-        relationId: attackPatternEdge.relation.id,
+        id: attackPatternEdge.relation.id,
+      },
+      updater: (store) => {
+        const node = store.get(this.props.courseOfAction.id);
+        const attackPatterns = node.getLinkedRecord('attackPatterns');
+        const edges = attackPatterns.getLinkedRecords('edges');
+        const newEdges = filter(
+          (n) => n.getLinkedRecord('node').getValue('id') !== attackPatternEdge.node.id,
+          edges,
+        );
+        attackPatterns.setLinkedRecords(newEdges, 'edges');
       },
     });
   }

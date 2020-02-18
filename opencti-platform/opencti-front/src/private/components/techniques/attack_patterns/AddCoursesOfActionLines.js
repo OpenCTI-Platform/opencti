@@ -28,29 +28,20 @@ const styles = (theme) => ({
 
 const addCoursesOfActionLinesMutationRelationAdd = graphql`
   mutation AddCoursesOfActionLinesRelationAddMutation(
-    $id: ID!
-    $input: RelationAddInput!
+    $input: StixRelationAddInput!
   ) {
-    attackPatternEdit(id: $id) {
-      relationAdd(input: $input) {
-        id
-        to {
-          ...AttackPatternCoursesOfAction_attackPattern
-        }
+    stixRelationAdd(input: $input) {
+      to {
+        ...AttackPatternCoursesOfAction_attackPattern
       }
     }
   }
 `;
 
 export const addCoursesOfActionMutationRelationDelete = graphql`
-  mutation AddCoursesOfActionLinesRelationDeleteMutation(
-    $id: ID!
-    $relationId: ID!
-  ) {
-    attackPatternEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
-        ...AttackPatternCoursesOfAction_attackPattern
-      }
+  mutation AddCoursesOfActionLinesRelationDeleteMutation($id: ID!) {
+    stixRelationEdit(id: $id) {
+      delete
     }
   }
 `;
@@ -75,25 +66,30 @@ class AddCoursesOfActionLinesContainer extends Component {
       );
       commitMutation({
         mutation: addCoursesOfActionMutationRelationDelete,
-        variables: {
-          id: attackPatternId,
-          relationId: existingCourseOfAction.relation.id,
+        variables: { id: existingCourseOfAction.relation.id },
+        updater: (store) => {
+          const node = store.get(this.props.attackPatternId);
+          const coursesOfAction = node.getLinkedRecord('coursesOfAction');
+          const edges = coursesOfAction.getLinkedRecords('edges');
+          const newEdges = filter(
+            (n) => n.getLinkedRecord('node').getValue('id')
+              !== existingCourseOfAction.node.id,
+            edges,
+          );
+          coursesOfAction.setLinkedRecords(newEdges, 'edges');
         },
       });
     } else {
       const input = {
+        relationship_type: 'mitigates',
+        fromId: courseOfAction.id,
         fromRole: 'mitigation',
         toId: attackPatternId,
         toRole: 'problem',
-        through: 'mitigates',
-        stix_id_key: 'create',
       };
       commitMutation({
         mutation: addCoursesOfActionLinesMutationRelationAdd,
-        variables: {
-          id: courseOfAction.id,
-          input,
-        },
+        variables: { input },
       });
     }
   }
@@ -204,7 +200,4 @@ const AddCoursesOfActionLines = createPaginationContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(AddCoursesOfActionLines);
+export default compose(inject18n, withStyles(styles))(AddCoursesOfActionLines);

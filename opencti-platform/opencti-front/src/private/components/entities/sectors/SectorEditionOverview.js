@@ -3,10 +3,8 @@ import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Formik, Form } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
 import {
   assoc,
-  compose,
   map,
   pathOr,
   pipe,
@@ -17,9 +15,7 @@ import {
   filter,
 } from 'ramda';
 import * as Yup from 'yup';
-import { Domain } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
-import Autocomplete from '../../../../components/Autocomplete';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import {
@@ -31,41 +27,6 @@ import { now } from '../../../../utils/Time';
 import { sectorsSearchQuery } from '../Sectors';
 import CreatedByRefField from '../../common/form/CreatedByRefField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-});
 
 const sectorMutationFieldPatch = graphql`
   mutation SectorEditionOverviewFieldPatchMutation(
@@ -306,9 +267,7 @@ class SectorEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, sector, context, classes,
-    } = this.props;
+    const { t, sector, context } = this.props;
     const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], sector) === null
       ? ''
       : {
@@ -316,14 +275,6 @@ class SectorEditionOverviewComponent extends Component {
         value: pathOr(null, ['createdByRef', 'node', 'id'], sector),
         relation: pathOr(null, ['createdByRef', 'relation', 'id'], sector),
       };
-    const subSectors = pipe(
-      pathOr([], ['subSectors', 'edges']),
-      map((n) => ({
-        label: n.node.name,
-        value: n.node.id,
-        relationId: n.relation.id,
-      })),
-    )(sector);
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
       map((n) => ({
@@ -334,15 +285,8 @@ class SectorEditionOverviewComponent extends Component {
     )(sector);
     const initialValues = pipe(
       assoc('createdByRef', createdByRef),
-      assoc('subSectors', subSectors),
       assoc('markingDefinitions', markingDefinitions),
-      pick([
-        'name',
-        'description',
-        'createdByRef',
-        'subSectors',
-        'markingDefinitions',
-      ]),
+      pick(['name', 'description', 'createdByRef', 'markingDefinitions']),
     )(sector);
     return (
       <Formik
@@ -376,37 +320,6 @@ class SectorEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
-            {!sector.isSubSector ? (
-              <Autocomplete
-                style={{ marginTop: 20, width: '100%' }}
-                name="subSectors"
-                multiple={true}
-                textfieldprops={{
-                  label: t('Subsectors'),
-                  helperText: (
-                    <SubscriptionFocus
-                      context={context}
-                      fieldName="subSectors"
-                    />
-                  ),
-                }}
-                noOptionsText={t('No available options')}
-                options={this.state.subSectors}
-                onInputChange={this.searchSubsector.bind(this)}
-                onChange={this.handleChangeSubsectors.bind(this)}
-                onFocus={this.handleChangeFocus.bind(this)}
-                renderOption={(option) => (
-                  <React.Fragment>
-                    <div className={classes.icon}>
-                      <Domain />
-                    </div>
-                    <div className={classes.text}>{option.label}</div>
-                  </React.Fragment>
-                )}
-              />
-            ) : (
-              ''
-            )}
             <CreatedByRefField
               name="createdByRef"
               style={{ marginTop: 20, width: '100%' }}
@@ -461,17 +374,6 @@ const SectorEditionOverview = createFragmentContainer(
             id
           }
         }
-        subSectors {
-          edges {
-            node {
-              id
-              name
-            }
-            relation {
-              id
-            }
-          }
-        }
         markingDefinitions {
           edges {
             node {
@@ -489,7 +391,4 @@ const SectorEditionOverview = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(SectorEditionOverview);
+export default inject18n(SectorEditionOverview);

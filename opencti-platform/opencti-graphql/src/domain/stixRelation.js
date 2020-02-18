@@ -74,7 +74,7 @@ export const stixRelationEditField = (user, stixRelationId, input) => {
   });
 };
 export const stixRelationAddRelation = async (user, stixRelationId, input) => {
-  const data = await loadEntityById(stixRelationId);
+  const data = await loadEntityById(stixRelationId, 'stix_relation');
   if (!data.parent_types.includes('stix_relation') || !input.through) {
     throw new ForbiddenAccess();
   }

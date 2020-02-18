@@ -54,7 +54,7 @@ export const up = async next => {
           await executeWrite(wTx => {
             return updateAttribute(
               stixObservable.id,
-              null,
+              'Stix-Observable',
               {
                 key: 'stix_id_key',
                 value: [stixObservable.stix_id_key.replace('indicator', 'observable')]

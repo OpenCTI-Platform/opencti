@@ -86,6 +86,8 @@ class CampaignIndicatorsComponent extends Component {
                 entityId={campaign.id}
                 relationType="indicates"
                 entityLink={link}
+                onChangeOpenExports={(openExports) => this.setState({ withPadding: openExports })
+                }
                 {...routeProps}
               />
             </Paper>

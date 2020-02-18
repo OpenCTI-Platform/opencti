@@ -11,10 +11,6 @@ svg {
   outline: 0;
 }
 
-html, body {
-  min-width: 1280px;
-}
-
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,

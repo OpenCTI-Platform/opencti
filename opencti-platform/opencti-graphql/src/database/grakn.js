@@ -915,18 +915,24 @@ export const load = async (query, entities, { infer, noCache } = findOpts) => {
   const data = await find(query, entities, { infer, noCache });
   return head(data);
 };
-export const loadEntityById = async (id, type = null, args = {}) => {
+export const internalLoadEntityById = async (id, type = null, args = {}) => {
   const { noCache = false } = args;
   if (!noCache && !forceNoCache()) {
     // [ELASTIC] From cache
     const fromCache = await elLoadById(id, type);
     if (fromCache) return fromCache;
   }
-  const query = `match $x ${type ? `isa ${type},` : ''} has internal_id_key "${escapeString(id)}"; get;`;
+  const query = `match $x ${type ? `isa ${type},` : ''} has stix_id_key "${escapeString(id)}"; get;`;
   const element = await load(query, ['x'], { noCache });
   return element ? element.x : null;
 };
-export const loadEntityByStixId = async (id, type = null) => {
+export const loadEntityById = (id, type, args = {}) => {
+  if (isNil(type)) {
+    throw new Error(`[GRAKN] loadEntityById > Missing type`);
+  }
+  return internalLoadEntityById(id, type, args);
+};
+export const internalLoadEntityByStixId = async (id, type = null) => {
   if (!forceNoCache()) {
     // [ELASTIC] From cache
     const fromCache = await elLoadByStixId(id, type);
@@ -935,6 +941,12 @@ export const loadEntityByStixId = async (id, type = null) => {
   const query = `match $x ${type ? `isa ${type},` : ''} has stix_id_key "${escapeString(id)}"; get;`;
   const element = await load(query, ['x']);
   return element ? element.x : null;
+};
+export const loadEntityByStixId = async (id, type) => {
+  if (isNil(type)) {
+    throw new Error(`[GRAKN] loadEntityByStixId > Missing type`);
+  }
+  return internalLoadEntityByStixId(id, type);
 };
 export const loadEntityByGraknId = async (graknId, args = {}) => {
   const { noCache = false } = args;
@@ -947,7 +959,10 @@ export const loadEntityByGraknId = async (graknId, args = {}) => {
   const element = await load(query, ['x']);
   return element.x;
 };
-export const loadRelationById = async (id, type = null, args = {}) => {
+export const loadRelationById = async (id, type, args = {}) => {
+  if (isNil(type)) {
+    throw new Error(`[GRAKN] loadRelationById > Missing type`);
+  }
   const { noCache = false } = args;
   if (!noCache && !forceNoCache()) {
     // [ELASTIC] From cache
@@ -955,18 +970,21 @@ export const loadRelationById = async (id, type = null, args = {}) => {
     if (fromCache) return fromCache;
   }
   const eid = escapeString(id);
-  const query = `match $rel($from, $to) ${type ? `isa ${type},` : ''} has internal_id_key "${eid}"; get;`;
+  const query = `match $rel($from, $to) isa ${type}, has internal_id_key "${eid}"; get;`;
   const element = await load(query, ['rel']);
   return element ? element.rel : null;
 };
-export const loadRelationByStixId = async (id, type = null) => {
+export const loadRelationByStixId = async (id, type) => {
+  if (isNil(type)) {
+    throw new Error(`[GRAKN] loadRelationByStixId > Missing type`);
+  }
   if (!forceNoCache()) {
     // [ELASTIC] From cache
     const fromCache = await elLoadByStixId(id, type);
     if (fromCache) return fromCache;
   }
   const eid = escapeString(id);
-  const query = `match $rel($from, $to) isa ${type ? `isa ${type},` : ''} has stix_id_key "${eid}"; get;`;
+  const query = `match $rel($from, $to) isa ${type}, has stix_id_key "${eid}"; get;`;
   const element = await load(query, ['rel']);
   return element ? element.rel : null;
 };
@@ -1640,7 +1658,7 @@ export const createEntity = async (entity, type, opts = {}) => {
 // endregion
 
 // region mutation update
-export const updateAttribute = async (id, type = null, input, wTx) => {
+export const updateAttribute = async (id, type, input, wTx) => {
   const { key, value } = input; // value can be multi valued
   if (includes(key, readOnlyAttributes)) {
     throw new DatabaseError({ data: { details: `The field ${key} cannot be modified` } });
@@ -1668,9 +1686,7 @@ export const updateAttribute = async (id, type = null, input, wTx) => {
   }, value);
   // --- Delete the old attribute
   const entityId = `${escapeString(id)}`;
-  const deleteQuery = `match $x ${
-    type ? `isa ${type},` : ''
-  } has internal_id_key "${entityId}", has ${escapedKey} $del via $d; delete $d;`;
+  const deleteQuery = `match $x isa ${type}, has internal_id_key "${entityId}", has ${escapedKey} $del via $d; delete $d;`;
   // eslint-disable-next-line prettier/prettier
   logger.debug(`[GRAKN - infer: false] updateAttribute - delete > ${deleteQuery}`);
   await wTx.tx.query(deleteQuery);
@@ -1684,9 +1700,7 @@ export const updateAttribute = async (id, type = null, input, wTx) => {
         map(gVal => `has ${escapedKey} ${gVal},`, tail(typedValues))
       )} has ${escapedKey} ${head(typedValues)}`;
     }
-    const createQuery = `match $x ${
-      type ? `isa ${type},` : ''
-    } has internal_id_key "${entityId}"; insert $x ${graknValues};`;
+    const createQuery = `match $x isa ${type}, has internal_id_key "${entityId}"; insert $x ${graknValues};`;
     logger.debug(`[GRAKN - infer: false] updateAttribute - insert > ${createQuery}`);
     await wTx.tx.query(createQuery);
   }
@@ -1721,6 +1735,9 @@ export const updateAttribute = async (id, type = null, input, wTx) => {
 
 // region mutation deletion
 export const deleteEntityById = async (id, type) => {
+  if (isNil(type)) {
+    throw new Error(`[GRAKN] deleteEntityById > Missing type`);
+  }
   const eid = escapeString(id);
   // 00. Load everything we need to remove in elastic
   const read = `match $from isa ${type}, has internal_id_key "${eid}"; $rel($from, $to) isa relation; get;`;
@@ -1738,18 +1755,19 @@ export const deleteEntityById = async (id, type) => {
     return id;
   });
 };
-export const deleteRelationById = async (relationId, type = null) => {
+export const deleteRelationById = async (relationId, type) => {
+  if (isNil(type)) {
+    throw new Error(`[GRAKN] deleteRelationById > Missing type`);
+  }
   const eid = escapeString(relationId);
   // 00. Load everything we need to remove in elastic
-  const read = `match $from ${
-    type ? `isa ${type},` : ''
-  } has internal_id_key "${eid}"; $rel($from, $to) isa relation; get;`;
+  const read = `match $from isa ${type}, has internal_id_key "${eid}"; $rel($from, $to) isa relation; get;`;
   const relationsToDeIndex = await find(read, ['rel']);
   const answers = map(r => r.rel.id, relationsToDeIndex);
   const relationsIds = filter(r => r, answers); // Because of relation to attributes
   // 01. Execute the delete in grakn and elastic
   return executeWrite(async wTx => {
-    const query = `match $x ${type ? `isa ${type},` : ''} has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
+    const query = `match $x isa ${type}, has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
     logger.debug(`[GRAKN - infer: false] deleteRelationById > ${query}`);
     await wTx.tx.query(query, { infer: false });
   }).then(async () => {
@@ -1759,7 +1777,10 @@ export const deleteRelationById = async (relationId, type = null) => {
     return relationId;
   });
 };
-export const deleteRelationsByFromAndTo = async (fromId, toId, relationType = 'relation') => {
+export const deleteRelationsByFromAndTo = async (fromId, toId, relationType, scopeType) => {
+  if (isNil(scopeType)) {
+    throw new Error(`[GRAKN] deleteRelationsByFromAndTo > Missing scopeType`);
+  }
   const efromId = escapeString(fromId);
   const etoId = escapeString(toId);
   const read = `match $from has internal_id_key "${efromId}"; 
@@ -1767,7 +1788,7 @@ export const deleteRelationsByFromAndTo = async (fromId, toId, relationType = 'r
     $rel($from, $to) isa ${relationType}; get;`;
   const relationsToDelete = await find(read, ['rel']);
   const relationsIds = map(r => r.rel.id, relationsToDelete);
-  await Promise.all(map(id => deleteRelationById(id, relationType), relationsIds));
+  await Promise.all(map(id => deleteRelationById(id, scopeType), relationsIds));
 };
 
 export const deleteAttributeById = async id => {
