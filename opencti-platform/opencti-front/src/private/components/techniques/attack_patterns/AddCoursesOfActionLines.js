@@ -67,6 +67,17 @@ class AddCoursesOfActionLinesContainer extends Component {
       commitMutation({
         mutation: addCoursesOfActionMutationRelationDelete,
         variables: { id: existingCourseOfAction.relation.id },
+        updater: (store) => {
+          const node = store.get(this.props.attackPatternId);
+          const coursesOfAction = node.getLinkedRecord('coursesOfAction');
+          const edges = coursesOfAction.getLinkedRecords('edges');
+          const newEdges = filter(
+            (n) => n.getLinkedRecord('node').getValue('id')
+              !== existingCourseOfAction.node.id,
+            edges,
+          );
+          coursesOfAction.setLinkedRecords(newEdges, 'edges');
+        },
       });
     } else {
       const input = {

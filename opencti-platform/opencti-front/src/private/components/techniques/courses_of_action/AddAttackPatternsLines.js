@@ -67,6 +67,17 @@ class AddAttackPatternsLinesContainer extends Component {
         variables: {
           id: existingCourseOfAction.relation.id,
         },
+        updater: (store) => {
+          const node = store.get(this.props.courseOfActionId);
+          const attackPatterns = node.getLinkedRecord('attackPatterns');
+          const edges = attackPatterns.getLinkedRecords('edges');
+          const newEdges = filter(
+            (n) => n.getLinkedRecord('node').getValue('id')
+              !== existingCourseOfAction.node.id,
+            edges,
+          );
+          attackPatterns.setLinkedRecords(newEdges, 'edges');
+        },
       });
     } else {
       const input = {

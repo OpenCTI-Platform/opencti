@@ -58,6 +58,16 @@ class AddSubSectorsLinesContainer extends Component {
       commitMutation({
         mutation: addSubSectorsMutationRelationDelete,
         variables: { id: existingSubSector.relation.id },
+        updater: (store) => {
+          const node = store.get(this.props.sectorId);
+          const subSectors = node.getLinkedRecord('subSectors');
+          const edges = subSectors.getLinkedRecords('edges');
+          const newEdges = filter(
+            (n) => n.getLinkedRecord('node').getValue('id') !== existingSubSector.node.id,
+            edges,
+          );
+          subSectors.setLinkedRecords(newEdges, 'edges');
+        },
       });
     } else {
       const input = {

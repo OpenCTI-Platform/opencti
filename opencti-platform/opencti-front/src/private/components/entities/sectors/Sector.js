@@ -88,6 +88,7 @@ SectorComponent.propTypes = {
 const Sector = createFragmentContainer(SectorComponent, {
   sector: graphql`
     fragment Sector_sector on Sector {
+      id
       isSubSector
       subSectors {
         edges {

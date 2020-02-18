@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, filter } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -50,6 +50,16 @@ class SectorSubSectorsComponent extends Component {
       mutation: addSubSectorsMutationRelationDelete,
       variables: {
         id: subSectorEdge.relation.id,
+      },
+      updater: (store) => {
+        const node = store.get(this.props.sector.id);
+        const subSectors = node.getLinkedRecord('subSectors');
+        const edges = subSectors.getLinkedRecords('edges');
+        const newEdges = filter(
+          (n) => n.getLinkedRecord('node').getValue('id') !== subSectorEdge.node.id,
+          edges,
+        );
+        subSectors.setLinkedRecords(newEdges, 'edges');
       },
     });
   }
@@ -108,7 +118,7 @@ SectorSubSectorsComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
-  attackPattern: PropTypes.object,
+  sector: PropTypes.object,
 };
 
 const SectorSubSectors = createFragmentContainer(SectorSubSectorsComponent, {
