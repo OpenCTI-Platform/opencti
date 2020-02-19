@@ -20,6 +20,8 @@ Then open the OVA file with VirtualBox or convert the OVA to another type of vir
 
 > This virtual machine image includes an SSH Server, default login is `opencti` and default password `opencti`.
 
+Once the virtual machine is launched, you have access to the plaform using the URL http://IP_ADDRESS:8080.
+
 # Using Docker
 
 OpenCTI could be deployed using the *docker-compose* command.

@@ -56,7 +56,7 @@ export const stixObservablesTimeSeries = args => {
 
 // region mutations
 export const stixObservableAskEnrichment = async (id, connectorId) => {
-  const connector = await loadEntityById(connectorId, 'Stix-Observable');
+  const connector = await loadEntityById(connectorId, 'Connector');
   const { job, work } = await createWork(connector, 'Stix-Observable', id);
   const message = {
     work_id: work.internal_id_key,
