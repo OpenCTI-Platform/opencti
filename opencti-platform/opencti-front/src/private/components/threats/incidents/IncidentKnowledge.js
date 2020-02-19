@@ -13,6 +13,7 @@ import IncidentPopover from './IncidentPopover';
 import IncidentKnowledgeBar from './IncidentKnowledgeBar';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import StixDomainEntityKillChain from '../../common/stix_domain_entities/StixDomainEntityKillChain';
+import StixDomainEntityVictimology from "../../common/stix_domain_entities/StixDomainEntityVictimology";
 
 const styles = () => ({
   container: {
@@ -92,19 +93,9 @@ class IncidentKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/incidents/:incidentId/knowledge/victimology"
           render={(routeProps) => (
-            <EntityStixRelations
-              entityId={incident.id}
-              relationType="targets"
-              targetEntityTypes={[
-                'Organization',
-                'Sector',
-                'City',
-                'Country',
-                'Region',
-              ]}
+            <StixDomainEntityVictimology
+              stixDomainEntityId={incident.id}
               entityLink={link}
-              exploreLink={`/dashboard/explore/victimology/${incident.id}`}
-              creationIsFrom={true}
               {...routeProps}
             />
           )}

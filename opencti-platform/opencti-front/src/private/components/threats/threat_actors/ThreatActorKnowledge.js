@@ -13,6 +13,7 @@ import ThreatActorKnowledgeBar from './ThreatActorKnowledgeBar';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import StixDomainEntityKillChain from '../../common/stix_domain_entities/StixDomainEntityKillChain';
 import StixDomainEntityThreatKnowledge from '../../common/stix_domain_entities/StixDomainEntityThreatKnowledge';
+import StixDomainEntityVictimology from '../../common/stix_domain_entities/StixDomainEntityVictimology';
 
 const styles = () => ({
   container: {
@@ -100,20 +101,9 @@ class ThreatActorKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/victimology"
           render={(routeProps) => (
-            <EntityStixRelations
-              entityId={threatActor.id}
-              relationType="targets"
-              targetEntityTypes={[
-                'Organization',
-                'Sector',
-                'City',
-                'Country',
-                'Region',
-                'User',
-              ]}
+            <StixDomainEntityVictimology
+              stixDomainEntityId={threatActor.id}
               entityLink={link}
-              exploreLink={`/dashboard/explore/victimology/${threatActor.id}`}
-              creationIsFrom={true}
               {...routeProps}
             />
           )}
