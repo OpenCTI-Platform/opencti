@@ -271,7 +271,6 @@ class UserEditionOverviewComponent extends Component {
                 <MenuItem value="auto">
                   <em>{t('Automatic')}</em>
                 </MenuItem>
-                RO
                 <MenuItem value="en">English</MenuItem>
                 <MenuItem value="fr">Français</MenuItem>
               </SelectField>

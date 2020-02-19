@@ -1,6 +1,8 @@
 import {
   createEntity,
+  createRelation,
   deleteEntityById,
+  deleteRelationById,
   escapeString,
   executeWrite,
   findWithConnectedRelations,
@@ -41,7 +43,7 @@ export const permissions = async groupId => {
 
 export const addGroup = async (user, group) => {
   const created = await createEntity(group, 'Group', { modelType: TYPE_OPENCTI_INTERNAL });
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS.Group.ADDED_TOPIC, created, user);
 };
 export const groupDelete = groupId => deleteEntityById(groupId, 'Group');
 
@@ -50,6 +52,17 @@ export const groupEditField = (user, groupId, input) => {
     return updateAttribute(groupId, 'Group', input, wTx);
   }).then(async () => {
     const group = await loadEntityById(groupId, 'Group');
-    return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, group, user);
+    return notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user);
   });
+};
+
+export const groupAddRelation = async (user, groupId, input) => {
+  const data = await createRelation(groupId, input, {}, 'Group', null);
+  return notify(BUS_TOPICS.Group.EDIT_TOPIC, data, user);
+};
+
+export const groupDeleteRelation = async (user, groupId, relationId) => {
+  await deleteRelationById(relationId, 'relation');
+  const data = await loadEntityById(groupId, 'Group');
+  return notify(BUS_TOPICS.Group.EDIT_TOPIC, data, user);
 };

@@ -1,10 +1,15 @@
-import { addGroup, groupDelete, findAll, findById, members, permissions, groupEditField } from '../domain/group';
 import {
-  stixDomainEntityEditContext,
-  stixDomainEntityCleanContext,
-  stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation
-} from '../domain/stixDomainEntity';
+  addGroup,
+  groupDelete,
+  findAll,
+  findById,
+  members,
+  permissions,
+  groupEditField,
+  groupDeleteRelation,
+  groupAddRelation
+} from '../domain/group';
+import { stixDomainEntityEditContext, stixDomainEntityCleanContext } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 
 const groupResolvers = {
@@ -23,8 +28,8 @@ const groupResolvers = {
       fieldPatch: ({ input }) => groupEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
+      relationAdd: ({ input }) => groupAddRelation(user, id, input),
+      relationDelete: ({ relationId }) => groupDeleteRelation(user, id, relationId)
     }),
     groupAdd: (_, { input }, { user }) => addGroup(user, input)
   }

@@ -13,6 +13,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Checkbox from '@material-ui/core/Checkbox';
 import Avatar from '@material-ui/core/Avatar';
+import Alert from '@material-ui/lab/Alert/Alert';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definitions/MarkingDefinitionsLines';
@@ -83,14 +84,19 @@ class GroupEditionPermissionsComponent extends Component {
   }
 
   render() {
-    const { classes, group } = this.props;
+    const { classes, group, t } = this.props;
     const groupMarkingDefinitions = pipe(
       pathOr([], ['permissions', 'edges']),
       map((n) => ({ id: n.node.id, relation: n.relation.id })),
     )(group);
 
     return (
-      <div>
+      <div style={{ paddingTop: 15 }}>
+        <Alert severity="warning" style={{ marginBottom: 10 }}>
+          {t(
+            'Groups permissions on data marking is not fully implemented yet.',
+          )}
+        </Alert>
         <QueryRenderer
           query={markingDefinitionsLinesSearchQuery}
           variables={{ search: '' }}

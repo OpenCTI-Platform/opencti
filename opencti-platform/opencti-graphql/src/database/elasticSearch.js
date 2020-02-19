@@ -480,6 +480,9 @@ const elMergeRelation = (concept, fromConnection, toConnection) => {
 };
 const elReconstructRelation = (concept, relationsMap = null) => {
   const naturalDirections = rolesMap[concept.relationship_type];
+  if (!naturalDirections) {
+    throw new Error(`[ELASTIC] Missing rolesMap of the relation type ${concept.relationship_type}`);
+  }
   const bindingByAlias = invertObj(naturalDirections);
   const { connections } = concept;
   // Need to rebuild the from and the to.

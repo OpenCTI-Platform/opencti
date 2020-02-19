@@ -55,6 +55,10 @@ export const BUS_TOPICS = {
   KillChainPhase: {
     EDIT_TOPIC: 'KILL_CHAIN_PHASE_EDIT_TOPIC',
     ADDED_TOPIC: 'KILL_CHAIN_PHASE_ADDED_TOPIC'
+  },
+  Group: {
+    EDIT_TOPIC: 'GROUP_EDIT_TOPIC',
+    ADDED_TOPIC: 'GROUP_ADDED_TOPIC'
   }
 };
 
@@ -118,6 +122,8 @@ logger.add(
 );
 
 // eslint-disable-next-line
-logger.info(`🚀 OpenCTI started in ${environment} mode with ${externalConfigurationFile ? 'external' : 'embedded'} file`);
+logger.info(
+  `🚀 OpenCTI started in ${environment} mode with ${externalConfigurationFile ? 'external' : 'embedded'} file`
+);
 export const isAppRealTime = nconf.get('app:reactive') && JSON.parse(nconf.get('app:reactive'));
 export default nconf;

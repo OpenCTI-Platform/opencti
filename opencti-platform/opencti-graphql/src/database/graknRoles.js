@@ -16,6 +16,10 @@ export const rolesMap = {
     allowed: 'from',
     allow: 'to'
   },
+  user_role: {
+    client: 'from',
+    position: 'to'
+  },
   // endregion
   // region relation_embedded
   authored_by: {

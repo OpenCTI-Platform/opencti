@@ -167,6 +167,7 @@ class UserCreation extends Component {
           </div>
           <div className={classes.container}>
             <Alert severity="info">{t('User will be created with default roles.')}</Alert>
+            <br />
             <Formik
               initialValues={{
                 name: '',

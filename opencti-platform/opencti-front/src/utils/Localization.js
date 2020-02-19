@@ -267,6 +267,8 @@ const i18n = {
       'Direct targeting of this sector': 'Ciblage direct de ce secteur',
       'Direct targeting of this region': 'Ciblage direct de cette région',
       'Direct targeting of this country': 'Ciblage direct de ce pays',
+      'Groups permissions on data marking is not fully implemented yet.':
+        "Les permissions des groupes sur le marquage des données n'est pas encore implémenté.",
       // Menu
       Dashboard: 'Tableau de bord',
       Visualization: 'Visualisation',

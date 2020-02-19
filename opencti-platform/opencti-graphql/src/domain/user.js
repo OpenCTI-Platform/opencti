@@ -320,17 +320,11 @@ export const userAddRelation = async (user, userId, input) => {
   const data = await createRelation(userId, input, {}, 'User', null);
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
 };
-export const userDeleteRelation = async (
-  user,
-  userId,
-  relationId = null,
-  toId = null,
-  relationType = 'stix_relation_embedded'
-) => {
+export const userDeleteRelation = async (user, userId, relationId = null, toId = null, relationType = 'relation') => {
   if (relationId) {
-    await deleteRelationById(relationId, 'stix_relation_embedded');
+    await deleteRelationById(relationId, 'relation');
   } else if (toId) {
-    await deleteRelationsByFromAndTo(userId, toId, relationType, 'stix_relation_embedded');
+    await deleteRelationsByFromAndTo(userId, toId, relationType, 'relation');
   } else {
     throw new Error('Cannot delete the relation, missing relationId or toId');
   }
