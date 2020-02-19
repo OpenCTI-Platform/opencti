@@ -40,3 +40,8 @@ export const Unknown = createError('Unknown', {
   message: 'An unknown error has occurred!  Please try again later.',
   data: { type: TYPE_TECHNICAL, level: LEVEL_ERROR }
 });
+
+export const FunctionalError = createError('DatabaseError', {
+  message: 'A database error has occured!',
+  data: { type: TYPE_TECHNICAL }
+});

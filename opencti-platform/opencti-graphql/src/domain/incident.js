@@ -16,9 +16,9 @@ import { buildPagination } from '../database/utils';
 
 export const findById = incidentId => {
   if (incidentId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(incidentId, 'Identity');
+    return loadEntityByStixId(incidentId, 'Incident');
   }
-  return loadEntityById(incidentId, 'Identity');
+  return loadEntityById(incidentId, 'Incident');
 };
 export const findAll = args => {
   return listEntities(['Incident'], ['name', 'alias'], args);

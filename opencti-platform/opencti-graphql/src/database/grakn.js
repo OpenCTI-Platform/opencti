@@ -1371,6 +1371,11 @@ const createRelationRaw = async (fromInternalId, input, opts = {}, fromType = nu
     relationAttributes.created_at = currentDate;
     relationAttributes.first_seen = input.first_seen ? input.first_seen : today;
     relationAttributes.last_seen = input.last_seen ? input.last_seen : today;
+    if (relationAttributes.first_seen > relationAttributes.last_seen) {
+      throw new DatabaseError({
+        data: { details: `You cant create a relation with a first seen less than the last_seen` }
+      });
+    }
   }
   // Add the additional fields for dates (day, month, year)
   const dataKeys = Object.keys(relationAttributes);
