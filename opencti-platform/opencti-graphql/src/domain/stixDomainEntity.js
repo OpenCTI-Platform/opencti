@@ -51,6 +51,9 @@ export const findById = async stixDomainEntityId => {
   } else {
     data = await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
   }
+  if (!data) {
+    return data;
+  }
   data = pipe(dissoc('user_email'), dissoc('password'))(data);
   return data;
 };

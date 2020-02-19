@@ -1,0 +1,43 @@
+{
+  "version-3.0.0-docs": {
+    "Getting Started": [
+      "version-3.0.0-getting-started/introduction",
+      "version-3.0.0-getting-started/architecture",
+      "version-3.0.0-getting-started/requirements"
+    ],
+    "Installation": [
+      "version-3.0.0-installation/auto",
+      "version-3.0.0-installation/manual",
+      "version-3.0.0-installation/configuration",
+      "version-3.0.0-installation/connectors",
+      "version-3.0.0-development/installation"
+    ],
+    "Usage": [
+      "version-3.0.0-usage/overview",
+      "version-3.0.0-usage/model",
+      "version-3.0.0-usage/knowledge-create",
+      "version-3.0.0-usage/knowledge-import",
+      "version-3.0.0-usage/reports-create",
+      "version-3.0.0-usage/report-knowledge"
+    ],
+    "Reference": [
+      "version-3.0.0-reference/relations",
+      "version-3.0.0-reference/inferences"
+    ],
+    "Development": [
+      "version-3.0.0-development/connectors"
+    ],
+    "Client libraries": [
+      "version-3.0.0-python",
+      {
+        "type": "subcategory",
+        "label": "Python",
+        "ids": [
+          "version-3.0.0-clients/python/overview",
+          "version-3.0.0-clients/python/guide",
+          "version-3.0.0-clients/python/reference"
+        ]
+      }
+    ]
+  }
+}
