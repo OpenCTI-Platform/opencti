@@ -26,7 +26,7 @@ export const addTag = async (user, tag) => {
 };
 export const tagDelete = tagId => deleteEntityById(tagId, 'Tag');
 export const tagAddRelation = (user, tagId, input) => {
-  return createRelation(tagId, assoc('through', 'tagged', input), {}, 'Tag', null).then(relationData => {
+  return createRelation(tagId, assoc('through', 'tagged', input), {}, null, 'Tag').then(relationData => {
     notify(BUS_TOPICS.Tag.EDIT_TOPIC, relationData, user);
     return relationData;
   });

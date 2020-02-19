@@ -1,4 +1,5 @@
 import {
+  connectorDelete,
   connectors,
   connectorsForExport,
   connectorsForImport,
@@ -20,6 +21,7 @@ const connectorResolvers = {
     connector: work => connectorForWork(work.id)
   },
   Mutation: {
+    deleteConnector: (_, { id }) => connectorDelete(id),
     registerConnector: (_, { input }) => registerConnector(input),
     resetStateConnector: (_, { id }) => resetStateConnector(id),
     pingConnector: (_, { id, state }) => pingConnector(id, state),

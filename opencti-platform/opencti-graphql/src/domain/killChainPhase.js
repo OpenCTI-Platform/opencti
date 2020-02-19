@@ -39,8 +39,8 @@ export const killChainPhaseAddRelation = (user, killChainPhaseId, input) => {
     killChainPhaseId,
     assoc('through', 'kill_chain_phases', input),
     {},
-    'Kill-Chain-Phase',
-    null
+    null,
+    'Kill-Chain-Phase'
   ).then(relationData => {
     notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, relationData, user);
     return relationData;

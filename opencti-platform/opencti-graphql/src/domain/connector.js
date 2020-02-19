@@ -1,6 +1,7 @@
-import { assoc, filter, includes, map, pipe } from 'ramda';
+import { assoc, filter, includes, isNil, map, pipe } from 'ramda';
 import {
   createEntity,
+  deleteEntityById,
   executeWrite,
   find,
   loadEntityById,
@@ -10,6 +11,7 @@ import {
   updateAttribute
 } from '../database/grakn';
 import { connectorConfig, registerConnectorQueues } from '../database/rabbitmq';
+import { ForbiddenAccess } from '../config/errors';
 
 export const CONNECTOR_INTERNAL_IMPORT_FILE = 'INTERNAL_IMPORT_FILE'; // Files mime types to support (application/json, ...) -> import-
 export const CONNECTOR_INTERNAL_EXPORT_FILE = 'INTERNAL_EXPORT_FILE'; // Files mime types to generate (application/pdf, ...) -> export-
@@ -102,4 +104,5 @@ export const registerConnector = async ({ id, name, type, scope }) => {
   // Return the connector
   return completeConnector(createdConnector);
 };
+export const connectorDelete = async connectorId => deleteEntityById(connectorId, 'Connector');
 // endregion

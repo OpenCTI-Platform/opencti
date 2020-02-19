@@ -250,12 +250,11 @@ export const stixDomainEntityDeleteRelation = async (
 ) => {
   const stixDomainEntity = await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
   if (relationId) {
-    const data = await loadEntityById(relationId, 'relation');
+    const data = await loadEntityById(relationId, 'stix_relation_embedded');
     if (
-      (data.entity_type !== 'stix_relation' && data.entity_type !== 'relation_embedded') ||
-      (stixDomainEntity.entity_type === 'user' &&
-        !isNil(stixDomainEntity.external) &&
-        !['tagged', 'created_by_ref', 'object_marking_refs'].includes(data.relationship_type))
+      stixDomainEntity.entity_type === 'user' &&
+      !isNil(stixDomainEntity.external) &&
+      !['tagged', 'created_by_ref', 'object_marking_refs'].includes(data.relationship_type)
     ) {
       throw new ForbiddenAccess();
     }

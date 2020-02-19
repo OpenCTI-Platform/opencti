@@ -336,7 +336,7 @@ type Work {
   internal_id_key: ID!
   jobs: [Job]
   status: Status!
-  connector: Connector!
+  connector: Connector
   work_type: String!
   created_at: DateTime!
 }
@@ -3674,6 +3674,7 @@ type Mutation {
   pingConnector(id: ID!, state: String): Connector @auth(for: [CONNECTORAPI])
   registerConnector(input: RegisterConnectorInput): Connector @auth(for: [CONNECTORAPI])
   resetStateConnector(id: ID!): Connector @auth(for: [MODULES_MODMANAGE])
+  deleteConnector(id: ID!): ID! @auth(for: [MODULES_MODMANAGE])
   deleteWork(id: ID!): ID! @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   initiateJob(workId: ID!): Job @auth(for: [CONNECTORAPI])
   updateJob(jobId: ID!, status: Status!, messages: [String]): Job @auth(for: [CONNECTORAPI])

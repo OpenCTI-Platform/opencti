@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import { propOr, compose } from 'ramda';
 import uuid from 'uuid/v4';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -10,7 +11,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { CheckCircle, Delete, Warning } from '@material-ui/icons';
-import { compose } from 'ramda';
+
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
 import inject18n from '../../../../components/i18n';
@@ -69,7 +70,7 @@ class FileWorkComponent extends Component {
                 )}
               </ListItemIcon>
               <ListItemText
-                primary={work.connector.name}
+                primary={propOr(t('Deleted'), 'name', work.connector)}
                 secondary={t(work.status)}
               />
               <ListItemSecondaryAction style={{ right: 0 }}>
@@ -110,7 +111,4 @@ const FileWork = createFragmentContainer(FileWorkComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(FileWork);
+export default compose(inject18n, withStyles(styles))(FileWork);

@@ -37,8 +37,8 @@ export const markingDefinitionAddRelation = (user, markingDefinitionId, input) =
     markingDefinitionId,
     assoc('through', 'object_marking_refs', input),
     {},
-    'Marking-Definition',
-    null
+    null,
+    'Marking-Definition'
   ).then(relationData => {
     notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, relationData, user);
     return relationData;

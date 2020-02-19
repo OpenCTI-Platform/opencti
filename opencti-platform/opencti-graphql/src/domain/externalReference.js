@@ -33,8 +33,8 @@ export const externalReferenceAddRelation = (user, externalReferenceId, input) =
     externalReferenceId,
     assoc('through', 'external_references', input),
     {},
-    'External-Reference',
-    null
+    null,
+    'External-Reference'
   ).then(relationData => {
     notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, relationData, user);
     return relationData;
