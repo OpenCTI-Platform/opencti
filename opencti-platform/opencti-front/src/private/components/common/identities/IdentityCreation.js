@@ -83,6 +83,7 @@ const identityMutation = graphql`
     identityAdd(input: $input) {
       id
       name
+      entity_type
     }
   }
 `;

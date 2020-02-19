@@ -13,6 +13,7 @@ import CampaignPopover from './CampaignPopover';
 import CampaignKnowledgeBar from './CampaignKnowledgeBar';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import StixDomainEntityKillChain from '../../common/stix_domain_entities/StixDomainEntityKillChain';
+import StixDomainEntityVictimology from '../../common/stix_domain_entities/StixDomainEntityVictimology';
 
 const styles = () => ({
   container: {
@@ -100,19 +101,9 @@ class CampaignKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/campaigns/:campaignId/knowledge/victimology"
           render={(routeProps) => (
-            <EntityStixRelations
-              entityId={campaign.id}
-              relationType="targets"
-              targetEntityTypes={[
-                'Organization',
-                'Sector',
-                'City',
-                'Country',
-                'Region',
-              ]}
+            <StixDomainEntityVictimology
+              stixDomainEntityId={campaign.id}
               entityLink={link}
-              exploreLink={`/dashboard/explore/victimology/${campaign.id}`}
-              creationIsFrom={true}
               {...routeProps}
             />
           )}

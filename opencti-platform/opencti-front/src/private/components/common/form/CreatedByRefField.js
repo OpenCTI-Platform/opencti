@@ -114,7 +114,15 @@ class CreatedByRefField extends Component {
             setFieldValue(name, {
               label: data.identityAdd.name,
               value: data.identityAdd.id,
+              type: data.identityAdd.entity_type,
             });
+            if (typeof onChange === 'function') {
+              onChange(name, {
+                label: data.identityAdd.name,
+                value: data.identityAdd.id,
+                type: data.identityAdd.entity_type,
+              });
+            }
           }}
         />
       </div>
