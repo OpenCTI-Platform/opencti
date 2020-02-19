@@ -14,7 +14,7 @@ OpenCTI could be deployed for **testing purposes** with a provided OVA file.
 
 ```bash
 $ mkdir /path/to/your/app && cd /path/to/your/app
-$ wget https://github.com/OpenCTI-Platform/opencti/releases/download/{RELEASE_VERSION}/opencti-release-{RELEASE_VERSION}.ova
+$ wget https://releases.opencti.io/opencti-release-{RELEASE_VERSION}.ova
 ```
 
 Then open the OVA file with VirtualBox or convert the OVA to another type of virtual machine image.
