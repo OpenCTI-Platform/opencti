@@ -40,6 +40,7 @@ import {
 import moment from 'moment';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import Grakn from 'grakn-client';
+import { from } from 'rxjs';
 import { DatabaseError } from '../config/errors';
 import conf, { logger } from '../config/conf';
 import { buildPagination, fillTimeSeries } from './utils';
@@ -920,7 +921,7 @@ export const internalLoadEntityById = async (id, type = null, args = {}) => {
   if (!noCache && !forceNoCache()) {
     // [ELASTIC] From cache
     const fromCache = await elLoadById(id, type);
-    if (fromCache) return fromCache;
+    return fromCache || null;
   }
   const query = `match $x ${type ? `isa ${type},` : ''} has stix_id_key "${escapeString(id)}"; get;`;
   const element = await load(query, ['x'], { noCache });
@@ -936,7 +937,7 @@ export const internalLoadEntityByStixId = async (id, type = null) => {
   if (!forceNoCache()) {
     // [ELASTIC] From cache
     const fromCache = await elLoadByStixId(id, type);
-    if (fromCache) return fromCache;
+    return fromCache || null;
   }
   const query = `match $x ${type ? `isa ${type},` : ''} has stix_id_key "${escapeString(id)}"; get;`;
   const element = await load(query, ['x']);

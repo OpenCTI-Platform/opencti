@@ -21,7 +21,14 @@ export const findById = async stixEntityId => {
   } else {
     data = await internalLoadEntityById(stixEntityId);
   }
-  if (!data.parent_types.includes('Stix-Domain-Entity') && !data.parent_types.includes('stix_relation')) {
+  if (!data) {
+    return data;
+  }
+  if (
+    !data.parent_types.includes('Stix-Domain-Entity') &&
+    !data.parent_types.includes('Stix-Observable') &&
+    !data.parent_types.includes('stix_relation')
+  ) {
     throw new ForbiddenAccess();
   }
   data = pipe(dissoc('user_email'), dissoc('password'))(data);
@@ -90,7 +97,9 @@ export const stixEntityAddRelation = async (user, stixEntityId, input) => {
     (data.entity_type === 'user' &&
       !isNil(data.external) &&
       !['tagged', 'created_by_ref', 'object_marking_refs'].includes(input.through)) ||
-    (!data.parent_types.includes('Stix-Domain-Entity') && !data.parent_types.includes('stix_relation')) ||
+    (!data.parent_types.includes('Stix-Domain-Entity') &&
+      !data.parent_types.includes('Stix-Observable') &&
+      !data.parent_types.includes('stix_relation')) ||
     !input.through
   ) {
     throw new ForbiddenAccess();
