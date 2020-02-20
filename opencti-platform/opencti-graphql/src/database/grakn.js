@@ -920,7 +920,7 @@ export const internalLoadEntityById = async (id, type = null, args = {}) => {
   if (!noCache && !forceNoCache()) {
     // [ELASTIC] From cache
     const fromCache = await elLoadById(id, type);
-    return fromCache || null;
+    if (fromCache) return fromCache;
   }
   const query = `match $x ${type ? `isa ${type},` : ''} has stix_id_key "${escapeString(id)}"; get;`;
   const element = await load(query, ['x'], { noCache });
@@ -936,7 +936,7 @@ export const internalLoadEntityByStixId = async (id, type = null) => {
   if (!forceNoCache()) {
     // [ELASTIC] From cache
     const fromCache = await elLoadByStixId(id, type);
-    return fromCache || null;
+    if (fromCache) return fromCache;
   }
   const query = `match $x ${type ? `isa ${type},` : ''} has stix_id_key "${escapeString(id)}"; get;`;
   const element = await load(query, ['x']);

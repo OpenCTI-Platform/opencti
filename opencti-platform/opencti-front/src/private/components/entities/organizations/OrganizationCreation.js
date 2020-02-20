@@ -176,6 +176,7 @@ class OrganizationCreation extends Component {
               initialValues={{
                 name: '',
                 description: '',
+                reliability: '',
                 organization_class: 'other',
                 createdByRef: '',
                 markingDefinitions: [],
