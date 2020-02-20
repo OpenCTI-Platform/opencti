@@ -17,7 +17,7 @@ The OVA file is available on the [Luatix Google Drive folder](https://drive.goog
 
 Then open the OVA file with VirtualBox or convert the OVA to another type of virtual machine image and launch it. You can login within the VM or connect in SSH with the default login `opencti` and the default password `opencti`.
 
-> Once the virtual machine is launched, you have access to the plaform using the URL http://{IP_ADDRESS}:8080.
+> Once the virtual machine is launched, the **OpenCTI platform can take 3 to 5 minutes to start the first time**. Then you have access to the plaform using the URL **http://{IP_ADDRESS}:8080**.
 
 # Using Docker
 

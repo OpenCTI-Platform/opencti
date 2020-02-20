@@ -141,7 +141,7 @@ class UserEditionOverviewComponent extends Component {
 
   searchRoles(event) {
     fetchQuery(userEditionOverviewRolesSearchQuery, {
-      search: event.target.value,
+      search: event && event.target.value !== 0 ? event.target.value : '',
     }).then((data) => {
       const roles = pipe(
         pathOr([], ['roles', 'edges']),

@@ -312,10 +312,10 @@ export const meEditField = (user, userId, input) => {
   return userEditField(user, userId, input);
 };
 export const userDelete = async userId => {
-  await deleteEntityById(userId, 'User');
   const userToken = await getToken(userId);
   await deleteEntityById(userToken.id, 'Token');
   await clearAccessCache(userToken.uuid);
+  await deleteEntityById(userId, 'User');
   return userId;
 };
 export const personDelete = async personId => {
