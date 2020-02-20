@@ -13,4 +13,4 @@ opencti_api_client = OpenCTIApiClient(api_url, api_token)
 file_to_import = "./test.json"
 
 # Import the bundle
-opencti_api_client.stix2.import_bundle_from_file(file_to_import)
+opencti_api_client.stix2.import_bundle_from_file(file_to_import, True)

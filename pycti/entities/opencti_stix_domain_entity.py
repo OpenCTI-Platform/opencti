@@ -422,7 +422,7 @@ class StixDomainEntity:
         id = kwargs.get("id", None)
         key = kwargs.get("key", None)
         value = kwargs.get("value", None)
-        custom_attributes = kwargs.get("customAttributes", key)
+        custom_attributes = kwargs.get("customAttributes", None)
         if id is not None and key is not None and value is not None:
             self.opencti.log(
                 "info", "Updating Stix-Domain-Entity {" + id + "} field {" + key + "}."

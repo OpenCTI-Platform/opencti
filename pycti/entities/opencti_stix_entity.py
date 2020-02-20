@@ -253,6 +253,8 @@ class StixEntity:
                 }
             }            
             ... on StixRelation {
+                first_seen
+                last_seen
                 killChainPhases {
                     edges {
                         node {
