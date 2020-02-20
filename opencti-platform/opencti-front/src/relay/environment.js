@@ -140,7 +140,7 @@ export const commitMutation = ({
         error.res.errors,
       );
       if (!isEmpty(authRequired)) {
-        MESSAGING$.notifyError('Unauthorized action');
+        MESSAGING$.notifyError('Unauthorized action, please refresh your browser');
       } else {
         const messages = map(
           (e) => ({

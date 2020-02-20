@@ -101,7 +101,7 @@ const i18n = {
       'Granted by default': 'Alloué par défaut',
       'Granted by default at user creation':
         "Alloué par défaut à la création d'un utilisateur",
-      'Unauthorized action': 'Action non autorisée',
+      'Unauthorized action, please refresh your browser': 'Action non autorisée, merci de rafraichir votre navigateur',
       Capabilities: 'Capacités',
       Title: 'Titre',
       'Sender email address': "Adresse mail d'expédition",

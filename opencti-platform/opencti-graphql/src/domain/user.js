@@ -1,4 +1,4 @@
-import { assoc, find as rFind, head, isNil, pathOr, pipe, map, dissoc, append, flatten, propOr, propEq } from 'ramda';
+import { assoc, find as rFind, head, isNil, pipe, map, dissoc, append, flatten, propOr, propEq } from 'ramda';
 import uuid from 'uuid/v4';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
@@ -65,7 +65,7 @@ export const ROLE_DEFAULT = 'Default';
 export const ROLE_ADMINISTRATOR = 'Administrator';
 
 export const findById = async (userId, args, isUser = false) => {
-  let data = null;
+  let data;
   if (userId.match(/[a-z-]+--[\w-]{36}/g)) {
     data = await loadEntityByStixId(userId, 'User');
   } else {
@@ -129,14 +129,17 @@ export const token = (userId, args, context) => {
   ).then(result => result.node.uuid);
 };
 
-export const getTokenId = async userId => {
+const getToken = async userId => {
   return loadWithConnectedRelations(
     `match $x isa Token;
     $rel(authorization:$x, client:$client) isa authorize;
     $client has internal_id_key "${escapeString(userId)}"; get; offset 0; limit 1;`,
     'x',
     'rel'
-  ).then(result => pathOr(null, ['node', 'id'], result));
+  ).then(result => result.node);
+};
+const clearUserTokenCache = userId => {
+  return getToken(userId).then(tokenValue => clearAccessCache(tokenValue.uuid));
 };
 export const getRoles = async userId => {
   const data = await find(
@@ -194,6 +197,7 @@ export const removeRole = async (userId, roleName) => {
             delete $rel;`;
     await wTx.tx.query(query, { infer: false });
   });
+  await clearUserTokenCache(userId);
   return findById(userId, {}, true);
 };
 export const roleRemoveCapability = async (roleId, capabilityName) => {
@@ -204,9 +208,17 @@ export const roleRemoveCapability = async (roleId, capabilityName) => {
             delete $rel;`;
     await wTx.tx.query(query, { infer: false });
   });
+  // Clear cache of every user with this modified role
+  const impactedUsers = await findAll({ filters: [{ key: 'rel_user_role.internal_id_key', values: [roleId] }] });
+  await Promise.all(map(e => clearUserTokenCache(e.node.id), impactedUsers.edges));
   return loadEntityById(roleId, 'Role');
 };
-export const roleDelete = roleId => deleteEntityById(roleId, 'Role');
+export const roleDelete = async roleId => {
+  // Clear cache of every user with this deleted role
+  const impactedUsers = await findAll({ filters: [{ key: 'rel_user_role.internal_id_key', values: [roleId] }] });
+  await Promise.all(map(e => clearUserTokenCache(e.node.id), impactedUsers.edges));
+  return deleteEntityById(roleId, 'Role');
+};
 
 export const addPerson = async (user, newUser) => {
   const created = await createEntity(newUser, 'User', {
@@ -265,8 +277,11 @@ export const roleEditField = (user, roleId, input) => {
     return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
   });
 };
-export const roleAddRelation = async (user, userId, input) => {
-  const data = await createRelation(userId, assoc('through', 'role_capability', input), {}, 'Role', null);
+export const roleAddRelation = async (user, roleId, input) => {
+  const data = await createRelation(roleId, assoc('through', 'role_capability', input), {}, 'Role', null);
+  // Clear cache of every user with this modified role
+  const impactedUsers = await findAll({ filters: [{ key: 'rel_user_role.internal_id_key', values: [roleId] }] });
+  await Promise.all(map(e => clearUserTokenCache(e.node.id), impactedUsers.edges));
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
 };
 // User related
@@ -297,27 +312,21 @@ export const meEditField = (user, userId, input) => {
   return userEditField(user, userId, input);
 };
 export const userDelete = async userId => {
-  const tokenId = await getTokenId(userId);
   await deleteEntityById(userId, 'User');
-  if (tokenId) {
-    await deleteEntityById(tokenId, 'Token');
-  }
+  const userToken = await getToken(userId);
+  await deleteEntityById(userToken.id, 'Token');
+  await clearAccessCache(userToken.uuid);
   return userId;
 };
-export const personDelete = async userId => {
-  const data = await loadEntityById(userId);
-  if (!isNil(data.external)) {
-    throw new ForbiddenAccess();
-  }
-  const tokenId = await getTokenId(userId);
-  await deleteEntityById(userId, 'User');
-  if (tokenId) {
-    await deleteEntityById(tokenId, 'Token');
-  }
-  return userId;
+export const personDelete = async personId => {
+  const data = await loadEntityById(personId);
+  if (!isNil(data.external)) throw new ForbiddenAccess();
+  await deleteEntityById(personId, 'User');
+  return personId;
 };
 export const userAddRelation = async (user, userId, input) => {
   const data = await createRelation(userId, input, {}, 'User', null);
+  await clearUserTokenCache(userId);
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
 };
 export const userDeleteRelation = async (user, userId, relationId = null, toId = null, relationType = 'relation') => {
@@ -328,6 +337,7 @@ export const userDeleteRelation = async (user, userId, relationId = null, toId =
   } else {
     throw new Error('Cannot delete the relation, missing relationId or toId');
   }
+  await clearUserTokenCache(userId);
   const data = await loadEntityById(userId, 'Stix-Domain-Entity');
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
 };
@@ -407,10 +417,10 @@ export const logout = async (user, res) => {
 // Token related
 export const userRenewToken = async (userId, newToken = generateOpenCTIWebToken()) => {
   // 01. Get current token
-  const currentToken = await getTokenId(userId);
+  const currentToken = await getToken(userId);
   // 02. Remove the token
   if (currentToken) {
-    await deleteEntityById(currentToken, 'Token');
+    await deleteEntityById(currentToken.id, 'Token');
   }
   // 03. Create a new one
   const defaultToken = await createEntity(newToken, 'Token', { modelType: TYPE_OPENCTI_INTERNAL, indexable: false });
