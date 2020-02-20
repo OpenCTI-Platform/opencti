@@ -11,6 +11,7 @@ import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import CitiesLines, { citiesLinesQuery } from './cities/CitiesLines';
 import CityCreation from './cities/CityCreation';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 class Cities extends Component {
   constructor(props) {
@@ -123,7 +124,9 @@ class Cities extends Component {
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <CityCreation paginationOptions={paginationOptions} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <CityCreation paginationOptions={paginationOptions} />
+        </Security>
       </div>
     );
   }

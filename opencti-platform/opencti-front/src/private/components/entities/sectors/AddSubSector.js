@@ -171,13 +171,13 @@ class AddSubSector extends Component {
               }}
             />
           </div>
+          <SectorCreation
+            display={this.state.open}
+            contextual={true}
+            inputValue={this.state.search}
+            paginationOptions={paginationOptions}
+          />
         </Drawer>
-        <SectorCreation
-          display={this.state.open}
-          contextual={true}
-          inputValue={this.state.search}
-          paginationOptions={paginationOptions}
-        />
       </div>
     );
   }

@@ -319,7 +319,7 @@ export const userDelete = async userId => {
   return userId;
 };
 export const personDelete = async personId => {
-  const data = await loadEntityById(personId);
+  const data = await loadEntityById(personId, 'User');
   if (!isNil(data.external)) throw new ForbiddenAccess();
   await deleteEntityById(personId, 'User');
   return personId;

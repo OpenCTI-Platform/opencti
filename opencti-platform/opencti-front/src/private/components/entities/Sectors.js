@@ -13,6 +13,7 @@ import inject18n from '../../../components/i18n';
 import SectorsLines, { sectorsLinesQuery } from './sectors/SectorsLines';
 import SectorCreation from './sectors/SectorCreation';
 import SearchInput from '../../../components/SearchInput';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 export const sectorsSearchQuery = graphql`
   query SectorsSearchQuery($search: String) {
@@ -87,7 +88,9 @@ class Sectors extends Component {
             <SectorsLines data={props} keyword={searchTerm} />
           )}
         />
-        <SectorCreation />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <SectorCreation />
+        </Security>
       </div>
     );
   }
@@ -100,8 +103,4 @@ Sectors.propTypes = {
   classes: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(Sectors);
+export default compose(inject18n, withRouter, withStyles(styles))(Sectors);

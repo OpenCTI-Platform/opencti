@@ -21,6 +21,7 @@ import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import PersonsLines, { personsLinesQuery } from './persons/PersonsLines';
 import PersonCreation from './persons/PersonCreation';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 class Persons extends Component {
   constructor(props) {
@@ -164,7 +165,9 @@ class Persons extends Component {
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <PersonCreation paginationOptions={paginationOptions} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <PersonCreation paginationOptions={paginationOptions} />
+        </Security>
       </div>
     );
   }

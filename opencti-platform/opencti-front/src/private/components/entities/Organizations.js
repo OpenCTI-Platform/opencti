@@ -23,6 +23,7 @@ import OrganizationsLines, {
   organizationsLinesQuery,
 } from './organizations/OrganizationsLines';
 import OrganizationCreation from './organizations/OrganizationCreation';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 class Organizations extends Component {
   constructor(props) {
@@ -171,7 +172,9 @@ class Organizations extends Component {
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <OrganizationCreation paginationOptions={paginationOptions} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <OrganizationCreation paginationOptions={paginationOptions} />
+        </Security>
       </div>
     );
   }

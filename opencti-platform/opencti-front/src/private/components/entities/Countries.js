@@ -13,6 +13,7 @@ import CountriesLines, {
   countriesLinesQuery,
 } from './countries/CountriesLines';
 import CountryCreation from './countries/CountryCreation';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 class Countries extends Component {
   constructor(props) {
@@ -125,7 +126,9 @@ class Countries extends Component {
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <CountryCreation paginationOptions={paginationOptions} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <CountryCreation paginationOptions={paginationOptions} />
+        </Security>
       </div>
     );
   }

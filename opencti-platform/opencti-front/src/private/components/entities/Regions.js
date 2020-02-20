@@ -11,6 +11,7 @@ import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import RegionsLines, { regionsLinesQuery } from './regions/RegionsLines';
 import RegionCreation from './regions/RegionCreation';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 class Regions extends Component {
   constructor(props) {
@@ -123,7 +124,9 @@ class Regions extends Component {
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <RegionCreation paginationOptions={paginationOptions} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <RegionCreation paginationOptions={paginationOptions} />
+        </Security>
       </div>
     );
   }

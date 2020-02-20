@@ -1,5 +1,134 @@
 # Changelog
 
+## Version 3.0.1 (20/02/2020)
+
+#### Bug Fixes:
+
+- [#516](https://github.com/OpenCTI-Platform/opencti/issues/516) User roles/capabilities change doesn't clear the token cache
+- [#514](https://github.com/OpenCTI-Platform/opencti/issues/514) Incident view load indefinitely 
+- [#488](https://github.com/OpenCTI-Platform/opencti/issues/488) First seen date can be more recent than last seen date
+
+---
+
+## Version 3.0.0 (19/02/2020)
+Dear OpenCTI community, we are proud to announce the release of OpenCTI version 3.0.0. This version is a turning point in the OpenCTI roadmap, as we worked hard on the following objective: allow you to deploy OpenCTI in production within your organization with the right level of security and the expected stability and performances, turn OpenCTI into an enterprise-grade product.
+
+One of the most important enhancement in this version is the implementation of the RBAC system, associated to 3 new authentication strategies (LDAP/AD, OpenID, etc.). You are now able to create roles and assign roles to users to grant them capabilities (read knowledge, update knowledge, import, manage accesses, etc.). The other feature is about reports and data. The import/export system is now stable (with the observed-data management) and we improved again the performances of write operations. We also speeded-up a lot a views (report knowledge graph, listing of some relationships, etc.). 
+
+A lot of improvements not related to the main features of this release have been made. We published a [new connector](https://github.com/OpenCTI-Platform/connectors/tree/master/import-file-pdf-observables) to analyze and extract IOCs from PDF files thanks to a member of our community. Many bugfixes on the API and the frontend, new content in the documentation and the creation of the [virtual machine template](https://opencti-platform.github.io/docs/installation/auto) hosting the whole stack for testing purposes. As we prepare a lot of new enrichment connectors for observables, we introduced the max TLP option to avoid leaking sensitive information. Other knowledge connectors will be soon published: AlienVault, CrowdStrike, TheHive, and other vendors.
+
+In a few days, we will send you a message with the date of our first webinar, during which we will present how the platform could be used in different types of organization. As we often say, it is just the beginning of an exciting adventure, with soon much more community activities, data management, intelligent subsystems, visualizations and investigations capabilities. 
+
+#### Enhancements:
+
+- [#487](https://github.com/OpenCTI-Platform/opencti/issues/487) Introduce kill chain view and diamond model
+- [#484](https://github.com/OpenCTI-Platform/opencti/issues/484) Automatic completion of marking when creating links
+- [#467](https://github.com/OpenCTI-Platform/opencti/issues/467) Enrichment connectors must have a "MAX TLP" config to avoid enrichment on sensitive data
+- [#466](https://github.com/OpenCTI-Platform/opencti/issues/466) Report views enhancement
+- [#442](https://github.com/OpenCTI-Platform/opencti/issues/442) Huge documentation enhancement
+- [#403](https://github.com/OpenCTI-Platform/opencti/issues/403) Creating "targets" relation between an Attack Pattern and a Vulnerability
+- [#398](https://github.com/OpenCTI-Platform/opencti/issues/398) Pre-installed OpenCTI iso or ready VM?
+- [#380](https://github.com/OpenCTI-Platform/opencti/issues/380) Add inference when action is linked to a specific malware
+- [#373](https://github.com/OpenCTI-Platform/opencti/issues/373) LDAP / SSO authentication
+- [#372](https://github.com/OpenCTI-Platform/opencti/issues/372) Automatically populate reports
+- [#330](https://github.com/OpenCTI-Platform/opencti/issues/330) threats to entities relations
+- [#329](https://github.com/OpenCTI-Platform/opencti/issues/329) Organization to threat actor relations
+- [#328](https://github.com/OpenCTI-Platform/opencti/issues/328) Organization to organization relations
+- [#260](https://github.com/OpenCTI-Platform/opencti/issues/260) Automatically compute the marking of entities/relations from reports
+- [#182](https://github.com/OpenCTI-Platform/opencti/issues/182) Change the behavior of auto-complete field
+- [#148](https://github.com/OpenCTI-Platform/opencti/issues/148) Workspaces : Add type of entity when selecting an entity for widget creation
+- [#86](https://github.com/OpenCTI-Platform/opencti/issues/86) Implement Lockheed Martin Cyber Kill Chain in model
+- [#75](https://github.com/OpenCTI-Platform/opencti/issues/75) Implement the RBAC system
+- [#62](https://github.com/OpenCTI-Platform/opencti/issues/62) Organisation : reliability
+
+#### Bug Fixes:
+
+- [#485](https://github.com/OpenCTI-Platform/opencti/issues/485) Have campaigns with no authors
+- [#472](https://github.com/OpenCTI-Platform/opencti/issues/472) Create person fails with "Thing does not have exactly one key of type [user_email]." error.
+- [#465](https://github.com/OpenCTI-Platform/opencti/issues/465) STIX2 file import error (example with the latest CERT-FR publication)
+- [#456](https://github.com/OpenCTI-Platform/opencti/issues/456) Bad entity_type on stix_observable_relation
+
+---
+
+## Version 2.1.4 (29/01/2020)
+OpenCTI 2.1.4 has been released! This version hotfixes 4 bugs and introduces some technical enhancements in the migration system (no more errors when launching a fresh platform). We also fixed 2 bugs in the [Python library](https://github.com/OpenCTI-Platform/client-python) that impacted the import of vulnerabilities through the CVE connector. Thank you to all community members who reported these bugs. We will now focus on the next milestone: workspaces, outputs and the full support of LDAP/SSO with roles and permissions (read only, read write, etc.).
+
+#### Enhancements:
+
+- [#445](https://github.com/OpenCTI-Platform/opencti/issues/445) Fresh platform should not apply migrations
+- [#413](https://github.com/OpenCTI-Platform/opencti/issues/413) [Doc] nodejs version on Ubuntu 18.04 is too old
+
+#### Bug Fixes:
+
+- [#452](https://github.com/OpenCTI-Platform/opencti/issues/452) CVE import
+- [#449](https://github.com/OpenCTI-Platform/opencti/issues/449) Too much log in console prevent to detect real errors
+- [#447](https://github.com/OpenCTI-Platform/opencti/issues/447) Unable to add entities in report knowledge
+- [#443](https://github.com/OpenCTI-Platform/opencti/issues/443) Add observables to report
+
+---
+
+## Version 2.1.3 (24/01/2020)
+Dear community, OpenCTI version 2.1.3 has been released! We mainly focused our work on the stability of the whole product as well as the resolution of some major bugs. However, several new features have also been implemented, in particular the possibility of exporting lists of entities in STIX2 or CSV format: exporting campaign indicators, reports about an intrusion sets, all malwares, etc. We have completed the refactoring of the Python library and added all the methods that were still missing on some entity types as well as the file upload feature. For the next release, we will carry on our huge refactor of workspaces and statistics in general. We also plan to conduct a documentation working session to improve it in depth.
+
+Last but not least, we will soon plan the organization of a webinar that will be didicated to OpenCTI basics but also a very interesting use case for both red teams and blue teams: how to put all knowledge about an incident in OpenCTI and replay it using [Caldera](https://github.com/mitre/caldera). Double advantage of such a scenario: the capitalization of knowledge related to the incident as well as the ability to test the reaction of SOC / CSIRT in the event of a similar attack. Your feedback and your impressions are precious, do not hesitate to send us your use cases and the difficulties you encounter!
+
+#### :warning: Breaking changes :warning:
+
+Grakn Core Server has been upgraded from 1.5.9 to version 1.6.2. The migration process of existing data cannot be done automatically even if you are using the Grakn Docker container. You have to follow the migration procedure *Upgrading an Existing Installation to Grakn Core 1.6.x.* available in the [Grakn documentation](https://dev.grakn.ai/docs/running-grakn/install-and-run). If you have any trouble to make this work, we are available to help you on [our Slack channel](https://slack.luatix.org) or you can reach the Grakn team directly on [their channel](https://grakn.ai/slack).
+
+#### Enhancements:
+
+- [#424](https://github.com/OpenCTI-Platform/opencti/issues/424) Enhance searching of entities
+- [#412](https://github.com/OpenCTI-Platform/opencti/issues/412) Add OR/AND option to filter Observables & Indicators
+- [#396](https://github.com/OpenCTI-Platform/opencti/issues/396) Infinite loading lists in observables and entities of a report
+- [#391](https://github.com/OpenCTI-Platform/opencti/issues/391) Export lists of objects (intrusion sets, indicators, etc.)
+- [#390](https://github.com/OpenCTI-Platform/opencti/issues/390) Duplicate function askEnrich in the API
+- [#388](https://github.com/OpenCTI-Platform/opencti/issues/388) Display the number of entities in each view/lists
+- [#371](https://github.com/OpenCTI-Platform/opencti/issues/371) Migrate to Grakn 1.6.1
+- [#360](https://github.com/OpenCTI-Platform/opencti/issues/360) Redirect to the requested page after login
+- [#345](https://github.com/OpenCTI-Platform/opencti/issues/345) Add tagging for Tools/Vulnerabilities/Observables/Reports
+- [#334](https://github.com/OpenCTI-Platform/opencti/issues/334) Tags for reports
+- [#123](https://github.com/OpenCTI-Platform/opencti/issues/123) Implement CSV export
+
+#### Bug Fixes:
+
+- [#432](https://github.com/OpenCTI-Platform/opencti/issues/432) Uploading a PDF threat report results in "Cannot read property 'toLowerCase' of null" error
+- [#427](https://github.com/OpenCTI-Platform/opencti/issues/427) Organisation type vs category
+- [#419](https://github.com/OpenCTI-Platform/opencti/issues/419) Filter with no tag not working anymore
+- [#416](https://github.com/OpenCTI-Platform/opencti/issues/416) infinite loading of reports using specific sort options
+- [#415](https://github.com/OpenCTI-Platform/opencti/issues/415) Mutation intrusionSetAdd creates an intrusion set with the first_seen value as the last_seen value
+- [#410](https://github.com/OpenCTI-Platform/opencti/issues/410) Exception when importing STIX 2 Indicators due to invalid default type in valid_from
+- [#407](https://github.com/OpenCTI-Platform/opencti/issues/407) Mandatory properties are not filled for inferred relations
+- [#405](https://github.com/OpenCTI-Platform/opencti/issues/405) Displaying an indicator constantly refreshes the page
+- [#404](https://github.com/OpenCTI-Platform/opencti/issues/404) Cannot create an Indicator of type Mac-Addr or Directory
+- [#381](https://github.com/OpenCTI-Platform/opencti/issues/381) New reports are added without a set "Processing Status"?
+
+---
+
+## Version 2.1.2 (21/12/2019)
+Dear community, the OpenCTI platform version 2.1.2 has been released! This version provides users of the platform with many new features that will allow them to better modelize their CTI knowledge. We have resolved the gap that existed between the OpenCTI data model and the STIX2 schema by definitively separating the concepts of [observables](https://demo.opencti.io/dashboard/signatures/observables) and [indicators](https://demo.opencti.io/dashboard/signatures/indicators). It is now possible to create indicator in various formats: STIX Pattern, Snort, Sigma, YARA, etc.
+
+All graphics and visuals are now based on ElasticSearch queries to increase performance. This will allow us to completely rework the workspaces and make them real monitoring tools in the next release. Also we have disabled all inferences rules on the platform by default, so a [very important screen](https://demo.opencti.io/dashboard/settings/inferences) has been added to the settings section, allowing users to enable inferences rules if they really need it. The MISP connector has been fully refactored and a [documentation is available](https://github.com/OpenCTI-Platform/connectors/tree/master/misp). Finally, we have added [many examples](https://github.com/OpenCTI-Platform/client-python/tree/master/examples) to the Python library.
+
+#### Enhancements:
+
+- [#383](https://github.com/OpenCTI-Platform/opencti/issues/383) Improve performance by using Elastic when searching for relations (when we can)
+- [#375](https://github.com/OpenCTI-Platform/opencti/issues/375) Enhance display of relations and separate inferred/not inferred
+- [#366](https://github.com/OpenCTI-Platform/opencti/issues/366) Use ElasticSearch for all statistics (timeseries, distribution, etc.)
+- [#349](https://github.com/OpenCTI-Platform/opencti/issues/349) Enhance loaders/spinners everywhere
+- [#335](https://github.com/OpenCTI-Platform/opencti/issues/335) Detection rules (yara, snort, suricata, sigma, etc)
+- [#316](https://github.com/OpenCTI-Platform/opencti/issues/316) Split indicator/observable concepts, create indicators from observables 
+- [#162](https://github.com/OpenCTI-Platform/opencti/issues/162) Refactor the observables schema to match STIX2 references
+- [#145](https://github.com/OpenCTI-Platform/opencti/issues/145) Enable/disable inferences rules in settings
+- [#58](https://github.com/OpenCTI-Platform/opencti/issues/58) Observables : expiration date
+- [#57](https://github.com/OpenCTI-Platform/opencti/issues/57) Observables : scoring/rating
+
+#### Bug Fixes:
+
+- [#369](https://github.com/OpenCTI-Platform/opencti/issues/369) Store the remote IDs in some ES entities is useless and performance killer
+
+---
+
 ## Version 2.1.1 (07/12/2019)
 OpenCTI 2.1.1 has been released! This version is hotfixing 5 bugs (4 in the API/Frontend and 1 in the Python library) found after the last release. Thank you to all people who reported these bugs so we can now work on the next milestone. The next milestone will be focused on: improving performances of charts and relations display in the UI, development of many outputs and graphics (killchains, diamond model, PDF export of knowledge, full refactor/enhancement of workspaces, graph view of entities, comparison of threats TTPs/infrastructure and introduction of indicator concept.
 

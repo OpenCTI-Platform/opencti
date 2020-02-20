@@ -40,7 +40,6 @@ import {
 import moment from 'moment';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import Grakn from 'grakn-client';
-import { from } from 'rxjs';
 import { DatabaseError } from '../config/errors';
 import conf, { logger } from '../config/conf';
 import { buildPagination, fillTimeSeries } from './utils';
