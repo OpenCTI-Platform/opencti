@@ -10,9 +10,11 @@
     "serv": "node --max_old_space_size=8192 build/index.js",
     "lint": "eslint --max-warnings 0 .",
     "migrate:add": "migrate create --template-file src/utils/migration-template.js --migrations-dir=./src/migrations",
-    "test": "yarn build && jest --coverage --e test",
     "index": "babel-node ./src/indexer.js",
-    "clean": "babel-node ./src/database/clean.js"
+    "clean": "babel-node ./src/database/clean.js",
+    "coverage": "jest --runInBand --coverage --e test",
+    "provision": "babel-node ./tests/import/provision.js --e test",
+    "test": "yarn build && yarn provision && yarn coverage"
   },
   "bin": {
     "opencti-graphql": "./build/index.js"
@@ -99,7 +101,7 @@
     "eslint-plugin-import": "^2.19.1",
     "eslint-plugin-prettier": "^3.1.2",
     "graphql-tag": "^2.10.3",
-    "jest": "^25.0.0",
+    "jest": "^25.1.0",
     "jest-junit": "^10.0.0",
     "jest-transform-graphql": "^2.1.0",
     "ora": "^4.0.3",
@@ -109,10 +111,5 @@
     "webpack": "^4.41.5",
     "webpack-cli": "^3.3.10",
     "webpack-node-externals": "^1.7.2"
-  },
-  "directories": {
-    "test": "tests"
-  },
-  "keywords": [],
-  "description": ""
+  }
 }

@@ -1,0 +1,5 @@
+requests
+PyYAML
+pika
+pycti
+black

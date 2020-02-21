@@ -28,10 +28,12 @@ OPENCTISTIX2 = {
     'x509-certificate-serial-number': {'type': 'x509-certificate', 'path': ['serial_number']}
 }
 
+
 def return_data(data):
     print(json.dumps(data))
     sys.stdout.flush()
     exit(0)
+
 
 def main():
     if len(sys.argv) <= 2:
@@ -52,6 +54,7 @@ def main():
         return_data({'status': 'success', 'data': str(ece)})
     else:
         return_data({'status': 'unknown', 'data': None})
+
 
 if __name__ == "__main__":
     main()

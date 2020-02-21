@@ -11,7 +11,7 @@ import {
 } from '../domain/settings';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { PROVIDERS } from '../config/security';
+import { PROVIDERS } from '../config/providers';
 
 const settingsResolvers = {
   Query: {

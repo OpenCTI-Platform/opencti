@@ -2880,6 +2880,7 @@ input RelationsAddInput {
 type Query {
   # Technical
   settings: Settings
+  platform_demo: Boolean
   about: AppInfo @auth(for: [SETTINGS])
   inferences: [Inference] @auth(for: [SETTINGS])
   attribute(id: String): Attribute @auth(for: [KNOWLEDGE])

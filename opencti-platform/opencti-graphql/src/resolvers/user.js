@@ -32,12 +32,9 @@ import {
   groups
 } from '../domain/user';
 import { logger } from '../config/conf';
-import {
-  stixDomainEntityCleanContext,
-  stixDomainEntityEditContext,
-} from '../domain/stixDomainEntity';
+import { stixDomainEntityCleanContext, stixDomainEntityEditContext } from '../domain/stixDomainEntity';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
-import passport, { PROVIDERS } from '../config/security';
+import passport, { PROVIDERS } from '../config/providers';
 import { AuthenticationFailure } from '../config/errors';
 import { addRole } from '../domain/grant';
 import { fetchEditContext } from '../database/redis';

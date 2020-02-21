@@ -77,7 +77,6 @@ nconf.add('argv', {
   }
 });
 
-// Priority to command line parameter and fallback to DEFAULT_ENV
 const currentPath = process.env.INIT_CWD || process.cwd();
 const resolvePath = relativePath => path.join(currentPath, relativePath);
 const environment = nconf.get('env') || nconf.get('node_env') || DEFAULT_ENV;
@@ -85,9 +84,11 @@ const resolveEnvFile = env => path.join(resolvePath('config'), `${env.toLowerCas
 export const DEV_MODE = environment !== 'production';
 const externalConfigurationFile = nconf.get('conf');
 let configurationFile;
+let configurationMode = 'external';
 if (externalConfigurationFile) {
   configurationFile = externalConfigurationFile;
 } else {
+  configurationMode = 'embedded';
   configurationFile = resolveEnvFile(environment);
 }
 
@@ -121,9 +122,6 @@ logger.add(
   })
 );
 
-// eslint-disable-next-line
-logger.info(
-  `🚀 OpenCTI started in ${environment} mode with ${externalConfigurationFile ? 'external' : 'embedded'} file`
-);
+logger.info(`🚀 OpenCTI started in ${environment} mode with ${configurationMode} file`);
 export const isAppRealTime = nconf.get('app:reactive') && JSON.parse(nconf.get('app:reactive'));
 export default nconf;

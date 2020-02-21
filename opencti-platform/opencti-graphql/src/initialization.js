@@ -3,7 +3,7 @@ import { logger } from './config/conf';
 import { elCreateIndexes, elIsAlive } from './database/elasticSearch';
 import { graknIsAlive, write } from './database/grakn';
 import applyMigration from './database/migration';
-import { initializeAdminUser } from './config/security';
+import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/minio';
 import { checkPythonStix2 } from './database/utils';
 import { addMarkingDefinition } from './domain/markingDefinition';

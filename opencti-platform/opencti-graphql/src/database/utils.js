@@ -80,21 +80,16 @@ export const execPython3 = async (scriptPath, scriptName, args) => {
         scriptPath,
         args
       };
-      return PythonShell.run(scriptName, options, (err, results) => {
-        if (err) {
-          reject(new Error(`Python3 is missing or script not found: ${err}`));
-        }
-        try {
-          let result = results[0];
-          if (result.includes('ANTLR')) {
-            // eslint-disable-next-line prefer-destructuring
-            result = results[2];
-          }
-          result = JSON.parse(result);
-          resolve(result);
-        } catch (err2) {
-          reject(new Error(`No valid JSON from Python script: ${err2}`));
-        }
+      const shell = new PythonShell(scriptName, options);
+      shell.on('message', message => {
+        resolve(JSON.parse(message));
+      });
+      shell.on('stderr', stderr => {
+        logger.info(`[API-PYTHON] > ${stderr}`);
+      });
+      shell.end((err, code) => {
+        if (err) reject(err);
+        resolve(code);
       });
     });
   } catch (err) {
