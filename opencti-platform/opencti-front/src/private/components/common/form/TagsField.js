@@ -66,7 +66,7 @@ class TagsField extends Component {
           style={style}
           name={name}
           multiple={true}
-          textfieldprops={{ label: t('Tags') }}
+          textfieldprops={{ label: t('Tags'), onFocus: this.searchTags(null) }}
           noOptionsText={t('No available options')}
           options={this.state.tags}
           onInputChange={this.searchTags.bind(this)}

@@ -146,7 +146,7 @@ class ReportAddObjectRefs extends Component {
                 search: this.state.search,
                 orderBy: 'created_at',
                 orderMode: 'desc',
-                count: 50,
+                count: 200,
               }}
               render={({ props }) => {
                 if (props) {

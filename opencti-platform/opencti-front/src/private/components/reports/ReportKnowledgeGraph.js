@@ -40,7 +40,9 @@ import { reportMutationFieldPatch } from './ReportEditionOverview';
 import ReportAddObjectRefs from './ReportAddObjectRefs';
 import StixRelationCreation from '../common/stix_relations/StixRelationCreation';
 import StixDomainEntityEdition from '../common/stix_domain_entities/StixDomainEntityEdition';
-import StixRelationEdition from '../common/stix_relations/StixRelationEdition';
+import StixRelationEdition, {
+  stixRelationEditionDeleteMutation,
+} from '../common/stix_relations/StixRelationEdition';
 
 const styles = () => ({
   container: {
@@ -473,10 +475,9 @@ class ReportKnowledgeGraphComponent extends Component {
           }).then((data) => {
             if (data.stixRelation.reports.edges.length === 1) {
               commitMutation({
-                mutation: reportKnowledgeGraphtMutationRelationDelete,
+                mutation: stixRelationEditionDeleteMutation,
                 variables: {
-                  id: this.props.report.id,
-                  relationId: node.extras.id,
+                  id: node.extras.id,
                 },
               });
             } else {
@@ -485,7 +486,7 @@ class ReportKnowledgeGraphComponent extends Component {
                 variables: {
                   id: this.props.report.id,
                   toId: node.extras.id,
-                  relationType: 'object_regs',
+                  relationType: 'object_refs',
                 },
               });
             }
