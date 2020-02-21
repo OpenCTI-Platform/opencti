@@ -186,7 +186,7 @@ const initializeDefaultValues = async () => {
   await createBasicRolesAndCapabilities();
 };
 
-const initializeData = async () => {
+export const initializeData = async () => {
   // Init default values only if platform as no settings
   const settings = await getSettings();
   if (!settings) await initializeDefaultValues();

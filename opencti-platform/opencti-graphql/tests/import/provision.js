@@ -1,7 +1,7 @@
-import { executeWrite } from '../../src/database/grakn';
-import { elDeleteIndexes } from '../../src/database/elasticSearch';
+import { executeWrite, graknIsAlive } from '../../src/database/grakn';
+import { elDeleteIndexes, elIsAlive } from '../../src/database/elasticSearch';
 import { internalFlushAll } from '../../src/database/redis';
-import { checkSystemDependencies, initializeData, initializeSchema } from '../../src/initialization';
+import { initializeData, initializeSchema } from '../../src/initialization';
 import { execPython3 } from '../../src/database/utils';
 import { logger } from '../../src/config/conf';
 
@@ -19,7 +19,8 @@ const cleanDependenciesData = async () => {
 };
 
 const provision = async () => {
-  await checkSystemDependencies();
+  await graknIsAlive();
+  await elIsAlive();
   let start = new Date().getTime();
   logger.info('[TESTING] > Cleaning data');
   await cleanDependenciesData();
