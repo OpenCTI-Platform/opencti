@@ -19,6 +19,7 @@ import AddSubSector from './AddSubSector';
 import { addSubSectorsMutationRelationDelete } from './AddSubSectorsLines';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   paper: {
@@ -71,10 +72,12 @@ class SectorSubSectorsComponent extends Component {
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Subsectors')}
         </Typography>
-        <AddSubSector
-          sectorId={sector.id}
-          sectorSubSectors={sector.subSectors.edges}
-        />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <AddSubSector
+            sectorId={sector.id}
+            sectorSubSectors={sector.subSectors.edges}
+          />
+        </Security>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <List>

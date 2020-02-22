@@ -81,7 +81,6 @@ const organizationValidation = (t) => Yup.object().shape({
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
   organization_class: Yup.string().required(t('This field is required')),
-  reliability: Yup.string().required(t('This field is required')),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
