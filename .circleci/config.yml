@@ -4,7 +4,7 @@ jobs:
   build:
     working_directory: ~/opencti
     docker:
-      - image: nikolaik/python3.8-nodejs12
+      - image: nikolaik/python-nodejs:python3.8-nodejs12
     steps:
       - checkout
       - run: 
@@ -26,7 +26,7 @@ jobs:
   test:
     working_directory: ~/opencti
     docker:
-      - image: nikolaik/python3.8-nodejs12
+      - image: nikolaik/python-nodejs:python3.8-nodejs12
         environment:
           APP__REACTIVE: false
           GRAKN__HOSTNAME: 127.0.0.1
