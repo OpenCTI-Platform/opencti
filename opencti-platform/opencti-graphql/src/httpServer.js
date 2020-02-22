@@ -1,7 +1,9 @@
 import http from 'http';
-import { isAppRealTime } from './config/conf';
+import conf, { isAppRealTime, logger } from './config/conf';
 import createApp from './app';
 import createApolloServer from './graphql/graphql';
+
+const PORT = conf.get('app:port');
 
 const createHttpServer = () => {
   const apolloServer = createApolloServer();
@@ -11,6 +13,31 @@ const createHttpServer = () => {
     apolloServer.installSubscriptionHandlers(httpServer);
   }
   return httpServer;
+};
+
+export const listenServer = () => {
+  return new Promise((resolve, reject) => {
+    try {
+      const httpServer = createHttpServer();
+      httpServer.listen(PORT, () => {
+        logger.info(`OPENCTI Ready on port ${PORT}`);
+        resolve(httpServer);
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+export const restartServer = httpServer => {
+  return new Promise((resolve, reject) => {
+    httpServer.close(() => {
+      logger.info('OPENCTI server stopped');
+      listenServer()
+        .then(server => resolve(server))
+        .catch(e => reject(e));
+    });
+    httpServer.emit('close'); // force server close
+  });
 };
 
 export default createHttpServer;
