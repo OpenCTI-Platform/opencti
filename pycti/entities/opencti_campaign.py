@@ -165,6 +165,7 @@ class Campaign:
     def read(self, **kwargs):
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
+        custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
             self.opencti.log("info", "Reading Campaign {" + id + "}.")
             query = (
@@ -172,7 +173,11 @@ class Campaign:
                 query Campaign($id: String!) {
                     campaign(id: $id) {
                         """
-                + self.properties
+                + (
+                    custom_attributes
+                    if custom_attributes is not None
+                    else self.properties
+                )
                 + """
                     }
                 }
@@ -272,7 +277,7 @@ class Campaign:
         update = kwargs.get("update", False)
 
         object_result = self.opencti.stix_domain_entity.get_by_stix_id_or_name(
-            types=["Campaign"], stix_id_key=stix_id_key, name=name
+            types=["Campaign"], stix_id_key=stix_id_key, name=name, onlyId=True
         )
         if object_result is not None:
             if update:

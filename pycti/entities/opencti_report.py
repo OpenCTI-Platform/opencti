@@ -234,16 +234,38 @@ class Report:
         stix_id_key = kwargs.get("stix_id_key", None)
         name = kwargs.get("name", None)
         published = kwargs.get("published", None)
+        only_id = kwargs.get("onlyId", False)
         object_result = None
+        custom_attributes_only_id = """
+            id
+            entity_type
+            observableRefs {
+                edges {
+                    node {
+                        id
+                        entity_type
+                        stix_id_key
+                        observable_value
+                    }
+                    relation {
+                        id
+                    }
+                }
+            }
+        """
         if stix_id_key is not None:
-            object_result = self.read(id=stix_id_key)
+            object_result = self.read(
+                id=stix_id_key,
+                customAttributes=custom_attributes_only_id if only_id else None,
+            )
         if object_result is None and name is not None and published is not None:
             published_final = parse(published).strftime("%Y-%m-%d")
             object_result = self.read(
                 filters=[
                     {"key": "name", "values": [name]},
                     {"key": "published_day", "values": [published_final]},
-                ]
+                ],
+                customAttributes=custom_attributes_only_id if only_id else None,
             )
         return object_result
 
@@ -347,10 +369,11 @@ class Report:
                 filters=[
                     {"key": "hasExternalReference", "values": [external_reference_id]}
                 ],
+                customAttributes="id",
             )
         if object_result is None and name is not None:
             object_result = self.get_by_stix_id_or_name(
-                stix_id_key=stix_id_key, name=name, published=published
+                stix_id_key=stix_id_key, name=name, published=published, onlyId=True
             )
         if object_result is not None:
             if update:

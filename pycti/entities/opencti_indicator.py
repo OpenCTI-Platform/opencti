@@ -220,6 +220,7 @@ class Indicator:
     def read(self, **kwargs):
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
+        custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
             self.opencti.log("info", "Reading Indicator {" + id + "}.")
             query = (
@@ -227,7 +228,11 @@ class Indicator:
                 query Indicator($id: String!) {
                     indicator(id: $id) {
                         """
-                + self.properties
+                + (
+                    custom_attributes
+                    if custom_attributes is not None
+                    else self.properties
+                )
                 + """
                     }
                 }
@@ -336,7 +341,26 @@ class Indicator:
         marking_definitions = kwargs.get("markingDefinitions", None)
         update = kwargs.get("update", False)
 
-        object_result = self.opencti.indicator.read(id=stix_id_key)
+        object_result = self.opencti.indicator.read(
+            id=stix_id_key, customAttributes="id"
+        )
+        custom_attributes = """
+            id
+            entity_type
+            observableRefs {
+                edges {
+                    node {
+                        id
+                        entity_type
+                        stix_id_key
+                        observable_value
+                    }
+                    relation {
+                        id
+                    }
+                }
+            }
+        """
         if object_result is None:
             object_result = self.read(
                 filters=[
@@ -346,6 +370,7 @@ class Indicator:
                         "operator": "match",
                     }
                 ],
+                customAttributes=custom_attributes,
             )
         if object_result is not None:
             if update:

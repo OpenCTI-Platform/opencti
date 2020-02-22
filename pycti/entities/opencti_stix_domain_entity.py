@@ -356,6 +356,7 @@ class StixDomainEntity:
         id = kwargs.get("id", None)
         types = kwargs.get("types", None)
         filters = kwargs.get("filters", None)
+        custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
             self.opencti.log("info", "Reading Stix-Domain-Entity {" + id + "}.")
             query = (
@@ -363,7 +364,11 @@ class StixDomainEntity:
                     query StixDomainEntity($id: String!) {
                         stixDomainEntity(id: $id) {
                             """
-                + self.properties
+                + (
+                    custom_attributes
+                    if custom_attributes is not None
+                    else self.properties
+                )
                 + """
                     }
                 }
@@ -396,16 +401,69 @@ class StixDomainEntity:
         types = kwargs.get("types", None)
         stix_id_key = kwargs.get("stix_id_key", None)
         name = kwargs.get("name", None)
+        only_id = kwargs.get("onlyId", False)
         object_result = None
+        custom_attributes_only_id = """
+            id
+            entity_type
+            ... on Incident {
+                observableRefs {
+                    edges {
+                        node {
+                            id
+                            entity_type
+                            stix_id_key
+                            observable_value
+                        }
+                        relation {
+                            id
+                        }
+                    }
+                }
+            }
+            ... on Indicator {
+                observableRefs {
+                    edges {
+                        node {
+                            id
+                            stix_id_key
+                            entity_type
+                            observable_value
+                        }
+                        relation {
+                            id
+                        }
+                    }
+                }
+            }
+            ... on Report {
+                observableRefs {
+                    edges {
+                        node {
+                            id
+                            stix_id_key
+                            entity_type
+                            observable_value
+                        }
+                    }
+                }
+            }
+        """
         if stix_id_key is not None:
-            object_result = self.read(id=stix_id_key)
+            object_result = self.read(
+                id=stix_id_key, customAttributes="id" if only_id else None
+            )
         if object_result is None and name is not None:
             object_result = self.read(
-                types=types, filters=[{"key": "name", "values": [name]}]
+                types=types,
+                filters=[{"key": "name", "values": [name]}],
+                customAttributes=custom_attributes_only_id if only_id else None,
             )
             if object_result is None:
                 object_result = self.read(
-                    types=types, filters=[{"key": "alias", "values": [name]}]
+                    types=types,
+                    filters=[{"key": "alias", "values": [name]}],
+                    customAttributes=custom_attributes_only_id if only_id else None,
                 )
         return object_result
 
@@ -422,28 +480,19 @@ class StixDomainEntity:
         id = kwargs.get("id", None)
         key = kwargs.get("key", None)
         value = kwargs.get("value", None)
-        custom_attributes = kwargs.get("customAttributes", None)
         if id is not None and key is not None and value is not None:
             self.opencti.log(
                 "info", "Updating Stix-Domain-Entity {" + id + "} field {" + key + "}."
             )
-            query = (
-                """
+            query = """
                     mutation StixDomainEntityEdit($id: ID!, $input: EditInput!) {
                         stixDomainEntityEdit(id: $id) {
                             fieldPatch(input: $input) {
-                        """
-                + (
-                    custom_attributes
-                    if custom_attributes is not None
-                    else self.properties
-                )
-                + """
+                                id
+                            }
                         }
                     }
-                }
-            """
-            )
+                """
             result = self.opencti.query(
                 query, {"id": id, "input": {"key": key, "value": value}}
             )
