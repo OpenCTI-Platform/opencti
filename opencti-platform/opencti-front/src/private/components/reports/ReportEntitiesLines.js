@@ -30,7 +30,6 @@ class ReportEntitiesLines extends Component {
       report,
       paginationOptions,
     } = this.props;
-    console.log(report);
     return (
       <div>
         <ListLinesContent

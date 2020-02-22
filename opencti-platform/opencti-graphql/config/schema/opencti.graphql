@@ -2564,6 +2564,11 @@ type Vulnerability implements GlobalObject & StixEntity & StixDomainEntity {
   stix_label: [String]
   alias: [String]
   description: String
+  base_score: Float
+  base_severity: String
+  attack_vector: String
+  integrity_impact: String
+  availability_impact: String
   created: DateTime
   modified: DateTime
   revoked: Boolean
@@ -2606,6 +2611,11 @@ input VulnerabilityAddInput {
   name: String!
   description: String!
   alias: [String]
+  base_score: Float
+  base_severity: String
+  attack_vector: String
+  integrity_impact: String
+  availability_impact: String
   createdByRef: String
   markingDefinitions: [String]
   tags: [String]
