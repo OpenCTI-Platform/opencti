@@ -16,12 +16,16 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { ExpandMore, CheckCircle } from '@material-ui/icons';
 import { ConnectionHandler } from 'relay-runtime';
+import Tooltip from '@material-ui/core/Tooltip';
 import { commitMutation } from '../../../relay/environment';
 import { truncate } from '../../../utils/String';
 import ItemIcon from '../../../components/ItemIcon';
 import inject18n from '../../../components/i18n';
 import { reportRefPopoverDeletionMutation } from './ReportRefPopover';
-import { reportKnowledgeGraphtMutationRelationAdd } from './ReportKnowledgeGraph';
+import {
+  reportKnowledgeGraphtMutationRelationAdd,
+  reportKnowledgeGraphtMutationRelationDelete,
+} from './ReportKnowledgeGraph';
 
 const styles = (theme) => ({
   container: {
@@ -76,36 +80,61 @@ class ReportAddObjectRefsLinesContainer extends Component {
   }
 
   toggleStixDomain(stixDomain) {
-    const { reportId, paginationOptions, knowledgeGraph } = this.props;
-    const alreadyAdded = this.state.addedStixDomainEntities.includes(
-      stixDomain.id,
-    );
+    const {
+      reportId,
+      paginationOptions,
+      knowledgeGraph,
+      reportObjectRefs,
+    } = this.props;
+    const { addedStixDomainEntities } = this.state;
+    const reportObjectRefsIds = map((n) => n.node.id, reportObjectRefs);
+    const alreadyAdded = addedStixDomainEntities.includes(stixDomain.id)
+      || reportObjectRefsIds.includes(stixDomain.id);
 
     if (alreadyAdded) {
-      commitMutation({
-        mutation: reportRefPopoverDeletionMutation,
-        variables: {
-          id: reportId,
-          toId: stixDomain.id,
-          relationType: 'object_refs',
-        },
-        updater: (store) => {
-          const conn = ConnectionHandler.getConnection(
-            store.get(reportId),
-            'Pagination_objectRefs',
-            this.props.paginationOptions,
-          );
-          ConnectionHandler.deleteNode(conn, stixDomain.id);
-        },
-        onCompleted: () => {
-          this.setState({
-            addedStixDomainEntities: filter(
-              (n) => n !== stixDomain.id,
-              this.state.addedStixDomainEntities,
-            ),
-          });
-        },
-      });
+      if (knowledgeGraph) {
+        commitMutation({
+          mutation: reportKnowledgeGraphtMutationRelationDelete,
+          variables: {
+            id: reportId,
+            toId: stixDomain.id,
+            relationType: 'object_refs',
+          },
+          onCompleted: () => {
+            this.setState({
+              addedStixDomainEntities: filter(
+                (n) => n !== stixDomain.id,
+                this.state.addedStixDomainEntities,
+              ),
+            });
+          },
+        });
+      } else {
+        commitMutation({
+          mutation: reportRefPopoverDeletionMutation,
+          variables: {
+            id: reportId,
+            toId: stixDomain.id,
+            relationType: 'object_refs',
+          },
+          updater: (store) => {
+            const conn = ConnectionHandler.getConnection(
+              store.get(reportId),
+              'Pagination_objectRefs',
+              this.props.paginationOptions,
+            );
+            ConnectionHandler.deleteNode(conn, stixDomain.id);
+          },
+          onCompleted: () => {
+            this.setState({
+              addedStixDomainEntities: filter(
+                (n) => n !== stixDomain.id,
+                this.state.addedStixDomainEntities,
+              ),
+            });
+          },
+        });
+      }
     } else {
       const input = {
         fromRole: 'knowledge_aggregation',
@@ -221,31 +250,35 @@ class ReportAddObjectRefsLinesContainer extends Component {
                     const alreadyAdded = addedStixDomainEntities.includes(stixDomainEntity.id)
                       || reportObjectRefsIds.includes(stixDomainEntity.id);
                     return (
-                      <ListItem
+                      <Tooltip
+                        title={stixDomainEntity.description}
                         key={stixDomainEntity.id}
-                        classes={{ root: classes.menuItem }}
-                        divider={true}
-                        button={true}
-                        onClick={this.toggleStixDomain.bind(
-                          this,
-                          stixDomainEntity,
-                        )}
                       >
-                        <ListItemIcon>
-                          {alreadyAdded ? (
-                            <CheckCircle classes={{ root: classes.icon }} />
-                          ) : (
-                            <ItemIcon type={type} />
+                        <ListItem
+                          classes={{ root: classes.menuItem }}
+                          divider={true}
+                          button={true}
+                          onClick={this.toggleStixDomain.bind(
+                            this,
+                            stixDomainEntity,
                           )}
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={stixDomainEntity.name}
-                          secondary={truncate(
-                            stixDomainEntity.description,
-                            100,
-                          )}
-                        />
-                      </ListItem>
+                        >
+                          <ListItemIcon>
+                            {alreadyAdded ? (
+                              <CheckCircle classes={{ root: classes.icon }} />
+                            ) : (
+                              <ItemIcon type={type} />
+                            )}
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={stixDomainEntity.name}
+                            secondary={truncate(
+                              stixDomainEntity.description,
+                              100,
+                            )}
+                          />
+                        </ListItem>
+                      </Tooltip>
                     );
                   })}
                 </List>
