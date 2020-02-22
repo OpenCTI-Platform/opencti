@@ -340,31 +340,30 @@ class Indicator:
         created_by_ref = kwargs.get("createdByRef", None)
         marking_definitions = kwargs.get("markingDefinitions", None)
         update = kwargs.get("update", False)
-
-        object_result = self.opencti.indicator.read(
-            id=stix_id_key, customAttributes="id"
-        )
         custom_attributes = """
-            id
-            entity_type
-            name
-            description
-            ... on Indicator {
-                observableRefs {
-                    edges {
-                        node {
-                            id
-                            entity_type
-                            stix_id_key
-                            observable_value
-                        }
-                        relation {
-                            id
+                    id
+                    entity_type
+                    name
+                    description
+                    ... on Indicator {
+                        observableRefs {
+                            edges {
+                                node {
+                                    id
+                                    entity_type
+                                    stix_id_key
+                                    observable_value
+                                }
+                                relation {
+                                    id
+                                }
+                            }
                         }
                     }
-                }
-            }
-        """
+                """
+        object_result = self.opencti.indicator.read(
+            id=stix_id_key, customAttributes=custom_attributes
+        )
         if object_result is None:
             object_result = self.read(
                 filters=[

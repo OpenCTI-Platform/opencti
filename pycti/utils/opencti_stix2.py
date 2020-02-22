@@ -978,6 +978,8 @@ class OpenCTIStix2:
                     type=observable["type"],
                     observable_value=observable["value"],
                     id=observable["id"],
+                    createdByRef=created_by_ref_id,
+                    markingDefinitions=marking_definitions_ids,
                     createIndicator=stix_object[CustomProperties.CREATE_INDICATOR]
                     if CustomProperties.CREATE_INDICATOR in stix_object
                     else False,
@@ -998,38 +1000,12 @@ class OpenCTIStix2:
                 toId=stix_observables_mapping[relation_to_create["to"]],
                 toType=relation_to_create["toType"],
                 relationship_type=relation_to_create["type"],
+                createdByRef=created_by_ref_id,
+                markingDefinitions=marking_definitions_ids,
             )
             stix_observable_relations_mapping[
                 relation_to_create["id"]
             ] = stix_observable_relation_result["id"]
-
-        for key, stix_observable_id in stix_observables_mapping.items():
-            # Update created by ref
-            if created_by_ref_id is not None:
-                self.opencti.stix_entity.update_created_by_ref(
-                    id=stix_observable_id, identity_id=created_by_ref_id
-                )
-            # Add marking definitions
-            for marking_definition_id in marking_definitions_ids:
-                self.opencti.stix_entity.add_marking_definition(
-                    id=stix_observable_id, marking_definition_id=marking_definition_id
-                )
-
-        for (
-            key,
-            stix_observable_relation_id,
-        ) in stix_observable_relations_mapping.items():
-            # Update created by ref
-            if created_by_ref_id is not None:
-                self.opencti.stix_entity.update_created_by_ref(
-                    id=stix_observable_relation_id, identity_id=created_by_ref_id
-                )
-            # Add marking definitions
-            for marking_definition_id in marking_definitions_ids:
-                self.opencti.stix_entity.add_marking_definition(
-                    id=stix_observable_relation_id,
-                    marking_definition_id=marking_definition_id,
-                )
 
     def export_entity(
         self, entity_type, entity_id, mode="simple", max_marking_definition=None
@@ -1837,8 +1813,8 @@ class OpenCTIStix2:
             createdByRef=extras["created_by_ref_id"]
             if "created_by_ref_id" in extras
             else None,
-            markingDefinitions=extras["created_by_ref_id"]
-            if "created_by_ref_id" in extras
+            markingDefinitions=extras["marking_definitions_ids"]
+            if "marking_definitions_ids" in extras
             else None,
             update=update,
         )
