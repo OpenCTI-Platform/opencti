@@ -1683,6 +1683,21 @@ class OpenCTIStix2:
             description=self.convert_markdown(stix_object["description"])
             if "description" in stix_object
             else "",
+            base_score=stix_object[CustomProperties.BASE_SCORE]
+            if CustomProperties.BASE_SCORE in stix_object
+            else None,
+            base_severity=stix_object[CustomProperties.BASE_SEVERITY]
+            if CustomProperties.BASE_SEVERITY in stix_object
+            else None,
+            attack_vector=stix_object[CustomProperties.ATTACK_VECTOR]
+            if CustomProperties.ATTACK_VECTOR in stix_object
+            else None,
+            integrity_impact=stix_object[CustomProperties.INTEGRITY_IMPACT]
+            if CustomProperties.INTEGRITY_IMPACT in stix_object
+            else None,
+            availability_impact=stix_object[CustomProperties.AVAILABILITY_IMPACT]
+            if CustomProperties.AVAILABILITY_IMPACT in stix_object
+            else None,
             alias=self.pick_aliases(stix_object),
             id=stix_object[CustomProperties.ID]
             if CustomProperties.ID in stix_object

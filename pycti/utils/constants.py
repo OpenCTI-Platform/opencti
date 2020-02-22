@@ -99,11 +99,18 @@ class CustomProperties:
     # use with attack pattern
     EXTERNAL_ID = "x_opencti_external_id"
 
+    # use with vulnerability
+    BASE_SCORE = "x_opencti_base_score"
+    BASE_SEVERITY = "x_opencti_base_severity"
+    ATTACK_VECTOR = "x_opencti_attack_vector"
+    INTEGRITY_IMPACT = "x_opencti_integrity_impact"
+    AVAILABILITY_IMPACT = "x_opencti_availability_impact"
+
     # use with intrusion-set, campaign, relation
     FIRST_SEEN = "x_opencti_first_seen"
     LAST_SEEN = "x_opencti_last_seen"
 
-    # use with marking deinitions
+    # use with marking definitions
     COLOR = "x_opencti_color"
     LEVEL = "x_opencti_level"  # should be an integer
 
