@@ -264,6 +264,8 @@ class StixObservableRelation:
         stix_id_key = kwargs.get("stix_id_key", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
+        created_by_ref = kwargs.get("createdByRef", None)
+        marking_definitions = kwargs.get("markingDefinitions", None)
 
         self.opencti.log(
             "info",
@@ -306,6 +308,8 @@ class StixObservableRelation:
                     "stix_id_key": stix_id_key,
                     "created": created,
                     "modified": modified,
+                    "createdByRef": created_by_ref,
+                    "markingDefinitions": marking_definitions,
                 }
             },
         )
@@ -335,6 +339,8 @@ class StixObservableRelation:
         stix_id_key = kwargs.get("stix_id_key", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
+        created_by_ref = kwargs.get("createdByRef", None)
+        marking_definitions = kwargs.get("markingDefinitions", None)
         update = kwargs.get("update", False)
         ignore_dates = kwargs.get("ignore_dates", False)
         custom_attributes = """
@@ -384,6 +390,7 @@ class StixObservableRelation:
                 firstSeenStop=first_seen_stop,
                 lastSeenStart=last_seen_start,
                 lastSeenStop=last_seen_stop,
+                customAttributes=custom_attributes,
             )
         if stix_relation_result is not None:
             if update:
@@ -462,6 +469,8 @@ class StixObservableRelation:
                 stix_id_key=stix_id_key,
                 created=created,
                 modified=modified,
+                createdByRef=created_by_ref,
+                markingDefinitions=marking_definitions,
             )
 
     """
