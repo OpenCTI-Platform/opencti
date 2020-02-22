@@ -309,10 +309,14 @@ class StixObservable:
         marking_definitions = kwargs.get("markingDefinitions", None)
         create_indicator = kwargs.get("createIndicator", False)
         update = kwargs.get("update", False)
-
+        custom_attributes = """
+            id
+            entity_type
+            description 
+        """
         object_result = self.read(
             filters=[{"key": "observable_value", "values": [observable_value]}],
-            customAttributes="id, entity_type",
+            customAttributes=custom_attributes,
         )
         if object_result is not None:
             if update:
