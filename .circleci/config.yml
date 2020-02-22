@@ -7,6 +7,9 @@ jobs:
       - image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
     steps:
       - checkout
+      - run:
+          name: install gcc
+          command: apk add build-base
       - run: 
           working_directory: ~/opencti/opencti-platform/opencti-front
           command: yarn install
@@ -39,6 +42,9 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/
+      - run:
+          name: install gcc
+          command: apk add build-base
       - run:
           name: install dockerize
           command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz
