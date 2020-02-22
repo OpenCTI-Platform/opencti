@@ -179,7 +179,9 @@ class ReportAddObjectRefsLinesContainer extends Component {
   }
 
   render() {
-    const { t, classes, data } = this.props;
+    const {
+      t, classes, data, reportObjectRefs,
+    } = this.props;
     const { addedStixDomainEntities } = this.state;
     const stixDomainEntitiesNodes = map(
       (n) => n.node,
@@ -188,7 +190,7 @@ class ReportAddObjectRefsLinesContainer extends Component {
     const byType = groupBy((stixDomainEntity) => stixDomainEntity.entity_type);
     const stixDomainEntities = byType(stixDomainEntitiesNodes);
     const stixDomainEntitiesTypes = keys(stixDomainEntities);
-
+    const reportObjectRefsIds = map((n) => n.node.id, reportObjectRefs);
     return (
       <div className={classes.container}>
         {stixDomainEntitiesTypes.length > 0 ? (
@@ -216,9 +218,8 @@ class ReportAddObjectRefsLinesContainer extends Component {
               >
                 <List classes={{ root: classes.list }}>
                   {stixDomainEntities[type].map((stixDomainEntity) => {
-                    const alreadyAdded = addedStixDomainEntities.includes(
-                      stixDomainEntity.id,
-                    );
+                    const alreadyAdded = addedStixDomainEntities.includes(stixDomainEntity.id)
+                      || reportObjectRefsIds.includes(stixDomainEntity.id);
                     return (
                       <ListItem
                         key={stixDomainEntity.id}
@@ -270,6 +271,7 @@ ReportAddObjectRefsLinesContainer.propTypes = {
   fld: PropTypes.func,
   paginationOptions: PropTypes.object,
   knowledgeGraph: PropTypes.bool,
+  reportObjectRefs: PropTypes.array,
 };
 
 export const reportAddObjectRefsLinesQuery = graphql`

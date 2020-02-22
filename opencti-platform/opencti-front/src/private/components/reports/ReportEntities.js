@@ -9,7 +9,7 @@ import { withStyles } from '@material-ui/core';
 import { QueryRenderer } from '../../../relay/environment';
 import ReportHeader from './ReportHeader';
 import ListLines from '../../../components/list_lines/ListLines';
-import ReportStixObservablesLines, {
+import ReportEntitiesLines, {
   ReportEntitiesLinesQuery,
 } from './ReportEntitiesLines';
 import {
@@ -17,9 +17,7 @@ import {
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
-import ReportAddObjectRefs from './ReportAddObjectRefs';
 import StixDomainEntitiesRightBar from '../common/stix_domain_entities/StixDomainEntitiesRightBar';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 const styles = () => ({
   container: {
@@ -165,7 +163,7 @@ class ReportEntitiesComponent extends Component {
             query={ReportEntitiesLinesQuery}
             variables={{ id: report.id, count: 25, ...paginationOptions }}
             render={({ props }) => (
-              <ReportStixObservablesLines
+              <ReportEntitiesLines
                 report={props ? props.report : null}
                 paginationOptions={paginationOptions}
                 dataColumns={dataColumns}
@@ -175,13 +173,6 @@ class ReportEntitiesComponent extends Component {
             )}
           />
         </ListLines>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ReportAddObjectRefs
-            reportId={report.id}
-            paginationOptions={paginationOptions}
-            withPadding={true}
-          />
-        </Security>
         <StixDomainEntitiesRightBar
           stixDomainEntitiesTypes={stixDomainEntitiesTypes}
           handleToggleStixDomainEntityType={this.handleToggleStixDomainEntityType.bind(

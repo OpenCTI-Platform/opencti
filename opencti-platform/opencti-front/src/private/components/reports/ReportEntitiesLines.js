@@ -6,6 +6,8 @@ import { pathOr, propOr } from 'ramda';
 import ListLinesContent from '../../../components/list_lines/ListLinesContent';
 import { ReportEntityLine, ReportEntityLineDummy } from './ReportEntityLine';
 import { setNumberOfElements } from '../../../utils/Number';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import ReportAddObjectRefs from './ReportAddObjectRefs';
 
 const nbOfRowsToLoad = 25;
 
@@ -28,26 +30,37 @@ class ReportEntitiesLines extends Component {
       report,
       paginationOptions,
     } = this.props;
+    console.log(report);
     return (
-      <ListLinesContent
-        initialLoading={initialLoading}
-        loadMore={relay.loadMore.bind(this)}
-        hasMore={relay.hasMore.bind(this)}
-        isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['objectRefs', 'edges'], report)}
-        paginationOptions={paginationOptions}
-        globalCount={pathOr(
-          nbOfRowsToLoad,
-          ['objectRefs', 'pageInfo', 'globalCount'],
-          report,
-        )}
-        LineComponent={
-          <ReportEntityLine reportId={propOr(null, 'id', report)} />
-        }
-        DummyLineComponent={<ReportEntityLineDummy />}
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-      />
+      <div>
+        <ListLinesContent
+          initialLoading={initialLoading}
+          loadMore={relay.loadMore.bind(this)}
+          hasMore={relay.hasMore.bind(this)}
+          isLoading={relay.isLoading.bind(this)}
+          dataList={pathOr([], ['objectRefs', 'edges'], report)}
+          paginationOptions={paginationOptions}
+          globalCount={pathOr(
+            nbOfRowsToLoad,
+            ['objectRefs', 'pageInfo', 'globalCount'],
+            report,
+          )}
+          LineComponent={
+            <ReportEntityLine reportId={propOr(null, 'id', report)} />
+          }
+          DummyLineComponent={<ReportEntityLineDummy />}
+          dataColumns={dataColumns}
+          nbOfRowsToLoad={nbOfRowsToLoad}
+        />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ReportAddObjectRefs
+            reportId={propOr(null, 'id', report)}
+            reportObjectRefs={pathOr([], ['objectRefs', 'edges'], report)}
+            paginationOptions={paginationOptions}
+            withPadding={true}
+          />
+        </Security>
+      </div>
     );
   }
 }
@@ -111,6 +124,7 @@ export default createPaginationContainer(
         ) @connection(key: "Pagination_objectRefs") {
           edges {
             node {
+              id
               ...ReportEntityLine_node
             }
           }
