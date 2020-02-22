@@ -82,7 +82,12 @@ export const execPython3 = async (scriptPath, scriptName, args) => {
       };
       const shell = new PythonShell(scriptName, options);
       shell.on('message', message => {
-        resolve(JSON.parse(message));
+        try {
+          resolve(JSON.parse(message));
+        } catch (e) {
+          // Result should be json, if not consider it as an error
+          reject(e);
+        }
       });
       shell.on('stderr', stderr => {
         logger.info(`[API-PYTHON] > ${stderr}`);
