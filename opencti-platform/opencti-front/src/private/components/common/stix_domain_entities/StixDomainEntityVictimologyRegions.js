@@ -319,8 +319,6 @@ class StixDomainEntityVictimologyRegionsComponent extends Component {
         }
       }
     }
-
-    console.log(finalRegions);
     return (
       <div>
         <div style={{ float: 'left' }}>
