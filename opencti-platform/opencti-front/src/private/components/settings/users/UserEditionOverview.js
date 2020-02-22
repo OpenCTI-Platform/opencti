@@ -283,6 +283,7 @@ class UserEditionOverviewComponent extends Component {
                   helperText: (
                     <SubscriptionFocus context={context} fieldName="roles" />
                   ),
+                  onFocus: this.searchRoles.bind(this),
                 }}
                 options={this.state.roles}
                 onInputChange={this.searchRoles.bind(this)}

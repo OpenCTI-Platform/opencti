@@ -51,7 +51,7 @@ class Search extends Component {
           query={stixDomainEntitiesLinesQuery}
           variables={{
             search: keyword,
-            count: 200,
+            count: 100,
             orderBy: 'created_at',
             orderMode: 'desc',
           }}
@@ -66,7 +66,7 @@ class Search extends Component {
           query={stixObservablesSearchLinesQuery}
           variables={{
             search: keyword,
-            count: 200,
+            count: 100,
             orderBy: 'created_at',
             orderMode: 'desc',
           }}
