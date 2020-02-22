@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import uuid from 'uuid/v4';
-import { queryAsAdmin } from '../utils';
 import { authentication } from '../../../src/domain/user';
+import { queryAsAdmin } from '../../utils/query';
 
 // region queries
 const USER_EMAIL = `${uuid()}@opencti.io`;

@@ -99,7 +99,7 @@ export const execPython3 = async (scriptPath, scriptName, args) => {
 
 export const checkPythonStix2 = async () => {
   try {
-    const result = await execPython3('./src/utils/stix2', 'stix2_create_pattern.py', ['check', 'health']);
+    const result = await execPython3('./src/python', 'stix2_create_pattern.py', ['check', 'health']);
     if (result.status !== 'success') {
       throw new Error('Python3 with STIX2 module is missing');
     }
@@ -110,7 +110,7 @@ export const checkPythonStix2 = async () => {
 
 export const createStixPattern = async (observableType, observableValue) => {
   try {
-    const result = await execPython3('./src/utils/stix2', 'stix2_create_pattern.py', [observableType, observableValue]);
+    const result = await execPython3('./src/python', 'stix2_create_pattern.py', [observableType, observableValue]);
     if (result.status === 'success') {
       return result.data;
     }
@@ -123,7 +123,7 @@ export const createStixPattern = async (observableType, observableValue) => {
 
 export const extractObservables = async pattern => {
   try {
-    const result = await execPython3('./src/utils/stix2', 'stix2_extract_observables.py', [pattern]);
+    const result = await execPython3('./src/python', 'stix2_extract_observables.py', [pattern]);
     if (result.status === 'success') {
       return result.data;
     }

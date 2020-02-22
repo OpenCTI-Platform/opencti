@@ -6,14 +6,14 @@
   "license": "Apache-2.0",
   "scripts": {
     "start": "webpack --mode development --max_old_space_size=8192",
-    "build": "webpack --mode production",
+    "install:python": "pip3 install -r src/python/requirements.txt",
+    "build": "yarn install:python && webpack --mode production",
     "serv": "node --max_old_space_size=8192 build/index.js",
     "lint": "eslint --max-warnings 0 .",
     "migrate:add": "migrate create --template-file src/utils/migration-template.js --migrations-dir=./src/migrations",
     "index": "babel-node ./src/indexer.js",
-    "clean": "babel-node ./src/database/clean.js",
     "coverage": "jest --runInBand --coverage --e test",
-    "provision": "babel-node ./tests/import/provision.js --e test",
+    "provision": "babel-node ./tests/utils/provision.js --e test",
     "test": "yarn build && yarn provision && yarn coverage"
   },
   "bin": {

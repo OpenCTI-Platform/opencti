@@ -3,14 +3,15 @@ import { elDeleteIndexes, elIsAlive } from '../../src/database/elasticSearch';
 import { internalFlushAll } from '../../src/database/redis';
 import { initializeData, initializeSchema } from '../../src/initialization';
 import { execPython3 } from '../../src/database/utils';
-import { logger } from '../../src/config/conf';
+import conf, { logger } from '../../src/config/conf';
 
 const cleanDependenciesData = async () => {
   // Cleaning grakn
   await executeWrite(async wTx => {
-    await wTx.tx.query('match $entity isa entity; delete $entity;');
     await wTx.tx.query('match $relation isa relation; delete $relation;');
-    await wTx.tx.query('match $attribute isa attribute; delete $attribute;');
+  });
+  await executeWrite(async wTx => {
+    await wTx.tx.query('match $entity isa entity; delete $entity;');
   });
   // Cleaning elastic
   await elDeleteIndexes();
@@ -22,15 +23,19 @@ const provision = async () => {
   await graknIsAlive();
   await elIsAlive();
   let start = new Date().getTime();
-  logger.info('[TESTING] > Cleaning data');
+  logger.warn('[TESTING] > Cleaning data');
   await cleanDependenciesData();
-  logger.info(`[TESTING] > Data cleaned in ${new Date().getTime() - start} ms`);
+  logger.warn(`[TESTING] > Data cleaned in ${new Date().getTime() - start} ms`);
   await initializeSchema();
   await initializeData();
-  logger.info(`[TESTING] > Platform initialized in ${new Date().getTime() - start} ms`);
+  logger.warn(`[TESTING] > Platform initialized in ${new Date().getTime() - start} ms`);
   start = new Date().getTime();
-  await execPython3('./tests/import', 'local_importer.py');
-  logger.info(`[TESTING] > Platform data loaded in ${new Date().getTime() - start} ms`);
+  const apiUri = `http://localhost:${conf.get('app:port')}`;
+  const apiToken = conf.get('app:admin:token');
+  const fileToInject = '/tests/data/CERTFR-2020-CTI-001-STIX2_v2.json';
+  const importOpts = [apiUri, apiToken, fileToInject];
+  await execPython3('./src/python', 'local_importer.py', importOpts);
+  logger.warn(`[TESTING] > Platform data loaded in ${new Date().getTime() - start} ms`);
 };
 
 (async () => {

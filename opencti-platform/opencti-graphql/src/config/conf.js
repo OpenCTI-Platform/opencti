@@ -84,11 +84,9 @@ const resolveEnvFile = env => path.join(resolvePath('config'), `${env.toLowerCas
 export const DEV_MODE = environment !== 'production';
 const externalConfigurationFile = nconf.get('conf');
 let configurationFile;
-let configurationMode = 'external';
 if (externalConfigurationFile) {
   configurationFile = externalConfigurationFile;
 } else {
-  configurationMode = 'embedded';
   configurationFile = resolveEnvFile(environment);
 }
 
@@ -122,6 +120,5 @@ logger.add(
   })
 );
 
-logger.info(`🚀 OpenCTI started in ${environment} mode with ${configurationMode} file`);
 export const isAppRealTime = nconf.get('app:reactive') && JSON.parse(nconf.get('app:reactive'));
 export default nconf;
