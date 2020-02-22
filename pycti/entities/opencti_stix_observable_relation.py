@@ -204,6 +204,7 @@ class StixObservableRelation:
         last_seen_start = kwargs.get("lastSeenStart", None)
         last_seen_stop = kwargs.get("lastSeenStop", None)
         inferred = kwargs.get("inferred", None)
+        custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
             self.opencti.log("info", "Reading stix_observable_relation {" + id + "}.")
             query = (
@@ -211,7 +212,11 @@ class StixObservableRelation:
                 query StixObservableRelation($id: String!) {
                     stixObservableRelation(id: $id) {
                         """
-                + self.properties
+                + (
+                    custom_attributes
+                    if custom_attributes is not None
+                    else self.properties
+                )
                 + """
                     }
                 }
@@ -332,10 +337,20 @@ class StixObservableRelation:
         modified = kwargs.get("modified", None)
         update = kwargs.get("update", False)
         ignore_dates = kwargs.get("ignore_dates", False)
-
+        custom_attributes = """
+            id
+            entity_type
+            name
+            description 
+            weight
+            first_seen
+            last_seen
+        """
         stix_relation_result = None
         if stix_id_key is not None:
-            stix_relation_result = self.read(id=stix_id_key)
+            stix_relation_result = self.read(
+                id=stix_id_key, customAttributes=custom_attributes
+            )
         if stix_relation_result is None:
             if (
                 ignore_dates is False

@@ -322,9 +322,24 @@ class AttackPattern:
         marking_definitions = kwargs.get("markingDefinitions", None)
         kill_chain_phases = kwargs.get("killChainPhases", None)
         update = kwargs.get("update", False)
-
+        custom_attributes = """
+            id
+            entity_type
+            name
+            description 
+            alias
+            ... on AttackPattern {
+                platform
+                required_permission
+                external_id
+                
+            }
+        """
         object_result = self.opencti.stix_domain_entity.get_by_stix_id_or_name(
-            types=["Attack-Pattern"], stix_id_key=stix_id_key, name=name, onlyId=True
+            types=["Attack-Pattern"],
+            stix_id_key=stix_id_key,
+            name=name,
+            customAttributes=custom_attributes,
         )
         if object_result is None and external_id is not None:
             object_result = self.read(

@@ -269,9 +269,18 @@ class Identity:
         created_by_ref = kwargs.get("createdByRef", None)
         marking_definitions = kwargs.get("markingDefinitions", None)
         update = kwargs.get("update", False)
-
+        custom_attributes = """
+            id
+            entity_type
+            name
+            description 
+            alias
+        """
         object_result = self.opencti.stix_domain_entity.get_by_stix_id_or_name(
-            types=[type], stix_id_key=stix_id_key, name=name, onlyId=True
+            types=[type],
+            stix_id_key=stix_id_key,
+            name=name,
+            customAttributes=custom_attributes,
         )
         if object_result is not None:
             if update:

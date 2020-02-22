@@ -347,16 +347,20 @@ class Indicator:
         custom_attributes = """
             id
             entity_type
-            observableRefs {
-                edges {
-                    node {
-                        id
-                        entity_type
-                        stix_id_key
-                        observable_value
-                    }
-                    relation {
-                        id
+            name
+            description
+            ... on Indicator {
+                observableRefs {
+                    edges {
+                        node {
+                            id
+                            entity_type
+                            stix_id_key
+                            observable_value
+                        }
+                        relation {
+                            id
+                        }
                     }
                 }
             }

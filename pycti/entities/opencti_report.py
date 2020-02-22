@@ -234,29 +234,11 @@ class Report:
         stix_id_key = kwargs.get("stix_id_key", None)
         name = kwargs.get("name", None)
         published = kwargs.get("published", None)
-        only_id = kwargs.get("onlyId", False)
+        custom_attributes = kwargs.get("customAttributes", None)
         object_result = None
-        custom_attributes_only_id = """
-            id
-            entity_type
-            observableRefs {
-                edges {
-                    node {
-                        id
-                        entity_type
-                        stix_id_key
-                        observable_value
-                    }
-                    relation {
-                        id
-                    }
-                }
-            }
-        """
         if stix_id_key is not None:
             object_result = self.read(
-                id=stix_id_key,
-                customAttributes=custom_attributes_only_id if only_id else None,
+                id=stix_id_key, customAttributes=custom_attributes
             )
         if object_result is None and name is not None and published is not None:
             published_final = parse(published).strftime("%Y-%m-%d")
@@ -265,7 +247,7 @@ class Report:
                     {"key": "name", "values": [name]},
                     {"key": "published_day", "values": [published_final]},
                 ],
-                customAttributes=custom_attributes_only_id if only_id else None,
+                customAttributes=custom_attributes,
             )
         return object_result
 
@@ -361,7 +343,27 @@ class Report:
         created_by_ref = kwargs.get("createdByRef", None)
         marking_definitions = kwargs.get("markingDefinitions", None)
         update = kwargs.get("update", False)
-
+        custom_attributes = """
+            id
+            entity_type
+            name
+            description 
+            ... on Report {
+                observableRefs {
+                    edges {
+                        node {
+                            id
+                            entity_type
+                            stix_id_key
+                            observable_value
+                        }
+                        relation {
+                            id
+                        }
+                    }
+                }
+            }
+        """
         object_result = None
         if external_reference_id is not None:
             object_result = self.opencti.stix_domain_entity.read(
@@ -369,11 +371,14 @@ class Report:
                 filters=[
                     {"key": "hasExternalReference", "values": [external_reference_id]}
                 ],
-                customAttributes="id",
+                customAttributes=custom_attributes,
             )
         if object_result is None and name is not None:
             object_result = self.get_by_stix_id_or_name(
-                stix_id_key=stix_id_key, name=name, published=published, onlyId=True
+                stix_id_key=stix_id_key,
+                name=name,
+                published=published,
+                custom_attributes=custom_attributes,
             )
         if object_result is not None:
             if update:
@@ -382,45 +387,11 @@ class Report:
                         id=object_result["id"], key="name", value=name
                     )
                     object_result["name"] = name
-                if (
-                    report_class is not None
-                    and object_result["report_class"] != report_class
-                ):
-                    self.opencti.stix_domain_entity.update_field(
-                        id=object_result["id"], key="report_class", value=report_class
-                    )
-                    object_result["report_class"] = report_class
                 if object_result["description"] != description:
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"], key="description", value=description
                     )
                     object_result["description"] = description
-                if (
-                    object_status is not None
-                    and object_result["object_status"] != object_status
-                ):
-                    self.opencti.stix_domain_entity.update_field(
-                        id=object_result["id"],
-                        key="object_status",
-                        value=str(object_status),
-                    )
-                    object_result["object_status"] = object_status
-                if (
-                    source_confidence_level is not None
-                    and object_result["source_confidence_level"]
-                    != source_confidence_level
-                ):
-                    self.opencti.stix_domain_entity.update_field(
-                        id=object_result["id"],
-                        key="source_confidence_level",
-                        value=str(source_confidence_level),
-                    )
-                    object_result["source_confidence_level"] = source_confidence_level
-                if graph_data is not None and object_result["graph_data"] != graph_data:
-                    self.opencti.stix_domain_entity.update_field(
-                        id=object_result["id"], key="graph_data", value=graph_data
-                    )
-                    object_result["graph_data"] = graph_data
             if external_reference_id is not None:
                 self.opencti.stix_entity.add_external_reference(
                     id=object_result["id"],

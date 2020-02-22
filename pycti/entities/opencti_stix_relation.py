@@ -372,13 +372,21 @@ class StixRelation:
         kill_chain_phases = kwargs.get("killChainPhases", None)
         update = kwargs.get("update", False)
         ignore_dates = kwargs.get("ignore_dates", False)
-
+        custom_attributes = """
+            id
+            entity_type
+            name
+            description 
+            weight
+            first_seen
+            last_seen
+        """
         stix_relation_result = None
         if id is not None:
-            stix_relation_result = self.read(id=id, customAttributes="id, entity_type")
+            stix_relation_result = self.read(id=id, customAttributes=custom_attributes)
         if stix_relation_result is None and stix_id_key is not None:
             stix_relation_result = self.read(
-                id=stix_id_key, customAttributes="id, entity_type"
+                id=stix_id_key, customAttributes=custom_attributes
             )
         if stix_relation_result is None:
             if (
@@ -413,7 +421,7 @@ class StixRelation:
                 firstSeenStop=first_seen_stop,
                 lastSeenStart=last_seen_start,
                 lastSeenStop=last_seen_stop,
-                customAttributes="id, entity_type",
+                customAttributes=custom_attributes,
             )
         if stix_relation_result is not None:
             if update:
