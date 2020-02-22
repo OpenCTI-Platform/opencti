@@ -202,6 +202,7 @@ class StixObservable:
     def read(self, **kwargs):
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
+        custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
             self.opencti.log("info", "Reading StixObservable {" + id + "}.")
             query = (
@@ -209,7 +210,11 @@ class StixObservable:
                 query StixObservable($id: String!) {
                     stixObservable(id: $id) {
                         """
-                + self.properties
+                + (
+                    custom_attributes
+                    if custom_attributes is not None
+                    else self.properties
+                )
                 + """
                     }
                 }
@@ -306,7 +311,8 @@ class StixObservable:
         update = kwargs.get("update", False)
 
         object_result = self.read(
-            filters=[{"key": "observable_value", "values": [observable_value]}]
+            filters=[{"key": "observable_value", "values": [observable_value]}],
+            customAttributes="id, entity_type",
         )
         if object_result is not None:
             if update:
@@ -348,19 +354,15 @@ class StixObservable:
             self.opencti.log(
                 "info", "Updating Stix-Observable {" + id + "} field {" + key + "}."
             )
-            query = (
-                """
+            query = """
                 mutation StixObservableEdit($id: ID!, $input: EditInput!) {
                     stixObservableEdit(id: $id) {
                         fieldPatch(input: $input) {
-                            """
-                + self.properties
-                + """
+                            id
                         }
                     }
                 }
             """
-            )
             result = self.opencti.query(
                 query, {"id": id, "input": {"key": key, "value": value}}
             )

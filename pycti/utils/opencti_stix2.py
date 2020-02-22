@@ -389,6 +389,17 @@ class OpenCTIStix2:
         external_references_ids = embedded_relationships["external_references"]
         reports = embedded_relationships["reports"]
 
+        # Extra
+        extras = {
+            "created_by_ref_id": created_by_ref_id,
+            "marking_definitions_ids": marking_definitions_ids,
+            "tags_ids": tags_ids,
+            "kill_chain_phases_ids": kill_chain_phases_ids,
+            "object_refs_ids": object_refs_ids,
+            "external_references_ids": external_references_ids,
+            "reports": reports,
+        }
+
         # Import
         importer = {
             "marking-definition": self.create_marking_definition,
@@ -407,9 +418,9 @@ class OpenCTIStix2:
         }
         do_import = importer.get(
             stix_object["type"],
-            lambda stix_object, update: self.unknown_type(stix_object),
+            lambda stix_object, extras, update: self.unknown_type(stix_object),
         )
-        stix_object_results = do_import(stix_object, update)
+        stix_object_results = do_import(stix_object, extras, update)
 
         if stix_object_results is None:
             return stix_object_results
@@ -436,14 +447,6 @@ class OpenCTIStix2:
 
             # Update created by ref
             if (
-                (update or stix_object_result["createdByRef"] is None)
-                and created_by_ref_id is not None
-                and stix_object["type"] != "marking-definition"
-            ):
-                self.opencti.stix_entity.update_created_by_ref(
-                    id=stix_object_result["id"], identity_id=created_by_ref_id,
-                )
-            if (
                 created_by_ref_id is not None
                 and "observableRefs" in stix_object_result
                 and stix_object_result["observableRefs"] is not None
@@ -456,10 +459,6 @@ class OpenCTIStix2:
 
             # Add marking definitions
             for marking_definition_id in marking_definitions_ids:
-                self.opencti.stix_entity.add_marking_definition(
-                    id=stix_object_result["id"],
-                    marking_definition_id=marking_definition_id,
-                )
                 if (
                     "observableRefs" in stix_object_result
                     and stix_object_result["observableRefs"] is not None
@@ -486,12 +485,6 @@ class OpenCTIStix2:
                         id=reports[external_reference_id]["id"],
                         entity_id=stix_object_result["id"],
                     )
-            # Add kill chain phases
-            for kill_chain_phase_id in kill_chain_phases_ids:
-                self.opencti.stix_entity.add_kill_chain_phase(
-                    id=stix_object_result["id"],
-                    kill_chain_phase_id=kill_chain_phase_id,
-                )
             # Add object refs
             for object_refs_id in object_refs_ids:
                 if "observed-data" in object_refs_id:
@@ -543,6 +536,15 @@ class OpenCTIStix2:
         kill_chain_phases_ids = embedded_relationships["kill_chain_phases"]
         external_references_ids = embedded_relationships["external_references"]
         reports = embedded_relationships["reports"]
+
+        # Extra
+        extras = {
+            "created_by_ref_id": created_by_ref_id,
+            "marking_definitions_ids": marking_definitions_ids,
+            "kill_chain_phases_ids": kill_chain_phases_ids,
+            "external_references_ids": external_references_ids,
+            "reports": reports,
+        }
 
         # Create the relation
 
@@ -670,6 +672,15 @@ class OpenCTIStix2:
                 modified=stix_relation["modified"]
                 if "modified" in stix_relation
                 else None,
+                createdByRef=extras["created_by_ref_id"]
+                if "created_by_ref_id" in extras
+                else None,
+                markingDefinitions=extras["marking_definitions_ids"]
+                if "marking_definitions_ids" in extras
+                else [],
+                killChainPhases=extras["kill_chain_phases_ids"]
+                if "kill_chain_phases_ids" in extras
+                else [],
                 update=update,
                 ignore_dates=stix_relation[CustomProperties.IGNORE_DATES]
                 if CustomProperties.IGNORE_DATES in stix_relation
@@ -707,6 +718,15 @@ class OpenCTIStix2:
                 modified=stix_relation["modified"]
                 if "modified" in stix_relation
                 else None,
+                createdByRef=extras["created_by_ref_id"]
+                if "created_by_ref_id" in extras
+                else None,
+                markingDefinitions=extras["marking_definitions_ids"]
+                if "marking_definitions_ids" in extras
+                else [],
+                killChainPhases=extras["kill_chain_phases_ids"]
+                if "kill_chain_phases_ids" in extras
+                else [],
                 update=update,
                 ignore_dates=stix_relation[CustomProperties.IGNORE_DATES]
                 if CustomProperties.IGNORE_DATES in stix_relation
@@ -720,17 +740,6 @@ class OpenCTIStix2:
         else:
             return None
 
-        # Update created by ref
-        if created_by_ref_id is not None:
-            self.opencti.stix_entity.update_created_by_ref(
-                id=stix_relation_result["id"], identity_id=created_by_ref_id,
-            )
-        # Add marking definitions
-        for marking_definition_id in marking_definitions_ids:
-            self.opencti.stix_entity.add_marking_definition(
-                id=stix_relation_result["id"],
-                marking_definition_id=marking_definition_id,
-            )
         # Add external references
         for external_reference_id in external_references_ids:
             self.opencti.stix_entity.add_external_reference(
@@ -748,11 +757,6 @@ class OpenCTIStix2:
                 self.opencti.report.add_stix_entity(
                     id=reports[external_reference_id]["id"], entity_id=target_id,
                 )
-        # Add kill chain phases
-        for kill_chain_phase_id in kill_chain_phases_ids:
-            self.opencti.stix_entity.add_kill_chain_phase(
-                id=stix_relation_result["id"], kill_chain_phase_id=kill_chain_phase_id,
-            )
 
     def import_observables(self, stix_object):
         # Extract
@@ -1437,7 +1441,7 @@ class OpenCTIStix2:
             return []
 
     # TODO move in MarkingDefinition
-    def create_marking_definition(self, stix_object, update=False, **kwargs):
+    def create_marking_definition(self, stix_object, extras, update=False):
         definition_type = stix_object["definition_type"]
         definition = stix_object["definition"][stix_object["definition_type"]]
         if stix_object["definition_type"] == "tlp":
@@ -1463,10 +1467,13 @@ class OpenCTIStix2:
             modified=stix_object[CustomProperties.MODIFIED]
             if CustomProperties.MODIFIED in stix_object
             else None,
+            createdByRef=extras["created_by_ref_id"]
+            if "created_by_ref_id" in extras
+            else None,
         )
 
     # TODO move in Identity
-    def create_identity(self, stix_object, update=False):
+    def create_identity(self, stix_object, extras, update=False):
         if CustomProperties.IDENTITY_TYPE in stix_object:
             type = stix_object[CustomProperties.IDENTITY_TYPE].capitalize()
         else:
@@ -1493,11 +1500,17 @@ class OpenCTIStix2:
             stix_id_key=stix_object["id"] if "id" in stix_object else None,
             created=stix_object["created"] if "created" in stix_object else None,
             modified=stix_object["modified"] if "modified" in stix_object else None,
+            createdByRef=extras["created_by_ref_id"]
+            if "created_by_ref_id" in extras
+            else None,
+            markingDefinitions=extras["marking_definitions_ids"]
+            if "marking_definitions_ids" in extras
+            else [],
             update=update,
         )
 
     # TODO move in ThreatActor
-    def create_threat_actor(self, stix_object, update=False):
+    def create_threat_actor(self, stix_object, extras, update=False):
         return self.opencti.threat_actor.create(
             name=stix_object["name"],
             description=self.convert_markdown(stix_object["description"])
@@ -1526,11 +1539,17 @@ class OpenCTIStix2:
             stix_id_key=stix_object["id"] if "id" in stix_object else None,
             created=stix_object["created"] if "created" in stix_object else None,
             modified=stix_object["modified"] if "modified" in stix_object else None,
+            createdByRef=extras["created_by_ref_id"]
+            if "created_by_ref_id" in extras
+            else None,
+            markingDefinitions=extras["marking_definitions_ids"]
+            if "marking_definitions_ids" in extras
+            else [],
             update=update,
         )
 
     # TODO move in IntrusionSet
-    def create_intrusion_set(self, stix_object, update=False):
+    def create_intrusion_set(self, stix_object, extras, update=False):
         return self.opencti.intrusion_set.create(
             name=stix_object["name"],
             description=self.convert_markdown(stix_object["description"])
@@ -1562,11 +1581,17 @@ class OpenCTIStix2:
             stix_id_key=stix_object["id"] if "id" in stix_object else None,
             created=stix_object["created"] if "created" in stix_object else None,
             modified=stix_object["modified"] if "modified" in stix_object else None,
+            createdByRef=extras["created_by_ref_id"]
+            if "created_by_ref_id" in extras
+            else None,
+            markingDefinitions=extras["marking_definitions_ids"]
+            if "marking_definitions_ids" in extras
+            else [],
             update=update,
         )
 
     # TODO move in Campaign
-    def create_campaign(self, stix_object, update=False):
+    def create_campaign(self, stix_object, extras, update=False):
         return self.opencti.campaign.create(
             name=stix_object["name"],
             description=self.convert_markdown(stix_object["description"])
@@ -1586,11 +1611,17 @@ class OpenCTIStix2:
             stix_id_key=stix_object["id"] if "id" in stix_object else None,
             created=stix_object["created"] if "created" in stix_object else None,
             modified=stix_object["modified"] if "modified" in stix_object else None,
+            createdByRef=extras["created_by_ref_id"]
+            if "created_by_ref_id" in extras
+            else None,
+            markingDefinitions=extras["marking_definitions_ids"]
+            if "marking_definitions_ids" in extras
+            else [],
             uodate=update,
         )
 
     # TODO move in Incident
-    def create_incident(self, stix_object, update=False):
+    def create_incident(self, stix_object, extras, update=False):
         return self.opencti.incident.create(
             name=stix_object["name"],
             description=self.convert_markdown(stix_object["description"])
@@ -1608,11 +1639,17 @@ class OpenCTIStix2:
             stix_id_key=stix_object["id"] if "id" in stix_object else None,
             created=stix_object["created"] if "created" in stix_object else None,
             modified=stix_object["modified"] if "modified" in stix_object else None,
+            createdByRef=extras["created_by_ref_id"]
+            if "created_by_ref_id" in extras
+            else None,
+            markingDefinitions=extras["marking_definitions_ids"]
+            if "marking_definitions_ids" in extras
+            else [],
             update=update,
         )
 
     # TODO move in Malware
-    def create_malware(self, stix_object, update=False):
+    def create_malware(self, stix_object, extras, update=False):
         return self.opencti.malware.create(
             name=stix_object["name"],
             description=self.convert_markdown(stix_object["description"])
@@ -1625,11 +1662,20 @@ class OpenCTIStix2:
             stix_id_key=stix_object["id"] if "id" in stix_object else None,
             created=stix_object["created"] if "created" in stix_object else None,
             modified=stix_object["modified"] if "modified" in stix_object else None,
+            createdByRef=extras["created_by_ref_id"]
+            if "created_by_ref_id" in extras
+            else None,
+            markingDefinitions=extras["marking_definitions_ids"]
+            if "marking_definitions_ids" in extras
+            else [],
+            killChainPhases=extras["kill_chain_phases_ids"]
+            if "kill_chain_phases_ids" in extras
+            else [],
             update=update,
         )
 
     # TODO move in Tool
-    def create_tool(self, stix_object, update=False):
+    def create_tool(self, stix_object, extras, update=False):
         return self.opencti.tool.create(
             name=stix_object["name"],
             description=self.convert_markdown(stix_object["description"])
@@ -1642,11 +1688,20 @@ class OpenCTIStix2:
             stix_id_key=stix_object["id"] if "id" in stix_object else None,
             created=stix_object["created"] if "created" in stix_object else None,
             modified=stix_object["modified"] if "modified" in stix_object else None,
+            createdByRef=extras["created_by_ref_id"]
+            if "created_by_ref_id" in extras
+            else None,
+            markingDefinitions=extras["marking_definitions_ids"]
+            if "marking_definitions_ids" in extras
+            else [],
+            killChainPhases=extras["kill_chain_phases_ids"]
+            if "kill_chain_phases_ids" in extras
+            else [],
             update=update,
         )
 
     # TODO move in Vulnerability
-    def create_vulnerability(self, stix_object, update=False):
+    def create_vulnerability(self, stix_object, extras, update=False):
         return self.opencti.vulnerability.create(
             name=stix_object["name"],
             description=self.convert_markdown(stix_object["description"])
@@ -1659,16 +1714,22 @@ class OpenCTIStix2:
             stix_id_key=stix_object["id"] if "id" in stix_object else None,
             created=stix_object["created"] if "created" in stix_object else None,
             modified=stix_object["modified"] if "modified" in stix_object else None,
+            createdByRef=extras["created_by_ref_id"]
+            if "created_by_ref_id" in extras
+            else None,
+            markingDefinitions=extras["marking_definitions_ids"]
+            if "marking_definitions_ids" in extras
+            else [],
             update=update,
         )
 
-    def create_attack_pattern(self, stix_object, update=False):
+    def create_attack_pattern(self, stix_object, extras, update=False):
         return self.opencti.attack_pattern.import_from_stix2(
-            stixObject=stix_object, update=update
+            stixObject=stix_object, extras=extras, update=update
         )
 
     # TODO move in Course Of Action
-    def create_course_of_action(self, stix_object, update=False):
+    def create_course_of_action(self, stix_object, extras, update=False):
         return self.opencti.course_of_action.create(
             name=stix_object["name"],
             description=self.convert_markdown(stix_object["description"])
@@ -1681,11 +1742,17 @@ class OpenCTIStix2:
             stix_id_key=stix_object["id"] if "id" in stix_object else None,
             created=stix_object["created"] if "created" in stix_object else None,
             modified=stix_object["modified"] if "modified" in stix_object else None,
+            createdByRef=extras["created_by_ref_id"]
+            if "created_by_ref_id" in extras
+            else None,
+            markingDefinitions=extras["marking_definitions_ids"]
+            if "marking_definitions_ids" in extras
+            else [],
             update=update,
         )
 
     # TODO move in Report
-    def create_report(self, stix_object, update=False):
+    def create_report(self, stix_object, extras, update=False):
         return self.opencti.report.create(
             name=stix_object["name"],
             description=self.convert_markdown(stix_object["description"])
@@ -1710,6 +1777,12 @@ class OpenCTIStix2:
             stix_id_key=stix_object["id"] if "id" in stix_object else None,
             created=stix_object["created"] if "created" in stix_object else None,
             modified=stix_object["modified"] if "modified" in stix_object else None,
+            createdByRef=extras["created_by_ref_id"]
+            if "created_by_ref_id" in extras
+            else None,
+            markingDefinitions=extras["marking_definitions_ids"]
+            if "marking_definitions_ids" in extras
+            else [],
             update=update,
         )
 
@@ -1734,7 +1807,7 @@ class OpenCTIStix2:
 
         return {"observedData": observed_data, "stixIds": stix_ids}
 
-    def create_indicator(self, stix_object, update=False):
+    def create_indicator(self, stix_object, extras, update=False):
         return self.opencti.indicator.create(
             name=stix_object["name"],
             description=self.convert_markdown(stix_object["description"])
@@ -1761,6 +1834,12 @@ class OpenCTIStix2:
             stix_id_key=stix_object["id"] if "id" in stix_object else None,
             created=stix_object["created"] if "created" in stix_object else None,
             modified=stix_object["modified"] if "modified" in stix_object else None,
+            createdByRef=extras["created_by_ref_id"]
+            if "created_by_ref_id" in extras
+            else None,
+            markingDefinitions=extras["created_by_ref_id"]
+            if "created_by_ref_id" in extras
+            else None,
             update=update,
         )
 

@@ -163,6 +163,7 @@ class CourseOfAction:
     def read(self, **kwargs):
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
+        custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
             self.opencti.log("info", "Reading Course-Of-Action {" + id + "}.")
             query = (
@@ -170,7 +171,11 @@ class CourseOfAction:
                 query CourseOfAction($id: String!) {
                     courseOfAction(id: $id) {
                         """
-                + self.properties
+                + (
+                    custom_attributes
+                    if custom_attributes is not None
+                    else self.properties
+                )
                 + """
                     }
                 }
@@ -266,7 +271,7 @@ class CourseOfAction:
         update = kwargs.get("update", False)
 
         object_result = self.opencti.stix_domain_entity.get_by_stix_id_or_name(
-            types=["Course-Of-Action"], stix_id_key=stix_id_key, name=name
+            types=["Course-Of-Action"], stix_id_key=stix_id_key, name=name, onlyId=True
         )
         if object_result is not None:
             if update:

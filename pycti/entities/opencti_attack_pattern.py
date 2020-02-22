@@ -204,6 +204,7 @@ class AttackPattern:
     def read(self, **kwargs):
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
+        custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
             self.opencti.log("info", "Reading Attack-Pattern {" + id + "}.")
             query = (
@@ -211,7 +212,11 @@ class AttackPattern:
                 query AttackPattern($id: String!) {
                     attackPattern(id: $id) {
                         """
-                + self.properties
+                + (
+                    custom_attributes
+                    if custom_attributes is not None
+                    else self.properties
+                )
                 + """
                     }
                 }
@@ -251,6 +256,7 @@ class AttackPattern:
         modified = kwargs.get("modified", None)
         created_by_ref = kwargs.get("createdByRef", None)
         marking_definitions = kwargs.get("markingDefinitions", None)
+        kill_chain_phases = kwargs.get("killChainPhases", None)
 
         if name is not None and description is not None:
             self.opencti.log("info", "Creating Attack-Pattern {" + name + "}.")
@@ -281,6 +287,7 @@ class AttackPattern:
                         "modified": modified,
                         "createdByRef": created_by_ref,
                         "markingDefinitions": marking_definitions,
+                        "killChainPhases": kill_chain_phases,
                     }
                 },
             )
@@ -313,10 +320,11 @@ class AttackPattern:
         modified = kwargs.get("modified", None)
         created_by_ref = kwargs.get("createdByRef", None)
         marking_definitions = kwargs.get("markingDefinitions", None)
+        kill_chain_phases = kwargs.get("killChainPhases", None)
         update = kwargs.get("update", False)
 
         object_result = self.opencti.stix_domain_entity.get_by_stix_id_or_name(
-            types=["Attack-Pattern"], stix_id_key=stix_id_key, name=name
+            types=["Attack-Pattern"], stix_id_key=stix_id_key, name=name, onlyId=True
         )
         if object_result is None and external_id is not None:
             object_result = self.read(
@@ -389,6 +397,7 @@ class AttackPattern:
                 modified=modified,
                 createdByRef=created_by_ref,
                 markingDefinitions=marking_definitions,
+                killChainPhases=kill_chain_phases,
             )
 
     """
@@ -400,6 +409,7 @@ class AttackPattern:
 
     def import_from_stix2(self, **kwargs):
         stix_object = kwargs.get("stixObject", None)
+        extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
         if stix_object is not None:
             # Extract external ID
@@ -437,6 +447,15 @@ class AttackPattern:
                 stix_id_key=stix_object["id"] if "id" in stix_object else None,
                 created=stix_object["created"] if "created" in stix_object else None,
                 modified=stix_object["modified"] if "modified" in stix_object else None,
+                createdByRef=extras["created_by_ref_id"]
+                if "created_by_ref_id" in extras
+                else None,
+                markingDefinitions=extras["marking_definitions_ids"]
+                if "marking_definitions_ids" in extras
+                else [],
+                killChainPhases=extras["kill_chain_phases_ids"]
+                if "kill_chain_phases_ids" in extras
+                else [],
                 update=update,
             )
         else:

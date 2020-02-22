@@ -231,6 +231,7 @@ class StixRelation:
         last_seen_start = kwargs.get("lastSeenStart", None)
         last_seen_stop = kwargs.get("lastSeenStop", None)
         inferred = kwargs.get("inferred", None)
+        custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
             self.opencti.log("info", "Reading stix_relation {" + id + "}.")
             query = (
@@ -238,7 +239,11 @@ class StixRelation:
                     query StixRelation($id: String!) {
                         stixRelation(id: $id) {
                             """
-                + self.properties
+                + (
+                    custom_attributes
+                    if custom_attributes is not None
+                    else self.properties
+                )
                 + """
                     }
                 }
@@ -289,6 +294,7 @@ class StixRelation:
         modified = kwargs.get("modified", None)
         created_by_ref = kwargs.get("createdByRef", None)
         marking_definitions = kwargs.get("markingDefinitions", None)
+        kill_chain_phases = kwargs.get("killChainPhases", None)
 
         self.opencti.log(
             "info",
@@ -333,6 +339,7 @@ class StixRelation:
                     "modified": modified,
                     "createdByRef": created_by_ref,
                     "markingDefinitions": marking_definitions,
+                    "killChainPhases": kill_chain_phases,
                 }
             },
         )
@@ -362,14 +369,17 @@ class StixRelation:
         modified = kwargs.get("modified", None)
         created_by_ref = kwargs.get("createdByRef", None)
         marking_definitions = kwargs.get("markingDefinitions", None)
+        kill_chain_phases = kwargs.get("killChainPhases", None)
         update = kwargs.get("update", False)
         ignore_dates = kwargs.get("ignore_dates", False)
 
         stix_relation_result = None
         if id is not None:
-            stix_relation_result = self.read(id=id)
+            stix_relation_result = self.read(id=id, customAttributes="id, entity_type")
         if stix_relation_result is None and stix_id_key is not None:
-            stix_relation_result = self.read(id=stix_id_key)
+            stix_relation_result = self.read(
+                id=stix_id_key, customAttributes="id, entity_type"
+            )
         if stix_relation_result is None:
             if (
                 ignore_dates is False
@@ -403,6 +413,7 @@ class StixRelation:
                 firstSeenStop=first_seen_stop,
                 lastSeenStart=last_seen_start,
                 lastSeenStop=last_seen_stop,
+                customAttributes="id, entity_type",
             )
         if stix_relation_result is not None:
             if update:
@@ -486,6 +497,7 @@ class StixRelation:
                 modified=modified,
                 createdByRef=created_by_ref,
                 markingDefinitions=marking_definitions,
+                killChainPhases=kill_chain_phases,
             )
 
     """
@@ -505,19 +517,15 @@ class StixRelation:
             self.opencti.log(
                 "info", "Updating stix_relation {" + id + "} field {" + key + "}."
             )
-            query = (
-                """
+            query = """
                     mutation StixRelationEdit($id: ID!, $input: EditInput!) {
                         stixRelationEdit(id: $id) {
                             fieldPatch(input: $input) {
-                                """
-                + self.properties
-                + """
+                                id    
+                            }
                         }
                     }
-                }
-            """
-            )
+                """
             result = self.opencti.query(
                 query, {"id": id, "input": {"key": key, "value": value}}
             )
