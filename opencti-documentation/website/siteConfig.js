@@ -106,7 +106,7 @@ const siteConfig = {
   docsSideNavCollapsible: true,
 
   // Edit URL
-  editURL: 'https://github.com/OpenCTI-Platform/opencti/tree/master/opencti-documentation/docs/'
+  editUrl: 'https://github.com/OpenCTI-Platform/opencti/edit/master/opencti-documentation/docs/'
 };
 
 module.exports = siteConfig;

@@ -138,7 +138,11 @@ class StixDomainEntityTags extends Component {
     }).then((data) => {
       const tags = pipe(
         pathOr([], ['tags', 'edges']),
-        map((n) => ({ label: n.node.value, value: n.node.id, color: n.node.color })),
+        map((n) => ({
+          label: n.node.value,
+          value: n.node.id,
+          color: n.node.color,
+        })),
       )(data);
       this.setState({
         tags: union(this.state.tags, tags),
@@ -243,7 +247,10 @@ class StixDomainEntityTags extends Component {
                   <Autocomplete
                     name="new_tags"
                     multiple={true}
-                    textfieldprops={{ label: t('Tags') }}
+                    textfieldprops={{
+                      label: t('Tags'),
+                      onFocus: this.searchTags.bind(this),
+                    }}
                     noOptionsText={t('No available options')}
                     options={this.state.tags}
                     onInputChange={this.searchTags.bind(this)}
