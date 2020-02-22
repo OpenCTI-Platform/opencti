@@ -39,6 +39,11 @@ jobs:
         environment:
           - "discovery.type=single-node"
           - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+      - image: minio/minio:RELEASE.2019-10-12T01-39-57Z
+        environment:
+          MINIO_ACCESS_KEY: ChangeMeAccess
+          MINIO_SECRET_KEY: ChangeMeKey
+        command: server /data
     steps:
       - attach_workspace:
           at: ~/
