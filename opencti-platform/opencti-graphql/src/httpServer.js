@@ -40,4 +40,13 @@ export const restartServer = httpServer => {
   });
 };
 
+export const stopServer = httpServer => {
+  return new Promise(resolve => {
+    httpServer.close(() => {
+      resolve();
+    });
+    httpServer.emit('close'); // force server close
+  });
+};
+
 export default createHttpServer;

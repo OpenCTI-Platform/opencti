@@ -4,8 +4,7 @@ import { internalFlushAll } from '../../src/database/redis';
 import { initializeData, initializeSchema } from '../../src/initialization';
 import { execPython3 } from '../../src/database/utils';
 import conf, { logger } from '../../src/config/conf';
-import {listenServer} from "../../src/httpServer";
-
+import { listenServer, stopServer } from '../../src/httpServer';
 
 const cleanDependenciesData = async () => {
   // Cleaning grakn
@@ -24,7 +23,7 @@ const cleanDependenciesData = async () => {
 const provision = async () => {
   await graknIsAlive();
   await elIsAlive();
-  await listenServer();
+  const httpServer = await listenServer();
   let start = new Date().getTime();
   logger.warn('[TESTING] > Cleaning data');
   await cleanDependenciesData();
@@ -39,6 +38,7 @@ const provision = async () => {
   const importOpts = [apiUri, apiToken, fileToInject];
   await execPython3('./src/python', 'local_importer.py', importOpts);
   logger.warn(`[TESTING] > Platform data loaded in ${new Date().getTime() - start} ms`);
+  await stopServer(httpServer);
 };
 
 (async () => {

@@ -13,8 +13,8 @@
     "migrate:add": "migrate create --template-file src/utils/migration-template.js --migrations-dir=./src/migrations",
     "index": "babel-node ./src/indexer.js",
     "coverage": "jest --runInBand --coverage --e test",
-    "provision": "node build/provision.js --e test",
-    "test": "yarn build && yarn provision && yarn coverage"
+    "provision": "yarn build && node build/provision.js --e test",
+    "test": "yarn provision && yarn coverage"
   },
   "bin": {
     "opencti-graphql": "./build/index.js"

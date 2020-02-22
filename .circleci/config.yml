@@ -41,8 +41,8 @@ jobs:
           - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
       - image: minio/minio:RELEASE.2019-10-12T01-39-57Z
         environment:
-          MINIO_ACCESS_KEY: ChangeMeAccess
-          MINIO_SECRET_KEY: ChangeMeKey
+          MINIO_ACCESS_KEY: ChangeMe
+          MINIO_SECRET_KEY: ChangeMe
         command: server /data
     steps:
       - attach_workspace:
@@ -61,10 +61,14 @@ jobs:
       - run:
           name: Wait for ElasticSearch
           command: dockerize -wait tcp://localhost:9200 -timeout 1m        
+      - run:
+          name: Wait for Minio
+          command: dockerize -wait tcp://localhost:9000 -timeout 1m  
       - run: 
           name: Setup custom environment variables
           command: |
             echo 'export APP__ADMIN__PASSWORD="admin"' >> $BASH_ENV
+            echo 'export APP__REACTIVE="false"' >> $BASH_ENV
             echo 'export APP__ADMIN__TOKEN="bfa014e0-e02e-4aa6-a42b-603b19dcf159"' >> $BASH_ENV
             source $BASH_ENV
       - run:
