@@ -182,6 +182,13 @@ class StixDomainEntity:
                     }
                 }
             }
+            ... on Vulnerability {
+                base_score
+                base_severity
+                attack_vector
+                integrity_impact
+                availability_impact
+            }
             ... on Organization {
                 organization_class
             }
