@@ -150,6 +150,7 @@ class StixRelation:
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
         get_all = kwargs.get("getAll", False)
+        force_natural = kwargs.get("forceNatural", False)
         if get_all:
             first = 500
 
@@ -165,8 +166,8 @@ class StixRelation:
         )
         query = (
             """
-                query StixRelations($fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $relationType: String, $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $inferred: Boolean, $first: Int, $after: ID, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode) {
-                    stixRelations(fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationType: $relationType, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, inferred: $inferred, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+                query StixRelations($fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $relationType: String, $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $inferred: Boolean, $first: Int, $after: ID, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode, $forceNatural: Boolean) {
+                    stixRelations(fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationType: $relationType, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, inferred: $inferred, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode, forceNatural: $forceNatural) {
                         edges {
                             node {
                                 """
@@ -202,6 +203,7 @@ class StixRelation:
                 "after": after,
                 "orderBy": order_by,
                 "orderMode": order_mode,
+                "forceNatural": force_natural,
             },
         )
         return self.opencti.process_multiple(result["data"]["stixRelations"])

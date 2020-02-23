@@ -122,6 +122,8 @@ class StixObservableRelation:
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
         get_all = kwargs.get("getAll", False)
+        force_natural = kwargs.get("forceNatural", False)
+
         if get_all:
             first = 500
 
@@ -137,8 +139,8 @@ class StixObservableRelation:
         )
         query = (
             """
-            query StixObservableRelations($fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $relationType: String, $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $inferred: Boolean, $first: Int, $after: ID, $orderBy: StixObservableRelationsOrdering, $orderMode: OrderingMode) {
-                stixObservableRelations(fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationType: $relationType, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, inferred: $inferred, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+            query StixObservableRelations($fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $relationType: String, $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $inferred: Boolean, $first: Int, $after: ID, $orderBy: StixObservableRelationsOrdering, $orderMode: OrderingMode, $forceNatural: Boolean) {
+                stixObservableRelations(fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationType: $relationType, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, inferred: $inferred, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode, forceNatural: $forceNatural) {
                     edges {
                         node {
                             """
@@ -157,6 +159,7 @@ class StixObservableRelation:
             }
          """
         )
+
         result = self.opencti.query(
             query,
             {
@@ -174,6 +177,7 @@ class StixObservableRelation:
                 "after": after,
                 "orderBy": order_by,
                 "orderMode": order_mode,
+                "forceNatural": force_natural,
             },
         )
         return self.opencti.process_multiple(result["data"]["stixObservableRelations"])
