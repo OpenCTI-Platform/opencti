@@ -20,7 +20,7 @@ const styles = (theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
-    margin: '0 0 0 0',
+    margin: 0,
     padding: '25px 15px 15px 15px',
     borderRadius: 6,
   },
@@ -136,7 +136,7 @@ class StixObservableKnowledgeEntities extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div>
+      <div style={{ height: '100%' }}>
         <Drawer
           anchor="bottom"
           variant="permanent"

@@ -5,20 +5,23 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
-import ListLines from '../../../../components/list_lines/ListLines';
+import Grid from '@material-ui/core/Grid';
+import Typography from '@material-ui/core/Typography';
+import StixObservableHeader from './StixObservableHeader';
+import StixObservableRelationCreationFromEntity from '../../common/stix_observable_relations/StixObservableRelationCreationFromEntity';
 import StixObservableObservablesLines, {
   stixObservableObservablesLinesQuery,
 } from './StixObservableObservablesLines';
-import StixObservableRelationCreationFromEntity from '../../common/stix_observable_relations/StixObservableRelationCreationFromEntity';
-import StixObservableHeader from './StixObservableHeader';
+import ListLines from '../../../../components/list_lines/ListLines';
+import inject18n from '../../../../components/i18n';
+import { QueryRenderer } from '../../../../relay/environment';
+import StixObservableEnrichment from './StixObservableEnrichment';
 
 const styles = () => ({
   paper: {
     height: '100%',
     minHeight: '100%',
-    margin: '5px 0 0 0',
+    margin: 0,
     padding: '25px 15px 15px 15px',
     borderRadius: 6,
   },
@@ -116,7 +119,7 @@ class StixObservableLinks extends Component {
     const {
       view, sortBy, orderAsc, searchTerm,
     } = this.state;
-    const { classes, stixObservable } = this.props;
+    const { classes, stixObservable, t } = this.props;
     const paginationOptions = {
       fromId: stixObservable.id,
       search: searchTerm,
@@ -124,17 +127,39 @@ class StixObservableLinks extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div className={classes.container}>
+      <div>
         <StixObservableHeader stixObservable={stixObservable} />
-        <StixObservableRelationCreationFromEntity
-          paginationOptions={paginationOptions}
-          entityId={stixObservable.id}
-          isFrom={true}
-        />
-        <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} elevation={2}>
-          {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        </Paper>
+        <Grid
+          container={true}
+          spacing={3}
+          classes={{ container: classes.gridContainer }}
+        >
+          <Grid item={true} xs={9}>
+            <Typography
+              variant="h4"
+              gutterBottom={true}
+              style={{ float: 'left' }}
+            >
+              {t('Relations')}
+            </Typography>
+            <StixObservableRelationCreationFromEntity
+              paginationOptions={paginationOptions}
+              entityId={stixObservable.id}
+              isFrom={true}
+              variant="inLine"
+            />
+            <div className="clearfix" />
+            <Paper classes={{ root: classes.paper }} elevation={2}>
+              {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+            </Paper>
+          </Grid>
+          <Grid item={true} xs={3}>
+            <Typography variant="h4" gutterBottom={true}>
+              {t('Enrichment connectors')}
+            </Typography>
+            <StixObservableEnrichment stixObservable={stixObservable} />
+          </Grid>
+        </Grid>
       </div>
     );
   }
@@ -153,6 +178,8 @@ const StixObservableLinksFragment = createRefetchContainer(
     stixObservable: graphql`
       fragment StixObservableLinks_stixObservable on StixObservable {
         id
+        entity_type
+        ...StixObservableEnrichment_stixObservable
         ...StixObservableHeader_stixObservable
       }
     `,
