@@ -15,12 +15,12 @@ import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import Avatar from '@material-ui/core/Avatar';
 import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions';
 import { LinkOff } from '@material-ui/icons';
 import { compose } from 'ramda';
+import Slide from '@material-ui/core/Slide';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { commitMutation } from '../../../../relay/environment';
@@ -51,6 +51,11 @@ const styles = (theme) => ({
     backgroundColor: theme.palette.grey[700],
   },
 });
+
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
 
 class EntityExternalReferencesLinesContainer extends Component {
   constructor(props) {
@@ -204,20 +209,10 @@ class EntityExternalReferencesLinesContainer extends Component {
         <Dialog
           open={this.state.displayDialog}
           keepMounted={true}
+          TransitionComponent={Transition}
           onClose={this.handleCloseDialog.bind(this)}
         >
-          <DialogTitle>{t('Confirmation required')}</DialogTitle>
           <DialogContent>
-            {this.state.removeExternalReference != null && (
-              <DialogContentText>
-                {t('Removing')} '
-                {truncate(
-                  this.state.removeExternalReference.node.source_name,
-                  30,
-                )}
-                '.
-              </DialogContentText>
-            )}
             <DialogContentText>
               {t('Do you want to remove this external reference?')}
             </DialogContentText>
@@ -228,14 +223,14 @@ class EntityExternalReferencesLinesContainer extends Component {
               color="primary"
               disabled={this.state.removing}
             >
-              {t('No')}
+              {t('Cancel')}
             </Button>
             <Button
               onClick={this.handleRemoval.bind(this)}
               color="primary"
               disabled={this.state.removing}
             >
-              {t('Yes')}
+              {t('Delete')}
             </Button>
           </DialogActions>
         </Dialog>
