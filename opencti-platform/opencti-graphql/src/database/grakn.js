@@ -636,21 +636,64 @@ export const find = async (query, entities, { infer } = findOpts) => {
 };
 
 // TODO Start - Refactor UI to be able to remove these 2 API
-export const findWithConnectedRelations = async (query, key, extraRelKey = null, infer = false) => {
-  const dataFind = await find(query, [key, extraRelKey], { infer });
+export const findWithConnectedRelations = async (
+  query,
+  key,
+  extraRelKey = null,
+  infer = false,
+  forceNatural = false
+) => {
+  let dataFind = await find(query, [key, extraRelKey], { infer });
+  if (forceNatural) {
+    dataFind = map(t => {
+      if (rolesMap[t[key].relationship_type][t[key].fromRole] !== 'from') {
+        return assoc(
+          key,
+          pipe(
+            assoc('fromId', t[key].toId),
+            assoc('fromInternalId', t[key].toInternalId),
+            assoc('fromRole', t[key].toRole),
+            assoc('fromTypes', t[key].toTypes),
+            assoc('toId', t[key].fromId),
+            assoc('toInternalId', t[key].fromInternalId),
+            assoc('toRole', t[key].fromRole),
+            assoc('toTypes', t[key].fromTypes)
+          )(t[key]),
+          t
+        );
+      }
+      return t;
+    }, dataFind);
+  }
   return map(t => ({ node: t[key], relation: t[extraRelKey] }), dataFind);
 };
 export const loadWithConnectedRelations = (query, key, relationKey = null, infer = false) => {
   return findWithConnectedRelations(query, key, relationKey, infer).then(result => head(result));
 };
 
-const listElements = async (baseQuery, first, offset, orderBy, orderMode, queryKey, connectedReference, inferred) => {
+const listElements = async (
+  baseQuery,
+  first,
+  offset,
+  orderBy,
+  orderMode,
+  queryKey,
+  connectedReference,
+  inferred,
+  forceNatural
+) => {
   const countQuery = `${baseQuery} count;`;
   const paginateQuery = `offset ${offset}; limit ${first};`;
   const orderQuery = orderBy ? `sort $order ${orderMode};` : '';
   const query = `${baseQuery} ${orderQuery} ${paginateQuery}`;
   const countPromise = getSingleValueNumber(countQuery);
-  const instancesPromise = await findWithConnectedRelations(query, queryKey, connectedReference, inferred);
+  const instancesPromise = await findWithConnectedRelations(
+    query,
+    queryKey,
+    connectedReference,
+    inferred,
+    forceNatural
+  );
   return Promise.all([instancesPromise, countPromise]).then(([instances, globalCount]) => {
     return buildPagination(first, offset, instances, globalCount);
   });
@@ -754,11 +797,19 @@ export const listEntities = async (entityTypes, searchFields, args = {}) => {
       : '';
   const baseQuery = `match $elem isa ${headType}; ${extraTypes} ${queryRelationsFields} 
                       ${queryAttributesFields} ${queryAttributesFilters} get;`;
-  return listElements(baseQuery, first, offset, orderBy, orderMode, 'elem', null, false);
+  return listElements(baseQuery, first, offset, orderBy, orderMode, 'elem', null, false, false);
 };
 export const listRelations = async (relationType, relationFilter, args) => {
   const searchFields = ['name', 'description'];
-  const { first = 1000, after, orderBy, orderMode = 'asc', withCache = true, inferred = false } = args;
+  const {
+    first = 1000,
+    after,
+    orderBy,
+    orderMode = 'asc',
+    withCache = true,
+    inferred = false,
+    forceNatural = false
+  } = args;
   const { filters = [], search, fromRole, fromId, toRole, toId, fromTypes = [], toTypes = [] } = args;
   const { firstSeenStart, firstSeenStop, lastSeenStart, lastSeenStop, weights = [] } = args;
   const offset = after ? cursorToOffset(after) : 0;
@@ -906,7 +957,7 @@ export const listRelations = async (relationType, relationFilter, args) => {
   const baseQuery = `match $rel(${relFrom}$from, ${relTo}$to) isa ${relationToGet};
                       ${queryFromTypes} ${queryToTypes} 
                       ${queryRelationsFields} ${queryAttributesFields} ${queryAttributesFilters} get;`;
-  return listElements(baseQuery, first, offset, orderBy, orderMode, 'rel', relationRef, inferred);
+  return listElements(baseQuery, first, offset, orderBy, orderMode, 'rel', relationRef, inferred, forceNatural);
 };
 // endregion
 

@@ -252,7 +252,6 @@ export const stixDomainEntityDeleteRelation = async (
   const stixDomainEntity = await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
   if (relationId) {
     const data = await loadRelationById(relationId, 'relation');
-    console.log(data);
     if (
       data.fromId !== stixDomainEntity.grakn_id ||
       (stixDomainEntity.entity_type === 'user' &&

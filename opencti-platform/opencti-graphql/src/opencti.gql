@@ -102,6 +102,7 @@ define
   source_confidence_level sub attribute, datatype long;
   reliability sub attribute, datatype string;
   value sub attribute, datatype string;
+  pattern_type sub attribute, datatype string;
   base_score sub attribute, datatype double;
   base_severity sub attribute, datatype string;
   attack_vector sub attribute, datatype string;

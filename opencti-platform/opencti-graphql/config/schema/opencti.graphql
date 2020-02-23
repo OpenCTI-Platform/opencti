@@ -419,6 +419,7 @@ interface StixEntity {
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -572,6 +573,7 @@ type StixObservable implements GlobalObject & StixEntity {
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection
   jobs(first: Int): [Work]
   connectors(onlyAlive: Boolean): [Connector]
@@ -677,6 +679,7 @@ type StixRelation implements GlobalObject & StixEntity {
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -770,6 +773,7 @@ type StixObservableRelation implements GlobalObject & StixEntity {
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -907,6 +911,7 @@ interface Identity {
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1059,6 +1064,7 @@ type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1181,6 +1187,7 @@ type Organization implements GlobalObject & StixEntity & StixDomainEntity & Iden
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1274,6 +1281,7 @@ type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1359,6 +1367,7 @@ type City implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1444,6 +1453,7 @@ type Country implements GlobalObject & StixEntity & StixDomainEntity & Identity 
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1528,6 +1538,7 @@ type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1835,6 +1846,7 @@ type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -1928,6 +1940,7 @@ type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2023,6 +2036,7 @@ type ThreatActor implements GlobalObject & StixEntity & StixDomainEntity & Ident
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2124,6 +2138,7 @@ type IntrusionSet implements GlobalObject & StixEntity & StixDomainEntity {
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2225,6 +2240,7 @@ type Campaign implements GlobalObject & StixEntity & StixDomainEntity {
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2322,6 +2338,7 @@ type Incident implements GlobalObject & StixEntity & StixDomainEntity {
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2414,6 +2431,7 @@ type Malware implements GlobalObject & StixEntity & StixDomainEntity {
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2506,6 +2524,7 @@ type Tool implements GlobalObject & StixEntity & StixDomainEntity {
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2601,6 +2620,7 @@ type Vulnerability implements GlobalObject & StixEntity & StixDomainEntity {
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2731,6 +2751,7 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2842,6 +2863,7 @@ type Indicator implements GlobalObject & StixEntity & StixDomainEntity {
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection
   created_at: DateTime!
   updated_at: DateTime!
@@ -2977,6 +2999,7 @@ type Query {
     search: String
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
+    forceNatural: Boolean
   ): StixRelationConnection @auth(for: [KNOWLEDGE])
   stixRelationsTimeSeries(
     fromId: String
@@ -3024,6 +3047,7 @@ type Query {
     weights: [Int]
     search: String
     infrastructure: Boolean
+    forceNatural: Boolean
   ): StixObservableRelationConnection @auth(for: [KNOWLEDGE])
   # Workspaces
   workspace(id: String!): Workspace @auth(for: [EXPLORE])
