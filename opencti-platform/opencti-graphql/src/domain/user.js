@@ -438,6 +438,7 @@ export const findByTokenUUID = async tokenValue => {
             (authorization:$token, client:$client) isa authorize; get;`,
       ['token', 'client']
     );
+    if (!data) return undefined;
     // eslint-disable-next-line no-shadow
     const { client, token } = data;
     if (!client) return undefined;

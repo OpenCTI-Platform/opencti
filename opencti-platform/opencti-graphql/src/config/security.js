@@ -98,7 +98,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const userMail = mappedConfig.mail_attribute ? user[mappedConfig.mail_attribute] : user.mail;
       const userName = mappedConfig.account_attribute ? user[mappedConfig.account_attribute] : user.givenName;
       logger.debug(`[LDAP_AUTH] Successfully logged with ${userMail} and ${userName}`);
-      loginFromProvider(userMail, userName)
+      loginFromProvider(userMail, userName || userMail)
         .then(token => {
           done(null, token);
         })
@@ -118,7 +118,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const options = { client, params: { scope: 'openid email profile' } };
       const openIDStrategy = new OpenIDStrategy(options, (tokenset, userinfo, done) => {
         const { email, name } = userinfo;
-        loginFromProvider(email, name)
+        loginFromProvider(email, name || email)
           .then(token => {
             done(null, token);
           })
@@ -138,7 +138,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const data = profile._json;
       const name = `${data.last_name} ${data.first_name}`;
       const { email } = data;
-      loginFromProvider(email, name)
+      loginFromProvider(email, data.first_name && data.last_name ? name : email)
         .then(token => {
           done(null, token);
         })
@@ -154,9 +154,9 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     const googleOptions = { ...mappedConfig, ...specificConfig };
     const googleStrategy = new GoogleStrategy(googleOptions, (token, tokenSecret, profile, done) => {
       const email = head(profile.emails).value;
-      const name = profile.displayName || email;
+      const name = profile.displayNamel;
       // let picture = head(profile.photos).value;
-      loginFromProvider(email, name)
+      loginFromProvider(email, name || email)
         .then(loggedToken => {
           done(null, loggedToken);
         })
@@ -174,7 +174,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const { displayName } = profile;
       const email = head(profile.emails).value;
       // let picture = profile.avatar_url;
-      loginFromProvider(email, displayName)
+      loginFromProvider(email, displayName || email)
         .then(loggedToken => {
           done(null, loggedToken);
         })
@@ -189,7 +189,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     const auth0Strategy = new Auth0Strategy(mappedConfig, (accessToken, refreshToken, extraParams, profile, done) => {
       const userName = profile.displayName;
       const email = head(profile.emails).value;
-      loginFromProvider(email, userName)
+      loginFromProvider(email, userName || email)
         .then(token => {
           done(null, token);
         })

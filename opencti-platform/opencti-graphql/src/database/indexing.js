@@ -18,11 +18,17 @@ const pad = (val, size) => {
   return s;
 };
 
-const indexElement = async (type, isRelation = false) => {
+const indexElement = async (type, isRelation = false, isHyperRelation = false) => {
   const start = moment();
   // Indexing all entities
   const matchingQuery = isRelation ? '$rel($from, $to)' : '$elem';
-  const nbOfEntities = await getSingleValueNumber(`match ${matchingQuery} isa ${type}; get; count;`);
+  // eslint-disable-next-line no-nested-ternary
+  const extraQuery = isRelation
+    ? isHyperRelation
+      ? '$from isa entity; $to isa relation;'
+      : '$from isa entity; $to isa entity;'
+    : '';
+  const nbOfEntities = await getSingleValueNumber(`match ${matchingQuery} isa ${type}; ${extraQuery} get; count;`);
   if (nbOfEntities === 0) return;
   // Compute the number of groups to create
   let counter = 0;
@@ -91,6 +97,7 @@ const index = async () => {
   await indexElement('membership', true);
   await indexElement('permission', true);
   await indexElement('stix_relation', true);
+  await indexElement('stix_relation', true, true);
   await indexElement('stix_observable_relation', true);
   await indexElement('relation_embedded', true);
   await indexElement('stix_relation_embedded', true);
