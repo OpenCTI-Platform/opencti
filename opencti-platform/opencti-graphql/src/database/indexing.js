@@ -18,17 +18,14 @@ const pad = (val, size) => {
   return s;
 };
 
-const indexElement = async (type, isRelation = false, isHyperRelation = false) => {
+const indexElement = async (type, isRelation = false, fromType = null, toType = null) => {
   const start = moment();
   // Indexing all entities
   const matchingQuery = isRelation ? '$rel($from, $to)' : '$elem';
-  // eslint-disable-next-line no-nested-ternary
-  const extraQuery = isRelation
-    ? isHyperRelation
-      ? '$from isa entity; $to isa relation;'
-      : '$from isa entity; $to isa entity;'
-    : '';
-  const nbOfEntities = await getSingleValueNumber(`match ${matchingQuery} isa ${type}; ${extraQuery} get; count;`);
+  let typeSuffix = fromType ? `$from isa ${fromType};` : '';
+  typeSuffix += toType ? `$to isa ${toType};` : '';
+
+  const nbOfEntities = await getSingleValueNumber(`match ${matchingQuery} isa ${type}; ${typeSuffix} get; count;`);
   if (nbOfEntities === 0) return;
   // Compute the number of groups to create
   let counter = 0;
@@ -39,7 +36,7 @@ const indexElement = async (type, isRelation = false, isHyperRelation = false) =
   const queries = [];
   for (let index = 0; index < nbGroup; index += 1) {
     const offset = index * GROUP_NUMBER;
-    const query = `match ${matchingQuery} isa ${type}; ${extraQuery} get; offset ${offset}; limit ${GROUP_NUMBER};`;
+    const query = `match ${matchingQuery} isa ${type}; ${typeSuffix} get; offset ${offset}; limit ${GROUP_NUMBER};`;
     queries.push(query);
   }
   // Fetch grakn with concurrency limit.
@@ -57,12 +54,7 @@ const indexElement = async (type, isRelation = false, isHyperRelation = false) =
         })
         .then(() => {
           counter += 1;
-          process.stdout.write(
-            `Indexing ${count} ${type}${isHyperRelation ? ' to relations' : ''} in ${pad(counter, 3)}/${pad(
-              nbGroup,
-              3
-            )} batchs\r`
-          );
+          process.stdout.write(`Indexing ${count} ${type} in ${pad(counter, 3)}/${pad(nbGroup, 3)} batchs\r`);
         });
     },
     { concurrency: GROUP_CONCURRENCY }
@@ -70,9 +62,7 @@ const indexElement = async (type, isRelation = false, isHyperRelation = false) =
   const execDuration = moment.duration(moment().diff(start));
   const avg = (execDuration.asSeconds() / count).toFixed(2);
   logger.info(
-    `Indexing of ${type}${
-      isHyperRelation ? ' to relations' : ''
-    } done in ${execDuration.asSeconds()} secs (${execDuration.humanize()}) - Element Avg: ${avg} secs`
+    `Indexing of ${type} done in ${execDuration.asSeconds()} secs (${execDuration.humanize()}) - Element Avg: ${avg} secs`
   );
   logger.info(`> ---------------------------------------------------------------------`);
 };
@@ -103,8 +93,9 @@ const index = async () => {
   // authorize - Not needed, authentication
   await indexElement('membership', true);
   await indexElement('permission', true);
-  await indexElement('stix_relation', true);
-  await indexElement('stix_relation', true, true);
+  await indexElement('stix_relation', true, 'entity', 'entity');
+  await indexElement('stix_relation', true, 'entity', 'relation');
+  await indexElement('stix_relation', true, 'relation', 'relation');
   await indexElement('stix_observable_relation', true);
   await indexElement('relation_embedded', true);
   await indexElement('stix_relation_embedded', true);
