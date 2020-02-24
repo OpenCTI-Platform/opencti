@@ -39,7 +39,7 @@ const indexElement = async (type, isRelation = false, isHyperRelation = false) =
   const queries = [];
   for (let index = 0; index < nbGroup; index += 1) {
     const offset = index * GROUP_NUMBER;
-    const query = `match ${matchingQuery} isa ${type}; get; offset ${offset}; limit ${GROUP_NUMBER};`;
+    const query = `match ${matchingQuery} isa ${type}; ${extraQuery} get; offset ${offset}; limit ${GROUP_NUMBER};`;
     queries.push(query);
   }
   // Fetch grakn with concurrency limit.
@@ -57,7 +57,12 @@ const indexElement = async (type, isRelation = false, isHyperRelation = false) =
         })
         .then(() => {
           counter += 1;
-          process.stdout.write(`Indexing ${count} ${type} in ${pad(counter, 3)}/${pad(nbGroup, 3)} batchs\r`);
+          process.stdout.write(
+            `Indexing ${count} ${type}${isHyperRelation ? ' to relations' : ''} in ${pad(counter, 3)}/${pad(
+              nbGroup,
+              3
+            )} batchs\r`
+          );
         });
     },
     { concurrency: GROUP_CONCURRENCY }
@@ -65,7 +70,9 @@ const indexElement = async (type, isRelation = false, isHyperRelation = false) =
   const execDuration = moment.duration(moment().diff(start));
   const avg = (execDuration.asSeconds() / count).toFixed(2);
   logger.info(
-    `Indexing of ${type} done in ${execDuration.asSeconds()} secs (${execDuration.humanize()}) - Element Avg: ${avg} secs`
+    `Indexing of ${type}${
+      isHyperRelation ? ' to relations' : ''
+    } done in ${execDuration.asSeconds()} secs (${execDuration.humanize()}) - Element Avg: ${avg} secs`
   );
   logger.info(`> ---------------------------------------------------------------------`);
 };
