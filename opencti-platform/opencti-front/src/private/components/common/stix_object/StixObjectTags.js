@@ -54,7 +54,7 @@ class StixObjectTags extends Component {
     }
     const tagsNodes = pipe(
       map((n) => n.node),
-      sortWith(ascend(prop('value'))),
+      sortWith([ascend(prop('value'))]),
     )(tags.edges);
     return (
       <div className={classes.tags}>
