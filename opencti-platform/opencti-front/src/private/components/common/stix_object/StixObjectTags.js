@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map, take } from 'ramda';
+import {
+  compose, map, take, sortWith, prop, ascend, pipe,
+} from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Chip from '@material-ui/core/Chip';
 import Slide from '@material-ui/core/Slide';
@@ -50,29 +52,28 @@ class StixObjectTags extends Component {
     if (variant === 'inSearch') {
       style = classes.tagInSearch;
     }
+    const tagsNodes = pipe(
+      map((n) => n.node),
+      sortWith(ascend(prop('value'))),
+    )(tags.edges);
     return (
       <div className={classes.tags}>
-        {tags.edges.length > 0 ? (
+        {tagsNodes.length > 0 ? (
           map(
-            (tagEdge) => (
+            (tag) => (
               <Chip
-                key={tagEdge.node.id}
+                key={tag.id}
                 classes={{ root: style }}
-                label={tagEdge.node.value}
-                style={{ backgroundColor: tagEdge.node.color }}
+                label={tag.value}
+                style={{ backgroundColor: tag.color }}
                 onClick={
                   typeof onClick === 'function'
-                    ? onClick.bind(
-                      this,
-                      'tags',
-                      tagEdge.node.id,
-                      tagEdge.node.value,
-                    )
+                    ? onClick.bind(this, 'tags', tag.id, tag.value)
                     : null
                 }
               />
             ),
-            take(3, tags.edges),
+            take(3, tagsNodes),
           )
         ) : (
           <Chip
