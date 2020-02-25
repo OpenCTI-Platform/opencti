@@ -1,7 +1,16 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose, map, pathOr, pipe, union, append, filter,
+  compose,
+  map,
+  pathOr,
+  pipe,
+  union,
+  append,
+  filter,
+  sortWith,
+  ascend,
+  prop,
 } from 'ramda';
 import { Form, Formik } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
@@ -193,6 +202,10 @@ class StixDomainEntityTags extends Component {
 
   render() {
     const { classes, tags, t } = this.props;
+    const tagsNodes = pipe(
+      map((n) => n.node),
+      sortWith([ascend(prop('value'))]),
+    )(tags.edges);
     return (
       <div>
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
@@ -211,16 +224,16 @@ class StixDomainEntityTags extends Component {
         <div className="clearfix" />
         <div className={classes.tags}>
           {map(
-            (tagEdge) => (
+            (tag) => (
               <Chip
-                key={tagEdge.node.id}
+                key={tag.id}
                 classes={{ root: classes.tag }}
-                label={tagEdge.node.value}
-                style={{ backgroundColor: tagEdge.node.color }}
-                onDelete={this.handleRemoveTag.bind(this, tagEdge.node.id)}
+                label={tag.value}
+                style={{ backgroundColor: tag.color }}
+                onDelete={this.handleRemoveTag.bind(this, tag.id)}
               />
             ),
-            tags.edges,
+            tagsNodes,
           )}
         </div>
         <Formik
