@@ -8,6 +8,6 @@ steps:
   - ls -al
   - pwd
   - apk add build-base
-  - cd opencti/opencti-platform/opencti-front
+  - cd opencti-platform/opencti-front
   - yarn install
   - yarn build
