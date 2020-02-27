@@ -39,5 +39,5 @@ services:
   environment:
     MINIO_ACCESS_KEY: ChangeMe
     MINIO_SECRET_KEY: ChangeMe
-  command: server /data
-
+  commands: 
+  - server /data
