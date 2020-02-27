@@ -8,7 +8,6 @@ steps:
   - apk add build-base
   - cd opencti-platform/opencti-front
   - yarn install
-  - yarn lint
   - yarn build
 
 - name: api
