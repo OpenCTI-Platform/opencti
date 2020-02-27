@@ -25,19 +25,19 @@ steps:
   - yarn test
 
 services:
-  grakn
-    image: graknlabs/grakn:1.6.2
+- name: grakn
+  image: graknlabs/grakn:1.6.2
 
-  elastic
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.2
-    environment:
-      - discovery.type=single-node
-      - ES_JAVA_OPTS=-Xms750m -Xmx750m
+- name: elastic
+  image: docker.elastic.co/elasticsearch/elasticsearch:7.5.2
+  environment:
+    - discovery.type=single-node
+    - ES_JAVA_OPTS=-Xms750m -Xmx750m
 
-  minio
-    image: minio/minio:RELEASE.2019-10-12T01-39-57Z
-    environment:
-      - MINIO_ACCESS_KEY=ChangeMe
-      - MINIO_SECRET_KEY=ChangeMe
-    command: server /data
+- name: minio
+  image: minio/minio:RELEASE.2019-10-12T01-39-57Z
+  environment:
+    - MINIO_ACCESS_KEY=ChangeMe
+    - MINIO_SECRET_KEY=ChangeMe
+  command: server /data
 
