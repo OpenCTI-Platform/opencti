@@ -1,14 +1,7 @@
 kind: pipeline
-name: opencti
+name: opencti-api
 
 steps:
-- name: front
-  image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
-  commands:
-  - apk add build-base
-  - cd opencti-platform/opencti-front
-  - yarn install
-  - yarn build
 
 - name: api
   image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
@@ -24,6 +17,16 @@ steps:
   - cd opencti-platform/opencti-graphql
   - yarn install
   - yarn test
+
+- name: coverage
+  image: plugins/codecov
+  settings:
+    token: e5c6fb05-76f7-4985-86cf-ff843d5d103e
+    files:
+    - *.xml
+    paths:
+    - coverage
+    - test-results
 
 services:
 - name: grakn

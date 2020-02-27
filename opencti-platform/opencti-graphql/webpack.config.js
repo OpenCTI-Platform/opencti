@@ -16,8 +16,7 @@ module.exports = (env, argv) => {
   const buildDate = new Date().toISOString();
   return {
     entry: {
-      index: [resolvePath('src/index'), ...addIf(isDev, [`${require.resolve('webpack/hot/poll')}?1000`])],
-      provision: [resolvePath('tests/utils/provision')]
+      index: [resolvePath('src/index'), ...addIf(isDev, [`${require.resolve('webpack/hot/poll')}?1000`])]
     },
     resolve: {
       extensions: ['.wasm', '.mjs', '.js', '.json', '.graphql']
