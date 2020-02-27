@@ -14,8 +14,9 @@ steps:
   image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
   environment:
     APP__REACTIVE: false
-    GRAKN__HOSTNAME: 127.0.0.1
-    ELASTICSEARCH__URL: http://127.0.0.1:9200
+    GRAKN__HOSTNAME: grakn
+    ELASTICSEARCH__URL: http://elastic:9200
+    MINIO__ENDPOINT: minio
   commands:
   - apk add build-base
   - cd opencti-platform/opencti-graphql
@@ -37,4 +38,4 @@ services:
   environment:
     MINIO_ACCESS_KEY: ChangeMe
     MINIO_SECRET_KEY: ChangeMe
-  command: "server /data"
+  command: server /data
