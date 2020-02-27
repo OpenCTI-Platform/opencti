@@ -1,10 +1,11 @@
 kind: pipeline
 name: default
+
 steps:
 - name: build-front
- image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
- commands:
-   - apk add build-base
-   - cd opencti-front
-   - yarn install
-   - yarn build
+  image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
+  commands:
+  - apk add build-base
+  - cd opencti-front
+  - yarn install
+  - yarn build
