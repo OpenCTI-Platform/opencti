@@ -21,7 +21,6 @@ steps:
   - apk add build-base
   - cd opencti-platform/opencti-graphql
   - yarn install
-  - yarn lint
   - yarn test
 
 services:
