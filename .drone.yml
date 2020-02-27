@@ -15,7 +15,7 @@ steps:
   environment:
     APP__REACTIVE: false
     GRAKN__HOSTNAME: 127.0.0.1
-    ELASTICSEARCH__HOSTNAME: 127.0.0.1
+    ELASTICSEARCH__URL: http://127.0.0.1:9200
   commands:
   - apk add build-base
   - cd opencti-platform/opencti-graphql
@@ -37,5 +37,4 @@ services:
   environment:
     MINIO_ACCESS_KEY: ChangeMe
     MINIO_SECRET_KEY: ChangeMe
-  commands: 
-  - server /data
+  command: "server /data"
