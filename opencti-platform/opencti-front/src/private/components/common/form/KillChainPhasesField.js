@@ -66,6 +66,7 @@ class KillChainPhasesField extends Component {
         textfieldprops={{
           label: t('Kill chain phases'),
           helperText: helpertext,
+          onFocus: this.searchKillChainPhases.bind(this),
         }}
         noOptionsText={t('No available options')}
         options={this.state.killChainPhases}

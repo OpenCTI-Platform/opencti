@@ -84,6 +84,7 @@ const tagValidation = (t) => Yup.object().shape({
   tag_type: Yup.string().required(t('This field is required')),
   definition: Yup.string().required(t('This field is required')),
   value: Yup.string().required(t('This field is required')),
+  color: Yup.string().required(t('This field is required')),
 });
 
 class TagEditionContainer extends Component {

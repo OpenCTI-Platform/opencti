@@ -27,7 +27,7 @@ const styles = (theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
-    margin: '10px 0 0 0',
+    margin: '6px 0 0 0',
     padding: '15px 15px 15px 15px',
     borderRadius: 6,
   },
@@ -188,7 +188,7 @@ class StixObservableIndicatorsComponent extends Component {
     );
     const sortedIndicators = sort(indicators);
     return (
-      <div style={{ marginTop: 40 }}>
+      <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Indicators composed with this observable')}
         </Typography>

@@ -14,7 +14,8 @@ import {
   loadEntityByStixId,
   timeSeriesEntities,
   updateAttribute,
-  deleteRelationsByFromAndTo
+  deleteRelationsByFromAndTo,
+  loadRelationById
 } from '../database/grakn';
 import { findById as findMarkingDefintionById } from './markingDefinition';
 import { elCount, INDEX_STIX_ENTITIES } from '../database/elasticSearch';
@@ -250,15 +251,16 @@ export const stixDomainEntityDeleteRelation = async (
 ) => {
   const stixDomainEntity = await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
   if (relationId) {
-    const data = await loadEntityById(relationId, 'stix_relation_embedded');
+    const data = await loadRelationById(relationId, 'relation');
     if (
-      stixDomainEntity.entity_type === 'user' &&
-      !isNil(stixDomainEntity.external) &&
-      !['tagged', 'created_by_ref', 'object_marking_refs'].includes(data.relationship_type)
+      data.fromId !== stixDomainEntity.grakn_id ||
+      (stixDomainEntity.entity_type === 'user' &&
+        !isNil(stixDomainEntity.external) &&
+        !['tagged', 'created_by_ref', 'object_marking_refs'].includes(data.relationship_type))
     ) {
       throw new ForbiddenAccess();
     }
-    await deleteRelationById(relationId, 'stix_relation_embedded');
+    await deleteRelationById(relationId, 'relation');
   } else if (toId) {
     if (
       stixDomainEntity.entity_type === 'user' &&
@@ -267,7 +269,7 @@ export const stixDomainEntityDeleteRelation = async (
     ) {
       throw new ForbiddenAccess();
     }
-    await deleteRelationsByFromAndTo(stixDomainEntityId, toId, relationType, 'stix_relation_embedded');
+    await deleteRelationsByFromAndTo(stixDomainEntityId, toId, relationType, 'relation');
   } else {
     throw new Error('Cannot delete the relation, missing relationId or toId');
   }

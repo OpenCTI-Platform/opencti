@@ -89,7 +89,11 @@ class CreatedByRefField extends Component {
         <Autocomplete
           style={style}
           name={name}
-          textfieldprops={{ label: t('Author'), helperText: helpertext }}
+          textfieldprops={{
+            label: t('Author'),
+            helperText: helpertext,
+            onFocus: this.searchIdentities.bind(this),
+          }}
           noOptionsText={t('No available options')}
           options={this.state.identities}
           onInputChange={this.searchIdentities.bind(this)}

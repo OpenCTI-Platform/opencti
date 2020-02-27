@@ -42,5 +42,4 @@ RUN BUILD_OPENCTI=noninteractive \
 
 # Expose and entrypoint
 RUN chmod +x /entrypoint.sh
-EXPOSE 4000/tcp
 ENTRYPOINT ["/entrypoint.sh"]

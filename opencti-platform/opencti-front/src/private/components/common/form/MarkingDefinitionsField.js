@@ -63,7 +63,11 @@ class MarkingDefinitionsField extends Component {
         style={style}
         name={name}
         multiple={true}
-        textfieldprops={{ label: t('Marking'), helperText: helpertext }}
+        textfieldprops={{
+          label: t('Marking'),
+          helperText: helpertext,
+          onFocus: this.searchMarkingDefinitions.bind(this),
+        }}
         noOptionsText={t('No available options')}
         options={this.state.markingDefinitions}
         onInputChange={this.searchMarkingDefinitions.bind(this)}

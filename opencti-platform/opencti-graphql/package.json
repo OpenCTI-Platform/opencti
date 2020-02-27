@@ -1,6 +1,6 @@
 {
   "name": "opencti-graphql",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "main": "src/server.js",
   "author": "Luatix",
   "license": "Apache-2.0",

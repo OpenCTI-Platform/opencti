@@ -148,8 +148,4 @@ Tags.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(Tags);
+export default compose(inject18n, withRouter, withStyles(styles))(Tags);

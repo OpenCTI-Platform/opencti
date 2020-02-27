@@ -1,7 +1,8 @@
 ---
-id: auto
+id: version-3.0.2-auto
 title: Automatic installation
 sidebar_label: Automatic installation
+original_id: auto
 ---
 
 

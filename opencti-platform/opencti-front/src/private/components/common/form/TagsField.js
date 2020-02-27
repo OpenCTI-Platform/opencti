@@ -58,7 +58,13 @@ class TagsField extends Component {
 
   render() {
     const {
-      t, name, style, classes, setFieldValue, values,
+      t,
+      name,
+      style,
+      classes,
+      setFieldValue,
+      values,
+      helpertext,
     } = this.props;
     return (
       <div>
@@ -66,7 +72,11 @@ class TagsField extends Component {
           style={style}
           name={name}
           multiple={true}
-          textfieldprops={{ label: t('Tags') }}
+          textfieldprops={{
+            label: t('Tags'),
+            helperText: helpertext,
+            onFocus: this.searchTags.bind(this),
+          }}
           noOptionsText={t('No available options')}
           options={this.state.tags}
           onInputChange={this.searchTags.bind(this)}

@@ -49,7 +49,7 @@ const dateFields = [
   'observable_date',
   'default_assignation' // TODO @JRI Ask @Sam for this.
 ];
-const numberFields = ['object_status', 'phase_order', 'level', 'weight', 'ordering'];
+const numberFields = ['object_status', 'phase_order', 'level', 'weight', 'ordering', 'base_score'];
 const virtualTypes = ['Identity', 'Email', 'File', 'Stix-Domain-Entity', 'Stix-Domain', 'Stix-Observable'];
 
 export const REL_INDEX_PREFIX = 'rel_';
@@ -478,7 +478,7 @@ const elMergeRelation = (concept, fromConnection, toConnection) => {
   const to = elBuildRelation('to', toConnection);
   return mergeAll([concept, from, to]);
 };
-const elReconstructRelation = (concept, relationsMap = null) => {
+const elReconstructRelation = (concept, relationsMap = null, forceNatural = false) => {
   const naturalDirections = rolesMap[concept.relationship_type];
   if (!naturalDirections) {
     throw new Error(`[ELASTIC] Missing rolesMap of the relation type ${concept.relationship_type}`);
@@ -499,19 +499,19 @@ const elReconstructRelation = (concept, relationsMap = null) => {
   const queryFrom = Rfind(v => v.alias === 'from', relationValues);
   const queryTo = Rfind(v => v.alias === 'to', relationValues);
   // If map contains a key filtering
-  if (queryFrom && queryFrom.internalIdKey) {
+  if (queryFrom && queryFrom.internalIdKey && forceNatural !== true) {
     fromConnection = Rfind(connection => connection.internal_id_key === queryFrom.internalIdKey, connections);
     toConnection = Rfind(connection => connection.internal_id_key !== queryFrom.internalIdKey, connections);
     return elMergeRelation(concept, fromConnection, toConnection);
   }
-  if (queryTo && queryTo.internalIdKey) {
+  if (queryTo && queryTo.internalIdKey && forceNatural !== true) {
     toConnection = Rfind(connection => connection.internal_id_key === queryTo.internalIdKey, connections);
     fromConnection = Rfind(connection => connection.internal_id_key !== queryTo.internalIdKey, connections);
     return elMergeRelation(concept, fromConnection, toConnection);
   }
   // If map contains a role filtering.
   // Only need to check on one side, the 2 roles are provisioned in this case.
-  if (queryFrom && queryFrom.role) {
+  if (queryFrom && queryFrom.role && forceNatural !== true) {
     fromConnection = Rfind(connection => connection.role === queryFrom.role, connections);
     toConnection = Rfind(connection => connection.role === queryTo.role, connections);
     return elMergeRelation(concept, fromConnection, toConnection);
@@ -537,6 +537,7 @@ export const elPaginate = async (indexName, options) => {
     orderBy = null,
     orderMode = 'asc',
     relationsMap = null,
+    forceNatural = false,
     connectionFormat = true // TODO @Julien Refactor that
   } = options;
   const offset = after ? cursorToOffset(after) : 0;
@@ -639,7 +640,7 @@ export const elPaginate = async (indexName, options) => {
       const dataWithIds = map(n => {
         const loadedElement = pipe(assoc('id', n._source.internal_id_key), assoc('_index', n._index))(n._source);
         if (loadedElement.relationship_type) {
-          return elReconstructRelation(loadedElement, relationsMap);
+          return elReconstructRelation(loadedElement, relationsMap, forceNatural);
         }
         return loadedElement;
       }, data.body.hits.hits);

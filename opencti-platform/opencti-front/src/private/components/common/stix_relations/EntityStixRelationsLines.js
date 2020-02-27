@@ -65,6 +65,7 @@ export const entityStixRelationsLinesQuery = graphql`
     $cursor: ID
     $orderBy: StixRelationsOrdering
     $orderMode: OrderingMode
+    $forceNatural: Boolean
   ) {
     ...EntityStixRelationsLines_data
       @arguments(
@@ -77,6 +78,7 @@ export const entityStixRelationsLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        forceNatural: $forceNatural
       )
   }
 `;
@@ -96,6 +98,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "StixRelationsOrdering", defaultValue: "first_seen" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          forceNatural: { type: "Boolean", defaultValue: false }
         ) {
         stixRelations(
           fromId: $fromId
@@ -107,6 +110,7 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          forceNatural: $forceNatural
         ) @connection(key: "Pagination_stixRelations") {
           edges {
             node {
@@ -144,6 +148,7 @@ export default createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        forceNatural: fragmentVariables.forceNatural,
       };
     },
     query: entityStixRelationsLinesQuery,

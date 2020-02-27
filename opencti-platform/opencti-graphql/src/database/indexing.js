@@ -18,11 +18,14 @@ const pad = (val, size) => {
   return s;
 };
 
-const indexElement = async (type, isRelation = false) => {
+const indexElement = async (type, isRelation = false, fromType = null, toType = null) => {
   const start = moment();
   // Indexing all entities
   const matchingQuery = isRelation ? '$rel($from, $to)' : '$elem';
-  const nbOfEntities = await getSingleValueNumber(`match ${matchingQuery} isa ${type}; get; count;`);
+  let typeSuffix = fromType ? `$from isa ${fromType};` : '';
+  typeSuffix += toType ? `$to isa ${toType};` : '';
+
+  const nbOfEntities = await getSingleValueNumber(`match ${matchingQuery} isa ${type}; ${typeSuffix} get; count;`);
   if (nbOfEntities === 0) return;
   // Compute the number of groups to create
   let counter = 0;
@@ -33,7 +36,7 @@ const indexElement = async (type, isRelation = false) => {
   const queries = [];
   for (let index = 0; index < nbGroup; index += 1) {
     const offset = index * GROUP_NUMBER;
-    const query = `match ${matchingQuery} isa ${type}; get; offset ${offset}; limit ${GROUP_NUMBER};`;
+    const query = `match ${matchingQuery} isa ${type}; ${typeSuffix} get; offset ${offset}; limit ${GROUP_NUMBER};`;
     queries.push(query);
   }
   // Fetch grakn with concurrency limit.
@@ -90,7 +93,9 @@ const index = async () => {
   // authorize - Not needed, authentication
   await indexElement('membership', true);
   await indexElement('permission', true);
-  await indexElement('stix_relation', true);
+  await indexElement('stix_relation', true, 'entity', 'entity');
+  await indexElement('stix_relation', true, 'entity', 'relation');
+  await indexElement('stix_relation', true, 'relation', 'relation');
   await indexElement('stix_observable_relation', true);
   await indexElement('relation_embedded', true);
   await indexElement('stix_relation_embedded', true);

@@ -103,6 +103,11 @@ define
   reliability sub attribute, datatype string;
   value sub attribute, datatype string;
   pattern_type sub attribute, datatype string;
+  base_score sub attribute, datatype double;
+  base_severity sub attribute, datatype string;
+  attack_vector sub attribute, datatype string;
+  integrity_impact sub attribute, datatype string;
+  availability_impact sub attribute, datatype string;
 
   # STIX SRO
   relationship_type sub attribute, datatype string;
@@ -789,6 +794,11 @@ define
     plays characterize;
 
   Vulnerability sub Stix-Domain-Entity,
+    has base_score,
+    has base_severity,
+    has attack_vector,
+    has integrity_impact,
+    has availability_impact,
     plays target,
     plays problem,
     plays characterize;

@@ -95,6 +95,7 @@ class ReportAddObjectRefs extends Component {
       withPadding,
       defaultCreatedByRef,
       defaultMarkingDefinition,
+      reportObjectRefs,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
@@ -146,7 +147,7 @@ class ReportAddObjectRefs extends Component {
                 search: this.state.search,
                 orderBy: 'created_at',
                 orderMode: 'desc',
-                count: 50,
+                count: 100,
               }}
               render={({ props }) => {
                 if (props) {
@@ -156,6 +157,7 @@ class ReportAddObjectRefs extends Component {
                       data={props}
                       paginationOptions={this.props.paginationOptions}
                       knowledgeGraph={knowledgeGraph}
+                      reportObjectRefs={reportObjectRefs}
                     />
                   );
                 }
@@ -213,6 +215,7 @@ ReportAddObjectRefs.propTypes = {
   withPadding: PropTypes.bool,
   defaultCreatedByRef: PropTypes.object,
   defaultMarkingDefinition: PropTypes.object,
+  reportObjectRefs: PropTypes.array,
 };
 
 export default compose(inject18n, withStyles(styles))(ReportAddObjectRefs);
