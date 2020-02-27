@@ -1,13 +1,45 @@
+---
 kind: pipeline
-name: default
+name: front
 
 steps:
-- name: build-front
+- name: build
   image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
   commands:
-  - ls -al
-  - pwd
   - apk add build-base
   - cd opencti-platform/opencti-front
   - yarn install
+  - yarn lint
   - yarn build
+
+---
+kind: pipeline
+name: api
+
+- name: build-test
+  image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
+  environment:
+    - APP__REACTIVE: false
+    - GRAKN__HOSTNAME: 127.0.0.1
+    - ELASTICSEARCH__HOSTNAME: 127.0.0.1
+  commands:
+  - apk add build-base
+  - cd opencti-platform/opencti-graphql
+  - yarn install
+  - yarn lint
+  - yarn test
+
+services:
+- name: grakn
+  image: graknlabs/grakn:1.6.2
+- name: elastic
+  image: docker.elastic.co/elasticsearch/elasticsearch:7.5.2
+  environment:
+    - discovery.type=single-node
+    - ES_JAVA_OPTS=-Xms750m -Xmx750m
+- name: minio
+  image: minio/minio:RELEASE.2019-10-12T01-39-57Z
+  environment:
+    - MINIO_ACCESS_KEY: ChangeMe
+    - MINIO_SECRET_KEY: ChangeMe
+  command: server /data
