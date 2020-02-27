@@ -5,6 +5,8 @@ steps:
 - name: build-front
   image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
   commands:
+  - ls -al
+  - pwd
   - apk add build-base
   - cd opencti/opencti-platform/opencti-front
   - yarn install
