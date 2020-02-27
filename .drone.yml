@@ -1,8 +1,8 @@
 kind: pipeline
-name: front
+name: opencti
 
 steps:
-- name: build
+- name: front
   image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
   commands:
   - apk add build-base
@@ -11,11 +11,7 @@ steps:
   - yarn lint
   - yarn build
 
----
-kind: pipeline
-name: api
-
-- name: build-test
+- name: api
   image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
   environment:
     - APP__REACTIVE: false
