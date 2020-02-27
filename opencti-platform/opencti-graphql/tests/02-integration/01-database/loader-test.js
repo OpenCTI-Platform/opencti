@@ -17,7 +17,7 @@ afterAll(async () => {
 describe('Database provision', () => {
   it('should dependencies accessible', () => {
     return checkSystemDependencies();
-  });
+  }, ONE_MINUTE);
 
   it('should schema initialized', () => {
     return initializeSchema();
