@@ -25,7 +25,6 @@ steps:
     token: e5c6fb05-76f7-4985-86cf-ff843d5d103e
     paths:
       - opencti-platform/opencti-graphql/coverage
-      - opencti-platform/opencti-graphql/test-results
 
 services:
 - name: grakn

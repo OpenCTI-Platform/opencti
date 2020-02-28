@@ -5,12 +5,12 @@ import { graknIsAlive, write } from './database/grakn';
 import applyMigration from './database/migration';
 import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/minio';
-import { checkPythonStix2 } from './database/utils';
 import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings, getSettings } from './domain/settings';
 import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from './domain/user';
 import { addCapability, addRole } from './domain/grant';
 import { addAttribute } from './domain/attribute';
+import {checkPythonStix2} from "./python/pythonBridge";
 
 const fs = require('fs');
 

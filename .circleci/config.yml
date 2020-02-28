@@ -1,80 +1,6 @@
 version: 2.1
 
 jobs:
-  build:
-    working_directory: ~/opencti
-    docker:
-      - image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
-    steps:
-      - checkout
-      - run:
-          name: install gcc
-          command: apk add build-base
-      - run: 
-          working_directory: ~/opencti/opencti-platform/opencti-front
-          command: yarn install
-      - run:
-          working_directory: ~/opencti/opencti-platform/opencti-front
-          command: yarn build
-      - run:
-          working_directory: ~/opencti/opencti-platform/opencti-graphql
-          command: yarn install
-      - run:
-          working_directory: ~/opencti/opencti-platform/opencti-graphql
-          command: yarn build
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - opencti
-  test:
-    working_directory: ~/opencti
-    docker:
-      - image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
-        environment:
-          APP__REACTIVE: false
-          GRAKN__HOSTNAME: 127.0.0.1
-          ELASTICSEARCH__HOSTNAME: 127.0.0.1
-      - image: graknlabs/grakn:1.6.2
-      - image: docker.elastic.co/elasticsearch/elasticsearch:7.5.2
-        environment:
-          - discovery.type=single-node
-          - ES_JAVA_OPTS=-Xms750m -Xmx750m
-      - image: minio/minio:RELEASE.2019-10-12T01-39-57Z
-        environment:
-          MINIO_ACCESS_KEY: ChangeMe
-          MINIO_SECRET_KEY: ChangeMe
-        command: server /data
-    steps:
-      - attach_workspace:
-          at: ~/
-      - run:
-          name: install gcc
-          command: apk add build-base
-      - run:
-          name: install dockerize
-          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          environment:
-            DOCKERIZE_VERSION: v0.3.0
-      - run:
-          name: Wait for Grakn
-          command: dockerize -wait tcp://localhost:48555 -timeout 1m
-      - run:
-          name: Wait for ElasticSearch
-          command: dockerize -wait tcp://localhost:9200 -timeout 1m        
-      - run:
-          name: Wait for Minio
-          command: dockerize -wait tcp://localhost:9000 -timeout 1m  
-      - run: 
-          name: Setup custom environment variables
-          command: |
-            echo 'export APP__ADMIN__PASSWORD="admin"' >> $BASH_ENV
-            echo 'export APP__REACTIVE="false"' >> $BASH_ENV
-            echo 'export APP__ADMIN__TOKEN="bfa014e0-e02e-4aa6-a42b-603b19dcf159"' >> $BASH_ENV
-            source $BASH_ENV
-      - run:
-          working_directory: ~/opencti/opencti-platform/opencti-graphql
-          command: yarn test
-
   package_rolling:
     working_directory: ~/opencti
     docker:
@@ -236,16 +162,6 @@ jobs:
 workflows:
   opencti:
     jobs:
-      - build:
-          filters:
-            tags:
-              only: /.*/
-      - test:
-          requires:
-            - build
-          filters:
-            tags:
-              only: /.*/
       - package_rolling:
           requires:
             - build

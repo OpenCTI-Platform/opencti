@@ -5,8 +5,8 @@
   <a href="https://www.opencti.io" alt="Website"><img src="https://img.shields.io/badge/website-opencti.io-blue.svg" /></a>
   <a href="https://opencti-platform.github.io/docs" alt="Documentation"><img src="https://img.shields.io/badge/Documentation-RTFM-orange.svg" /></a>
   <a href="https://slack.luatix.org" alt="Slack"><img src="https://slack.luatix.org/badge.svg" /></a>
+  <a href="https://cloud.drone.io/OpenCTI-Platform/opencti"><img src="https://cloud.drone.io/api/badges/OpenCTI-Platform/opencti/status.svg?ref=refs/heads/issue/513" /></a>
   <a href="https://codecov.io/gh/OpenCTI-Platform/opencti"><img src="https://codecov.io/gh/OpenCTI-Platform/opencti/branch/issue%2F513/graph/badge.svg" /></a>
-  <a href="https://circleci.com/gh/OpenCTI-Platform/opencti" alt="CICD"><img src="https://circleci.com/gh/OpenCTI-Platform/opencti.svg?style=shield" /></a>
   <a href="https://deepscan.io/dashboard#view=project&tid=4926&pid=6716&bid=57311"><img src="https://deepscan.io/api/teams/4926/projects/6716/branches/57311/badge/grade.svg" alt="DeepScan grade"></a>
   <a href="https://github.com/OpenCTI-Platform/opencti/releases/latest" alt="Releases"><img src="https://img.shields.io/github/release/OpenCTI-Platform/opencti.svg" /></a>
   <a href="https://hub.docker.com/u/opencti" alt="Docker pulls"><img src="https://img.shields.io/docker/pulls/opencti/platform" /></a>

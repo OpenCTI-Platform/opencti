@@ -2,8 +2,8 @@
 import { checkSystemDependencies, initializeData, initializeSchema } from '../../../src/initialization';
 import { listenServer, stopServer } from '../../../src/httpServer';
 import conf from '../../../src/config/conf';
-import { execPython3 } from '../../../src/database/utils';
 import { ONE_MINUTE, ONE_HOUR } from '../../utils/query';
+import {execPython3} from "../../../src/python/pythonBridge";
 
 let httpServer = null;
 beforeAll(async () => {

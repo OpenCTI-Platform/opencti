@@ -13,10 +13,11 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { notify } from '../database/redis';
-import { buildPagination, extractObservables } from '../database/utils';
+import { buildPagination} from '../database/utils';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { findById as findKillChainPhaseById } from './killChainPhase';
 import { askEnrich } from './enrichment';
+import {extractObservables} from "../python/pythonBridge";
 
 const OpenCTITimeToLive = {
   // Formatted as "[Marking-Definition]-[KillChainPhaseIsDelivery]"
