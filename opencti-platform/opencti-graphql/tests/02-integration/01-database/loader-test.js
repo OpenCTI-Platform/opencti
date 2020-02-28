@@ -3,7 +3,7 @@ import { checkSystemDependencies, initializeData, initializeSchema } from '../..
 import { listenServer, stopServer } from '../../../src/httpServer';
 import conf from '../../../src/config/conf';
 import { execPython3 } from '../../../src/database/utils';
-import { ONE_MINUTE, TWENTY_MINUTE } from '../../utils/query';
+import { ONE_MINUTE, ONE_HOUR } from '../../utils/query';
 
 let httpServer = null;
 beforeAll(async () => {
@@ -33,5 +33,5 @@ describe('Database provision', () => {
     const fileToInject = '/tests/data/CERTFR-2020-CTI-001-STIX2_v2.json';
     const importOpts = [apiUri, apiToken, fileToInject];
     return execPython3('./src/python', 'local_importer.py', importOpts);
-  }, TWENTY_MINUTE);
+  }, ONE_HOUR);
 });
