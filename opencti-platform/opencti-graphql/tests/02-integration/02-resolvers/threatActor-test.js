@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/query';
+import { queryAsAdmin } from '../../utils/testQuery';
 
 // region queries
 const CREATE_QUERY = gql`

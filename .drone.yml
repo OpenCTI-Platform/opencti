@@ -5,7 +5,6 @@ steps:
 
 - name: api
   image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
-  failure: ignore
   environment:
     APP__ADMIN__PASSWORD: admin
     APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159

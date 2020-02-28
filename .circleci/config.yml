@@ -1,6 +1,28 @@
 version: 2.1
 
 jobs:
+  build:
+    working_directory: ~/opencti
+    docker:
+      - image: circleci/node:12.13.1-stretch
+    steps:
+      - checkout
+      - run: 
+          working_directory: ~/opencti/opencti-platform/opencti-front
+          command: yarn install
+      - run:
+          working_directory: ~/opencti/opencti-platform/opencti-front
+          command: yarn build
+      - run:
+          working_directory: ~/opencti/opencti-platform/opencti-graphql
+          command: yarn install
+      - run:
+          working_directory: ~/opencti/opencti-platform/opencti-graphql
+          command: yarn build
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - opencti
   package_rolling:
     working_directory: ~/opencti
     docker:
@@ -162,10 +184,15 @@ jobs:
 workflows:
   opencti:
     jobs:
+      - build:
+          filters:
+            tags:
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
       - package_rolling:
           requires:
             - build
-            - test
           filters:
             branches:
               only:
@@ -175,7 +202,6 @@ workflows:
       - deploy_demo:
           requires:
             - build
-            - test
           filters:
             branches:
               only:
@@ -183,7 +209,6 @@ workflows:
       - deploy_reference:
           requires:
             - build
-            - test
           filters:
             branches:
               only:
@@ -195,8 +220,7 @@ workflows:
                 - master
       - docker_build_rolling:
           requires:
-            - build
-            - test        
+            - build  
           filters:
             branches:
               only:
