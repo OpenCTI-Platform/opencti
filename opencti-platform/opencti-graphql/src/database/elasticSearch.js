@@ -86,9 +86,9 @@ export const elIndexExists = async indexName => {
   const existIndex = await el.indices.exists({ index: indexName });
   return existIndex.body === true;
 };
-export const elCreateIndexes = async () => {
+export const elCreateIndexes = async (indexesToCreate = PLATFORM_INDICES) => {
   return Promise.all(
-    PLATFORM_INDICES.map(index => {
+    indexesToCreate.map(index => {
       return el.indices.exists({ index }).then(result => {
         if (result.body === false) {
           return el.indices.create({
@@ -180,36 +180,6 @@ export const elDeleteIndexes = async (indexesToDelete = PLATFORM_INDICES) => {
       });
     })
   );
-};
-
-export const elDeleteByField = async (indexName, fieldName, value) => {
-  const query = {
-    match: { [fieldName]: value }
-  };
-  await el.deleteByQuery({
-    index: indexName,
-    body: { query }
-  });
-  return value;
-};
-export const elDeleteInstanceIds = async ids => {
-  logger.debug(`[ELASTICSEARCH] elDeleteInstanceIds > ${ids}`);
-  const terms = map(id => ({ term: { 'internal_id_key.keyword': id } }), ids);
-  return el
-    .deleteByQuery({
-      index: PLATFORM_INDICES,
-      refresh: true,
-      body: {
-        query: {
-          bool: {
-            should: terms
-          }
-        }
-      }
-    })
-    .catch(err => {
-      logger.error(`[ELASTICSEARCH] elDeleteInstanceIds > ${err}`);
-    });
 };
 
 export const elCount = (indexName, options = {}) => {
@@ -505,8 +475,8 @@ const elReconstructRelation = (concept, relationsMap = null, forceNatural = fals
     return elMergeRelation(concept, fromConnection, toConnection);
   }
   if (queryTo && queryTo.internalIdKey && forceNatural !== true) {
-    toConnection = Rfind(connection => connection.internal_id_key === queryTo.internalIdKey, connections);
     fromConnection = Rfind(connection => connection.internal_id_key !== queryTo.internalIdKey, connections);
+    toConnection = Rfind(connection => connection.internal_id_key === queryTo.internalIdKey, connections);
     return elMergeRelation(concept, fromConnection, toConnection);
   }
   // If map contains a role filtering.
@@ -762,6 +732,35 @@ export const elUpdate = (indexName, documentId, documentBody, retry = 2) => {
   });
 };
 
+export const elDeleteByField = async (indexName, fieldName, value) => {
+  const query = {
+    match: { [fieldName]: value }
+  };
+  await el.deleteByQuery({
+    index: indexName,
+    body: { query }
+  });
+  return value;
+};
+export const elDeleteInstanceIds = async (ids, indexesToHandle = PLATFORM_INDICES) => {
+  logger.debug(`[ELASTICSEARCH] elDeleteInstanceIds > ${ids}`);
+  const terms = map(id => ({ term: { 'internal_id_key.keyword': id } }), ids);
+  return el
+    .deleteByQuery({
+      index: indexesToHandle,
+      refresh: true,
+      body: {
+        query: {
+          bool: {
+            should: terms
+          }
+        }
+      }
+    })
+    .catch(err => {
+      logger.error(`[ELASTICSEARCH] elDeleteInstanceIds > ${err}`);
+    });
+};
 export const elRemoveRelationConnection = async relationId => {
   const relation = await elLoadById(relationId);
   const from = await elLoadByGraknId(relation.fromId);

@@ -46,7 +46,7 @@ export const findAll = async args => {
   return data;
 };
 export const findById = async stixDomainEntityId => {
-  let data = null;
+  let data;
   if (stixDomainEntityId.match(/[a-z-]+--[\w-]{36}/g)) {
     data = await loadEntityByStixId(stixDomainEntityId, 'Stix-Domain-Entity');
   } else {
