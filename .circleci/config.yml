@@ -227,8 +227,7 @@ workflows:
                 - master
       - docker_build:
           requires:
-            - build
-            - test        
+            - build   
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/

@@ -16,6 +16,7 @@ steps:
   - apk add build-base
   - cd opencti-platform/opencti-graphql
   - yarn install
+  - yarn build
   - yarn test
 
 - name: coverage
@@ -41,3 +42,17 @@ services:
     MINIO_ACCESS_KEY: ChangeMe
     MINIO_SECRET_KEY: ChangeMe
   command: [ server, /data ]
+
+---
+kind: pipeline
+name: opencti-front
+
+steps:
+
+- name: front
+  image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
+  commands:
+  - cd opencti-platform/opencti-front
+  - yarn install
+  - yarn build
+  - yarn test
