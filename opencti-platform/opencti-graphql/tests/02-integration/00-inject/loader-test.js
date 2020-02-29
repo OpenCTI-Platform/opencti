@@ -14,7 +14,7 @@ afterAll(async () => {
   await stopServer(httpServer);
 });
 
-describe.skip('Database provision', () => {
+describe('Database provision', () => {
   it('should dependencies accessible', () => {
     return checkSystemDependencies();
   }, ONE_MINUTE);
