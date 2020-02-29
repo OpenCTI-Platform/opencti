@@ -3,30 +3,26 @@ import { checkSystemDependencies, initializeData, initializeSchema } from '../..
 import { listenServer, stopServer } from '../../../src/httpServer';
 import conf from '../../../src/config/conf';
 import { ONE_MINUTE, ONE_HOUR } from '../../utils/testQuery';
-import {execPython3} from "../../../src/python/pythonBridge";
-
-let httpServer = null;
-beforeAll(async () => {
-  httpServer = await listenServer();
-});
-
-afterAll(async () => {
-  await stopServer(httpServer);
-});
+import { execPython3 } from "../../../src/python/pythonBridge";
 
 describe('Database provision', () => {
+  let httpServer = null;
+  beforeAll(async () => {
+    httpServer = await listenServer();
+  });
+  afterAll(async () => {
+    await stopServer(httpServer);
+  });
+
   it('should dependencies accessible', () => {
     return checkSystemDependencies();
   }, ONE_MINUTE);
-
   it('should schema initialized', () => {
     return initializeSchema();
   }, ONE_MINUTE);
-
   it('should default data initialized', () => {
     return initializeData();
   }, ONE_MINUTE);
-
   it('Should import succeed', () => {
     const apiUri = `http://localhost:${conf.get('app:port')}`;
     const apiToken = conf.get('app:admin:token');

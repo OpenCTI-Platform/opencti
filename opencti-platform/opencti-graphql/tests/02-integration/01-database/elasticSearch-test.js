@@ -1,6 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { assoc, find, propEq, map, head } from 'ramda';
 import {
+  elAggregationCount,
   elCount,
   elCreateIndexes,
   elDeleteIndexes,
@@ -70,6 +71,56 @@ describe('Elasticsearch document loader', () => {
   });
 });
 
+describe('Elasticsearch computation', () => {
+  it('should count accurate', async () => {
+    // const { endDate = null, type = null, types = null } = options;
+    let malwaresCount = await elCount(INDEX_STIX_ENTITIES, { type: 'Malware' });
+    expect(malwaresCount).toEqual(2);
+    // Test with date filtering
+    const mostRecentMalware = await elLoadByStixId('malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
+    malwaresCount = await elCount(INDEX_STIX_ENTITIES, { type: 'Malware', endDate: mostRecentMalware.created_at });
+    expect(malwaresCount).toEqual(1);
+  });
+  it('should aggregation accurate', async () => {
+    // { "isRelation", "from", "to", "type", "value" }
+    // "from", "to" is not use in elastic
+    // Aggregate all stix domain by entity type, no filtering
+    let malwaresAggregation = await elAggregationCount(
+      'Stix-Domain',
+      'entity_type',
+      undefined, // No start
+      undefined, // No end
+      [] // No filters
+    );
+    let aggregationMap = new Map(malwaresAggregation.map(i => [i.label, i.value]));
+    expect(aggregationMap.get('malware')).toEqual(2);
+    expect(aggregationMap.get('marking-definition')).toEqual(5);
+    // Aggregate with dates and simple filter
+    const mostRecentMalware = await elLoadByStixId('malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
+    malwaresAggregation = await elAggregationCount(
+      'Stix-Domain',
+      'entity_type',
+      '2019-01-01T00:00:00Z',
+      new Date(mostRecentMalware.created_at).getTime() - 1,
+      [{ type: 'name', value: 'Beacon' }] // No filters
+    );
+    aggregationMap = new Map(malwaresAggregation.map(i => [i.label, i.value]));
+    expect(aggregationMap.size).toEqual(1);
+    expect(aggregationMap.get('malware')).toEqual(1);
+    // Aggregate with relation filter
+    const marking = await elLoadByStixId('marking-definition--f814dace-5888-4848-ab23-326518531d3e');
+    malwaresAggregation = await elAggregationCount(
+      'Stix-Domain',
+      'entity_type',
+      undefined, // No start
+      undefined, // No end
+      [{ isRelation: true, type: 'object_marking_refs', value: marking.internal_id_key }]
+    );
+    aggregationMap = new Map(malwaresAggregation.map(i => [i.label, i.value]));
+    expect(aggregationMap.get('malware')).toEqual(2);
+  });
+});
+
 describe('Elasticsearch pagination', () => {
   it('should paginate return correct data', async () => {
     // first = 200, after, types = null, filters = [], search = null,
@@ -85,14 +136,5 @@ describe('Elasticsearch pagination', () => {
     expect(malware.name).toEqual('Beacon');
     expect(malware._index).toEqual(INDEX_STIX_ENTITIES);
     expect(malware.parent_types).toEqual(expect.arrayContaining(['Malware', 'Stix-Domain-Entity', 'Stix-Domain']));
-  });
-  it('should computing accurate', async () => {
-    // const { endDate = null, type = null, types = null } = options;
-    let malwaresCount = await elCount(INDEX_STIX_ENTITIES, { type: 'Malware' });
-    expect(malwaresCount).toEqual(2);
-    // Test with date filtering
-    const mostRecentMalware = await elLoadByStixId('malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
-    malwaresCount = await elCount(INDEX_STIX_ENTITIES, { type: 'Malware', endDate: mostRecentMalware.created_at });
-    expect(malwaresCount).toEqual(1);
   });
 });

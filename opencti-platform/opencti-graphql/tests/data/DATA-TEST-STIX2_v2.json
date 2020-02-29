@@ -22,7 +22,7 @@
             "type": "marking-definition",
             "definition_type": "TLP",
             "definition": {
-                "TLP": "TLP:WHITE"
+                "TLP": "TLP:TEST"
             },
             "created": "2019-04-15T16:50:04.000Z",
             "x_opencti_modified": "2019-04-15T16:50:04.000Z",
