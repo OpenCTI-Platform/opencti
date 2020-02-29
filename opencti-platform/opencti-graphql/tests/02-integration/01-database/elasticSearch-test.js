@@ -10,7 +10,7 @@ import {
 describe('Elasticsearch testing', () => {
   it('should configuration correct', () => {
     expect(elIsAlive()).resolves.toBeTruthy();
-    expect(elVersion()).resolves.toEqual('7.5.0');
+    expect(elVersion()).resolves.toContain('7.5');
     expect(forceNoCache()).toBeFalsy();
   });
 
