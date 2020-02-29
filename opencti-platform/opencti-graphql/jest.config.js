@@ -12,6 +12,8 @@ module.exports = {
     '/src/migrations',
     '/src/utils',
     '/src/config',
+    '/src/database/indexing.js',
+    '/src/database/migration.js',
     '/src/app.js',
     '/src/httpServer.js',
     '/src/index.js',

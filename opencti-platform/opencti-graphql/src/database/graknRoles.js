@@ -23,6 +23,10 @@ export const rolesMap = {
     client: ROLE_FROM,
     position: ROLE_TO
   },
+  role_capability: {
+    position: ROLE_FROM,
+    capability: ROLE_TO
+  },
   // endregion
   // region relation_embedded
   authored_by: {

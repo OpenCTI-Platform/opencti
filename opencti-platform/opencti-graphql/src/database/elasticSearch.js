@@ -64,7 +64,7 @@ export const el = new Client({ node: conf.get('elasticsearch:url') });
 
 export const elIsAlive = async () => {
   try {
-    await el.info().then(info => {
+    return el.info().then(info => {
       if (info.meta.connection.status !== 'alive') {
         logger.error(`[ELASTICSEARCH] Seems down`);
         throw new Error('elastic seems down');
