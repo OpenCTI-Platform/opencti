@@ -132,7 +132,7 @@ describe('Elasticsearch computation', () => {
     const aggregationMap = new Map(reportRelationsAggregation.map(i => [i.label, i.value]));
     expect(aggregationMap.get('indicator')).toEqual(3);
     expect(aggregationMap.get('organization')).toEqual(3);
-    expect(aggregationMap.get('attack-pattern')).toEqual(3);
+    expect(aggregationMap.get('attack-pattern')).toEqual(2);
     expect(aggregationMap.get('city')).toEqual(1);
     expect(aggregationMap.get('country')).toEqual(1);
     expect(aggregationMap.get('intrusion-set')).toEqual(1);
