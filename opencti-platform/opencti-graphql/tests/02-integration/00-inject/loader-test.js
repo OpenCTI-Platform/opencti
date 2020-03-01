@@ -14,19 +14,20 @@ describe('Database provision', () => {
     await stopServer(httpServer);
   });
 
-  it('should dependencies accessible', () => {
-    return checkSystemDependencies();
+  it('should dependencies accessible',  () => {
+    return expect(checkSystemDependencies()).resolves.toBe(true);
   }, ONE_MINUTE);
   it('should schema initialized', () => {
-    return initializeSchema();
+    return expect(initializeSchema()).resolves.toBe(true);
   }, ONE_MINUTE);
   it('should default data initialized', () => {
-    return initializeData();
+    return expect(initializeData()).resolves.toBe(true);
   }, ONE_MINUTE);
   it('Should import succeed', () => {
     const apiUri = `http://localhost:${conf.get('app:port')}`;
     const apiToken = conf.get('app:admin:token');
     const importOpts = [apiUri, apiToken, '/tests/data/DATA-TEST-STIX2_v2.json'];
-    return execPython3('./src/python', 'local_importer.py', importOpts);
+    const path = './src/python';
+    return expect(execPython3(path, 'local_importer.py', importOpts)).resolves.toBe(0);
   }, ONE_HOUR);
 });

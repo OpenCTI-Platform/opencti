@@ -90,6 +90,7 @@ export const checkSystemDependencies = async () => {
   // Check if Python is available
   await checkPythonStix2();
   logger.info(`[PRE-CHECK] > Python3 is available`);
+  return true;
 };
 
 // Initialize
@@ -101,6 +102,7 @@ export const initializeSchema = async () => {
   // Create default indexes
   await elCreateIndexes();
   logger.info(`[INIT] > Elasticsearch indexes loaded`);
+  return true;
 };
 
 const createAttributesTypes = async () => {
@@ -192,6 +194,7 @@ export const initializeData = async () => {
   if (!settings) await initializeDefaultValues();
   logger.info(`[INIT] > Platform default initialized`);
   await initializeAdminUser();
+  return true;
 };
 
 const init = async () => {

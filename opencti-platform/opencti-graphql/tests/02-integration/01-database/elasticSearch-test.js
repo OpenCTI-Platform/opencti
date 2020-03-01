@@ -81,7 +81,7 @@ describe('Elasticsearch computation', () => {
     malwaresCount = await elCount(INDEX_STIX_ENTITIES, { type: 'Malware', endDate: mostRecentMalware.created_at });
     expect(malwaresCount).toEqual(1);
   });
-  it('should aggregation accurate', async () => {
+  it('should entity aggregation accurate', async () => {
     // { "isRelation", "from", "to", "type", "value" }
     // "from", "to" is not use in elastic
     // Aggregate all stix domain by entity type, no filtering
@@ -107,7 +107,7 @@ describe('Elasticsearch computation', () => {
     aggregationMap = new Map(malwaresAggregation.map(i => [i.label, i.value]));
     expect(aggregationMap.size).toEqual(1);
     expect(aggregationMap.get('malware')).toEqual(1);
-    // Aggregate with relation filter
+    // Aggregate with relation filter on marking definition TLP:TEST
     const marking = await elLoadByStixId('marking-definition--f814dace-5888-4848-ab23-326518531d3e');
     malwaresAggregation = await elAggregationCount(
       'Stix-Domain',
@@ -118,6 +118,9 @@ describe('Elasticsearch computation', () => {
     );
     aggregationMap = new Map(malwaresAggregation.map(i => [i.label, i.value]));
     expect(aggregationMap.get('malware')).toEqual(2);
+  });
+  it('should relation aggregation accurate', async () => {
+
   });
 });
 
