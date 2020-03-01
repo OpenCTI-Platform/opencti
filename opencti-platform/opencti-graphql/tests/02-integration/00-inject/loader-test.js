@@ -23,11 +23,12 @@ describe('Database provision', () => {
   it('should default data initialized', () => {
     return expect(initializeData()).resolves.toBe(true);
   }, ONE_MINUTE);
-  it('Should import succeed', () => {
+  it('Should import succeed', async () => {
     const apiUri = `http://localhost:${conf.get('app:port')}`;
     const apiToken = conf.get('app:admin:token');
     const importOpts = [apiUri, apiToken, '/tests/data/DATA-TEST-STIX2_v2.json'];
     const path = './src/python';
-    return expect(execPython3(path, 'local_importer.py', importOpts)).resolves.toBe(0);
+    const execution = await execPython3(path, 'local_importer.py', importOpts);
+    return expect(execution).toBe(0);
   }, ONE_HOUR);
 });

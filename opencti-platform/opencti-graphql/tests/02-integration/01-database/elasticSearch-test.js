@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { assoc, find, propEq, map, head } from 'ramda';
 import {
-  elAggregationCount,
+  elAggregationCount, elAggregationRelationsCount,
   elCount,
   elCreateIndexes,
   elDeleteIndexes,
@@ -102,13 +102,13 @@ describe('Elasticsearch computation', () => {
       'entity_type',
       '2019-01-01T00:00:00Z',
       new Date(mostRecentMalware.created_at).getTime() - 1,
-      [{ type: 'name', value: 'Beacon' }] // No filters
+      [{ type: 'name', value: 'Paradise Ransomware' }] // Filter on name
     );
     aggregationMap = new Map(malwaresAggregation.map(i => [i.label, i.value]));
     expect(aggregationMap.size).toEqual(1);
     expect(aggregationMap.get('malware')).toEqual(1);
     // Aggregate with relation filter on marking definition TLP:TEST
-    const marking = await elLoadByStixId('marking-definition--f814dace-5888-4848-ab23-326518531d3e');
+    const marking = await elLoadByStixId('marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed');
     malwaresAggregation = await elAggregationCount(
       'Stix-Domain',
       'entity_type',
@@ -117,10 +117,28 @@ describe('Elasticsearch computation', () => {
       [{ isRelation: true, type: 'object_marking_refs', value: marking.internal_id_key }]
     );
     aggregationMap = new Map(malwaresAggregation.map(i => [i.label, i.value]));
-    expect(aggregationMap.get('malware')).toEqual(2);
+    expect(aggregationMap.get('malware')).toEqual(1);
+    expect(aggregationMap.get('report')).toEqual(1);
   });
   it('should relation aggregation accurate', async () => {
-
+    const testingReport = await elLoadByStixId('report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
+    const reportRelationsAggregation = await elAggregationRelationsCount(
+      'stix_relation_embedded',
+      null,
+      null,
+      ['Stix-Domain'], //
+      testingReport.internal_id_key
+    );
+    const aggregationMap = new Map(reportRelationsAggregation.map(i => [i.label, i.value]));
+    expect(aggregationMap.get('indicator')).toEqual(3);
+    expect(aggregationMap.get('organization')).toEqual(3);
+    expect(aggregationMap.get('attack-pattern')).toEqual(3);
+    expect(aggregationMap.get('city')).toEqual(1);
+    expect(aggregationMap.get('country')).toEqual(1);
+    expect(aggregationMap.get('intrusion-set')).toEqual(1);
+    expect(aggregationMap.get('malware')).toEqual(1);
+    expect(aggregationMap.get('marking-definition')).toEqual(1);
+    expect(aggregationMap.get('sector')).toEqual(1);
   });
 });
 
@@ -134,9 +152,9 @@ describe('Elasticsearch pagination', () => {
     expect(data).not.toBeNull();
     expect(data.edges.length).toBeGreaterThanOrEqual(2);
     const nodes = map(e => e.node, data.edges);
-    const malware = find(propEq('stix_id_key', 'malware--c521e7de-aeb9-439b-8bb3-cd93a88f27ea'))(nodes);
+    const malware = find(propEq('stix_id_key', 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c'))(nodes);
     expect(malware.internal_id_key).not.toBeNull();
-    expect(malware.name).toEqual('Beacon');
+    expect(malware.name).toEqual('Paradise Ransomware');
     expect(malware._index).toEqual(INDEX_STIX_ENTITIES);
     expect(malware.parent_types).toEqual(expect.arrayContaining(['Malware', 'Stix-Domain-Entity', 'Stix-Domain']));
   });
