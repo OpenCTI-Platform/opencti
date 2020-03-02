@@ -24,11 +24,11 @@ describe('Database provision', () => {
 
   it('should schema initialized', () => {
     return expect(initializeSchema()).resolves.toBe(true);
-  }, ONE_MINUTE);
+  }, FIVE_MINUTES);
 
   it('should default data initialized', () => {
     return expect(initializeData()).resolves.toBe(true);
-  }, ONE_MINUTE);
+  }, FIVE_MINUTES);
 
   it('Should import creation succeed', async () => {
     const execution = await execPython3(path, 'local_importer.py', importOpts);
