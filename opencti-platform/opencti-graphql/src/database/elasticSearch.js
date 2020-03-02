@@ -359,7 +359,7 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) =
     return map(b => ({ label: b.key, value: b.doc_count }), filteredBuckets);
   });
 };
-export const elHistogramCount = (type, field, interval, start, end, filters) => {
+export const elHistogramCount = async (type, field, interval, start, end, filters) => {
   const histoFilters = map(f => {
     // eslint-disable-next-line no-nested-ternary
     const key = f.isRelation
@@ -383,8 +383,11 @@ export const elHistogramCount = (type, field, interval, start, end, filters) => 
     case 'month':
       dateFormat = 'yyyy-MM';
       break;
-    default:
+    case 'day':
       dateFormat = 'yyyy-MM-dd';
+      break;
+    default:
+      throw new Error('Unsupported interval, please choose between year, month or day');
   }
   const query = {
     index: PLATFORM_INDICES,
@@ -396,7 +399,7 @@ export const elHistogramCount = (type, field, interval, start, end, filters) => 
             [
               {
                 range: {
-                  created_at: {
+                  [field]: {
                     gte: start,
                     lte: end
                   }
@@ -412,7 +415,7 @@ export const elHistogramCount = (type, field, interval, start, end, filters) => 
       aggs: {
         count_over_time: {
           date_histogram: {
-            field: `${field}_${interval}`,
+            field,
             calendar_interval: interval,
             format: dateFormat,
             keyed: true

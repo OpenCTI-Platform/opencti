@@ -6,6 +6,7 @@ import {
   elCount,
   elCreateIndexes,
   elDeleteIndexes,
+  elHistogramCount,
   elIndex,
   elIndexExists,
   elIsAlive,
@@ -163,6 +164,58 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('indicator')).toEqual(1);
     expect(aggregationMap.get('organization')).toEqual(1);
     expect(aggregationMap.get('malware')).toEqual(undefined); // Because of date filtering
+  });
+  it('should invalid time histogram fail', async () => {
+    const histogramCount = elHistogramCount('Stix-Domain-Entity', 'created_at', 'minute', null, null, []);
+    // noinspection ES6MissingAwait
+    expect(histogramCount).rejects.toThrow();
+  });
+  it('should day histogram accurate', async () => {
+    const data = await elHistogramCount(
+      'Stix-Domain-Entity',
+      'created_at',
+      'day',
+      '2019-09-29T00:00:00.000Z',
+      new Date().getTime(),
+      []
+    );
+    expect(data.length).toEqual(1);
+    expect(head(data).date).toEqual('2020-03-02');
+    expect(head(data).value).toEqual(18);
+  });
+  it('should month histogram accurate', async () => {
+    const data = await elHistogramCount(
+      'Stix-Domain-Entity',
+      'created',
+      'month',
+      '2019-09-23T00:00:00.000Z',
+      '2020-03-02T00:00:00.000Z',
+      []
+    );
+    expect(data.length).toEqual(7);
+    const aggregationMap = new Map(data.map(i => [i.date, i.value]));
+    expect(aggregationMap.get('2019-08')).toEqual(undefined);
+    expect(aggregationMap.get('2019-09')).toEqual(2);
+    expect(aggregationMap.get('2019-10')).toEqual(1);
+    expect(aggregationMap.get('2019-11')).toEqual(0);
+    expect(aggregationMap.get('2019-12')).toEqual(0);
+    expect(aggregationMap.get('2020-01')).toEqual(1);
+    expect(aggregationMap.get('2020-02')).toEqual(9);
+    expect(aggregationMap.get('2020-03')).toEqual(1);
+  });
+  it('should year histogram accurate', async () => {
+    const data = await elHistogramCount(
+      'Stix-Domain-Entity',
+      'created',
+      'year',
+      '2019-09-23T00:00:00.000Z',
+      '2020-03-02T00:00:00.000Z',
+      []
+    );
+    expect(data.length).toEqual(2);
+    const aggregationMap = new Map(data.map(i => [i.date, i.value]));
+    expect(aggregationMap.get('2019')).toEqual(3);
+    expect(aggregationMap.get('2020')).toEqual(11);
   });
 });
 

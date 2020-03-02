@@ -27,6 +27,7 @@ export const execPython3 = async (scriptPath, scriptName, args) => {
       });
       shell.on('stderr', stderr => {
         logger.info(`[API-PYTHON] > ${stderr}`);
+        /* istanbul ignore if */
         if (DEV_MODE && stderr.startsWith('ERROR:')) {
           jsonResult = { status: 'error', message: stderr };
           shell.terminate();
