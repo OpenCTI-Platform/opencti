@@ -1,5 +1,5 @@
 import { PythonShell } from 'python-shell';
-import { logger } from '../config/conf';
+import { DEV_MODE, logger } from '../config/conf';
 
 const isJSON = str => {
   const prepareStr = str
@@ -22,10 +22,15 @@ export const execPython3 = async (scriptPath, scriptName, args) => {
       // Messaging is used to get data out of the python process
       let jsonResult = { status: 'success' };
       shell.on('message', message => {
+        /* istanbul ignore next */
         jsonResult = JSON.parse(isJSON(message) ? message : { status: 'error', message });
       });
       shell.on('stderr', stderr => {
         logger.info(`[API-PYTHON] > ${stderr}`);
+        if (DEV_MODE && stderr.startsWith('ERROR:')) {
+          jsonResult = { status: 'error', message: stderr };
+          shell.terminate();
+        }
       });
       shell.end(err => {
         if (err) reject(err);
@@ -34,29 +39,19 @@ export const execPython3 = async (scriptPath, scriptName, args) => {
       });
     });
   } catch (err) {
+    /* istanbul ignore next */
     throw new Error(`Python3 is missing or script not found: ${err}`);
   }
 };
 
-export const checkPythonStix2 = async () => {
-  try {
-    const result = await execPython3('./src/python', 'stix2_create_pattern.py', ['check', 'health']);
-    if (result.status !== 'success') {
-      throw new Error('Python3 with STIX2 module is missing');
-    }
-    return result;
-  } catch (err) {
-    throw new Error(`Python3 check fail ${err}`);
-  }
+export const checkPythonStix2 = () => {
+  return execPython3('./src/python', 'stix2_create_pattern.py', ['check', 'health']);
 };
 
 export const createStixPattern = async (observableType, observableValue) => {
   try {
     const result = await execPython3('./src/python', 'stix2_create_pattern.py', [observableType, observableValue]);
-    if (result.status === 'success') {
-      return result.data;
-    }
-    return null;
+    return result.data;
   } catch (err) {
     logger.error('[Python3] createStixPattern error > ', err);
     return null;
@@ -66,10 +61,7 @@ export const createStixPattern = async (observableType, observableValue) => {
 export const extractObservables = async pattern => {
   try {
     const result = await execPython3('./src/python', 'stix2_extract_observables.py', [pattern]);
-    if (result.status === 'success') {
-      return result.data;
-    }
-    return null;
+    return result.data;
   } catch (err) {
     logger.error('[Python3] extractObservables error > ', err);
     return null;

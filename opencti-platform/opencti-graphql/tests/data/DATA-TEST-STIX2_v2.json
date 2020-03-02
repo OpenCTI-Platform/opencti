@@ -512,7 +512,7 @@
             "x_opencti_target_ref": "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
             "created": "2020-03-01T14:04:45.334Z",
             "modified": "2020-03-01T14:04:45.334Z",
-            "x_opencti_first_seen": "2020-02-29T23:00:00.000Z",
+            "x_opencti_first_seen": "2020-02-28T23:00:00.000Z",
             "x_opencti_last_seen": "2020-02-29T23:00:00.000Z",
             "x_opencti_weight": 3,
             "x_opencti_role_played": "Unknown",

@@ -1,10 +1,16 @@
 import { head } from 'ramda';
-import { checkPythonStix2, createStixPattern, extractObservables } from '../../../src/python/pythonBridge';
+import { checkPythonStix2, createStixPattern, execPython3, extractObservables } from '../../../src/python/pythonBridge';
 
 test('Check if python is well configured', async () => {
   const check = await checkPythonStix2();
   expect(check).not.toBeNull();
   expect(check.status).toEqual('success');
+  // noinspection ES6MissingAwait
+  expect(execPython3('/missing')).rejects.toThrow(undefined);
+  // noinspection ES6MissingAwait
+  expect(createStixPattern('fail')).resolves.toEqual(null);
+  // noinspection ES6MissingAwait
+  expect(extractObservables('fail')).resolves.toEqual(null);
 });
 
 test('Check extractObservables bad pattern', async () => {
