@@ -26,16 +26,6 @@ if (client) {
 }
 const isActive = () => client && client.status === 'ready';
 
-export const internalFlushAll = () => {
-  return new Promise(resolve => {
-    if (isActive()) {
-      client.flushall('ASYNC', () => resolve());
-    } else {
-      resolve();
-    }
-  });
-};
-
 export const getRedisVersion = () => {
   if (isActive()) return client.serverInfo.redis_version;
   return 'Disconnected';

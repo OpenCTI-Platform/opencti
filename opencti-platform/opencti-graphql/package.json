@@ -12,7 +12,7 @@
     "lint": "eslint --max-warnings 0 .",
     "migrate:add": "migrate create --template-file src/utils/migration-template.js --migrations-dir=./src/migrations",
     "index": "babel-node ./src/indexer.js",
-    "test": "jest --bail --testSequencer ./tests/utils/testSequencer.js --verbose --runInBand --coverage --e test"
+    "test": "jest --bail --testSequencer ./tests/utils/testSequencer.js --verbose --runInBand --forceExit --coverage --e test"
   },
   "bin": {
     "opencti-graphql": "./build/index.js"
