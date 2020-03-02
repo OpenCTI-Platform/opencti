@@ -15,7 +15,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
 
 export const findById = async stixEntityId => {
-  let data = null;
+  let data;
   if (stixEntityId.match(/[a-z-]+--[\w-]{36}/g)) {
     data = await internalLoadEntityByStixId(stixEntityId);
   } else {
@@ -109,6 +109,11 @@ export const stixEntityAddRelation = async (user, stixEntityId, input) => {
 
 export const stixEntityDeleteRelation = async (user, stixEntityId, relationId) => {
   const stixDomainEntity = await internalLoadEntityById(stixEntityId);
+  const parentTypes = stixDomainEntity.parent_types;
+  // Check if entity is a real stix domain
+  if (!parentTypes.includes('Stix-Domain-Entity') && !parentTypes.includes('stix_relation')) {
+    throw new ForbiddenAccess();
+  }
   const data = await internalLoadEntityById(relationId);
   if (
     (data.entity_type !== 'stix_relation' && data.entity_type !== 'relation_embedded') ||
@@ -119,9 +124,5 @@ export const stixEntityDeleteRelation = async (user, stixEntityId, relationId) =
     throw new ForbiddenAccess();
   }
   await deleteRelationById(relationId, 'stix_relation_embedded');
-  const entity = await internalLoadEntityById(stixEntityId);
-  if (!entity.parent_types.includes('Stix-Domain-Entity') && !entity.parent_types.includes('stix_relation')) {
-    throw new ForbiddenAccess();
-  }
-  return notify(BUS_TOPICS.StixEntity.EDIT_TOPIC, entity, user);
+  return notify(BUS_TOPICS.StixEntity.EDIT_TOPIC, stixDomainEntity, user);
 };

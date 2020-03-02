@@ -1,6 +1,14 @@
 import { PythonShell } from 'python-shell';
 import { logger } from '../config/conf';
 
+const isJSON = str => {
+  const prepareStr = str
+    .replace(/\\(?:["\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@')
+    .replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?/g, ']')
+    .replace(/(?:^|:|,)(?:\s*\[)+/g, '');
+  return /^[\],:{}\s]*$/.test(prepareStr);
+};
+
 export const execPython3 = async (scriptPath, scriptName, args) => {
   try {
     return new Promise((resolve, reject) => {
@@ -11,20 +19,18 @@ export const execPython3 = async (scriptPath, scriptName, args) => {
         args
       };
       const shell = new PythonShell(scriptName, options);
+      // Messaging is used to get data out of the python process
+      let jsonResult = { status: 'success' };
       shell.on('message', message => {
-        try {
-          resolve(JSON.parse(message));
-        } catch (e) {
-          // Result should be json, if not consider it as an error
-          reject(e);
-        }
+        jsonResult = JSON.parse(isJSON(message) ? message : { status: 'error', message });
       });
       shell.on('stderr', stderr => {
         logger.info(`[API-PYTHON] > ${stderr}`);
       });
-      shell.end((err, code) => {
+      shell.end(err => {
         if (err) reject(err);
-        resolve(code);
+        if (jsonResult.status !== 'success') reject(jsonResult);
+        resolve(jsonResult);
       });
     });
   } catch (err) {
@@ -38,8 +44,9 @@ export const checkPythonStix2 = async () => {
     if (result.status !== 'success') {
       throw new Error('Python3 with STIX2 module is missing');
     }
+    return result;
   } catch (err) {
-    throw new Error('Python3 with STIX2 module is missing');
+    throw new Error(`Python3 check fail ${err}`);
   }
 };
 

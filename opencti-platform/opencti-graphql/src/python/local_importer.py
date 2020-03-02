@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 
@@ -13,7 +14,7 @@ class TestLocalImporter:
 
     def inject(self):
         opencti_api_client = OpenCTIApiClient(self.api_url, self.api_token)
-        opencti_api_client.stix2_import_bundle_from_file(self.config_file_path)
+        opencti_api_client.stix2.import_bundle_from_file(self.config_file_path)
 
 
 if __name__ == '__main__':
@@ -25,5 +26,5 @@ if __name__ == '__main__':
         testLocalImporter = TestLocalImporter(api_url, api_token, config_file_path)
         testLocalImporter.inject()
     except Exception as e:
-        print(e)
-        exit(0)
+        logging.exception(str(e))
+        exit(1)

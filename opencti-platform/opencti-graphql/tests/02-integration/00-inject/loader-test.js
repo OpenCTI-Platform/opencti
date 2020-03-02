@@ -29,6 +29,7 @@ describe('Database provision', () => {
     const importOpts = [apiUri, apiToken, '/tests/data/DATA-TEST-STIX2_v2.json'];
     const path = './src/python';
     const execution = await execPython3(path, 'local_importer.py', importOpts);
-    return expect(execution).toBe(0);
+    expect(execution).not.toBeNull();
+    expect(execution.status).toEqual('success');
   }, ONE_HOUR);
 });

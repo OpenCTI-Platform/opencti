@@ -94,11 +94,14 @@ export const loadFile = async filename => {
 };
 
 const rawFilesListing = directory => {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     const files = [];
     const stream = minioClient.listObjectsV2(bucketName, directory);
     stream.on('data', async obj => files.push(assoc('id', obj.name, obj)));
-    stream.on('error', e => logger.error('MINIO > Error listing files', e));
+    stream.on('error', e => {
+      logger.error('MINIO > Error listing files', e);
+      reject(e);
+    });
     stream.on('end', () => resolve(files));
   }).then(files => {
     return Promise.all(map(elem => loadFile(elem.name), files));
