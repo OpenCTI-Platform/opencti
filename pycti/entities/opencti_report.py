@@ -439,7 +439,7 @@ class Report:
             if report is None:
                 custom_attributes = """
                     id
-                    objectRefs {
+                    objectRefs(first: 10000) {
                         edges {
                             node {
                                 id
@@ -448,7 +448,7 @@ class Report:
                             }
                         }
                     }
-                    relationRefs {
+                    relationRefs(first: 10000) {
                         edges {
                             node {
                                 id

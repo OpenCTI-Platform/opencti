@@ -374,5 +374,128 @@ class StixObservable:
                 result["data"]["stixObservableEdit"]["fieldPatch"]
             )
         else:
-            self.opencti.log("error", "Missing parameters: id and key and value")
+            self.opencti.log("error", "[opencti_stix_observable_update_field] Missing parameters: id and key and value")
             return None
+
+    """
+        Delete a Stix-Observable
+
+        :param id: the Stix-Observable id
+        :return void
+    """
+
+    def delete(self, **kwargs):
+        id = kwargs.get("id", None)
+        if id is not None:
+            self.opencti.log("info", "Deleting Stix-Observable {" + id + "}.")
+            query = """
+                 mutation StixObservableEdit($id: ID!) {
+                     stixObservableEdit(id: $id) {
+                         delete
+                     }
+                 }
+             """
+            self.opencti.query(query, {"id": id})
+        else:
+            self.opencti.log(
+                "error", "[opencti_stix_observable_delete] Missing parameters: id"
+            )
+            return None
+
+    """
+        Update the Identity author of a Stix-Observable object (created_by_ref)
+
+        :param id: the id of the Stix-Observable
+        :param identity_id: the id of the Identity
+        :return Boolean
+    """
+
+    def update_created_by_ref(self, **kwargs):
+        id = kwargs.get("id", None)
+        stix_entity = kwargs.get("entity", None)
+        identity_id = kwargs.get("identity_id", None)
+        if id is not None and identity_id is not None:
+            if stix_entity is None:
+                custom_attributes = """
+                    id
+                    createdByRef {
+                        node {
+                            id
+                            entity_type
+                            stix_id_key
+                            stix_label
+                            name
+                            alias
+                            description
+                            created
+                            modified
+                            ... on Organization {
+                                organization_class
+                            }
+                        }
+                        relation {
+                            id
+                        }
+                    }    
+                """
+                stix_entity = self.read(id=id, customAttributes=custom_attributes)
+            if stix_entity is None:
+                self.opencti.log(
+                    "error", "Cannot update created_by_ref, entity not found"
+                )
+                return False
+            current_identity_id = None
+            current_relation_id = None
+            if stix_entity["createdByRef"] is not None:
+                current_identity_id = stix_entity["createdByRef"]["id"]
+                current_relation_id = stix_entity["createdByRef"]["remote_relation_id"]
+            # Current identity is the same
+            if current_identity_id == identity_id:
+                return True
+            else:
+                self.opencti.log(
+                    "info",
+                    "Updating author of Stix-Entity {"
+                    + id
+                    + "} with Identity {"
+                    + identity_id
+                    + "}",
+                )
+                # Current identity is different, delete the old relation
+                if current_relation_id is not None:
+                    query = """
+                        mutation StixObservableEdit($id: ID!, $relationId: ID!) {
+                            stixObservableEdit(id: $id) {
+                                relationDelete(relationId: $relationId) {
+                                    id
+                                }
+                            }
+                        }
+                    """
+                    self.opencti.query(
+                        query, {"id": id, "relationId": current_relation_id}
+                    )
+                # Add the new relation
+                query = """
+                   mutation StixObservableEdit($id: ID!, $input: RelationAddInput) {
+                       stixObservableEdit(id: $id) {
+                            relationAdd(input: $input) {
+                                id
+                            }
+                       }
+                   }
+                """
+                variables = {
+                    "id": id,
+                    "input": {
+                        "fromRole": "so",
+                        "toId": identity_id,
+                        "toRole": "creator",
+                        "through": "created_by_ref",
+                    },
+                }
+                self.opencti.query(query, variables)
+
+        else:
+            self.opencti.log("error", "Missing parameters: id and identity_id")
+            return False

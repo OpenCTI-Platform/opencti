@@ -445,30 +445,6 @@ class OpenCTIStix2:
                 else [],
             }
 
-            # Update created by ref
-            if (
-                created_by_ref_id is not None
-                and "observableRefs" in stix_object_result
-                and stix_object_result["observableRefs"] is not None
-                and len(stix_object_result["observableRefs"]) > 0
-            ):
-                for observable_ref in stix_object_result["observableRefs"]:
-                    self.opencti.stix_entity.update_created_by_ref(
-                        id=observable_ref["id"], identity_id=created_by_ref_id
-                    )
-
-            # Add marking definitions
-            for marking_definition_id in marking_definitions_ids:
-                if (
-                    "observableRefs" in stix_object_result
-                    and stix_object_result["observableRefs"] is not None
-                    and len(stix_object_result["observableRefs"]) > 0
-                ):
-                    for observable_ref in stix_object_result["observableRefs"]:
-                        self.opencti.stix_entity.add_marking_definition(
-                            id=observable_ref["id"],
-                            marking_definition_id=marking_definition_id,
-                        )
             # Add tags
             for tag_id in tags_ids:
                 self.opencti.stix_entity.add_tag(
@@ -1290,7 +1266,6 @@ class OpenCTIStix2:
                     if entity_relation_ref["stix_id_key"] not in object_refs:
                         object_refs.append(entity_relation_ref["stix_id_key"])
             stix_object["object_refs"] = object_refs
-        result.append(stix_object)
 
         uuids = []
         for x in result:
@@ -1309,6 +1284,12 @@ class OpenCTIStix2:
                 observables_stix_ids = (
                     observables_stix_ids + observable_object_data["stixIds"]
                 )
+                if stix_object['type'] == 'report':
+                    if 'object_refs' in stix_object:
+                        stix_object['object_refs'].append(observable_object_data['observedData']['id'])
+                    else:
+                        stix_object['object_refs'] = [observable_object_data['observedData']['id']]
+        result.append(stix_object)
 
         if mode == "simple":
             return result
@@ -1406,9 +1387,10 @@ class OpenCTIStix2:
             final_result = []
             for entity in result:
                 if entity["type"] == "report":
-                    entity["object_refs"] = [
-                        k for k in entity["object_refs"] if k in uuids
-                    ]
+                    if 'object_refs' in entity:
+                        entity["object_refs"] = [
+                            k for k in entity["object_refs"] if k in uuids
+                        ]
                     final_result.append(entity)
                 else:
                     final_result.append(entity)
