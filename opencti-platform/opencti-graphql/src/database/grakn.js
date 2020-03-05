@@ -421,7 +421,7 @@ const loadConcept = async (concept, args = {}) => {
   if (infer === false && noCache === false && !forceNoCache()) {
     const conceptFromCache = await elLoadByGraknId(id, null, relationsMap, [index]);
     if (!conceptFromCache) {
-      logger.debug(`[GRAKN] Cache warning: ${id} should be available in cache`);
+      logger.error(`[ELASTIC] ${id} missing, cant load the element, you need to reindex`);
     } else {
       return conceptFromCache;
     }
@@ -562,12 +562,12 @@ export const getSingleValueNumber = async (query, infer = false) => {
   return getSingleValue(query, infer).then(data => data.number());
 };
 
-const findOpts = { infer: false, noCache: false, directedAlias: new Map() };
+const conceptOpts = { infer: false, noCache: false, directedAlias: new Map() };
 const getConcepts = async (
   answers,
   conceptQueryVars,
   entities,
-  { uniqueKey, infer, noCache, directedAlias } = findOpts
+  { uniqueKey, infer, noCache, directedAlias } = conceptOpts
 ) => {
   const plainEntities = filter(e => !isEmpty(e) && !isNil(e), entities);
   if (answers.length === 0) return [];
@@ -623,8 +623,9 @@ const getConcepts = async (
   }
   return result;
 };
-export const find = async (query, entities, { infer } = findOpts) => {
+export const find = async (query, entities, findOpts = {}) => {
   // Remove empty values from entities
+  const { infer = false } = findOpts;
   return executeRead(async rTx => {
     const conceptQueryVars = extractQueryVars(query);
     logger.debug(`[GRAKN - infer: ${infer}] Find > ${query}`);
@@ -636,14 +637,9 @@ export const find = async (query, entities, { infer } = findOpts) => {
 };
 
 // TODO Start - Refactor UI to be able to remove these 2 API
-export const findWithConnectedRelations = async (
-  query,
-  key,
-  extraRelKey = null,
-  infer = false,
-  forceNatural = false
-) => {
-  let dataFind = await find(query, [key, extraRelKey], { infer });
+export const findWithConnectedRelations = async (query, key, options = {}) => {
+  const { extraRelKey = null, forceNatural = false } = options;
+  let dataFind = await find(query, [key, extraRelKey], options);
   if (forceNatural) {
     dataFind = map(t => {
       if (rolesMap[t[key].relationship_type][t[key].fromRole] !== 'from') {
@@ -667,8 +663,8 @@ export const findWithConnectedRelations = async (
   }
   return map(t => ({ node: t[key], relation: t[extraRelKey] }), dataFind);
 };
-export const loadWithConnectedRelations = (query, key, relationKey = null, infer = false) => {
-  return findWithConnectedRelations(query, key, relationKey, infer).then(result => head(result));
+export const loadWithConnectedRelations = (query, key, options = {}) => {
+  return findWithConnectedRelations(query, key, options).then(result => head(result));
 };
 
 const listElements = async (
@@ -687,13 +683,11 @@ const listElements = async (
   const orderQuery = orderBy ? `sort $order ${orderMode};` : '';
   const query = `${baseQuery} ${orderQuery} ${paginateQuery}`;
   const countPromise = getSingleValueNumber(countQuery);
-  const instancesPromise = await findWithConnectedRelations(
-    query,
-    queryKey,
-    connectedReference,
-    inferred,
+  const instancesPromise = await findWithConnectedRelations(query, queryKey, {
+    extraRelKey: connectedReference,
+    infer: inferred,
     forceNatural
-  );
+  });
   return Promise.all([instancesPromise, countPromise]).then(([instances, globalCount]) => {
     return buildPagination(first, offset, instances, globalCount);
   });
@@ -962,8 +956,8 @@ export const listRelations = async (relationType, relationFilter, args) => {
 // endregion
 
 // region Loader element
-export const load = async (query, entities, { infer, noCache } = findOpts) => {
-  const data = await find(query, entities, { infer, noCache });
+export const load = async (query, entities, options) => {
+  const data = await find(query, entities, options);
   return head(data);
 };
 export const internalLoadEntityById = async (id, type = null, args = {}) => {
@@ -973,7 +967,7 @@ export const internalLoadEntityById = async (id, type = null, args = {}) => {
     const fromCache = await elLoadById(id, type);
     if (fromCache) return fromCache;
   }
-  const query = `match $x ${type ? `isa ${type},` : ''} has stix_id_key "${escapeString(id)}"; get;`;
+  const query = `match $x ${type ? `isa ${type},` : ''} has internal_id_key "${escapeString(id)}"; get;`;
   const element = await load(query, ['x'], { noCache });
   return element ? element.x : null;
 };
@@ -983,8 +977,9 @@ export const loadEntityById = (id, type, args = {}) => {
   }
   return internalLoadEntityById(id, type, args);
 };
-export const internalLoadEntityByStixId = async (id, type = null) => {
-  if (!forceNoCache()) {
+export const internalLoadEntityByStixId = async (id, type = null, args = {}) => {
+  const { noCache = false } = args;
+  if (!noCache && !forceNoCache()) {
     // [ELASTIC] From cache
     const fromCache = await elLoadByStixId(id, type);
     if (fromCache) return fromCache;
@@ -993,11 +988,11 @@ export const internalLoadEntityByStixId = async (id, type = null) => {
   const element = await load(query, ['x']);
   return element ? element.x : null;
 };
-export const loadEntityByStixId = async (id, type) => {
+export const loadEntityByStixId = async (id, type, args = {}) => {
   if (isNil(type)) {
     throw new Error(`[GRAKN] loadEntityByStixId > Missing type`);
   }
-  return internalLoadEntityByStixId(id, type);
+  return internalLoadEntityByStixId(id, type, args);
 };
 export const loadEntityByGraknId = async (graknId, args = {}) => {
   const { noCache = false } = args;
@@ -1784,20 +1779,24 @@ export const updateAttribute = async (id, type, input, wTx) => {
   // eslint-disable-next-line no-nested-ternary
   const typedVal = val === 'true' ? true : val === 'false' ? false : val;
   const updateValueField = { [key]: typedVal };
-  await elUpdate(currentIndex, currentInstanceData.grakn_id, { doc: updateValueField });
+  try {
+    await elUpdate(currentIndex, currentInstanceData.grakn_id, { doc: updateValueField });
+  } catch (e) {
+    logger.error(`[ELASTIC] ${id} missing, cant update the element, you need to reindex`);
+  }
   return id;
 };
 // endregion
 
 // region mutation deletion
-export const deleteEntityById = async (id, type) => {
+export const deleteEntityById = async (id, type, options = {}) => {
   if (isNil(type)) {
     throw new Error(`[GRAKN] deleteEntityById > Missing type`);
   }
   const eid = escapeString(id);
   // 00. Load everything we need to remove in elastic
   const read = `match $from isa ${type}, has internal_id_key "${eid}"; $rel($from, $to) isa relation; get;`;
-  const relationsToDeIndex = await find(read, ['rel']);
+  const relationsToDeIndex = await find(read, ['rel'], options);
   const answers = map(r => r.rel.id, relationsToDeIndex);
   const relationsIds = filter(r => r, answers); // Because of relation to attributes
   // 01. Execute the delete in grakn and elastic

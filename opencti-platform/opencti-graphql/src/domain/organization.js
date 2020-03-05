@@ -25,7 +25,7 @@ export const sectors = organizationId => {
     `match $to isa Sector; $rel(part_of:$from, gather:$to) isa gathering;
      $from has internal_id_key "${escapeString(organizationId)}"; get;`,
     'to',
-    'rel'
+    { extraRelKey: 'rel' }
   ).then(data => buildPagination(0, 0, data, data.length));
 };
 

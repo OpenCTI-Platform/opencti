@@ -32,10 +32,7 @@ import {
   groups
 } from '../domain/user';
 import { logger } from '../config/conf';
-import {
-  stixDomainEntityCleanContext,
-  stixDomainEntityEditContext,
-} from '../domain/stixDomainEntity';
+import { stixDomainEntityCleanContext, stixDomainEntityEditContext } from '../domain/stixDomainEntity';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import passport, { PROVIDERS } from '../config/security';
 import { AuthenticationFailure } from '../config/errors';
@@ -44,14 +41,14 @@ import { fetchEditContext } from '../database/redis';
 
 const userResolvers = {
   Query: {
-    user: (_, { id }) => findById(id, {}, true),
+    user: (_, { id }) => findById(id, { isUser: true }),
     users: (_, args) => findAll(args, true),
     person: (_, { id }) => findById(id),
     persons: (_, args) => findAll(args),
     role: (_, { id }) => findRoleById(id),
     roles: (_, args) => findRoles(args),
     capabilities: (_, args) => findCapabilities(args),
-    me: (_, args, { user }) => findById(user.id, {}, true)
+    me: (_, args, { user }) => findById(user.id, { isUser: true })
   },
   UsersOrdering: {
     markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
