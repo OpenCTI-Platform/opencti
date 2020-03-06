@@ -93,33 +93,19 @@ export const inferIndexFromConceptTypes = (types, parentType = null) => {
   return INDEX_STIX_ENTITIES;
 };
 
-export const now = () => {
-  // eslint-disable-next-line prettier/prettier
-  return moment()
-    .utc()
-    .toISOString();
-};
-export const graknNow = () => {
-  // eslint-disable-next-line prettier/prettier
-  return moment()
-    .utc()
-    .format(dateFormat); // Format that accept grakn
-};
-export const prepareDate = date => {
-  // eslint-disable-next-line prettier/prettier
-  return moment(date)
-    .utc()
-    .format(dateFormat);
-};
+export const utcDate = (date = undefined) => (date ? moment(date).utc() : moment().utc());
+export const now = () => utcDate().toISOString();
+export const graknNow = () => utcDate().format(dateFormat); // Format that accept grakn
+export const prepareDate = date => utcDate(date).format(dateFormat);
 export const sinceNowInMinutes = lastModified => {
-  const utc = moment().utc();
-  const diff = utc.diff(moment(lastModified));
+  const diff = utcDate().diff(moment(lastModified));
   const duration = moment.duration(diff);
   return Math.floor(duration.asMinutes());
 };
-export const yearFormat = date => moment(date).format('YYYY');
-export const monthFormat = date => moment(date).format('YYYY-MM');
-export const dayFormat = date => moment(date).format('YYYY-MM-DD');
+export const yearFormat = date => utcDate(date).format('YYYY');
+export const monthFormat = date => utcDate(date).format('YYYY-MM');
+export const dayFormat = date => utcDate(date).format('YYYY-MM-DD');
+
 export const escape = chars => {
   const toEscape = chars && typeof chars === 'string';
   if (toEscape) {
