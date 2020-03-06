@@ -28,7 +28,7 @@ export const members = async groupId => {
    $from isa Group, has internal_id_key "${escapeString(groupId)}";
    get;`,
     'to',
-    'rel'
+    { extraRelKey: 'rel' }
   ).then(data => buildPagination(0, 0, data, data.length));
 };
 export const permissions = async groupId => {
@@ -37,7 +37,7 @@ export const permissions = async groupId => {
    $from isa Group, has internal_id_key "${escapeString(groupId)}";
    get;`,
     'to',
-    'rel'
+    { extraRelKey: 'rel' }
   ).then(data => buildPagination(0, 0, data, data.length));
 };
 

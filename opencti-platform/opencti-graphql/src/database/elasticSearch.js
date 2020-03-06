@@ -652,7 +652,16 @@ export const elPaginate = async (indexName, options) => {
       return dataWithIds;
     })
     .catch(err => {
-      logger.error(`[ELASTICSEARCH] Paginate fail > ${err}`);
+      // Because we create the mapping at element creation
+      // We log the error only if its not a mapping not found error
+      const numberOfCauses = err.meta.body.error.root_cause.length;
+      const invalidMappingCauses = pipe(
+        map(r => r.reason),
+        filter(r => includes('No mapping found for', r))
+      )(err.meta.body.error.root_cause);
+      if (numberOfCauses > invalidMappingCauses.length) {
+        logger.error(`[ELASTICSEARCH] Paginate fail > ${err}`);
+      }
       if (connectionFormat) {
         return buildPagination(0, 0, [], 0);
       }

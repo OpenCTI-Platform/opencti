@@ -1,10 +1,10 @@
-import { head, assoc, dissocPath, pipe } from 'ramda';
+import { assoc, dissocPath, pipe } from 'ramda';
 import {
   createEntity,
   deleteEntityById,
   executeWrite,
   getGraknVersion,
-  listEntities,
+  load,
   loadEntityById,
   TYPE_OPENCTI_INTERNAL,
   updateAttribute
@@ -28,11 +28,9 @@ export const getApplicationInfo = () => ({
 });
 
 export const getSettings = async () => {
-  const data = await listEntities(['Settings'], ['platform_title'], {});
-  const settings = data.edges.length > 0 ? head(data.edges).node : null;
-  if (settings === null) {
-    return null;
-  }
+  const data = await load('match $settings isa Settings; get;', ['settings'], { noCache: true });
+  const settings = data && data.settings;
+  if (settings == null) return null;
   const config = pipe(
     dissocPath(['app', 'admin']),
     dissocPath(['rabbitmq', 'password']),

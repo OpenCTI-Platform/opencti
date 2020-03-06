@@ -30,6 +30,6 @@ export const coursesOfAction = async attackPatternId => {
     `match $to isa Course-Of-Action; $rel(mitigation:$to, problem:$from) isa mitigates;
    $from isa Attack-Pattern, has internal_id_key "${escapeString(attackPatternId)}"; get;`,
     'to',
-    'rel'
+    { extraRelKey: 'rel' }
   ).then(data => buildPagination(0, 0, data, data.length));
 };
