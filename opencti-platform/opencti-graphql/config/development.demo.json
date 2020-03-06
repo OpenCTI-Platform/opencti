@@ -1,0 +1,88 @@
+{
+  "app": {
+    "port": 4000,
+    "logs": "./logs",
+    "logs_level": "debug",
+    "reactive": true,
+    "cookie_secure": false,
+    "base_path": "",
+    "platform_demo": true,
+    "admin": {
+      "email": "demo@opencti.io",
+      "password": "demo",
+      "token": "2b4f29e3-5ea8-4890-8cf5-a76f61f1e2b2"
+    }
+  },
+  "grakn": {
+    "hostname": "opencti.io",
+    "port": 48556,
+    "timeout": 30000
+  },
+  "redis": {
+    "hostname": "opencti.io",
+    "port": 6379
+  },
+  "elasticsearch": {
+    "url": "http://opencti.io:9201",
+    "noQueryCache": false
+  },
+  "minio": {
+    "endpoint": "opencti.io",
+    "port": 9000,
+    "use_ssl": false,
+    "access_key": "G0X18WESN84ZVHEL8P5Z",
+    "secret_key": "ryEhdW0Y85mcJHEguOJeOPgGhjTOWNG+58LIOnmX"
+  },
+  "rabbitmq": {
+    "hostname": "opencti.io",
+    "port": 5672,
+    "port_management": 15672,
+    "management_ssl": false,
+    "username": "admin",
+    "password": "shos001ihcsc10"
+  },
+  "jwt": {
+    "dev_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkdXJhdGlvbiI6IlA5OVkiLCJuYW1lIjoiRGVmYXVsdCIsImNyZWF0ZWRfYXQiOiIyMDE4LTEwLTIxVDE2OjE3OjUzLjc5M1oiLCJpZCI6IjliNDQ1YjEyLTdkYTQtNTFjZi1hZTBlLThhY2EwYjJmZDMzMSIsInJldm9rZWQiOmZhbHNlLCJpc3N1ZXIiOiJPcGVuQ1RJIiwiaWF0IjoxNTQwMzI1MjE3fQ.QWDr_DCrcH9ixtd9FFwsYfnR7hHoXUk4Yfxip9GP5Og"
+  },
+  "providers": {
+    "local": {
+      "strategy": "LocalStrategy"
+    },
+    "ldap": {
+      "strategy": "LdapStrategy",
+      "config": {
+        "url": "ldap://li-001:389",
+        "bind_dn": "cn=Administrator,cn=Users,dc=limeo,dc=org",
+        "bind_credentials": "Passw01#",
+        "search_base": "cn=Users,dc=limeo,dc=org",
+        "search_filter": "(cn={{username}})",
+        "email_attribute": "userPrincipalName",
+        "account_attribute": "name"
+      }
+    },
+    "facebook": {
+      "strategy": "FacebookStrategy",
+      "config": {
+        "client_id": "199970403405616",
+        "client_secret": "66824d39495ea6e3bd5a7847696673c2",
+        "callback_url": "http://localhost:4000/auth/facebook/callback"
+      }
+    },
+    "google": {
+      "strategy": "GoogleStrategy",
+      "config": {
+        "client_id": "564943111504-j4bhaut089uaoe6n04j6s5rvho35lvkl.apps.googleusercontent.com",
+        "client_secret": "9lx-rgxsumt7SudREjdpBg9m",
+        "callback_url": "http://localhost:3000/auth/google/callback"
+      }
+    },
+    "github": {
+      "strategy": "GithubStrategy",
+      "config": {
+        "client_id": "17ecec8bdce457524329",
+        "client_secret": "dfa6a4162991a9632dc457ee7d601ef8ee811f9e",
+        "callback_url": "http://localhost:3000/auth/github/callback"
+      }
+    }
+  }
+}

@@ -20,10 +20,10 @@ import Chip from '@material-ui/core/Chip';
 import Tooltip from '@material-ui/core/Tooltip';
 import { RotateLeft } from 'mdi-material-ui';
 import IconButton from '@material-ui/core/IconButton';
-import { FIVE_SECONDS } from '../../../utils/Time';
-import inject18n from '../../../components/i18n';
-import { commitMutation, MESSAGING$ } from '../../../relay/environment';
-import Security, { MODULES_MODMANAGE } from '../../../utils/Security';
+import { FIVE_SECONDS } from '../../../../utils/Time';
+import inject18n from '../../../../components/i18n';
+import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import Security, { MODULES_MODMANAGE } from '../../../../utils/Security';
 
 const interval$ = interval(FIVE_SECONDS);
 

@@ -1,4 +1,4 @@
-import { assoc, dissoc, map, propOr, pipe, invertObj, isNil } from 'ramda';
+import { assoc, dissoc, map, propOr, pipe, invertObj, isNil, head } from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
@@ -15,7 +15,9 @@ import {
   timeSeriesEntities,
   updateAttribute,
   deleteRelationsByFromAndTo,
-  loadRelationById
+  loadRelationById,
+  distributionEntities,
+  TYPE_STIX_DOMAIN_ENTITY
 } from '../database/grakn';
 import { findById as findMarkingDefintionById } from './markingDefinition';
 import { elCount, INDEX_STIX_ENTITIES } from '../database/elasticSearch';
@@ -24,6 +26,7 @@ import { connectorsForExport } from './connector';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import stixDomainEntityResolvers from '../resolvers/stixDomainEntity';
+import { findAll as findAllStixRelations, addStixRelation } from './stixRelation';
 import { ForbiddenAccess } from '../config/errors';
 
 export const findAll = async args => {
@@ -44,6 +47,11 @@ export const findAll = async args => {
     data
   );
   return data;
+};
+export const findAllDuplicates = args => {
+  const noTypes = !args.types || args.types.length === 0;
+  const entityTypes = noTypes ? ['Stix-Domain-Entity'] : args.types;
+  return distributionEntities(head(entityTypes), [], { field: 'name', operation: 'count' });
 };
 export const findById = async stixDomainEntityId => {
   let data = null;
@@ -195,16 +203,34 @@ export const stixDomainEntityExportPush = async (
 export const addStixDomainEntity = async (user, stixDomainEntity) => {
   const innerType = stixDomainEntity.type;
   const domainToCreate = dissoc('type', stixDomainEntity);
-  const created = await createEntity(domainToCreate, innerType);
+  let args = {};
+  if (
+    innerType.toLowerCase() === 'sector' ||
+    innerType.toLowerCase() === 'organization' ||
+    innerType.toLowerCase() === 'user' ||
+    innerType.toLowerCase() === 'region' ||
+    innerType.toLowerCase() === 'country' ||
+    innerType.toLowerCase() === 'city'
+  ) {
+    args = { modelType: TYPE_STIX_DOMAIN_ENTITY, stixIdType: 'identity' };
+  }
+  const created = await createEntity(domainToCreate, innerType, args);
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 export const stixDomainEntityDelete = async stixDomainEntityId => {
   const stixDomainEntity = await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
+  if (!stixDomainEntity) {
+    return stixDomainEntityId;
+  }
   if (stixDomainEntity.entity_type === 'user' && !isNil(stixDomainEntity.external)) {
     throw new ForbiddenAccess();
   }
   return deleteEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
 };
+export const stixDomainEntitiesDelete = async stixDomainEntitiesIds => {
+  return Promise.all(stixDomainEntitiesIds.map(stixDomainEntityId => stixDomainEntityDelete(stixDomainEntityId)));
+};
+
 export const stixDomainEntityAddRelation = async (user, stixDomainEntityId, input) => {
   const stixDomainEntity = await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
   if (
@@ -287,6 +313,26 @@ export const stixDomainEntityEditField = async (user, stixDomainEntityId, input)
     const stixDomain = await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
     return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomain, user);
   });
+};
+export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomainEntitiesIds, alias) => {
+  // 1. Update aliases
+  await stixDomainEntityEditField(user, stixDomainEntityId, { key: 'alias', value: alias });
+
+  // 2. Copy the relationships
+  await Promise.all(
+    stixDomainEntitiesIds.map(async id => {
+    const relations = await findAllStixRelations({fromId: id});
+    return Promise.all(relations.map(relation => {
+      const relationToCreate = pipe(
+        dissoc('internal_id_key'),
+        dissoc('stix_id_key'),
+
+      )(relation);
+      return addStixRelation(user, relationToCreate);
+    }))
+  }));
+
+
 };
 // endregion
 

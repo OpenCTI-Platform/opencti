@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, differenceWith } from 'ramda';
+import { compose, differenceWith, propOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
   AutoSizer,
@@ -37,7 +37,16 @@ class ListLinesContent extends Component {
       this.props.dataList,
       prevProps.dataList,
     );
-    if (diff.length > 0) {
+    let selection = false;
+    if (this.props.selectedElements) {
+      if (
+        Object.keys(this.props.selectedElements).length
+        !== Object.keys(propOr({}, 'selectedElements', prevProps)).length
+      ) {
+        selection = true;
+      }
+    }
+    if (diff.length > 0 || selection) {
       this.listRef.forceUpdateGrid();
     }
   }
@@ -85,6 +94,8 @@ class ListLinesContent extends Component {
       entityLink,
       me,
       onTagClick,
+      selectedElements,
+      onToggleEntity,
     } = this.props;
     const edge = dataList[index];
     if (!edge) {
@@ -106,6 +117,8 @@ class ListLinesContent extends Component {
           entityLink,
           me,
           onTagClick,
+          selectedElements,
+          onToggleEntity,
         })}
       </div>
     );
@@ -183,9 +196,8 @@ ListLinesContent.propTypes = {
   paginationOptions: PropTypes.object,
   entityLink: PropTypes.string,
   onTagClick: PropTypes.func,
+  selectedElements: PropTypes.object,
+  onToggleEntity: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(ListLinesContent);
+export default compose(inject18n, withStyles(styles))(ListLinesContent);
