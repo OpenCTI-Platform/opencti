@@ -40,7 +40,7 @@ export const createdByRef = stixEntityId => {
     `match $to isa Identity; $rel(creator:$to, so:$from) isa created_by_ref;
    $from has internal_id_key "${escapeString(stixEntityId)}"; get; offset 0; limit 1;`,
     'to',
-    'rel'
+    { extraRelKey: 'rel' }
   );
 };
 export const reports = stixEntityId => {
@@ -49,7 +49,7 @@ export const reports = stixEntityId => {
    $from has internal_id_key "${escapeString(stixEntityId)}";
    get;`,
     'to',
-    'rel'
+    { extraRelKey: 'rel' }
   ).then(data => buildPagination(0, 0, data, data.length));
 };
 export const tags = stixEntityId => {
@@ -58,7 +58,7 @@ export const tags = stixEntityId => {
    $from has internal_id_key "${escapeString(stixEntityId)}";
    get;`,
     'to',
-    'rel'
+    { extraRelKey: 'rel' }
   ).then(data => buildPagination(0, 0, data, data.length));
 };
 export const markingDefinitions = stixEntityId => {
@@ -66,7 +66,7 @@ export const markingDefinitions = stixEntityId => {
     `match $to isa Marking-Definition; $rel(marking:$to, so:$from) isa object_marking_refs;
    $from has internal_id_key "${escapeString(stixEntityId)}"; get;`,
     'to',
-    'rel'
+    { extraRelKey: 'rel' }
   ).then(data => buildPagination(0, 0, data, data.length));
 };
 export const killChainPhases = stixDomainEntityId => {
@@ -74,15 +74,14 @@ export const killChainPhases = stixDomainEntityId => {
     `match $to isa Kill-Chain-Phase; $rel(kill_chain_phase:$to, phase_belonging:$from) isa kill_chain_phases;
     $from has internal_id_key "${escapeString(stixDomainEntityId)}"; get;`,
     'to',
-    'rel'
+    { extraRelKey: 'rel' }
   ).then(data => buildPagination(0, 0, data, data.length));
 };
 export const externalReferences = stixDomainEntityId => {
   return findWithConnectedRelations(
     `match $to isa External-Reference; $rel(external_reference:$to, so:$from) isa external_references;
     $from has internal_id_key "${escapeString(stixDomainEntityId)}"; get;`,
-    'to',
-    'rel'
+    { extraRelKey: 'rel' }
   ).then(data => buildPagination(0, 0, data, data.length));
 };
 

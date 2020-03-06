@@ -43,7 +43,7 @@ const indexElement = async (type, isRelation = false, fromType = null, toType = 
   await Promise.map(
     queries,
     query => {
-      return find(query, [isRelation ? 'rel' : 'elem'])
+      return find(query, [isRelation ? 'rel' : 'elem'], { noCache: true })
         .then(fetchedGroupElements => {
           const fetchedElements = pipe(
             flatten,

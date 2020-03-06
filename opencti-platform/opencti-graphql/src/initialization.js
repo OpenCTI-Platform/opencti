@@ -1,6 +1,6 @@
 // Admin user initialization
 import { logger } from './config/conf';
-import { elCreateIndexes, elIsAlive } from './database/elasticSearch';
+import { elCount, elCreateIndexes, elDeleteIndexes, elIsAlive, INDEX_STIX_ENTITIES } from './database/elasticSearch';
 import { graknIsAlive, write } from './database/grakn';
 import applyMigration from './database/migration';
 import { initializeAdminUser } from './config/security';
@@ -175,6 +175,7 @@ export const createBasicRolesAndCapabilities = async () => {
 
 const initializeDefaultValues = async () => {
   logger.info(`[INIT] > Initialization of settings and basic elements`);
+  // Create default elements
   await addSettings(SYSTEM_USER, {
     platform_title: 'Cyber threat intelligence platform',
     platform_email: 'admin@opencti.io',
@@ -189,7 +190,16 @@ const initializeDefaultValues = async () => {
 const initializeData = async () => {
   // Init default values only if platform as no settings
   const settings = await getSettings();
-  if (!settings) await initializeDefaultValues();
+  if (!settings) {
+    // This is a first platform bootstrap
+    const countOfElasticEntities = await elCount(INDEX_STIX_ENTITIES);
+    if (countOfElasticEntities > 0) {
+      logger.info(`[INIT] > Platform started from scratch, reset elastic indices`);
+      await elDeleteIndexes();
+      await elCreateIndexes();
+    }
+    await initializeDefaultValues();
+  }
   logger.info(`[INIT] > Platform default initialized`);
   await initializeAdminUser();
 };
