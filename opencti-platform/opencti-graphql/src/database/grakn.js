@@ -1700,15 +1700,16 @@ export const createEntity = async (entity, type, opts = {}) => {
 // endregion
 
 // region mutation update
-export const updateAttribute = async (id, type, input, wTx) => {
+export const updateAttribute = async (id, type, input, wTx, options = {}) => {
+  const { forceUpdate = false } = options;
   const { key, value } = input; // value can be multi valued
   if (includes(key, readOnlyAttributes)) {
     throw new DatabaseError({ data: { details: `The field ${key} cannot be modified` } });
   }
-  // --- 00 Need update?
-  const val = includes(key, multipleAttributes) ? value : head(value);
   const currentInstanceData = await loadEntityById(id, type);
-  if (equals(currentInstanceData[key], val)) {
+  const val = includes(key, multipleAttributes) ? value : head(value);
+  // --- 00 Need update?
+  if (!forceUpdate && equals(currentInstanceData[key], val)) {
     return id;
   }
   // --- 01 Get the current attribute types
@@ -1752,17 +1753,17 @@ export const updateAttribute = async (id, type, input, wTx) => {
     const monthValue = monthFormat(head(value));
     const yearValue = yearFormat(head(value));
     const dayInput = { key: `${key}_day`, value: [dayValue] };
-    await updateAttribute(id, type, dayInput, wTx);
+    await updateAttribute(id, type, dayInput, wTx, options);
     const monthInput = { key: `${key}_month`, value: [monthValue] };
-    await updateAttribute(id, type, monthInput, wTx);
+    await updateAttribute(id, type, monthInput, wTx, options);
     const yearInput = { key: `${key}_year`, value: [yearValue] };
-    await updateAttribute(id, type, yearInput, wTx);
+    await updateAttribute(id, type, yearInput, wTx, options);
   }
   // Update modified / updated_at
   if (currentInstanceData.parent_types.includes(TYPE_STIX_DOMAIN) && key !== 'modified' && key !== 'updated_at') {
     const today = now();
-    await updateAttribute(id, type, { key: 'updated_at', value: [today] }, wTx);
-    await updateAttribute(id, type, { key: 'modified', value: [today] }, wTx);
+    await updateAttribute(id, type, { key: 'updated_at', value: [today] }, wTx, options);
+    await updateAttribute(id, type, { key: 'modified', value: [today] }, wTx, options);
   }
 
   // Update elasticsearch

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form } from 'formik';
+import { Form, Formik } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -10,14 +10,14 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
-  compose, pluck, evolve, path,
+  compose, evolve, path, pluck,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
-import { parse } from '../../../utils/Time';
+import { dayStartDate, parse } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
-import { QueryRenderer, commitMutation } from '../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import DatePickerField from '../../../components/DatePickerField';
 import SelectField from '../../../components/SelectField';
@@ -193,7 +193,7 @@ class ReportCreation extends Component {
                       <Formik
                         initialValues={{
                           name: '',
-                          published: new Date(),
+                          published: dayStartDate(),
                           description: '',
                           report_class: '',
                           createdByRef: '',
