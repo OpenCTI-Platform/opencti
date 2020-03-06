@@ -33,7 +33,7 @@ export const ownedBy = workspaceId => {
     $rel(owner:$x, so:$workspace) isa owned_by; 
     $workspace has internal_id_key "${escapeString(workspaceId)}"; get; offset 0; limit 1;`,
     'x',
-    'rel'
+    { extraRelKey: 'rel' }
   );
 };
 export const objectRefs = (workspaceId, args) => {

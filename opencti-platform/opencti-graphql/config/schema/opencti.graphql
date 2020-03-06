@@ -2798,6 +2798,13 @@ enum IndicatorsFilter {
   tags
   observablesContains
   indicates
+  score
+  created
+  modified
+  created_at
+  updated_at
+  valid_from
+  valid_until
 }
 input IndicatorsFiltering {
   key: IndicatorsFilter!

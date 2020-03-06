@@ -24,7 +24,7 @@ export const country = cityId => {
     `match $to isa Country; $rel(localized:$from, location:$to) isa localization;
    $from has internal_id_key "${escapeString(cityId)}"; get; offset 0; limit 1;`,
     'to',
-    'rel'
+    { extraRelKey: 'rel' }
   ).then(data => (data ? data.node : undefined));
 };
 

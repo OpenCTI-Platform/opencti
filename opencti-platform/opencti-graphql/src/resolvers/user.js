@@ -41,14 +41,14 @@ import { fetchEditContext } from '../database/redis';
 
 const userResolvers = {
   Query: {
-    user: (_, { id }) => findById(id, {}, true),
+    user: (_, { id }) => findById(id, { isUser: true }),
     users: (_, args) => findAll(args, true),
     person: (_, { id }) => findById(id),
     persons: (_, args) => findAll(args),
     role: (_, { id }) => findRoleById(id),
     roles: (_, args) => findRoles(args),
     capabilities: (_, args) => findCapabilities(args),
-    me: (_, args, { user }) => findById(user.id, {}, true)
+    me: (_, args, { user }) => findById(user.id, { isUser: true })
   },
   UsersOrdering: {
     markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,

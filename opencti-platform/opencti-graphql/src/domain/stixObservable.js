@@ -73,7 +73,7 @@ export const indicators = stixObservableId => {
     $to isa Indicator;
     $from has internal_id_key "${escapeString(stixObservableId)}"; get;`,
     'to',
-    'rel'
+    { extraRelKey: 'rel' }
   ).then(data => buildPagination(0, 0, data, data.length));
 };
 export const addStixObservable = async (user, stixObservable) => {

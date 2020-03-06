@@ -64,14 +64,14 @@ export const SYSTEM_USER = { name: 'system' };
 export const ROLE_DEFAULT = 'Default';
 export const ROLE_ADMINISTRATOR = 'Administrator';
 
-export const findById = async (userId, args, isUser = false) => {
+export const findById = async (userId, options = { isUser: false }) => {
   let data;
   if (userId.match(/[a-z-]+--[\w-]{36}/g)) {
-    data = await loadEntityByStixId(userId, 'User');
+    data = await loadEntityByStixId(userId, 'User', options);
   } else {
-    data = await loadEntityById(userId, 'User');
+    data = await loadEntityById(userId, 'User', options);
   }
-  if (!isUser) {
+  if (!options.isUser) {
     data = pipe(dissoc('user_email'), dissoc('password'))(data);
   }
   return data;
@@ -104,7 +104,7 @@ export const organizations = userId => {
     `match $to isa Organization; $rel(part_of:$from, gather:$to) isa gathering;
      $from isa User, has internal_id_key "${escapeString(userId)}"; get;`,
     'to',
-    'rel'
+    { extraRelKey: 'rel' }
   ).then(data => buildPagination(0, 0, data, data.length));
 };
 export const groups = userId => {
@@ -113,7 +113,7 @@ export const groups = userId => {
    $from isa User, has internal_id_key "${escapeString(userId)}";
    get;`,
     'to',
-    'rel'
+    { extraRelKey: 'rel' }
   ).then(data => buildPagination(0, 0, data, data.length));
 };
 export const token = (userId, args, context) => {
@@ -125,21 +125,28 @@ export const token = (userId, args, context) => {
     $rel(authorization:$x, client:$client) isa authorize;
     $client has internal_id_key "${escapeString(userId)}"; get; offset 0; limit 1;`,
     'x',
-    'rel'
+    { extraRelKey: 'rel', noCache: true }
   ).then(result => result.node.uuid);
 };
 
-const getToken = async userId => {
+const internalGetToken = async userId => {
   return loadWithConnectedRelations(
     `match $x isa Token;
     $rel(authorization:$x, client:$client) isa authorize;
     $client has internal_id_key "${escapeString(userId)}"; get; offset 0; limit 1;`,
     'x',
-    'rel'
-  ).then(result => result.node);
+    { extraRelKey: 'rel', noCache: true }
+  ).then(result => result && result.node);
 };
+
+const internalGetTokenByUUID = async tokenUUID => {
+  return load(`match $token isa Token; $x has uuid "${escapeString(tokenUUID)}"; get;`, ['token'], {
+    noCache: true
+  }).then(result => result && result.token);
+};
+
 const clearUserTokenCache = userId => {
-  return getToken(userId).then(tokenValue => clearAccessCache(tokenValue.uuid));
+  return internalGetToken(userId).then(tokenValue => clearAccessCache(tokenValue.uuid));
 };
 export const getRoles = async userId => {
   const data = await find(
@@ -198,7 +205,7 @@ export const removeRole = async (userId, roleName) => {
     await wTx.tx.query(query, { infer: false });
   });
   await clearUserTokenCache(userId);
-  return findById(userId, {}, true);
+  return findById(userId, { isUser: true });
 };
 export const roleRemoveCapability = async (roleId, capabilityName) => {
   await executeWrite(async wTx => {
@@ -312,7 +319,7 @@ export const meEditField = (user, userId, input) => {
   return userEditField(user, userId, input);
 };
 export const userDelete = async userId => {
-  const userToken = await getToken(userId);
+  const userToken = await internalGetToken(userId);
   await deleteEntityById(userToken.id, 'Token');
   await clearAccessCache(userToken.uuid);
   await deleteEntityById(userId, 'User');
@@ -417,10 +424,16 @@ export const logout = async (user, res) => {
 // Token related
 export const userRenewToken = async (userId, newToken = generateOpenCTIWebToken()) => {
   // 01. Get current token
-  const currentToken = await getToken(userId);
+  const currentToken = await internalGetToken(userId);
   // 02. Remove the token
   if (currentToken) {
-    await deleteEntityById(currentToken.id, 'Token');
+    await deleteEntityById(currentToken.id, 'Token', { noCache: true });
+  } else {
+    logger.error(`[GRAKN] ${userId} user have no token to renew, please report this problem in github`);
+    const detachedToken = await internalGetTokenByUUID(newToken.uuid);
+    if (detachedToken) {
+      await deleteEntityById(detachedToken.id, 'Token', { noCache: true });
+    }
   }
   // 03. Create a new one
   const defaultToken = await createEntity(newToken, 'Token', { modelType: TYPE_OPENCTI_INTERNAL, indexable: false });
@@ -436,7 +449,8 @@ export const findByTokenUUID = async tokenValue => {
     const data = await load(
       `match $token isa Token, has uuid "${escapeString(tokenValue)}", has revoked false;
             (authorization:$token, client:$client) isa authorize; get;`,
-      ['token', 'client']
+      ['token', 'client'],
+      { noCache: true }
     );
     if (!data) return undefined;
     // eslint-disable-next-line no-shadow
@@ -474,7 +488,7 @@ export const authentication = async tokenUUID => {
  * @returns {*}
  */
 export const initAdmin = async (email, password, tokenValue) => {
-  const admin = await findById(OPENCTI_ADMIN_UUID, { noCache: true }, true);
+  const admin = await findById(OPENCTI_ADMIN_UUID, { isUser: true, noCache: true });
   const tokenAdmin = generateOpenCTIWebToken(tokenValue);
   if (admin) {
     // Update admin fields

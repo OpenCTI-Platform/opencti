@@ -13,7 +13,7 @@ const purgeDuplicates = async (query, relation = false, reportId = null) => {
       relations = await listRelations('stix_relation', pointingFilter, { withCache: false, first: 500000 });
       relations = relations.edges;
     } else {
-      relations = await findWithConnectedRelations(query, 'to', 'rel');
+      relations = await findWithConnectedRelations(query, 'to', { extraRelKey: 'rel' });
     }
     const groupedRelations = groupBy(n => n.node.internal_id_key, relations);
     // eslint-disable-next-line no-restricted-syntax,guard-for-in

@@ -26,7 +26,7 @@ export const parentSectors = sectorId => {
     `match $to isa Sector; $rel(part_of:$from, gather:$to) isa gathering;
      $from has internal_id_key "${escapeString(sectorId)}"; get;`,
     'to',
-    'rel'
+    { extraRelKey: 'rel' }
   ).then(data => buildPagination(0, 0, data, data.length));
 };
 export const subSectors = sectorId => {
@@ -34,7 +34,7 @@ export const subSectors = sectorId => {
     `match $to isa Sector; $rel(gather:$from, part_of:$to) isa gathering;
      $from has internal_id_key "${escapeString(sectorId)}"; get;`,
     'to',
-    'rel'
+    { extraRelKey: 'rel' }
   ).then(data => buildPagination(0, 0, data, data.length));
 };
 

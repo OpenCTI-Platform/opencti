@@ -41,7 +41,7 @@ export const observableRefs = reportId => {
     $from isa Stix-Observable;
     $to has internal_id_key "${escapeString(reportId)}"; get;`,
     'from',
-    'rel'
+    { extraRelKey: 'rel' }
   ).then(data => buildPagination(0, 0, data, data.length));
 };
 
