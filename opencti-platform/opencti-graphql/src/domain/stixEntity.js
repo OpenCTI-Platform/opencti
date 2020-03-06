@@ -15,7 +15,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
 
 export const findById = async stixEntityId => {
-  let data = null;
+  let data;
   if (stixEntityId.match(/[a-z-]+--[\w-]{36}/g)) {
     data = await internalLoadEntityByStixId(stixEntityId);
   } else {
@@ -81,6 +81,7 @@ export const externalReferences = stixDomainEntityId => {
   return findWithConnectedRelations(
     `match $to isa External-Reference; $rel(external_reference:$to, so:$from) isa external_references;
     $from has internal_id_key "${escapeString(stixDomainEntityId)}"; get;`,
+    'to',
     { extraRelKey: 'rel' }
   ).then(data => buildPagination(0, 0, data, data.length));
 };
