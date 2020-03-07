@@ -1,4 +1,4 @@
-import { assoc, dissoc, map, propOr, pipe, invertObj, isNil, head, omit } from 'ramda';
+import { assoc, dissoc, map, propOr, pipe, invertObj, isNil, head } from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
