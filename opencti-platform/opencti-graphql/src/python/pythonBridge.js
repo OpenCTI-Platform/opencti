@@ -1,14 +1,6 @@
 import { PythonShell } from 'python-shell';
 import { DEV_MODE, logger } from '../config/conf';
 
-const isJSON = str => {
-  const prepareStr = str
-    .replace(/\\(?:["\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@')
-    .replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?/g, ']')
-    .replace(/(?:^|:|,)(?:\s*\[)+/g, '');
-  return /^[\],:{}\s]*$/.test(prepareStr);
-};
-
 export const execPython3 = async (scriptPath, scriptName, args) => {
   try {
     return new Promise((resolve, reject) => {
@@ -23,7 +15,11 @@ export const execPython3 = async (scriptPath, scriptName, args) => {
       let jsonResult = { status: 'success' };
       shell.on('message', message => {
         /* istanbul ignore next */
-        jsonResult = JSON.parse(isJSON(message) ? message : { status: 'error', message });
+        try {
+          jsonResult = JSON.parse(message);
+        } catch (e) {
+          jsonResult = { status: 'error', message };
+        }
       });
       shell.on('stderr', stderr => {
         logger.info(`[API-PYTHON] > ${stderr}`);
