@@ -24,7 +24,7 @@ import { ConnectionHandler } from 'relay-runtime';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
-import { parse } from '../../../../utils/Time';
+import { dayStartDate, parse } from '../../../../utils/Time';
 import {
   resolveRoles,
   resolveRelationsTypes,
@@ -380,8 +380,8 @@ class StixObservableRelationCreationFromEntity extends Component {
     const initialValues = {
       relationship_type: defaultRelationshipType,
       role_played: 'Unknown',
-      first_seen: new Date(),
-      last_seen: new Date(),
+      first_seen: dayStartDate(),
+      last_seen: dayStartDate(),
     };
     return (
       <QueryRenderer
