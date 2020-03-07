@@ -93,33 +93,19 @@ export const inferIndexFromConceptTypes = (types, parentType = null) => {
   return INDEX_STIX_ENTITIES;
 };
 
-export const now = () => {
-  // eslint-disable-next-line prettier/prettier
-  return moment()
-    .utc()
-    .toISOString();
-};
-export const graknNow = () => {
-  // eslint-disable-next-line prettier/prettier
-  return moment()
-    .utc()
-    .format(dateFormat); // Format that accept grakn
-};
-export const prepareDate = date => {
-  // eslint-disable-next-line prettier/prettier
-  return moment(date)
-    .utc()
-    .format(dateFormat);
-};
+export const utcDate = (date = undefined) => (date ? moment(date).utc() : moment().utc());
+export const now = () => utcDate().toISOString();
+export const graknNow = () => utcDate().format(dateFormat); // Format that accept grakn
+export const prepareDate = date => utcDate(date).format(dateFormat);
 export const sinceNowInMinutes = lastModified => {
-  const utc = moment().utc();
-  const diff = utc.diff(moment(lastModified));
+  const diff = utcDate().diff(moment(lastModified));
   const duration = moment.duration(diff);
   return Math.floor(duration.asMinutes());
 };
-export const yearFormat = date => moment(date).format('YYYY');
-export const monthFormat = date => moment(date).format('YYYY-MM');
-export const dayFormat = date => moment(date).format('YYYY-MM-DD');
+export const yearFormat = date => utcDate(date).format('YYYY');
+export const monthFormat = date => utcDate(date).format('YYYY-MM');
+export const dayFormat = date => utcDate(date).format('YYYY-MM-DD');
+
 export const escape = chars => {
   const toEscape = chars && typeof chars === 'string';
   if (toEscape) {
@@ -421,7 +407,7 @@ const loadConcept = async (concept, args = {}) => {
   if (infer === false && noCache === false && !forceNoCache()) {
     const conceptFromCache = await elLoadByGraknId(id, null, relationsMap, [index]);
     if (!conceptFromCache) {
-      logger.error(`[ELASTIC] ${id} missing, cant load the element, you need to reindex`);
+      logger.debug(`[ELASTIC] ${id} missing, cant load the element, you need to reindex`);
     } else {
       return conceptFromCache;
     }
@@ -1709,15 +1695,16 @@ export const createEntity = async (entity, type, opts = {}) => {
 // endregion
 
 // region mutation update
-export const updateAttribute = async (id, type, input, wTx) => {
+export const updateAttribute = async (id, type, input, wTx, options = {}) => {
+  const { forceUpdate = false } = options;
   const { key, value } = input; // value can be multi valued
   if (includes(key, readOnlyAttributes)) {
     throw new DatabaseError({ data: { details: `The field ${key} cannot be modified` } });
   }
-  // --- 00 Need update?
-  const val = includes(key, multipleAttributes) ? value : head(value);
   const currentInstanceData = await loadEntityById(id, type);
-  if (equals(currentInstanceData[key], val)) {
+  const val = includes(key, multipleAttributes) ? value : head(value);
+  // --- 00 Need update?
+  if (!forceUpdate && equals(currentInstanceData[key], val)) {
     return id;
   }
   // --- 01 Get the current attribute types
@@ -1761,17 +1748,17 @@ export const updateAttribute = async (id, type, input, wTx) => {
     const monthValue = monthFormat(head(value));
     const yearValue = yearFormat(head(value));
     const dayInput = { key: `${key}_day`, value: [dayValue] };
-    await updateAttribute(id, type, dayInput, wTx);
+    await updateAttribute(id, type, dayInput, wTx, options);
     const monthInput = { key: `${key}_month`, value: [monthValue] };
-    await updateAttribute(id, type, monthInput, wTx);
+    await updateAttribute(id, type, monthInput, wTx, options);
     const yearInput = { key: `${key}_year`, value: [yearValue] };
-    await updateAttribute(id, type, yearInput, wTx);
+    await updateAttribute(id, type, yearInput, wTx, options);
   }
   // Update modified / updated_at
   if (currentInstanceData.parent_types.includes(TYPE_STIX_DOMAIN) && key !== 'modified' && key !== 'updated_at') {
     const today = now();
-    await updateAttribute(id, type, { key: 'updated_at', value: [today] }, wTx);
-    await updateAttribute(id, type, { key: 'modified', value: [today] }, wTx);
+    await updateAttribute(id, type, { key: 'updated_at', value: [today] }, wTx, options);
+    await updateAttribute(id, type, { key: 'modified', value: [today] }, wTx, options);
   }
 
   // Update elasticsearch

@@ -37,10 +37,7 @@ const styles = (theme) => ({
     marginRight: 0,
   },
   item: {
-    padding: '0 0 0 10px',
-  },
-  itemField: {
-    padding: '0 15px 0 15px',
+    padding: '0 0 0 6px',
   },
   toolbar: theme.mixins.toolbar,
 });
@@ -77,20 +74,9 @@ class StixDomainEntitiesRightBar extends Component {
             <Checkbox
               checked={stixDomainEntitiesTypes.includes('Sector')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Sectors')} />
-          </ListItem>
-          <ListItem
-            dense={true}
-            button={true}
-            onClick={handleToggleStixDomainEntityType.bind(this, 'Country')}
-            classes={{ root: classes.item }}
-          >
-            <Checkbox
-              checked={stixDomainEntitiesTypes.includes('Country')}
-              disableRipple={true}
-            />
-            <ListItemText primary={t('Countries')} />
           </ListItem>
           <ListItem
             dense={true}
@@ -101,8 +87,51 @@ class StixDomainEntitiesRightBar extends Component {
             <Checkbox
               checked={stixDomainEntitiesTypes.includes('Region')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Regions')} />
+          </ListItem>
+          <ListItem
+            dense={true}
+            button={true}
+            onClick={handleToggleStixDomainEntityType.bind(this, 'Country')}
+            classes={{ root: classes.item }}
+          >
+            <Checkbox
+              checked={stixDomainEntitiesTypes.includes('Country')}
+              disableRipple={true}
+              size="small"
+            />
+            <ListItemText primary={t('Countries')} />
+          </ListItem>
+          <ListItem
+            dense={true}
+            button={true}
+            onClick={handleToggleStixDomainEntityType.bind(this, 'City')}
+            classes={{ root: classes.item }}
+          >
+            <Checkbox
+              checked={stixDomainEntitiesTypes.includes('City')}
+              disableRipple={true}
+              size="small"
+            />
+            <ListItemText primary={t('Cities')} />
+          </ListItem>
+          <ListItem
+            dense={true}
+            button={true}
+            onClick={handleToggleStixDomainEntityType.bind(
+              this,
+              'Organization',
+            )}
+            classes={{ root: classes.item }}
+          >
+            <Checkbox
+              checked={stixDomainEntitiesTypes.includes('Organization')}
+              disableRipple={true}
+              size="small"
+            />
+            <ListItemText primary={t('Organizations')} />
           </ListItem>
           <ListItem
             dense={true}
@@ -116,6 +145,7 @@ class StixDomainEntitiesRightBar extends Component {
             <Checkbox
               checked={stixDomainEntitiesTypes.includes('Threat-Actor')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Threat actors')} />
           </ListItem>
@@ -131,6 +161,7 @@ class StixDomainEntitiesRightBar extends Component {
             <Checkbox
               checked={stixDomainEntitiesTypes.includes('Intrusion-Set')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Intrusion sets')} />
           </ListItem>
@@ -143,6 +174,7 @@ class StixDomainEntitiesRightBar extends Component {
             <Checkbox
               checked={stixDomainEntitiesTypes.includes('Campaign')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Campaigns')} />
           </ListItem>
@@ -155,6 +187,7 @@ class StixDomainEntitiesRightBar extends Component {
             <Checkbox
               checked={stixDomainEntitiesTypes.includes('Incident')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Incidents')} />
           </ListItem>
@@ -167,6 +200,7 @@ class StixDomainEntitiesRightBar extends Component {
             <Checkbox
               checked={stixDomainEntitiesTypes.includes('Malware')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Malwares')} />
           </ListItem>
@@ -179,6 +213,7 @@ class StixDomainEntitiesRightBar extends Component {
             <Checkbox
               checked={stixDomainEntitiesTypes.includes('Tool')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Tools')} />
           </ListItem>
@@ -194,30 +229,39 @@ class StixDomainEntitiesRightBar extends Component {
             <Checkbox
               checked={stixDomainEntitiesTypes.includes('Vulnerability')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Vulnerabilities')} />
           </ListItem>
           <ListItem
             dense={true}
             button={true}
-            onClick={handleToggleStixDomainEntityType.bind(this, 'Attack-Pattern')}
+            onClick={handleToggleStixDomainEntityType.bind(
+              this,
+              'Attack-Pattern',
+            )}
             classes={{ root: classes.item }}
           >
             <Checkbox
               checked={stixDomainEntitiesTypes.includes('Attack-Pattern')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Attack patterns')} />
           </ListItem>
           <ListItem
             dense={true}
             button={true}
-            onClick={handleToggleStixDomainEntityType.bind(this, 'Course-Of-Action')}
+            onClick={handleToggleStixDomainEntityType.bind(
+              this,
+              'Course-Of-Action',
+            )}
             classes={{ root: classes.item }}
           >
             <Checkbox
               checked={stixDomainEntitiesTypes.includes('Course-Of-Action')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Courses of action')} />
           </ListItem>
@@ -230,6 +274,7 @@ class StixDomainEntitiesRightBar extends Component {
             <Checkbox
               checked={stixDomainEntitiesTypes.includes('Indicator')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Indicators')} />
           </ListItem>
@@ -242,6 +287,7 @@ class StixDomainEntitiesRightBar extends Component {
             <Checkbox
               checked={stixDomainEntitiesTypes.includes('Report')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Reports')} />
           </ListItem>

@@ -282,7 +282,8 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
       aggs: {
         genres: {
           terms: {
-            field: `${aggregationField}.keyword`
+            field: `${aggregationField}.keyword`,
+            min_doc_count: 2
           }
         }
       }

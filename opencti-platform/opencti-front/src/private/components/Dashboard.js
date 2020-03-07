@@ -56,9 +56,6 @@ const styles = (theme) => ({
     maxHeight: 60,
     paddingRight: 0,
   },
-  itemIcon: {
-    color: theme.palette.primary.main,
-  },
   itemText: {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -458,10 +455,8 @@ class Dashboard extends Component {
                                 component={Link}
                                 to={`/dashboard/reports/all/${report.id}`}
                               >
-                                <ListItemIcon
-                                  classes={{ root: classes.itemIcon }}
-                                >
-                                  <Description />
+                                <ListItemIcon>
+                                  <Description color="primary" />
                                 </ListItemIcon>
                                 <ListItemText
                                   classes={{ root: classes.itemText }}
@@ -528,10 +523,8 @@ class Dashboard extends Component {
                                   component={Link}
                                   to={`/dashboard/signatures/observables/${stixObservable.id}`}
                                 >
-                                  <ListItemIcon
-                                    classes={{ root: classes.itemIcon }}
-                                  >
-                                    <HexagonOutline />
+                                  <ListItemIcon>
+                                    <HexagonOutline color="primary" />
                                   </ListItemIcon>
                                   <ListItemText
                                     classes={{ root: classes.itemText }}
