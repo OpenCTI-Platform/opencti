@@ -36,8 +36,7 @@ describe('Database provision', () => {
     expect(execution.status).toEqual('success');
   }, FIVE_MINUTES);
 
-  // TODO The update test fail for now, wait for python lib fix @Sam
-  it.skip('Should import update succeed', async () => {
+  it('Should import update succeed', async () => {
     const execution = await execPython3(path, 'local_importer.py', importOpts);
     expect(execution).not.toBeNull();
     expect(execution.status).toEqual('success');
