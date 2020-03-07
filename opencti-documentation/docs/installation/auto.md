@@ -33,7 +33,11 @@ $ cd docker
 
 ### Configure the environment
 
-Before running the docker-compose command, please change the admin token (this token must be a [valid UUID](https://www.uuidgenerator.net/)) and password of the application in the file `docker-compose.yml`:
+Before running the docker-compose command, please change the admin token (this token must be a [valid UUID](https://www.uuidgenerator.net/)) and password of the application in the file `.env`. 
+
+They are a `.env.example` with indications of differents variables (if it's UUID or just text).
+
+If you cannot or don't want to use the `.env`, please, edit the file `docker-compose.yml`:
 
 ```yaml
 - APP__ADMIN__PASSWORD=ChangeMe
