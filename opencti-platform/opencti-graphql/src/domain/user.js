@@ -405,7 +405,8 @@ export const login = async (email, password) => {
   const result = await load(
     `match $client isa User, has user_email "${escapeString(email)}";
      (authorization:$token, client:$client) isa authorize; get;`,
-    ['client', 'token']
+    ['client', 'token'],
+    { noCache: true } // Because of the fetching of the token that not in cache
   );
   if (isNil(result)) throw new AuthenticationFailure();
   const dbPassword = result.client.password;

@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { assoc, find, propEq, map, head } from 'ramda';
+import moment from 'moment';
 import {
   elAggregationCount,
   elAggregationRelationsCount,
@@ -180,7 +181,9 @@ describe('Elasticsearch computation', () => {
       []
     );
     expect(data.length).toEqual(1);
-    expect(head(data).date).toEqual('2020-03-02');
+    // eslint-disable-next-line prettier/prettier
+    const nowDate = moment().utc().format('YYYY-MM-DD');
+    expect(head(data).date).toEqual(nowDate);
     expect(head(data).value).toEqual(18);
   });
   it('should month histogram accurate', async () => {

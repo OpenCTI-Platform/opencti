@@ -41,7 +41,7 @@ export const execPython3 = async (scriptPath, scriptName, args) => {
     });
   } catch (err) {
     /* istanbul ignore next */
-    throw new Error(`Python3 is missing or script not found: ${err}`);
+    throw new Error(`Python3 is missing or script not found: ${err.message}`);
   }
 };
 
@@ -54,7 +54,7 @@ export const createStixPattern = async (observableType, observableValue) => {
     const result = await execPython3('./src/python', 'stix2_create_pattern.py', [observableType, observableValue]);
     return result.data;
   } catch (err) {
-    logger.error('[Python3] createStixPattern error > ', err);
+    logger.warn(`[Python3] createStixPattern error > ${err.message}`);
     return null;
   }
 };
@@ -64,7 +64,7 @@ export const extractObservables = async pattern => {
     const result = await execPython3('./src/python', 'stix2_extract_observables.py', [pattern]);
     return result.data;
   } catch (err) {
-    logger.error('[Python3] extractObservables error > ', err);
+    logger.warn(`[Python3] extractObservables error > ${err.message}`);
     return null;
   }
 };

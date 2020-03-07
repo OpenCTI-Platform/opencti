@@ -94,8 +94,8 @@ nconf.file(environment, configurationFile);
 nconf.file('default', resolveEnvFile('default'));
 
 // Setup logger
-export const logger = winston.createLogger({
-  level: 'info',
+const loggerInstance = winston.createLogger({
+  level: nconf.get('app:logs_level'),
   format: winston.format.json(),
   transports: [
     new DailyRotateFile({
@@ -108,17 +108,20 @@ export const logger = winston.createLogger({
       filename: 'opencti.log',
       dirname: nconf.get('app:logs'),
       maxFiles: '30'
+    }),
+    new winston.transports.Console({
+      format: winston.format.json()
     })
   ]
 });
 
-// Console logging
-logger.add(
-  new winston.transports.Console({
-    format: winston.format.simple(),
-    level: nconf.get('app:logs_level')
-  })
-);
+// Specific case to fail any test that produce an error log
+if (environment === 'test') {
+  loggerInstance.on('data', log => {
+    if (log.level === 'error') throw Error(log.message);
+  });
+}
 
 export const isAppRealTime = nconf.get('app:reactive') && JSON.parse(nconf.get('app:reactive'));
+export const logger = loggerInstance;
 export default nconf;
