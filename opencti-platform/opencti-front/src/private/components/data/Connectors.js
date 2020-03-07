@@ -4,8 +4,8 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles/index';
 import inject18n from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
-import WorkersStatus, { workersStatusQuery } from './WorkersStatus';
-import ConnectorsStatus, { connectorsStatusQuery } from './ConnectorsStatus';
+import WorkersStatus, { workersStatusQuery } from './connectors/WorkersStatus';
+import ConnectorsStatus, { connectorsStatusQuery } from './connectors/ConnectorsStatus';
 import Loader from '../../../components/Loader';
 
 const styles = () => ({

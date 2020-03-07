@@ -20,16 +20,18 @@ import {
   Layers,
   ListAlt,
   GroupWork,
-  Extension,
 } from '@material-ui/icons';
-import { Settings, Database, Binoculars } from 'mdi-material-ui';
+import {
+  Settings, Database, Binoculars, Flask,
+} from 'mdi-material-ui';
 import { compose } from 'ramda';
 import logo from '../../../resources/images/logo_text.png';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE,
   EXPLORE,
-  SETTINGS, MODULES,
+  SETTINGS,
+  MODULES,
 } from '../../../utils/Security';
 
 const styles = (theme) => ({
@@ -93,7 +95,7 @@ const LeftBar = ({ t, location, classes }) => {
               classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
-                <Database />
+                <Flask />
               </ListItemIcon>
             </MenuItem>
             <MenuItem
@@ -185,23 +187,27 @@ const LeftBar = ({ t, location, classes }) => {
           <Divider />
           <MenuList component="nav">
             <Security needs={[MODULES]}>
-              <MenuItem component={Link}
-                to="/dashboard/connectors"
-                selected={location.pathname.includes('/dashboard/connectors')}
+              <MenuItem
+                component={Link}
+                to="/dashboard/data"
+                selected={location.pathname.includes('/dashboard/data')}
                 dense={false}
-                classes={{ root: classes.menuItem }}>
+                classes={{ root: classes.menuItem }}
+              >
                 <ListItemIcon>
-                  <Extension />
+                  <Database />
                 </ListItemIcon>
               </MenuItem>
             </Security>
             <Security needs={[SETTINGS]}>
-              <MenuItem component={Link}
+              <MenuItem
+                component={Link}
                 to="/dashboard/settings"
                 selected={location.pathname.includes('/dashboard/settings')}
                 dense={false}
                 style={{ marginBottom: 50 }}
-                classes={{ root: classes.menuItem }}>
+                classes={{ root: classes.menuItem }}
+              >
                 <ListItemIcon>
                   <Settings />
                 </ListItemIcon>
@@ -261,7 +267,7 @@ const LeftBar = ({ t, location, classes }) => {
             classes={{ root: classes.menuItem }}
           >
             <ListItemIcon>
-              <Database />
+              <Flask />
             </ListItemIcon>
             <ListItemText primary={t('Threats')} />
           </MenuItem>
@@ -369,16 +375,16 @@ const LeftBar = ({ t, location, classes }) => {
           <MenuList component="nav">
             <MenuItem
               component={Link}
-              to="/dashboard/connectors"
+              to="/dashboard/data"
               onClick={toggle}
-              selected={location.pathname.includes('/dashboard/connectors')}
+              selected={location.pathname.includes('/dashboard/data')}
               dense={false}
               classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
-                <Extension />
+                <Database />
               </ListItemIcon>
-              <ListItemText primary={t('Connectors')} />
+              <ListItemText primary={t('Data management')} />
             </MenuItem>
             <MenuItem
               component={Link}

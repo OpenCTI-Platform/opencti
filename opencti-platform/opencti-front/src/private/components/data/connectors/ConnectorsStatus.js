@@ -18,12 +18,12 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import List from '@material-ui/core/List';
 import Chip from '@material-ui/core/Chip';
 import Tooltip from '@material-ui/core/Tooltip';
-import { RotateLeft } from 'mdi-material-ui';
+import { RotateLeft, Delete } from 'mdi-material-ui';
 import IconButton from '@material-ui/core/IconButton';
-import { FIVE_SECONDS } from '../../../utils/Time';
-import inject18n from '../../../components/i18n';
-import { commitMutation, MESSAGING$ } from '../../../relay/environment';
-import Security, { MODULES_MODMANAGE } from '../../../utils/Security';
+import { FIVE_SECONDS } from '../../../../utils/Time';
+import inject18n from '../../../../components/i18n';
+import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import Security, { MODULES_MODMANAGE } from '../../../../utils/Security';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -80,7 +80,7 @@ const inlineStylesHeaders = {
   },
   name: {
     float: 'left',
-    width: '25%',
+    width: '20%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -106,7 +106,7 @@ const inlineStylesHeaders = {
 const inlineStyles = {
   name: {
     float: 'left',
-    width: '25%',
+    width: '20%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -145,6 +145,12 @@ const connectorsStatusResetStateMutation = graphql`
   }
 `;
 
+const connectorsStatusDeletionMutation = graphql`
+  mutation ConnectorsStatusDeletionMutation($id: ID!) {
+    deleteConnector(id: $id)
+  }
+`;
+
 class ConnectorsStatusComponent extends Component {
   constructor(props) {
     super(props);
@@ -169,6 +175,18 @@ class ConnectorsStatusComponent extends Component {
       },
       onCompleted: () => {
         MESSAGING$.notifySuccess('The connector state has been reset');
+      },
+    });
+  }
+
+  handleDelete(connectorId) {
+    commitMutation({
+      mutation: connectorsStatusDeletionMutation,
+      variables: {
+        id: connectorId,
+      },
+      onCompleted: () => {
+        MESSAGING$.notifySuccess('The connector has been cleared');
       },
     });
   }
@@ -254,11 +272,15 @@ class ConnectorsStatusComponent extends Component {
               <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
             </ListItem>
             {sortedConnectors.map((connector) => (
-              <ListItem key={connector.id}
+              <ListItem
+                key={connector.id}
                 classes={{ root: classes.item }}
                 divider={true}
-                button={true}>
-                <ListItemIcon style={{ color: connector.active ? '#4caf50' : '#f44336' }}>
+                button={true}
+              >
+                <ListItemIcon
+                  style={{ color: connector.active ? '#4caf50' : '#f44336' }}
+                >
                   <Extension />
                 </ListItemIcon>
                 <ListItemText
@@ -300,10 +322,22 @@ class ConnectorsStatusComponent extends Component {
                 <ListItemSecondaryAction>
                   <Security needs={[MODULES_MODMANAGE]}>
                     <Tooltip title={t('Reset the connector state')}>
-                      <IconButton onClick={this.handleResetState.bind(this, connector.id)}
+                      <IconButton
+                        onClick={this.handleResetState.bind(this, connector.id)}
                         aria-haspopup="true"
-                        color="primary">
+                        color="primary"
+                      >
                         <RotateLeft />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title={t('Clear this connector')}>
+                      <IconButton
+                        onClick={this.handleDelete.bind(this, connector.id)}
+                        aria-haspopup="true"
+                        color="primary"
+                        disabled={connector.active}
+                      >
+                        <Delete />
                       </IconButton>
                     </Tooltip>
                   </Security>

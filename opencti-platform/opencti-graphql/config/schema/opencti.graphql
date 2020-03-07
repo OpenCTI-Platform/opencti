@@ -2961,6 +2961,16 @@ type Query {
     filterMode: FilterMode
     search: String
   ): StixDomainEntityConnection  @auth(for: [KNOWLEDGE])
+  duplicateStixDomainEntities(
+    first: Int
+    after: ID
+    types: [String]
+    orderBy: StixDomainEntitiesOrdering
+    orderMode: OrderingMode
+    filters: [StixDomainEntitiesFiltering]
+    filterMode: FilterMode
+    search: String
+  ): [Distribution]  @auth(for: [KNOWLEDGE])
   stixDomainEntitiesExportFiles(first: Int, type: String!, context: String): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixDomainEntitiesTimeSeries(
     type: String
@@ -3405,6 +3415,7 @@ type StixEntityEditMutations {
 # StixDomainEntity
 type StixDomainEntityEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  changeType(newType: String!): StixDomainEntity @auth(for: [KNOWLEDGE_KNUPDATE])
   fieldPatch(input: EditInput): StixDomainEntity @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): StixDomainEntity @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: StixDomainEntity @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -3414,6 +3425,7 @@ type StixDomainEntityEditMutations {
   importPush(file: Upload!): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
+  mergeEntities(stixDomainEntitiesIds: [String]!, alias: [String]): StixDomainEntity @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 # StixObservable
@@ -3744,6 +3756,13 @@ type Mutation {
     filters: [StixDomainEntitiesFiltering]
     filterMode: FilterMode
   ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  stixDomainEntitiesMerge(
+    keepedEntityId: ID!
+    mergedEntityId: ID!
+    mergeRelations: Boolean
+    mergeAliases: Boolean
+  ): StixDomainEntity @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixDomainEntitiesDelete(id: [ID]!): [ID]!
   stixDomainEntitiesExportPush(type: String!, file: Upload!, context: String, listArgs: String): Boolean @auth(for: [CONNECTORAPI])
   # StixObservable
   stixObservableAdd(input: StixObservableAddInput): StixObservable @auth(for: [KNOWLEDGE_KNUPDATE])
