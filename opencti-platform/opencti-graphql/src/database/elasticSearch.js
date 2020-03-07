@@ -451,7 +451,7 @@ const elMergeRelation = (concept, fromConnection, toConnection) => {
   const to = elBuildRelation('to', toConnection);
   return mergeAll([concept, from, to]);
 };
-const elReconstructRelation = (concept, relationsMap = null, forceNatural = false) => {
+export const elReconstructRelation = (concept, relationsMap = null, forceNatural = false) => {
   const naturalDirections = rolesMap[concept.relationship_type];
   if (!naturalDirections) {
     throw new Error(`[ELASTIC] Missing rolesMap of the relation type ${concept.relationship_type}`);
