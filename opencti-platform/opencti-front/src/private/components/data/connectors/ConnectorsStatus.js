@@ -145,6 +145,12 @@ const connectorsStatusResetStateMutation = graphql`
   }
 `;
 
+const connectorsStatusDeletionMutation = graphql`
+  mutation ConnectorsStatusDeletionMutation($id: ID!) {
+    deleteConnector(id: $id)
+  }
+`;
+
 class ConnectorsStatusComponent extends Component {
   constructor(props) {
     super(props);
@@ -169,6 +175,15 @@ class ConnectorsStatusComponent extends Component {
       },
       onCompleted: () => {
         MESSAGING$.notifySuccess('The connector state has been reset');
+      },
+    });
+  }
+
+  handleDelete(connectorId) {
+    commitMutation({
+      mutation: connectorsStatusDeletionMutation,
+      variables: {
+        id: connectorId,
       },
     });
   }
@@ -254,11 +269,15 @@ class ConnectorsStatusComponent extends Component {
               <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
             </ListItem>
             {sortedConnectors.map((connector) => (
-              <ListItem key={connector.id}
+              <ListItem
+                key={connector.id}
                 classes={{ root: classes.item }}
                 divider={true}
-                button={true}>
-                <ListItemIcon style={{ color: connector.active ? '#4caf50' : '#f44336' }}>
+                button={true}
+              >
+                <ListItemIcon
+                  style={{ color: connector.active ? '#4caf50' : '#f44336' }}
+                >
                   <Extension />
                 </ListItemIcon>
                 <ListItemText
@@ -300,9 +319,11 @@ class ConnectorsStatusComponent extends Component {
                 <ListItemSecondaryAction>
                   <Security needs={[MODULES_MODMANAGE]}>
                     <Tooltip title={t('Reset the connector state')}>
-                      <IconButton onClick={this.handleResetState.bind(this, connector.id)}
+                      <IconButton
+                        onClick={this.handleResetState.bind(this, connector.id)}
                         aria-haspopup="true"
-                        color="primary">
+                        color="primary"
+                      >
                         <RotateLeft />
                       </IconButton>
                     </Tooltip>
