@@ -295,19 +295,21 @@ class OpenCTIStix2:
                     # Extract date
                     try:
                         if "description" in external_reference:
-                            matches = list(
-                                datefinder.find_dates(external_reference["description"])
+                            matches = datefinder.find_dates(
+                                external_reference["description"]
                             )
                         else:
-                            matches = list(datefinder.find_dates(source_name))
+                            matches = datefinder.find_dates(source_name)
                     except:
-                        matches = []
-                    if len(matches) > 0:
-                        published = list(matches)[0].strftime("%Y-%m-%dT%H:%M:%SZ")
-                    else:
-                        published = datetime.datetime.today().strftime(
-                            "%Y-%m-%dT%H:%M:%SZ"
-                        )
+                        matches = None
+                    published = None
+                    today = datetime.datetime.today()
+                    if matches is not None:
+                        for match in matches:
+                            if match < today:
+                                published = match.strftime("%Y-%m-%dT%H:%M:%SZ")
+                    if published is None:
+                        published = today.strftime("%Y-%m-%dT%H:%M:%SZ")
 
                     if "mitre" in source_name and "name" in stix_object:
                         title = "[MITRE ATT&CK] " + stix_object["name"]
@@ -595,25 +597,23 @@ class OpenCTIStix2:
             for external_reference in stix_relation["external_references"]:
                 try:
                     if "description" in external_reference:
-                        matches = list(
-                            datefinder.find_dates(external_reference["description"])
+                        matches = datefinder.find_dates(
+                            external_reference["description"]
                         )
                     else:
-                        matches = list(
-                            datefinder.find_dates(external_reference["source_name"])
+                        matches = datefinder.find_dates(
+                            external_reference["source_name"]
                         )
                 except:
-                    matches = []
-                if len(matches) > 0:
-                    date = matches[0].strftime("%Y-%m-%dT%H:%M:%SZ")
-                else:
-                    date = datetime.datetime.today().strftime("%Y-%m-%dT%H:%M:%SZ")
+                    matches = None
+                date = None
+                today = datetime.datetime.today()
+                if matches is not None:
+                    for match in matches:
+                        if match < today:
+                            date = match.strftime("%Y-%m-%dT%H:%M:%SZ")
         if date is None:
-            date = (
-                datetime.datetime.utcnow()
-                .replace(microsecond=0, tzinfo=datetime.timezone.utc)
-                .isoformat()
-            )
+            date = datetime.datetime.today().strftime("%Y-%m-%dT%H:%M:%SZ")
 
         stix_relation_result = None
         if StixObservableRelationTypes.has_value(stix_relation["relationship_type"]):
@@ -1284,11 +1284,15 @@ class OpenCTIStix2:
                 observables_stix_ids = (
                     observables_stix_ids + observable_object_data["stixIds"]
                 )
-                if stix_object['type'] == 'report':
-                    if 'object_refs' in stix_object:
-                        stix_object['object_refs'].append(observable_object_data['observedData']['id'])
+                if stix_object["type"] == "report":
+                    if "object_refs" in stix_object:
+                        stix_object["object_refs"].append(
+                            observable_object_data["observedData"]["id"]
+                        )
                     else:
-                        stix_object['object_refs'] = [observable_object_data['observedData']['id']]
+                        stix_object["object_refs"] = [
+                            observable_object_data["observedData"]["id"]
+                        ]
         result.append(stix_object)
 
         if mode == "simple":
@@ -1387,7 +1391,7 @@ class OpenCTIStix2:
             final_result = []
             for entity in result:
                 if entity["type"] == "report":
-                    if 'object_refs' in entity:
+                    if "object_refs" in entity:
                         entity["object_refs"] = [
                             k for k in entity["object_refs"] if k in uuids
                         ]

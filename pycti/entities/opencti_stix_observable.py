@@ -374,7 +374,10 @@ class StixObservable:
                 result["data"]["stixObservableEdit"]["fieldPatch"]
             )
         else:
-            self.opencti.log("error", "[opencti_stix_observable_update_field] Missing parameters: id and key and value")
+            self.opencti.log(
+                "error",
+                "[opencti_stix_observable_update_field] Missing parameters: id and key and value",
+            )
             return None
 
     """
