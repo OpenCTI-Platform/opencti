@@ -14,6 +14,7 @@ import {
   elLoadById,
   elLoadByStixId,
   elPaginate,
+  elReconstructRelation,
   elVersion,
   forceNoCache,
   INDEX_STIX_ENTITIES
@@ -218,6 +219,80 @@ describe('Elasticsearch computation', () => {
     const aggregationMap = new Map(data.map(i => [i.date, i.value]));
     expect(aggregationMap.get('2019')).toEqual(3);
     expect(aggregationMap.get('2020')).toEqual(11);
+  });
+});
+
+describe('Elasticsearch relation reconstruction', () => {
+  const RELATION_ID = 'a0cfc7fc-837b-5ea0-b919-425047d4bb0d';
+  const CONN_MALWARE_ID = '6fb84f02-f095-430e-87a0-394d41955eee';
+  const CONN_MALWARE_GRAKN_ID = 'V454728';
+  const CONN_MALWARE_ROLE = 'so';
+  const CONN_MARKING_ID = '63309927-48f6-45c2-aee0-4d92b403cee5';
+  const CONN_MARKING_GRAKN_ID = 'V409696';
+  const CONN_MARKING_ROLE = 'marking';
+  const RECONSTRUCT_RELATION_CONCEPT = {
+    internal_id_key: RELATION_ID,
+    entity_type: 'relation_embedded',
+    relationship_type: 'object_marking_refs',
+    connections: [
+      {
+        internal_id_key: CONN_MALWARE_ID,
+        grakn_id: CONN_MALWARE_GRAKN_ID,
+        role: CONN_MALWARE_ROLE,
+        types: ['Malware', 'Stix-Domain-Entity', 'Stix-Domain']
+      },
+      {
+        internal_id_key: CONN_MARKING_ID,
+        grakn_id: CONN_MARKING_GRAKN_ID,
+        role: CONN_MARKING_ROLE,
+        types: ['Marking-Definition', 'Stix-Domain']
+      }
+    ]
+  };
+  it('Relation reconstruct with internal_id_key', async () => {
+    const relationMap = new Map();
+    relationMap.set(CONN_MARKING_GRAKN_ID, { alias: 'to', internalIdKey: undefined, role: undefined });
+    relationMap.set(CONN_MALWARE_GRAKN_ID, { alias: 'from', internalIdKey: CONN_MALWARE_ID, role: undefined });
+    const relation = elReconstructRelation(RECONSTRUCT_RELATION_CONCEPT, relationMap);
+    expect(relation.internal_id_key).toEqual(RECONSTRUCT_RELATION_CONCEPT.internal_id_key);
+    expect(relation.fromId).toEqual(CONN_MALWARE_GRAKN_ID);
+    expect(relation.fromInternalId).toEqual(CONN_MALWARE_ID);
+    expect(relation.fromRole).toEqual(CONN_MALWARE_ROLE);
+    expect(relation.toId).toEqual(CONN_MARKING_GRAKN_ID);
+    expect(relation.toInternalId).toEqual(CONN_MARKING_ID);
+    expect(relation.toRole).toEqual(CONN_MARKING_ROLE);
+  });
+  it('Relation reconstruct with no info', async () => {
+    const relationMap = new Map();
+    relationMap.set(CONN_MARKING_GRAKN_ID, { alias: 'to', internalIdKey: undefined, role: undefined });
+    relationMap.set(CONN_MALWARE_GRAKN_ID, { alias: 'from', internalIdKey: undefined, role: undefined });
+    const relation = elReconstructRelation(RECONSTRUCT_RELATION_CONCEPT, relationMap);
+    expect(relation.fromId).toEqual(CONN_MALWARE_GRAKN_ID);
+    expect(relation.toId).toEqual(CONN_MARKING_GRAKN_ID);
+  });
+  it('Relation reconstruct from reverse id', async () => {
+    const relationMap = new Map();
+    relationMap.set(CONN_MARKING_GRAKN_ID, { alias: 'to', internalIdKey: CONN_MALWARE_ID, role: undefined });
+    relationMap.set(CONN_MALWARE_GRAKN_ID, { alias: 'from', internalIdKey: undefined, role: undefined });
+    const relation = elReconstructRelation(RECONSTRUCT_RELATION_CONCEPT, relationMap);
+    expect(relation.fromId).toEqual(CONN_MARKING_GRAKN_ID);
+    expect(relation.toId).toEqual(CONN_MALWARE_GRAKN_ID);
+  });
+  it('Relation reconstruct from reverse id, forcing natural', async () => {
+    const relationMap = new Map();
+    relationMap.set(CONN_MARKING_GRAKN_ID, { alias: 'to', internalIdKey: CONN_MALWARE_ID, role: undefined });
+    relationMap.set(CONN_MALWARE_GRAKN_ID, { alias: 'from', internalIdKey: undefined, role: undefined });
+    const relation = elReconstructRelation(RECONSTRUCT_RELATION_CONCEPT, relationMap, true);
+    expect(relation.fromId).toEqual(CONN_MALWARE_GRAKN_ID);
+    expect(relation.toId).toEqual(CONN_MARKING_GRAKN_ID);
+  });
+  it('Relation reconstruct from reverse role', async () => {
+    const relationMap = new Map();
+    relationMap.set(CONN_MARKING_GRAKN_ID, { alias: 'to', internalIdKey: undefined, role: CONN_MALWARE_ROLE });
+    relationMap.set(CONN_MALWARE_GRAKN_ID, { alias: 'from', internalIdKey: undefined, role: undefined });
+    const relation = elReconstructRelation(RECONSTRUCT_RELATION_CONCEPT, relationMap);
+    expect(relation.fromId).toEqual(CONN_MALWARE_GRAKN_ID);
+    expect(relation.toId).toEqual(CONN_MARKING_GRAKN_ID);
   });
 });
 
