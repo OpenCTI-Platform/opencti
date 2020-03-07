@@ -1,7 +1,8 @@
 ---
-id: auto
+id: version-3.0.3-auto
 title: Automatic installation
 sidebar_label: Automatic installation
+original_id: auto
 ---
 
 > For production deployment, we advise you to deploy `Grakn` and `ElasticSearch` manually in a dedicated environment and then to start the other components using `Docker`.

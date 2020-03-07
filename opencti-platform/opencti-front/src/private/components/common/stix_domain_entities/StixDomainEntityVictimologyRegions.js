@@ -18,6 +18,9 @@ import {
   pathOr,
   pluck,
   concat,
+  sortWith,
+  ascend,
+  descend,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -319,6 +322,11 @@ class StixDomainEntityVictimologyRegionsComponent extends Component {
         }
       }
     }
+
+    const orderedFinalRegions = pipe(
+      values,
+      sortWith([ascend(prop('name'))]),
+    )(finalRegions);
     return (
       <div>
         <div style={{ float: 'left' }}>
@@ -337,319 +345,381 @@ class StixDomainEntityVictimologyRegionsComponent extends Component {
         <div className="clearfix" />
         <div className={classes.container} id="container">
           <List id="test">
-            {values(finalRegions).map((region) => (
-              <div key={region.id}>
-                <ListItem
-                  button={true}
-                  divider={true}
-                  onClick={this.handleToggleLine.bind(this, region.id)}
-                >
-                  <ListItemIcon>
-                    <Map role="img" />
-                  </ListItemIcon>
-                  <ListItemText primary={region.name} />
-                  <ListItemSecondaryAction>
-                    <IconButton
-                      onClick={this.handleToggleLine.bind(this, region.id)}
-                      aria-haspopup="true"
-                    >
-                      {this.state.expandedLines[region.id] === true ? (
-                        <ExpandLess />
-                      ) : (
-                        <ExpandMore />
-                      )}
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
-                <Collapse in={this.state.expandedLines[region.id] === true}>
-                  <List>
-                    {values(region.relations).map((stixRelation) => {
-                      const link = `${entityLink}/relations/${stixRelation.id}`;
-                      return (
-                        <ListItem
-                          key={stixRelation.id}
-                          classes={{ root: classes.nested }}
-                          divider={true}
-                          button={true}
-                          dense={true}
-                          component={Link}
-                          to={link}
-                        >
-                          <ListItemIcon className={classes.itemIcon}>
-                            <ItemIcon type={stixRelation.to.entity_type} />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={
-                              stixRelation.to.id === region.id ? (
-                                <em>{t('Direct targeting of this region')}</em>
-                              ) : (
-                                stixRelation.to.name
-                              )
-                            }
-                            secondary={
-                              // eslint-disable-next-line no-nested-ternary
-                              stixRelation.description
-                              && stixRelation.description.length > 0 ? (
-                                <Markdown
-                                  className="markdown"
-                                  source={stixRelation.description}
-                                />
-                                ) : stixRelation.inferred ? (
-                                <i>{t('This relation is inferred')}</i>
-                                ) : (
-                                  t('No description of this targeting')
-                                )
-                            }
-                          />
-                          {take(
-                            1,
-                            pathOr(
-                              [],
-                              ['markingDefinitions', 'edges'],
-                              stixRelation,
-                            ),
-                          ).map((markingDefinition) => (
-                            <ItemMarking
-                              key={markingDefinition.node.id}
-                              variant="inList"
-                              label={markingDefinition.node.definition}
-                              color={markingDefinition.node.color}
-                            />
-                          ))}
-                          <ItemYears
-                            variant="inList"
-                            years={
-                              stixRelation.inferred
-                                ? t('Inferred')
-                                : stixRelation.years
-                            }
-                            disabled={stixRelation.inferred}
-                          />
-                          <ListItemSecondaryAction>
-                            <StixRelationPopover
-                              stixRelationId={stixRelation.id}
-                              paginationOptions={paginationOptions}
-                              onDelete={this.props.relay.refetch.bind(this)}
-                            />
-                          </ListItemSecondaryAction>
-                        </ListItem>
-                      );
-                    })}
-                    {values(region.countries).map((country) => {
-                      return (
-                        <div key={country.id}>
+            {orderedFinalRegions.map((region) => {
+              const orderedRelations = pipe(
+                values,
+                sortWith([descend(prop('years'))]),
+              )(region.relations);
+              const orderedCountries = pipe(
+                values,
+                sortWith([ascend(prop('name'))]),
+              )(region.countries);
+              return (
+                <div key={region.id}>
+                  <ListItem
+                    button={true}
+                    divider={true}
+                    onClick={this.handleToggleLine.bind(this, region.id)}
+                  >
+                    <ListItemIcon>
+                      <Map role="img" />
+                    </ListItemIcon>
+                    <ListItemText primary={region.name} />
+                    <ListItemSecondaryAction>
+                      <IconButton
+                        onClick={this.handleToggleLine.bind(this, region.id)}
+                        aria-haspopup="true"
+                      >
+                        {this.state.expandedLines[region.id] === true ? (
+                          <ExpandLess />
+                        ) : (
+                          <ExpandMore />
+                        )}
+                      </IconButton>
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                  <Collapse in={this.state.expandedLines[region.id] === true}>
+                    <List>
+                      {orderedRelations.map((stixRelation) => {
+                        const link = `${entityLink}/relations/${stixRelation.id}`;
+                        return (
                           <ListItem
-                            button={true}
-                            divider={true}
+                            key={stixRelation.id}
                             classes={{ root: classes.nested }}
-                            onClick={this.handleToggleLine.bind(this, country.id)}
+                            divider={true}
+                            button={true}
+                            dense={true}
+                            component={Link}
+                            to={link}
                           >
-                            <ListItemIcon>
-                              <Flag role="img" />
+                            <ListItemIcon className={classes.itemIcon}>
+                              <ItemIcon type={stixRelation.to.entity_type} />
                             </ListItemIcon>
-                            <ListItemText primary={country.name} />
-                            <ListItemSecondaryAction>
-                              <IconButton
-                                onClick={this.handleToggleLine.bind(
-                                  this,
-                                  country.id,
-                                )}
-                                aria-haspopup="true"
-                              >
-                                {this.state.expandedLines[country.id] === true ? (
-                                  <ExpandLess />
+                            <ListItemText
+                              primary={
+                                stixRelation.to.id === region.id ? (
+                                  <em>
+                                    {t('Direct targeting of this region')}
+                                  </em>
                                 ) : (
-                                  <ExpandMore />
-                                )}
-                              </IconButton>
+                                  stixRelation.to.name
+                                )
+                              }
+                              secondary={
+                                // eslint-disable-next-line no-nested-ternary
+                                stixRelation.description
+                                && stixRelation.description.length > 0 ? (
+                                  <Markdown
+                                    className="markdown"
+                                    source={stixRelation.description}
+                                  />
+                                  ) : stixRelation.inferred ? (
+                                  <i>{t('This relation is inferred')}</i>
+                                  ) : (
+                                    t('No description of this targeting')
+                                  )
+                              }
+                            />
+                            {take(
+                              1,
+                              pathOr(
+                                [],
+                                ['markingDefinitions', 'edges'],
+                                stixRelation,
+                              ),
+                            ).map((markingDefinition) => (
+                              <ItemMarking
+                                key={markingDefinition.node.id}
+                                variant="inList"
+                                label={markingDefinition.node.definition}
+                                color={markingDefinition.node.color}
+                              />
+                            ))}
+                            <ItemYears
+                              variant="inList"
+                              years={
+                                stixRelation.inferred
+                                  ? t('Inferred')
+                                  : stixRelation.years
+                              }country
+                              disabled={stixRelation.inferred}
+                            />
+                            <ListItemSecondaryAction>
+                              <StixRelationPopover
+                                stixRelationId={stixRelation.id}
+                                paginationOptions={paginationOptions}
+                                onDelete={this.props.relay.refetch.bind(this)}
+                              />
                             </ListItemSecondaryAction>
                           </ListItem>
-                          <Collapse
-                            in={this.state.expandedLines[country.id] === true}
-                          >
-                            <List>
-                              {values(country.relations).map((stixRelation) => {
-                                const link = `${entityLink}/relations/${stixRelation.id}`;
-                                return (
-                                  <ListItem
-                                    key={stixRelation.id}
-                                    classes={{ root: classes.subnested }}
-                                    divider={true}
-                                    button={true}
-                                    dense={true}
-                                    component={Link}
-                                    to={link}
-                                  >
-                                    <ListItemIcon className={classes.itemIcon}>
-                                      <ItemIcon
-                                        type={stixRelation.to.entity_type}
-                                      />
-                                    </ListItemIcon>
-                                    <ListItemText
-                                      primary={
-                                        stixRelation.to.id === country.id ? (
-                                          <em>
-                                            {t(
-                                              'Direct targeting of this country',
-                                            )}
-                                          </em>
-                                        ) : (
-                                          stixRelation.to.name
-                                        )
-                                      }
-                                      secondary={
-                                        // eslint-disable-next-line no-nested-ternary
-                                        stixRelation.description
-                                        && stixRelation.description.length > 0 ? (
-                                          <Markdown
-                                            className="markdown"
-                                            source={stixRelation.description}
-                                          />
-                                        ) : stixRelation.inferred ? (
-                                          <i>{t('This relation is inferred')}</i>
-                                        ) : (
-                                          t('No description of this targeting')
-                                        )
-                                      }
-                                    />
-                                    {take(
-                                      1,
-                                      pathOr(
-                                        [],
-                                        ['markingDefinitions', 'edges'],
-                                        stixRelation,
-                                      ),
-                                    ).map((markingDefinition) => (
-                                      <ItemMarking
-                                        key={markingDefinition.node.id}
-                                        variant="inList"
-                                        label={markingDefinition.node.definition}
-                                        color={markingDefinition.node.color}
-                                      />
-                                    ))}
-                                    <ItemYears
-                                      variant="inList"
-                                      years={
-                                        stixRelation.inferred
-                                          ? t('Inferred')
-                                          : stixRelation.years
-                                      }
-                                      disabled={stixRelation.inferred}
-                                    />
-                                    <ListItemSecondaryAction>
-                                      <StixRelationPopover
-                                        stixRelationId={stixRelation.id}
-                                        paginationOptions={paginationOptions}
-                                        onDelete={this.props.relay.refetch.bind(
-                                          this,
-                                        )}
-                                      />
-                                    </ListItemSecondaryAction>
-                                  </ListItem>
-                                );
-                              })}
-                              {values(country.cities).map((city) => (
-                                <div key={city.id}>
-                                  {values(city.relations).map((stixRelation) => {
-                                    const link = `${entityLink}/relations/${stixRelation.id}`;
-                                    return (
-                                      <ListItem
-                                        key={stixRelation.id}
-                                        classes={{ root: classes.subnested }}
-                                        divider={true}
-                                        button={true}
-                                        dense={true}
-                                        component={Link}
-                                        to={link}
+                        );
+                      })}
+                      {orderedCountries.map((country) => {
+                        const orderedSubRelations = pipe(
+                          values,
+                          sortWith([descend(prop('years'))]),
+                        )(country.relations);
+                        const orderedCities = pipe(
+                          values,
+                          sortWith([ascend(prop('name'))]),
+                        )(country.cities);
+                        return (
+                          <div key={country.id}>
+                            <ListItem
+                              button={true}
+                              divider={true}
+                              classes={{ root: classes.nested }}
+                              onClick={this.handleToggleLine.bind(
+                                this,
+                                country.id,
+                              )}
+                            >
+                              <ListItemIcon>
+                                <Flag role="img" />
+                              </ListItemIcon>
+                              <ListItemText primary={country.name} />
+                              <ListItemSecondaryAction>
+                                <IconButton
+                                  onClick={this.handleToggleLine.bind(
+                                    this,
+                                    country.id,
+                                  )}
+                                  aria-haspopup="true"
+                                >
+                                  {this.state.expandedLines[country.id]
+                                  === true ? (
+                                    <ExpandLess />
+                                    ) : (
+                                    <ExpandMore />
+                                    )}
+                                </IconButton>
+                              </ListItemSecondaryAction>
+                            </ListItem>
+                            <Collapse
+                              in={this.state.expandedLines[country.id] === true}
+                            >
+                              <List>
+                                {orderedSubRelations.map((stixRelation) => {
+                                  const link = `${entityLink}/relations/${stixRelation.id}`;
+                                  return (
+                                    <ListItem
+                                      key={stixRelation.id}
+                                      classes={{ root: classes.subnested }}
+                                      divider={true}
+                                      button={true}
+                                      dense={true}
+                                      component={Link}
+                                      to={link}
+                                    >
+                                      <ListItemIcon
+                                        className={classes.itemIcon}
                                       >
-                                        <ListItemIcon
-                                          className={classes.itemIcon}
-                                        >
-                                          <ItemIcon
-                                            type={stixRelation.to.entity_type}
-                                          />
-                                        </ListItemIcon>
-                                        <ListItemText
-                                          primary={
-                                            stixRelation.to.id === country.id ? (
-                                              <em>
-                                                {t(
-                                                  'Direct targeting of this country',
-                                                )}
-                                              </em>
-                                            ) : (
-                                              stixRelation.to.name
-                                            )
-                                          }
-                                          secondary={
-                                            // eslint-disable-next-line no-nested-ternary
-                                            stixRelation.description
-                                            && stixRelation.description.length
+                                        <ItemIcon
+                                          type={stixRelation.to.entity_type}
+                                        />
+                                      </ListItemIcon>
+                                      <ListItemText
+                                        primary={
+                                          stixRelation.to.id === country.id ? (
+                                            <em>
+                                              {t(
+                                                'Direct targeting of this country',
+                                              )}
+                                            </em>
+                                          ) : (
+                                            stixRelation.to.name
+                                          )
+                                        }
+                                        secondary={
+                                          // eslint-disable-next-line no-nested-ternary
+                                          stixRelation.description
+                                          && stixRelation.description.length
                                             > 0 ? (
-                                              <Markdown
-                                                className="markdown"
-                                                source={stixRelation.description}
-                                              />
+                                            <Markdown
+                                              className="markdown"
+                                              source={stixRelation.description}
+                                            />
                                             ) : stixRelation.inferred ? (
-                                              <i>
-                                                {t('This relation is inferred')}
-                                              </i>
+                                            <i>
+                                              {t('This relation is inferred')}
+                                            </i>
                                             ) : (
                                               t(
                                                 'No description of this targeting',
                                               )
                                             )
-                                          }
-                                        />
-                                        {take(
-                                          1,
-                                          pathOr(
-                                            [],
-                                            ['markingDefinitions', 'edges'],
-                                            stixRelation,
-                                          ),
-                                        ).map((markingDefinition) => (
-                                          <ItemMarking
-                                            key={markingDefinition.node.id}
-                                            variant="inList"
-                                            label={
-                                              markingDefinition.node.definition
-                                            }
-                                            color={markingDefinition.node.color}
-                                          />
-                                        ))}
-                                        <ItemYears
+                                        }
+                                      />
+                                      {take(
+                                        1,
+                                        pathOr(
+                                          [],
+                                          ['markingDefinitions', 'edges'],
+                                          stixRelation,
+                                        ),
+                                      ).map((markingDefinition) => (
+                                        <ItemMarking
+                                          key={markingDefinition.node.id}
                                           variant="inList"
-                                          years={
-                                            stixRelation.inferred
-                                              ? t('Inferred')
-                                              : stixRelation.years
+                                          label={
+                                            markingDefinition.node.definition
                                           }
-                                          disabled={stixRelation.inferred}
+                                          color={markingDefinition.node.color}
                                         />
-                                        <ListItemSecondaryAction>
-                                          <StixRelationPopover
-                                            stixRelationId={stixRelation.id}
-                                            paginationOptions={paginationOptions}
-                                            onDelete={this.props.relay.refetch.bind(
-                                              this,
-                                            )}
-                                          />
-                                        </ListItemSecondaryAction>
-                                      </ListItem>
-                                    );
-                                  })}
-                                </div>
-                              ))}
-                            </List>
-                          </Collapse>
-                        </div>
-                      )
-                    })}
-                  </List>
-                </Collapse>
-              </div>
-            ))}
+                                      ))}
+                                      <ItemYears
+                                        variant="inList"
+                                        years={
+                                          stixRelation.inferred
+                                            ? t('Inferred')
+                                            : stixRelation.years
+                                        }
+                                        disabled={stixRelation.inferred}
+                                      />
+                                      <ListItemSecondaryAction>
+                                        <StixRelationPopover
+                                          stixRelationId={stixRelation.id}
+                                          paginationOptions={paginationOptions}
+                                          onDelete={this.props.relay.refetch.bind(
+                                            this,
+                                          )}
+                                        />
+                                      </ListItemSecondaryAction>
+                                    </ListItem>
+                                  );
+                                })}
+                                {orderedCities.map((city) => {
+                                  const orderedSubSubRelations = pipe(
+                                    values,
+                                    sortWith([descend(prop('years'))]),
+                                  )(city.relations);
+                                  return (
+                                    <div key={city.id}>
+                                      {orderedSubSubRelations.map(
+                                        (stixRelation) => {
+                                          const link = `${entityLink}/relations/${stixRelation.id}`;
+                                          return (
+                                            <ListItem
+                                              key={stixRelation.id}
+                                              classes={{
+                                                root: classes.subnested,
+                                              }}
+                                              divider={true}
+                                              button={true}
+                                              dense={true}
+                                              component={Link}
+                                              to={link}
+                                            >
+                                              <ListItemIcon
+                                                className={classes.itemIcon}
+                                              >
+                                                <ItemIcon
+                                                  type={
+                                                    stixRelation.to.entity_type
+                                                  }
+                                                />
+                                              </ListItemIcon>
+                                              <ListItemText
+                                                primary={
+                                                  stixRelation.to.id
+                                                  === country.id ? (
+                                                    <em>
+                                                      {t(
+                                                        'Direct targeting of this country',
+                                                      )}
+                                                    </em>
+                                                    ) : (
+                                                      stixRelation.to.name
+                                                    )
+                                                }
+                                                secondary={
+                                                  // eslint-disable-next-line no-nested-ternary
+                                                  stixRelation.description
+                                                  && stixRelation.description
+                                                    .length > 0 ? (
+                                                    <Markdown
+                                                      className="markdown"
+                                                      source={
+                                                        stixRelation.description
+                                                      }
+                                                    />
+                                                    ) : stixRelation.inferred ? (
+                                                    <i>
+                                                      {t(
+                                                        'This relation is inferred',
+                                                      )}
+                                                    </i>
+                                                    ) : (
+                                                      t(
+                                                        'No description of this targeting',
+                                                      )
+                                                    )
+                                                }
+                                              />
+                                              {take(
+                                                1,
+                                                pathOr(
+                                                  [],
+                                                  [
+                                                    'markingDefinitions',
+                                                    'edges',
+                                                  ],
+                                                  stixRelation,
+                                                ),
+                                              ).map((markingDefinition) => (
+                                                <ItemMarking
+                                                  key={
+                                                    markingDefinition.node.id
+                                                  }
+                                                  variant="inList"
+                                                  label={
+                                                    markingDefinition.node
+                                                      .definition
+                                                  }
+                                                  color={
+                                                    markingDefinition.node.color
+                                                  }
+                                                />
+                                              ))}
+                                              <ItemYears
+                                                variant="inList"
+                                                years={
+                                                  stixRelation.inferred
+                                                    ? t('Inferred')
+                                                    : stixRelation.years
+                                                }
+                                                disabled={stixRelation.inferred}
+                                              />
+                                              <ListItemSecondaryAction>
+                                                <StixRelationPopover
+                                                  stixRelationId={
+                                                    stixRelation.id
+                                                  }
+                                                  paginationOptions={
+                                                    paginationOptions
+                                                  }
+                                                  onDelete={this.props.relay.refetch.bind(
+                                                    this,
+                                                  )}
+                                                />
+                                              </ListItemSecondaryAction>
+                                            </ListItem>
+                                          );
+                                        },
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </List>
+                            </Collapse>
+                          </div>
+                        );
+                      })}
+                    </List>
+                  </Collapse>
+                </div>
+              );
+            })}
           </List>
         </div>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>

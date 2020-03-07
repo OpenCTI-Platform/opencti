@@ -10,8 +10,8 @@ import CardContent from '@material-ui/core/CardContent';
 import Grid from '@material-ui/core/Grid';
 import { createRefetchContainer } from 'react-relay';
 import { MultilineChart } from '@material-ui/icons';
-import inject18n from '../../../components/i18n';
-import { FIVE_SECONDS } from '../../../utils/Time';
+import inject18n from '../../../../components/i18n';
+import { FIVE_SECONDS } from '../../../../utils/Time';
 
 const interval$ = interval(FIVE_SECONDS);
 

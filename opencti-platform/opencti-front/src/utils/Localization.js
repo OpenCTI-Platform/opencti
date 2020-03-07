@@ -86,6 +86,8 @@ const i18n = {
         'Souhaitez-vous supprimer cet observable de cet indicateur ?',
       'Do you want to delete this role?': 'Souhaitez-vous supprimer ce rôle ?',
       'Do you want to delete this tag?': 'Souhaitez-vous supprimer ce tag ?',
+      'Do you want to delete these entities?':
+        'Souhaitez-vous supprimer ces entités ?',
       'Confirmation required': 'Confirmation requise',
       Information: 'Informations',
       'Last reports': 'Derniers rapports',
@@ -101,7 +103,8 @@ const i18n = {
       'Granted by default': 'Alloué par défaut',
       'Granted by default at user creation':
         "Alloué par défaut à la création d'un utilisateur",
-      'Unauthorized action, please refresh your browser': 'Action non autorisée, merci de rafraichir votre navigateur',
+      'Unauthorized action, please refresh your browser':
+        'Action non autorisée, merci de rafraichir votre navigateur',
       Capabilities: 'Capacités',
       Title: 'Titre',
       'Sender email address': "Adresse mail d'expédition",
@@ -124,6 +127,7 @@ const i18n = {
       Export: 'Exporter',
       Delete: 'Supprimer',
       Remove: 'Supprimer',
+      Merge: 'Fusionner',
       Cancel: 'Annuler',
       Import: 'Importer',
       'Import data': 'Importer des données',
@@ -132,6 +136,7 @@ const i18n = {
       'STIX2 bundle': 'Bundle STIX2',
       'File to import': 'Fichier à importer',
       'Select your file': 'Selectionner votre fichier',
+      selected: 'sélectionné(s)',
       'The importation of the file has been started':
         "L'importation du fichier a été lancée",
       Add: 'Ajouter',
@@ -176,6 +181,7 @@ const i18n = {
       'Update a malware': 'Modifier un code malveillant',
       'New alias': 'Nouvel alias',
       'Aliases separated by commas': 'Alias séparés par des virgules',
+      Aliases: 'Alias',
       'Entity aliases': "Alias de l'entité",
       'Create a marking definition': 'Créer un marquage',
       'Update a marking definition': 'Modifier un marquage',
@@ -238,6 +244,9 @@ const i18n = {
       'Exports list': 'Liste des exports',
       'Export as image': 'Exporter comme image',
       'Export as PDF': 'Exporter comme PDF',
+      'Merge entities': 'Fusionner des entités',
+      'Selected entities': 'Entités sélectionnées',
+      'Merged entity': 'Entité fusionnée',
       'Demo credentials': 'Identifiants de démo',
       'User will be created with default roles.':
         "L'utilisateur sera créé avec les rôles par défaut.",
@@ -248,6 +257,8 @@ const i18n = {
         "Aucun connecteur d'enrichissement sur cette plateforme",
       'Enrichment connectors': "Connecteurs d'enrichissement",
       'Registered connectors': 'Connecteurs enregistrés',
+      'The relations attached to selected entities will be copied to the merged entity.':
+        "Les relations attachées aux entités sélectionnées seront copiées sur l'entité fusionnée.",
       Scope: 'Périmètre',
       Modified: 'Modifié',
       'No import connectors on this platform':
@@ -257,8 +268,10 @@ const i18n = {
       'This connector is active': 'Ce connecteur est actif',
       'This connector is disconnected': 'Ce connecteur est déconnecté',
       'Reset the connector state': "Réinitialiser l'état du connecteur",
+      'Clear this connector': 'Supprimer ce connecteur',
       'The connector state has been reset':
         "L'état du connecteur a été réinitialisé",
+      'The connector has been cleared': 'Le connecteur a été supprimé',
       'Refresh the knowledge using this connector':
         'Actualiser la connaissance en utilisant ce connecteur',
       'Sectors, organizations and persons':
@@ -279,6 +292,7 @@ const i18n = {
       Investigate: 'Investiguer',
       Correlate: 'Corréler',
       Connectors: 'Connecteurs',
+      'Data management': 'Gestion des données',
       Settings: 'Paramètres',
       About: 'A propos',
       General: 'Général',
@@ -287,6 +301,7 @@ const i18n = {
       Tags: 'Tags',
       Tag: 'Tag',
       Accesses: 'Accès',
+      'Data curation': 'Curation des données',
       'Tools versions': 'Versions des outils',
       'OpenCTI version': 'OpenCTI version',
       'No tag': 'Aucun tag',
