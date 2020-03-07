@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import {assoc, find, head, map, propEq} from 'ramda';
+import { assoc, find, head, map, propEq } from 'ramda';
 import {
   elAggregationCount,
   elAggregationRelationsCount,
@@ -18,7 +18,7 @@ import {
   forceNoCache,
   INDEX_STIX_ENTITIES
 } from '../../../src/database/elasticSearch';
-import {utcDate} from "../../../src/database/grakn";
+import { utcDate } from '../../../src/database/grakn';
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', () => {
