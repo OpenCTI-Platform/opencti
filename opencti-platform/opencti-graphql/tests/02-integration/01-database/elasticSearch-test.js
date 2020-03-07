@@ -1,6 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { assoc, find, propEq, map, head } from 'ramda';
-import moment from 'moment';
+import {assoc, find, head, map, propEq} from 'ramda';
 import {
   elAggregationCount,
   elAggregationRelationsCount,
@@ -19,6 +18,7 @@ import {
   forceNoCache,
   INDEX_STIX_ENTITIES
 } from '../../../src/database/elasticSearch';
+import {utcDate} from "../../../src/database/grakn";
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', () => {
@@ -182,8 +182,7 @@ describe('Elasticsearch computation', () => {
     );
     expect(data.length).toEqual(1);
     // eslint-disable-next-line prettier/prettier
-    const nowDate = moment().utc().format('YYYY-MM-DD');
-    expect(head(data).date).toEqual(nowDate);
+    expect(head(data).date).toEqual(utcDate().format('YYYY-MM-DD'));
     expect(head(data).value).toEqual(18);
   });
   it('should month histogram accurate', async () => {

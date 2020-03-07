@@ -320,7 +320,7 @@ export const meEditField = (user, userId, input) => {
 };
 export const userDelete = async userId => {
   const userToken = await internalGetToken(userId);
-  await deleteEntityById(userToken.id, 'Token');
+  await deleteEntityById(userToken.id, 'Token', { noCache: true });
   await clearAccessCache(userToken.uuid);
   await deleteEntityById(userId, 'User');
   return userId;
