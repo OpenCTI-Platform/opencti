@@ -17,7 +17,8 @@ import {
   elReconstructRelation,
   elVersion,
   forceNoCache,
-  INDEX_STIX_ENTITIES
+  INDEX_STIX_ENTITIES,
+  specialElasticCharsEscape
 } from '../../../src/database/elasticSearch';
 import { utcDate } from '../../../src/database/grakn';
 
@@ -270,10 +271,10 @@ describe('Elasticsearch relation reconstruction', () => {
   const CONN_MARKING_ID = '63309927-48f6-45c2-aee0-4d92b403cee5';
   const CONN_MARKING_GRAKN_ID = 'V409696';
   const CONN_MARKING_ROLE = 'marking';
-  const RECONSTRUCT_RELATION_CONCEPT = {
+  const buildRelationConcept = relationType => ({
     internal_id_key: RELATION_ID,
     entity_type: 'relation_embedded',
-    relationship_type: 'object_marking_refs',
+    relationship_type: relationType,
     connections: [
       {
         internal_id_key: CONN_MALWARE_ID,
@@ -288,13 +289,22 @@ describe('Elasticsearch relation reconstruction', () => {
         types: ['Marking-Definition', 'Stix-Domain']
       }
     ]
-  };
+  });
+  it('Relation reconstruct natural', async () => {
+    const concept = buildRelationConcept('object_marking_refs');
+    const relation = elReconstructRelation(concept);
+    expect(relation.fromId).toEqual(CONN_MALWARE_GRAKN_ID);
+    expect(relation.fromRole).toEqual(CONN_MALWARE_ROLE);
+    expect(relation.toId).toEqual(CONN_MARKING_GRAKN_ID);
+    expect(relation.toRole).toEqual(CONN_MARKING_ROLE);
+  });
   it('Relation reconstruct with internal_id_key', async () => {
     const relationMap = new Map();
     relationMap.set(CONN_MARKING_GRAKN_ID, { alias: 'to', internalIdKey: undefined, role: undefined });
     relationMap.set(CONN_MALWARE_GRAKN_ID, { alias: 'from', internalIdKey: CONN_MALWARE_ID, role: undefined });
-    const relation = elReconstructRelation(RECONSTRUCT_RELATION_CONCEPT, relationMap);
-    expect(relation.internal_id_key).toEqual(RECONSTRUCT_RELATION_CONCEPT.internal_id_key);
+    const concept = buildRelationConcept('object_marking_refs');
+    const relation = elReconstructRelation(concept, relationMap);
+    expect(relation.internal_id_key).toEqual(concept.internal_id_key);
     expect(relation.fromId).toEqual(CONN_MALWARE_GRAKN_ID);
     expect(relation.fromInternalId).toEqual(CONN_MALWARE_ID);
     expect(relation.fromRole).toEqual(CONN_MALWARE_ROLE);
@@ -306,7 +316,8 @@ describe('Elasticsearch relation reconstruction', () => {
     const relationMap = new Map();
     relationMap.set(CONN_MARKING_GRAKN_ID, { alias: 'to', internalIdKey: undefined, role: undefined });
     relationMap.set(CONN_MALWARE_GRAKN_ID, { alias: 'from', internalIdKey: undefined, role: undefined });
-    const relation = elReconstructRelation(RECONSTRUCT_RELATION_CONCEPT, relationMap);
+    const concept = buildRelationConcept('object_marking_refs');
+    const relation = elReconstructRelation(concept, relationMap);
     expect(relation.fromId).toEqual(CONN_MALWARE_GRAKN_ID);
     expect(relation.toId).toEqual(CONN_MARKING_GRAKN_ID);
   });
@@ -314,7 +325,8 @@ describe('Elasticsearch relation reconstruction', () => {
     const relationMap = new Map();
     relationMap.set(CONN_MARKING_GRAKN_ID, { alias: 'to', internalIdKey: CONN_MALWARE_ID, role: undefined });
     relationMap.set(CONN_MALWARE_GRAKN_ID, { alias: 'from', internalIdKey: undefined, role: undefined });
-    const relation = elReconstructRelation(RECONSTRUCT_RELATION_CONCEPT, relationMap);
+    const concept = buildRelationConcept('object_marking_refs');
+    const relation = elReconstructRelation(concept, relationMap);
     expect(relation.fromId).toEqual(CONN_MARKING_GRAKN_ID);
     expect(relation.toId).toEqual(CONN_MALWARE_GRAKN_ID);
   });
@@ -322,21 +334,47 @@ describe('Elasticsearch relation reconstruction', () => {
     const relationMap = new Map();
     relationMap.set(CONN_MARKING_GRAKN_ID, { alias: 'to', internalIdKey: CONN_MALWARE_ID, role: undefined });
     relationMap.set(CONN_MALWARE_GRAKN_ID, { alias: 'from', internalIdKey: undefined, role: undefined });
-    const relation = elReconstructRelation(RECONSTRUCT_RELATION_CONCEPT, relationMap, true);
+    const concept = buildRelationConcept('object_marking_refs');
+    const relation = elReconstructRelation(concept, relationMap, true);
     expect(relation.fromId).toEqual(CONN_MALWARE_GRAKN_ID);
     expect(relation.toId).toEqual(CONN_MARKING_GRAKN_ID);
   });
-  it('Relation reconstruct from reverse role', async () => {
+  it('Relation reconstruct from roles', async () => {
     const relationMap = new Map();
     relationMap.set(CONN_MARKING_GRAKN_ID, { alias: 'to', internalIdKey: undefined, role: CONN_MALWARE_ROLE });
+    relationMap.set(CONN_MALWARE_GRAKN_ID, { alias: 'from', internalIdKey: undefined, role: CONN_MARKING_ROLE });
+    const concept = buildRelationConcept('object_marking_refs');
+    const relation = elReconstructRelation(concept, relationMap);
+    expect(relation.fromId).toEqual(CONN_MARKING_GRAKN_ID);
+    expect(relation.toId).toEqual(CONN_MALWARE_GRAKN_ID);
+  });
+  it('Relation reconstruct fail if no reverse definition', async () => {
+    const concept = buildRelationConcept('undefined_relation');
+    expect(() => {
+      elReconstructRelation(concept, new Map());
+    }).toThrow(Error);
+  });
+  it('Relation reconstruct fail with bad configuration', async () => {
+    const relationMap = new Map();
+    relationMap.set(CONN_MARKING_GRAKN_ID, { alias: 'to', internalIdKey: 'bad-to', role: undefined });
     relationMap.set(CONN_MALWARE_GRAKN_ID, { alias: 'from', internalIdKey: undefined, role: undefined });
-    const relation = elReconstructRelation(RECONSTRUCT_RELATION_CONCEPT, relationMap);
-    expect(relation.fromId).toEqual(CONN_MALWARE_GRAKN_ID);
-    expect(relation.toId).toEqual(CONN_MARKING_GRAKN_ID);
+    const concept = buildRelationConcept('object_marking_refs');
+    expect(() => {
+      elReconstructRelation(concept, relationMap);
+    }).toThrow(Error);
   });
 });
 
 describe('Elasticsearch pagination', () => {
+  it('Pagination standard escape', async () => {
+    // +|\-*()~={}:?\\
+    let escape = specialElasticCharsEscape('Looking {for} [malware] : ~APT');
+    expect(escape).toEqual('Looking \\{for\\} [malware] \\: \\~APT');
+    escape = specialElasticCharsEscape('Looking (threat) = ?maybe');
+    expect(escape).toEqual('Looking \\(threat\\) \\= \\?maybe');
+    escape = specialElasticCharsEscape('Looking All* + Everything| - \\with');
+    expect(escape).toEqual('Looking All\\* \\+ Everything\\| \\- \\\\with');
+  });
   it('should paginate return correct data', async () => {
     // first = 200, after, types = null, filters = [], search = null,
     // orderBy = null, orderMode = 'asc',

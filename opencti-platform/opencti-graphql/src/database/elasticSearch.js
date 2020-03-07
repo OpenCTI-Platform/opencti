@@ -63,29 +63,32 @@ export const forceNoCache = () => conf.get('elasticsearch:noQueryCache') || fals
 export const el = new Client({ node: conf.get('elasticsearch:url') });
 
 export const elIsAlive = async () => {
-  try {
-    return el.info().then(info => {
+  return el
+    .info()
+    .then(info => {
       /* istanbul ignore if */
       if (info.meta.connection.status !== 'alive') {
         logger.error(`[ELASTICSEARCH] Seems down`);
         throw new Error('elastic seems down');
       }
       return true;
-    });
-  } catch (e) {
-    /* istanbul ignore next */
-    logger.error(`[ELASTICSEARCH] Seems down`);
-    throw new Error('elastic seems down');
-  }
+    })
+    .catch(
+      /* istanbul ignore next */ () => {
+        logger.error(`[ELASTICSEARCH] Seems down`);
+        throw new Error('elastic seems down');
+      }
+    );
 };
 export const elVersion = () => {
   return el
     .info()
     .then(info => info.body.version.number)
-    .catch(() => {
-      /* istanbul ignore next */
-      return 'Disconnected';
-    });
+    .catch(
+      /* istanbul ignore next */ () => {
+        return 'Disconnected';
+      }
+    );
 };
 export const elIndexExists = async indexName => {
   const existIndex = await el.indices.exists({ index: indexName });
@@ -284,16 +287,10 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
     }
   };
   logger.debug(`[ELASTICSEARCH] aggregationCount > ${JSON.stringify(query)}`);
-  return el
-    .search(query)
-    .then(data => {
-      const { buckets } = data.body.aggregations.genres;
-      return map(b => ({ label: b.key, value: b.doc_count }), buckets);
-    })
-    .catch(err => {
-      /* istanbul ignore next */
-      throw err;
-    });
+  return el.search(query).then(data => {
+    const { buckets } = data.body.aggregations.genres;
+    return map(b => ({ label: b.key, value: b.doc_count }), buckets);
+  });
 };
 export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) => {
   const haveRange = start && end;
@@ -497,7 +494,7 @@ export const elReconstructRelation = (concept, relationsMap = null, forceNatural
 // endregion
 
 // region elastic common loader.
-const specialElasticCharsEscape = query => {
+export const specialElasticCharsEscape = query => {
   return query.replace(/([+|\-*()~={}:?\\])/g, '\\$1');
 };
 export const elPaginate = async (indexName, options) => {
