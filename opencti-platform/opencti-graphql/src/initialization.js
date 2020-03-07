@@ -10,7 +10,7 @@ import { addSettings, getSettings } from './domain/settings';
 import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from './domain/user';
 import { addCapability, addRole } from './domain/grant';
 import { addAttribute } from './domain/attribute';
-import {checkPythonStix2} from "./python/pythonBridge";
+import { checkPythonStix2 } from './python/pythonBridge';
 
 const fs = require('fs');
 

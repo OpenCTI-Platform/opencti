@@ -65,6 +65,7 @@ export const el = new Client({ node: conf.get('elasticsearch:url') });
 export const elIsAlive = async () => {
   try {
     return el.info().then(info => {
+      /* istanbul ignore if */
       if (info.meta.connection.status !== 'alive') {
         logger.error(`[ELASTICSEARCH] Seems down`);
         throw new Error('elastic seems down');
@@ -72,6 +73,7 @@ export const elIsAlive = async () => {
       return true;
     });
   } catch (e) {
+    /* istanbul ignore next */
     logger.error(`[ELASTICSEARCH] Seems down`);
     throw new Error('elastic seems down');
   }
@@ -80,7 +82,10 @@ export const elVersion = () => {
   return el
     .info()
     .then(info => info.body.version.number)
-    .catch(() => 'Disconnected');
+    .catch(() => {
+      /* istanbul ignore next */
+      return 'Disconnected';
+    });
 };
 export const elIndexExists = async indexName => {
   const existIndex = await el.indices.exists({ index: indexName });
@@ -167,6 +172,7 @@ export const elCreateIndexes = async (indexesToCreate = PLATFORM_INDICES) => {
             }
           });
         }
+        /* istanbul ignore next */
         return result;
       });
     })
@@ -176,6 +182,7 @@ export const elDeleteIndexes = async (indexesToDelete = PLATFORM_INDICES) => {
   return Promise.all(
     indexesToDelete.map(index => {
       return el.indices.delete({ index }).catch(err => {
+        /* istanbul ignore next */
         logger.error(`[ELASTICSEARCH] Delete indices fail > ${err}`);
       });
     })
@@ -183,7 +190,7 @@ export const elDeleteIndexes = async (indexesToDelete = PLATFORM_INDICES) => {
 };
 
 export const elCount = (indexName, options = {}) => {
-  const { endDate = null, type = null, types = null } = options;
+  const { endDate = null, types = null } = options;
   let must = [];
   if (endDate !== null) {
     must = append(
@@ -192,18 +199,6 @@ export const elCount = (indexName, options = {}) => {
           created_at: {
             format: 'strict_date_optional_time',
             lt: endDate
-          }
-        }
-      },
-      must
-    );
-  }
-  if (type !== null && type.length > 0) {
-    must = append(
-      {
-        match_phrase: {
-          entity_type: {
-            query: type
           }
         }
       },
@@ -296,6 +291,7 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
       return map(b => ({ label: b.key, value: b.doc_count }), buckets);
     })
     .catch(err => {
+      /* istanbul ignore next */
       throw err;
     });
 };
@@ -398,6 +394,12 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
           must: concat(
             [
               {
+                bool: {
+                  should: [{ match_phrase: { entity_type: type } }, { match_phrase: { parent_types: type } }],
+                  minimum_should_match: 1
+                }
+              },
+              {
                 range: {
                   [field]: {
                     gte: start,
@@ -407,9 +409,7 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
               }
             ],
             histoFilters
-          ),
-          should: [{ match_phrase: { entity_type: type } }, { match_phrase: { parent_types: type } }],
-          minimum_should_match: 1
+          )
         }
       },
       aggs: {

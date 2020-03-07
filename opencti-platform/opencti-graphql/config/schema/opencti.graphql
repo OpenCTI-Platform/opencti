@@ -2980,7 +2980,7 @@ type Query {
     endDate: DateTime!
     interval: String!
   ): [TimeSeries]  @auth(for: [KNOWLEDGE])
-  stixDomainEntitiesNumber(type: String, endDate: DateTime): Number  @auth(for: [KNOWLEDGE])
+  stixDomainEntitiesNumber(types: [String], endDate: DateTime): Number  @auth(for: [KNOWLEDGE])
   # StixObservables
   stixObservable(id: String): StixObservable @auth(for: [KNOWLEDGE])
   stixObservables(
@@ -2993,7 +2993,7 @@ type Query {
     filterMode: FilterMode
     search: String
   ): StixObservableConnection @auth(for: [KNOWLEDGE])
-  stixObservablesNumber(type: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
+  stixObservablesNumber(types: [String], endDate: DateTime): Number @auth(for: [KNOWLEDGE])
   stixObservablesTimeSeries(type: String): [TimeSeries] @auth(for: [KNOWLEDGE])
   stixObservablesDistribution(type: String): [Distribution] @auth(for: [KNOWLEDGE])
   # StixRelations

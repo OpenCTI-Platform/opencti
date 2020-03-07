@@ -79,13 +79,13 @@ describe('Elasticsearch document loader', () => {
 describe('Elasticsearch computation', () => {
   it('should count accurate', async () => {
     // const { endDate = null, type = null, types = null } = options;
-    const malwaresCount = await elCount(INDEX_STIX_ENTITIES, { type: 'Malware' });
+    const malwaresCount = await elCount(INDEX_STIX_ENTITIES, { types: ['Malware'] });
     expect(malwaresCount).toEqual(2);
   });
   it('should count accurate with date filter', async () => {
     const mostRecentMalware = await elLoadByStixId('malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
     const malwaresCount = await elCount(INDEX_STIX_ENTITIES, {
-      type: 'Malware',
+      types: ['Malware'],
       endDate: mostRecentMalware.created_at
     });
     expect(malwaresCount).toEqual(1);
@@ -219,6 +219,46 @@ describe('Elasticsearch computation', () => {
     const aggregationMap = new Map(data.map(i => [i.date, i.value]));
     expect(aggregationMap.get('2019')).toEqual(3);
     expect(aggregationMap.get('2020')).toEqual(11);
+  });
+  it('should year histogram with relation filter accurate', async () => {
+    const data = await elHistogramCount(
+      'Stix-Domain-Entity',
+      'created',
+      'year',
+      '2019-09-23T00:00:00.000Z',
+      '2020-03-02T00:00:00.000Z',
+      [{ isRelation: true, type: 'uses', value: '9f7f00f9-304b-4055-8c4f-f5eadb00de3b' }]
+    );
+    expect(data.length).toEqual(1);
+    const aggregationMap = new Map(data.map(i => [i.date, i.value]));
+    expect(aggregationMap.get('2019')).toEqual(1);
+  });
+  it('should year histogram with relation filter accurate', async () => {
+    const data = await elHistogramCount(
+      'Stix-Domain-Entity',
+      'created',
+      'year',
+      '2019-09-23T00:00:00.000Z',
+      '2020-03-02T00:00:00.000Z',
+      [{ isRelation: true, type: undefined, value: '9f7f00f9-304b-4055-8c4f-f5eadb00de3b' }]
+    );
+    expect(data.length).toEqual(2);
+    const aggregationMap = new Map(data.map(i => [i.date, i.value]));
+    expect(aggregationMap.get('2019')).toEqual(1);
+    expect(aggregationMap.get('2020')).toEqual(1);
+  });
+  it('should year histogram with attribute filter accurate', async () => {
+    const data = await elHistogramCount(
+      'Identity',
+      'created',
+      'year',
+      undefined, // No start
+      undefined, // No end
+      [{ isRelation: false, type: 'name', value: 'The MITRE Corporation' }]
+    );
+    expect(data.length).toEqual(1);
+    const aggregationMap = new Map(data.map(i => [i.date, i.value]));
+    expect(aggregationMap.get('2017')).toEqual(1);
   });
 });
 

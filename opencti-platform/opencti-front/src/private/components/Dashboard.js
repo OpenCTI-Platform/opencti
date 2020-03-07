@@ -174,11 +174,8 @@ const dashboardLastObservablesQuery = graphql`
 `;
 
 const dashboardStixDomainEntitiesNumberQuery = graphql`
-  query DashboardStixDomainEntitiesNumberQuery(
-    $type: String
-    $endDate: DateTime
-  ) {
-    stixDomainEntitiesNumber(type: $type, endDate: $endDate) {
+  query DashboardStixDomainEntitiesNumberQuery($types: [String]$endDate: DateTime) {
+    stixDomainEntitiesNumber(types: $types, endDate: $endDate) {
       total
       count
     }
@@ -186,8 +183,8 @@ const dashboardStixDomainEntitiesNumberQuery = graphql`
 `;
 
 const dashboardStixObservablesNumberQuery = graphql`
-  query DashboardStixObservablesNumberQuery($type: String, $endDate: DateTime) {
-    stixObservablesNumber(type: $type, endDate: $endDate) {
+  query DashboardStixObservablesNumberQuery($types: [String], $endDate: DateTime) {
+    stixObservablesNumber(types: $types, endDate: $endDate) {
       total
       count
     }
@@ -256,7 +253,7 @@ class Dashboard extends Component {
               >
                 <QueryRenderer
                   query={dashboardStixDomainEntitiesNumberQuery}
-                  variables={{ type: 'report', endDate: dayAgo() }}
+                  variables={{ types: ['report'], endDate: dayAgo() }}
                   render={({ props }) => {
                     if (props && props.stixDomainEntitiesNumber) {
                       const { total } = props.stixDomainEntitiesNumber;
@@ -324,7 +321,7 @@ class Dashboard extends Component {
               >
                 <QueryRenderer
                   query={dashboardStixDomainEntitiesNumberQuery}
-                  variables={{ type: 'workspace', endDate: dayAgo() }}
+                  variables={{ types: ['workspace'], endDate: dayAgo() }}
                   render={({ props }) => {
                     if (props && props.stixDomainEntitiesNumber) {
                       const { total } = props.stixDomainEntitiesNumber;
