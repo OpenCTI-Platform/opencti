@@ -407,7 +407,7 @@ const loadConcept = async (concept, args = {}) => {
   if (infer === false && noCache === false && !forceNoCache()) {
     const conceptFromCache = await elLoadByGraknId(id, null, relationsMap, [index]);
     if (!conceptFromCache) {
-      logger.error(`[ELASTIC] ${id} missing, cant load the element, you need to reindex`);
+      logger.debug(`[ELASTIC] ${id} missing, cant load the element, you need to reindex`);
     } else {
       return conceptFromCache;
     }

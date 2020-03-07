@@ -20,7 +20,7 @@ import RootWorkspace from './components/workspaces/Root';
 import Reports from './components/reports/Reports';
 import RootReport from './components/reports/Root';
 import ExternalReferences from './components/common/external_references/ExternalReferences';
-import Connectors from './components/connectors/Connectors';
+import RootData from './components/data/Root';
 import Profile from './components/Profile';
 import Message from '../components/Message';
 import { NoMatch, BoundaryRoute } from './components/Error';
@@ -165,9 +165,8 @@ const Root = () => {
                         )}
                       />
                       <BoundaryRoute
-                        exact
-                        path="/dashboard/connectors"
-                        render={(routeProps) => <Connectors {...routeProps} />}
+                        path="/dashboard/data"
+                        render={(routeProps) => <RootData {...routeProps} />}
                       />
                       <BoundaryRoute
                         path="/dashboard/settings"

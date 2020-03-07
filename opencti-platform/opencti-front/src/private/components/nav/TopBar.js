@@ -44,7 +44,7 @@ import TopMenuCountry from './TopMenuCountry';
 import TopMenuCity from './TopMenuCity';
 import TopMenuOrganization from './TopMenuOrganization';
 import TopMenuPerson from './TopMenuPerson';
-import TopMenuConnectors from './TopMenuConnectors';
+import TopMenuData from './TopMenuData';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuProfile from './TopMenuProfile';
 import { commitMutation } from '../../../relay/environment';
@@ -290,9 +290,9 @@ const TopBar = ({
           ) : (
             ''
           )}
-          {location.pathname === '/dashboard/connectors'
-          || location.pathname.match('/dashboard/connectors/[a-z_]+$') ? (
-            <TopMenuConnectors />
+          {location.pathname === '/dashboard/data'
+          || location.pathname.match('/dashboard/data/[a-z_]+$') ? (
+            <TopMenuData />
             ) : (
               ''
             )}
