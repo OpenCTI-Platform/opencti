@@ -3424,6 +3424,7 @@ type StixDomainEntityEditMutations {
   importPush(file: Upload!): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
+  mergeEntities(stixDomainEntitiesIds: [String]!, alias: [String]): StixDomainEntity @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 # StixObservable

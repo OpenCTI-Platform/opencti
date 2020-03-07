@@ -1,4 +1,4 @@
-import { assoc, dissoc, map, propOr, pipe, invertObj, isNil, head } from 'ramda';
+import { assoc, dissoc, map, propOr, pipe, invertObj, isNil, head, omit } from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
@@ -317,22 +317,38 @@ export const stixDomainEntityEditField = async (user, stixDomainEntityId, input)
 export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomainEntitiesIds, alias) => {
   // 1. Update aliases
   await stixDomainEntityEditField(user, stixDomainEntityId, { key: 'alias', value: alias });
-
   // 2. Copy the relationships
   await Promise.all(
     stixDomainEntitiesIds.map(async id => {
-    const relations = await findAllStixRelations({fromId: id});
-    return Promise.all(relations.map(relation => {
-      const relationToCreate = pipe(
-        dissoc('internal_id_key'),
-        dissoc('stix_id_key'),
-
-      )(relation);
-      return addStixRelation(user, relationToCreate);
-    }))
-  }));
-
-
+      const relations = await findAllStixRelations({ fromId: id, forceNatural: true });
+      return Promise.all(
+        relations.edges.map(relationEdge => {
+          const relation = relationEdge.node;
+          const relationToCreate = {
+            fromId: id === relation.fromInternalId ? stixDomainEntityId : relation.fromInternalId,
+            fromRole: relation.fromRole,
+            toId: id === relation.toInternalId ? stixDomainEntityId : relation.toInternalId,
+            toRole: relation.toRole,
+            relationship_type: relation.relationship_type,
+            weight: relation.weight,
+            description: relation.description,
+            role_played: relation.role_played,
+            first_seen: relation.first_seen,
+            last_seen: relation.last_seen,
+            created: relation.created,
+            modified: relation.modified
+          };
+          return addStixRelation(user, relationToCreate);
+        })
+      );
+    })
+  );
+  // 3. Delete entities
+  await stixDomainEntitiesDelete(stixDomainEntitiesIds);
+  // 4. Return entity
+  return loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity').then(stixDomainEntity =>
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomainEntity, user)
+  );
 };
 // endregion
 

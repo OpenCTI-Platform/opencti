@@ -76,6 +76,10 @@ class StixObservables extends Component {
     this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
+  handleResetSelectedElements() {
+    this.setState({ selectedElements: {} });
+  }
+
   handleToggle(type) {
     if (this.state.stixDomainEntitiesTypes.includes(type)) {
       this.setState(
@@ -199,79 +203,9 @@ class StixObservables extends Component {
         <CurationToolBar
           paginationOptions={paginationOptions}
           selectedElements={selectedElements}
+          handleResetSelectedElements={this.handleResetSelectedElements.bind(this)}
         />
       </div>
-    );
-  }
-
-  renderDuplicates(paginationOptions) {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      numberOfElements,
-      selectedElements,
-    } = this.state;
-    const dataColumns = {
-      entity_type: {
-        label: 'Type',
-        width: '15%',
-        isSortable: true,
-      },
-      name: {
-        label: 'Name',
-        width: '35%',
-        isSortable: true,
-      },
-      tags: {
-        label: 'Tags',
-        width: '20%',
-        isSortable: false,
-      },
-      created_at: {
-        label: 'Creation date',
-        width: '15%',
-        isSortable: true,
-      },
-      markingDefinitions: {
-        label: 'Marking',
-        isSortable: false,
-      },
-    };
-    return (
-      <ListLines
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={this.handleSort.bind(this)}
-        handleSearch={this.handleSearch.bind(this)}
-        handleChangeView={this.handleChangeView.bind(this)}
-        disableCards={true}
-        enableDuplicates={true}
-        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={paginationOptions}
-        numberOfElements={numberOfElements}
-      >
-        <QueryRenderer
-          query={curationStixDomainEntitiesLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <CurationStixDomainEntitiesLines
-              data={props}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-              onTagClick={this.handleAddFilter.bind(this)}
-              selectedElements={selectedElements}
-              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
-          )}
-        />
-      </ListLines>
     );
   }
 

@@ -13,6 +13,8 @@ import {
   pluck,
   flatten,
   pathOr,
+  tail,
+  filter,
 } from 'ramda';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
@@ -32,6 +34,8 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import Radio from '@material-ui/core/Radio';
 import Alert from '@material-ui/lab/Alert/Alert';
 import Chip from '@material-ui/core/Chip';
 import { commitMutation } from '../../../../relay/environment';
@@ -100,12 +104,30 @@ const curationToolBarDeletionMutation = graphql`
   }
 `;
 
+const curationToolBarMergeMutation = graphql`
+  mutation CurationToolBarMergeMutation(
+    $id: ID!
+    $stixDomainEntitiesIds: [String]!
+    $alias: [String]
+  ) {
+    stixDomainEntityEdit(id: $id) {
+      mergeEntities(
+        stixDomainEntitiesIds: $stixDomainEntitiesIds
+        alias: $alias
+      ) {
+        id
+      }
+    }
+  }
+`;
+
 class CurationToolBar extends Component {
   constructor(props) {
     super(props);
     this.state = {
       displayMerge: false,
       displayDelete: false,
+      keptEntityId: null,
       merging: false,
       deleting: false,
     };
@@ -128,8 +150,8 @@ class CurationToolBar extends Component {
   }
 
   submitDelete() {
-    const stixDomainEntitiesIds = Object.keys(this.props.selectedElements);
     this.setState({ deleting: true });
+    const stixDomainEntitiesIds = Object.keys(this.props.selectedElements);
     commitMutation({
       mutation: curationToolBarDeletionMutation,
       variables: {
@@ -147,18 +169,37 @@ class CurationToolBar extends Component {
       },
       onCompleted: () => {
         this.setState({ deleting: false });
+        this.props.handleResetSelectedElements();
         this.handleCloseDelete();
       },
     });
   }
 
-  submitMerge(aliases) {
-    const stixDomainEntitiesIds = Object.keys(this.props.selectedElements);
+  handleChangeKeptEntityId(entityId) {
+    this.setState({ keptEntityId: entityId });
+  }
+
+  submitMerge() {
     this.setState({ merging: true });
+    const { selectedElements } = this.props;
+    const { keptEntityId } = this.state;
+    const stixDomainEntitiesIds = Object.keys(selectedElements);
+    const selectedElementsList = values(selectedElements);
+    const keptElement = keptEntityId
+      ? head(filter((n) => n.id === keptEntityId, selectedElementsList))
+      : head(selectedElementsList);
+    const names = pluck('name', selectedElementsList);
+    const aliases = flatten(pluck('alias', selectedElementsList));
+    const newAliases = filter((n) => n.length > 0, uniq(concat(names, aliases)));
+    const filteredStixDomainEntitiesIds = keptEntityId
+      ? filter((n) => n !== keptEntityId, stixDomainEntitiesIds)
+      : tail(stixDomainEntitiesIds);
     commitMutation({
-      mutation: curationToolBarDeletionMutation,
+      mutation: curationToolBarMergeMutation,
       variables: {
-        id: stixDomainEntitiesIds,
+        id: keptElement.id,
+        stixDomainEntitiesIds: filteredStixDomainEntitiesIds,
+        alias: newAliases,
       },
       updater: (store) => {
         const container = store.getRoot();
@@ -168,24 +209,28 @@ class CurationToolBar extends Component {
           'Pagination_stixDomainEntities',
           this.props.paginationOptions,
         );
-        stixDomainEntitiesIds.map((id) => ConnectionHandler.deleteNode(conn, id));
+        filteredStixDomainEntitiesIds.map((id) => ConnectionHandler.deleteNode(conn, id));
       },
       onCompleted: () => {
-        this.setState({ deleting: false });
-        this.handleCloseDelete();
+        this.setState({ merging: false });
+        this.props.handleResetSelectedElements();
+        this.handleCloseMerge();
       },
     });
   }
 
   render() {
     const { t, classes, selectedElements } = this.props;
+    const { keptEntityId } = this.state;
     const numberOfSelectedElements = Object.keys(selectedElements).length;
     const typesAreDifferent = uniq(map((n) => n.entity_type, values(selectedElements))).length > 1;
     const selectedElementsList = values(selectedElements);
-    const keptElement = head(selectedElementsList);
+    const keptElement = keptEntityId
+      ? head(filter((n) => n.id === keptEntityId, selectedElementsList))
+      : head(selectedElementsList);
     const names = pluck('name', selectedElementsList);
     const aliases = flatten(pluck('alias', selectedElementsList));
-    const newAliases = uniq(concat(names, aliases));
+    const newAliases = filter((n) => n.length > 0, uniq(concat(names, aliases)));
     return (
       <Drawer
         anchor="bottom"
@@ -259,6 +304,39 @@ class CurationToolBar extends Component {
                     primary={element.name}
                     secondary={truncate(element.description, 60)}
                   />
+                  <div style={{ marginRight: 50 }}>
+                    {pathOr([], ['markingDefinitions', 'edges'], element)
+                      .length > 0 ? (
+                        map(
+                          (markingDefinition) => (
+                          <ItemMarking
+                            key={markingDefinition.node.id}
+                            label={markingDefinition.node.definition}
+                            variant="inList"
+                          />
+                          ),
+                          element.markingDefinitions.edges,
+                        )
+                      ) : (
+                      <ItemMarking label="TLP:WHITE" variant="inList" />
+                      )}
+                  </div>
+                  <ListItemSecondaryAction>
+                    <Radio
+                      checked={
+                        keptEntityId
+                          ? keptEntityId === element.id
+                          : head(selectedElementsList).id === element.id
+                      }
+                      onChange={this.handleChangeKeptEntityId.bind(
+                        this,
+                        element.id,
+                      )}
+                      value="a"
+                      name="radio-button-demo"
+                      inputProps={{ 'aria-label': 'A' }}
+                    />
+                  </ListItemSecondaryAction>
                 </ListItem>
               ))}
             </List>
@@ -324,8 +402,8 @@ class CurationToolBar extends Component {
                 variant="contained"
                 color="primary"
                 onClick={this.submitMerge.bind(this)}
-                disabled={this.state.merging}
                 classes={{ root: classes.button }}
+                disabled={this.state.merging}
               >
                 {t('Merge')}
               </Button>
@@ -370,6 +448,7 @@ CurationToolBar.propTypes = {
   t: PropTypes.func,
   paginationOptions: PropTypes.object,
   selectedElements: PropTypes.object,
+  handleResetSelectedElements: PropTypes.func,
 };
 
 export default compose(inject18n, withStyles(styles))(CurationToolBar);

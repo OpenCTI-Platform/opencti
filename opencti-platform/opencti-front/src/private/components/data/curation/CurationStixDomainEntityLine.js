@@ -143,6 +143,7 @@ const CurationStixDomainEntityLineFragment = createFragmentContainer(
         id
         entity_type
         name
+        description
         alias
         created_at
         markingDefinitions {
