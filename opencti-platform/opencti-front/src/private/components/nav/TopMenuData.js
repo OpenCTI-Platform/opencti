@@ -19,22 +19,40 @@ const styles = theme => ({
   },
 });
 
-class TopMenuConnectors extends Component {
+class TopMenuData extends Component {
   render() {
     const { t, location, classes } = this.props;
     return (
       <div>
         <Button
           component={Link}
-          to="/dashboard/connectors"
+          to="/dashboard/data/curation"
           variant={
-            location.pathname === '/dashboard/connectors'
+            location.pathname === '/dashboard/data/curation'
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/connectors'
+            location.pathname === '/dashboard/data/curation'
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Data curation')}
+        </Button>
+        <Button
+          component={Link}
+          to="/dashboard/data/connectors"
+          variant={
+            location.pathname === '/dashboard/data/connectors'
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/data/connectors'
               ? 'primary'
               : 'inherit'
           }
@@ -47,7 +65,7 @@ class TopMenuConnectors extends Component {
   }
 }
 
-TopMenuConnectors.propTypes = {
+TopMenuData.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
   t: PropTypes.func,
@@ -58,4 +76,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(TopMenuConnectors);
+)(TopMenuData);

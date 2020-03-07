@@ -18,6 +18,7 @@ import {
   values,
   sortWith,
   ascend,
+  descend,
   take,
   pathOr,
 } from 'ramda';
@@ -166,7 +167,7 @@ class StixDomainEntityKillChainLinesComponent extends Component {
             : { id: 'unknown', phase_name: t('Unknown'), phase_order: 99 },
         n,
       )),
-      sortWith([ascend(prop('years'))]),
+      sortWith([descend(prop('years'))]),
       groupBy(path(['killChainPhase', 'id'])),
       mapObjIndexed((value, key) => assoc('attackPatterns', value, killChainPhases[key])),
       values,

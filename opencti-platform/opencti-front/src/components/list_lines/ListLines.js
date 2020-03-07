@@ -120,6 +120,8 @@ class ListLines extends Component {
       classes,
       handleSearch,
       handleChangeView,
+      disableCards,
+      enableDuplicates,
       handleRemoveFilter,
       handleToggleExports,
       openExports,
@@ -184,7 +186,7 @@ class ListLines extends Component {
             ) : (
               ''
             )}
-            {typeof handleChangeView === 'function' ? (
+            {typeof handleChangeView === 'function' && !disableCards ? (
               <Tooltip title={t('Cards view')}>
                 <IconButton
                   color="primary"
@@ -201,6 +203,18 @@ class ListLines extends Component {
                 <IconButton
                   color="secondary"
                   onClick={handleChangeView.bind(this, 'lines')}
+                >
+                  <TableChart />
+                </IconButton>
+              </Tooltip>
+            ) : (
+              ''
+            )}
+            {typeof handleChangeView === 'function' && enableDuplicates ? (
+              <Tooltip title={t('Detect duplicates')}>
+                <IconButton
+                  color="secondary"
+                  onClick={handleChangeView.bind(this, 'duplicates')}
                 >
                   <TableChart />
                 </IconButton>
@@ -293,6 +307,8 @@ ListLines.propTypes = {
   handleSearch: PropTypes.func,
   handleSort: PropTypes.func.isRequired,
   handleChangeView: PropTypes.func,
+  disableCards: PropTypes.bool,
+  enableDuplicates: PropTypes.bool,
   handleRemoveFilter: PropTypes.func,
   handleToggleExports: PropTypes.func,
   openExports: PropTypes.bool,

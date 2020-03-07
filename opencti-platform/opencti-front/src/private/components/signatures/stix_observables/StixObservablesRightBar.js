@@ -37,7 +37,7 @@ const styles = (theme) => ({
     marginRight: 0,
   },
   item: {
-    padding: '0 0 0 10px',
+    padding: '0 0 0 6px',
   },
   itemField: {
     padding: '0 15px 0 15px',
@@ -75,6 +75,7 @@ class StixObservablesRightBar extends Component {
             <Checkbox
               checked={types.includes('Autonomous-System')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Autonomous systems')} />
           </ListItem>
@@ -84,7 +85,11 @@ class StixObservablesRightBar extends Component {
             onClick={handleToggle.bind(this, 'Domain')}
             classes={{ root: classes.item }}
           >
-            <Checkbox checked={types.includes('Domain')} disableRipple={true} />
+            <Checkbox
+              checked={types.includes('Domain')}
+              disableRipple={true}
+              size="small"
+            />
             <ListItemText primary={t('Domain names')} />
           </ListItem>
           <ListItem
@@ -96,6 +101,7 @@ class StixObservablesRightBar extends Component {
             <Checkbox
               checked={types.includes('Mac-Addr')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('MAC addresses')} />
           </ListItem>
@@ -108,6 +114,7 @@ class StixObservablesRightBar extends Component {
             <Checkbox
               checked={types.includes('IPv4-Addr')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('IPv4 addresses')} />
           </ListItem>
@@ -120,6 +127,7 @@ class StixObservablesRightBar extends Component {
             <Checkbox
               checked={types.includes('IPv6-Addr')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('IPv6 addresses')} />
           </ListItem>
@@ -129,7 +137,11 @@ class StixObservablesRightBar extends Component {
             onClick={handleToggle.bind(this, 'URL')}
             classes={{ root: classes.item }}
           >
-            <Checkbox checked={types.includes('URL')} disableRipple={true} />
+            <Checkbox
+              checked={types.includes('URL')}
+              disableRipple={true}
+              size="small"
+            />
             <ListItemText primary={t('URL')} />
           </ListItem>
           <ListItem
@@ -138,7 +150,11 @@ class StixObservablesRightBar extends Component {
             onClick={handleToggle.bind(this, 'Email')}
             classes={{ root: classes.item }}
           >
-            <Checkbox checked={types.includes('Email')} disableRipple={true} />
+            <Checkbox
+              checked={types.includes('Email')}
+              disableRipple={true}
+              size="small"
+            />
             <ListItemText primary={t('Emails')} />
           </ListItem>
           <ListItem
@@ -147,7 +163,11 @@ class StixObservablesRightBar extends Component {
             onClick={handleToggle.bind(this, 'Mutex')}
             classes={{ root: classes.item }}
           >
-            <Checkbox checked={types.includes('Mutex')} disableRipple={true} />
+            <Checkbox
+              checked={types.includes('Mutex')}
+              disableRipple={true}
+              size="small"
+            />
             <ListItemText primary={t('Mutex')} />
           </ListItem>
           <ListItem
@@ -159,6 +179,7 @@ class StixObservablesRightBar extends Component {
             <Checkbox
               checked={types.includes('Directory')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Directories')} />
           </ListItem>
@@ -168,7 +189,11 @@ class StixObservablesRightBar extends Component {
             onClick={handleToggle.bind(this, 'File')}
             classes={{ root: classes.item }}
           >
-            <Checkbox checked={types.includes('File')} disableRipple={true} />
+            <Checkbox
+              checked={types.includes('File')}
+              disableRipple={true}
+              size="small"
+            />
             <ListItemText primary={t('Files')} />
           </ListItem>
           <ListItem
@@ -180,6 +205,7 @@ class StixObservablesRightBar extends Component {
             <Checkbox
               checked={types.includes('Registry-Key')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Registry')} />
           </ListItem>
@@ -192,6 +218,7 @@ class StixObservablesRightBar extends Component {
             <Checkbox
               checked={types.includes('PDB-Path')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('PDB Path')} />
           </ListItem>
@@ -204,6 +231,7 @@ class StixObservablesRightBar extends Component {
             <Checkbox
               checked={types.includes('Windows-Service')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Windows services')} />
           </ListItem>
@@ -216,6 +244,7 @@ class StixObservablesRightBar extends Component {
             <Checkbox
               checked={types.includes('Windows-Scheduled-Task')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Windows scheduled tasks')} />
           </ListItem>
@@ -228,6 +257,7 @@ class StixObservablesRightBar extends Component {
             <Checkbox
               checked={types.includes('X509-Certificate')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('X509 Certificates')} />
           </ListItem>

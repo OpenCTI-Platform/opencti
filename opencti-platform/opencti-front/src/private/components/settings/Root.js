@@ -14,7 +14,11 @@ import { BoundaryRoute } from '../Error';
 const Root = () => (
   <Switch>
     <BoundaryRoute exact path="/dashboard/settings" component={Settings} />
-      <BoundaryRoute exact path="/dashboard/settings/inferences" component={Inferences} />
+    <BoundaryRoute
+      exact
+      path="/dashboard/settings/inferences"
+      component={Inferences}
+    />
     <BoundaryRoute
       exact
       path="/dashboard/settings/accesses"
@@ -26,9 +30,9 @@ const Root = () => (
       component={Users}
     />
     <BoundaryRoute
-        exact
-        path="/dashboard/settings/accesses/roles"
-        component={Roles}
+      exact
+      path="/dashboard/settings/accesses/roles"
+      component={Roles}
     />
     <BoundaryRoute
       exact
