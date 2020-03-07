@@ -4,6 +4,7 @@ import { BUS_TOPICS } from '../config/conf';
 import {
   addStixDomainEntity,
   findAll,
+  findAllDuplicates,
   findById,
   stixDomainEntitiesNumber,
   stixDomainEntitiesTimeSeries,
@@ -11,12 +12,14 @@ import {
   stixDomainEntityAddRelations,
   stixDomainEntityCleanContext,
   stixDomainEntityDelete,
+  stixDomainEntitiesDelete,
   stixDomainEntityDeleteRelation,
   stixDomainEntityEditContext,
   stixDomainEntityEditField,
   stixDomainEntityExportAsk,
   stixDomainEntityExportPush,
-  stixDomainEntityImportPush
+  stixDomainEntityImportPush,
+  stixDomainEntityMerge
 } from '../domain/stixDomainEntity';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -27,6 +30,7 @@ const stixDomainEntityResolvers = {
   Query: {
     stixDomainEntity: (_, { id }) => findById(id),
     stixDomainEntities: (_, args) => findAll(args),
+    duplicateStixDomainEntities: (_, args) => findAllDuplicates(args),
     stixDomainEntitiesTimeSeries: (_, args) => stixDomainEntitiesTimeSeries(args),
     stixDomainEntitiesNumber: (_, args) => stixDomainEntitiesNumber(args),
     stixDomainEntitiesExportFiles: (_, { type, first, context }) => filesListing(first, 'export', type, null, context)
@@ -66,8 +70,10 @@ const stixDomainEntityResolvers = {
         stixDomainEntityDeleteRelation(user, id, relationId, toId, relationType),
       importPush: ({ file }) => stixDomainEntityImportPush(user, null, id, file),
       exportAsk: args => stixDomainEntityExportAsk(assoc('stixDomainEntityId', id, args)),
-      exportPush: ({ file }) => stixDomainEntityExportPush(user, null, id, file)
+      exportPush: ({ file }) => stixDomainEntityExportPush(user, null, id, file),
+      mergeEntities: ({ stixDomainEntitiesIds, alias }) => stixDomainEntityMerge(user, id, stixDomainEntitiesIds, alias)
     }),
+    stixDomainEntitiesDelete: (_, { id }) => stixDomainEntitiesDelete(id),
     stixDomainEntityAdd: (_, { input }, { user }) => addStixDomainEntity(user, input),
     stixDomainEntitiesExportAsk: (_, args) => stixDomainEntityExportAsk(args),
     stixDomainEntitiesExportPush: (_, { type, file, context, listArgs }, { user }) =>

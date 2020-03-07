@@ -14,6 +14,7 @@ export const saveViewParameters = (
     dissoc('types'),
     dissoc('openExports'),
     dissoc('numberOfElements'),
+    dissoc('selectedElements'),
     dissoc('lastSeenStart'),
     dissoc('lastSeenStop'),
     dissoc('inferred'),

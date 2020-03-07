@@ -37,7 +37,7 @@ const styles = (theme) => ({
     marginRight: 0,
   },
   item: {
-    padding: '0 0 0 10px',
+    padding: '0 0 0 6px',
   },
   itemField: {
     padding: '0 15px 0 15px',
@@ -79,6 +79,7 @@ class IndicatorsRightBar extends Component {
             <Checkbox
               checked={indicatorTypes.includes('stix')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary="STIX" />
           </ListItem>
@@ -91,6 +92,7 @@ class IndicatorsRightBar extends Component {
             <Checkbox
               checked={indicatorTypes.includes('pcre')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary="PCRE" />
           </ListItem>
@@ -103,6 +105,7 @@ class IndicatorsRightBar extends Component {
             <Checkbox
               checked={indicatorTypes.includes('sigma')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary="SIGMA" />
           </ListItem>
@@ -115,6 +118,7 @@ class IndicatorsRightBar extends Component {
             <Checkbox
               checked={indicatorTypes.includes('snort')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary="SNORT" />
           </ListItem>
@@ -127,6 +131,7 @@ class IndicatorsRightBar extends Component {
             <Checkbox
               checked={indicatorTypes.includes('suricata')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary="Suricata" />
           </ListItem>
@@ -139,6 +144,7 @@ class IndicatorsRightBar extends Component {
             <Checkbox
               checked={indicatorTypes.includes('yara')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary="YARA" />
           </ListItem>
@@ -159,6 +165,7 @@ class IndicatorsRightBar extends Component {
             <Checkbox
               checked={observableTypes.includes('Autonomous-System')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Autonomous systems')} />
           </ListItem>
@@ -171,6 +178,7 @@ class IndicatorsRightBar extends Component {
             <Checkbox
               checked={observableTypes.includes('Domain')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Domain names')} />
           </ListItem>
@@ -183,6 +191,7 @@ class IndicatorsRightBar extends Component {
             <Checkbox
               checked={observableTypes.includes('Mac-Addr')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('MAC addresses')} />
           </ListItem>
@@ -195,6 +204,7 @@ class IndicatorsRightBar extends Component {
             <Checkbox
               checked={observableTypes.includes('IPv4-Addr')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('IPv4 addresses')} />
           </ListItem>
@@ -207,6 +217,7 @@ class IndicatorsRightBar extends Component {
             <Checkbox
               checked={observableTypes.includes('IPv6-Addr')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('IPv6 addresses')} />
           </ListItem>
@@ -219,6 +230,7 @@ class IndicatorsRightBar extends Component {
             <Checkbox
               checked={observableTypes.includes('URL')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('URL')} />
           </ListItem>
@@ -231,6 +243,7 @@ class IndicatorsRightBar extends Component {
             <Checkbox
               checked={observableTypes.includes('Email*')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Emails')} />
           </ListItem>
@@ -243,6 +256,7 @@ class IndicatorsRightBar extends Component {
             <Checkbox
               checked={observableTypes.includes('Mutex')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Mutex')} />
           </ListItem>
@@ -255,6 +269,7 @@ class IndicatorsRightBar extends Component {
             <Checkbox
               checked={observableTypes.includes('Directory')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Directories')} />
           </ListItem>
@@ -267,6 +282,7 @@ class IndicatorsRightBar extends Component {
             <Checkbox
               checked={observableTypes.includes('File*')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Files')} />
           </ListItem>
@@ -279,6 +295,7 @@ class IndicatorsRightBar extends Component {
             <Checkbox
               checked={observableTypes.includes('Registry-Key*')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Registry')} />
           </ListItem>
@@ -291,6 +308,7 @@ class IndicatorsRightBar extends Component {
             <Checkbox
               checked={observableTypes.includes('PDB-Path')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('PDB Path')} />
           </ListItem>
@@ -303,6 +321,7 @@ class IndicatorsRightBar extends Component {
             <Checkbox
               checked={observableTypes.includes('Windows-Service')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Windows services')} />
           </ListItem>
@@ -318,6 +337,7 @@ class IndicatorsRightBar extends Component {
             <Checkbox
               checked={observableTypes.includes('Windows-Scheduled-Task')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('Windows scheduled tasks')} />
           </ListItem>
@@ -330,6 +350,7 @@ class IndicatorsRightBar extends Component {
             <Checkbox
               checked={observableTypes.includes('X509-Certificate')}
               disableRipple={true}
+              size="small"
             />
             <ListItemText primary={t('X509 Certificates')} />
           </ListItem>
