@@ -268,8 +268,10 @@ const i18n = {
       'This connector is active': 'Ce connecteur est actif',
       'This connector is disconnected': 'Ce connecteur est déconnecté',
       'Reset the connector state': "Réinitialiser l'état du connecteur",
+      'Clear this connector': 'Supprimer ce connecteur',
       'The connector state has been reset':
         "L'état du connecteur a été réinitialisé",
+      'The connector has been cleared': 'Le connecteur a été supprimé',
       'Refresh the knowledge using this connector':
         'Actualiser la connaissance en utilisant ce connecteur',
       'Sectors, organizations and persons':

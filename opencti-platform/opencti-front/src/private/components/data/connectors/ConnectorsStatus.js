@@ -18,7 +18,7 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import List from '@material-ui/core/List';
 import Chip from '@material-ui/core/Chip';
 import Tooltip from '@material-ui/core/Tooltip';
-import { RotateLeft } from 'mdi-material-ui';
+import { RotateLeft, Delete } from 'mdi-material-ui';
 import IconButton from '@material-ui/core/IconButton';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
@@ -80,7 +80,7 @@ const inlineStylesHeaders = {
   },
   name: {
     float: 'left',
-    width: '25%',
+    width: '20%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -106,7 +106,7 @@ const inlineStylesHeaders = {
 const inlineStyles = {
   name: {
     float: 'left',
-    width: '25%',
+    width: '20%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -184,6 +184,9 @@ class ConnectorsStatusComponent extends Component {
       mutation: connectorsStatusDeletionMutation,
       variables: {
         id: connectorId,
+      },
+      onCompleted: () => {
+        MESSAGING$.notifySuccess('The connector has been cleared');
       },
     });
   }
@@ -325,6 +328,16 @@ class ConnectorsStatusComponent extends Component {
                         color="primary"
                       >
                         <RotateLeft />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title={t('Clear this connector')}>
+                      <IconButton
+                        onClick={this.handleDelete.bind(this, connector.id)}
+                        aria-haspopup="true"
+                        color="primary"
+                        disabled={connector.active}
+                      >
+                        <Delete />
                       </IconButton>
                     </Tooltip>
                   </Security>
