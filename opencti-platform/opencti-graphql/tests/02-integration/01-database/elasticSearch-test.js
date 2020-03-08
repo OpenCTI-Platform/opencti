@@ -9,7 +9,8 @@ import {
   elDeleteByField,
   elDeleteIndexes,
   elHistogramCount,
-  elIndex, elIndexElements,
+  elIndex,
+  elIndexElements,
   elIndexExists,
   elIsAlive,
   elLoadByGraknId,
@@ -17,7 +18,8 @@ import {
   elLoadByStixId,
   elLoadByTerms,
   elPaginate,
-  elReconstructRelation, elRemoveRelationConnection,
+  elReconstructRelation,
+  elRemoveRelationConnection,
   elVersion,
   forceNoCache,
   specialElasticCharsEscape
@@ -559,6 +561,11 @@ describe('Elasticsearch basic loader', () => {
     expect(data.fromRole).toEqual('indicator');
     expect(data.toRole).toEqual('characterize');
     expect(data.entity_type).toEqual('stix_relation');
+  });
+  it('should relation creation use x_opencti_id', async () => {
+    const data = await elLoadByStixId('relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02');
+    expect(data).not.toBeNull();
+    expect(data.id).toEqual('209cbdf0-fc5e-47c9-8023-dd724993ae55');
   });
 });
 

@@ -1256,8 +1256,13 @@ const createRelationRaw = async (fromInternalId, input, opts = {}, fromType = nu
   }
   // 02. Prepare the data to create or index
   const today = now();
-  const relationId =
-    entityType === TYPE_RELATION_EMBEDDED ? uuid5(`${fromInternalId}${input.toId}`, uuid5.DNS) : uuid();
+  let relationId;
+  if (input.internal_id_key) {
+    relationId = input.internal_id_key;
+  } else {
+    const relationEmbeddedId = uuid5(`${fromInternalId}${input.toId}`, uuid5.DNS);
+    relationId = entityType === TYPE_RELATION_EMBEDDED ? relationEmbeddedId : uuid();
+  }
   let relationAttributes = { internal_id_key: relationId };
   if (isStixRelation) {
     const currentDate = now();
