@@ -605,4 +605,9 @@ describe('Elasticsearch reindex', () => {
     expect(data).toEqual(1);
     await checkRelationConnections();
   });
+  it('should relation reindex check consistency', async () => {
+    const indexPromise = elIndexElements([{ relationship_type: 'uses' }]);
+    // noinspection ES6MissingAwait
+    expect(indexPromise).rejects.toThrow();
+  });
 });
