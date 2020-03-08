@@ -6,7 +6,6 @@ import {
   getGraknVersion,
   load,
   loadEntityById,
-  TYPE_OPENCTI_INTERNAL,
   updateAttribute
 } from '../database/grakn';
 import conf, { BUS_TOPICS } from '../config/conf';
@@ -15,6 +14,7 @@ import { elVersion } from '../database/elasticSearch';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { getMinIOVersion } from '../database/minio';
 import { version } from '../../package.json';
+import { TYPE_OPENCTI_INTERNAL } from '../database/utils';
 
 export const getApplicationInfo = () => ({
   version,

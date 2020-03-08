@@ -1,4 +1,5 @@
-import { el, INDEX_STIX_ENTITIES } from '../database/elasticSearch';
+import { el } from '../database/elasticSearch';
+import { INDEX_STIX_ENTITIES } from '../database/utils';
 
 const removeAttributeForEntityType = async (entityType, role) => {
   await el.updateByQuery({

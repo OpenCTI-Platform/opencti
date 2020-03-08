@@ -1,6 +1,6 @@
 // Admin user initialization
 import { logger } from './config/conf';
-import { elCount, elCreateIndexes, elDeleteIndexes, elIsAlive, INDEX_STIX_ENTITIES } from './database/elasticSearch';
+import { elCount, elCreateIndexes, elDeleteIndexes, elIsAlive } from './database/elasticSearch';
 import { graknIsAlive, write } from './database/grakn';
 import applyMigration from './database/migration';
 import { initializeAdminUser } from './config/providers';
@@ -11,6 +11,7 @@ import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from './domain/
 import { addCapability, addRole } from './domain/grant';
 import { addAttribute } from './domain/attribute';
 import { checkPythonStix2 } from './python/pythonBridge';
+import { INDEX_STIX_ENTITIES } from './database/utils';
 
 const fs = require('fs');
 

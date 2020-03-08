@@ -1,14 +1,9 @@
 import uuid from 'uuid/v4';
 import { assoc, pipe, splitEvery } from 'ramda';
-import {
-  attributeExists,
-  conceptTypes,
-  executeWrite,
-  inferIndexFromConceptTypes,
-  loadEntityByGraknId
-} from '../database/grakn';
+import { attributeExists, conceptTypes, executeWrite, loadEntityByGraknId } from '../database/grakn';
 import { logger } from '../config/conf';
 import { elIndex } from '../database/elasticSearch';
+import { inferIndexFromConceptTypes } from '../database/utils';
 
 export const up = async next => {
   logger.info(

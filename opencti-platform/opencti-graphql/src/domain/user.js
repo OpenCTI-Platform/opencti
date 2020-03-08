@@ -29,11 +29,9 @@ import {
   loadEntityByStixId,
   loadWithConnectedRelations,
   now,
-  TYPE_OPENCTI_INTERNAL,
-  TYPE_STIX_DOMAIN_ENTITY,
   updateAttribute
 } from '../database/grakn';
-import { buildPagination } from '../database/utils';
+import { buildPagination, TYPE_OPENCTI_INTERNAL, TYPE_STIX_DOMAIN_ENTITY } from '../database/utils';
 
 // region utils
 export const BYPASS = 'BYPASS';

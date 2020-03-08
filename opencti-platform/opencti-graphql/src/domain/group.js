@@ -8,12 +8,11 @@ import {
   findWithConnectedRelations,
   listEntities,
   loadEntityById,
-  TYPE_OPENCTI_INTERNAL,
   updateAttribute
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { buildPagination } from '../database/utils';
+import { buildPagination, TYPE_OPENCTI_INTERNAL } from '../database/utils';
 
 export const findById = groupId => {
   return loadEntityById(groupId, 'Group');

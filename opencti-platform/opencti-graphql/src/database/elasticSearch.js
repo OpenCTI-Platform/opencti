@@ -9,6 +9,7 @@ import {
   filter,
   find as Rfind,
   flatten,
+  groupBy,
   head,
   includes,
   invertObj,
@@ -20,7 +21,13 @@ import {
   toPairs,
   uniq
 } from 'ramda';
-import { buildPagination } from './utils';
+import {
+  buildPagination,
+  INDEX_STIX_ENTITIES,
+  INDEX_STIX_OBSERVABLE,
+  INDEX_STIX_RELATIONS,
+  inferIndexFromConceptTypes
+} from './utils';
 import conf, { logger } from '../config/conf';
 import { rolesMap } from './graknRoles';
 
@@ -53,10 +60,8 @@ const numberFields = ['object_status', 'phase_order', 'level', 'weight', 'orderi
 const virtualTypes = ['Identity', 'Email', 'File', 'Stix-Domain-Entity', 'Stix-Domain', 'Stix-Observable'];
 
 export const REL_INDEX_PREFIX = 'rel_';
-export const INDEX_STIX_OBSERVABLE = 'stix_observables';
-export const INDEX_STIX_ENTITIES = 'stix_domain_entities_v2';
-export const INDEX_STIX_RELATIONS = 'stix_relations';
 export const INDEX_WORK_JOBS = 'work_jobs_index';
+const UNIMPACTED_ENTITIES_ROLE = ['tagging', 'marking', 'kill_chain_phase', 'creator'];
 export const PLATFORM_INDICES = [INDEX_STIX_ENTITIES, INDEX_STIX_RELATIONS, INDEX_STIX_OBSERVABLE, INDEX_WORK_JOBS];
 
 export const forceNoCache = () => conf.get('elasticsearch:noQueryCache') || false;
@@ -559,9 +564,9 @@ export const elPaginate = async (indexName, options = {}) => {
     must = append({ bool: { should, minimum_should_match: 1 } }, must);
   }
   const validFilters = filter(f => f && f.values.length > 0, filters || []);
-  const valuesFiltering = [];
   if (validFilters.length > 0) {
     for (let index = 0; index < validFilters.length; index += 1) {
+      const valuesFiltering = [];
       const { key, values, operator = 'eq' } = validFilters[index];
       for (let i = 0; i < values.length; i += 1) {
         if (values[i] === null) {
@@ -620,22 +625,25 @@ export const elPaginate = async (indexName, options = {}) => {
       }
       return dataWithIds;
     })
-    .catch(err => {
-      // Because we create the mapping at element creation
-      // We log the error only if its not a mapping not found error
-      const numberOfCauses = err.meta.body.error.root_cause.length;
-      const invalidMappingCauses = pipe(
-        map(r => r.reason),
-        filter(r => includes('No mapping found for', r))
-      )(err.meta.body.error.root_cause);
-      if (numberOfCauses > invalidMappingCauses.length) {
-        logger.error(`[ELASTICSEARCH] Paginate fail > ${err}`);
+    .catch(
+      /* istanbul ignore next */ err => {
+        logger.error(err);
+        // Because we create the mapping at element creation
+        // We log the error only if its not a mapping not found error
+        const numberOfCauses = err.meta.body.error.root_cause.length;
+        const invalidMappingCauses = pipe(
+          map(r => r.reason),
+          filter(r => includes('No mapping found for', r))
+        )(err.meta.body.error.root_cause);
+        // If uncontrolled error, log and propagate
+        if (numberOfCauses > invalidMappingCauses.length) {
+          logger.error(`[ELASTICSEARCH] Paginate fail > ${err}`);
+          throw err;
+        } else {
+          return connectionFormat ? buildPagination(0, 0, [], 0) : [];
+        }
       }
-      if (connectionFormat) {
-        return buildPagination(0, 0, [], 0);
-      }
-      return [];
-    });
+    );
 };
 export const elLoadByTerms = async (terms, relationsMap, indices = PLATFORM_INDICES) => {
   const query = {
@@ -650,10 +658,9 @@ export const elLoadByTerms = async (terms, relationsMap, indices = PLATFORM_INDI
     }
   };
   logger.debug(`[ELASTICSEARCH] loadByTerms > ${JSON.stringify(query)}`);
-  const data = await el.search(query).catch(err => {
-    logger.error(`[ELASTICSEARCH] Load term fail > ${err}`);
-  });
+  const data = await el.search(query);
   const total = data.body.hits.total.value;
+  /* istanbul ignore if */
   if (total > 1) {
     throw new Error(`[ELASTIC] Expect only one response expected for ${terms}`);
   }
@@ -692,24 +699,22 @@ export const elLoadByGraknId = (id, type = null, relationsMap = null, indices = 
 export const elBulk = async args => {
   return el.bulk(args);
 };
+
+/* istanbul ignore next */
 export const elReindex = async indices => {
   return Promise.all(
     indices.map(indexMap => {
-      return el
-        .reindex({
-          timeout: '60m',
-          body: {
-            source: {
-              index: indexMap.source
-            },
-            dest: {
-              index: indexMap.dest
-            }
+      return el.reindex({
+        timeout: '60m',
+        body: {
+          source: {
+            index: indexMap.source
+          },
+          dest: {
+            index: indexMap.dest
           }
-        })
-        .catch(err => {
-          logger.error(`[ELASTICSEARCH] Re index > fail ${err}`);
-        });
+        }
+      });
     })
   );
 };
@@ -717,19 +722,16 @@ export const elIndex = async (indexName, documentBody, refresh = true) => {
   const internalId = documentBody.internal_id_key;
   const entityType = documentBody.entity_type ? documentBody.entity_type : '';
   logger.debug(`[ELASTICSEARCH] index > ${entityType} ${internalId} in ${indexName}`);
-  await el
-    .index({
-      index: indexName,
-      id: documentBody.grakn_id,
-      refresh,
-      timeout: '60m',
-      body: dissoc('_index', documentBody)
-    })
-    .catch(err => {
-      logger.error(`[ELASTICSEARCH] index > ${entityType} ${internalId} in ${indexName}, ${err}`);
-    });
+  await el.index({
+    index: indexName,
+    id: documentBody.grakn_id,
+    refresh,
+    timeout: '60m',
+    body: dissoc('_index', documentBody)
+  });
   return documentBody;
 };
+/* istanbul ignore next */
 export const elUpdate = (indexName, documentId, documentBody, retry = 2) => {
   return el.update({
     id: documentId,
@@ -747,6 +749,7 @@ export const elDeleteByField = async (indexName, fieldName, value) => {
   };
   await el.deleteByQuery({
     index: indexName,
+    refresh: true,
     body: { query }
   });
   return value;
@@ -754,21 +757,17 @@ export const elDeleteByField = async (indexName, fieldName, value) => {
 export const elDeleteInstanceIds = async (ids, indexesToHandle = PLATFORM_INDICES) => {
   logger.debug(`[ELASTICSEARCH] elDeleteInstanceIds > ${ids}`);
   const terms = map(id => ({ term: { 'internal_id_key.keyword': id } }), ids);
-  return el
-    .deleteByQuery({
-      index: indexesToHandle,
-      refresh: true,
-      body: {
-        query: {
-          bool: {
-            should: terms
-          }
+  return el.deleteByQuery({
+    index: indexesToHandle,
+    refresh: true,
+    body: {
+      query: {
+        bool: {
+          should: terms
         }
       }
-    })
-    .catch(err => {
-      logger.error(`[ELASTICSEARCH] elDeleteInstanceIds > ${err}`);
-    });
+    }
+  });
 };
 export const elRemoveRelationConnection = async relationId => {
   const relation = await elLoadById(relationId);
@@ -793,4 +792,118 @@ export const elRemoveRelationConnection = async relationId => {
       }
     }
   });
+};
+
+const prepareIndexing = async elements => {
+  return Promise.all(
+    map(async thing => {
+      if (thing.relationship_type) {
+        if (thing.fromRole === undefined || thing.toRole === undefined) {
+          throw new Error(
+            `[ELASTIC] Cant index relation ${thing.grakn_id} connections without from (${thing.fromId}) or to (${thing.toId})`
+          );
+        }
+        const connections = [];
+        const [from, to] = await Promise.all([elLoadByGraknId(thing.fromId), elLoadByGraknId(thing.toId)]);
+        connections.push({
+          grakn_id: thing.fromId,
+          internal_id_key: from.internal_id_key,
+          types: thing.fromTypes,
+          role: thing.fromRole
+        });
+        connections.push({
+          grakn_id: thing.toId,
+          internal_id_key: to.internal_id_key,
+          types: thing.toTypes,
+          role: thing.toRole
+        });
+        return pipe(
+          assoc('connections', connections),
+          // Dissoc from
+          dissoc('from'),
+          dissoc('fromId'),
+          dissoc('fromTypes'),
+          dissoc('fromRole'),
+          // Dissoc to
+          dissoc('to'),
+          dissoc('toId'),
+          dissoc('toTypes'),
+          dissoc('toRole')
+        )(thing);
+      }
+      return thing;
+    }, elements)
+  );
+};
+export const elIndexElements = async (elements, retry = 2) => {
+  // 00. Relations must be transformed before indexing.
+  const transformedElements = await prepareIndexing(elements);
+  // 01. Bulk the indexing of row elements
+  const body = transformedElements.flatMap(doc => [
+    { index: { _index: inferIndexFromConceptTypes(doc.parent_types), _id: doc.grakn_id } },
+    doc
+  ]);
+  await elBulk({ refresh: true, body });
+  // 02. If relation, generate impacts for from and to sides
+  const impactedEntities = pipe(
+    filter(e => e.relationship_type !== undefined),
+    map(e => {
+      const { fromRole, toRole } = e;
+      const relationshipType = e.relationship_type;
+      const impacts = [];
+      // We impact target entities of the relation only if not global entities like
+      // MarkingDefinition (marking) / KillChainPhase (kill_chain_phase) / Tag (tagging)
+      if (!includes(fromRole, UNIMPACTED_ENTITIES_ROLE)) impacts.push({ from: e.fromId, relationshipType, to: e.toId });
+      if (!includes(toRole, UNIMPACTED_ENTITIES_ROLE)) impacts.push({ from: e.toId, relationshipType, to: e.fromId });
+      return impacts;
+    }),
+    flatten,
+    groupBy(i => i.from)
+  )(elements);
+  const elementsToUpdate = await Promise.all(
+    // For each from, generate the
+    map(async entityGraknId => {
+      const entity = await elLoadByGraknId(entityGraknId);
+      const targets = impactedEntities[entityGraknId];
+      // Build document fields to update ( per relation type )
+      // rel_membership: [{ internal_id_key: ID, types: [] }]
+      const targetsByRelation = groupBy(i => i.relationshipType, targets);
+      const targetsElements = await Promise.all(
+        map(async relType => {
+          const data = targetsByRelation[relType];
+          const resolvedData = await Promise.all(
+            map(async d => {
+              const resolvedTarget = await elLoadByGraknId(d.to);
+              return resolvedTarget.internal_id_key;
+            }, data)
+          );
+          return { relation: relType, elements: resolvedData };
+        }, Object.keys(targetsByRelation))
+      );
+      // Create params and scripted update
+      const params = {};
+      const sources = map(t => {
+        const field = `${REL_INDEX_PREFIX + t.relation}.internal_id_key`;
+        const createIfNotExist = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
+        const addAllElements = `ctx._source['${field}'].addAll(params['${field}'])`;
+        return `${createIfNotExist} ${addAllElements}`;
+      }, targetsElements);
+      const source = sources.length > 1 ? join(';', sources) : `${head(sources)};`;
+      for (let index = 0; index < targetsElements.length; index += 1) {
+        const targetElement = targetsElements[index];
+        params[`${REL_INDEX_PREFIX + targetElement.relation}.internal_id_key`] = targetElement.elements;
+      }
+      // eslint-disable-next-line no-underscore-dangle
+      return { _index: entity._index, id: entityGraknId, data: { script: { source, params } } };
+    }, Object.keys(impactedEntities))
+  );
+  const bodyUpdate = elementsToUpdate.flatMap(doc => [
+    // eslint-disable-next-line no-underscore-dangle
+    { update: { _index: doc._index, _id: doc.id, retry_on_conflict: retry } },
+    doc.data
+  ]);
+  if (bodyUpdate.length > 0) {
+    await elBulk({ refresh: true, timeout: '60m', body: bodyUpdate });
+  }
+  return transformedElements.length;
 };

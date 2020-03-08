@@ -1,6 +1,18 @@
 import moment from 'moment/moment';
-import { head, last, mapObjIndexed, pipe, values } from 'ramda';
+import { head, includes, last, mapObjIndexed, pipe, values } from 'ramda';
 import { offsetToCursor } from 'graphql-relay';
+
+export const INDEX_STIX_OBSERVABLE = 'stix_observables';
+export const INDEX_STIX_ENTITIES = 'stix_domain_entities_v2';
+export const INDEX_STIX_RELATIONS = 'stix_relations';
+
+export const TYPE_OPENCTI_INTERNAL = 'Internal';
+export const TYPE_STIX_DOMAIN_ENTITY = 'Stix-Domain-Entity';
+export const TYPE_STIX_OBSERVABLE = 'Stix-Observable';
+export const TYPE_STIX_RELATION = 'stix_relation';
+export const TYPE_STIX_OBSERVABLE_RELATION = 'stix_observable_relation';
+export const TYPE_RELATION_EMBEDDED = 'relation_embedded';
+export const TYPE_STIX_RELATION_EMBEDDED = 'stix_relation_embedded';
 
 export const fillTimeSeries = (startDate, endDate, interval, data) => {
   const startDateParsed = moment(startDate);
@@ -67,4 +79,18 @@ export const buildPagination = (first, offset, instances, globalCount) => {
     globalCount
   };
   return { edges, pageInfo };
+};
+
+export const inferIndexFromConceptTypes = (types, parentType = null) => {
+  // Observable index
+  if (includes(TYPE_STIX_OBSERVABLE, types) || parentType === TYPE_STIX_OBSERVABLE) return INDEX_STIX_OBSERVABLE;
+  // Relation index
+  if (includes(TYPE_STIX_RELATION, types) || parentType === TYPE_STIX_RELATION) return INDEX_STIX_RELATIONS;
+  if (includes(TYPE_STIX_OBSERVABLE_RELATION, types) || parentType === TYPE_STIX_OBSERVABLE_RELATION)
+    return INDEX_STIX_RELATIONS;
+  if (includes(TYPE_STIX_RELATION_EMBEDDED, types) || parentType === TYPE_STIX_RELATION_EMBEDDED)
+    return INDEX_STIX_RELATIONS;
+  if (includes(TYPE_RELATION_EMBEDDED, types) || parentType === TYPE_RELATION_EMBEDDED) return INDEX_STIX_RELATIONS;
+  // Everything else in entities index
+  return INDEX_STIX_ENTITIES;
 };

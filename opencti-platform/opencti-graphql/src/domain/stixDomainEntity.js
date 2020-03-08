@@ -16,11 +16,10 @@ import {
   updateAttribute,
   deleteRelationsByFromAndTo,
   loadRelationById,
-  distributionEntities,
-  TYPE_STIX_DOMAIN_ENTITY
+  distributionEntities
 } from '../database/grakn';
 import { findById as findMarkingDefintionById } from './markingDefinition';
-import { elCount, INDEX_STIX_ENTITIES } from '../database/elasticSearch';
+import { elCount } from '../database/elasticSearch';
 import { generateFileExportName, upload } from '../database/minio';
 import { connectorsForExport } from './connector';
 import { createWork, workToExportFile } from './work';
@@ -28,6 +27,7 @@ import { pushToConnector } from '../database/rabbitmq';
 import stixDomainEntityResolvers from '../resolvers/stixDomainEntity';
 import { findAll as findAllStixRelations, addStixRelation } from './stixRelation';
 import { ForbiddenAccess } from '../config/errors';
+import { INDEX_STIX_ENTITIES, TYPE_STIX_DOMAIN_ENTITY } from '../database/utils';
 
 export const findAll = async args => {
   const noTypes = !args.types || args.types.length === 0;

@@ -1,7 +1,7 @@
 import { flatten, map, pipe, uniqBy } from 'ramda';
 import { Promise } from 'bluebird';
 import moment from 'moment';
-import { find, getSingleValueNumber, indexElements } from './grakn';
+import { find, getSingleValueNumber, elIndexElements } from './grakn';
 import { elCreateIndexes, elDeleteIndexes } from './elasticSearch';
 import { logger } from '../config/conf';
 

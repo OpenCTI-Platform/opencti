@@ -42,12 +42,21 @@ import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import Grakn from 'grakn-client';
 import { DatabaseError } from '../config/errors';
 import conf, { logger } from '../config/conf';
-import { buildPagination, fillTimeSeries } from './utils';
+import {
+  buildPagination,
+  fillTimeSeries,
+  INDEX_STIX_RELATIONS,
+  inferIndexFromConceptTypes,
+  TYPE_RELATION_EMBEDDED,
+  TYPE_STIX_DOMAIN_ENTITY,
+  TYPE_STIX_OBSERVABLE,
+  TYPE_STIX_OBSERVABLE_RELATION,
+  TYPE_STIX_RELATION
+} from './utils';
 import { isInversed, rolesMap } from './graknRoles';
 import {
   elAggregationCount,
   elAggregationRelationsCount,
-  elBulk,
   elDeleteInstanceIds,
   elHistogramCount,
   elLoadByGraknId,
@@ -57,9 +66,7 @@ import {
   elRemoveRelationConnection,
   elUpdate,
   forceNoCache,
-  INDEX_STIX_ENTITIES,
-  INDEX_STIX_OBSERVABLE,
-  INDEX_STIX_RELATIONS,
+  elIndexElements,
   REL_INDEX_PREFIX
 } from './elasticSearch';
 
@@ -69,29 +76,8 @@ const GraknString = 'String';
 const GraknDate = 'Date';
 
 export const REL_CONNECTED_SUFFIX = 'CONNECTED';
-export const TYPE_OPENCTI_INTERNAL = 'Internal';
 export const TYPE_STIX_DOMAIN = 'Stix-Domain';
-export const TYPE_STIX_DOMAIN_ENTITY = 'Stix-Domain-Entity';
-export const TYPE_STIX_OBSERVABLE = 'Stix-Observable';
-export const TYPE_STIX_RELATION = 'stix_relation';
-export const TYPE_STIX_OBSERVABLE_RELATION = 'stix_observable_relation';
-export const TYPE_RELATION_EMBEDDED = 'relation_embedded';
-export const TYPE_STIX_RELATION_EMBEDDED = 'stix_relation_embedded';
-const UNIMPACTED_ENTITIES_ROLE = ['tagging', 'marking', 'kill_chain_phase', 'creator'];
 const INFERRED_RELATION_KEY = 'rel';
-export const inferIndexFromConceptTypes = (types, parentType = null) => {
-  // Observable index
-  if (includes(TYPE_STIX_OBSERVABLE, types) || parentType === TYPE_STIX_OBSERVABLE) return INDEX_STIX_OBSERVABLE;
-  // Relation index
-  if (includes(TYPE_STIX_RELATION, types) || parentType === TYPE_STIX_RELATION) return INDEX_STIX_RELATIONS;
-  if (includes(TYPE_STIX_OBSERVABLE_RELATION, types) || parentType === TYPE_STIX_OBSERVABLE_RELATION)
-    return INDEX_STIX_RELATIONS;
-  if (includes(TYPE_STIX_RELATION_EMBEDDED, types) || parentType === TYPE_STIX_RELATION_EMBEDDED)
-    return INDEX_STIX_RELATIONS;
-  if (includes(TYPE_RELATION_EMBEDDED, types) || parentType === TYPE_RELATION_EMBEDDED) return INDEX_STIX_RELATIONS;
-  // Everything else in entities index
-  return INDEX_STIX_ENTITIES;
-};
 
 export const utcDate = (date = undefined) => (date ? moment(date).utc() : moment().utc());
 export const now = () => utcDate().toISOString();
@@ -1049,119 +1035,7 @@ export const loadByGraknId = async (graknId, args = {}) => {
 // endregion
 
 // region Indexer
-const prepareIndexing = async elements => {
-  return Promise.all(
-    map(async thing => {
-      if (thing.relationship_type) {
-        if (thing.fromRole === undefined || thing.toRole === undefined) {
-          throw new Error(
-            `[ELASTIC] Cant index relation ${thing.grakn_id} connections without from (${thing.fromId}) or to (${thing.toId})`
-          );
-        }
-        const connections = [];
-        const [from, to] = await Promise.all([elLoadByGraknId(thing.fromId), elLoadByGraknId(thing.toId)]);
-        connections.push({
-          grakn_id: thing.fromId,
-          internal_id_key: from.internal_id_key,
-          types: thing.fromTypes,
-          role: thing.fromRole
-        });
-        connections.push({
-          grakn_id: thing.toId,
-          internal_id_key: to.internal_id_key,
-          types: thing.toTypes,
-          role: thing.toRole
-        });
-        return pipe(
-          assoc('connections', connections),
-          // Dissoc from
-          dissoc('from'),
-          dissoc('fromId'),
-          dissoc('fromTypes'),
-          dissoc('fromRole'),
-          // Dissoc to
-          dissoc('to'),
-          dissoc('toId'),
-          dissoc('toTypes'),
-          dissoc('toRole')
-        )(thing);
-      }
-      return thing;
-    }, elements)
-  );
-};
-export const indexElements = async (elements, retry = 2) => {
-  // 00. Relations must be transformed before indexing.
-  const transformedElements = await prepareIndexing(elements);
-  // 01. Bulk the indexing of row elements
-  const body = transformedElements.flatMap(doc => [
-    { index: { _index: inferIndexFromConceptTypes(doc.parent_types), _id: doc.grakn_id } },
-    doc
-  ]);
-  await elBulk({ refresh: true, body });
-  // 02. If relation, generate impacts for from and to sides
-  const impactedEntities = pipe(
-    filter(e => e.relationship_type !== undefined),
-    map(e => {
-      const { fromRole, toRole } = e;
-      const relationshipType = e.relationship_type;
-      const impacts = [];
-      // We impact target entities of the relation only if not global entities like
-      // MarkingDefinition (marking) / KillChainPhase (kill_chain_phase) / Tag (tagging)
-      if (!includes(fromRole, UNIMPACTED_ENTITIES_ROLE)) impacts.push({ from: e.fromId, relationshipType, to: e.toId });
-      if (!includes(toRole, UNIMPACTED_ENTITIES_ROLE)) impacts.push({ from: e.toId, relationshipType, to: e.fromId });
-      return impacts;
-    }),
-    flatten,
-    groupBy(i => i.from)
-  )(elements);
-  const elementsToUpdate = await Promise.all(
-    // For each from, generate the
-    map(async entityGraknId => {
-      const entity = await elLoadByGraknId(entityGraknId);
-      const targets = impactedEntities[entityGraknId];
-      // Build document fields to update ( per relation type )
-      // rel_membership: [{ internal_id_key: ID, types: [] }]
-      const targetsByRelation = groupBy(i => i.relationshipType, targets);
-      const targetsElements = await Promise.all(
-        map(async relType => {
-          const data = targetsByRelation[relType];
-          const resolvedData = await Promise.all(
-            map(async d => {
-              const resolvedTarget = await elLoadByGraknId(d.to);
-              return resolvedTarget.internal_id_key;
-            }, data)
-          );
-          return { relation: relType, elements: resolvedData };
-        }, Object.keys(targetsByRelation))
-      );
-      // Create params and scripted update
-      const params = {};
-      const sources = map(t => {
-        const field = `${REL_INDEX_PREFIX + t.relation}.internal_id_key`;
-        const createIfNotExist = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
-        const addAllElements = `ctx._source['${field}'].addAll(params['${field}'])`;
-        return `${createIfNotExist} ${addAllElements}`;
-      }, targetsElements);
-      const source = sources.length > 1 ? join(';', sources) : `${head(sources)};`;
-      for (let index = 0; index < targetsElements.length; index += 1) {
-        const targetElement = targetsElements[index];
-        params[`${REL_INDEX_PREFIX + targetElement.relation}.internal_id_key`] = targetElement.elements;
-      }
-      // eslint-disable-next-line no-underscore-dangle
-      return { _index: entity._index, id: entityGraknId, data: { script: { source, params } } };
-    }, Object.keys(impactedEntities))
-  );
-  const bodyUpdate = elementsToUpdate.flatMap(doc => [
-    // eslint-disable-next-line no-underscore-dangle
-    { update: { _index: doc._index, _id: doc.id, retry_on_conflict: retry } },
-    doc.data
-  ]);
-  if (bodyUpdate.length > 0) {
-    await elBulk({ refresh: true, timeout: '60m', body: bodyUpdate });
-  }
-  return transformedElements.length;
-};
+
 export const reindexByQuery = async (query, entities) => {
   const elements = await find(query, entities, { infer: false, noCache: true });
   // Get all inner elements
@@ -1169,7 +1043,7 @@ export const reindexByQuery = async (query, entities) => {
     map(entity => elements.map(e => e[entity])),
     flatten
   )(entities);
-  return indexElements(innerElements);
+  return elIndexElements(innerElements);
 };
 export const reindexEntityByAttribute = (type, value) => {
   const eType = escape(type);
@@ -1465,12 +1339,13 @@ const createRelationRaw = async (fromInternalId, input, opts = {}, fromType = nu
     assoc('inferred', false),
     // Types
     assoc('entity_type', entityType),
+    assoc('base_type', 'relation'),
     assoc('relationship_type', relationshipType),
     assoc('parent_types', graknRelation.relationTypes)
   )(relationAttributes);
   if (indexable) {
     // 04. Index the relation and the modification in the base entity
-    await indexElements([createdRel]);
+    await elIndexElements([createdRel]);
   }
   // 06. Return result
   if (reversedReturn !== true) {
@@ -1671,6 +1546,7 @@ export const createEntity = async (entity, type, opts = {}) => {
     // Transaction succeed, complete the result to send it back
     const completedData = pipe(
       assoc('id', internalId),
+      assoc('base_type', 'entity'),
       // Grakn identifiers
       assoc('grakn_id', entityCreated.id),
       // Types (entity type directly saved)
@@ -1678,7 +1554,7 @@ export const createEntity = async (entity, type, opts = {}) => {
     )(data);
     // Transaction succeed, index the result
     if (indexable) {
-      await indexElements([completedData]);
+      await elIndexElements([completedData]);
     }
     // Complete with eventual relations (will eventually update the index)
     await addOwner(internalId, entity.createdByOwner, opts);
