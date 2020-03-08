@@ -423,4 +423,55 @@ describe('Elasticsearch pagination', () => {
     data = await elPaginate(INDEX_STIX_ENTITIES, { search: 'https://attack.mitre.org/groups/G0096' });
     expect(data.edges.length).toEqual(2);
   });
+  it('should paginate with incorrect encoding', async () => {
+    const data = await elPaginate(INDEX_STIX_ENTITIES, { search: 'ATT%' });
+    expect(data.edges.length).toEqual(0);
+  });
+  it('should paginate with field not exist filter', async () => {
+    const filters = [{ key: 'color', operator: undefined, values: [null] }];
+    const data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    expect(data.edges.length).toEqual(46); // The 4 Default TLP Marking definitions
+  });
+  it('should paginate with field exist filter', async () => {
+    const filters = [{ key: 'color', operator: undefined, values: ['EXISTS'] }];
+    const data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    expect(data.edges.length).toEqual(4); // The 4 Default TLP Marking definitions
+  });
+  it('should paginate with equality filter', async () => {
+    // eq operation will use the field.keyword to do an exact field equality
+    let filters = [{ key: 'color', operator: 'eq', values: ['#c62828'] }];
+    let data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    expect(data.edges.length).toEqual(1); // The 4 Default TLP
+    // Special case when operator = eq + the field key is a dateFields => use a match
+    filters = [{ key: 'published', operator: 'eq', values: ['2020-03-01'] }];
+    data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    expect(data.edges.length).toEqual(1);
+  });
+  it('should paginate with match filter', async () => {
+    let filters = [{ key: 'entity_type', operator: 'match', values: ['marking'] }];
+    let data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    expect(data.edges.length).toEqual(5); // The 4 Default TLP + MITRE Corporation
+    // Verify that nothing is found in this case if using the eq operator
+    filters = [{ key: 'entity_type', operator: 'eq', values: ['marking'] }];
+    data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    expect(data.edges.length).toEqual(0);
+  });
+  it('should paginate with dates filter', async () => {
+    let filters = [{ key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] }];
+    let data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    expect(data.edges.length).toEqual(2); // The 4 Default TLP + MITRE Corporation
+    filters = [
+      { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
+      { key: 'color', operator: undefined, values: [null] }
+    ];
+    data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    expect(data.edges.length).toEqual(1);
+    filters = [
+      { key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] },
+      { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
+      { key: 'color', operator: undefined, values: [null] }
+    ];
+    data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    expect(data.edges.length).toEqual(3);
+  });
 });

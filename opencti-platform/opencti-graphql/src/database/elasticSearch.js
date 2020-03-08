@@ -559,9 +559,9 @@ export const elPaginate = async (indexName, options = {}) => {
     must = append({ bool: { should, minimum_should_match: 1 } }, must);
   }
   const validFilters = filter(f => f && f.values.length > 0, filters || []);
+  const valuesFiltering = [];
   if (validFilters.length > 0) {
     for (let index = 0; index < validFilters.length; index += 1) {
-      const valuesFiltering = [];
       const { key, values, operator = 'eq' } = validFilters[index];
       for (let i = 0; i < values.length; i += 1) {
         if (values[i] === null) {
