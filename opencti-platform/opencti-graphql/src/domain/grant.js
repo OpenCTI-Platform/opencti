@@ -26,7 +26,7 @@ export const addRole = async role => {
           toRole: 'capability',
           through: 'role_capability'
         },
-        {},
+        { indexable: false },
         'Role',
         'Capability'
       ),

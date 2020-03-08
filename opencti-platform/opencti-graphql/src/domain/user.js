@@ -243,7 +243,7 @@ export const assignRoleToUser = (userId, roleName) => {
       toRole: 'position',
       through: 'user_role'
     },
-    {},
+    { indexable: false },
     'User',
     'Role'
   );
@@ -285,7 +285,13 @@ export const roleEditField = (user, roleId, input) => {
   });
 };
 export const roleAddRelation = async (user, roleId, input) => {
-  const data = await createRelation(roleId, assoc('through', 'role_capability', input), {}, 'Role', null);
+  const data = await createRelation(
+    roleId,
+    assoc('through', 'role_capability', input),
+    { indexable: false },
+    'Role',
+    null
+  );
   // Clear cache of every user with this modified role
   const impactedUsers = await findAll({ filters: [{ key: 'rel_user_role.internal_id_key', values: [roleId] }] });
   await Promise.all(map(e => clearUserTokenCache(e.node.id), impactedUsers.edges));

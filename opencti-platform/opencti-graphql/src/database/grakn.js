@@ -64,7 +64,7 @@ import {
 } from './elasticSearch';
 
 // region global variables
-const dateFormat = 'YYYY-MM-DDTHH:mm:ss';
+const dateFormat = 'YYYY-MM-DDTHH:mm:ss.SSS';
 const GraknString = 'String';
 const GraknDate = 'Date';
 

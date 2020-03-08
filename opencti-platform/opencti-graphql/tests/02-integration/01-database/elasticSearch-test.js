@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { assoc, find, head, map, propEq } from 'ramda';
+import { offsetToCursor } from 'graphql-relay';
 import {
   elAggregationCount,
   elAggregationRelationsCount,
@@ -369,25 +370,57 @@ describe('Elasticsearch pagination', () => {
   it('Pagination standard escape', async () => {
     // +|\-*()~={}:?\\
     let escape = specialElasticCharsEscape('Looking {for} [malware] : ~APT');
-    expect(escape).toEqual('Looking \\{for\\} [malware] \\: \\~APT');
+    expect(escape).toEqual('Looking \\{for\\} \\[malware\\] \\: \\~APT');
     escape = specialElasticCharsEscape('Looking (threat) = ?maybe');
     expect(escape).toEqual('Looking \\(threat\\) \\= \\?maybe');
     escape = specialElasticCharsEscape('Looking All* + Everything| - \\with');
     expect(escape).toEqual('Looking All\\* \\+ Everything\\| \\- \\\\with');
   });
-  it('should paginate return correct data', async () => {
+  it('should paginate everything', async () => {
+    const data = await elPaginate(INDEX_STIX_ENTITIES);
+    expect(data).not.toBeNull();
+    expect(data.edges.length).toEqual(50);
+  });
+  it('should paginate everything after', async () => {
+    const data = await elPaginate(INDEX_STIX_ENTITIES, { after: offsetToCursor(30) });
+    expect(data).not.toBeNull();
+    expect(data.edges.length).toEqual(20);
+  });
+  it('should paginate with single type', async () => {
     // first = 200, after, types = null, filters = [], search = null,
     // orderBy = null, orderMode = 'asc',
     // relationsMap = null, forceNatural = false,
     // connectionFormat = true
     const data = await elPaginate(INDEX_STIX_ENTITIES, { types: ['Malware'] });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toBeGreaterThanOrEqual(2);
+    expect(data.edges.length).toEqual(2);
     const nodes = map(e => e.node, data.edges);
     const malware = find(propEq('stix_id_key', 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c'))(nodes);
     expect(malware.internal_id_key).not.toBeNull();
     expect(malware.name).toEqual('Paradise Ransomware');
     expect(malware._index).toEqual(INDEX_STIX_ENTITIES);
     expect(malware.parent_types).toEqual(expect.arrayContaining(['Malware', 'Stix-Domain-Entity', 'Stix-Domain']));
+  });
+  it('should paginate with classic search', async () => {
+    let data = await elPaginate(INDEX_STIX_ENTITIES, { search: 'malicious' });
+    expect(data.edges.length).toEqual(1);
+    data = await elPaginate(INDEX_STIX_ENTITIES, { search: 'with malicious' });
+    expect(data.edges.length).toEqual(2);
+    data = await elPaginate(INDEX_STIX_ENTITIES, { search: '"with malicious"' });
+    expect(data.edges.length).toEqual(1);
+  });
+  it('should paginate with escaped search', async () => {
+    let data = await elPaginate(INDEX_STIX_ENTITIES, { search: '(Citation:' });
+    expect(data.edges.length).toEqual(3);
+    data = await elPaginate(INDEX_STIX_ENTITIES, { search: '[APT41]' });
+    expect(data.edges.length).toEqual(1);
+    data = await elPaginate(INDEX_STIX_ENTITIES, { search: '%5BAPT41%5D' });
+    expect(data.edges.length).toEqual(1);
+  });
+  it('should paginate with http and https', async () => {
+    let data = await elPaginate(INDEX_STIX_ENTITIES, { search: 'http://attack.mitre.org/groups/G0096' });
+    expect(data.edges.length).toEqual(2);
+    data = await elPaginate(INDEX_STIX_ENTITIES, { search: 'https://attack.mitre.org/groups/G0096' });
+    expect(data.edges.length).toEqual(2);
   });
 });

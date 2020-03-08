@@ -495,9 +495,9 @@ export const elReconstructRelation = (concept, relationsMap = null, forceNatural
 
 // region elastic common loader.
 export const specialElasticCharsEscape = query => {
-  return query.replace(/([+|\-*()~={}:?\\])/g, '\\$1');
+  return query.replace(/([+|\-*()~={}[\]:?\\])/g, '\\$1');
 };
-export const elPaginate = async (indexName, options) => {
+export const elPaginate = async (indexName, options = {}) => {
   const {
     first = 200,
     after,
@@ -524,10 +524,10 @@ export const elPaginate = async (indexName, options) => {
     }
     const cleanSearch = specialElasticCharsEscape(decodedSearch.trim());
     let finalSearch;
-    if (cleanSearch.startsWith('http://')) {
-      finalSearch = `"*${cleanSearch.replace('http://', '')}*"`;
-    } else if (cleanSearch.startsWith('https://')) {
-      finalSearch = `"*${cleanSearch.replace('https://', '')}*"`;
+    if (cleanSearch.startsWith('http\\://')) {
+      finalSearch = `"*${cleanSearch.replace('http\\://', '')}*"`;
+    } else if (cleanSearch.startsWith('https\\://')) {
+      finalSearch = `"*${cleanSearch.replace('https\\://', '')}*"`;
     } else if (cleanSearch.startsWith('"')) {
       finalSearch = `${cleanSearch}`;
     } else {
