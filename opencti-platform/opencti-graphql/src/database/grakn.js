@@ -215,7 +215,7 @@ export const graknIsAlive = async () => {
     throw new Error('Grakn seems down');
   }
 };
-export const getGraknVersion = async () => {
+export const getGraknVersion = () => {
   // It seems that Grakn server does not expose its version yet:
   // https://github.com/graknlabs/client-nodejs/issues/47
   return '1.6.2';
