@@ -49,14 +49,6 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
   return newData;
 };
 
-/**
- * Pure building of pagination expected format.
- * @param first
- * @param offset
- * @param instances
- * @param globalCount
- * @returns {{edges: *, pageInfo: *}}
- */
 export const buildPagination = (first, offset, instances, globalCount) => {
   const edges = pipe(
     mapObjIndexed((record, key) => {

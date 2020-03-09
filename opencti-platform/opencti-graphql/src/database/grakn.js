@@ -81,13 +81,12 @@ const INFERRED_RELATION_KEY = 'rel';
 
 export const utcDate = (date = undefined) => (date ? moment(date).utc() : moment().utc());
 export const now = () => utcDate().toISOString();
-export const graknNow = () => utcDate().format(dateFormat); // Format that accept grakn
-export const prepareDate = date => utcDate(date).format(dateFormat);
 export const sinceNowInMinutes = lastModified => {
-  const diff = utcDate().diff(moment(lastModified));
+  const diff = utcDate().diff(utcDate(lastModified));
   const duration = moment.duration(diff);
   return Math.floor(duration.asMinutes());
 };
+export const prepareDate = date => utcDate(date).format(dateFormat);
 export const yearFormat = date => utcDate(date).format('YYYY');
 export const monthFormat = date => utcDate(date).format('YYYY-MM');
 export const dayFormat = date => utcDate(date).format('YYYY-MM-DD');
@@ -149,7 +148,7 @@ export const executeRead = async executeFunction => {
     return result;
   } catch (err) {
     await closeTx(rTx);
-    logger.error('[GRAKN] executeRead error > ', err);
+    logger.info('[GRAKN] executeRead error > ', err);
     throw err;
   }
 };
@@ -191,19 +190,19 @@ export const executeWrite = async executeFunction => {
     return result;
   } catch (err) {
     await closeTx(wTx);
-    logger.error('[GRAKN] executeWrite error > ', err);
+    logger.info('[GRAKN] executeWrite error > ', err);
     throw err;
   }
 };
-export const write = async query => {
+export const internalDirectWrite = async query => {
   const wTx = await takeWriteTx();
   try {
     await wTx.tx.query(query);
     await commitWriteTx(wTx);
   } catch (err) {
-    logger.error('[GRAKN] Write error > ', err);
-  } finally {
     await closeTx(wTx);
+    logger.error('[GRAKN] Write error > ', err);
+    throw err;
   }
 };
 
