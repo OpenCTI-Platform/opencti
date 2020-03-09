@@ -116,29 +116,31 @@ let session = null;
 
 // region basic commands
 const closeTx = async gTx => {
-  try {
-    if (gTx.tx.isOpen()) {
-      await gTx.tx.close();
-    }
-  } catch (err) {
-    logger.error('[GRAKN] CloseReadTx error > ', err);
+  if (gTx.tx.isOpen()) {
+    return gTx.tx.close().catch(
+      /* istanbul ignore next */ err => {
+        logger.error('[GRAKN] CloseReadTx error > ', err);
+      }
+    );
   }
+  return true;
 };
 const takeReadTx = async (retry = false) => {
-  if (session === null) {
-    session = await client.session('grakn');
-  }
-  try {
-    const tx = await session.transaction().read();
-    return { session, tx };
-  } catch (err) {
-    logger.error('[GRAKN] TakeReadTx error > ', err);
-    if (retry === true) {
-      logger.error('[GRAKN] TakeReadTx, retry failed, Grakn seems down, stopping...');
-      process.exit(1);
-    }
-    return takeReadTx(true);
-  }
+  if (session === null) session = await client.session('grakn');
+  return session
+    .transaction()
+    .read()
+    .then(tx => ({ session, tx }))
+    .catch(
+      /* istanbul ignore next */ err => {
+        logger.error('[GRAKN] TakeReadTx error > ', err);
+        if (retry === true) {
+          logger.error('[GRAKN] TakeReadTx, retry failed, Grakn seems down, stopping...');
+          process.exit(1);
+        }
+        return takeReadTx(true);
+      }
+    );
 };
 export const executeRead = async executeFunction => {
   const rTx = await takeReadTx();
@@ -148,39 +150,40 @@ export const executeRead = async executeFunction => {
     return result;
   } catch (err) {
     await closeTx(rTx);
-    logger.info('[GRAKN] executeRead error > ', err);
+    logger.error('[GRAKN] executeRead error > ', err);
     throw err;
   }
 };
 
 const takeWriteTx = async (retry = false) => {
-  if (session === null) {
-    session = await client.session('grakn');
-  }
-  try {
-    const tx = await session.transaction().write();
-    return { session, tx };
-  } catch (err) {
-    logger.error('[GRAKN] TakeWriteTx error > ', err);
-    if (retry === true) {
-      logger.error('[GRAKN] TakeWriteTx, retry failed, Grakn seems down, stopping...');
-      process.exit(1);
-    }
-    return takeWriteTx(true);
-  }
+  if (session === null) session = await client.session('grakn');
+  return session
+    .transaction()
+    .write()
+    .then(tx => ({ session, tx }))
+    .catch(
+      /* istanbul ignore next */ err => {
+        logger.error('[GRAKN] TakeWriteTx error > ', err);
+        if (retry === true) {
+          logger.error('[GRAKN] TakeWriteTx, retry failed, Grakn seems down, stopping...');
+          process.exit(1);
+        }
+        return takeWriteTx(true);
+      }
+    );
 };
 const commitWriteTx = async wTx => {
-  try {
-    await wTx.tx.commit();
-  } catch (err) {
-    logger.error('[GRAKN] CommitWriteTx error > ', err);
-    if (err.code === 3) {
-      throw new DatabaseError({
-        data: { details: split('\n', err.details)[1] }
-      });
+  return wTx.tx.commit().catch(
+    /* istanbul ignore next */ err => {
+      logger.error('[GRAKN] CommitWriteTx error > ', err);
+      if (err.code === 3) {
+        throw new DatabaseError({
+          data: { details: split('\n', err.details)[1] }
+        });
+      }
+      throw new DatabaseError({ data: { details: err.details } });
     }
-    throw new DatabaseError({ data: { details: err.details } });
-  }
+  );
 };
 export const executeWrite = async executeFunction => {
   const wTx = await takeWriteTx();
@@ -190,30 +193,33 @@ export const executeWrite = async executeFunction => {
     return result;
   } catch (err) {
     await closeTx(wTx);
-    logger.info('[GRAKN] executeWrite error > ', err);
+    logger.error('[GRAKN] executeWrite error > ', err);
     throw err;
   }
 };
 export const internalDirectWrite = async query => {
   const wTx = await takeWriteTx();
-  try {
-    await wTx.tx.query(query);
-    await commitWriteTx(wTx);
-  } catch (err) {
-    await closeTx(wTx);
-    logger.error('[GRAKN] Write error > ', err);
-    throw err;
-  }
+  return wTx.tx
+    .query(query)
+    .then(() => commitWriteTx(wTx))
+    .catch(
+      /* istanbul ignore next */ async err => {
+        await closeTx(wTx);
+        logger.error('[GRAKN] Write error > ', err);
+        throw err;
+      }
+    );
 };
 
 export const graknIsAlive = async () => {
-  try {
-    // Just try to take a read transaction
-    await executeRead(() => {});
-  } catch (e) {
-    logger.error(`[GRAKN] Seems down`);
-    throw new Error('Grakn seems down');
-  }
+  return executeRead(() => {})
+    .then(() => true)
+    .catch(
+      /* istanbul ignore next */ err => {
+        logger.error(`[GRAKN] Seems down > `, err);
+        throw new Error('Grakn seems down');
+      }
+    );
 };
 export const getGraknVersion = () => {
   // It seems that Grakn server does not expose its version yet:
