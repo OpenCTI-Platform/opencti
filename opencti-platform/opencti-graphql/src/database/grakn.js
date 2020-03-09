@@ -151,6 +151,7 @@ export const executeRead = async executeFunction => {
   } catch (err) {
     await closeTx(rTx);
     logger.error('[GRAKN] executeRead error > ', err);
+    /* istanbul ignore next */
     throw err;
   }
 };
@@ -194,6 +195,7 @@ export const executeWrite = async executeFunction => {
   } catch (err) {
     await closeTx(wTx);
     logger.error('[GRAKN] executeWrite error > ', err);
+    /* istanbul ignore next */
     throw err;
   }
 };
@@ -259,23 +261,24 @@ const extractRelationAlias = (alias, role, relationType) => {
   if (alias !== 'from' && alias !== 'to') {
     throw new Error('[GRAKN] Query cant have relation alias without roles (except for from/to)');
   }
-  const resolveRightAlias = alias === 'from' ? 'to' : 'from';
   const resolvedRelation = rolesMap[relationType];
   if (resolvedRelation === undefined) {
     throw new Error(`[GRAKN] Relation binding missing and rolesMap: ${relationType}`);
   }
   const bindingByAlias = invertObj(resolvedRelation);
-  const resolveRightRole = bindingByAlias[resolveRightAlias];
-  if (resolveRightRole === undefined) {
-    throw new Error(`[GRAKN] Role resolution error for alias: ${resolveRightAlias} - relation: ${relationType}`);
-  }
-  // Control the role specified in the query.
-  const resolveLeftRole = bindingByAlias[alias];
-  if (role !== resolveLeftRole) {
+  const resolvedRole = bindingByAlias[alias];
+  if (role !== resolvedRole) {
     throw new Error(`[GRAKN] Incorrect role specified for alias: ${alias} - role: ${role} - relation: ${relationType}`);
   }
-  variables.push({ role: resolveRightRole, alias: resolveRightAlias, forceNatural: false });
+  const resolveOppositeAlias = alias === 'from' ? 'to' : 'from';
+  const resolveOppositeRole = bindingByAlias[resolveOppositeAlias];
+  if (resolveOppositeRole === undefined) {
+    throw new Error(`[GRAKN] Role resolution error for alias: ${resolveOppositeRole} - relation: ${relationType}`);
+  }
+  // Control the role specified in the query.
+
   variables.push({ role, alias, forceNatural: false });
+  variables.push({ role: resolveOppositeRole, alias: resolveOppositeAlias, forceNatural: false });
   return variables;
 };
 /**

@@ -90,7 +90,7 @@ describe('Grakn low level commands', () => {
     expect(head(deleteData).message()).toEqual('Delete successful.');
   });
   it('should write transaction fail with bad query', async () => {
-    const queryPromise = executeRead(rTx => {
+    const queryPromise = executeWrite(rTx => {
       return rTx.tx.query(`insert $c isa Connector, has invalid_attr "invalid";`);
     });
     // noinspection ES6MissingAwait
@@ -131,6 +131,20 @@ describe('Grakn low level commands', () => {
     aggregationMap = new Map(vars.map(i => [i.alias, i]));
     expect(aggregationMap.get('from').role).toEqual('part_of');
     expect(aggregationMap.get('to').role).toEqual('gather');
+  });
+  it('should query vars check inconsistency', async () => {
+    // Query must have a from and a to
+    let query = 'match $to isa Sector; $rel(part_of:$part, $to) isa gathering; get;';
+    expect(() => extractQueryVars(query)).toThrowError();
+    // Relation is not found
+    query = 'match $to isa Sector; $rel(part_of:$from, $to) isa undefined; get;';
+    expect(() => extractQueryVars(query)).toThrowError();
+    // Relation is found, one role is ok, the other is missing
+    query = 'match $to isa Sector; $rel($to, source:$from) isa role_test_missing; get;';
+    expect(() => extractQueryVars(query)).toThrowError();
+    // Relation is found but the role specified is not in the map
+    query = 'match $to isa Sector; $rel(sourced:$to, $from) isa role_test_missing; get;';
+    expect(() => extractQueryVars(query)).toThrowError();
   });
 });
 
