@@ -1,5 +1,6 @@
-import { head } from 'ramda';
+import { head, includes, map } from 'ramda';
 import {
+  attributeExists,
   dayFormat,
   escape,
   escapeString,
@@ -12,6 +13,8 @@ import {
   monthFormat,
   now,
   prepareDate,
+  queryAttributeValueByGraknId,
+  queryAttributeValues,
   sinceNowInMinutes,
   utcDate,
   yearFormat
@@ -154,5 +157,28 @@ describe('Grakn basic loader', () => {
     const malware = await load(query, ['m'], { noCache: true });
     expect(malware.m).not.toBeNull();
     expect(malware.m.stix_id_key).toEqual('malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
+  });
+  it('should load attributes values', async () => {
+    const attrValues = await queryAttributeValues('report_class');
+    expect(attrValues).not.toBeNull();
+    expect(attrValues.edges.length).toEqual(2);
+    const valueDefinitions = map(e => e.node.value, attrValues.edges);
+    expect(includes('Threat Report', valueDefinitions)).toBeTruthy();
+    expect(includes('Internal Report', valueDefinitions)).toBeTruthy();
+  });
+  it('should check attributes exist', async () => {
+    const reportClassExist = await attributeExists('report_class');
+    expect(reportClassExist).toBeTruthy();
+    const notExist = await attributeExists('not_an_attribute');
+    expect(notExist).not.toBeTruthy();
+  });
+  it('should check attributes resolve by id', async () => {
+    const attrValues = await queryAttributeValues('report_class');
+    const attributeId = head(attrValues.edges).node.id;
+    const attrValue = await queryAttributeValueByGraknId(attributeId);
+    expect(attrValue).not.toBeNull();
+    expect(attrValue.id).toEqual(attributeId);
+    expect(attrValue.type).toEqual('report_class');
+    expect(attrValue.value).toEqual('Threat Report');
   });
 });

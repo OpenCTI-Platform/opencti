@@ -276,7 +276,6 @@ const extractRelationAlias = (alias, role, relationType) => {
     throw new Error(`[GRAKN] Role resolution error for alias: ${resolveOppositeRole} - relation: ${relationType}`);
   }
   // Control the role specified in the query.
-
   variables.push({ role, alias, forceNatural: false });
   variables.push({ role: resolveOppositeRole, alias: resolveOppositeAlias, forceNatural: false });
   return variables;
@@ -366,7 +365,7 @@ export const attributeExists = async attributeLabel => {
     return true;
   }).catch(() => false);
 };
-export const queryAttributeValueById = async id => {
+export const queryAttributeValueByGraknId = async id => {
   return executeRead(async rTx => {
     const query = `match $x id ${escape(id)}; get;`;
     logger.debug(`[GRAKN - infer: false] queryAttributeValueById > ${query}`);
@@ -401,6 +400,7 @@ const loadConcept = async (concept, args = {}) => {
   if (infer === false && noCache === false && !forceNoCache()) {
     const conceptFromCache = await elLoadByGraknId(id, null, relationsMap, [index]);
     if (!conceptFromCache) {
+      /* istanbul ignore next */
       logger.error(`[ELASTIC] ${id} missing, cant load the element, you need to reindex`);
     } else {
       return conceptFromCache;

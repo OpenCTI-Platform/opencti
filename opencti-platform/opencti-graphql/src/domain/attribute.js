@@ -2,14 +2,14 @@ import {
   deleteAttributeById,
   escapeString,
   executeWrite,
-  queryAttributeValueById,
+  queryAttributeValueByGraknId,
   queryAttributeValues,
   reindexEntityByAttribute,
   reindexRelationByAttribute
 } from '../database/grakn';
 import { logger } from '../config/conf';
 
-export const findById = attributeId => queryAttributeValueById(attributeId);
+export const findById = attributeId => queryAttributeValueByGraknId(attributeId);
 
 export const findAll = args => queryAttributeValues(args.type);
 
