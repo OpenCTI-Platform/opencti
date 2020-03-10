@@ -1,6 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { assoc, find, head, includes, map, propEq, uniq } from 'ramda';
 import { offsetToCursor } from 'graphql-relay';
+import moment from 'moment';
 import {
   elAggregationCount,
   elAggregationRelationsCount,
@@ -192,8 +193,9 @@ describe('Elasticsearch computation', () => {
       []
     );
     expect(data.length).toEqual(1);
-    // eslint-disable-next-line prettier/prettier
-    expect(head(data).date).toEqual(utcDate().format('YYYY-MM-DD'));
+    // noinspection JSUnresolvedVariable
+    const storedFormat = moment(head(data).date)._f;
+    expect(storedFormat).toEqual('YYYY-MM-DD');
     expect(head(data).value).toEqual(18);
   });
   it('should month histogram accurate', async () => {
@@ -486,7 +488,7 @@ describe('Elasticsearch pagination', () => {
   });
   it('should entity paginate with date ordering', async () => {
     const data = await elPaginate(INDEX_STIX_ENTITIES, { orderBy: 'created', orderMode: 'asc' });
-    expect(data.edges.length).toEqual(50);
+    expect(data.edges.length).toEqual(28);
     const createdDates = map(e => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {

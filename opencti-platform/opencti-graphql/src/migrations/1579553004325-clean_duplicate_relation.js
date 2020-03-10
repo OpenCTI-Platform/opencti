@@ -10,7 +10,7 @@ const purgeDuplicates = async (query, relation = false, reportId = null) => {
     let relations;
     if (relation) {
       const pointingFilter = { relation: 'object_refs', fromRole: 'so', toRole: 'knowledge_aggregation', id: reportId };
-      relations = await listRelations('stix_relation', pointingFilter, { withCache: false, first: 500000 });
+      relations = await listRelations('stix_relation', pointingFilter, { noCache: true, first: 500000 });
       relations = relations.edges;
     } else {
       relations = await findWithConnectedRelations(query, 'to', { extraRelKey: 'rel' });

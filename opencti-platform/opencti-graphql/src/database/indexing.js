@@ -1,8 +1,8 @@
 import { flatten, map, pipe, uniqBy } from 'ramda';
 import { Promise } from 'bluebird';
 import moment from 'moment';
-import { find, getSingleValueNumber, elIndexElements } from './grakn';
-import { elCreateIndexes, elDeleteIndexes } from './elasticSearch';
+import { find, getSingleValueNumber } from './grakn';
+import { elCreateIndexes, elDeleteIndexes, elIndexElements } from './elasticSearch';
 import { logger } from '../config/conf';
 
 const GROUP_NUMBER = 200; // Pagination size for query
@@ -50,7 +50,7 @@ const indexElement = async (type, isRelation = false, fromType = null, toType = 
             map(e => e[isRelation ? 'rel' : 'elem']),
             uniqBy(u => u.grakn_id)
           )(fetchedGroupElements);
-          return indexElements(fetchedElements, GROUP_INDEX_MAX_RETRY);
+          return elIndexElements(fetchedElements, GROUP_INDEX_MAX_RETRY);
         })
         .then(() => {
           counter += 1;

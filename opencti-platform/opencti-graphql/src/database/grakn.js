@@ -531,14 +531,14 @@ const loadConcept = async (concept, args = {}) => {
 // endregion
 
 // region Loader list
-export const getSingleValue = async (query, infer = false) => {
+const getSingleValue = (query, infer = false) => {
   return executeRead(async rTx => {
     logger.debug(`[GRAKN - infer: ${infer}] getSingleValue > ${query}`);
     const iterator = await rTx.tx.query(query, { infer });
     return iterator.next();
   });
 };
-export const getSingleValueNumber = async (query, infer = false) => {
+export const getSingleValueNumber = (query, infer = false) => {
   return getSingleValue(query, infer).then(data => data.number());
 };
 
@@ -674,7 +674,7 @@ const listElements = async (
 };
 export const listEntities = async (entityTypes, searchFields, args = {}) => {
   // filters contains potential relations like, mitigates, tagged ...
-  const { first = 1000, after, orderBy, orderMode = 'asc', withCache = true } = args;
+  const { first = 1000, after, orderBy, orderMode = 'asc', noCache = false } = args;
   const { parentType = null, search, filters } = args;
   const offset = after ? cursorToOffset(after) : 0;
   const isRelationOrderBy = orderBy && includes('.', orderBy);
@@ -697,11 +697,11 @@ export const listEntities = async (entityTypes, searchFields, args = {}) => {
   // 01-3 Check the ordering
   const unsupportedOrdering = isRelationOrderBy && last(orderBy.split('.')) !== 'internal_id_key';
   const supportedByCache = !unsupportedOrdering && !unSupportedRelations;
-  if (!forceNoCache() && withCache && supportedByCache) {
+  if (!forceNoCache() && !noCache && supportedByCache) {
     const index = inferIndexFromConceptTypes(entityTypes, parentType);
     return elPaginate(index, assoc('types', entityTypes, args));
   }
-  logger.debug(`[GRAKN] ListEntities on Grakn, supportedByCache: ${supportedByCache} - withCache: ${withCache}`);
+  logger.debug(`[GRAKN] ListEntities on Grakn, supportedByCache: ${supportedByCache} - noCache: ${noCache}`);
 
   // 02. If not go with standard Grakn
   const relationsFields = [];
@@ -780,7 +780,7 @@ export const listRelations = async (relationType, relationFilter, args) => {
     after,
     orderBy,
     orderMode = 'asc',
-    withCache = true,
+    noCache = false,
     inferred = false,
     forceNatural = false
   } = args;
@@ -798,7 +798,7 @@ export const listRelations = async (relationType, relationFilter, args) => {
   );
   const unsupportedFiltering = unsupportedFilteringKeys.length > 0;
   const supportedByCache = !unsupportedOrdering && !unsupportedFiltering && !relationFilter && !inferred;
-  const useCache = !forceNoCache() && withCache && supportedByCache;
+  const useCache = !forceNoCache() && !noCache && supportedByCache;
   if (useCache) {
     const finalFilters = map(
       f => ({ key: f.key, values: map(v => v.replace(REL_INDEX_PREFIX, ''), f.values) }),

@@ -588,8 +588,11 @@ export const elPaginate = async (indexName, options = {}) => {
   }
   if (orderBy !== null && orderBy.length > 0) {
     const order = {};
-    order[dateFields.includes(orderBy) || numberFields.includes(orderBy) ? orderBy : `${orderBy}.keyword`] = orderMode;
+    const orderKeyword =
+      dateFields.includes(orderBy) || numberFields.includes(orderBy) ? orderBy : `${orderBy}.keyword`;
+    order[orderKeyword] = orderMode;
     ordering = append(order, ordering);
+    must = append({ exists: { field: orderKeyword } }, must);
   }
 
   const query = {
