@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link, withRouter } from 'react-router-dom';
-import { compose, includes, map } from 'ramda';
+import { compose, includes, map, pathOr } from "ramda";
 import { withStyles } from '@material-ui/core/styles';
 import graphql from 'babel-plugin-relay/macro';
 import { DiagramEngine } from 'storm-react-diagrams';
@@ -31,6 +31,7 @@ import ItemMarking from '../../../../components/ItemMarking';
 import StixRelationInferences from './StixRelationInferences';
 import StixRelationStixRelations from './StixRelationStixRelations';
 import EntityLastReports from '../../reports/EntityLastReports';
+import ItemCreator from "../../../../components/ItemCreator";
 
 const styles = () => ({
   container: {
@@ -350,6 +351,16 @@ class StixRelationContainer extends Component {
                 {t('Modification date')}
               </Typography>
               {stixRelation.inferred ? '-' : fld(stixRelation.updated_at)}
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Creator')}
+              </Typography>
+              <ItemCreator
+                createdByRef={pathOr(null, ['createdByRef', 'node'], stixRelation)}
+              />
             </Paper>
           </Grid>
           <Grid item={true} xs={6}>
@@ -484,6 +495,13 @@ const StixRelationOverview = createFragmentContainer(StixRelationContainer, {
       toRole
       created_at
       updated_at
+      createdByRef {
+        node {
+          id
+          name
+          entity_type
+        }
+      }
       markingDefinitions {
         edges {
           node {

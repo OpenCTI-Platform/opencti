@@ -287,6 +287,7 @@ class StixRelationCreationFromEntity extends Component {
       assoc('toRole', roles.toRole),
       assoc('first_seen', parse(values.first_seen).format()),
       assoc('last_seen', parse(values.last_seen).format()),
+      assoc('createdByRef', values.createdByRef.value),
       assoc('killChainPhases', pluck('value', values.killChainPhases)),
       assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
     )(values);
