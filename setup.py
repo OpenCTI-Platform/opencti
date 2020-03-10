@@ -13,7 +13,7 @@ except ImportError:
     print("warning: pypandoc module not found, could not convert Markdown to RST")
     read_md = lambda f: open(f, "r").read()
 
-VERSION = "3.0.3"
+VERSION = "3.0.4"
 
 
 class VerifyVersionCommand(install):
@@ -40,7 +40,7 @@ setup(
     license="Apache",
     packages=["pycti", "pycti.api", "pycti.connector", "pycti.entities", "pycti.utils"],
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "Intended Audience :: Information Technology",
         "Intended Audience :: Science/Research",
