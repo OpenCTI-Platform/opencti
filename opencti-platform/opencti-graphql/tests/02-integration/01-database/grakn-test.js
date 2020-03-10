@@ -174,7 +174,8 @@ describe('Grakn basic loader', () => {
   });
   it('should check attributes resolve by id', async () => {
     const attrValues = await queryAttributeValues('report_class');
-    const attributeId = head(attrValues.edges).node.id;
+    const aggregationMap = new Map(attrValues.edges.map(i => [i.node.value, i.node]));
+    const attributeId = aggregationMap.get('Threat Report').id;
     const attrValue = await queryAttributeValueByGraknId(attributeId);
     expect(attrValue).not.toBeNull();
     expect(attrValue.id).toEqual(attributeId);
