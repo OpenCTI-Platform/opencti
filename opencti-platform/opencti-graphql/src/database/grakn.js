@@ -542,13 +542,8 @@ export const getSingleValueNumber = (query, infer = false) => {
   return getSingleValue(query, infer).then(data => data.number());
 };
 
-const conceptOpts = { infer: false, noCache: false, directedAlias: new Map() };
-const getConcepts = async (
-  answers,
-  conceptQueryVars,
-  entities,
-  { uniqueKey, infer, noCache, directedAlias } = conceptOpts
-) => {
+const getConcepts = async (answers, conceptQueryVars, entities, conceptOpts = {}) => {
+  const { uniqueKey, infer = false, noCache = false, directedAlias = new Map() } = conceptOpts;
   const plainEntities = filter(e => !isEmpty(e) && !isNil(e), entities);
   if (answers.length === 0) return [];
   // 02. Query concepts and rebind the data

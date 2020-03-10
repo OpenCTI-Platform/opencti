@@ -208,8 +208,8 @@ describe('Grakn loaders', () => {
 });
 
 describe('Grakn entities listing', () => {
-  // const { first = 1000, after, orderBy, orderMode = 'asc', noCache = false } = args;
-  // const { parentType = null, search, filters } = args;
+  // const { first = 1000, after, orderBy, orderMode = 'asc', noCache = false }
+  // const { parentType = null, search, filters }
   // filters part. Definition -> { key, values, fromRole, toRole }
   // TODO parentType is only use for elastic, that strange
   const noCacheCases = [[true], [false]];
@@ -331,10 +331,16 @@ describe('Grakn entities listing', () => {
 });
 
 describe('Grakn relations listing', () => {
+  // const { first = 1000, after, orderBy, orderMode = 'asc', noCache = false, inferred = false, forceNatural = false }
+  // const { filters = [], search, fromRole, fromId, toRole, toId, fromTypes = [], toTypes = [] }
+  // const { firstSeenStart, firstSeenStop, lastSeenStart, lastSeenStop, weights = [] }
   const noCacheCases = [[true], [false]];
   it.each(noCacheCases)('should list entities (noCache = %s)', async noCache => {
-    const relations = await listRelations('stix_relation', undefined, { noCache }); // List all stix_relations
-    expect(relations).not.toBeNull();
-    expect(relations.edges.length).toEqual(11);
+    const stixRelations = await listRelations('stix_relation', undefined, { noCache });
+    expect(stixRelations).not.toBeNull();
+    expect(stixRelations.edges.length).toEqual(11);
+    const embeddedRelations = await listRelations('stix_relation_embedded', undefined, { noCache });
+    expect(embeddedRelations).not.toBeNull();
+    expect(embeddedRelations.edges.length).toEqual(68);
   });
 });
