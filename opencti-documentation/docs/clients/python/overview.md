@@ -12,6 +12,11 @@ The `pycti` library is designed to help OpenCTI users and developers to programa
 $ pip install pycti
 ```
 
+maybe for python3 
+```bash
+$ pip install pycti
+```
+
 ## Getting started
 
 ### Initialization
