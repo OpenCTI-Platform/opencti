@@ -157,9 +157,7 @@ class Tag:
         value = kwargs.get("value", None)
         color = kwargs.get("color", None)
 
-        object_result = self.read(
-            filters=[{"key": "value", "values": [value]}]
-        )
+        object_result = self.read(filters=[{"key": "value", "values": [value]}])
         if object_result is not None:
             return object_result
         else:
