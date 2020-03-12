@@ -29,7 +29,7 @@ import {
   inferIndexFromConceptTypes
 } from './utils';
 import conf, { logger } from '../config/conf';
-import { rolesMap } from './graknRoles';
+import { resolveNaturalRoles } from './graknRoles';
 
 const dateFields = [
   'created',
@@ -454,10 +454,7 @@ const elMergeRelation = (concept, fromConnection, toConnection) => {
   return mergeAll([concept, from, to]);
 };
 export const elReconstructRelation = (concept, relationsMap = null, forceNatural = false) => {
-  const naturalDirections = rolesMap[concept.relationship_type];
-  if (!naturalDirections) {
-    throw new Error(`[ELASTIC] Missing rolesMap of the relation type ${concept.relationship_type}`);
-  }
+  const naturalDirections = resolveNaturalRoles(concept.relationship_type);
   const bindingByAlias = invertObj(naturalDirections);
   const { connections } = concept;
   // Need to rebuild the from and the to.
@@ -799,7 +796,19 @@ export const elRemoveRelationConnection = async relationId => {
 
 const prepareIndexing = async elements => {
   return Promise.all(
-    map(async thing => {
+    map(async element => {
+      // Ensure empty list are not indexed
+      const thing = {};
+      Object.keys(element).forEach(key => {
+        const value = element[key];
+        if (Array.isArray(value)) {
+          const filteredArray = value.filter(i => i);
+          thing[key] = filteredArray.length > 0 ? filteredArray : [];
+        } else {
+          thing[key] = value;
+        }
+      });
+      // For relation, index a list of connections.
       if (thing.relationship_type) {
         if (thing.fromRole === undefined || thing.toRole === undefined) {
           throw new Error(
@@ -807,7 +816,10 @@ const prepareIndexing = async elements => {
           );
         }
         const connections = [];
-        const [from, to] = await Promise.all([elLoadByGraknId(thing.fromId), elLoadByGraknId(thing.toId)]);
+        const [from, to] = await Promise.all([
+          elLoadByGraknId(thing.fromId), //
+          elLoadByGraknId(thing.toId)
+        ]);
         connections.push({
           grakn_id: thing.fromId,
           internal_id_key: from.internal_id_key,
@@ -825,12 +837,10 @@ const prepareIndexing = async elements => {
           // Dissoc from
           dissoc('from'),
           dissoc('fromId'),
-          dissoc('fromTypes'),
           dissoc('fromRole'),
           // Dissoc to
           dissoc('to'),
           dissoc('toId'),
-          dissoc('toTypes'),
           dissoc('toRole')
         )(thing);
       }

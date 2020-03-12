@@ -34,7 +34,9 @@ const graknStateStorage = {
       const lastExistingMigration = last(retrieveMigrations());
       const [time] = lastExistingMigration.title.split('-');
       const lastRunInit = `${parseInt(time, 10) + 1}-init`;
-      await internalDirectWrite(`insert $x isa MigrationStatus, has lastRun "${lastRunInit}", has internal_id_key "${uuid()}";`);
+      await internalDirectWrite(
+        `insert $x isa MigrationStatus, has lastRun "${lastRunInit}", has internal_id_key "${uuid()}";`
+      );
       return fn(null, { lastRun: lastRunInit, migrations: [] });
     }
     // If migrations found, convert to current status

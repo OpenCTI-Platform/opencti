@@ -1,7 +1,9 @@
+import { invertObj } from 'ramda';
+
 const ROLE_FROM = 'from';
 const ROLE_TO = 'to';
 
-export const rolesMap = {
+const rolesMap = {
   // region relation
   authorize: {
     client: ROLE_FROM,
@@ -143,8 +145,20 @@ export const rolesMap = {
   // region testing
   role_test_missing: {
     source: ROLE_FROM
-  },
+  }
   // endregion
+};
+
+export const resolveNaturalRoles = relationship => {
+  const definition = rolesMap[relationship];
+  if (!definition) {
+    throw new Error(`Undefined directed roles for ${relationship}`);
+  }
+  const inverseDefinition = invertObj(definition);
+  if (!inverseDefinition[ROLE_FROM] || !inverseDefinition[ROLE_TO]) {
+    throw new Error(`Cannot find from or to definition in ${relationship}`);
+  }
+  return definition;
 };
 
 export const isInversed = (relationType, fromRole) => {

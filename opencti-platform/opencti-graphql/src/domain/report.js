@@ -50,7 +50,7 @@ export const relationRefs = (reportId, args) => {
     append({ key: `${REL_INDEX_PREFIX}object_refs.internal_id_key`, values: [reportId] }, propOr([], 'filters', args)),
     args
   );
-  return listRelations(args.relationType, null, finalArgs);
+  return listRelations(args.relationType, finalArgs);
 };
 // Observable refs
 export const observableRefs = (reportId, args) => {

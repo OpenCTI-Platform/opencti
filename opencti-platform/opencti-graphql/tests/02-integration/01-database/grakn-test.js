@@ -1,4 +1,4 @@
-import { head, includes, last, map } from 'ramda';
+import { head, includes, invertObj, last, map } from 'ramda';
 import { offsetToCursor } from 'graphql-relay';
 import {
   attributeExists,
@@ -8,12 +8,17 @@ import {
   executeRead,
   executeWrite,
   extractQueryVars,
+  find,
   getGraknVersion,
+  getRelationInferredById,
   getSingleValueNumber,
   graknIsAlive,
+  internalLoadEntityById,
+  internalLoadEntityByStixId,
   listEntities,
   listRelations,
   load,
+  loadByGraknId,
   monthFormat,
   now,
   prepareDate,
@@ -24,6 +29,8 @@ import {
   yearFormat
 } from '../../../src/database/grakn';
 import { INDEX_STIX_ENTITIES } from '../../../src/database/utils';
+import { GATHERING_TARGETS_RULE, inferenceDisable, inferenceEnable } from '../../../src/domain/inference';
+import { resolveNaturalRoles } from '../../../src/database/graknRoles';
 
 describe('Grakn basic and utils', () => {
   it('should database accessible', () => {
@@ -191,7 +198,7 @@ describe('Grakn loaders', () => {
   it('should count accurate', async () => {
     const countObjects = type => getSingleValueNumber(`match $c isa ${type}; get; count;`);
     // Entities
-    expect(await countObjects('MigrationStatus')).toEqual(0);
+    expect(await countObjects('MigrationStatus')).toEqual(0); // Loader doesnt init migrations
     expect(await countObjects('MigrationReference')).toEqual(0);
     expect(await countObjects('Settings')).toEqual(1);
     expect(await countObjects('Tag')).toEqual(0);
@@ -229,8 +236,7 @@ describe('Grakn entities listing', () => {
     expect(includes('Stix-Domain', malware.parent_types)).toBeTruthy();
     expect(malware.created).toEqual('2019-09-30T16:38:26.000Z');
     expect(malware.name).toEqual('Paradise Ransomware');
-    expect(malware.alias.length).toEqual(1);
-    expect(head(malware.alias)).toEqual('');
+    expect(malware.alias.length).toEqual(0);
     // eslint-disable-next-line
     expect(malware._index).toEqual(INDEX_STIX_ENTITIES);
   });
@@ -245,26 +251,22 @@ describe('Grakn entities listing', () => {
     expect(aggregationMap.get('France')).toBeUndefined(); // Stix organization convert to Country with OpenCTI
   });
   it.each(noCacheCases)('should list entities with basic filtering (noCache = %s)', async noCache => {
-    let indicators = await listEntities(['Indicator'], ['name', 'alias'], { noCache });
-    expect(indicators).not.toBeNull();
-    expect(indicators.edges.length).toEqual(3);
-    const options = { first: 1, after: offsetToCursor(1), orderBy: 'created', noCache: true };
-    indicators = await listEntities(['Indicator'], ['name', 'alias'], options);
+    const options = { first: 1, after: offsetToCursor(2), orderBy: 'created', orderMode: 'desc', noCache };
+    const indicators = await listEntities(['Indicator'], ['name', 'alias'], options);
     expect(indicators.edges.length).toEqual(1);
     const indicator = head(indicators.edges).node;
-    expect(indicator.name).toEqual('www.one-clap.jp');
+    expect(indicator.name).toEqual('2a0169c72c84e6d3fa49af701fd46ee7aaf1d1d9e107798d93a6ca8df5d25957');
   });
   it.each(noCacheCases)('should list entities with search (noCache = %s)', async noCache => {
     let options = { search: 'xolod', noCache };
     let indicators = await listEntities(['Indicator'], ['name'], options);
     expect(indicators.edges.length).toEqual(1);
-    options = { search: 'location', noCache: true };
+    options = { search: 'location', noCache };
     indicators = await listEntities(['Indicator'], ['description'], options);
     expect(indicators.edges.length).toEqual(2);
-    // Grakn is not a full text search engine :)
-    options = { search: 'i want a location', noCache: true };
+    options = { search: 'i want a location', noCache };
     indicators = await listEntities(['Indicator'], ['description'], options);
-    expect(indicators.edges.length).toEqual(0);
+    expect(indicators.edges.length).toEqual(noCache ? 0 : 3); // Grakn is not a full text search engine :)
   });
   it.each(noCacheCases)('should list entities order by relation (noCache = %s)', async noCache => {
     // France (f2ea7d37-996d-4313-8f73-42a8782d39a0) < localization > Hietzing (d1881166-f431-4335-bfed-b1c647e59f89)
@@ -335,12 +337,168 @@ describe('Grakn relations listing', () => {
   // const { filters = [], search, fromRole, fromId, toRole, toId, fromTypes = [], toTypes = [] }
   // const { firstSeenStart, firstSeenStop, lastSeenStart, lastSeenStop, weights = [] }
   const noCacheCases = [[true], [false]];
-  it.each(noCacheCases)('should list entities (noCache = %s)', async noCache => {
-    const stixRelations = await listRelations('stix_relation', undefined, { noCache });
+  it.each(noCacheCases)('should find entities in grakn (noCache = %s)', async noCache => {
+    const data = await find('match $m isa Malware; get;', ['m'], { noCache });
+    expect(data).not.toBeNull();
+    expect(data.length).toEqual(2);
+    const aggregationMap = new Map(data.map(i => [i.m.stix_id_key, i.m]));
+    const malware = aggregationMap.get('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    expect(malware).not.toBeUndefined();
+    expect(malware.name).toEqual('Paradise Ransomware');
+  });
+  // uses: { user: ROLE_FROM, usage: ROLE_TO }
+  const checkRoles = (relations, from, to) => {
+    // Roles with be set according to query specification
+    for (let index = 0; index < relations.length; index += 1) {
+      const { fromRole, toRole } = relations[index];
+      expect(fromRole).toEqual(from);
+      expect(toRole).toEqual(to);
+    }
+  };
+  it.each(noCacheCases)('should find relations no roles in grakn (noCache = %s)', async noCache => {
+    // Getting everything if only relations lead to default roles ordering
+    const relations = await find('match $rel isa uses; get;', ['rel'], { noCache });
+    expect(relations).not.toBeNull();
+    expect(relations.length).toEqual(3);
+    // eslint-disable-next-line prettier/prettier
+    checkRoles(relations.map(r => r.rel), 'user', 'usage'); // Roles with be set according to query specification
+  });
+  it.each(noCacheCases)('should find relations inverse roles in grakn (noCache = %s)', async noCache => {
+    // Getting everything specifying all roles respect the roles of the query
+    const relations = await find('match $rel(usage:$from, user:$to) isa uses; get;', ['rel'], { noCache });
+    expect(relations).not.toBeNull();
+    expect(relations.length).toEqual(3);
+    // eslint-disable-next-line prettier/prettier
+    checkRoles(relations.map(r => r.rel), 'usage', 'user');
+  });
+  it.each(noCacheCases)('should find relations partial right roles in grakn (noCache = %s)', async noCache => {
+    // Getting everything with partial roles respect the roles of the query
+    const relations = await find('match $rel($from, user:$to) isa uses; get;', ['rel'], { noCache });
+    expect(relations).not.toBeNull();
+    expect(relations.length).toEqual(3);
+    // eslint-disable-next-line prettier/prettier
+    checkRoles(relations.map(r => r.rel), 'usage', 'user');
+  });
+  it.each(noCacheCases)('should find relations partial left roles in grakn (noCache = %s)', async noCache => {
+    // Getting everything with partial roles respect the roles of the query
+    const relations = await find('match $rel(usage:$from, $to) isa uses; get;', ['rel'], { noCache });
+    expect(relations).not.toBeNull();
+    expect(relations.length).toEqual(3);
+    // eslint-disable-next-line prettier/prettier
+    checkRoles(relations.map(r => r.rel), 'usage', 'user');
+  });
+  it.each(noCacheCases)('should list relations (noCache = %s)', async noCache => {
+    const stixRelations = await listRelations('stix_relation', { noCache });
     expect(stixRelations).not.toBeNull();
     expect(stixRelations.edges.length).toEqual(11);
-    const embeddedRelations = await listRelations('stix_relation_embedded', undefined, { noCache });
+    const embeddedRelations = await listRelations('stix_relation_embedded', { noCache });
     expect(embeddedRelations).not.toBeNull();
     expect(embeddedRelations.edges.length).toEqual(68);
+  });
+  it.each(noCacheCases)('should list relations with id option (noCache = %s)', async noCache => {
+    // Just id specified,
+    // "name": "Paradise Ransomware"
+    const options = { noCache, fromId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330' };
+    const thing = internalLoadEntityById('ab78a62f-4928-4d5a-8740-03f0af9c4330');
+    const stixRelations = await listRelations('uses', options);
+    for (let index = 0; index < stixRelations.length; index += 1) {
+      const stixRelation = stixRelations[index].node;
+      expect(stixRelation.fromId).toEqual(thing.grakn_id);
+    }
+  });
+  it.each(noCacheCases)('should list relations with types option (noCache = %s)', async noCache => {
+    // Just id specified,
+    // "name": "Paradise Ransomware"
+    const options = { noCache, toTypes: ['Attack-Pattern'] };
+    const stixRelations = await listRelations('uses', options);
+    for (let index = 0; index < stixRelations.edges.length; index += 1) {
+      const stixRelation = stixRelations.edges[index].node;
+      // eslint-disable-next-line no-await-in-loop
+      const toThing = await loadByGraknId(stixRelation.toId);
+      expect(toThing.entity_type).toEqual('attack-pattern');
+    }
+  });
+  it.each(noCacheCases)('should list relations with first and order filtering (noCache = %s)', async noCache => {
+    const options = { first: 6, after: offsetToCursor(0), orderBy: 'created', orderMode: 'desc', noCache };
+    const stixRelations = await listRelations('stix_relation', options);
+    expect(stixRelations).not.toBeNull();
+    expect(stixRelations.edges.length).toEqual(6);
+    // Every relations must have natural ordering for from and to
+    for (let index = 0; index < stixRelations.edges.length; index += 1) {
+      const stixRelation = stixRelations.edges[index].node;
+      // eslint-disable-next-line camelcase
+      const { fromRole, toRole, relationship_type } = stixRelation;
+      const roles = invertObj(resolveNaturalRoles(relationship_type));
+      expect(fromRole).toEqual(roles.from);
+      expect(toRole).toEqual(roles.to);
+    }
+    const relation = head(stixRelations.edges).node;
+    expect(relation.created).toEqual('2020-03-01T14:08:24.617Z');
+    const from = await loadByGraknId(relation.fromId);
+    expect(from.stix_id_key).toEqual('organization--5a510e41-5cb2-45cc-a191-a4844ea0a141');
+    const to = await loadByGraknId(relation.toId);
+    expect(to.stix_id_key).toEqual('identity--062f72b1-7caf-4112-ab92-6211f7e7abc8');
+  });
+  it.each(noCacheCases)('should list relations with first and order filtering (noCache = %s)', async noCache => {
+    let stixRelations = await listRelations('uses', { noCache });
+    expect(stixRelations).not.toBeNull();
+    expect(stixRelations.edges.length).toEqual(3);
+    // Filter the list through relation filter
+    // [Malware: Paradise Ransomware] ---- (user) ---- <uses> ---- (usage) ---- [Attack pattern: Spear phishing messages with text only]
+    //                                                   |
+    //                                             (characterize)
+    //                                                   |
+    //                                              < indicates >
+    //                                                   |
+    //                                               (indicator)
+    //                                                   |
+    //                                     [Indicator: www.xolod-teplo.ru]
+    const indicatorId = 'e7652cb6-777a-4220-9b64-0543ef36d467'; // indicator -> www.xolod-teplo.ru
+    const relationFilter = { relation: 'indicates', fromRole: 'characterize', toRole: 'indicator', id: indicatorId };
+    const options = { noCache, relationFilter };
+    stixRelations = await listRelations('uses', options);
+    expect(stixRelations.edges.length).toEqual(1);
+    const relation = head(stixRelations.edges).node;
+    expect(relation.stix_id_key).toEqual('relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de');
+    expect(relation.fromRole).toEqual('user');
+    expect(relation.toRole).toEqual('usage');
+    expect(relation.created).toEqual('2020-03-01T14:05:16.797Z');
+  });
+  it.each(noCacheCases)('should inference explanation correctly resolved', async noCache => {
+    await inferenceEnable(GATHERING_TARGETS_RULE);
+    // Find the Grakn ID of the connections to build the inferred relation
+    // In the data loaded its APT41 (intrusion-set) < target > Southwire (organization)
+    const apt28 = await internalLoadEntityByStixId('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
+    const southwire = await internalLoadEntityByStixId('organization--5a510e41-5cb2-45cc-a191-a4844ea0a141');
+    // Build the inferred relation for testing
+    const inference = `{ $rel(source: $from, target: $to) isa targets; $from id ${apt28.grakn_id}; $to id ${southwire.grakn_id}; };`;
+    const inferenceId = Buffer.from(inference).toString('base64');
+    const relation = await getRelationInferredById(inferenceId, { noCache });
+    expect(relation).not.toBeNull();
+    expect(relation.relationship_type).toEqual('targets');
+    expect(relation.inferred).toBeTruthy();
+    expect(relation.fromRole).toEqual('source');
+    expect(relation.toRole).toEqual('target');
+    expect(relation.inferences).not.toBeNull();
+    expect(relation.inferences.edges.length).toEqual(2);
+    const aggregationMap = new Map(relation.inferences.edges.map(i => [i.node.stix_id_key, i.node]));
+    // relationship--3541149d-1af6-4688-993c-dc32c7ee3880
+    // APT41 > intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7
+    // Allied Universal > organization--c017f212-546b-4f21-999d-97d3dc558f7b
+    const firstSegment = aggregationMap.get('relationship--3541149d-1af6-4688-993c-dc32c7ee3880');
+    expect(firstSegment).not.toBeUndefined();
+    expect(firstSegment.internal_id_key).toEqual('36d591b6-54b9-4152-ab89-79c7dad709f7');
+    expect(firstSegment.fromRole).toEqual('source');
+    expect(firstSegment.toRole).toEqual('target');
+    // relationship--307058e3-84f3-4e9c-8776-2e4fe4d6c6c7
+    // Allied Universal > organization--c017f212-546b-4f21-999d-97d3dc558f7b
+    // Southwire > organization--5a510e41-5cb2-45cc-a191-a4844ea0a141
+    const secondSegment = aggregationMap.get('relationship--307058e3-84f3-4e9c-8776-2e4fe4d6c6c7');
+    expect(secondSegment).not.toBeUndefined();
+    expect(secondSegment.internal_id_key).toEqual('b7a4d86f-220e-412a-8135-6e9fb9f7b296');
+    expect(secondSegment.fromRole).toEqual('part_of');
+    expect(secondSegment.toRole).toEqual('gather');
+    // Disable the rule
+    await inferenceDisable(GATHERING_TARGETS_RULE);
   });
 });
