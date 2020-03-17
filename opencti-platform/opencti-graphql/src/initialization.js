@@ -1,7 +1,7 @@
 // Admin user initialization
 import { logger } from './config/conf';
 import { elCount, elCreateIndexes, elDeleteIndexes, elIsAlive } from './database/elasticSearch';
-import { graknIsAlive, write } from './database/grakn';
+import { graknIsAlive, internalDirectWrite } from './database/grakn';
 import applyMigration from './database/migration';
 import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/minio';
@@ -98,7 +98,7 @@ export const checkSystemDependencies = async () => {
 export const initializeSchema = async () => {
   // Inject grakn schema
   const schema = fs.readFileSync('./src/opencti.gql', 'utf8');
-  await write(schema);
+  await internalDirectWrite(schema);
   logger.info(`[INIT] > Grakn schema loaded`);
   // Create default indexes
   await elCreateIndexes();

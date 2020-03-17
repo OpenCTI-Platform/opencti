@@ -62,10 +62,8 @@ type RelationEmbedded {
   entity_type: String
   from: GlobalObject
   fromRole: String
-  fromTypes: [String]
   to: GlobalObject
   toRole: String
-  toTypes: [String]
 }
 type createdByRef {
   node: Identity
@@ -654,10 +652,8 @@ type StixRelation implements GlobalObject & StixEntity {
   reports: ReportConnection
   from: StixEntity
   fromRole: String
-  fromTypes: [String]
   to: StixEntity
   toRole: String
-  toTypes: [String]
   inferences: StixRelationConnection
   stixRelations(
     first: Int

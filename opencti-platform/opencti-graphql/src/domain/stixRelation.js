@@ -19,7 +19,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
 
 export const findAll = async args => {
-  return listRelations(propOr('stix_relation', 'relationType', args), null, args);
+  return listRelations(propOr('stix_relation', 'relationType', args), args);
 };
 export const findById = stixRelationId => {
   if (stixRelationId.match(/[a-z-]+--[\w-]{36}/g)) {
