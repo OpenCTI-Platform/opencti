@@ -144,6 +144,7 @@ class StixRelation:
         first_seen_stop = kwargs.get("firstSeenStop", None)
         last_seen_start = kwargs.get("lastSeenStart", None)
         last_seen_stop = kwargs.get("lastSeenStop", None)
+        filters = kwargs.get("filters", [])
         inferred = kwargs.get("inferred", None)
         first = kwargs.get("first", 500)
         after = kwargs.get("after", None)
@@ -166,8 +167,8 @@ class StixRelation:
         )
         query = (
             """
-                query StixRelations($fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $relationType: String, $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $inferred: Boolean, $first: Int, $after: ID, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode, $forceNatural: Boolean) {
-                    stixRelations(fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationType: $relationType, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, inferred: $inferred, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode, forceNatural: $forceNatural) {
+                query StixRelations($fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $relationType: String, $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $inferred: Boolean, $filters: [StixRelationsFiltering], $first: Int, $after: ID, $orderBy: StixRelationsOrdering, $orderMode: OrderingMode, $forceNatural: Boolean) {
+                    stixRelations(fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationType: $relationType, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, inferred: $inferred, filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode, forceNatural: $forceNatural) {
                         edges {
                             node {
                                 """
@@ -198,6 +199,7 @@ class StixRelation:
                 "firstSeenStop": first_seen_stop,
                 "lastSeenStart": last_seen_start,
                 "lastSeenStop": last_seen_stop,
+                "filters": filters,
                 "inferred": inferred,
                 "first": first,
                 "after": after,
