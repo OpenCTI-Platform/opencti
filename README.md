@@ -10,11 +10,13 @@ The official OpenCTI Python client helps developers to use the OpenCTI API by pr
 
 ## Python client
 
+To install the Python client library, please use `pip`:
+
 ```bash
 $ pip3 install pycti
 ```
 
-On Windows, please execute the following after installing `pycti`
+On Windows, please execute the following after installing `pycti`:
 
 ```
 $ pip3 uninstall python-magic
