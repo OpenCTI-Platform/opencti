@@ -1,6 +1,6 @@
 import { invertObj } from 'ramda';
 
-const ROLE_FROM = 'from';
+export const ROLE_FROM = 'from';
 const ROLE_TO = 'to';
 
 const rolesMap = {

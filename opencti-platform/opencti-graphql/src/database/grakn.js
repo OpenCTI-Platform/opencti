@@ -52,7 +52,7 @@ import {
   TYPE_STIX_OBSERVABLE_RELATION,
   TYPE_STIX_RELATION
 } from './utils';
-import { isInversed, resolveNaturalRoles } from './graknRoles';
+import { isInversed, resolveNaturalRoles, ROLE_FROM } from './graknRoles';
 import {
   elAggregationCount,
   elAggregationRelationsCount,
@@ -587,24 +587,26 @@ export const findWithConnectedRelations = async (query, key, options = {}) => {
   const { extraRelKey = null, forceNatural = false } = options;
   let dataFind = await find(query, [key, extraRelKey], options);
   if (forceNatural) {
-    dataFind = map(t => {
-      if (resolveNaturalRoles(t[key].relationship_type)[t[key].fromRole] !== 'from') {
+    dataFind = map(relation => {
+      const data = relation[key];
+      const naturalRoles = resolveNaturalRoles(data.relationship_type);
+      if (naturalRoles[data.fromRole] !== ROLE_FROM) {
         return assoc(
           key,
           pipe(
-            assoc('fromId', t[key].toId),
-            assoc('fromInternalId', t[key].toInternalId),
-            assoc('fromRole', t[key].toRole),
-            assoc('fromTypes', t[key].toTypes),
-            assoc('toId', t[key].fromId),
-            assoc('toInternalId', t[key].fromInternalId),
-            assoc('toRole', t[key].fromRole),
-            assoc('toTypes', t[key].fromTypes)
-          )(t[key]),
-          t
+            assoc('fromId', data.toId),
+            assoc('fromInternalId', data.toInternalId),
+            assoc('fromRole', data.toRole),
+            assoc('fromTypes', data.toTypes),
+            assoc('toId', data.fromId),
+            assoc('toInternalId', data.fromInternalId),
+            assoc('toRole', data.fromRole),
+            assoc('toTypes', data.fromTypes)
+          )(data),
+          relation
         );
       }
-      return t;
+      return relation;
     }, dataFind);
   }
   return map(t => ({ node: t[key], relation: t[extraRelKey] }), dataFind);
@@ -629,7 +631,7 @@ const listElements = async (
   const paginateQuery = `offset ${offset}; limit ${first};`;
   const orderQuery = orderBy ? `sort $order ${orderMode};` : '';
   const query = `${baseQuery} ${orderQuery} ${paginateQuery}`;
-  const countPromise = getSingleValueNumber(countQuery);
+  const countPromise = getSingleValueNumber(countQuery, inferred);
   const instancesPromise = await findWithConnectedRelations(query, queryKey, {
     extraRelKey: connectedReference,
     infer: inferred,
@@ -753,6 +755,7 @@ export const listRelations = async (relationType, args) => {
     forceNatural = false,
     noCache = false
   } = args;
+  let useInference = inferred;
   const { filters = [], search, fromId, toId, fromTypes = [], toTypes = [] } = args;
   const { firstSeenStart, firstSeenStop, lastSeenStart, lastSeenStop, weights = [] } = args;
   const offset = after ? cursorToOffset(after) : 0;
@@ -826,8 +829,10 @@ export const listRelations = async (relationType, args) => {
       const finalCuratedRelation = curatedRelation.replace(REL_CONNECTED_SUFFIX, '');
       relationsFields.push(`$${finalCuratedRelation} has ${field} $order;`);
     } else {
+      useInference = true;
       relationsFields.push(
-        `($rel, $${curatedRelation}) isa ${curatedRelation}; $${curatedRelation} has ${field} $order;`
+        `($rel, $${curatedRelation}) isa ${curatedRelation}; $${curatedRelation} has ${field} $order;` +
+          `not { ($rel, $compare) isa ${curatedRelation}; $compare has ${field} $conn-order; $conn-order > $order; };`
       );
     }
   } else if (orderBy) {
@@ -909,7 +914,7 @@ export const listRelations = async (relationType, args) => {
     orderMode,
     'rel',
     relationRef,
-    inferred,
+    useInference,
     forceNatural,
     noCache
   );

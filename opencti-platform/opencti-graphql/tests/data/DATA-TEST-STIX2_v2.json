@@ -455,6 +455,22 @@
             "x_opencti_id": "c3577e42-29b7-4985-bdb9-0c0b4ce61e43"
         },
         {
+            "id": "relationship--c32d553c-e22f-40ce-93e6-eb62dd145f3b",
+            "type": "relationship",
+            "relationship_type": "indicates",
+            "source_ref": "indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf",
+            "target_ref": "relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02",
+            "x_opencti_source_ref": "indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf",
+            "x_opencti_target_ref": "relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02",
+            "created": "2020-03-02T14:06:06.256Z",
+            "modified": "2020-03-02T14:06:06.256Z",
+            "x_opencti_first_seen": "2020-01-29T23:00:00.000Z",
+            "x_opencti_last_seen": "2020-01-29T23:00:00.000Z",
+            "x_opencti_weight": 4,
+            "x_opencti_role_played": "Unknown",
+            "x_opencti_id": "08159b1e-d2a3-44bf-9153-8e985ef4442b"
+        },
+        {
             "id": "relationship--8d2200a8-f9ef-4345-95d1-ba3ed49606f9",
             "type": "relationship",
             "relationship_type": "indicates",

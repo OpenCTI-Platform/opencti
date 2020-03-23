@@ -23,7 +23,7 @@ import {
   now,
   prepareDate,
   queryAttributeValueByGraknId,
-  queryAttributeValues,
+  queryAttributeValues, REL_CONNECTED_SUFFIX,
   sinceNowInMinutes,
   utcDate,
   yearFormat
@@ -31,6 +31,7 @@ import {
 import { INDEX_STIX_ENTITIES } from '../../../src/database/utils';
 import { GATHERING_TARGETS_RULE, inferenceDisable, inferenceEnable } from '../../../src/domain/inference';
 import { resolveNaturalRoles } from '../../../src/database/graknRoles';
+import {REL_INDEX_PREFIX} from "../../../src/database/elasticSearch";
 
 describe('Grakn basic and utils', () => {
   it('should database accessible', () => {
@@ -390,7 +391,7 @@ describe('Grakn relations listing', () => {
   it.each(noCacheCases)('should list relations (noCache = %s)', async noCache => {
     const stixRelations = await listRelations('stix_relation', { noCache });
     expect(stixRelations).not.toBeNull();
-    expect(stixRelations.edges.length).toEqual(11);
+    expect(stixRelations.edges.length).toEqual(12);
     const embeddedRelations = await listRelations('stix_relation_embedded', { noCache });
     expect(embeddedRelations).not.toBeNull();
     expect(embeddedRelations.edges.length).toEqual(68);
@@ -399,14 +400,26 @@ describe('Grakn relations listing', () => {
     // Just id specified,
     // "name": "Paradise Ransomware"
     const options = { noCache, fromId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330' };
-    const thing = internalLoadEntityById('ab78a62f-4928-4d5a-8740-03f0af9c4330');
+    const thing = await internalLoadEntityById('ab78a62f-4928-4d5a-8740-03f0af9c4330');
     const stixRelations = await listRelations('uses', options);
-    for (let index = 0; index < stixRelations.length; index += 1) {
-      const stixRelation = stixRelations[index].node;
+    for (let index = 0; index < stixRelations.edges.length; index += 1) {
+      const stixRelation = stixRelations.edges[index].node;
       expect(stixRelation.fromId).toEqual(thing.grakn_id);
     }
   });
-  it.each(noCacheCases)('should list relations with types option (noCache = %s)', async noCache => {
+  it.each(noCacheCases)('should list relations with from types option (noCache = %s)', async noCache => {
+    // Just id specified,
+    // "name": "Paradise Ransomware"
+    const options = { noCache, fromTypes: ['Intrusion-Set'] };
+    const stixRelations = await listRelations('targets', options);
+    for (let index = 0; index < stixRelations.edges.length; index += 1) {
+      const stixRelation = stixRelations.edges[index].node;
+      // eslint-disable-next-line no-await-in-loop
+      const toThing = await loadByGraknId(stixRelation.fromId);
+      expect(toThing.entity_type).toEqual('intrusion-set');
+    }
+  });
+  it.each(noCacheCases)('should list relations with to types option (noCache = %s)', async noCache => {
     // Just id specified,
     // "name": "Paradise Ransomware"
     const options = { noCache, toTypes: ['Attack-Pattern'] };
@@ -433,13 +446,41 @@ describe('Grakn relations listing', () => {
       expect(toRole).toEqual(roles.to);
     }
     const relation = head(stixRelations.edges).node;
-    expect(relation.created).toEqual('2020-03-01T14:08:24.617Z');
+    expect(relation.created).toEqual('2020-03-02T14:06:06.256Z');
     const from = await loadByGraknId(relation.fromId);
-    expect(from.stix_id_key).toEqual('organization--5a510e41-5cb2-45cc-a191-a4844ea0a141');
+    expect(from.stix_id_key).toEqual('indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf');
     const to = await loadByGraknId(relation.toId);
-    expect(to.stix_id_key).toEqual('identity--062f72b1-7caf-4112-ab92-6211f7e7abc8');
+    expect(to.stix_id_key).toEqual('relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02');
   });
-  it.each(noCacheCases)('should list relations with first and order filtering (noCache = %s)', async noCache => {
+  it.each(noCacheCases)('should list relations ordered by relation (noCache = %s)', async noCache => {
+    // "relationship_type": "uses",
+    // "id": "relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02" > 209cbdf0-fc5e-47c9-8023-dd724993ae55
+    //  "relationship_type": "indicates",
+    //  "source_ref": "indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf", > 1c47970a-a23b-4b6c-85cd-ab73ddb506c6 [2a0169c72c84e6d3fa49af701fd46ee7aaf1d1d9e107798d93a6ca8df5d25957]
+    //  "target_ref": "relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02",
+
+    // "relationship_type": "uses",
+    // "id": "relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de" > 50a205fa-92ec-4ec9-bf62-e065dd85f5d4
+    //  "relationship_type": "indicates",
+    //  "source_ref": "indicator--51640662-9c78-4402-932f-1d4531624723" > c8739116-e1d9-4c4f-b091-590147b3d7b9 [www.one-clap.jp]
+    //  "target_ref": "relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de",
+    //  "relationship_type": "indicates",
+    //  "source_ref": "indicator--10e9a46e-7edb-496b-a167-e27ea3ed0079" > e7652cb6-777a-4220-9b64-0543ef36d467 [www.xolod-teplo.ru]
+    //  "target_ref": "relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de",
+
+    // "relationship_type": "uses",
+    // "id": "relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3",
+    // No relation on it
+
+    const options = { orderBy: 'rel_indicates.internal_id_key', orderMode: 'asc', noCache };
+    const stixRelations = await listRelations('uses', options);
+    expect(stixRelations.edges.length).toEqual(2);
+    const first = head(stixRelations.edges).node;
+    const second = last(stixRelations.edges).node;
+    expect(first.stix_id_key).toEqual('relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02');
+    expect(second.stix_id_key).toEqual('relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de');
+  });
+  it.each(noCacheCases)('should list relations with relation filtering (noCache = %s)', async noCache => {
     let stixRelations = await listRelations('uses', { noCache });
     expect(stixRelations).not.toBeNull();
     expect(stixRelations.edges.length).toEqual(3);
@@ -464,6 +505,33 @@ describe('Grakn relations listing', () => {
     expect(relation.toRole).toEqual('usage');
     expect(relation.created).toEqual('2020-03-01T14:05:16.797Z');
   });
+  it('should list relations with to attribute filtering (noCache = %s)', async (noCache = true) => {
+    const options = { orderBy: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.name`, orderMode: 'asc', noCache };
+    const stixRelations = await listRelations('uses', options);
+    // TODO Fix that test
+    expect(stixRelations).not.toBeNull();
+  });
+  it.each(noCacheCases)('should list relations with forceNatural (noCache = %s)', async noCache => {
+    // uses: { user: ROLE_FROM, usage: ROLE_TO }
+    // Here we force the direction with the fromId option
+    // However the forNatural will force the natural order.
+    const options = { noCache, fromId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330', forceNatural: true };
+    const stixRelations = await listRelations('uses', options);
+    for (let index = 0; index < stixRelations.edges.length; index += 1) {
+      const stixRelation = stixRelations.edges[index].node;
+      expect(stixRelation.fromRole).toEqual('user');
+      expect(stixRelation.toRole).toEqual('usage');
+    }
+    // Check the specific relation that have been reversed
+    const thing = await internalLoadEntityById('ab78a62f-4928-4d5a-8740-03f0af9c4330');
+    const aggregationMap = new Map(stixRelations.edges.map(i => [i.node.stix_id_key, i]));
+    const reversedRelation = aggregationMap.get('relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3');
+    expect(reversedRelation.fromId).not.toEqual(thing.grakn_id);
+  });
+});
+
+describe('Grakn relations with inferences', () => {
+  const noCacheCases = [[true], [false]];
   it.each(noCacheCases)('should inference explanation correctly resolved', async noCache => {
     await inferenceEnable(GATHERING_TARGETS_RULE);
     // Find the Grakn ID of the connections to build the inferred relation
