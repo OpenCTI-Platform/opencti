@@ -23,7 +23,8 @@ import {
   now,
   prepareDate,
   queryAttributeValueByGraknId,
-  queryAttributeValues, REL_CONNECTED_SUFFIX,
+  queryAttributeValues,
+  REL_CONNECTED_SUFFIX,
   sinceNowInMinutes,
   utcDate,
   yearFormat
@@ -31,7 +32,7 @@ import {
 import { INDEX_STIX_ENTITIES } from '../../../src/database/utils';
 import { GATHERING_TARGETS_RULE, inferenceDisable, inferenceEnable } from '../../../src/domain/inference';
 import { resolveNaturalRoles } from '../../../src/database/graknRoles';
-import {REL_INDEX_PREFIX} from "../../../src/database/elasticSearch";
+import { REL_INDEX_PREFIX } from '../../../src/database/elasticSearch';
 
 describe('Grakn basic and utils', () => {
   it('should database accessible', () => {
