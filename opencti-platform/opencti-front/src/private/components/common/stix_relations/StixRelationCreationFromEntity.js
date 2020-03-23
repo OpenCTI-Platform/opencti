@@ -487,6 +487,7 @@ class StixRelationCreationFromEntity extends Component {
       description: '',
       killChainPhases: [],
       markingDefinitions: [],
+      createdByRef: '',
     };
     return (
       <QueryRenderer

@@ -616,6 +616,7 @@ enum StixRelationsFilter {
 input StixRelationsFiltering {
   key: StixRelationsFilter!
   values: [String]
+  operator: String
 }
 type StixRelationConnection {
   pageInfo: PageInfo!

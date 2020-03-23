@@ -451,12 +451,16 @@ const loadConcept = async (concept, args = {}) => {
       const rolesPromises = Promise.all(
         map(async roleItem => {
           // eslint-disable-next-line prettier/prettier
-          const roleTargetId = last(roleItem).values().next().value.id;
+          const roleTargetId = last(roleItem)
+            .values()
+            .next().value.id;
           const conceptFromMap = relationsMap.get(roleTargetId);
           if (conceptFromMap && conceptFromMap.forceNatural !== true) {
             const { alias } = conceptFromMap;
             // eslint-disable-next-line prettier/prettier
-            return head(roleItem).label().then(async roleLabel => {
+            return head(roleItem)
+              .label()
+              .then(async roleLabel => {
                 // For inference rules we cant use the from/to convention
                 // So we need to specify it differently through the relation name.
                 const useAlias = explanationAlias.get(roleLabel) || alias;
@@ -469,7 +473,9 @@ const loadConcept = async (concept, args = {}) => {
           }
           // Target was not resolved but we can just infer from natural
           // eslint-disable-next-line prettier/prettier
-          return head(roleItem).label().then(async roleLabel => {
+          return head(roleItem)
+            .label()
+            .then(async roleLabel => {
               const useAlias = resolveNaturalRoles(head(types))[roleLabel];
               return {
                 [useAlias]: null, // With be use lazily
@@ -763,7 +769,7 @@ export const listRelations = async (relationType, args) => {
   const unsupportedOrdering = isRelationOrderBy && last(orderBy.split('.')) !== 'internal_id_key';
   const unsupportedFilteringKeys = filter(
     k => !k.includes('internal_id_key'),
-    map(f => f.key, filters)
+    map(f => f.key, filters || [])
   );
   const unsupportedFiltering = unsupportedFilteringKeys.length > 0;
   const supportedByCache = !unsupportedOrdering && !unsupportedFiltering && !relationFilter && !inferred;
@@ -771,7 +777,7 @@ export const listRelations = async (relationType, args) => {
   if (useCache) {
     const finalFilters = map(
       f => ({ key: f.key, values: map(v => v.replace(REL_INDEX_PREFIX, ''), f.values) }),
-      filters
+      filters || []
     );
     const relationsMap = new Map();
     if (fromId) {
@@ -884,7 +890,10 @@ export const listRelations = async (relationType, args) => {
         .replace(REL_CONNECTED_SUFFIX, '')
         .split('.');
       const queryFilters = pipe(
-        map(e => `{ $${filterKey[0]} has ${filterKey[1]} "${escapeString(e)}"; }`),
+        map(
+          e =>
+            `{ $${filterKey[0]} has ${filterKey[1]} ${f.operator === 'match' ? 'contains' : ''} "${escapeString(e)}"; }`
+        ),
         join(' or '),
         concat(__, ';')
       )(f.values);
