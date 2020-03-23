@@ -338,7 +338,10 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
             created: relation.created,
             modified: relation.modified
           };
-          return addStixRelation(user, relationToCreate);
+          if (relationToCreate.fromId !== relationToCreate.toId) {
+            return addStixRelation(user, relationToCreate);
+          }
+          return true;
         })
       );
     })

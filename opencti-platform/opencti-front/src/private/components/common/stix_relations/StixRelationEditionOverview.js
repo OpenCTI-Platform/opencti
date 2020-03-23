@@ -40,6 +40,7 @@ import { attributesQuery } from '../../settings/attributes/AttributesLines';
 import Loader from '../../../../components/Loader';
 import KillChainPhasesField from '../form/KillChainPhasesField';
 import MarkingDefinitionsField from '../form/MarkingDefinitionsField';
+import CreatedByRefField from '../form/CreatedByRefField';
 
 const styles = (theme) => ({
   header: {
@@ -257,6 +258,49 @@ const StixRelationEditionContainer = ({
       });
     }
   };
+  const handleChangeCreatedByRef = (name, value) => {
+    const currentCreatedByRef = {
+      label: pathOr(null, ['createdByRef', 'node', 'name'], stixRelation),
+      value: pathOr(null, ['createdByRef', 'node', 'id'], stixRelation),
+      relation: pathOr(null, ['createdByRef', 'relation', 'id'], stixRelation),
+    };
+    if (currentCreatedByRef.value === null) {
+      commitMutation({
+        mutation: stixRelationMutationRelationAdd,
+        variables: {
+          id: stixRelation.id,
+          input: {
+            fromRole: 'so',
+            toId: value.value,
+            toRole: 'creator',
+            through: 'created_by_ref',
+          },
+        },
+      });
+    } else if (currentCreatedByRef.value !== value.value) {
+      commitMutation({
+        mutation: stixRelationMutationRelationDelete,
+        variables: {
+          id: stixRelation.id,
+          relationId: currentCreatedByRef.relation,
+        },
+      });
+      if (value.value) {
+        commitMutation({
+          mutation: stixRelationMutationRelationAdd,
+          variables: {
+            id: stixRelation.id,
+            input: {
+              fromRole: 'so',
+              toId: value.value,
+              toRole: 'creator',
+              through: 'created_by_ref',
+            },
+          },
+        });
+      }
+    }
+  };
   const handleChangeFocus = (name) => {
     commitMutation({
       mutation: stixRelationEditionFocus,
@@ -282,7 +326,17 @@ const StixRelationEditionContainer = ({
       })
       .catch(() => false);
   };
-
+  const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], stixRelation) === null
+    ? ''
+    : {
+      label: pathOr(null, ['createdByRef', 'node', 'name'], stixRelation),
+      value: pathOr(null, ['createdByRef', 'node', 'id'], stixRelation),
+      relation: pathOr(
+        null,
+        ['createdByRef', 'relation', 'id'],
+        stixRelation,
+      ),
+    };
   const killChainPhases = pipe(
     pathOr([], ['killChainPhases', 'edges']),
     map((n) => ({
@@ -302,6 +356,7 @@ const StixRelationEditionContainer = ({
   const initialValues = pipe(
     assoc('first_seen', dateFormat(stixRelation.first_seen)),
     assoc('last_seen', dateFormat(stixRelation.last_seen)),
+    assoc('createdByRef', createdByRef),
     assoc('killChainPhases', killChainPhases),
     assoc('markingDefinitions', markingDefinitions),
     pick([
@@ -310,6 +365,7 @@ const StixRelationEditionContainer = ({
       'last_seen',
       'description',
       'role_played',
+      'createdByRef',
       'killChainPhases',
       'markingDefinitions',
     ]),
@@ -456,6 +512,18 @@ const StixRelationEditionContainer = ({
                         }
                         onChange={handleChangeKillChainPhases}
                       />
+                      <CreatedByRefField
+                        name="createdByRef"
+                        style={{ marginTop: 20, width: '100%' }}
+                        setFieldValue={setFieldValue}
+                        helpertext={
+                          <SubscriptionFocus
+                            context={editContext}
+                            fieldName="createdByRef"
+                          />
+                        }
+                        onChange={handleChangeCreatedByRef}
+                      />
                       <MarkingDefinitionsField
                         name="markingDefinitions"
                         style={{ marginTop: 20, width: '100%' }}
@@ -526,6 +594,16 @@ const StixRelationEditionFragment = createFragmentContainer(
         description
         relationship_type
         role_played
+        createdByRef {
+          node {
+            id
+            name
+            entity_type
+          }
+          relation {
+            id
+          }
+        }
         killChainPhases {
           edges {
             node {
