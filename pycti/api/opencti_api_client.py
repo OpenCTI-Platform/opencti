@@ -1636,6 +1636,10 @@ class OpenCTIApiClient:
         return self.report.add_stix_entity(id=report_id, entity_id=object_id)
 
     def resolve_role(self, relation_type, from_type, to_type):
+        if from_type == "stix-relation":
+            from_type = "stix_relation"
+        if to_type == "stix-relation":
+            to_type = "stix_relation"
         if relation_type == "related-to":
             return {"from_role": "relate_from", "to_role": "relate_to"}
 
