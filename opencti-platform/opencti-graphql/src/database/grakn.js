@@ -749,6 +749,7 @@ export const listEntities = async (entityTypes, searchFields, args = {}) => {
                       ${queryAttributesFields} ${queryAttributesFilters} get;`;
   return listElements(baseQuery, first, offset, orderBy, orderMode, 'elem', null, false, false, noCache);
 };
+
 export const listRelations = async (relationType, args) => {
   const searchFields = ['name', 'description'];
   const {
@@ -764,6 +765,17 @@ export const listRelations = async (relationType, args) => {
   let useInference = inferred;
   const { filters = [], search, fromId, toId, fromTypes = [], toTypes = [] } = args;
   const { firstSeenStart, firstSeenStop, lastSeenStart, lastSeenStop, weights = [] } = args;
+
+  // Use $from, $to only if fromId or toId specified.
+  // Else, just ask for the relation only.
+  // fromType or toType only allow if fromId or toId available
+  const askForConnections = fromId !== undefined || toId !== undefined;
+  const fromTypesFilter = fromTypes && fromTypes.length > 0;
+  const toTypesFilter = toTypes && toTypes.length > 0;
+  if (askForConnections === false && (fromTypesFilter || toTypesFilter)) {
+    throw new Error('Cant list relation with types filtering if from or to id are not specified');
+  }
+
   const offset = after ? cursorToOffset(after) : 0;
   const isRelationOrderBy = orderBy && includes('.', orderBy);
   // Handle relation type(s)
@@ -807,22 +819,20 @@ export const listRelations = async (relationType, args) => {
     return elPaginate(INDEX_STIX_RELATIONS, paginateArgs);
   }
   // 1- If not, use Grakn
-  const queryFromTypes =
-    fromTypes && fromTypes.length > 0
-      ? pipe(
-          map(e => `{ $from isa ${e}; }`),
-          join(' or '),
-          concat(__, ';')
-        )(fromTypes)
-      : '';
-  const queryToTypes =
-    toTypes && toTypes.length > 0
-      ? pipe(
-          map(e => `{ $to isa ${e}; }`),
-          join(' or '),
-          concat(__, ';')
-        )(toTypes)
-      : '';
+  const queryFromTypes = fromTypesFilter
+    ? pipe(
+        map(e => `{ $from isa ${e}; }`),
+        join(' or '),
+        concat(__, ';')
+      )(fromTypes)
+    : '';
+  const queryToTypes = toTypesFilter
+    ? pipe(
+        map(e => `{ $to isa ${e}; }`),
+        join(' or '),
+        concat(__, ';')
+      )(toTypes)
+    : '';
   // Search
   const relationsFields = [];
   const attributesFields = [];
@@ -884,21 +894,17 @@ export const listRelations = async (relationType, args) => {
     // eslint-disable-next-line no-shadow
     const { relation, fromRole, toRole, id } = relationFilter;
     const pEid = escapeString(id);
-    const relationQueryPart = `$${relationRef}(${fromRole}:$rel,${toRole}:$pointer) isa ${relation}; $pointer has internal_id_key "${pEid}";`;
+    const relationQueryPart = `$${relationRef}(${fromRole}:$rel, ${toRole}:$pointer) isa ${relation}; $pointer has internal_id_key "${pEid}";`;
     relationsFields.push(relationQueryPart);
   }
   if (filters.length > 0) {
     // eslint-disable-next-line
     for (const f of filters) {
-      const filterKey = f.key
-        .replace(REL_INDEX_PREFIX, '')
-        .replace(REL_CONNECTED_SUFFIX, '')
-        .split('.');
+      // eslint-disable-next-line prettier/prettier
+      const filterKey = f.key.replace(REL_INDEX_PREFIX, '').replace(REL_CONNECTED_SUFFIX, '').split('.');
+      const [key, val] = filterKey;
       const queryFilters = pipe(
-        map(
-          e =>
-            `{ $${filterKey[0]} has ${filterKey[1]} ${f.operator === 'match' ? 'contains' : ''} "${escapeString(e)}"; }`
-        ),
+        map(e => `{ $${key} has ${val} ${f.operator === 'match' ? 'contains' : ''} "${escapeString(e)}"; }`),
         join(' or '),
         concat(__, ';')
       )(f.values);
@@ -906,15 +912,13 @@ export const listRelations = async (relationType, args) => {
     }
   }
   // Build the query
-  const isTargetedRelation = fromId || toId || !isEmpty(queryFromTypes) || !isEmpty(queryToTypes);
   const queryAttributesFields = join(' ', attributesFields);
   const queryAttributesFilters = join(' ', attributesFilters);
   const queryRelationsFields = join(' ', relationsFields);
-  const queryGetFields = isTargetedRelation ? 'get' : `get $rel ${orderBy ? ', $order' : ''}`;
-  const baseQuery = `match $rel($from, $to) isa ${relationToGet};
+  const querySource = askForConnections ? '$rel($from, $to)' : '$rel';
+  const baseQuery = `match ${querySource} isa ${relationToGet};
                       ${queryFromTypes} ${queryToTypes} 
-                      ${queryRelationsFields} ${queryAttributesFields} ${queryAttributesFilters} 
-                      ${queryGetFields};`;
+                      ${queryRelationsFields} ${queryAttributesFields} ${queryAttributesFilters} get;`;
   return listElements(
     baseQuery,
     first,
