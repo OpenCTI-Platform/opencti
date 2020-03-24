@@ -208,7 +208,7 @@ describe('Grakn loaders', () => {
     expect(await countObjects('Group')).toEqual(0);
     expect(await countObjects('Workspace')).toEqual(0);
     expect(await countObjects('Token')).toEqual(1);
-    expect(await countObjects('Stix-Domain')).toEqual(28);
+    expect(await countObjects('Stix-Domain')).toEqual(29);
     expect(await countObjects('Role')).toEqual(2);
     expect(await countObjects('Capability')).toEqual(19);
     expect(await countObjects('Stix-Observable')).toEqual(3);

@@ -114,7 +114,7 @@ describe('Elasticsearch computation', () => {
     );
     const aggregationMap = new Map(malwaresAggregation.map(i => [i.label, i.value]));
     expect(aggregationMap.get('malware')).toEqual(2);
-    expect(aggregationMap.get('marking-definition')).toEqual(5);
+    expect(aggregationMap.get('marking-definition')).toEqual(6);
   });
   it('should entity aggregation with date accurate', async () => {
     const mostRecentMalware = await elLoadByStixId('malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
@@ -130,8 +130,8 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('malware')).toEqual(1);
   });
   it('should entity aggregation with relation accurate', async () => {
-    // Aggregate with relation filter on marking definition TLP:TEST
-    const marking = await elLoadByStixId('marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed');
+    // Aggregate with relation filter on marking definition TLP:RED
+    const marking = await elLoadByStixId('marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27');
     const malwaresAggregation = await elAggregationCount(
       'Stix-Domain',
       'entity_type',
@@ -389,7 +389,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything', async () => {
     const data = await elPaginate(INDEX_STIX_ENTITIES);
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(50);
+    expect(data.edges.length).toEqual(51);
     const filterBaseTypes = uniq(map(e => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('entity');
@@ -397,7 +397,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything after', async () => {
     const data = await elPaginate(INDEX_STIX_ENTITIES, { after: offsetToCursor(30) });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(20);
+    expect(data.edges.length).toEqual(21);
   });
   it('should entity paginate with single type', async () => {
     // first = 200, after, types = null, filters = [], search = null,
@@ -443,7 +443,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate with field not exist filter', async () => {
     const filters = [{ key: 'color', operator: undefined, values: [null] }];
     const data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
-    expect(data.edges.length).toEqual(46); // The 4 Default TLP Marking definitions
+    expect(data.edges.length).toEqual(47); // The 4 Default TLP Marking definitions + 1
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = [{ key: 'color', operator: undefined, values: ['EXISTS'] }];
@@ -463,7 +463,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate with match filter', async () => {
     let filters = [{ key: 'entity_type', operator: 'match', values: ['marking'] }];
     let data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
-    expect(data.edges.length).toEqual(5); // The 4 Default TLP + MITRE Corporation
+    expect(data.edges.length).toEqual(6); // The 4 Default TLP + MITRE Corporation
     // Verify that nothing is found in this case if using the eq operator
     filters = [{ key: 'entity_type', operator: 'eq', values: ['marking'] }];
     data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
@@ -488,7 +488,7 @@ describe('Elasticsearch pagination', () => {
   });
   it('should entity paginate with date ordering', async () => {
     const data = await elPaginate(INDEX_STIX_ENTITIES, { orderBy: 'created', orderMode: 'asc' });
-    expect(data.edges.length).toEqual(28);
+    expect(data.edges.length).toEqual(29);
     const createdDates = map(e => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {

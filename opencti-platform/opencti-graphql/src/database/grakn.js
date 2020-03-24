@@ -1692,7 +1692,7 @@ export const deleteRelationById = async (relationId, type) => {
   }
   const eid = escapeString(relationId);
   // 00. Load everything we need to remove in elastic
-  const read = `match $from isa ${type}, has internal_id_key "${eid}"; $rel($from, $to) isa relation; get;`;
+  const read = `match $from isa ${type}, has internal_id_key "${eid}"; $to isa entity; $rel($from, $to) isa relation; get;`;
   const relationsToDeIndex = await find(read, ['rel']);
   const answers = map(r => r.rel.id, relationsToDeIndex);
   const relationsIds = filter(r => r, answers); // Because of relation to attributes

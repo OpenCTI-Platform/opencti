@@ -18,7 +18,7 @@
             "x_opencti_id": "c79e5d9f-4321-4174-b120-7cd9342ec88a"
         },
         {
-            "id": "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed",
+            "id": "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27",
             "type": "marking-definition",
             "definition_type": "TLP",
             "definition": {
@@ -46,7 +46,7 @@
             "x_opencti_id": "685aac19-d2f6-4835-a256-0631bb322732",
             "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
             "object_marking_refs": [
-                "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"
+                "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
             ],
             "object_refs": [
                 "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
@@ -98,7 +98,7 @@
             "modified": "2020-02-04T14:48:31.601Z",
             "x_opencti_id": "6fb84f02-f095-430e-87a0-394d41955eee",
             "object_marking_refs": [
-                "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"
+                "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
             ]
         },
         {
@@ -551,7 +551,7 @@
             "x_opencti_id": "36d591b6-54b9-4152-ab89-79c7dad709f7",
             "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
             "object_marking_refs": [
-                "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"
+                "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
             ]
         },
         {
@@ -571,7 +571,7 @@
             "x_opencti_id": "7bd87ef8-2383-4620-8a48-e3be878fff34",
             "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
             "object_marking_refs": [
-                "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"
+                "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
             ]
         },
         {
@@ -591,7 +591,7 @@
             "x_opencti_id": "39218742-6f81-495e-ae47-b814f8c0df4e",
             "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
             "object_marking_refs": [
-                "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"
+                "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
             ]
         },
         {
@@ -611,7 +611,7 @@
             "x_opencti_id": "b7a4d86f-220e-412a-8135-6e9fb9f7b296",
             "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
             "object_marking_refs": [
-                "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"
+                "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
             ]
         }
     ]
