@@ -60,7 +60,9 @@ describe('Campaign resolver standard behavior', () => {
       input: {
         name: 'Campaign',
         stix_id_key: campaignStixId,
-        description: 'Campaign description'
+        description: 'Campaign description',
+        first_seen: '2020-03-24T10:51:20+0000',
+        last_seen: '2020-03-24T10:51:20+0000'
       }
     };
     const campaign = await queryAsAdmin({
@@ -87,6 +89,36 @@ describe('Campaign resolver standard behavior', () => {
   });
   it('should list campaigns', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 1 } });
+    expect(queryResult.data.campaigns.edges.length).toEqual(1);
+  });
+  it('should timeseries campaigns', async () => {
+    const TIMESERIES_QUERY = gql`
+      query campaignsTimeSeries(
+        $objectId: String
+        $field: String!
+        $operation: StatsOperation!
+        $startDate: DateTime!
+        $endDate: DateTime!
+        $interval: String!
+        $relationType: String!
+        $inferred: Boolean
+      ) {
+        campaignsTimeSeries(
+          objectId: $objectId
+          field: $field
+          operation: $operation
+          startDate: $startDate
+          endDate: $endDate
+          interval: $interval
+          relationType: $relationType
+          inferred: $inferred
+        ) {
+          date
+          value
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({ query: TIMESERIES_QUERY, variables: { field: 'first_seen' } });
     expect(queryResult.data.campaigns.edges.length).toEqual(1);
   });
   it('should update campaign', async () => {
