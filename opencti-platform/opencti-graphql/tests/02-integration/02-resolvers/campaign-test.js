@@ -61,13 +61,13 @@ describe('Campaign resolver standard behavior', () => {
         name: 'Campaign',
         stix_id_key: campaignStixId,
         description: 'Campaign description',
-        first_seen: '2020-03-24T10:51:20+0000',
-        last_seen: '2020-03-24T10:51:20+0000'
-      }
+        first_seen: '2020-03-24T10:51:20+00:00',
+        last_seen: '2020-03-24T10:51:20+00:00',
+      },
     };
     const campaign = await queryAsAdmin({
       query: CREATE_QUERY,
-      variables: INTRUSION_SET_TO_CREATE
+      variables: INTRUSION_SET_TO_CREATE,
     });
     expect(campaign).not.toBeNull();
     expect(campaign.data.campaignAdd).not.toBeNull();
@@ -100,7 +100,7 @@ describe('Campaign resolver standard behavior', () => {
         $startDate: DateTime!
         $endDate: DateTime!
         $interval: String!
-        $relationType: String!
+        $relationType: String
         $inferred: Boolean
       ) {
         campaignsTimeSeries(
@@ -118,8 +118,18 @@ describe('Campaign resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await queryAsAdmin({ query: TIMESERIES_QUERY, variables: { field: 'first_seen' } });
-    expect(queryResult.data.campaigns.edges.length).toEqual(1);
+    const queryResult = await queryAsAdmin({
+      query: TIMESERIES_QUERY,
+      variables: {
+        field: 'first_seen',
+        operation: 'count',
+        startDate: '2020-01-01T00:00:00+00:00',
+        endDate: '2021-01-01T00:00:00+00:00',
+        interval: 'month',
+      },
+    });
+    expect(queryResult.data.campaignsTimeSeries.length).toEqual(13);
+    expect(queryResult.data.campaignsTimeSeries[2].value).toEqual(1);
   });
   it('should update campaign', async () => {
     const UPDATE_QUERY = gql`
@@ -134,7 +144,7 @@ describe('Campaign resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
-      variables: { id: campaignInternalId, input: { key: 'name', value: ['Campaign - test'] } }
+      variables: { id: campaignInternalId, input: { key: 'name', value: ['Campaign - test'] } },
     });
     expect(queryResult.data.campaignEdit.fieldPatch.name).toEqual('Campaign - test');
   });
@@ -150,7 +160,7 @@ describe('Campaign resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
-      variables: { id: campaignInternalId, input: { focusOn: 'description' } }
+      variables: { id: campaignInternalId, input: { focusOn: 'description' } },
     });
     expect(queryResult.data.campaignEdit.contextPatch.id).toEqual(campaignInternalId);
   });
@@ -166,7 +176,7 @@ describe('Campaign resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
-      variables: { id: campaignInternalId }
+      variables: { id: campaignInternalId },
     });
     expect(queryResult.data.campaignEdit.contextClean.id).toEqual(campaignInternalId);
   });
@@ -202,9 +212,9 @@ describe('Campaign resolver standard behavior', () => {
           fromRole: 'so',
           toRole: 'marking',
           toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs'
-        }
-      }
+          through: 'object_marking_refs',
+        },
+      },
     });
     expect(queryResult.data.campaignEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
     campaignMarkingDefinitionRelationId =
@@ -231,8 +241,8 @@ describe('Campaign resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: campaignInternalId,
-        relationId: campaignMarkingDefinitionRelationId
-      }
+        relationId: campaignMarkingDefinitionRelationId,
+      },
     });
     expect(queryResult.data.campaignEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
   });
@@ -247,7 +257,7 @@ describe('Campaign resolver standard behavior', () => {
     // Delete the campaign
     await queryAsAdmin({
       query: DELETE_QUERY,
-      variables: { id: campaignInternalId }
+      variables: { id: campaignInternalId },
     });
     // Verify is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: campaignStixId } });

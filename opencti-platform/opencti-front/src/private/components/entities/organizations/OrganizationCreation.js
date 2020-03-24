@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -194,8 +194,10 @@ class OrganizationCreation extends Component {
                 values,
               }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <TextField name="name" label={t('Name')} fullWidth={true} />
-                  <TextField
+                  <Field
+                    component={TextField}  name="name" label={t('Name')} fullWidth={true} />
+                  <Field
+                    component={TextField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}
@@ -203,7 +205,8 @@ class OrganizationCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <SelectField
+                  <Field
+                    component={SelectField}
                     name="organization_class"
                     label={t('Organization type')}
                     fullWidth={true}
@@ -214,8 +217,9 @@ class OrganizationCreation extends Component {
                     <MenuItem value="partner">{t('Partner')}</MenuItem>
                     <MenuItem value="vendor">{t('Vendor')}</MenuItem>
                     <MenuItem value="other">{t('Other')}</MenuItem>
-                  </SelectField>
-                  <SelectField
+                  </Field>
+                  <Field
+                    component={SelectField}
                     name="reliability"
                     label={t('Reliability')}
                     fullWidth={true}
@@ -227,7 +231,7 @@ class OrganizationCreation extends Component {
                     <MenuItem value="D">{t('reliability_D')}</MenuItem>
                     <MenuItem value="E">{t('reliability_E')}</MenuItem>
                     <MenuItem value="F">{t('reliability_F')}</MenuItem>
-                  </SelectField>
+                  </Field>
                   <CreatedByRefField
                     name="createdByRef"
                     style={{ marginTop: 20, width: '100%' }}

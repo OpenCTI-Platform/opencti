@@ -17,7 +17,7 @@ import * as PropTypes from 'prop-types';
 import {
   map, isEmpty, difference, filter, pathOr, isNil,
 } from 'ramda';
-import { urlMiddleware, RelayNetworkLayer } from 'react-relay-network-modern';
+import { urlMiddleware, RelayNetworkLayer } from 'react-relay-network-modern/node8';
 import uploadMiddleware from './uploadMiddleware';
 
 // Dev tools

@@ -3,29 +3,31 @@ import TextField from '@material-ui/core/TextField';
 import IconButton from '@material-ui/core/IconButton';
 import { Add } from '@material-ui/icons';
 import MUIAutocomplete from '@material-ui/lab/Autocomplete';
-import { useFieldToTextField } from 'formik-material-ui';
+import { fieldToTextField } from 'formik-material-ui';
 import { useField } from 'formik';
 import { isNil } from 'ramda';
 
 const Autocomplete = (props) => {
-  const [, meta] = useField(props);
-  const customize = React.useCallback(
-    ([field, , helpers]) => ({
-      onChange: (_, value) => {
-        helpers.setValue(value);
-        if (typeof props.onChange === 'function') {
-          props.onChange(field.name, value || '');
-        }
-      },
-      onFocus: () => {
-        if (typeof props.onFocus === 'function') {
-          props.onFocus(field.name);
-        }
-      },
-    }),
-    [props],
+  const {
+    form: { setFieldValue },
+    field: { name },
+  } = props;
+  const [, meta] = useField(name);
+  const onChange = React.useCallback(
+    (_, value) => {
+      setFieldValue(name, value);
+      if (typeof props.onChange === 'function') {
+        props.onChange(name, value || '');
+      }
+    },
+    [setFieldValue, name],
   );
-  const fieldProps = useFieldToTextField(props, customize);
+  const onFocus = React.useCallback(() => {
+    if (typeof props.onFocus === 'function') {
+      props.onFocus(name);
+    }
+  }, [name]);
+  const fieldProps = fieldToTextField(props);
   delete fieldProps.helperText;
   delete fieldProps.openCreate;
 
@@ -49,6 +51,8 @@ const Autocomplete = (props) => {
           />
         )}
         {...fieldProps}
+        onChange={onChange}
+        onFocus={onFocus}
       />
       {typeof props.openCreate === 'function' ? (
         <IconButton
