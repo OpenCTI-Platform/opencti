@@ -29,7 +29,7 @@ import { Tag } from 'mdi-material-ui';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { tagsSearchQuery } from '../../settings/Tags';
-import Autocomplete from '../../../../components/Autocomplete';
+import AutocompleteField from '../../../../components/AutocompleteField';
 import TagCreation from '../../settings/tags/TagCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
@@ -258,7 +258,7 @@ class StixDomainEntityTags extends Component {
               <DialogContent style={{ overflowY: 'hidden' }}>
                 <Form>
                   <Field
-                    component={Autocomplete}
+                    component={AutocompleteField}
                     name="new_tags"
                     multiple={true}
                     textfieldprops={{

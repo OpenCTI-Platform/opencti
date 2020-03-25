@@ -2,9 +2,10 @@ import React, { Component } from 'react';
 import {
   compose, pathOr, pipe, map, union,
 } from 'ramda';
+import { Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import { fetchQuery } from '../../../../relay/environment';
-import Autocomplete from '../../../../components/Autocomplete';
+import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
 import IdentityCreation, {
   identityCreationIdentitiesSearchQuery,
@@ -86,7 +87,8 @@ class CreatedByRefField extends Component {
     } = this.props;
     return (
       <div>
-        <Autocomplete
+        <Field
+          component={AutocompleteField}
           style={style}
           name={name}
           textfieldprops={{

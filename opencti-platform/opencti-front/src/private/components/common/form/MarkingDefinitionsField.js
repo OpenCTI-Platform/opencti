@@ -4,8 +4,9 @@ import {
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import { CenterFocusStrong } from '@material-ui/icons';
+import { Field } from 'formik';
 import { fetchQuery } from '../../../../relay/environment';
-import Autocomplete from '../../../../components/Autocomplete';
+import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 
@@ -59,7 +60,8 @@ class MarkingDefinitionsField extends Component {
       t, name, style, classes, onChange, helpertext,
     } = this.props;
     return (
-      <Autocomplete
+      <Field
+        component={AutocompleteField}
         style={style}
         name={name}
         multiple={true}

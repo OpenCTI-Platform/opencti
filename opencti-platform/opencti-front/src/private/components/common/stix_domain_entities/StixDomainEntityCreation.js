@@ -444,19 +444,22 @@ class StixDomainEntityCreation extends Component {
                 <DialogTitle>{t('Create an entity')}</DialogTitle>
                 <DialogContent>
                   {this.renderEntityTypesList()}
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="alias"
                     label={t('Aliases separated by commas')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}

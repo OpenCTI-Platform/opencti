@@ -337,7 +337,8 @@ class StixObservableCreation extends Component {
                     label={t('Observable type')}
                     containerstyle={{ width: '100%' }}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="observable_value"
                     label={t('Observable value')}
                     fullWidth={true}
@@ -345,7 +346,8 @@ class StixObservableCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}

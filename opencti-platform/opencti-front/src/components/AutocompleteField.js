@@ -7,10 +7,10 @@ import { fieldToTextField } from 'formik-material-ui';
 import { useField } from 'formik';
 import { isNil } from 'ramda';
 
-const Autocomplete = (props) => {
+const AutocompleteField = (props) => {
   const {
-    setFieldValue,
-    name,
+    form: { setFieldValue },
+    field: { name },
     onChange,
     onFocus,
     noOptionsText,
@@ -19,6 +19,7 @@ const Autocomplete = (props) => {
     openCreate,
   } = props;
   const [, meta] = useField(name);
+  console.log(meta);
   const internalOnChange = React.useCallback(
     (_, value) => {
       setFieldValue(name, value);
@@ -26,17 +27,21 @@ const Autocomplete = (props) => {
         onChange(name, value || '');
       }
     },
-    [props],
+    [setFieldValue, name, onChange],
   );
   const internalOnFocus = React.useCallback(() => {
     if (typeof onFocus === 'function') {
       onFocus(name);
     }
   }, [onFocus, name]);
+  const fieldProps = fieldToTextField(props);
+  delete fieldProps.helperText;
+  delete fieldProps.openCreate;
 
   return (
     <div style={{ position: 'relative' }}>
       <MUIAutocomplete
+        {...fieldProps}
         size="small"
         selectOnFocus={true}
         autoHighlight={true}
@@ -71,4 +76,4 @@ const Autocomplete = (props) => {
   );
 };
 
-export default Autocomplete;
+export default AutocompleteField;

@@ -270,18 +270,21 @@ class TagCreation extends Component {
               >
                 <DialogTitle>{t('Create a tag')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialog }}>
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="tag_type"
                     label={t('Type')}
                     fullWidth={true}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="value"
                     label={t('Value')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <ColorPickerField
+                  <Field
+                    component={ColorPickerField}
                     name="color"
                     label={t('Color')}
                     fullWidth={true}

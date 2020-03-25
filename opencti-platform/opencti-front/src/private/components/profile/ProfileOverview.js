@@ -217,13 +217,15 @@ class ProfileOverviewComponent extends Component {
             >
               {({ submitForm, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="password"
                     label={t('Password')}
                     type="password"
                     fullWidth={true}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="confirmation"
                     label={t('Confirmation')}
                     type="password"

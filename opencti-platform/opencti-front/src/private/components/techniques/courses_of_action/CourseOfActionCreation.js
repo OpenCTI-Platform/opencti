@@ -295,8 +295,14 @@ class CourseOfActionCreation extends Component {
               <Form>
                 <DialogTitle>{t('Create a course of action')}</DialogTitle>
                 <DialogContent>
-                  <TextField name="name" label={t('Name')} fullWidth={true} />
-                  <TextField
+                  <Field
+                    component={TextField}
+                    name="name"
+                    label={t('Name')}
+                    fullWidth={true}
+                  />
+                  <Field
+                    component={TextField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}

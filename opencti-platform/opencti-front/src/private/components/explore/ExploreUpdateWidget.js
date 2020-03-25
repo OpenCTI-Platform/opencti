@@ -17,7 +17,7 @@ import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
 import { stixDomainEntitiesLinesSearchQuery } from '../common/stix_domain_entities/StixDomainEntitiesLines';
 import { fetchQuery } from '../../../relay/environment';
-import Autocomplete from '../../../components/Autocomplete';
+import AutocompleteField from '../../../components/AutocompleteField';
 import ItemIcon from '../../../components/ItemIcon';
 
 const styles = (theme) => ({
@@ -211,7 +211,7 @@ class ExploreUpdateWidget extends Component {
                     {t('[Killchain] Tactics and procedures')}
                   </MenuItem>
                 </Field>
-                <Autocomplete
+                <AutocompleteField
                   style={{ marginTop: 20, width: '100%' }}
                   name="entity"
                   multiple={false}

@@ -21,7 +21,7 @@ import { Security } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
-import Autocomplete from '../../../../components/Autocomplete';
+import AutocompleteField from '../../../../components/AutocompleteField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 
@@ -279,7 +279,7 @@ class UserEditionOverviewComponent extends Component {
                 <MenuItem value="en">English</MenuItem>
                 <MenuItem value="fr">Français</MenuItem>
               </Field>
-              <Autocomplete
+              <AutocompleteField
                 name="roles"
                 multiple={true}
                 noOptionsText={t('No available options')}

@@ -276,24 +276,28 @@ class ExternalReferenceCreation extends Component {
               <Form>
                 <DialogTitle>{t('Create an external reference')}</DialogTitle>
                 <DialogContent>
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="source_name"
                     label={t('Source name')}
                     fullWidth={true}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="external_id"
                     label={t('External ID')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="url"
                     label={t('URL')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}
