@@ -19,7 +19,6 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByRefField from '../../common/form/CreatedByRefField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
-import DatePickerField from '../../../../components/DatePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
