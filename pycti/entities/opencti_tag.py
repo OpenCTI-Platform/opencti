@@ -104,7 +104,7 @@ class Tag:
             else:
                 return None
         else:
-            self.opencti.log("error", "Missing parameters: id or filters")
+            self.opencti.log("error", "[opencti_tag] Missing parameters: id or filters")
             return None
 
     """

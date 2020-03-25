@@ -231,7 +231,9 @@ class StixObservable:
             else:
                 return None
         else:
-            self.opencti.log("error", "Missing parameters: id or filters")
+            self.opencti.log(
+                "error", "[opencti_stix_observable] Missing parameters: id or filters"
+            )
             return None
 
     """

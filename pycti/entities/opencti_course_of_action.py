@@ -192,7 +192,9 @@ class CourseOfAction:
             else:
                 return None
         else:
-            self.opencti.log("error", "Missing parameters: id or filters")
+            self.opencti.log(
+                "error", "[opencti_course_of_action] Missing parameters: id or filters"
+            )
             return None
 
     """

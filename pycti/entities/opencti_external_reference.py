@@ -113,7 +113,10 @@ class ExternalReference:
             else:
                 return None
         else:
-            self.opencti.log("error", "Missing parameters: id or filters")
+            self.opencti.log(
+                "error",
+                "[opencti_external_reference] Missing parameters: id or filters",
+            )
             return None
 
     """
