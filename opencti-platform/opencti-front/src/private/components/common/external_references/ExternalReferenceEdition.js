@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Form, Formik } from 'formik';
+import { Form, Formik, Field } from 'formik';
 import { compose, pick } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -10,9 +10,15 @@ import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, requestSubscription } from '../../../../relay/environment';
+import {
+  commitMutation,
+  requestSubscription,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
+import {
+  SubscriptionAvatars,
+  SubscriptionFocus,
+} from '../../../../components/Subscription';
 
 const styles = (theme) => ({
   header: {
@@ -91,7 +97,7 @@ class ExternalReferenceEditionContainer extends Component {
       subscription,
       variables: {
         // eslint-disable-next-line
-        id: this.props.externalReference.id
+        id: this.props.externalReference.id,
       },
     });
     this.setState({ sub });
@@ -161,7 +167,8 @@ class ExternalReferenceEditionContainer extends Component {
           >
             {() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <TextField
+                <Field
+                  component={TextField}
                   name="source_name"
                   label={t('Source name')}
                   fullWidth={true}
@@ -174,7 +181,8 @@ class ExternalReferenceEditionContainer extends Component {
                     />
                   }
                 />
-                <TextField
+                <Field
+                  component={TextField}
                   name="external_id"
                   label={t('External ID')}
                   fullWidth={true}
@@ -188,7 +196,8 @@ class ExternalReferenceEditionContainer extends Component {
                     />
                   }
                 />
-                <TextField
+                <Field
+                  component={TextField}
                   name="url"
                   label={t('URL')}
                   fullWidth={true}
@@ -199,7 +208,8 @@ class ExternalReferenceEditionContainer extends Component {
                     <SubscriptionFocus context={editContext} fieldName="url" />
                   }
                 />
-                <TextField
+                <Field
+                  component={TextField}
                   name="description"
                   label={t('Description')}
                   fullWidth={true}

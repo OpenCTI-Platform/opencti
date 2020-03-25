@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
@@ -109,14 +109,16 @@ class ProfileOverviewComponent extends Component {
           >
             {() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <TextField
+                <Field
+                  component={TextField}
                   name="name"
                   disabled={external}
                   label={t('Name')}
                   fullWidth={true}
                   onSubmit={this.handleSubmitField.bind(this)}
                 />
-                <TextField
+                <Field
+                  component={TextField}
                   name="user_email"
                   disabled={true}
                   label={t('Email address')}
@@ -124,21 +126,24 @@ class ProfileOverviewComponent extends Component {
                   style={{ marginTop: 20 }}
                   onSubmit={this.handleSubmitField.bind(this)}
                 />
-                <TextField
+                <Field
+                  component={TextField}
                   name="firstname"
                   label={t('Firstname')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                   onSubmit={this.handleSubmitField.bind(this)}
                 />
-                <TextField
+                <Field
+                  component={TextField}
                   name="lastname"
                   label={t('Lastname')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                   onSubmit={this.handleSubmitField.bind(this)}
                 />
-                <SelectField
+                <Field
+                  component={SelectField}
                   name="language"
                   label={t('Language')}
                   fullWidth={true}
@@ -154,8 +159,9 @@ class ProfileOverviewComponent extends Component {
                   </MenuItem>
                   <MenuItem value="en">English</MenuItem>
                   <MenuItem value="fr">Français</MenuItem>
-                </SelectField>
-                <TextField
+                </Field>
+                <Field
+                  component={TextField}
                   name="description"
                   label={t('Description')}
                   fullWidth={true}

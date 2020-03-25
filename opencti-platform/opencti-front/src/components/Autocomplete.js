@@ -9,27 +9,30 @@ import { isNil } from 'ramda';
 
 const Autocomplete = (props) => {
   const {
-    form: { setFieldValue },
-    field: { name },
+    setFieldValue,
+    name,
+    onChange,
+    onFocus,
+    noOptionsText,
+    renderOption,
+    textfieldprops,
+    openCreate,
   } = props;
   const [, meta] = useField(name);
-  const onChange = React.useCallback(
+  const internalOnChange = React.useCallback(
     (_, value) => {
       setFieldValue(name, value);
-      if (typeof props.onChange === 'function') {
-        props.onChange(name, value || '');
+      if (typeof onChange === 'function') {
+        onChange(name, value || '');
       }
     },
     [setFieldValue, name],
   );
-  const onFocus = React.useCallback(() => {
-    if (typeof props.onFocus === 'function') {
-      props.onFocus(name);
+  const internalOnFocus = React.useCallback(() => {
+    if (typeof onFocus === 'function') {
+      onFocus(name);
     }
-  }, [name]);
-  const fieldProps = fieldToTextField(props);
-  delete fieldProps.helperText;
-  delete fieldProps.openCreate;
+  }, [onFocus, name]);
 
   return (
     <div style={{ position: 'relative' }}>
@@ -38,25 +41,24 @@ const Autocomplete = (props) => {
         selectOnFocus={true}
         autoHighlight={true}
         getOptionLabel={(option) => (option.label ? option.label : '')}
-        noOptionsText={props.noOptionsText}
-        renderOption={props.renderOption}
+        noOptionsText={noOptionsText}
+        renderOption={renderOption}
         renderInput={(params) => (
           <TextField
             {...params}
-            {...props.textfieldprops}
-            name={props.name}
+            {...textfieldprops}
+            name={name}
             fullWidth={true}
             error={meta.touched && !isNil(meta.error)}
-            helperText={meta.error || props.textfieldprops.helperText}
+            helperText={meta.error || textfieldprops.helperText}
           />
         )}
-        {...fieldProps}
-        onChange={onChange}
-        onFocus={onFocus}
+        onChange={internalOnChange}
+        onFocus={internalOnFocus}
       />
-      {typeof props.openCreate === 'function' ? (
+      {typeof openCreate === 'function' ? (
         <IconButton
-          onClick={() => props.openCreate()}
+          onClick={() => openCreate()}
           edge="end"
           style={{ position: 'absolute', top: 5, right: 35 }}
         >

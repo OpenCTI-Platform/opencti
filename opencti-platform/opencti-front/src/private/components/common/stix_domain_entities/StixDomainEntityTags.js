@@ -12,7 +12,7 @@ import {
   ascend,
   prop,
 } from 'ramda';
-import { Form, Formik } from 'formik';
+import { Form, Formik, Field } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -257,7 +257,8 @@ class StixDomainEntityTags extends Component {
               <DialogTitle>{t('Add new tags')}</DialogTitle>
               <DialogContent style={{ overflowY: 'hidden' }}>
                 <Form>
-                  <Autocomplete
+                  <Field
+                    component={Autocomplete}
                     name="new_tags"
                     multiple={true}
                     textfieldprops={{

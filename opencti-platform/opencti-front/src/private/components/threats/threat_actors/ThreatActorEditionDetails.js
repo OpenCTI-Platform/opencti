@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
@@ -126,7 +126,8 @@ class ThreatActorEditionDetailsComponent extends Component {
           {() => (
             <div>
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <SelectField
+                <Field
+                  component={SelectField}
                   name="sophistication"
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
@@ -161,8 +162,9 @@ class ThreatActorEditionDetailsComponent extends Component {
                   <MenuItem key="strategic" value="strategic">
                     {t('sophistication_strategic')}
                   </MenuItem>
-                </SelectField>
-                <SelectField
+                </Field>
+                <Field
+                  component={SelectField}
                   name="resource_level"
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
@@ -197,8 +199,9 @@ class ThreatActorEditionDetailsComponent extends Component {
                   <MenuItem key="government" value="government">
                     {t('resource_government')}
                   </MenuItem>
-                </SelectField>
-                <SelectField
+                </Field>
+                <Field
+                  component={SelectField}
                   name="primary_motivation"
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
@@ -251,8 +254,9 @@ class ThreatActorEditionDetailsComponent extends Component {
                   <MenuItem key="unpredictable" value="unpredictable">
                     {t('motivation_unpredictable')}
                   </MenuItem>
-                </SelectField>
-                <SelectField
+                </Field>
+                <Field
+                  component={SelectField}
                   name="secondary_motivation"
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
@@ -305,8 +309,9 @@ class ThreatActorEditionDetailsComponent extends Component {
                   <MenuItem key="unpredictable" value="unpredictable">
                     {t('motivation_unpredictable')}
                   </MenuItem>
-                </SelectField>
-                <TextField
+                </Field>
+                <Field
+                  component={TextField}
                   name="goal"
                   label={t('Goal')}
                   fullWidth={true}

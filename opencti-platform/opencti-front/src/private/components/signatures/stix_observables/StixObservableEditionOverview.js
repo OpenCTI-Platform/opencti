@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
   assoc,
@@ -143,7 +143,11 @@ class StixObservableEditionOverviewComponent extends Component {
     const currentCreatedByRef = {
       label: pathOr(null, ['createdByRef', 'node', 'name'], stixObservable),
       value: pathOr(null, ['createdByRef', 'node', 'id'], stixObservable),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], stixObservable),
+      relation: pathOr(
+        null,
+        ['createdByRef', 'relation', 'id'],
+        stixObservable,
+      ),
     };
 
     if (currentCreatedByRef.value === null) {
@@ -269,7 +273,8 @@ class StixObservableEditionOverviewComponent extends Component {
       >
         {({ setFieldValue }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
-            <TextField
+            <Field
+              component={TextField}
               name="observable_value"
               label={t('Observable value')}
               fullWidth={true}
@@ -285,7 +290,8 @@ class StixObservableEditionOverviewComponent extends Component {
                 />
               }
             />
-            <TextField
+            <Field
+              component={TextField}
               name="description"
               label={t('Description')}
               fullWidth={true}

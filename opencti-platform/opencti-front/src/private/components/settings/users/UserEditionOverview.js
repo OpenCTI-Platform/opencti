@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
   assoc,
@@ -212,7 +212,8 @@ class UserEditionOverviewComponent extends Component {
         >
           {() => (
             <Form style={{ margin: '20px 0 20px 0' }}>
-              <TextField
+              <Field
+                component={TextField}
                 name="name"
                 label={t('name')}
                 disabled={external}
@@ -223,7 +224,8 @@ class UserEditionOverviewComponent extends Component {
                   <SubscriptionFocus context={context} fieldName="name" />
                 }
               />
-              <TextField
+              <Field
+                component={TextField}
                 name="user_email"
                 disabled={external}
                 label={t('Email address')}
@@ -235,7 +237,8 @@ class UserEditionOverviewComponent extends Component {
                   <SubscriptionFocus context={context} fieldName="user_email" />
                 }
               />
-              <TextField
+              <Field
+                component={TextField}
                 name="firstname"
                 label={t('Firstname')}
                 fullWidth={true}
@@ -246,7 +249,8 @@ class UserEditionOverviewComponent extends Component {
                   <SubscriptionFocus context={context} fieldName="firstname" />
                 }
               />
-              <TextField
+              <Field
+                component={TextField}
                 name="lastname"
                 label={t('Lastname')}
                 fullWidth={true}
@@ -257,7 +261,8 @@ class UserEditionOverviewComponent extends Component {
                   <SubscriptionFocus context={context} fieldName="lastname" />
                 }
               />
-              <SelectField
+              <Field
+                component={SelectField}
                 name="language"
                 label={t('Language')}
                 fullWidth={true}
@@ -273,7 +278,7 @@ class UserEditionOverviewComponent extends Component {
                 </MenuItem>
                 <MenuItem value="en">English</MenuItem>
                 <MenuItem value="fr">Français</MenuItem>
-              </SelectField>
+              </Field>
               <Autocomplete
                 name="roles"
                 multiple={true}
@@ -298,7 +303,8 @@ class UserEditionOverviewComponent extends Component {
                 )}
                 style={{ marginTop: 20, width: '100%' }}
               />
-              <TextField
+              <Field
+                component={TextField}
                 name="description"
                 label={t('Description')}
                 fullWidth={true}
