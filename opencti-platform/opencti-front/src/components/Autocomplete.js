@@ -20,6 +20,7 @@ const Autocomplete = (props) => {
         props.onChange(name, value || '');
       }
     },
+    [props],
   );
   const onFocus = React.useCallback(() => {
     if (typeof props.onFocus === 'function') {
