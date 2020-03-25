@@ -211,7 +211,8 @@ class ExploreUpdateWidget extends Component {
                     {t('[Killchain] Tactics and procedures')}
                   </MenuItem>
                 </Field>
-                <AutocompleteField
+                <Field
+                  component={AutocompleteField}
                   style={{ marginTop: 20, width: '100%' }}
                   name="entity"
                   multiple={false}

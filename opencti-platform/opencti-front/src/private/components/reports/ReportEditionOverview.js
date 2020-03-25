@@ -410,8 +410,7 @@ class ReportEditionOverviewComponent extends Component {
                             {t('confidence_4')}
                           </MenuItem>
                         </Field>
-                        <Field
-                          component={CreatedByRefField}
+                        <CreatedByRefField
                           name="createdByRef"
                           style={{ marginTop: 20, width: '100%' }}
                           setFieldValue={setFieldValue}
@@ -423,8 +422,7 @@ class ReportEditionOverviewComponent extends Component {
                           }
                           onChange={this.handleChangeCreatedByRef.bind(this)}
                         />
-                        <Field
-                          component={MarkingDefinitionsField}
+                        <MarkingDefinitionsField
                           name="markingDefinitions"
                           style={{ marginTop: 20, width: '100%' }}
                           helpertext={

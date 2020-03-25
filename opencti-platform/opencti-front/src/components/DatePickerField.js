@@ -46,12 +46,12 @@ const DatePickerField = (props) => {
   );
   return (
     <KeyboardDatePicker
+      {...fieldToKeyboardDatePicker(props)}
       variant="inline"
       disableToolbar={false}
       autoOk={true}
       allowKeyboardControl={true}
       format="YYYY-MM-DD"
-      {...fieldToKeyboardDatePicker(props)}
       onAccept={internalOnAccept}
       onChange={internalOnChange}
       onFocus={internalOnFocus}

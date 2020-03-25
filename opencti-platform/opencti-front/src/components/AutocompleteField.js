@@ -19,7 +19,6 @@ const AutocompleteField = (props) => {
     openCreate,
   } = props;
   const [, meta] = useField(name);
-  console.log(meta);
   const internalOnChange = React.useCallback(
     (_, value) => {
       setFieldValue(name, value);

@@ -279,7 +279,8 @@ class UserEditionOverviewComponent extends Component {
                 <MenuItem value="en">English</MenuItem>
                 <MenuItem value="fr">Français</MenuItem>
               </Field>
-              <AutocompleteField
+              <Field
+                component={AutocompleteField}
                 name="roles"
                 multiple={true}
                 noOptionsText={t('No available options')}
