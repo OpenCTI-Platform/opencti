@@ -112,7 +112,10 @@ class MarkingDefinition:
             else:
                 return None
         else:
-            self.opencti.log("error", "Missing parameters: id or filters")
+            self.opencti.log(
+                "error",
+                "[opencti_marking_definition] Missing parameters: id or filters",
+            )
             return None
 
     """

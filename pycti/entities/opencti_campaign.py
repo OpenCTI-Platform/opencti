@@ -192,7 +192,9 @@ class Campaign:
             else:
                 return None
         else:
-            self.opencti.log("error", "Missing parameters: id or filters")
+            self.opencti.log(
+                "error", "[opencti_campaign] Missing parameters: id or filters"
+            )
             return None
 
     """

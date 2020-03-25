@@ -392,7 +392,10 @@ class StixDomainEntity:
             else:
                 return None
         else:
-            self.opencti.log("error", "Missing parameters: id or filters")
+            self.opencti.log(
+                "error",
+                "[opencti_stix_domain_entity] Missing parameters: id or filters",
+            )
             return None
 
     """
