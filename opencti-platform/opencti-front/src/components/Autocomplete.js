@@ -26,7 +26,7 @@ const Autocomplete = (props) => {
         onChange(name, value || '');
       }
     },
-    [setFieldValue, name],
+    [props],
   );
   const internalOnFocus = React.useCallback(() => {
     if (typeof onFocus === 'function') {

@@ -200,14 +200,13 @@ describe('Grakn loaders', () => {
   it('should count accurate', async () => {
     const countObjects = type => getSingleValueNumber(`match $c isa ${type}; get; count;`);
     // Entities
-    expect(await countObjects('MigrationStatus')).toEqual(0); // Loader doesnt init migrations
-    expect(await countObjects('MigrationReference')).toEqual(0);
     expect(await countObjects('Settings')).toEqual(1);
     expect(await countObjects('Tag')).toEqual(0);
     expect(await countObjects('Connector')).toEqual(0);
     expect(await countObjects('Group')).toEqual(0);
     expect(await countObjects('Workspace')).toEqual(0);
     expect(await countObjects('Token')).toEqual(1);
+    expect(await countObjects('Marking-Definition')).toEqual(6);
     expect(await countObjects('Stix-Domain')).toEqual(29);
     expect(await countObjects('Role')).toEqual(2);
     expect(await countObjects('Capability')).toEqual(19);
@@ -411,25 +410,29 @@ describe('Grakn relations listing', () => {
   it.each(noCacheCases)('should list relations with from types option (noCache = %s)', async noCache => {
     // Just id specified,
     // "name": "Paradise Ransomware"
-    const options = { noCache, fromTypes: ['Intrusion-Set'] };
+    const intrusionSet = await internalLoadEntityByStixId('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
+    expect(intrusionSet.entity_type).toEqual('intrusion-set');
+    const options = { noCache, fromId: '82316ffd-a0ec-4519-a454-6566f8f5676c', fromTypes: ['Intrusion-Set'] };
     const stixRelations = await listRelations('targets', options);
+    expect(stixRelations.edges.length).toEqual(2);
     for (let index = 0; index < stixRelations.edges.length; index += 1) {
       const stixRelation = stixRelations.edges[index].node;
-      // eslint-disable-next-line no-await-in-loop
-      const toThing = await loadByGraknId(stixRelation.fromId);
-      expect(toThing.entity_type).toEqual('intrusion-set');
+      expect(stixRelation.fromId).toEqual(intrusionSet.grakn_id);
     }
   });
   it.each(noCacheCases)('should list relations with to types option (noCache = %s)', async noCache => {
     // Just id specified,
     // "name": "Paradise Ransomware"
-    const options = { noCache, toTypes: ['Attack-Pattern'] };
+    const malware = await internalLoadEntityByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const options = { noCache, fromId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330', toTypes: ['Attack-Pattern'] };
     const stixRelations = await listRelations('uses', options);
+    expect(stixRelations.edges.length).toEqual(2);
     for (let index = 0; index < stixRelations.edges.length; index += 1) {
       const stixRelation = stixRelations.edges[index].node;
       // eslint-disable-next-line no-await-in-loop
       const toThing = await loadByGraknId(stixRelation.toId);
       expect(toThing.entity_type).toEqual('attack-pattern');
+      expect(stixRelation.fromId).toEqual(malware.grakn_id);
     }
   });
   it.each(noCacheCases)('should list relations with first and order filtering (noCache = %s)', async noCache => {
@@ -506,7 +509,7 @@ describe('Grakn relations listing', () => {
     expect(relation.toRole).toEqual('usage');
     expect(relation.created).toEqual('2020-03-01T14:05:16.797Z');
   });
-  it('should list relations with to attribute filtering (noCache = %s)', async (noCache = true) => {
+  it.each(noCacheCases)('should list relations with to attribute filtering (noCache = %s)', async noCache => {
     const options = { orderBy: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.name`, orderMode: 'asc', noCache };
     const stixRelations = await listRelations('uses', options);
     // TODO Fix that test
