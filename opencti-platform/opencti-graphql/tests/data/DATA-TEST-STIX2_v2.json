@@ -60,6 +60,8 @@
                 "identity--c3794ffd-0e71-4670-aa4d-978b4cbdc72c",
                 "identity--5acd8b26-51c2-4608-86ed-e9edd43ad971",
                 "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
+                "campaign--92d46985-17a6-4610-8be8-cc70c82ed214",
+                "incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4",
                 "attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17",
                 "relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02",
                 "relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de",
@@ -84,7 +86,47 @@
             "description": "MalwareHunterTeam discovered a new Paradise Ransomware variant that uses the extension _V.0.0.0.1{paradise@all-ransomware.info}.prt and drops a ransom note named PARADISE_README_paradise@all-ransomware.info.txt.",
             "created": "2019-09-30T16:38:26.000Z",
             "modified": "2020-01-14T14:01:48.288Z",
-            "x_opencti_id": "ab78a62f-4928-4d5a-8740-03f0af9c4330"
+            "x_opencti_id": "ab78a62f-4928-4d5a-8740-03f0af9c4330",
+            "kill_chain_phases": [
+                {
+                    "id": "kill-chain-phase--4ca3ebcb-2a62-452e-93e6-a90aa1bbefe9",
+                    "kill_chain_name": "mitre-attack",
+                    "phase_name": "persistence",
+                    "x_opencti_id": "2a2202bd-1da6-4668-9fc5-ad1017e974bc",
+                    "x_opencti_phase_order": 20,
+                    "x_opencti_created": "2020-02-25T09:18:18.472Z",
+                    "x_opencti_modified": "2020-02-25T10:23:56.737Z"
+                }
+            ],
+            "external_references": [
+                {
+                    "id": "external-reference--70ef875f-4d6e-4a2a-a2a5-d2459b4d0130",
+                    "source_name": "ESET Sednit Part 2",
+                    "description": "ESET. (2016, October). En Route with Sednit - Part 2: Observing the Comings and Goings. Retrieved November 21, 2016.",
+                    "url": "http://www.welivesecurity.com/wp-content/uploads/2016/10/eset-sednit-part-2.pdf",
+                    "x_opencti_id": "144a862d-c31e-4a29-9a5c-13a730dc23ac",
+                    "x_opencti_created": "2020-02-25T09:29:15.668Z",
+                    "x_opencti_modified": "2020-02-25T09:29:15.668Z"
+                },
+                {
+                    "id": "external-reference--ecd931c0-52c9-4150-97bf-c3a692f06688",
+                    "source_name": "mitre-attack",
+                    "url": "https://attack.mitre.org/software/S0045",
+                    "external_id": "S0045",
+                    "x_opencti_id": "21dfc4c4-1529-4c69-9718-d9059f4ec25e",
+                    "x_opencti_created": "2020-02-25T09:29:13.138Z",
+                    "x_opencti_modified": "2020-02-25T09:29:13.138Z"
+                },
+                {
+                    "id": "external-reference--d79ff8d3-00d2-44a1-a35b-6f91590d6422",
+                    "source_name": "Kaspersky Sofacy",
+                    "description": "Kaspersky Lab's Global Research and Analysis Team. (2015, December 4). Sofacy APT hits high profile targets with updated toolset. Retrieved December 10, 2015.",
+                    "url": "https://securelist.com/sofacy-apt-hits-high-profile-targets-with-updated-toolset/72924/",
+                    "x_opencti_id": "430d6364-6ddb-4096-a700-7a0b5d0fad2e",
+                    "x_opencti_created": "2020-02-25T09:15:29.347Z",
+                    "x_opencti_modified": "2020-02-25T09:15:29.347Z"
+                }
+            ]
         },
         {
             "id": "malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88",
@@ -97,6 +139,40 @@
             "created": "2020-02-04T14:48:31.601Z",
             "modified": "2020-02-04T14:48:31.601Z",
             "x_opencti_id": "6fb84f02-f095-430e-87a0-394d41955eee",
+            "object_marking_refs": [
+                "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+            ]
+        },
+        {
+            "id": "campaign--92d46985-17a6-4610-8be8-cc70c82ed214",
+            "type": "campaign",
+            "name": "A new campaign",
+            "labels": [
+                "campaign"
+            ],
+            "description": "A test campaign",
+            "x_opencti_first_seen": "2020-02-27T08:45:43.365Z",
+            "x_opencti_last_seen": "2020-02-27T08:45:43.365Z",
+            "created": "2020-02-29T14:48:31.601Z",
+            "modified": "2020-02-29T14:48:31.601Z",
+            "x_opencti_id": "fab6fa99-b07f-4278-86b4-b674edf60877",
+            "object_marking_refs": [
+                "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+            ]
+        },
+        {
+            "id": "incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4",
+            "type": "x-opencti-incident",
+            "name": "A new incident",
+            "labels": [
+                "x-opencti-incident"
+            ],
+            "description": "A test incident",
+            "first_seen": "2020-02-27T08:45:47.779Z",
+            "last_seen": "2020-02-27T08:45:47.779Z",
+            "created": "2020-03-25T14:48:31.601Z",
+            "modified": "2020-03-25T14:48:31.601Z",
+            "x_opencti_id": "5e0a1dea-0f58-4da4-a00b-481640f8e7b3",
             "object_marking_refs": [
                 "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
             ]
@@ -421,6 +497,38 @@
             "x_opencti_weight": 3,
             "x_opencti_role_played": "Unknown",
             "x_opencti_id": "209cbdf0-fc5e-47c9-8023-dd724993ae55"
+        },
+        {
+            "id": "relationship--6d59077d-a2fb-4217-846f-c7cf038672fa",
+            "type": "relationship",
+            "relationship_type": "attributed-to",
+            "source_ref": "campaign--92d46985-17a6-4610-8be8-cc70c82ed214",
+            "target_ref": "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
+            "x_opencti_source_ref": "campaign--92d46985-17a6-4610-8be8-cc70c82ed214",
+            "x_opencti_target_ref": "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
+            "created": "2020-03-02T14:10:20.065Z",
+            "modified": "2020-03-02T14:10:20.065Z",
+            "x_opencti_first_seen": "2020-03-01T23:01:00.000Z",
+            "x_opencti_last_seen": "2020-03-01T23:01:00.000Z",
+            "x_opencti_weight": 3,
+            "x_opencti_role_played": "Unknown",
+            "x_opencti_id": "253bb10d-3c92-4033-a33a-e0ffb8a92962"
+        },
+        {
+            "id": "relationship--55119cba-8fbe-450b-bb47-3af8db29c187",
+            "type": "relationship",
+            "relationship_type": "attributed-to",
+            "source_ref": "incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4",
+            "target_ref": "campaign--92d46985-17a6-4610-8be8-cc70c82ed214",
+            "x_opencti_source_ref": "incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4",
+            "x_opencti_target_ref": "campaign--92d46985-17a6-4610-8be8-cc70c82ed214",
+            "created": "2020-03-25T14:10:20.065Z",
+            "modified": "2020-03-25T14:10:20.065Z",
+            "x_opencti_first_seen": "2020-02-27T08:45:47.779Z",
+            "x_opencti_last_seen": "2020-02-27T08:45:47.779Z",
+            "x_opencti_weight": 2,
+            "x_opencti_role_played": "Unknown",
+            "x_opencti_id": "259ec544-4f3d-4c6a-a805-75aa60bcc108"
         },
         {
             "id": "relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de",

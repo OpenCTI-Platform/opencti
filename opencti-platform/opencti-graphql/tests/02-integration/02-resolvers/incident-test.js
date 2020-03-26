@@ -2,16 +2,16 @@ import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
 
 const LIST_QUERY = gql`
-  query campaigns(
+  query incidents(
     $first: Int
     $after: ID
-    $orderBy: CampaignsOrdering
+    $orderBy: IncidentsOrdering
     $orderMode: OrderingMode
-    $filters: [CampaignsFiltering]
+    $filters: [IncidentsFiltering]
     $filterMode: FilterMode
     $search: String
   ) {
-    campaigns(
+    incidents(
       first: $first
       after: $after
       orderBy: $orderBy
@@ -32,7 +32,7 @@ const LIST_QUERY = gql`
 `;
 
 const TIMESERIES_QUERY = gql`
-  query campaignsTimeSeries(
+  query incidentsTimeSeries(
     $objectId: String
     $field: String!
     $operation: StatsOperation!
@@ -42,7 +42,7 @@ const TIMESERIES_QUERY = gql`
     $relationType: String
     $inferred: Boolean
   ) {
-    campaignsTimeSeries(
+    incidentsTimeSeries(
       objectId: $objectId
       field: $field
       operation: $operation
@@ -59,8 +59,8 @@ const TIMESERIES_QUERY = gql`
 `;
 
 const READ_QUERY = gql`
-  query campaign($id: String!) {
-    campaign(id: $id) {
+  query incident($id: String!) {
+    incident(id: $id) {
       id
       name
       description
@@ -68,57 +68,57 @@ const READ_QUERY = gql`
   }
 `;
 
-describe('Campaign resolver standard behavior', () => {
-  let campaignInternalId;
-  let campaignMarkingDefinitionRelationId;
-  const campaignStixId = 'campaign--76c42acb-c5d7-4f38-abf2-a8566ac89ac9';
-  it('should campaign created', async () => {
+describe('Incident resolver standard behavior', () => {
+  let incidentInternalId;
+  let incidentMarkingDefinitionRelationId;
+  const incidentStixId = 'incident--1cbc610d-9f6b-4937-a404-2bec7f261ae5';
+  it('should incident created', async () => {
     const CREATE_QUERY = gql`
-      mutation CampaignAdd($input: CampaignAddInput) {
-        campaignAdd(input: $input) {
+      mutation IncidentAdd($input: IncidentAddInput) {
+        incidentAdd(input: $input) {
           id
           name
           description
         }
       }
     `;
-    // Create the campaign
-    const CAMPAIGN_TO_CREATE = {
+    // Create the incident
+    const INCIDENT_TO_CREATE = {
       input: {
-        name: 'Campaign',
-        stix_id_key: campaignStixId,
-        description: 'Campaign description',
+        name: 'Incident',
+        stix_id_key: incidentStixId,
+        description: 'Incident description',
         first_seen: '2020-03-24T10:51:20+00:00',
         last_seen: '2020-03-24T10:51:20+00:00',
       },
     };
-    const campaign = await queryAsAdmin({
+    const incident = await queryAsAdmin({
       query: CREATE_QUERY,
-      variables: CAMPAIGN_TO_CREATE,
+      variables: INCIDENT_TO_CREATE,
     });
-    expect(campaign).not.toBeNull();
-    expect(campaign.data.campaignAdd).not.toBeNull();
-    expect(campaign.data.campaignAdd.name).toEqual('Campaign');
-    campaignInternalId = campaign.data.campaignAdd.id;
+    expect(incident).not.toBeNull();
+    expect(incident.data.incidentAdd).not.toBeNull();
+    expect(incident.data.incidentAdd.name).toEqual('Incident');
+    incidentInternalId = incident.data.incidentAdd.id;
   });
-  it('should campaign loaded by internal id', async () => {
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: campaignInternalId } });
+  it('should incident loaded by internal id', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: incidentInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.campaign).not.toBeNull();
-    expect(queryResult.data.campaign.id).toEqual(campaignInternalId);
+    expect(queryResult.data.incident).not.toBeNull();
+    expect(queryResult.data.incident.id).toEqual(incidentInternalId);
   });
-  it('should campaign loaded by stix id', async () => {
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: campaignStixId } });
+  it('should incident loaded by stix id', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: incidentStixId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.campaign).not.toBeNull();
-    expect(queryResult.data.campaign.id).toEqual(campaignInternalId);
-    // Delete the campaign
+    expect(queryResult.data.incident).not.toBeNull();
+    expect(queryResult.data.incident.id).toEqual(incidentInternalId);
+    // Delete the incident
   });
-  it('should list campaigns', async () => {
+  it('should list incidents', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.campaigns.edges.length).toEqual(2);
+    expect(queryResult.data.incidents.edges.length).toEqual(2);
   });
-  it('should timeseries campaigns', async () => {
+  it('should timeseries incidents', async () => {
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {
@@ -129,10 +129,10 @@ describe('Campaign resolver standard behavior', () => {
         interval: 'month',
       },
     });
-    expect(queryResult.data.campaignsTimeSeries.length).toEqual(13);
-    expect(queryResult.data.campaignsTimeSeries[2].value).toEqual(1);
+    expect(queryResult.data.incidentsTimeSeries.length).toEqual(13);
+    expect(queryResult.data.incidentsTimeSeries[2].value).toEqual(1);
   });
-  it("should timeseries of an entity's campaigns", async () => {
+  it("should timeseries of an entity's incidents", async () => {
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {
@@ -145,13 +145,13 @@ describe('Campaign resolver standard behavior', () => {
         relationType: 'attributed-to',
       },
     });
-    /* expect(queryResult.data.campaignsTimeSeries.length).toEqual(13);
-    expect(queryResult.data.campaignsTimeSeries[2].value).toEqual(1); */
+    expect(queryResult.data.incidentsTimeSeries.length).toEqual(13);
+    // expect(queryResult.data.incidentsTimeSeries[2].value).toEqual(1);
   });
-  it('should update campaign', async () => {
+  it('should update incident', async () => {
     const UPDATE_QUERY = gql`
-      mutation CampaignEdit($id: ID!, $input: EditInput!) {
-        campaignEdit(id: $id) {
+      mutation IncidentEdit($id: ID!, $input: EditInput!) {
+        incidentEdit(id: $id) {
           fieldPatch(input: $input) {
             id
             name
@@ -161,14 +161,14 @@ describe('Campaign resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
-      variables: { id: campaignInternalId, input: { key: 'name', value: ['Campaign - test'] } },
+      variables: { id: incidentInternalId, input: { key: 'name', value: ['Incident - test'] } },
     });
-    expect(queryResult.data.campaignEdit.fieldPatch.name).toEqual('Campaign - test');
+    expect(queryResult.data.incidentEdit.fieldPatch.name).toEqual('Incident - test');
   });
-  it('should context patch campaign', async () => {
+  it('should context patch incident', async () => {
     const CONTEXT_PATCH_QUERY = gql`
-      mutation CampaignEdit($id: ID!, $input: EditContext) {
-        campaignEdit(id: $id) {
+      mutation IncidentEdit($id: ID!, $input: EditContext) {
+        incidentEdit(id: $id) {
           contextPatch(input: $input) {
             id
           }
@@ -177,14 +177,14 @@ describe('Campaign resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
-      variables: { id: campaignInternalId, input: { focusOn: 'description' } },
+      variables: { id: incidentInternalId, input: { focusOn: 'description' } },
     });
-    expect(queryResult.data.campaignEdit.contextPatch.id).toEqual(campaignInternalId);
+    expect(queryResult.data.incidentEdit.contextPatch.id).toEqual(incidentInternalId);
   });
-  it('should context clean campaign', async () => {
+  it('should context clean incident', async () => {
     const CONTEXT_PATCH_QUERY = gql`
-      mutation CampaignEdit($id: ID!) {
-        campaignEdit(id: $id) {
+      mutation IncidentEdit($id: ID!) {
+        incidentEdit(id: $id) {
           contextClean {
             id
           }
@@ -193,18 +193,18 @@ describe('Campaign resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
-      variables: { id: campaignInternalId },
+      variables: { id: incidentInternalId },
     });
-    expect(queryResult.data.campaignEdit.contextClean.id).toEqual(campaignInternalId);
+    expect(queryResult.data.incidentEdit.contextClean.id).toEqual(incidentInternalId);
   });
-  it('should add relation in campaign', async () => {
+  it('should add relation in incident', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation CampaignEdit($id: ID!, $input: RelationAddInput!) {
-        campaignEdit(id: $id) {
+      mutation IncidentEdit($id: ID!, $input: RelationAddInput!) {
+        incidentEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
-              ... on Campaign {
+              ... on Incident {
                 markingDefinitions {
                   edges {
                     node {
@@ -224,7 +224,7 @@ describe('Campaign resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: RELATION_ADD_QUERY,
       variables: {
-        id: campaignInternalId,
+        id: incidentInternalId,
         input: {
           fromRole: 'so',
           toRole: 'marking',
@@ -233,14 +233,14 @@ describe('Campaign resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.campaignEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
-    campaignMarkingDefinitionRelationId =
-      queryResult.data.campaignEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+    expect(queryResult.data.incidentEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
+    incidentMarkingDefinitionRelationId =
+      queryResult.data.incidentEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
   });
-  it('should delete relation in campaign', async () => {
+  it('should delete relation in incident', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation CampaignEdit($id: ID!, $relationId: ID!) {
-        campaignEdit(id: $id) {
+      mutation IncidentEdit($id: ID!, $relationId: ID!) {
+        incidentEdit(id: $id) {
           relationDelete(relationId: $relationId) {
             id
             markingDefinitions {
@@ -257,28 +257,28 @@ describe('Campaign resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: RELATION_DELETE_QUERY,
       variables: {
-        id: campaignInternalId,
-        relationId: campaignMarkingDefinitionRelationId,
+        id: incidentInternalId,
+        relationId: incidentMarkingDefinitionRelationId,
       },
     });
-    expect(queryResult.data.campaignEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.incidentEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
   });
-  it('should campaign deleted', async () => {
+  it('should incident deleted', async () => {
     const DELETE_QUERY = gql`
-      mutation campaignDelete($id: ID!) {
-        campaignEdit(id: $id) {
+      mutation incidentDelete($id: ID!) {
+        incidentEdit(id: $id) {
           delete
         }
       }
     `;
-    // Delete the campaign
+    // Delete the incident
     await queryAsAdmin({
       query: DELETE_QUERY,
-      variables: { id: campaignInternalId },
+      variables: { id: incidentInternalId },
     });
     // Verify is no longer found
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: campaignStixId } });
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: incidentStixId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.campaign).toBeNull();
+    expect(queryResult.data.incident).toBeNull();
   });
 });

@@ -57,7 +57,11 @@ class ThreatActorComponent extends Component {
           style={{ marginTop: 30 }}
         >
           <Grid item={true} xs={4}>
-            <EntityCampaignsChart entityId={threatActor.id} inferred={true} />
+            <EntityCampaignsChart
+              entityId={threatActor.id}
+              inferred={true}
+              relationType="attributed-to"
+            />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityIncidentsChart entityId={threatActor.id} inferred={true} />
