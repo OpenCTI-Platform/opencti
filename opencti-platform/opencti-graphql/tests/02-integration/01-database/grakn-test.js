@@ -396,6 +396,11 @@ describe('Grakn relations listing', () => {
     expect(embeddedRelations).not.toBeNull();
     expect(embeddedRelations.edges.length).toEqual(68);
   });
+  it.each(noCacheCases)('should list relations with no id (noCache = %s)', noCache => {
+    expect(listRelations('uses', { noCache, fromTypes: ['Attack-Pattern'] })).rejects.toThrow();
+    expect(listRelations('uses', { noCache, toTypes: ['Attack-Pattern'] })).rejects.toThrow();
+    expect(listRelations('uses', { noCache, search: 'to description' })).rejects.toThrow();
+  });
   it.each(noCacheCases)('should list relations with id option (noCache = %s)', async noCache => {
     // Just id specified,
     // "name": "Paradise Ransomware"
@@ -509,6 +514,17 @@ describe('Grakn relations listing', () => {
     expect(relation.toRole).toEqual('usage');
     expect(relation.created).toEqual('2020-03-01T14:05:16.797Z');
   });
+  it.each(noCacheCases)('should list relations with relation filtering on report (noCache = %s)', async noCache => {
+    const relationFilter = {
+      relation: 'object_refs',
+      fromRole: 'so',
+      toRole: 'knowledge_aggregation',
+      id: '685aac19-d2f6-4835-a256-0631bb322732'
+    };
+    const args = { noCache, relationFilter };
+    const stixRelations = await listRelations('stix_relation', args);
+    expect(stixRelations.edges.length).toEqual(11);
+  });
   it.each(noCacheCases)('should list relations with to attribute filtering (noCache = %s)', async noCache => {
     const options = { orderBy: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.name`, orderMode: 'asc', noCache };
     const stixRelations = await listRelations('uses', options);
@@ -531,6 +547,54 @@ describe('Grakn relations listing', () => {
     const aggregationMap = new Map(stixRelations.edges.map(i => [i.node.stix_id_key, i]));
     const reversedRelation = aggregationMap.get('relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3');
     expect(reversedRelation.fromId).not.toEqual(thing.grakn_id);
+  });
+  it.each(noCacheCases)('should list relations with search (noCache = %s)', async noCache => {
+    const options = { noCache, fromId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330', search: 'Spear phishing' };
+    const stixRelations = await listRelations('uses', options);
+    expect(stixRelations.edges.length).toEqual(2);
+    const relTargets = await Promise.all(map(s => loadByGraknId(s.node.toId), stixRelations.edges));
+    for (let index = 0; index < relTargets.length; index += 1) {
+      const target = relTargets[index];
+      expect(target.name).toEqual(expect.stringContaining('Spear phishing'));
+    }
+  });
+  it.each(noCacheCases)('should list relations first seen (noCache = %s)', async noCache => {
+    // Uses relations first seen
+    // 0 = "2020-02-29T23:00:00.000Z" | 1 = "2020-02-29T23:00:00.000Z" | 2 = "2020-02-28T23:00:00.000Z"
+    const options = { noCache, firstSeenStart: '2020-02-29T22:00:00.000Z', firstSeenStop: '2020-02-29T23:30:00.000Z' };
+    const stixRelations = await listRelations('uses', options);
+    expect(stixRelations.edges.length).toEqual(2);
+  });
+  it.each(noCacheCases)('should list relations last seen (noCache = %s)', async noCache => {
+    // Uses relations last seen
+    // 0 = "2020-02-29T23:00:00.000Z" | 1 = "2020-02-29T23:00:00.000Z" | 2 = "2020-02-29T23:00:00.000Z"
+    let options = { noCache, lastSeenStart: '2020-02-29T23:00:00.000Z', lastSeenStop: '2020-02-29T23:00:00.000Z' };
+    let stixRelations = await listRelations('uses', options);
+    expect(stixRelations.edges.length).toEqual(0);
+    options = { noCache, lastSeenStart: '2020-02-29T22:59:59.000Z', lastSeenStop: '2020-02-29T23:00:01.000Z' };
+    stixRelations = await listRelations('uses', options);
+    expect(stixRelations.edges.length).toEqual(3);
+  });
+  it.each(noCacheCases)('should list relations with weight (noCache = %s)', async noCache => {
+    const options = { noCache, weights: [4] };
+    const stixRelations = await listRelations('indicates', options);
+    expect(stixRelations.edges.length).toEqual(1);
+  });
+  it.each(noCacheCases)('should list relations with filters (noCache = %s)', async noCache => {
+    const key = `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.name`;
+    let filters = [{ key, operator: 'match', values: ['malicious'] }];
+    // malware--faa5b705-cf44-4e50-8472-29e5fec43c3c - Paradise Ransomware
+    let options = { noCache, fromId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330', filters };
+    let stixRelations = await listRelations('uses', options);
+    expect(stixRelations.edges.length).toEqual(1);
+    const relation = head(stixRelations.edges).node;
+    const target = await loadByGraknId(relation.toId);
+    expect(target.name).toEqual(expect.stringContaining('malicious'));
+    // Test with exact match
+    filters = [{ key, values: ['malicious'] }];
+    options = { noCache, fromId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330', filters };
+    stixRelations = await listRelations('uses', options);
+    expect(stixRelations.edges.length).toEqual(0);
   });
 });
 

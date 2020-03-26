@@ -573,7 +573,9 @@ export const elPaginate = async (indexName, options = {}) => {
         } else if (operator === 'eq' || operator === 'match') {
           valuesFiltering.push({
             match_phrase: {
-              [`${dateFields.includes(key) || operator === 'match' ? key : `${key}.keyword`}`]: values[i]
+              [`${
+                dateFields.includes(key) || numberFields.includes(key) || operator === 'match' ? key : `${key}.keyword`
+              }`]: values[i].toString()
             }
           });
         } else {
