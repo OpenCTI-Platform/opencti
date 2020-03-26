@@ -36,32 +36,20 @@ export const findAll = async args => {
 
 // Entities tab
 export const objectRefs = (reportId, args) => {
-  const finalArgs = assoc(
-    'filters',
-    append({ key: `${REL_INDEX_PREFIX}object_refs.internal_id_key`, values: [reportId] }, propOr([], 'filters', args)),
-    args
-  );
+  const key = `${REL_INDEX_PREFIX}object_refs.internal_id_key`;
+  const finalArgs = assoc('filters', append({ key, values: [reportId] }, propOr([], 'filters', args)), args);
   return findAllStixDomainEntities(finalArgs);
 };
 // Relation refs
 export const relationRefs = (reportId, args) => {
-  const finalArgs = assoc(
-    'filters',
-    append({ key: `${REL_INDEX_PREFIX}object_refs.internal_id_key`, values: [reportId] }, propOr([], 'filters', args)),
-    args
-  );
+  const relationFilter = { relation: 'object_refs', fromRole: 'so', toRole: 'knowledge_aggregation', id: reportId };
+  const finalArgs = assoc('relationFilter', relationFilter, args);
   return listRelations(args.relationType, finalArgs);
 };
 // Observable refs
 export const observableRefs = (reportId, args) => {
-  const finalArgs = assoc(
-    'filters',
-    append(
-      { key: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`, values: [reportId] },
-      propOr([], 'filters', args)
-    ),
-    args
-  );
+  const key = `${REL_INDEX_PREFIX}observable_refs.internal_id_key`;
+  const finalArgs = assoc('filters', append({ key, values: [reportId] }, propOr([], 'filters', args)), args);
   return findAllStixObservables(finalArgs);
 };
 

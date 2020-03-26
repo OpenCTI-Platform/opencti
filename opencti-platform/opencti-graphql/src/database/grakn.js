@@ -770,10 +770,11 @@ export const listRelations = async (relationType, args) => {
   // Else, just ask for the relation only.
   // fromType or toType only allow if fromId or toId available
   const askForConnections = fromId !== undefined || toId !== undefined;
+  const targetFilters = filters && filters.length > 0;
   const fromTypesFilter = fromTypes && fromTypes.length > 0;
   const toTypesFilter = toTypes && toTypes.length > 0;
-  if (askForConnections === false && (fromTypesFilter || toTypesFilter)) {
-    throw new Error('Cant list relation with types filtering if from or to id are not specified');
+  if (askForConnections === false && (targetFilters || fromTypesFilter || toTypesFilter || search)) {
+    throw new Error('Cant list relation with types filtering or search if from or to id are not specified');
   }
 
   const offset = after ? cursorToOffset(after) : 0;
@@ -787,13 +788,18 @@ export const listRelations = async (relationType, args) => {
     map(f => f.key, filters || [])
   );
   const unsupportedFiltering = unsupportedFilteringKeys.length > 0;
-  const supportedByCache = !unsupportedOrdering && !unsupportedFiltering && !relationFilter && !inferred;
+  // Search is not supported because its only search on the relation to.
+  const supportedByCache = !search && !unsupportedOrdering && !unsupportedFiltering && !inferred;
   const useCache = !forceNoCache() && !noCache && supportedByCache;
   if (useCache) {
     const finalFilters = map(
       f => ({ key: f.key, values: map(v => v.replace(REL_INDEX_PREFIX, ''), f.values) }),
       filters || []
     );
+    if (relationFilter) {
+      const { relation, id } = relationFilter;
+      finalFilters.push({ key: `${REL_INDEX_PREFIX}${relation}.internal_id_key`, values: [id] });
+    }
     const relationsMap = new Map();
     if (fromId) {
       finalFilters.push({ key: 'connections.internal_id_key', values: [fromId] });
@@ -900,6 +906,7 @@ export const listRelations = async (relationType, args) => {
   if (filters.length > 0) {
     // eslint-disable-next-line
     for (const f of filters) {
+      if (!includes(REL_CONNECTED_SUFFIX, f.key)) throw new Error('Filters only support connected target filtering');
       // eslint-disable-next-line prettier/prettier
       const filterKey = f.key.replace(REL_INDEX_PREFIX, '').replace(REL_CONNECTED_SUFFIX, '').split('.');
       const [key, val] = filterKey;
