@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Form, Formik } from 'formik';
+import { Form, Formik, Field } from 'formik';
 import {
   assoc,
   compose,
@@ -404,7 +404,8 @@ const StixRelationEditionContainer = ({
                 >
                   {(setFieldValue) => (
                     <Form style={{ margin: '20px 0 20px 0' }}>
-                      <SelectField
+                      <Field
+                        component={SelectField}
                         name="weight"
                         onFocus={handleChangeFocus}
                         onChange={handleSubmitField}
@@ -422,9 +423,10 @@ const StixRelationEditionContainer = ({
                         <MenuItem value="2">{t('Moderate')}</MenuItem>
                         <MenuItem value="3">{t('Good')}</MenuItem>
                         <MenuItem value="4">{t('Strong')}</MenuItem>
-                      </SelectField>
+                      </Field>
                       {stixRelation.relationship_type === 'indicates' ? (
-                        <SelectField
+                        <Field
+                          component={SelectField}
                           name="role_played"
                           onFocus={handleChangeFocus}
                           onChange={handleSubmitField}
@@ -446,11 +448,12 @@ const StixRelationEditionContainer = ({
                               {t(rolePlayedEdge.node.value)}
                             </MenuItem>
                           ))}
-                        </SelectField>
+                        </Field>
                       ) : (
                         ''
                       )}
-                      <DatePickerField
+                      <Field
+                        component={DatePickerField}
                         name="first_seen"
                         label={t('First seen')}
                         invalidDateMessage={t(
@@ -467,7 +470,8 @@ const StixRelationEditionContainer = ({
                           />
                         }
                       />
-                      <DatePickerField
+                      <Field
+                        component={DatePickerField}
                         name="last_seen"
                         label={t('Last seen')}
                         invalidDateMessage={t(
@@ -484,7 +488,8 @@ const StixRelationEditionContainer = ({
                           />
                         }
                       />
-                      <TextField
+                      <Field
+                        component={TextField}
                         name="description"
                         label={t('Description')}
                         fullWidth={true}

@@ -7,26 +7,32 @@ import { fieldToTextField } from 'formik-material-ui';
 import { useField } from 'formik';
 import { isNil } from 'ramda';
 
-const Autocomplete = (props) => {
+const AutocompleteField = (props) => {
   const {
     form: { setFieldValue },
     field: { name },
+    onChange,
+    onFocus,
+    noOptionsText,
+    renderOption,
+    textfieldprops,
+    openCreate,
   } = props;
   const [, meta] = useField(name);
-  const onChange = React.useCallback(
+  const internalOnChange = React.useCallback(
     (_, value) => {
       setFieldValue(name, value);
-      if (typeof props.onChange === 'function') {
-        props.onChange(name, value || '');
+      if (typeof onChange === 'function') {
+        onChange(name, value || '');
       }
     },
-    [props],
+    [setFieldValue, name, onChange],
   );
-  const onFocus = React.useCallback(() => {
-    if (typeof props.onFocus === 'function') {
-      props.onFocus(name);
+  const internalOnFocus = React.useCallback(() => {
+    if (typeof onFocus === 'function') {
+      onFocus(name);
     }
-  }, [name]);
+  }, [onFocus, name]);
   const fieldProps = fieldToTextField(props);
   delete fieldProps.helperText;
   delete fieldProps.openCreate;
@@ -34,29 +40,29 @@ const Autocomplete = (props) => {
   return (
     <div style={{ position: 'relative' }}>
       <MUIAutocomplete
+        {...fieldProps}
         size="small"
         selectOnFocus={true}
         autoHighlight={true}
         getOptionLabel={(option) => (option.label ? option.label : '')}
-        noOptionsText={props.noOptionsText}
-        renderOption={props.renderOption}
+        noOptionsText={noOptionsText}
+        renderOption={renderOption}
         renderInput={(params) => (
           <TextField
             {...params}
-            {...props.textfieldprops}
-            name={props.name}
+            {...textfieldprops}
+            name={name}
             fullWidth={true}
             error={meta.touched && !isNil(meta.error)}
-            helperText={meta.error || props.textfieldprops.helperText}
+            helperText={meta.error || textfieldprops.helperText}
           />
         )}
-        {...fieldProps}
-        onChange={onChange}
-        onFocus={onFocus}
+        onChange={internalOnChange}
+        onFocus={internalOnFocus}
       />
-      {typeof props.openCreate === 'function' ? (
+      {typeof openCreate === 'function' ? (
         <IconButton
-          onClick={() => props.openCreate()}
+          onClick={() => openCreate()}
           edge="end"
           style={{ position: 'absolute', top: 5, right: 35 }}
         >
@@ -69,4 +75,4 @@ const Autocomplete = (props) => {
   );
 };
 
-export default Autocomplete;
+export default AutocompleteField;

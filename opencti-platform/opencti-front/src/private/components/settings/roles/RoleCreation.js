@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -166,8 +166,14 @@ class RoleCreation extends Component {
             >
               {({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <TextField name="name" label={t('Name')} fullWidth={true} />
-                  <TextField
+                  <Field
+                    component={TextField}
+                    name="name"
+                    label={t('Name')}
+                    fullWidth={true}
+                  />
+                  <Field
+                    component={TextField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}

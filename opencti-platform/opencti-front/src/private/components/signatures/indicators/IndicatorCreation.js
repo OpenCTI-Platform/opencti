@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -215,8 +215,14 @@ class IndicatorCreation extends Component {
                 values,
               }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <TextField name="name" label={t('Name')} fullWidth={true} />
-                  <SelectField
+                  <Field
+                    component={TextField}
+                    name="name"
+                    label={t('Name')}
+                    fullWidth={true}
+                  />
+                  <Field
+                    component={SelectField}
                     name="pattern_type"
                     label={t('Pattern type')}
                     fullWidth={true}
@@ -228,8 +234,9 @@ class IndicatorCreation extends Component {
                     <MenuItem value="snort">snort</MenuItem>
                     <MenuItem value="suricata">suricata</MenuItem>
                     <MenuItem value="yara">yara</MenuItem>
-                  </SelectField>
-                  <TextField
+                  </Field>
+                  <Field
+                    component={TextField}
                     name="indicator_pattern"
                     label={t('Pattern')}
                     fullWidth={true}
@@ -242,7 +249,8 @@ class IndicatorCreation extends Component {
                     label={t('Main observable type')}
                     containerstyle={{ marginTop: 20, width: '100%' }}
                   />
-                  <DatePickerField
+                  <Field
+                    component={DatePickerField}
                     name="valid_from"
                     label={t('Valid from')}
                     invalidDateMessage={t(
@@ -251,7 +259,8 @@ class IndicatorCreation extends Component {
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <DatePickerField
+                  <Field
+                    component={DatePickerField}
                     name="valid_until"
                     label={t('Valid until')}
                     invalidDateMessage={t(
@@ -260,7 +269,8 @@ class IndicatorCreation extends Component {
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}

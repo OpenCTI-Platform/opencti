@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -196,18 +196,21 @@ class TagCreation extends Component {
             >
               {({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="tag_type"
                     label={t('Type')}
                     fullWidth={true}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="value"
                     label={t('Value')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <ColorPickerField
+                  <Field
+                    component={ColorPickerField}
                     name="color"
                     label={t('Color')}
                     fullWidth={true}
@@ -267,18 +270,21 @@ class TagCreation extends Component {
               >
                 <DialogTitle>{t('Create a tag')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialog }}>
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="tag_type"
                     label={t('Type')}
                     fullWidth={true}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="value"
                     label={t('Value')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <ColorPickerField
+                  <Field
+                    component={ColorPickerField}
                     name="color"
                     label={t('Color')}
                     fullWidth={true}

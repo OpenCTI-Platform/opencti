@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Form, Formik } from 'formik';
+import { Form, Formik, Field } from 'formik';
 import {
   assoc,
   difference,
@@ -344,7 +344,8 @@ class StixDomainEntityEditionContainer extends Component {
           >
             {(setFieldValue) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <TextField
+                <Field
+                  component={TextField}
                   name="name"
                   label={t('Name')}
                   fullWidth={true}
@@ -357,7 +358,8 @@ class StixDomainEntityEditionContainer extends Component {
                     />
                   }
                 />
-                <TextField
+                <Field
+                  component={TextField}
                   name="alias"
                   label={t('Aliases separated by commas')}
                   fullWidth={true}
@@ -371,7 +373,8 @@ class StixDomainEntityEditionContainer extends Component {
                     />
                   }
                 />
-                <TextField
+                <Field
+                  component={TextField}
                   name="description"
                   label={t('Description')}
                   fullWidth={true}

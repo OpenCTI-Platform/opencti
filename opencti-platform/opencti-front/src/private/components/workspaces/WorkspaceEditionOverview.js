@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
   assoc,
@@ -203,7 +203,8 @@ class WorkspaceEditionOverviewComponent extends Component {
           {() => (
             <div>
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <TextField
+                <Field
+                  component={TextField}
                   name="name"
                   label={t('Name')}
                   fullWidth={true}
@@ -213,7 +214,8 @@ class WorkspaceEditionOverviewComponent extends Component {
                     <SubscriptionFocus context={context} fieldName="name" />
                   }
                 />
-                <TextField
+                <Field
+                  component={TextField}
                   name="description"
                   label={t('Description')}
                   fullWidth={true}

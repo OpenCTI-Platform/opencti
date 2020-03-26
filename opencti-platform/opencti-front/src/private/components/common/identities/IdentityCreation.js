@@ -265,8 +265,14 @@ class IdentityCreation extends Component {
               >
                 <DialogTitle>{t('Create an entity')}</DialogTitle>
                 <DialogContent>
-                  <TextField name="name" label={t('Name')} fullWidth={true} />
-                  <TextField
+                  <Field
+                    component={TextField}
+                    name="name"
+                    label={t('Name')}
+                    fullWidth={true}
+                  />
+                  <Field
+                    component={TextField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}
@@ -274,7 +280,8 @@ class IdentityCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <SelectField
+                  <Field
+                    component={SelectField}
                     name="type"
                     label={t('Entity type')}
                     fullWidth={true}
@@ -288,7 +295,7 @@ class IdentityCreation extends Component {
                     <MenuItem value="Country">{t('Country')}</MenuItem>
                     <MenuItem value="City">{t('City')}</MenuItem>
                     <MenuItem value="User">{t('Person')}</MenuItem>
-                  </SelectField>
+                  </Field>
                 </DialogContent>
                 <DialogActions>
                   <Button

@@ -21,7 +21,7 @@ import Button from '@material-ui/core/Button';
 import Slide from '@material-ui/core/Slide';
 import { Add } from '@material-ui/icons';
 import { createFragmentContainer } from 'react-relay';
-import { Form, Formik } from 'formik';
+import { Form, Formik, Field } from 'formik';
 import MenuItem from '@material-ui/core/MenuItem';
 import IconButton from '@material-ui/core/IconButton';
 import * as Yup from 'yup';
@@ -217,7 +217,8 @@ class StixDomainEntitiesExportCreationComponent extends Component {
                     if (props && props.markingDefinitions) {
                       return (
                         <DialogContent>
-                          <SelectField
+                          <Field
+                            component={SelectField}
                             name="format"
                             label={t('Export format')}
                             fullWidth={true}
@@ -232,8 +233,9 @@ class StixDomainEntitiesExportCreationComponent extends Component {
                                 {value}
                               </MenuItem>
                             ))}
-                          </SelectField>
-                          <SelectField
+                          </Field>
+                          <Field
+                            component={SelectField}
                             name="maxMarkingDefinition"
                             label={t('Max marking definition level')}
                             fullWidth={true}
@@ -254,7 +256,7 @@ class StixDomainEntitiesExportCreationComponent extends Component {
                               ),
                               props.markingDefinitions.edges,
                             )}
-                          </SelectField>
+                          </Field>
                         </DialogContent>
                       );
                     }

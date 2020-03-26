@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Form, Formik } from 'formik';
+import { Form, Formik, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
   assoc, compose, pick, pipe,
@@ -120,7 +120,8 @@ class IncidentEditionDetailsComponent extends Component {
       >
         {() => (
           <Form style={{ margin: '20px 0 20px 0' }}>
-            <DatePickerField
+            <Field
+              component={DatePickerField}
               name="first_seen"
               label={t('First seen')}
               invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
@@ -131,7 +132,8 @@ class IncidentEditionDetailsComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="first_seen" />
               }
             />
-            <DatePickerField
+            <Field
+              component={DatePickerField}
               name="last_seen"
               label={t('Last seen')}
               invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
@@ -143,7 +145,8 @@ class IncidentEditionDetailsComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="last_seen" />
               }
             />
-            <TextField
+            <Field
+              component={TextField}
               name="objective"
               label={t('Objective')}
               fullWidth={true}

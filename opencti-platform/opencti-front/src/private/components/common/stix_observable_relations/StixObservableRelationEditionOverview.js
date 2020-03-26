@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Form, Formik } from 'formik';
+import { Form, Formik, Field } from 'formik';
 import {
   assoc, compose, map, pathOr, pick, pipe,
 } from 'ramda';
@@ -125,7 +125,7 @@ class StixObservableRelationEditionContainer extends Component {
       subscription,
       variables: {
         // eslint-disable-next-line
-        id: this.props.stixObservableRelation.id
+        id: this.props.stixObservableRelation.id,
       },
     });
     this.setState({ sub });
@@ -236,7 +236,8 @@ class StixObservableRelationEditionContainer extends Component {
                     validationSchema={stixObservableRelationValidation(t)}
                     render={() => (
                       <Form style={{ margin: '20px 0 20px 0' }}>
-                        <SelectField
+                        <Field
+                          component={SelectField}
                           name="role_played"
                           onFocus={this.handleChangeFocus.bind(this)}
                           onChange={this.handleSubmitField.bind(this)}
@@ -258,8 +259,9 @@ class StixObservableRelationEditionContainer extends Component {
                               {rolePlayedEdge.node.value}
                             </MenuItem>
                           ))}
-                        </SelectField>
-                        <DatePickerField
+                        </Field>
+                        <Field
+                          component={DatePickerField}
                           name="first_seen"
                           label={t('First seen')}
                           invalidDateMessage={t(
@@ -276,7 +278,8 @@ class StixObservableRelationEditionContainer extends Component {
                             />
                           }
                         />
-                        <DatePickerField
+                        <Field
+                          component={DatePickerField}
                           name="last_seen"
                           label={t('Last seen')}
                           invalidDateMessage={t(
@@ -293,7 +296,8 @@ class StixObservableRelationEditionContainer extends Component {
                             />
                           }
                         />
-                        <TextField
+                        <Field
+                          component={TextField}
                           name="description"
                           label={t('Description')}
                           fullWidth={true}

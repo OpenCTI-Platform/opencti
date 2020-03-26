@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Form, Formik } from 'formik';
+import { Form, Formik, Field } from 'formik';
 import {
   assoc, compose, pick, pipe,
 } from 'ramda';
@@ -109,7 +109,8 @@ class IntrusionSetEditionDetailsComponent extends Component {
       >
         {() => (
           <Form style={{ margin: '20px 0 20px 0' }}>
-            <DatePickerField
+            <Field
+              component={DatePickerField}
               name="first_seen"
               label={t('First seen')}
               invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
@@ -120,7 +121,8 @@ class IntrusionSetEditionDetailsComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="first_seen" />
               }
             />
-            <DatePickerField
+            <Field
+              component={DatePickerField}
               name="last_seen"
               label={t('Last seen')}
               invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
@@ -132,7 +134,8 @@ class IntrusionSetEditionDetailsComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="last_seen" />
               }
             />
-            <SelectField
+            <Field
+              component={SelectField}
               name="sophistication"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
@@ -167,8 +170,9 @@ class IntrusionSetEditionDetailsComponent extends Component {
               <MenuItem key="strategic" value="strategic">
                 {t('sophistication_strategic')}
               </MenuItem>
-            </SelectField>
-            <SelectField
+            </Field>
+            <Field
+              component={SelectField}
               name="resource_level"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
@@ -203,8 +207,9 @@ class IntrusionSetEditionDetailsComponent extends Component {
               <MenuItem key="government" value="government">
                 {t('resource_government')}
               </MenuItem>
-            </SelectField>
-            <SelectField
+            </Field>
+            <Field
+              component={SelectField}
               name="primary_motivation"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
@@ -254,8 +259,9 @@ class IntrusionSetEditionDetailsComponent extends Component {
               <MenuItem key="unpredictable" value="unpredictable">
                 {t('motivation_unpredictable')}
               </MenuItem>
-            </SelectField>
-            <SelectField
+            </Field>
+            <Field
+              component={SelectField}
               name="secondary_motivation"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
@@ -305,7 +311,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
               <MenuItem key="unpredictable" value="unpredictable">
                 {t('motivation_unpredictable')}
               </MenuItem>
-            </SelectField>
+            </Field>
           </Form>
         )}
       </Formik>

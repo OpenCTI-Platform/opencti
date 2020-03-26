@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Form, Formik } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import {
   compose, defaultTo, lensProp, over, pickAll,
 } from 'ramda';
@@ -99,7 +99,7 @@ class KillChainPhaseEditionContainer extends Component {
       subscription,
       variables: {
         // eslint-disable-next-line
-        id: this.props.killChainPhase.id
+        id: this.props.killChainPhase.id,
       },
     });
     this.setState({ sub });
@@ -172,7 +172,8 @@ class KillChainPhaseEditionContainer extends Component {
           >
             {() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <TextField
+                <Field
+                  component={TextField}
                   name="kill_chain_name"
                   label={t('Kill chain name')}
                   fullWidth={true}
@@ -185,7 +186,8 @@ class KillChainPhaseEditionContainer extends Component {
                     />
                   }
                 />
-                <TextField
+                <Field
+                  component={TextField}
                   name="phase_name"
                   label={t('Phase name')}
                   fullWidth={true}
@@ -199,7 +201,8 @@ class KillChainPhaseEditionContainer extends Component {
                     />
                   }
                 />
-                <TextField
+                <Field
+                  component={TextField}
                   name="phase_order"
                   label={t('Order')}
                   fullWidth={true}

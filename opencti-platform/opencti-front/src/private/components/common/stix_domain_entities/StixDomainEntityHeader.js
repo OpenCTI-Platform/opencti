@@ -221,7 +221,8 @@ class StixDomainEntityHeader extends Component {
             >
               {() => (
                 <Form style={{ float: 'right' }}>
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="new_alias"
                     autoFocus={true}
                     placeholder={t('New alias')}

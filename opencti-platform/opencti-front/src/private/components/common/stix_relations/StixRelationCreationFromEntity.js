@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Form, Formik } from 'formik';
+import { Form, Formik, Field } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
 import {
   assoc,
@@ -662,7 +662,8 @@ class StixRelationCreationFromEntity extends Component {
                           </div>
                         </div>
                       </div>
-                      <SelectField
+                      <Field
+                        component={SelectField}
                         name="relationship_type"
                         label={t('Relationship type')}
                         fullWidth={true}
@@ -676,8 +677,9 @@ class StixRelationCreationFromEntity extends Component {
                           ),
                           relationshipTypes,
                         )}
-                      </SelectField>
-                      <SelectField
+                      </Field>
+                      <Field
+                        component={SelectField}
                         name="weight"
                         label={t('Confidence level')}
                         fullWidth={true}
@@ -687,9 +689,10 @@ class StixRelationCreationFromEntity extends Component {
                         <MenuItem value={2}>{t('Moderate')}</MenuItem>
                         <MenuItem value={3}>{t('Good')}</MenuItem>
                         <MenuItem value={4}>{t('Strong')}</MenuItem>
-                      </SelectField>
+                      </Field>
                       {values.relationship_type === 'indicates' ? (
-                        <SelectField
+                        <Field
+                          component={SelectField}
                           name="role_played"
                           label={t('Played role')}
                           fullWidth={true}
@@ -703,11 +706,12 @@ class StixRelationCreationFromEntity extends Component {
                               {t(rolePlayedEdge.node.value)}
                             </MenuItem>
                           ))}
-                        </SelectField>
+                        </Field>
                       ) : (
                         ''
                       )}
-                      <DatePickerField
+                      <Field
+                        component={DatePickerField}
                         name="first_seen"
                         label={t('First seen')}
                         invalidDateMessage={t(
@@ -716,7 +720,8 @@ class StixRelationCreationFromEntity extends Component {
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                       />
-                      <DatePickerField
+                      <Field
+                        component={DatePickerField}
                         name="last_seen"
                         label={t('Last seen')}
                         invalidDateMessage={t(
@@ -725,7 +730,8 @@ class StixRelationCreationFromEntity extends Component {
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                       />
-                      <TextField
+                      <Field
+                        component={TextField}
                         name="description"
                         label={t('Description')}
                         fullWidth={true}

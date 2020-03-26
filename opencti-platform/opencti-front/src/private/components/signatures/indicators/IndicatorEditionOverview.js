@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
   assoc,
@@ -275,7 +275,8 @@ class IndicatorEditionOverviewComponent extends Component {
       >
         {({ setFieldValue }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
-            <TextField
+            <Field
+              component={TextField}
               name="name"
               label={t('Name')}
               fullWidth={true}
@@ -285,7 +286,8 @@ class IndicatorEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="name" />
               }
             />
-            <TextField
+            <Field
+              component={TextField}
               name="indicator_pattern"
               label={t('Indicator pattern')}
               fullWidth={true}
@@ -301,7 +303,8 @@ class IndicatorEditionOverviewComponent extends Component {
                 />
               }
             />
-            <DatePickerField
+            <Field
+              component={DatePickerField}
               name="valid_from"
               label={t('Valid until')}
               invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
@@ -313,7 +316,8 @@ class IndicatorEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="valid_from" />
               }
             />
-            <DatePickerField
+            <Field
+              component={DatePickerField}
               name="valid_until"
               label={t('Valid until')}
               invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
@@ -325,7 +329,8 @@ class IndicatorEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="valid_until" />
               }
             />
-            <TextField
+            <Field
+              component={TextField}
               name="score"
               label={t('Score')}
               fullWidth={true}
@@ -336,7 +341,8 @@ class IndicatorEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="score" />
               }
             />
-            <TextField
+            <Field
+              component={TextField}
               name="description"
               label={t('Description')}
               fullWidth={true}
