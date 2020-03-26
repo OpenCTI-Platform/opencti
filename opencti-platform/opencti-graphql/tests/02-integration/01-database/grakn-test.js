@@ -207,7 +207,7 @@ describe('Grakn loaders', () => {
     expect(await countObjects('Workspace')).toEqual(0);
     expect(await countObjects('Token')).toEqual(1);
     expect(await countObjects('Marking-Definition')).toEqual(6);
-    expect(await countObjects('Stix-Domain')).toEqual(29);
+    expect(await countObjects('Stix-Domain')).toEqual(35);
     expect(await countObjects('Role')).toEqual(2);
     expect(await countObjects('Capability')).toEqual(19);
     expect(await countObjects('Stix-Observable')).toEqual(3);
@@ -391,10 +391,10 @@ describe('Grakn relations listing', () => {
   it.each(noCacheCases)('should list relations (noCache = %s)', async noCache => {
     const stixRelations = await listRelations('stix_relation', { noCache });
     expect(stixRelations).not.toBeNull();
-    expect(stixRelations.edges.length).toEqual(12);
+    expect(stixRelations.edges.length).toEqual(14);
     const embeddedRelations = await listRelations('stix_relation_embedded', { noCache });
     expect(embeddedRelations).not.toBeNull();
-    expect(embeddedRelations.edges.length).toEqual(68);
+    expect(embeddedRelations.edges.length).toEqual(75);
   });
   it.each(noCacheCases)('should list relations with id option (noCache = %s)', async noCache => {
     // Just id specified,
@@ -450,11 +450,11 @@ describe('Grakn relations listing', () => {
       expect(toRole).toEqual(roles.to);
     }
     const relation = head(stixRelations.edges).node;
-    expect(relation.created).toEqual('2020-03-02T14:06:06.256Z');
+    expect(relation.created).toEqual('2020-03-25T14:10:20.065Z');
     const from = await loadByGraknId(relation.fromId);
-    expect(from.stix_id_key).toEqual('indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf');
+    expect(from.stix_id_key).toEqual('incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4');
     const to = await loadByGraknId(relation.toId);
-    expect(to.stix_id_key).toEqual('relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02');
+    expect(to.stix_id_key).toEqual('campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
   });
   it.each(noCacheCases)('should list relations ordered by relation (noCache = %s)', async noCache => {
     // "relationship_type": "uses",

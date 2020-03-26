@@ -196,7 +196,7 @@ describe('Elasticsearch computation', () => {
     // noinspection JSUnresolvedVariable
     const storedFormat = moment(head(data).date)._f;
     expect(storedFormat).toEqual('YYYY-MM-DD');
-    expect(head(data).value).toEqual(18);
+    expect(head(data).value).toEqual(20);
   });
   it('should month histogram accurate', async () => {
     const data = await elHistogramCount(
@@ -215,7 +215,7 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('2019-11')).toEqual(0);
     expect(aggregationMap.get('2019-12')).toEqual(0);
     expect(aggregationMap.get('2020-01')).toEqual(1);
-    expect(aggregationMap.get('2020-02')).toEqual(9);
+    expect(aggregationMap.get('2020-02')).toEqual(10);
     expect(aggregationMap.get('2020-03')).toEqual(1);
   });
   it('should year histogram accurate', async () => {
@@ -230,7 +230,7 @@ describe('Elasticsearch computation', () => {
     expect(data.length).toEqual(2);
     const aggregationMap = new Map(data.map(i => [i.date, i.value]));
     expect(aggregationMap.get('2019')).toEqual(3);
-    expect(aggregationMap.get('2020')).toEqual(11);
+    expect(aggregationMap.get('2020')).toEqual(12);
   });
   it('should year histogram with relation filter accurate', async () => {
     const data = await elHistogramCount(
@@ -389,7 +389,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything', async () => {
     const data = await elPaginate(INDEX_STIX_ENTITIES);
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(51);
+    expect(data.edges.length).toEqual(57);
     const filterBaseTypes = uniq(map(e => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('entity');
@@ -397,7 +397,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything after', async () => {
     const data = await elPaginate(INDEX_STIX_ENTITIES, { after: offsetToCursor(30) });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(21);
+    expect(data.edges.length).toEqual(27);
   });
   it('should entity paginate with single type', async () => {
     // first = 200, after, types = null, filters = [], search = null,
@@ -418,7 +418,7 @@ describe('Elasticsearch pagination', () => {
     let data = await elPaginate(INDEX_STIX_ENTITIES, { search: 'malicious' });
     expect(data.edges.length).toEqual(1);
     data = await elPaginate(INDEX_STIX_ENTITIES, { search: 'with malicious' });
-    expect(data.edges.length).toEqual(2);
+    expect(data.edges.length).toEqual(4);
     data = await elPaginate(INDEX_STIX_ENTITIES, { search: '"with malicious"' });
     expect(data.edges.length).toEqual(1);
   });
@@ -443,7 +443,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate with field not exist filter', async () => {
     const filters = [{ key: 'color', operator: undefined, values: [null] }];
     const data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
-    expect(data.edges.length).toEqual(47); // The 4 Default TLP Marking definitions + 1
+    expect(data.edges.length).toEqual(53); // The 4 Default TLP Marking definitions + 1
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = [{ key: 'color', operator: undefined, values: ['EXISTS'] }];
@@ -478,7 +478,7 @@ describe('Elasticsearch pagination', () => {
       { key: 'color', operator: undefined, values: [null] }
     ];
     data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
-    expect(data.edges.length).toEqual(1);
+    expect(data.edges.length).toEqual(2);
     filters = [
       { key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] },
       { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] }
@@ -488,7 +488,7 @@ describe('Elasticsearch pagination', () => {
   });
   it('should entity paginate with date ordering', async () => {
     const data = await elPaginate(INDEX_STIX_ENTITIES, { orderBy: 'created', orderMode: 'asc' });
-    expect(data.edges.length).toEqual(29);
+    expect(data.edges.length).toEqual(35);
     const createdDates = map(e => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
@@ -517,14 +517,14 @@ describe('Elasticsearch pagination', () => {
   it('should relation paginate everything', async () => {
     let data = await elPaginate(INDEX_STIX_RELATIONS);
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(80);
+    expect(data.edges.length).toEqual(89);
     let filterBaseTypes = uniq(map(e => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('relation');
     // Same query with no pagination
     data = await elPaginate(INDEX_STIX_RELATIONS, { connectionFormat: false });
     expect(data).not.toBeNull();
-    expect(data.length).toEqual(80);
+    expect(data.length).toEqual(89);
     filterBaseTypes = uniq(map(e => e.base_type, data));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('relation');

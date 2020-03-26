@@ -3288,7 +3288,7 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-    relationType: String!
+    relationType: String
     inferred: Boolean
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
   # Malwares
