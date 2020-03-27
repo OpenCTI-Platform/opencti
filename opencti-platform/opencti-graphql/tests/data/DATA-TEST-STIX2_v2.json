@@ -288,7 +288,7 @@
       "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"]
     },
     {
-      "id": "organization--c017f212-546b-4f21-999d-97d3dc558f7b",
+      "id": "identity--c017f212-546b-4f21-999d-97d3dc558f7b",
       "type": "identity",
       "name": "Allied Universal",
       "identity_class": "organization",
@@ -302,7 +302,24 @@
       "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"]
     },
     {
-      "id": "organization--5a510e41-5cb2-45cc-a191-a4844ea0a141",
+      "id": "relationship--9315a197-fe15-4c96-b77c-edcaa5e22ecb",
+      "type": "relationship",
+      "relationship_type": "gathering",
+      "description": "Allied Universal is part of the Consulting sector",
+      "source_ref": "identity--c017f212-546b-4f21-999d-97d3dc558f7b",
+      "target_ref": "identity--5556c4ab-3e5e-4d56-8410-60b29cecbeb6",
+      "x_opencti_source_ref": "identity--c017f212-546b-4f21-999d-97d3dc558f7b",
+      "x_opencti_target_ref": "identity--5556c4ab-3e5e-4d56-8410-60b29cecbeb6",
+      "created": "2020-02-25T23:42:53.582Z",
+      "modified": "2020-02-25T23:42:53.582Z",
+      "x_opencti_first_seen": "1900-01-01T00:00:00.000Z",
+      "x_opencti_last_seen": "1900-01-01T00:00:00.000Z",
+      "x_opencti_weight": 4,
+      "x_opencti_role_played": "Unknown",
+      "x_opencti_id": "f1cc183c-0c3c-4cfa-b77d-a79a89e8b6a8"
+    },
+    {
+      "id": "identity--5a510e41-5cb2-45cc-a191-a4844ea0a141",
       "type": "identity",
       "name": "Southwire",
       "identity_class": "organization",
