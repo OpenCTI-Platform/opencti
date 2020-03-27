@@ -1299,14 +1299,18 @@ class OpenCTIStix2:
             return result
         elif mode == "full":
             # Get extra relations
-            stix_relations = self.opencti.stix_relation.list(fromId=entity["id"])
+            stix_relations = self.opencti.stix_relation.list(fromId=entity["id"], forceNatural=True)
             for stix_relation in stix_relations:
                 if self.check_max_marking_definition(
                     max_marking_definition_entity, stix_relation["markingDefinitions"]
                 ):
-                    objects_to_get.append(stix_relation["to"])
-                    if stix_relation["to"]["stix_id_key"] in observables_stix_ids:
-                        stix_relation["to"]["stix_id_key"] = observable_object_data[
+                    if stix_relation["to"]["id"] == entity["id"]:
+                        other_side_entity = stix_relation["from"]
+                    else:
+                        other_side_entity = stix_relation["to"]
+                    objects_to_get.append(other_side_entity)
+                    if other_side_entity["stix_id_key"] in observables_stix_ids:
+                        other_side_entity["stix_id_key"] = observable_object_data[
                             "observedData"
                         ]["id"]
                     relation_object_data = self.opencti.stix_relation.to_stix2(
