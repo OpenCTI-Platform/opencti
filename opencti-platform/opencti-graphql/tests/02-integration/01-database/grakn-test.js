@@ -214,7 +214,7 @@ describe('Grakn loaders', () => {
     expect(await countObjects('Workspace')).toEqual(0);
     expect(await countObjects('Token')).toEqual(1);
     expect(await countObjects('Marking-Definition')).toEqual(6);
-    expect(await countObjects('Stix-Domain')).toEqual(35);
+    expect(await countObjects('Stix-Domain')).toEqual(38);
     expect(await countObjects('Role')).toEqual(2);
     expect(await countObjects('Capability')).toEqual(19);
     expect(await countObjects('Stix-Observable')).toEqual(4);
@@ -398,7 +398,7 @@ describe('Grakn relations listing', () => {
   it.each(noCacheCases)('should list relations (noCache = %s)', async noCache => {
     const stixRelations = await listRelations('stix_relation', { noCache });
     expect(stixRelations).not.toBeNull();
-    expect(stixRelations.edges.length).toEqual(15);
+    expect(stixRelations.edges.length).toEqual(17);
     const embeddedRelations = await listRelations('stix_relation_embedded', { noCache });
     expect(embeddedRelations).not.toBeNull();
     expect(embeddedRelations.edges.length).toEqual(76);

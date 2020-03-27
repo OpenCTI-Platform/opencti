@@ -40,6 +40,51 @@
       }
     },
     {
+      "id": "identity--5556c4ab-3e5e-4d56-8410-60b29cecbeb6",
+      "type": "identity",
+      "name": "Consulting",
+      "identity_class": "class",
+      "labels": [
+        "identity"
+      ],
+      "description": "Private entities providing expert advice in a specific field to external entities.",
+      "created": "2020-02-23T23:40:53.582Z",
+      "modified": "2020-03-07T10:48:51.034Z",
+      "x_opencti_identity_type": "sector",
+      "x_opencti_id": "9dcde1a4-88ef-4f50-ad74-23d865b438e6"
+    },
+    {
+      "id": "identity--360f3368-b911-4bb1-a7f9-0a8e4ef4e023",
+      "type": "identity",
+      "name": "Information Technologies Consulting",
+      "identity_class": "class",
+      "labels": [
+        "identity"
+      ],
+      "description": "Includes Managed Services Providers (MSPs).",
+      "created": "2020-02-23T23:40:53.582Z",
+      "modified": "2020-03-24T07:26:32.754Z",
+      "x_opencti_identity_type": "sector",
+      "x_opencti_id": "b9c8cb0f-607c-4cb3-aa20-2450eaa8c3c4"
+    },
+    {
+      "id": "relationship--10e8c71d-a1b4-4e35-bca8-2e4a3785ea04",
+      "type": "relationship",
+      "relationship_type": "gathering",
+      "description": "Sector Information Technologies Consulting is a subsector of Consulting",
+      "source_ref": "identity--360f3368-b911-4bb1-a7f9-0a8e4ef4e023",
+      "target_ref": "identity--5556c4ab-3e5e-4d56-8410-60b29cecbeb6",
+      "x_opencti_source_ref": "identity--360f3368-b911-4bb1-a7f9-0a8e4ef4e023",
+      "x_opencti_target_ref": "identity--5556c4ab-3e5e-4d56-8410-60b29cecbeb6",
+      "created": "2020-02-23T23:40:53.582Z",
+      "modified": "2020-02-23T23:40:53.582Z",
+      "x_opencti_first_seen": "1900-01-01T00:00:00.000Z",
+      "x_opencti_last_seen": "1900-01-01T00:00:00.000Z",
+      "x_opencti_weight": 4,
+      "x_opencti_role_played": "Unknown",
+      "x_opencti_id": "cfe1017d-5785-4f0d-b2fc-3de3b9038b67"
+    },
+    {
       "id": "report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7",
       "type": "report",
       "name": "A demo report for testing purposes",
@@ -433,6 +478,34 @@
           "x_opencti_modified": "2020-02-26T05:33:28.879Z"
         }
       ]
+    },
+    {
+      "id": "course-of-action--ae56a49d-5281-45c5-ab95-70a1439c338e",
+      "type": "course-of-action",
+      "name": "Compile After Delivery Mitigation",
+      "labels": [
+        "course-of-action"
+      ],
+      "description": "This type of technique cannot be easily mitigated with preventive controls or patched since it is based on the abuse of operating system design features. For example, blocking all file compilation may have unintended side effects, such as preventing legitimate OS frameworks and code development mechanisms from operating properly. Consider removing compilers if not needed, otherwise efforts should be focused on preventing adversary tools from running earlier in the chain of activity and on identifying subsequent malicious behavior.\n\nIdentify unnecessary system utilities or potentially malicious software that may be used to decrypt, deobfuscate, decode, and compile files or information, and audit and/or block them by using whitelisting (Citation: Beechey 2010) tools, like AppLocker, (Citation: Windows Commands JPCERT) (Citation: NSA MS AppLocker) or Software Restriction Policies (Citation: Corio 2008) where appropriate. (Citation: TechNet Applocker vs SRP)",
+      "created": "2019-04-25T20:53:07.814Z",
+      "modified": "2019-07-24T14:18:49.192Z",
+      "x_opencti_id": "326b7708-d4cf-4020-8cd1-9726b99895db"
+    },
+    {
+      "id": "relationship--efc9bbb8-e606-4fb1-83ae-d74690fd0416",
+      "type": "relationship",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--ae56a49d-5281-45c5-ab95-70a1439c338e",
+      "target_ref": "attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17",
+      "x_opencti_source_ref": "course-of-action--ae56a49d-5281-45c5-ab95-70a1439c338e",
+      "x_opencti_target_ref": "attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17",
+      "created": "2019-04-25T20:53:08.446Z",
+      "modified": "2019-07-24T14:18:49.366Z",
+      "x_opencti_first_seen": "2020-02-26T00:51:35.000Z",
+      "x_opencti_last_seen": "2020-02-26T00:51:35.000Z",
+      "x_opencti_weight": 1,
+      "x_opencti_role_played": "Unknown",
+      "x_opencti_id": "74559c72-c2ff-4822-8f41-7ece3a007987"
     },
     {
       "id": "relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02",

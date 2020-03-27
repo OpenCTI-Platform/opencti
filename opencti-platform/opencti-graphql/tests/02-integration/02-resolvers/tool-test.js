@@ -93,7 +93,6 @@ describe('Tool resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.tool).not.toBeNull();
     expect(queryResult.data.tool.id).toEqual(toolInternalId);
-    // Delete the tool
   });
   it('should list tools', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });

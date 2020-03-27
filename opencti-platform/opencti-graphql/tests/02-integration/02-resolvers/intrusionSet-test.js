@@ -83,7 +83,6 @@ describe('Intrusion set resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.intrusionSet).not.toBeNull();
     expect(queryResult.data.intrusionSet.id).toEqual(intrusionSetInternalId);
-    // Delete the intrusion set
   });
   it('should list intrusion sets', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 2 } });

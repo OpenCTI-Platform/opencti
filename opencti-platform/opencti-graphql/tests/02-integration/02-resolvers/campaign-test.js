@@ -112,7 +112,6 @@ describe('Campaign resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.campaign).not.toBeNull();
     expect(queryResult.data.campaign.id).toEqual(campaignInternalId);
-    // Delete the campaign
   });
   it('should list campaigns', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
