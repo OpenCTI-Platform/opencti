@@ -19,6 +19,12 @@ import {
   listRelations,
   load,
   loadByGraknId,
+  loadEntityByGraknId,
+  loadEntityById,
+  loadEntityByStixId,
+  loadRelationByGraknId,
+  loadRelationById,
+  loadRelationByStixId,
   monthFormat,
   now,
   prepareDate,
@@ -29,6 +35,7 @@ import {
   utcDate,
   yearFormat
 } from '../../../src/database/grakn';
+import { findAll as findAllAttributes } from '../../../src/domain/attribute';
 import { INDEX_STIX_ENTITIES } from '../../../src/database/utils';
 import { GATHERING_TARGETS_RULE, inferenceDisable, inferenceEnable } from '../../../src/domain/inference';
 import { resolveNaturalRoles } from '../../../src/database/graknRoles';
@@ -636,5 +643,88 @@ describe('Grakn relations with inferences', () => {
     expect(secondSegment.toRole).toEqual('gather');
     // Disable the rule
     await inferenceDisable(GATHERING_TARGETS_RULE);
+  });
+});
+
+describe('Grakn element loader', () => {
+  const noCacheCases = [[true], [false]];
+  it.each(noCacheCases)('should load entity by id - internal (noCache = %s)', async noCache => {
+    // No type
+    const internalId = '685aac19-d2f6-4835-a256-0631bb322732';
+    let element = await internalLoadEntityById(internalId, null, { noCache });
+    expect(element).not.toBeNull();
+    expect(element.id).toEqual(internalId);
+    expect(element.name).toEqual('A demo report for testing purposes');
+    // Correct type
+    element = await internalLoadEntityById(internalId, 'Report', { noCache });
+    expect(element).not.toBeNull();
+    expect(element.id).toEqual(internalId);
+    // Wrong type
+    element = await internalLoadEntityById(internalId, 'Malware', { noCache });
+    expect(element).toBeNull();
+  });
+  it.each(noCacheCases)('should load entity by id (noCache = %s)', async noCache => {
+    // No type
+    const internalId = '685aac19-d2f6-4835-a256-0631bb322732';
+    const loadPromise = loadEntityById(internalId, null, { noCache });
+    expect(loadPromise).rejects.toThrow();
+    const element = await loadEntityById(internalId, 'Report', { noCache });
+    expect(element).not.toBeNull();
+    expect(element.id).toEqual(internalId);
+    expect(element.name).toEqual('A demo report for testing purposes');
+  });
+  it.each(noCacheCases)('should load entity by stix id (noCache = %s)', async noCache => {
+    // No type
+    const stixId = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
+    const loadPromise = loadEntityByStixId(stixId, null, { noCache });
+    expect(loadPromise).rejects.toThrow();
+    const element = await loadEntityByStixId(stixId, 'Report', { noCache });
+    expect(element).not.toBeNull();
+    expect(element.id).toEqual('685aac19-d2f6-4835-a256-0631bb322732');
+    expect(element.name).toEqual('A demo report for testing purposes');
+  });
+  it.each(noCacheCases)('should load entity by grakn id (noCache = %s)', async noCache => {
+    // No type
+    const stixId = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
+    const report = await loadEntityByStixId(stixId, 'Report', { noCache });
+    const element = await loadEntityByGraknId(report.grakn_id, { noCache });
+    expect(element).not.toBeNull();
+    expect(element.stix_id_key).toEqual(stixId);
+    expect(element.name).toEqual('A demo report for testing purposes');
+  });
+  it.each(noCacheCases)('should load relation by id (noCache = %s)', async noCache => {
+    // No type
+    const relationId = '209cbdf0-fc5e-47c9-8023-dd724993ae55';
+    const loadPromise = loadRelationById(relationId, null, { noCache });
+    expect(loadPromise).rejects.toThrow();
+    const element = await loadRelationById(relationId, 'uses', { noCache });
+    expect(element).not.toBeNull();
+    expect(element.id).toEqual(relationId);
+    expect(element.weight).toEqual(3);
+  });
+  it.each(noCacheCases)('should load relation by stix id (noCache = %s)', async noCache => {
+    const stixId = 'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02';
+    const loadPromise = loadRelationByStixId(stixId, null, { noCache });
+    expect(loadPromise).rejects.toThrow();
+    const element = await loadRelationByStixId(stixId, 'uses', { noCache });
+    expect(element).not.toBeNull();
+    expect(element.stix_id_key).toEqual(stixId);
+    expect(element.weight).toEqual(3);
+  });
+  it.each(noCacheCases)('should load relation by grakn id (noCache = %s)', async noCache => {
+    const stixId = 'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02';
+    const report = await loadRelationByStixId(stixId, 'uses', { noCache });
+    const element = await loadRelationByGraknId(report.grakn_id, { noCache });
+    expect(element).not.toBeNull();
+    expect(element.stix_id_key).toEqual(stixId);
+    expect(element.weight).toEqual(3);
+  });
+});
+
+describe('Grakn attribute updated and indexed correctly', () => {
+  it('should read transaction fail with bad query', async () => {
+    const types = await findAllAttributes({ type: 'report_class' });
+    expect(types).not.toBeNull();
+    expect(types.edges.length).toEqual(2);
   });
 });

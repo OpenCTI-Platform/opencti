@@ -770,10 +770,10 @@ export const listRelations = async (relationType, args) => {
   // Else, just ask for the relation only.
   // fromType or toType only allow if fromId or toId available
   const askForConnections = fromId !== undefined || toId !== undefined;
-  const targetFilters = filters && filters.length > 0;
+  const haveTargetFilters = filters && filters.length > 0; // For now filters only contains target to filtering
   const fromTypesFilter = fromTypes && fromTypes.length > 0;
   const toTypesFilter = toTypes && toTypes.length > 0;
-  if (askForConnections === false && (targetFilters || fromTypesFilter || toTypesFilter || search)) {
+  if (askForConnections === false && (haveTargetFilters || fromTypesFilter || toTypesFilter || search)) {
     throw new Error('Cant list relation with types filtering or search if from or to id are not specified');
   }
 
@@ -783,19 +783,11 @@ export const listRelations = async (relationType, args) => {
   const relationToGet = relationType || 'stix_relation';
   // 0 - Check if we can support the query by Elastic
   const unsupportedOrdering = isRelationOrderBy && last(orderBy.split('.')) !== 'internal_id_key';
-  const unsupportedFilteringKeys = filter(
-    k => !k.includes('internal_id_key'),
-    map(f => f.key, filters || [])
-  );
-  const unsupportedFiltering = unsupportedFilteringKeys.length > 0;
   // Search is not supported because its only search on the relation to.
-  const supportedByCache = !search && !unsupportedOrdering && !unsupportedFiltering && !inferred;
+  const supportedByCache = !search && !unsupportedOrdering && !haveTargetFilters && !inferred;
   const useCache = !forceNoCache() && !noCache && supportedByCache;
   if (useCache) {
-    const finalFilters = map(
-      f => ({ key: f.key, values: map(v => v.replace(REL_INDEX_PREFIX, ''), f.values) }),
-      filters || []
-    );
+    const finalFilters = [];
     if (relationFilter) {
       const { relation, id } = relationFilter;
       finalFilters.push({ key: `${REL_INDEX_PREFIX}${relation}.internal_id_key`, values: [id] });
@@ -957,7 +949,7 @@ export const internalLoadEntityById = async (id, type = null, args = {}) => {
   const element = await load(query, ['x'], { noCache });
   return element ? element.x : null;
 };
-export const loadEntityById = (id, type, args = {}) => {
+export const loadEntityById = async (id, type, args = {}) => {
   if (isNil(type)) {
     throw new Error(`[GRAKN] loadEntityById > Missing type`);
   }
@@ -1006,11 +998,12 @@ export const loadRelationById = async (id, type, args = {}) => {
   const element = await load(query, ['rel']);
   return element ? element.rel : null;
 };
-export const loadRelationByStixId = async (id, type) => {
+export const loadRelationByStixId = async (id, type, args = {}) => {
   if (isNil(type)) {
     throw new Error(`[GRAKN] loadRelationByStixId > Missing type`);
   }
-  if (!forceNoCache()) {
+  const { noCache = false } = args;
+  if (!noCache && !forceNoCache()) {
     // [ELASTIC] From cache
     const fromCache = await elLoadByStixId(id, type);
     if (fromCache) return fromCache;
@@ -1050,7 +1043,7 @@ export const loadByGraknId = async (graknId, args = {}) => {
 
 // region Indexer
 
-export const reindexByQuery = async (query, entities) => {
+const reindexByQuery = async (query, entities) => {
   const elements = await find(query, entities, { infer: false, noCache: true });
   // Get all inner elements
   const innerElements = pipe(
