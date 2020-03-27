@@ -64,6 +64,14 @@ const READ_QUERY = gql`
       id
       name
       description
+      observableRefs {
+        edges {
+          node {
+            id
+            observable_value
+          }
+        }
+      }
     }
   }
 `;
@@ -106,6 +114,17 @@ describe('Incident resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.incident).not.toBeNull();
     expect(queryResult.data.incident.id).toEqual(incidentInternalId);
+    expect(queryResult.data.incident.observableRefs.edges.length).toEqual(0);
+  });
+  it('should incident observable refs be accurate', async () => {
+    const queryResult = await queryAsAdmin({
+      query: READ_QUERY,
+      variables: { id: '5e0a1dea-0f58-4da4-a00b-481640f8e7b3' },
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.incident).not.toBeNull();
+    expect(queryResult.data.incident.id).toEqual('5e0a1dea-0f58-4da4-a00b-481640f8e7b3');
+    expect(queryResult.data.incident.observableRefs.edges.length).toEqual(1);
   });
   it('should incident loaded by stix id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: incidentStixId } });
