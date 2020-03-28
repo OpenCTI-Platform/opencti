@@ -1,6 +1,6 @@
-import moment from 'moment/moment';
 import { head, includes, last, mapObjIndexed, pipe, values } from 'ramda';
 import { offsetToCursor } from 'graphql-relay';
+import moment from 'moment';
 
 export const INDEX_STIX_OBSERVABLE = 'stix_observables';
 export const INDEX_STIX_ENTITIES = 'stix_domain_entities_v2';
@@ -14,9 +14,11 @@ export const TYPE_STIX_OBSERVABLE_RELATION = 'stix_observable_relation';
 export const TYPE_RELATION_EMBEDDED = 'relation_embedded';
 export const TYPE_STIX_RELATION_EMBEDDED = 'stix_relation_embedded';
 
+export const utcDate = (date = undefined) => (date ? moment(date).utc() : moment().utc());
+
 export const fillTimeSeries = (startDate, endDate, interval, data) => {
-  const startDateParsed = moment(startDate);
-  const endDateParsed = moment(endDate);
+  const startDateParsed = moment.parseZone(startDate);
+  const endDateParsed = moment.parseZone(endDate);
   let dateFormat;
 
   switch (interval) {
@@ -34,17 +36,23 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
 
   const newData = [];
   for (let i = 0; i <= elementsOfInterval; i += 1) {
+    const workDate = moment(startDateParsed).add(i, `${interval}s`);
+
+    // Looking for the value
     let dataValue = 0;
     for (let j = 0; j < data.length; j += 1) {
-      if (data[j].date === startDateParsed.format(dateFormat)) {
+      if (data[j].date === workDate.format(dateFormat)) {
         dataValue = data[j].value;
       }
     }
+    const intervalDate = moment(workDate)
+      .startOf(interval)
+      .utc()
+      .toISOString();
     newData[i] = {
-      date: startDateParsed.startOf(interval).toISOString(),
+      date: intervalDate,
       value: dataValue
     };
-    startDateParsed.add(1, `${interval}s`);
   }
   return newData;
 };
