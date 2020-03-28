@@ -100,6 +100,21 @@ describe('User resolver standard behavior', () => {
     expect(queryResult.data.user).not.toBeNull();
     expect(queryResult.data.user.id).toEqual(userInternalId);
   });
+  it('should me loaded', async () => {
+    const userResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
+    const ME_QUERY = gql`
+      query me {
+        me {
+          id
+        }
+      }
+    `;
+    // TODO: Ask to Julien
+    /* const queryResult = await queryAsUser(userResult.data.user, { query: ME_QUERY });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.me).not.toBeNull();
+    expect(queryResult.data.me.id).toEqual(userInternalId); */
+  });
   it('should user roles to be accurate', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
     expect(queryResult).not.toBeNull();

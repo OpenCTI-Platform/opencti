@@ -3,7 +3,7 @@ import uuid from 'uuid/v4';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
 import uuidv5 from 'uuid/v5';
-import { clearAccessCache, delUserContext, getAccessCache, notify, storeAccessCache } from '../database/redis';
+import { clearAccessCache, delEditContext, delUserContext, getAccessCache, notify, setEditContext, storeAccessCache } from "../database/redis";
 import { AuthenticationFailure, ForbiddenAccess } from '../config/errors';
 import conf, {
   BUS_TOPICS,
@@ -224,6 +224,19 @@ export const roleDelete = async roleId => {
   await Promise.all(map(e => clearUserTokenCache(e.node.id), impactedUsers.edges));
   return deleteEntityById(roleId, 'Role');
 };
+export const roleCleanContext = (user, roleId) => {
+  delEditContext(user, roleId);
+  return loadEntityById(roleId, 'Role').then(role =>
+    notify(BUS_TOPICS.Role.EDIT_TOPIC, role, user)
+  );
+};
+export const roleEditContext = (user, roleId, input) => {
+  setEditContext(user, roleId, input);
+  return loadEntityById(roleId, 'Role').then(role =>
+    notify(BUS_TOPICS.Role.EDIT_TOPIC, role, user)
+  );
+};
+// endregion
 
 export const addPerson = async (user, newUser) => {
   const created = await createEntity(newUser, 'User', {
