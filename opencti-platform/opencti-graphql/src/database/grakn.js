@@ -1105,10 +1105,10 @@ const graknTimeSeries = (query, keyRef, valueRef, inferred) => {
 export const timeSeriesEntities = async (entityType, filters, options) => {
   // filters: [ { isRelation: true, type: stix_relation, from: 'role', to: 'role', value: uuid } ]
   //            { isRelation: false, type: report_class, value: string } ]
-  const { startDate, endDate, operation, field, interval, inferred = false } = options;
+  const { startDate, endDate, operation, field, interval, noCache = false, inferred = false } = options;
   // Check if can be supported by ES
   let histogramData;
-  if (operation === 'count' && !inferred) {
+  if (!noCache && operation === 'count' && !inferred) {
     histogramData = await elHistogramCount(entityType, field, interval, startDate, endDate, filters);
   } else {
     // If not compatible, do it with grakn
