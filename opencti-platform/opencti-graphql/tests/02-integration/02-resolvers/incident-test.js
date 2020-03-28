@@ -97,12 +97,12 @@ describe('Incident resolver standard behavior', () => {
         stix_id_key: incidentStixId,
         description: 'Incident description',
         first_seen: '2020-03-24T10:51:20+00:00',
-        last_seen: '2020-03-24T10:51:20+00:00',
-      },
+        last_seen: '2020-03-24T10:51:20+00:00'
+      }
     };
     const incident = await queryAsAdmin({
       query: CREATE_QUERY,
-      variables: INCIDENT_TO_CREATE,
+      variables: INCIDENT_TO_CREATE
     });
     expect(incident).not.toBeNull();
     expect(incident.data.incidentAdd).not.toBeNull();
@@ -125,7 +125,7 @@ describe('Incident resolver standard behavior', () => {
   it('should incident observable refs be accurate', async () => {
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
-      variables: { id: '5e0a1dea-0f58-4da4-a00b-481640f8e7b3' },
+      variables: { id: '5e0a1dea-0f58-4da4-a00b-481640f8e7b3' }
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.incident).not.toBeNull();
@@ -144,8 +144,8 @@ describe('Incident resolver standard behavior', () => {
         operation: 'count',
         startDate: '2020-01-01T00:00:00+00:00',
         endDate: '2021-01-01T00:00:00+00:00',
-        interval: 'month',
-      },
+        interval: 'month'
+      }
     });
     expect(queryResult.data.incidentsTimeSeries.length).toEqual(13);
     expect(queryResult.data.incidentsTimeSeries[2].value).toEqual(1);
@@ -154,17 +154,17 @@ describe('Incident resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {
-        objectId: 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7',
+        objectId: 'fab6fa99-b07f-4278-86b4-b674edf60877',
         field: 'first_seen',
         operation: 'count',
         startDate: '2020-01-01T00:00:00+00:00',
         endDate: '2021-01-01T00:00:00+00:00',
         interval: 'month',
-        relationType: 'attributed-to',
-      },
+        relationType: 'attributed-to'
+      }
     });
     expect(queryResult.data.incidentsTimeSeries.length).toEqual(13);
-    // expect(queryResult.data.incidentsTimeSeries[2].value).toEqual(1);
+    expect(queryResult.data.incidentsTimeSeries[1].value).toEqual(1);
   });
   it('should update incident', async () => {
     const UPDATE_QUERY = gql`
@@ -179,7 +179,7 @@ describe('Incident resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
-      variables: { id: incidentInternalId, input: { key: 'name', value: ['Incident - test'] } },
+      variables: { id: incidentInternalId, input: { key: 'name', value: ['Incident - test'] } }
     });
     expect(queryResult.data.incidentEdit.fieldPatch.name).toEqual('Incident - test');
   });
@@ -195,7 +195,7 @@ describe('Incident resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
-      variables: { id: incidentInternalId, input: { focusOn: 'description' } },
+      variables: { id: incidentInternalId, input: { focusOn: 'description' } }
     });
     expect(queryResult.data.incidentEdit.contextPatch.id).toEqual(incidentInternalId);
   });
@@ -211,7 +211,7 @@ describe('Incident resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
-      variables: { id: incidentInternalId },
+      variables: { id: incidentInternalId }
     });
     expect(queryResult.data.incidentEdit.contextClean.id).toEqual(incidentInternalId);
   });
@@ -247,9 +247,9 @@ describe('Incident resolver standard behavior', () => {
           fromRole: 'so',
           toRole: 'marking',
           toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
-        },
-      },
+          through: 'object_marking_refs'
+        }
+      }
     });
     expect(queryResult.data.incidentEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
     incidentMarkingDefinitionRelationId =
@@ -276,8 +276,8 @@ describe('Incident resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: incidentInternalId,
-        relationId: incidentMarkingDefinitionRelationId,
-      },
+        relationId: incidentMarkingDefinitionRelationId
+      }
     });
     expect(queryResult.data.incidentEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
   });
@@ -292,7 +292,7 @@ describe('Incident resolver standard behavior', () => {
     // Delete the incident
     await queryAsAdmin({
       query: DELETE_QUERY,
-      variables: { id: incidentInternalId },
+      variables: { id: incidentInternalId }
     });
     // Verify is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: incidentStixId } });

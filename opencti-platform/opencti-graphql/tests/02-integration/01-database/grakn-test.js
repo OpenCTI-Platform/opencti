@@ -32,6 +32,7 @@ import {
   queryAttributeValues,
   REL_CONNECTED_SUFFIX,
   sinceNowInMinutes,
+  timeSeriesEntities,
   utcDate,
   yearFormat
 } from '../../../src/database/grakn';
@@ -785,7 +786,7 @@ describe('Grakn attribute updated and indexed correctly', () => {
     expect(report).not.toBeNull();
     expect(report.report_class).toEqual('Threat Report');
   });
-  it('should relation report attribute updated (noCache = %s)', async (noCache = true) => {
+  it.each(noCacheCases)('should relation report attribute updated (noCache = %s)', async noCache => {
     // Test with relation update
     let relationTypes = await findAllAttributes({ type: 'role_played' });
     expect(relationTypes).not.toBeNull();
@@ -822,5 +823,56 @@ describe('Grakn attribute updated and indexed correctly', () => {
     relation = await loadRelationByStixId(stixId, 'indicates', { noCache });
     expect(relation).not.toBeNull();
     expect(relation.role_played).toEqual('Unknown');
+  });
+});
+
+describe('Grakn entities time series', () => {
+  const noCacheCases = [[true], [false]];
+  it.each(noCacheCases)('should published entity time series (noCache = %s)', async noCache => {
+    // const { startDate, endDate, operation, field, interval, inferred = false } = options;
+    const options = {
+      field: 'published',
+      operation: 'count',
+      interval: 'month',
+      startDate: '2019-09-23T00:00:00.000Z',
+      endDate: '2020-04-04T00:00:00.000Z',
+      noCache
+    };
+    const series = await timeSeriesEntities('Stix-Domain-Entity', [], options);
+    expect(series.length).toEqual(7);
+    const aggregationMap = new Map(series.map(i => [i.date, i.value]));
+    expect(aggregationMap.get('2020-02-29T23:00:00.000Z')).toEqual(1);
+  });
+  it.each(noCacheCases)('should first seen relation time series (noCache = %s)', async noCache => {
+    // const { startDate, endDate, operation, field, interval, inferred = false } = options;
+    const filters = [{ isRelation: true, type: 'attributed-to', value: '82316ffd-a0ec-4519-a454-6566f8f5676c' }];
+    const options = {
+      field: 'first_seen',
+      operation: 'count',
+      interval: 'month',
+      startDate: '2020-01-01T00:00:00+00:00',
+      endDate: '2021-01-01T00:00:00+00:00',
+      noCache
+    };
+    const series = await timeSeriesEntities('Campaign', filters, options);
+    expect(series.length).toEqual(13);
+    const aggregationMap = new Map(series.map(i => [i.date, i.value]));
+    expect(aggregationMap.get('2020-01-31T23:00:00.000Z')).toEqual(1);
+  });
+  it.each(noCacheCases)('should local filter time series (noCache = %s)', async noCache => {
+    // const { startDate, endDate, operation, field, interval, inferred = false } = options;
+    const filters = [{ type: 'name', value: 'A new campaign' }];
+    const options = {
+      field: 'first_seen',
+      operation: 'count',
+      interval: 'month',
+      startDate: '2020-01-01T00:00:00+00:00',
+      endDate: '2020-10-01T00:00:00+00:00',
+      noCache
+    };
+    const series = await timeSeriesEntities('Stix-Domain-Entity', filters, options);
+    expect(series.length).toEqual(10);
+    const aggregationMap = new Map(series.map(i => [i.date, i.value]));
+    expect(aggregationMap.get('2020-01-31T23:00:00.000Z')).toEqual(1);
   });
 });

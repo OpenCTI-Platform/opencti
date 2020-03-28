@@ -41,7 +41,7 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
       }
     }
     newData[i] = {
-      date: startDateParsed.startOf(interval).format(),
+      date: startDateParsed.startOf(interval).toISOString(),
       value: dataValue
     };
     startDateParsed.add(1, `${interval}s`);
