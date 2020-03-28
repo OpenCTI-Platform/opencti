@@ -189,7 +189,11 @@
             "modified": "2020-02-25T22:23:20.648Z",
             "x_opencti_organization_class": null,
             "x_opencti_identity_type": "organization",
-            "x_opencti_id": "78ef0cb8-4397-4603-86b4-f1d60be7400d"
+            "x_opencti_id": "78ef0cb8-4397-4603-86b4-f1d60be7400d",
+            "x_opencti_aliases": [
+                "Computer Incident",
+                "Incident"
+            ]
         },
         {
             "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
@@ -411,6 +415,9 @@
             "name": "APT41",
             "labels": [
                 "intrusion-set"
+            ],
+            "aliases": [
+                "Winnti"
             ],
             "description": "[APT41](https://attack.mitre.org/groups/G0096) is a group that carries out Chinese state-sponsored espionage activity in addition to financially motivated activity. [APT41](https://attack.mitre.org/groups/G0096) has been active since as early as 2012. The group has been observed targeting healthcare, telecom, technology, and video game industries in 14 countries.(Citation: FireEye APT41 Aug 2019)",
             "x_opencti_first_seen": "2020-02-26T04:26:43.965Z",
