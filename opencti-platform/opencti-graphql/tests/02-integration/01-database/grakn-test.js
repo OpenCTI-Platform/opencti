@@ -841,7 +841,7 @@ describe('Grakn entities time series', () => {
     const series = await timeSeriesEntities('Stix-Domain-Entity', [], options);
     expect(series.length).toEqual(7);
     const aggregationMap = new Map(series.map(i => [i.date, i.value]));
-    expect(aggregationMap.get('2020-03-01T00:00:00+01:00')).toEqual(1);
+    expect(aggregationMap.get('2020-02-29T23:00:00.000Z')).toEqual(1);
   });
   it.each(noCacheCases)('should first seen relation time series (noCache = %s)', async noCache => {
     // const { startDate, endDate, operation, field, interval, inferred = false } = options;
@@ -857,7 +857,7 @@ describe('Grakn entities time series', () => {
     const series = await timeSeriesEntities('Campaign', filters, options);
     expect(series.length).toEqual(13);
     const aggregationMap = new Map(series.map(i => [i.date, i.value]));
-    expect(aggregationMap.get('2020-02-01T00:00:00+01:00')).toEqual(1);
+    expect(aggregationMap.get('2020-01-31T23:00:00.000Z')).toEqual(1);
   });
   it.each(noCacheCases)('should local filter time series (noCache = %s)', async noCache => {
     // const { startDate, endDate, operation, field, interval, inferred = false } = options;
@@ -873,6 +873,6 @@ describe('Grakn entities time series', () => {
     const series = await timeSeriesEntities('Stix-Domain-Entity', filters, options);
     expect(series.length).toEqual(10);
     const aggregationMap = new Map(series.map(i => [i.date, i.value]));
-    expect(aggregationMap.get('2020-02-01T00:00:00+01:00')).toEqual(1);
+    expect(aggregationMap.get('2020-01-31T23:00:00.000Z')).toEqual(1);
   });
 });
