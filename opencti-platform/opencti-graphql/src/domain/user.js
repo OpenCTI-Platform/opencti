@@ -115,7 +115,7 @@ export const groups = userId => {
   ).then(data => buildPagination(0, 0, data, data.length));
 };
 export const token = (userId, args, context) => {
-  if (userId !== context.user.id) {
+  if (context.user.id !== OPENCTI_ADMIN_UUID && userId !== context.user.id) {
     throw new ForbiddenAccess();
   }
   return loadWithConnectedRelations(

@@ -47,6 +47,7 @@ const READ_QUERY = gql`
         name
         description
       }
+      token
     }
   }
 `;
@@ -55,6 +56,7 @@ describe('User resolver standard behavior', () => {
   let userInternalId;
   let groupInternalId;
   let userGroupRelationId;
+  let userToken;
   const userStixId = 'identity--a186efb8-5e41-4082-817e-993e378d32f0';
   it('should user created', async () => {
     const CREATE_QUERY = gql`
@@ -150,6 +152,13 @@ describe('User resolver standard behavior', () => {
     expect(res.data.token).toBeDefined();
     const user = await authentication(res.data.token);
     expect(user.user_email).toBe('user@mail.com');
+    userToken = res.data.token;
+  });
+  it('should user token to be accurate', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.user).not.toBeNull();
+    expect(queryResult.data.user.token).toEqual(userToken);
   });
   it('should list users', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });

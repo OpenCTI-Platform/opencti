@@ -6,7 +6,7 @@ import createSchema from '../../src/graphql/schema';
 export const ONE_MINUTE = 60 * 1000;
 export const FIVE_MINUTES = 5 * ONE_MINUTE;
 const ADMIN_USER = {
-  id: 'V1234',
+  id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
   name: 'admin',
   email: 'admin@opencti.io',
   roles: [{ name: ROLE_ADMINISTRATOR }],

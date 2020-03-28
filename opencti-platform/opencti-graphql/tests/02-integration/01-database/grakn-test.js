@@ -214,7 +214,7 @@ describe('Grakn loaders', () => {
     expect(await countObjects('Workspace')).toEqual(0);
     expect(await countObjects('Token')).toEqual(1);
     expect(await countObjects('Marking-Definition')).toEqual(6);
-    expect(await countObjects('Stix-Domain')).toEqual(38);
+    expect(await countObjects('Stix-Domain')).toEqual(39);
     expect(await countObjects('Role')).toEqual(2);
     expect(await countObjects('Capability')).toEqual(19);
     expect(await countObjects('Stix-Observable')).toEqual(4);
@@ -398,7 +398,7 @@ describe('Grakn relations listing', () => {
   it.each(noCacheCases)('should list relations (noCache = %s)', async noCache => {
     const stixRelations = await listRelations('stix_relation', { noCache });
     expect(stixRelations).not.toBeNull();
-    expect(stixRelations.edges.length).toEqual(18);
+    expect(stixRelations.edges.length).toEqual(19);
     const embeddedRelations = await listRelations('stix_relation_embedded', { noCache });
     expect(embeddedRelations).not.toBeNull();
     expect(embeddedRelations.edges.length).toEqual(76);
@@ -462,11 +462,11 @@ describe('Grakn relations listing', () => {
       expect(toRole).toEqual(roles.to);
     }
     const relation = head(stixRelations.edges).node;
-    expect(relation.created).toEqual('2020-03-25T14:10:20.065Z');
+    expect(relation.created).toEqual('2020-03-28T02:42:53.582Z');
     const from = await loadByGraknId(relation.fromId);
-    expect(from.stix_id_key).toEqual('incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4');
+    expect(from.stix_id_key).toEqual('identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f');
     const to = await loadByGraknId(relation.toId);
-    expect(to.stix_id_key).toEqual('campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
+    expect(to.stix_id_key).toEqual('identity--c017f212-546b-4f21-999d-97d3dc558f7b');
   });
   it.each(noCacheCases)('should list relations ordered by relation (noCache = %s)', async noCache => {
     // "relationship_type": "uses",

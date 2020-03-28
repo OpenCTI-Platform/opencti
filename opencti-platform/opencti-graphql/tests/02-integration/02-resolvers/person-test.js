@@ -97,13 +97,13 @@ describe('Person resolver standard behavior', () => {
       variables: { id: '639331ab-ae8d-4c69-9037-3b7e5c67e5c5' },
     });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.user).not.toBeNull();
-    expect(queryResult.data.user.organizations.edges.length).toEqual(1);
-    expect(queryResult.data.user.organizations.edges[0].node.id).toEqual('9ca2ff43-b765-4f13-a213-10664a2ae8fc');
+    expect(queryResult.data.person).not.toBeNull();
+    expect(queryResult.data.person.organizations.edges.length).toEqual(1);
+    expect(queryResult.data.person.organizations.edges[0].node.id).toEqual('9ca2ff43-b765-4f13-a213-10664a2ae8fc');
   });
   it('should list persons', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.persons.edges.length).toEqual(2);
+    expect(queryResult.data.persons.edges.length).toEqual(3);
   });
   it('should update person', async () => {
     const UPDATE_QUERY = gql`
