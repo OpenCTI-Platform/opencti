@@ -47,6 +47,7 @@ class IdentityTypes(Enum):
     COUNTRY = "Country"
     CITY = "City"
     ORGANIZATION = "Organization"
+    USER = "User"
 
     @classmethod
     def has_value(cls, value):
