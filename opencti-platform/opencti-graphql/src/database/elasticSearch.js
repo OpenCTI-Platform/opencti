@@ -629,7 +629,6 @@ export const elPaginate = async (indexName, options = {}) => {
     })
     .catch(
       /* istanbul ignore next */ err => {
-        logger.error(err);
         // Because we create the mapping at element creation
         // We log the error only if its not a mapping not found error
         const numberOfCauses = err.meta.body.error.root_cause.length;
@@ -741,7 +740,7 @@ export const elUpdate = (indexName, documentId, documentBody, retry = 2) => {
     retry_on_conflict: retry,
     timeout: '60m',
     refresh: true,
-    body: documentBody
+    body: dissoc('_index', documentBody)
   });
 };
 
@@ -856,9 +855,11 @@ export const elIndexElements = async (elements, retry = 2) => {
   // 01. Bulk the indexing of row elements
   const body = transformedElements.flatMap(doc => [
     { index: { _index: inferIndexFromConceptTypes(doc.parent_types), _id: doc.grakn_id } },
-    doc
+    dissoc('_index', doc)
   ]);
-  await elBulk({ refresh: true, body });
+  if (body.length > 0) {
+    await elBulk({ refresh: true, body });
+  }
   // 02. If relation, generate impacts for from and to sides
   const impactedEntities = pipe(
     filter(e => e.relationship_type !== undefined),
@@ -915,7 +916,7 @@ export const elIndexElements = async (elements, retry = 2) => {
   const bodyUpdate = elementsToUpdate.flatMap(doc => [
     // eslint-disable-next-line no-underscore-dangle
     { update: { _index: doc._index, _id: doc.id, retry_on_conflict: retry } },
-    doc.data
+    dissoc('_index', doc.data)
   ]);
   if (bodyUpdate.length > 0) {
     await elBulk({ refresh: true, timeout: '60m', body: bodyUpdate });

@@ -35,7 +35,7 @@ import {
   utcDate,
   yearFormat
 } from '../../../src/database/grakn';
-import { findAll as findAllAttributes } from '../../../src/domain/attribute';
+import { attributeUpdate, findAll as findAllAttributes } from '../../../src/domain/attribute';
 import { INDEX_STIX_ENTITIES } from '../../../src/database/utils';
 import { GATHERING_TARGETS_RULE, inferenceDisable, inferenceEnable } from '../../../src/domain/inference';
 import { resolveNaturalRoles } from '../../../src/database/graknRoles';
@@ -719,12 +719,100 @@ describe('Grakn element loader', () => {
     expect(element.stix_id_key).toEqual(stixId);
     expect(element.weight).toEqual(3);
   });
+  it.each(noCacheCases)('should load by grakn id (noCache = %s)', async noCache => {
+    const stixId = 'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02';
+    const report = await loadRelationByStixId(stixId, 'uses', { noCache });
+    const element = await loadByGraknId(report.grakn_id, { noCache });
+    expect(element).not.toBeNull();
+    expect(element.stix_id_key).toEqual(stixId);
+    expect(element.weight).toEqual(3);
+  });
+  it.each(noCacheCases)('should load by grakn id for multiple attributes (noCache = %s)', async noCache => {
+    const stixId = 'identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132';
+    const identity = await loadEntityByStixId(stixId, 'Organization', { noCache });
+    expect(identity).not.toBeNull();
+    expect(identity.alias).not.toBeNull();
+    expect(identity.alias.length).toEqual(2);
+    expect(identity.alias.includes('Computer Incident')).toBeTruthy();
+    expect(identity.alias.includes('Incident')).toBeTruthy();
+  });
 });
 
 describe('Grakn attribute updated and indexed correctly', () => {
-  it('should read transaction fail with bad query', async () => {
-    const types = await findAllAttributes({ type: 'report_class' });
-    expect(types).not.toBeNull();
-    expect(types.edges.length).toEqual(2);
+  const noCacheCases = [[true], [false]];
+  it.each(noCacheCases)('should entity report attribute updated (noCache = %s)', async noCache => {
+    let entityTypes = await findAllAttributes({ type: 'report_class' });
+    expect(entityTypes).not.toBeNull();
+    // expect(entityTypes.edges.length).toEqual(2);
+    let typeMap = new Map(entityTypes.edges.map(i => [i.node.value, i]));
+    const threatReportAttribute = typeMap.get('Threat Report');
+    expect(threatReportAttribute).not.toBeUndefined();
+    const attributeGraknId = threatReportAttribute.node.id;
+    // 01. Get the report directly and test if type is "Threat report".
+    const stixId = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
+    let report = await loadEntityByStixId(stixId, 'Report', { noCache });
+    expect(report).not.toBeNull();
+    expect(report.report_class).toEqual('Threat Report');
+    // 02. Update attribute "Threat report" to "Threat test"
+    let updatedAttribute = await attributeUpdate(attributeGraknId, {
+      type: 'report_class',
+      value: 'Threat Report',
+      newValue: 'Threat Test'
+    });
+    expect(updatedAttribute).not.toBeNull();
+    // 03. Get the report directly and test if type is Threat test
+    report = await loadEntityByStixId(stixId, 'Report', { noCache });
+    expect(report).not.toBeNull();
+    expect(report.report_class).toEqual('Threat Test');
+    // 04. Back to original configuration
+    entityTypes = await findAllAttributes({ type: 'report_class' });
+    typeMap = new Map(entityTypes.edges.map(i => [i.node.value, i]));
+    updatedAttribute = await attributeUpdate(typeMap.get('Threat Test').node.id, {
+      type: 'report_class',
+      value: 'Threat Test',
+      newValue: 'Threat Report'
+    });
+    expect(updatedAttribute).not.toBeNull();
+    report = await loadEntityByStixId(stixId, 'Report', { noCache });
+    expect(report).not.toBeNull();
+    expect(report.report_class).toEqual('Threat Report');
+  });
+  it.each(noCacheCases)('should relation report attribute updated (noCache = %s)', async noCache => {
+    // Test with relation update
+    let relationTypes = await findAllAttributes({ type: 'role_played' });
+    expect(relationTypes).not.toBeNull();
+    expect(relationTypes.edges.length).toEqual(3);
+    let typeMap = new Map(relationTypes.edges.map(i => [i.node.value, i]));
+    const relationAttribute = typeMap.get('Unknown');
+    expect(relationAttribute).not.toBeUndefined();
+    const attributeGraknId = relationAttribute.node.id;
+    // 01. Get the relation relationship--c32d553c-e22f-40ce-93e6-eb62dd145f3b and test if type is "Unknown"
+    const stixId = 'relationship--c32d553c-e22f-40ce-93e6-eb62dd145f3b';
+    let relation = await loadRelationByStixId(stixId, 'indicates', { noCache });
+    expect(relation).not.toBeNull();
+    expect(relation.role_played).toEqual('Unknown');
+    // 02. Update attribute "Unknown" to "For test"
+    const updatedAttribute = await attributeUpdate(attributeGraknId, {
+      type: 'role_played',
+      value: 'Unknown',
+      newValue: 'For test'
+    });
+    expect(updatedAttribute).not.toBeNull();
+    // 03. Get the relation directly and test if type is "For test"
+    relation = await loadRelationByStixId(stixId, 'indicates', { noCache });
+    expect(relation).not.toBeNull();
+    expect(relation.role_played).toEqual('For test');
+    // 04. Back to original configuration
+    relationTypes = await findAllAttributes({ type: 'role_played' });
+    expect(relationTypes.edges.length).toEqual(3);
+    typeMap = new Map(relationTypes.edges.map(i => [i.node.value, i]));
+    await attributeUpdate(typeMap.get('For test').node.id, {
+      type: 'role_played',
+      value: 'For test',
+      newValue: 'Unknown'
+    });
+    relation = await loadRelationByStixId(stixId, 'indicates', { noCache });
+    expect(relation).not.toBeNull();
+    expect(relation.role_played).toEqual('Unknown');
   });
 });
