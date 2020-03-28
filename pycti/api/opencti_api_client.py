@@ -247,7 +247,7 @@ class OpenCTIApiClient:
                 is_not_empty = False
                 for v in value:
                     if len(v) > 0:
-                        is_not_empty = False
+                        is_not_empty = True
                 return is_not_empty
             if isinstance(value, int):
                 return True
