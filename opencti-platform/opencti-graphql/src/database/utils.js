@@ -17,8 +17,8 @@ export const TYPE_STIX_RELATION_EMBEDDED = 'stix_relation_embedded';
 export const utcDate = (date = undefined) => (date ? moment(date).utc() : moment().utc());
 
 export const fillTimeSeries = (startDate, endDate, interval, data) => {
-  const startDateParsed = moment(startDate);
-  const endDateParsed = moment(endDate);
+  const startDateParsed = moment.parseZone(startDate);
+  const endDateParsed = moment.parseZone(endDate);
   let dateFormat;
 
   switch (interval) {

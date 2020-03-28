@@ -839,7 +839,6 @@ describe('Grakn entities time series', () => {
     };
     const series = await timeSeriesEntities('Stix-Domain-Entity', [], options);
     expect(series.length).toEqual(7);
-    console.log(series.map(x => `${x.date}/${x.value}`));
     const aggregationMap = new Map(series.map(i => [i.date, i.value]));
     expect(aggregationMap.get('2020-02-29T23:00:00.000Z')).toEqual(1);
   });
@@ -871,7 +870,7 @@ describe('Grakn entities time series', () => {
       noCache
     };
     const series = await timeSeriesEntities('Stix-Domain-Entity', filters, options);
-    expect(series.length).toEqual(10);
+    expect(series.length).toEqual(9);
     const aggregationMap = new Map(series.map(i => [i.date, i.value]));
     expect(aggregationMap.get('2020-01-31T23:00:00.000Z')).toEqual(1);
   });
