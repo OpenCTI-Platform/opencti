@@ -303,6 +303,34 @@
       "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"]
     },
     {
+      "id": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
+      "type": "identity",
+      "name": "John Doe",
+      "identity_class": "individual",
+      "labels": ["identity"],
+      "created": "2020-03-27T08:39:45.676Z",
+      "modified": "2020-03-27T08:39:45.676Z",
+      "x_opencti_identity_type": "user",
+      "x_opencti_id": "639331ab-ae8d-4c69-9037-3b7e5c67e5c5"
+    },
+    {
+      "id": "relationship--10f2228d-cc68-45e3-bce2-53b1841b01c2",
+      "type": "relationship",
+      "relationship_type": "gathering",
+      "description": "John Doe works for Allied Universal",
+      "source_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
+      "target_ref": "identity--c017f212-546b-4f21-999d-97d3dc558f7b",
+      "x_opencti_source_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
+      "x_opencti_target_ref": "identity--c017f212-546b-4f21-999d-97d3dc558f7b",
+      "created": "2020-03-28T02:42:53.582Z",
+      "modified": "2020-02-28T02:42:53.582Z",
+      "x_opencti_first_seen": "1900-01-01T00:00:00.000Z",
+      "x_opencti_last_seen": "1900-01-01T00:00:00.000Z",
+      "x_opencti_weight": 4,
+      "x_opencti_role_played": "Unknown",
+      "x_opencti_id": "439d0865-734f-4853-8d27-ef1f320833da"
+    },
+    {
       "id": "relationship--9315a197-fe15-4c96-b77c-edcaa5e22ecb",
       "type": "relationship",
       "relationship_type": "gathering",

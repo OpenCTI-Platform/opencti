@@ -3493,9 +3493,7 @@ type PersonEditMutations {
   fieldPatch(input: EditInput): User
   contextPatch(input: EditContext): User
   contextClean: User
-  tokenRenew: User
   relationAdd(input: RelationAddInput): RelationEmbedded
-  removeRole(name: String!): User
   relationDelete(relationId: ID!): User
 }
 

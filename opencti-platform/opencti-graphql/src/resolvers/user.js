@@ -124,8 +124,6 @@ const userResolvers = {
       fieldPatch: ({ input }) => personEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
-      tokenRenew: () => userRenewToken(id),
-      removeRole: ({ name }) => removeRole(id, name),
       relationAdd: ({ input }) => personAddRelation(user, id, input),
       relationDelete: ({ relationId }) => personDeleteRelation(user, id, relationId),
     }),

@@ -53,7 +53,8 @@ const READ_QUERY = gql`
 
 describe('User resolver standard behavior', () => {
   let userInternalId;
-  let userMarkingDefinitionRelationId;
+  let groupInternalId;
+  let userGroupRelationId;
   const userStixId = 'identity--a186efb8-5e41-4082-817e-993e378d32f0';
   it('should user created', async () => {
     const CREATE_QUERY = gql`
@@ -204,6 +205,30 @@ describe('User resolver standard behavior', () => {
     expect(queryResult.data.userEdit.contextClean.id).toEqual(userInternalId);
   });
   it('should add relation in user', async () => {
+    const GROUP_ADD_QUERY = gql`
+      mutation GroupAdd($input: GroupAddInput) {
+        groupAdd(input: $input) {
+          id
+          name
+          description
+        }
+      }
+    `;
+    // Create the group
+    const GROUP_TO_CREATE = {
+      input: {
+        name: 'Group in user',
+        description: 'Group in user description',
+      },
+    };
+    const group = await queryAsAdmin({
+      query: GROUP_ADD_QUERY,
+      variables: GROUP_TO_CREATE,
+    });
+    expect(group).not.toBeNull();
+    expect(group.data.groupAdd).not.toBeNull();
+    expect(group.data.groupAdd.name).toEqual('Group in user');
+    groupInternalId = group.data.groupAdd.id;
     const RELATION_ADD_QUERY = gql`
       mutation UserEdit($id: ID!, $input: RelationAddInput!) {
         userEdit(id: $id) {
@@ -211,7 +236,7 @@ describe('User resolver standard behavior', () => {
             id
             from {
               ... on User {
-                markingDefinitions {
+                groups {
                   edges {
                     node {
                       id
@@ -232,16 +257,15 @@ describe('User resolver standard behavior', () => {
       variables: {
         id: userInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
-          toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          fromRole: 'member',
+          toId: group.data.groupAdd.id,
+          toRole: 'grouping',
+          through: 'membership',
         },
       },
     });
-    expect(queryResult.data.userEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
-    userMarkingDefinitionRelationId =
-      queryResult.data.userEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+    expect(queryResult.data.userEdit.relationAdd.from.groups.edges.length).toEqual(1);
+    userGroupRelationId = queryResult.data.userEdit.relationAdd.from.groups.edges[0].relation.id;
   });
   it('should delete relation in user', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -249,7 +273,7 @@ describe('User resolver standard behavior', () => {
         userEdit(id: $id) {
           relationDelete(relationId: $relationId) {
             id
-            markingDefinitions {
+            groups {
               edges {
                 node {
                   id
@@ -264,10 +288,10 @@ describe('User resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: userInternalId,
-        relationId: userMarkingDefinitionRelationId,
+        relationId: userGroupRelationId,
       },
     });
-    expect(queryResult.data.userEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.userEdit.relationDelete.groups.edges.length).toEqual(0);
   });
   it('should user deleted', async () => {
     const DELETE_QUERY = gql`
