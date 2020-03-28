@@ -1831,12 +1831,12 @@ class OpenCTIApiClient:
                     "sector": {"from_role": "part_of", "to_role": "gather"},
                     "organization": {"from_role": "part_of", "to_role": "gather"},
                 },
-                "person": {
+                "user": {
                     "organization": {"from_role": "part_of", "to_role": "gather"},
                 },
                 "observable": {
                     "organization": {"from_role": "part_of", "to_role": "gather"},
-                    "person": {"from_role": "part_of", "to_role": "gather"},
+                    "user": {"from_role": "part_of", "to_role": "gather"},
                 },
             },
             "drops": {
