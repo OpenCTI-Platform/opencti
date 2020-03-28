@@ -214,10 +214,10 @@ describe('Grakn loaders', () => {
     expect(await countObjects('Workspace')).toEqual(0);
     expect(await countObjects('Token')).toEqual(1);
     expect(await countObjects('Marking-Definition')).toEqual(6);
-    expect(await countObjects('Stix-Domain')).toEqual(35);
+    expect(await countObjects('Stix-Domain')).toEqual(38);
     expect(await countObjects('Role')).toEqual(2);
     expect(await countObjects('Capability')).toEqual(19);
-    expect(await countObjects('Stix-Observable')).toEqual(3);
+    expect(await countObjects('Stix-Observable')).toEqual(4);
     // Relations
   });
 });
@@ -398,10 +398,10 @@ describe('Grakn relations listing', () => {
   it.each(noCacheCases)('should list relations (noCache = %s)', async noCache => {
     const stixRelations = await listRelations('stix_relation', { noCache });
     expect(stixRelations).not.toBeNull();
-    expect(stixRelations.edges.length).toEqual(14);
+    expect(stixRelations.edges.length).toEqual(18);
     const embeddedRelations = await listRelations('stix_relation_embedded', { noCache });
     expect(embeddedRelations).not.toBeNull();
-    expect(embeddedRelations.edges.length).toEqual(75);
+    expect(embeddedRelations.edges.length).toEqual(76);
   });
   it.each(noCacheCases)('should list relations with no id (noCache = %s)', noCache => {
     expect(listRelations('uses', { noCache, fromTypes: ['Attack-Pattern'] })).rejects.toThrow();
@@ -612,7 +612,7 @@ describe('Grakn relations with inferences', () => {
     // Find the Grakn ID of the connections to build the inferred relation
     // In the data loaded its APT41 (intrusion-set) < target > Southwire (organization)
     const apt28 = await internalLoadEntityByStixId('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
-    const southwire = await internalLoadEntityByStixId('organization--5a510e41-5cb2-45cc-a191-a4844ea0a141');
+    const southwire = await internalLoadEntityByStixId('identity--5a510e41-5cb2-45cc-a191-a4844ea0a141');
     // Build the inferred relation for testing
     const inference = `{ $rel(source: $from, target: $to) isa targets; $from id ${apt28.grakn_id}; $to id ${southwire.grakn_id}; };`;
     const inferenceId = Buffer.from(inference).toString('base64');
@@ -627,15 +627,15 @@ describe('Grakn relations with inferences', () => {
     const aggregationMap = new Map(relation.inferences.edges.map(i => [i.node.stix_id_key, i.node]));
     // relationship--3541149d-1af6-4688-993c-dc32c7ee3880
     // APT41 > intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7
-    // Allied Universal > organization--c017f212-546b-4f21-999d-97d3dc558f7b
+    // Allied Universal > identity--c017f212-546b-4f21-999d-97d3dc558f7b
     const firstSegment = aggregationMap.get('relationship--3541149d-1af6-4688-993c-dc32c7ee3880');
     expect(firstSegment).not.toBeUndefined();
     expect(firstSegment.internal_id_key).toEqual('36d591b6-54b9-4152-ab89-79c7dad709f7');
     expect(firstSegment.fromRole).toEqual('source');
     expect(firstSegment.toRole).toEqual('target');
     // relationship--307058e3-84f3-4e9c-8776-2e4fe4d6c6c7
-    // Allied Universal > organization--c017f212-546b-4f21-999d-97d3dc558f7b
-    // Southwire > organization--5a510e41-5cb2-45cc-a191-a4844ea0a141
+    // Allied Universal > identity--c017f212-546b-4f21-999d-97d3dc558f7b
+    // Southwire > identity--5a510e41-5cb2-45cc-a191-a4844ea0a141
     const secondSegment = aggregationMap.get('relationship--307058e3-84f3-4e9c-8776-2e4fe4d6c6c7');
     expect(secondSegment).not.toBeUndefined();
     expect(secondSegment.internal_id_key).toEqual('b7a4d86f-220e-412a-8135-6e9fb9f7b296');

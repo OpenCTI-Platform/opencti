@@ -83,7 +83,6 @@ describe('Threat actor resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.threatActor).not.toBeNull();
     expect(queryResult.data.threatActor.id).toEqual(threatActorInternalId);
-    // Delete the threat actor
   });
   it('should list threat actors', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 1 } });

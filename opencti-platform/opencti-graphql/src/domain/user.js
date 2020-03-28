@@ -308,7 +308,7 @@ export const userEditField = (user, userId, input) => {
   });
 };
 export const personEditField = async (user, userId, input) => {
-  const data = await loadEntityById(userId);
+  const data = await loadEntityById(userId, 'User');
   if (!isNil(data.external)) {
     throw new ForbiddenAccess();
   }
