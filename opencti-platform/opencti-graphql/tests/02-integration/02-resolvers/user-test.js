@@ -301,6 +301,18 @@ describe('User resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.userEdit.relationDelete.groups.edges.length).toEqual(0);
+    const DELETE_GROUP_QUERY = gql`
+      mutation groupDelete($id: ID!) {
+        groupEdit(id: $id) {
+          delete
+        }
+      }
+    `;
+    // Delete the group
+    await queryAsAdmin({
+      query: DELETE_GROUP_QUERY,
+      variables: { id: groupInternalId },
+    });
   });
   it('should user deleted', async () => {
     const DELETE_QUERY = gql`

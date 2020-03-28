@@ -14,6 +14,7 @@ steps:
   commands:
   - apk add build-base
   - cd opencti-platform/opencti-graphql
+  - pip3 install --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
   - yarn install
   - yarn build
   - yarn test
