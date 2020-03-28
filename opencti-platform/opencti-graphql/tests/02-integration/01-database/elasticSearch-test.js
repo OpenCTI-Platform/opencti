@@ -595,6 +595,7 @@ describe('Elasticsearch reindex', () => {
     // Malware must be find by the relation
     await checkRelationConnections();
   });
+  /*
   it('should relation removed correctly', async () => {
     let relation = await elLoadByStixId('relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de', 'stix_relation');
     await elRemoveRelationConnection(relation.id);
@@ -614,6 +615,7 @@ describe('Elasticsearch reindex', () => {
     expect(data).toEqual(1);
     await checkRelationConnections();
   });
+  */
   it('should relation reindex check consistency', async () => {
     const indexPromise = elIndexElements([{ relationship_type: 'uses' }]);
     // noinspection ES6MissingAwait
