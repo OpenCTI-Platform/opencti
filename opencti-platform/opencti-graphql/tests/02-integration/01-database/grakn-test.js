@@ -720,12 +720,20 @@ describe('Grakn element loader', () => {
     expect(element.weight).toEqual(3);
   });
   it.each(noCacheCases)('should load by grakn id (noCache = %s)', async noCache => {
-    const stixId = 'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02';
+    // Load a relation
+    let stixId = 'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02';
     const report = await loadRelationByStixId(stixId, 'uses', { noCache });
-    const element = await loadByGraknId(report.grakn_id, { noCache });
+    let element = await loadByGraknId(report.grakn_id, { noCache });
     expect(element).not.toBeNull();
     expect(element.stix_id_key).toEqual(stixId);
     expect(element.weight).toEqual(3);
+    // Load an entity
+    stixId = 'course-of-action--ae56a49d-5281-45c5-ab95-70a1439c338e';
+    const courseOfAction = await loadEntityByStixId(stixId, 'Course-Of-Action', { noCache });
+    element = await loadByGraknId(courseOfAction.grakn_id, { noCache });
+    expect(element).not.toBeNull();
+    expect(element.stix_id_key).toEqual(stixId);
+    expect(element.name).toEqual('Compile After Delivery Mitigation');
   });
   it.each(noCacheCases)('should load by grakn id for multiple attributes (noCache = %s)', async noCache => {
     const stixId = 'identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132';
@@ -777,7 +785,7 @@ describe('Grakn attribute updated and indexed correctly', () => {
     expect(report).not.toBeNull();
     expect(report.report_class).toEqual('Threat Report');
   });
-  it.each(noCacheCases)('should relation report attribute updated (noCache = %s)', async noCache => {
+  it('should relation report attribute updated (noCache = %s)', async (noCache = true) => {
     // Test with relation update
     let relationTypes = await findAllAttributes({ type: 'role_played' });
     expect(relationTypes).not.toBeNull();

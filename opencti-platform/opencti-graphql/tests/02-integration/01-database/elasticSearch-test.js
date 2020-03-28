@@ -20,7 +20,6 @@ import {
   elLoadByTerms,
   elPaginate,
   elReconstructRelation,
-  elRemoveRelationConnection,
   elVersion,
   forceNoCache,
   specialElasticCharsEscape
@@ -595,27 +594,6 @@ describe('Elasticsearch reindex', () => {
     // Malware must be find by the relation
     await checkRelationConnections();
   });
-  /*
-  it('should relation removed correctly', async () => {
-    let relation = await elLoadByStixId('relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de', 'stix_relation');
-    await elRemoveRelationConnection(relation.id);
-    // Verify that everything is no longer indexed
-    relation = await elLoadByStixId('relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de', 'stix_relation');
-    expect(relation).not.toBeNull();
-    let terms = [{ 'internal_id_key.keyword': malwareInternalId }, { 'rel_uses.internal_id_key.keyword': attackId }];
-    const malware = await elLoadByTerms(terms);
-    expect(malware).toBeUndefined();
-    terms = [{ 'internal_id_key.keyword': attackId }, { 'rel_uses.internal_id_key.keyword': malwareInternalId }];
-    const attack = await elLoadByTerms(terms);
-    expect(attack).toBeUndefined();
-  });
-  it('should relation reindex correctly', async () => {
-    const relation = await elLoadByStixId('relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de', 'stix_relation');
-    const data = await elIndexElements([relation]);
-    expect(data).toEqual(1);
-    await checkRelationConnections();
-  });
-  */
   it('should relation reindex check consistency', async () => {
     const indexPromise = elIndexElements([{ relationship_type: 'uses' }]);
     // noinspection ES6MissingAwait

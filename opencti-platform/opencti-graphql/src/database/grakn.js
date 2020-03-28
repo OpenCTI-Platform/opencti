@@ -44,6 +44,7 @@ import conf, { logger } from '../config/conf';
 import {
   buildPagination,
   fillTimeSeries,
+  INDEX_STIX_ENTITIES,
   INDEX_STIX_RELATIONS,
   inferIndexFromConceptTypes,
   TYPE_RELATION_EMBEDDED,
@@ -56,8 +57,10 @@ import { isInversed, resolveNaturalRoles, ROLE_FROM } from './graknRoles';
 import {
   elAggregationCount,
   elAggregationRelationsCount,
+  elBulk,
   elDeleteInstanceIds,
   elHistogramCount,
+  elIndexElements,
   elLoadByGraknId,
   elLoadById,
   elLoadByStixId,
@@ -65,7 +68,6 @@ import {
   elRemoveRelationConnection,
   elUpdate,
   forceNoCache,
-  elIndexElements,
   REL_INDEX_PREFIX
 } from './elasticSearch';
 
@@ -1042,30 +1044,22 @@ export const loadByGraknId = async (graknId, args = {}) => {
 // endregion
 
 // region Indexer
-
-const reindexByQuery = async (query, entities) => {
-  const elements = await find(query, entities, { infer: false, noCache: true });
-  // Get all inner elements
-  const innerElements = pipe(
-    map(entity => elements.map(e => e[entity])),
-    flatten
-  )(entities);
-  return elIndexElements(innerElements);
-};
-export const reindexEntityByAttribute = (type, value) => {
-  const eType = escape(type);
-  const eVal = escapeString(value);
-  const readQuery = `match $x isa entity, has ${eType} $a; $a "${eVal}"; get;`;
+const reindexAttributeValue = async (queryType, type, value) => {
+  const index = queryType === 'relation' ? INDEX_STIX_RELATIONS : INDEX_STIX_ENTITIES;
+  const readQuery = `match $x isa ${queryType}, has ${escape(type)} $a; $a "${escapeString(value)}"; get;`;
   logger.debug(`[GRAKN - infer: false] attributeUpdate > ${readQuery}`);
-  return reindexByQuery(readQuery, ['x']);
+  const elementIds = await executeRead(async rTx => {
+    const iterator = await rTx.tx.query(readQuery, { infer: false });
+    const answer = await iterator.collect();
+    return answer.map(n => n.get('x').id);
+  });
+  const body = elementIds.flatMap(id => [{ update: { _index: index, _id: id } }, { doc: { [type]: value } }]);
+  if (body.length > 0) {
+    await elBulk({ refresh: true, body });
+  }
 };
-export const reindexRelationByAttribute = (type, value) => {
-  const eType = escape(type);
-  const eVal = escapeString(value);
-  const readQuery = `match $x isa relation, has ${eType} $a; $a "${eVal}"; get;`;
-  logger.debug(`[GRAKN - infer: false] attributeUpdate > ${readQuery}`);
-  return reindexByQuery(readQuery, ['x']);
-};
+export const reindexEntityAttribute = (type, value) => reindexAttributeValue('entity', type, value);
+export const reindexRelationAttribute = (type, value) => reindexAttributeValue('relation', type, value);
 // endregion
 
 // region Graphics
