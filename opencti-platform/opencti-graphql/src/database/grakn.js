@@ -51,7 +51,8 @@ import {
   TYPE_STIX_DOMAIN_ENTITY,
   TYPE_STIX_OBSERVABLE,
   TYPE_STIX_OBSERVABLE_RELATION,
-  TYPE_STIX_RELATION
+  TYPE_STIX_RELATION,
+  utcDate
 } from './utils';
 import { isInversed, resolveNaturalRoles, ROLE_FROM } from './graknRoles';
 import {
@@ -80,7 +81,6 @@ export const REL_CONNECTED_SUFFIX = 'CONNECTED';
 export const TYPE_STIX_DOMAIN = 'Stix-Domain';
 const INFERRED_RELATION_KEY = 'rel';
 
-export const utcDate = (date = undefined) => (date ? moment(date).utc() : moment().utc());
 export const now = () => utcDate().toISOString();
 export const sinceNowInMinutes = lastModified => {
   const diff = utcDate().diff(utcDate(lastModified));

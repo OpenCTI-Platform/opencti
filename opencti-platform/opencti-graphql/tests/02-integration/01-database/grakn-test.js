@@ -33,11 +33,10 @@ import {
   REL_CONNECTED_SUFFIX,
   sinceNowInMinutes,
   timeSeriesEntities,
-  utcDate,
   yearFormat
 } from '../../../src/database/grakn';
 import { attributeUpdate, findAll as findAllAttributes } from '../../../src/domain/attribute';
-import { INDEX_STIX_ENTITIES } from '../../../src/database/utils';
+import { INDEX_STIX_ENTITIES, utcDate } from '../../../src/database/utils';
 import { GATHERING_TARGETS_RULE, inferenceDisable, inferenceEnable } from '../../../src/domain/inference';
 import { resolveNaturalRoles } from '../../../src/database/graknRoles';
 import { REL_INDEX_PREFIX } from '../../../src/database/elasticSearch';
@@ -834,8 +833,8 @@ describe('Grakn entities time series', () => {
       field: 'published',
       operation: 'count',
       interval: 'month',
-      startDate: '2019-09-23T00:00:00.000Z',
-      endDate: '2020-04-04T00:00:00.000Z',
+      startDate: '2019-09-23T00:00:00.000+01:00',
+      endDate: '2020-04-04T00:00:00.000+01:00',
       noCache
     };
     const series = await timeSeriesEntities('Stix-Domain-Entity', [], options);
@@ -850,8 +849,8 @@ describe('Grakn entities time series', () => {
       field: 'first_seen',
       operation: 'count',
       interval: 'month',
-      startDate: '2020-01-01T00:00:00+00:00',
-      endDate: '2021-01-01T00:00:00+00:00',
+      startDate: '2020-01-01T00:00:00+01:00',
+      endDate: '2021-01-01T00:00:00+01:00',
       noCache
     };
     const series = await timeSeriesEntities('Campaign', filters, options);
@@ -866,8 +865,8 @@ describe('Grakn entities time series', () => {
       field: 'first_seen',
       operation: 'count',
       interval: 'month',
-      startDate: '2020-01-01T00:00:00+00:00',
-      endDate: '2020-10-01T00:00:00+00:00',
+      startDate: '2020-01-01T00:00:00+01:00',
+      endDate: '2020-10-01T00:00:00+02:00',
       noCache
     };
     const series = await timeSeriesEntities('Stix-Domain-Entity', filters, options);

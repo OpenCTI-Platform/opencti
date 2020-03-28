@@ -24,8 +24,7 @@ import {
   forceNoCache,
   specialElasticCharsEscape
 } from '../../../src/database/elasticSearch';
-import { utcDate } from '../../../src/database/grakn';
-import { INDEX_STIX_ENTITIES, INDEX_STIX_RELATIONS } from '../../../src/database/utils';
+import { INDEX_STIX_ENTITIES, INDEX_STIX_RELATIONS, utcDate } from '../../../src/database/utils';
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', () => {
