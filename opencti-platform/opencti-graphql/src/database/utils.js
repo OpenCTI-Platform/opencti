@@ -36,7 +36,7 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
 
   const newData = [];
   for (let i = 0; i <= elementsOfInterval; i += 1) {
-    const workDate = startDateParsed.add(i, `${interval}s`);
+    const workDate = moment(startDateParsed).add(i, `${interval}s`);
 
     // Looking for the value
     let dataValue = 0;

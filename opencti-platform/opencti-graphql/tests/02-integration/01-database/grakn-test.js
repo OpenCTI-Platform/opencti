@@ -839,6 +839,7 @@ describe('Grakn entities time series', () => {
     };
     const series = await timeSeriesEntities('Stix-Domain-Entity', [], options);
     expect(series.length).toEqual(7);
+    console.log(series.map(x => `${x.date}/${x.value}`));
     const aggregationMap = new Map(series.map(i => [i.date, i.value]));
     expect(aggregationMap.get('2020-02-29T23:00:00.000Z')).toEqual(1);
   });
