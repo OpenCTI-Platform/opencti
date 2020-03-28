@@ -12,7 +12,7 @@ steps:
     ELASTICSEARCH__URL: http://elastic:9200
     MINIO__ENDPOINT: minio
   commands:
-  - apk add build-base
+  - apk add build-base git
   - cd opencti-platform/opencti-graphql
   - pip3 install --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
   - yarn install
