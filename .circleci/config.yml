@@ -4,7 +4,7 @@ jobs:
   build:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:12.13.1-stretch
+      - image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
     steps:
       - checkout
       - run: 
