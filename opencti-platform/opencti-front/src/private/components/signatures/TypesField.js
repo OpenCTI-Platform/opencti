@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import { Field } from 'formik';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -18,7 +19,8 @@ class TypesField extends Component {
       t, name, label, containerstyle,
     } = this.props;
     return (
-      <SelectField
+      <Field
+        component={SelectField}
         name={name}
         label={label}
         fullWidth={true}
@@ -59,7 +61,7 @@ class TypesField extends Component {
         <MenuItem value="X509-Certificate-Serial-Number">
           {t('X509 Certificate Serial number')}
         </MenuItem>
-      </SelectField>
+      </Field>
     );
   }
 }
