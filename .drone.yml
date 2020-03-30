@@ -28,20 +28,19 @@ steps:
 
 - name: frontend-tests
   image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
-  commands:
+  commands: 
   - cd opencti-platform/opencti-front
   - yarn install
   - yarn build
   - yarn test
 
 - name: build-circleci
-  image: wesleimp/drone-circleci
-  settings:
-    token: 
+  image: curlimages/curl
+  commands:
+  - curl -X POST https://circleci.com/api/v1.1/project/github/OpenCTI-Platform/opencti/build?circle-token=$CIRCLECI_TOKEN
+  environment:
+    CIRCLECI_TOKEN:
       from_secret: circleci_token
-    user: OpenCTI-Platform
-    repo: opencti
-    branch: master  
   when:
     branch:
     - master
