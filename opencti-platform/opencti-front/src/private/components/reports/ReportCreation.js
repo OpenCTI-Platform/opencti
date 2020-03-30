@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Form, Formik } from 'formik';
+import { Form, Formik, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -212,12 +212,14 @@ class ReportCreation extends Component {
                           values,
                         }) => (
                           <Form style={{ margin: '20px 0 20px 0' }}>
-                            <TextField
+                            <Field
+                              component={TextField}
                               name="name"
                               label={t('Name')}
                               fullWidth={true}
                             />
-                            <DatePickerField
+                            <Field
+                              component={DatePickerField}
                               name="published"
                               label={t('Publication date')}
                               invalidDateMessage={t(
@@ -226,7 +228,8 @@ class ReportCreation extends Component {
                               fullWidth={true}
                               style={{ marginTop: 20 }}
                             />
-                            <SelectField
+                            <Field
+                              component={SelectField}
                               name="report_class"
                               label={t('Report type')}
                               fullWidth={true}
@@ -243,8 +246,9 @@ class ReportCreation extends Component {
                                   {reportClassEdge.node.value}
                                 </MenuItem>
                               ))}
-                            </SelectField>
-                            <TextField
+                            </Field>
+                            <Field
+                              component={TextField}
                               name="description"
                               label={t('Description')}
                               fullWidth={true}

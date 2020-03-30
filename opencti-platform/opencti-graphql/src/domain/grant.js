@@ -1,6 +1,7 @@
 import { assoc, dissoc, map, propOr, pipe } from 'ramda';
 import uuidv5 from 'uuid/v5';
-import { createEntity, createRelation, deleteEntityById, TYPE_OPENCTI_INTERNAL } from '../database/grakn';
+import { createEntity, createRelation, deleteEntityById } from '../database/grakn';
+import { TYPE_OPENCTI_INTERNAL } from '../database/utils';
 
 export const addCapability = async capability => {
   const capabilityToCreate = assoc('internal_id_key', uuidv5(capability.name, uuidv5.DNS), capability);
@@ -26,7 +27,7 @@ export const addRole = async role => {
           toRole: 'capability',
           through: 'role_capability'
         },
-        {},
+        { indexable: false },
         'Role',
         'Capability'
       ),

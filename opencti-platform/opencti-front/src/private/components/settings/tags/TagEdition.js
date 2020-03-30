@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Form, Formik } from 'formik';
+import { Form, Formik, Field } from 'formik';
 import { compose, pick } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -159,7 +159,8 @@ class TagEditionContainer extends Component {
           >
             {() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <TextField
+                <Field
+                  component={TextField}
                   name="tag_type"
                   label={t('Type')}
                   fullWidth={true}
@@ -172,7 +173,8 @@ class TagEditionContainer extends Component {
                     />
                   }
                 />
-                <TextField
+                <Field
+                  component={TextField}
                   name="value"
                   label={t('Value')}
                   fullWidth={true}
@@ -186,7 +188,8 @@ class TagEditionContainer extends Component {
                     />
                   }
                 />
-                <ColorPickerField
+                <Field
+                  component={ColorPickerField}
                   name="color"
                   label={t('Color')}
                   fullWidth={true}

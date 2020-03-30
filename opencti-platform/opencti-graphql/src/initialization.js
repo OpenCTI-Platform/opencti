@@ -1,16 +1,17 @@
 // Admin user initialization
 import { logger } from './config/conf';
-import { elCount, elCreateIndexes, elDeleteIndexes, elIsAlive, INDEX_STIX_ENTITIES } from './database/elasticSearch';
-import { graknIsAlive, write } from './database/grakn';
+import { elCount, elCreateIndexes, elDeleteIndexes, elIsAlive } from './database/elasticSearch';
+import { graknIsAlive, internalDirectWrite } from './database/grakn';
 import applyMigration from './database/migration';
-import { initializeAdminUser } from './config/security';
+import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/minio';
-import { checkPythonStix2 } from './database/utils';
 import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings, getSettings } from './domain/settings';
 import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from './domain/user';
 import { addCapability, addRole } from './domain/grant';
 import { addAttribute } from './domain/attribute';
+import { checkPythonStix2 } from './python/pythonBridge';
+import { INDEX_STIX_ENTITIES } from './database/utils';
 
 const fs = require('fs');
 
@@ -90,17 +91,19 @@ export const checkSystemDependencies = async () => {
   // Check if Python is available
   await checkPythonStix2();
   logger.info(`[PRE-CHECK] > Python3 is available`);
+  return true;
 };
 
 // Initialize
 export const initializeSchema = async () => {
   // Inject grakn schema
   const schema = fs.readFileSync('./src/opencti.gql', 'utf8');
-  await write(schema);
+  await internalDirectWrite(schema);
   logger.info(`[INIT] > Grakn schema loaded`);
   // Create default indexes
   await elCreateIndexes();
   logger.info(`[INIT] > Elasticsearch indexes loaded`);
+  return true;
 };
 
 const createAttributesTypes = async () => {
@@ -187,7 +190,7 @@ const initializeDefaultValues = async () => {
   await createBasicRolesAndCapabilities();
 };
 
-const initializeData = async () => {
+export const initializeData = async () => {
   // Init default values only if platform as no settings
   const settings = await getSettings();
   if (!settings) {
@@ -202,6 +205,7 @@ const initializeData = async () => {
   }
   logger.info(`[INIT] > Platform default initialized`);
   await initializeAdminUser();
+  return true;
 };
 
 const init = async () => {

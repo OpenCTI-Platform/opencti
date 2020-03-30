@@ -2,7 +2,7 @@ import React from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Form, Formik } from 'formik';
+import { Form, Formik, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
   compose, filter, find, includes, pick, propEq,
@@ -19,7 +19,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import inject18n from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
-import Switch from '../../../../components/SwitchField';
+import SwitchField from '../../../../components/SwitchField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -175,7 +175,8 @@ const RoleEditionOverviewComponent = ({
       >
         {() => (
           <Form style={{ margin: '20px 0 20px 0' }}>
-            <TextField
+            <Field
+              component={TextField}
               name="name"
               label={t('Name')}
               fullWidth={true}
@@ -185,7 +186,8 @@ const RoleEditionOverviewComponent = ({
                 <SubscriptionFocus context={context} fieldName="name" />
               }
             />
-            <TextField
+            <Field
+              component={TextField}
               name="description"
               label={t('Description')}
               fullWidth={true}
@@ -198,7 +200,8 @@ const RoleEditionOverviewComponent = ({
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
-            <Switch
+            <Field
+              component={SwitchField}
               name="default_assignation"
               label={t('Granted by default at user creation')}
               containerstyle={{ marginTop: 20 }}
@@ -216,30 +219,42 @@ const RoleEditionOverviewComponent = ({
               render={({ props }) => {
                 if (props) {
                   return (
-                    <List dense={true}
+                    <List
+                      dense={true}
                       className={classes.root}
                       subheader={
-                        <ListSubheader component="div" style={{ paddingLeft: 0 }}>
+                        <ListSubheader
+                          component="div"
+                          style={{ paddingLeft: 0 }}
+                        >
                           {t('Capabilities')}
                         </ListSubheader>
-                      }>
+                      }
+                    >
                       {props.capabilities.edges.map((edge) => {
                         const capability = edge.node;
                         const paddingLeft = capability.name.split('_').length * 20 - 20;
                         const roleCapability = find(
                           propEq('name', capability.name),
                         )(role.capabilities);
-                        const matchingCapabilities = filter((r) => capability.name !== r.name
-                          && includes(capability.name, r.name), role.capabilities);
+                        const matchingCapabilities = filter(
+                          (r) => capability.name !== r.name
+                            && includes(capability.name, r.name),
+                          role.capabilities,
+                        );
                         const isDisabled = matchingCapabilities.length > 0;
                         const isChecked = isDisabled || roleCapability !== undefined;
                         return (
-                          <ListItem key={capability.name}
+                          <ListItem
+                            key={capability.name}
                             divider={true}
-                            style={{ paddingLeft }}>
+                            style={{ paddingLeft }}
+                          >
                             <ListItemText primary={capability.description} />
                             <ListItemSecondaryAction>
-                              <Checkbox onChange={(event) => handleToggle(capability, event)}
+                              <Checkbox
+                                onChange={(event) => handleToggle(capability, event)
+                                }
                                 checked={isChecked}
                                 disabled={isDisabled}
                               />

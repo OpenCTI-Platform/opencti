@@ -133,21 +133,24 @@ class StixRelationEditionInferred extends Component {
                     <MenuItem value="4">{t('High')}</MenuItem>
                     <MenuItem value="5">{t('Very high')}</MenuItem>
                   </Field>
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="first_seen"
                     label={t('First seen')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                     disabled={true}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="last_seen"
                     label={t('Last seen')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                     disabled={true}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}

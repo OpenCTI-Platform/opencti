@@ -3,7 +3,7 @@ import uuid from 'uuid/v4';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
 import uuidv5 from 'uuid/v5';
-import { clearAccessCache, delUserContext, getAccessCache, notify, storeAccessCache } from '../database/redis';
+import { clearAccessCache, delEditContext, delUserContext, getAccessCache, notify, setEditContext, storeAccessCache } from "../database/redis";
 import { AuthenticationFailure, ForbiddenAccess } from '../config/errors';
 import conf, {
   BUS_TOPICS,
@@ -29,11 +29,9 @@ import {
   loadEntityByStixId,
   loadWithConnectedRelations,
   now,
-  TYPE_OPENCTI_INTERNAL,
-  TYPE_STIX_DOMAIN_ENTITY,
   updateAttribute
 } from '../database/grakn';
-import { buildPagination } from '../database/utils';
+import { buildPagination, TYPE_OPENCTI_INTERNAL, TYPE_STIX_DOMAIN_ENTITY } from '../database/utils';
 
 // region utils
 export const BYPASS = 'BYPASS';
@@ -117,7 +115,7 @@ export const groups = userId => {
   ).then(data => buildPagination(0, 0, data, data.length));
 };
 export const token = (userId, args, context) => {
-  if (userId !== context.user.id) {
+  if (context.user.id !== OPENCTI_ADMIN_UUID && userId !== context.user.id) {
     throw new ForbiddenAccess();
   }
   return loadWithConnectedRelations(
@@ -226,6 +224,19 @@ export const roleDelete = async roleId => {
   await Promise.all(map(e => clearUserTokenCache(e.node.id), impactedUsers.edges));
   return deleteEntityById(roleId, 'Role');
 };
+export const roleCleanContext = (user, roleId) => {
+  delEditContext(user, roleId);
+  return loadEntityById(roleId, 'Role').then(role =>
+    notify(BUS_TOPICS.Role.EDIT_TOPIC, role, user)
+  );
+};
+export const roleEditContext = (user, roleId, input) => {
+  setEditContext(user, roleId, input);
+  return loadEntityById(roleId, 'Role').then(role =>
+    notify(BUS_TOPICS.Role.EDIT_TOPIC, role, user)
+  );
+};
+// endregion
 
 export const addPerson = async (user, newUser) => {
   const created = await createEntity(newUser, 'User', {
@@ -243,7 +254,7 @@ export const assignRoleToUser = (userId, roleName) => {
       toRole: 'position',
       through: 'user_role'
     },
-    {},
+    { indexable: false },
     'User',
     'Role'
   );
@@ -285,7 +296,13 @@ export const roleEditField = (user, roleId, input) => {
   });
 };
 export const roleAddRelation = async (user, roleId, input) => {
-  const data = await createRelation(roleId, assoc('through', 'role_capability', input), {}, 'Role', null);
+  const data = await createRelation(
+    roleId,
+    assoc('through', 'role_capability', input),
+    { indexable: false },
+    'Role',
+    null
+  );
   // Clear cache of every user with this modified role
   const impactedUsers = await findAll({ filters: [{ key: 'rel_user_role.internal_id_key', values: [roleId] }] });
   await Promise.all(map(e => clearUserTokenCache(e.node.id), impactedUsers.edges));
@@ -304,7 +321,7 @@ export const userEditField = (user, userId, input) => {
   });
 };
 export const personEditField = async (user, userId, input) => {
-  const data = await loadEntityById(userId);
+  const data = await loadEntityById(userId, 'User');
   if (!isNil(data.external)) {
     throw new ForbiddenAccess();
   }
@@ -320,7 +337,7 @@ export const meEditField = (user, userId, input) => {
 };
 export const userDelete = async userId => {
   const userToken = await internalGetToken(userId);
-  await deleteEntityById(userToken.id, 'Token');
+  await deleteEntityById(userToken.id, 'Token', { noCache: true });
   await clearAccessCache(userToken.uuid);
   await deleteEntityById(userId, 'User');
   return userId;
@@ -405,7 +422,8 @@ export const login = async (email, password) => {
   const result = await load(
     `match $client isa User, has user_email "${escapeString(email)}";
      (authorization:$token, client:$client) isa authorize; get;`,
-    ['client', 'token']
+    ['client', 'token'],
+    { noCache: true } // Because of the fetching of the token that not in cache
   );
   if (isNil(result)) throw new AuthenticationFailure();
   const dbPassword = result.client.password;

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
 import { compose } from 'ramda';
 import * as Yup from 'yup';
@@ -188,24 +188,28 @@ class ExternalReferenceCreation extends Component {
             >
               {({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="source_name"
                     label={t('Source name')}
                     fullWidth={true}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="external_id"
                     label={t('External ID')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="url"
                     label={t('URL')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}
@@ -272,24 +276,28 @@ class ExternalReferenceCreation extends Component {
               <Form>
                 <DialogTitle>{t('Create an external reference')}</DialogTitle>
                 <DialogContent>
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="source_name"
                     label={t('Source name')}
                     fullWidth={true}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="external_id"
                     label={t('External ID')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="url"
                     label={t('URL')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}

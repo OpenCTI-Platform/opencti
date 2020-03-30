@@ -4,12 +4,11 @@ import {
   findWithConnectedRelations,
   listEntities,
   loadEntityById,
-  loadEntityByStixId,
-  TYPE_STIX_DOMAIN_ENTITY
+  loadEntityByStixId
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { buildPagination } from '../database/utils';
+import {buildPagination, TYPE_STIX_DOMAIN_ENTITY} from '../database/utils';
 
 export const findById = organizationId => {
   if (organizationId.match(/[a-z-]+--[\w-]{36}/g)) {

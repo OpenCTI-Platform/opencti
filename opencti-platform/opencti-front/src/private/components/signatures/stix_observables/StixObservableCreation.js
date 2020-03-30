@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -21,7 +21,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import Switch from '../../../../components/SwitchField';
+import SwitchField from '../../../../components/SwitchField';
 import CreatedByRefField from '../../common/form/CreatedByRefField';
 import TagsField from '../../common/form/TagsField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
@@ -224,7 +224,8 @@ class StixObservableCreation extends Component {
                     label={t('Observable type')}
                     containerstyle={{ width: '100%' }}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="observable_value"
                     label={t('Observable value')}
                     fullWidth={true}
@@ -232,7 +233,8 @@ class StixObservableCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}
@@ -255,7 +257,8 @@ class StixObservableCreation extends Component {
                     name="markingDefinitions"
                     style={{ marginTop: 20, width: '100%' }}
                   />
-                  <Switch
+                  <Field
+                    component={SwitchField}
                     name="createIndicator"
                     label={t('Create an indicator from this observable')}
                     containerstyle={{ marginTop: 20 }}
@@ -334,7 +337,8 @@ class StixObservableCreation extends Component {
                     label={t('Observable type')}
                     containerstyle={{ width: '100%' }}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="observable_value"
                     label={t('Observable value')}
                     fullWidth={true}
@@ -342,7 +346,8 @@ class StixObservableCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}

@@ -1,4 +1,5 @@
-import { elDeleteIndexes, elIndexExists, elReindex, INDEX_STIX_ENTITIES } from '../database/elasticSearch';
+import { elDeleteIndexes, elIndexExists, elReindex } from '../database/elasticSearch';
+import { INDEX_STIX_ENTITIES } from '../database/utils';
 
 export const up = async next => {
   const applyMigration = await elIndexExists('stix_domain_entities');

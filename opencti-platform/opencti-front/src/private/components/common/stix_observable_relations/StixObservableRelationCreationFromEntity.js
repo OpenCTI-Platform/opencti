@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
 import {
   compose, map, pipe, head, assoc,
@@ -491,7 +491,8 @@ class StixObservableRelationCreationFromEntity extends Component {
                           </div>
                         </div>
                       </div>
-                      <SelectField
+                      <Field
+                        component={SelectField}
                         name="relationship_type"
                         label={t('Relationship type')}
                         fullWidth={true}
@@ -508,8 +509,9 @@ class StixObservableRelationCreationFromEntity extends Component {
                         <MenuItem value="linked">
                           {t('relation_linked')}
                         </MenuItem>
-                      </SelectField>
-                      <SelectField
+                      </Field>
+                      <Field
+                        component={SelectField}
                         name="role_played"
                         label={t('Played role')}
                         fullWidth={true}
@@ -523,8 +525,9 @@ class StixObservableRelationCreationFromEntity extends Component {
                             {t(rolePlayedEdge.node.value)}
                           </MenuItem>
                         ))}
-                      </SelectField>
-                      <DatePickerField
+                      </Field>
+                      <Field
+                        component={DatePickerField}
                         name="first_seen"
                         label={t('First seen')}
                         invalidDateMessage={t(
@@ -533,7 +536,8 @@ class StixObservableRelationCreationFromEntity extends Component {
                         fullWidth={true}
                         style={{ marginTop: 20 }}
                       />
-                      <DatePickerField
+                      <Field
+                        component={DatePickerField}
                         name="last_seen"
                         label={t('Last seen')}
                         invalidDateMessage={t(

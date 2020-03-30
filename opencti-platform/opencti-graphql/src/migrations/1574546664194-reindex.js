@@ -1,4 +1,4 @@
-import { executeWrite, write } from '../database/grakn';
+import { executeWrite, internalDirectWrite } from '../database/grakn';
 import index from '../database/indexing';
 import { logger } from '../config/conf';
 
@@ -24,7 +24,7 @@ export const up = async next => {
     logger.info(`[MIGRATION] reindex > Error during deleting orphan relations (${err}), try to index...`);
   }
   try {
-    await write('undefine UsageIndicatesRule sub rule;');
+    await internalDirectWrite('undefine UsageIndicatesRule sub rule;');
   } catch (err) {
     logger.info('[MIGRATION] reindex > Undefine the rule (not exists)');
   }

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { compose } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -176,8 +176,14 @@ class IdentityCreation extends Component {
             >
               {({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <TextField name="name" label={t('Name')} fullWidth={true} />
-                  <TextField
+                  <Field
+                    component={TextField}
+                    name="name"
+                    label={t('Name')}
+                    fullWidth={true}
+                  />
+                  <Field
+                    component={TextField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}
@@ -185,7 +191,8 @@ class IdentityCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <SelectField
+                  <Field
+                    component={SelectField}
                     name="type"
                     label={t('Entity type')}
                     fullWidth={true}
@@ -203,7 +210,7 @@ class IdentityCreation extends Component {
                     <MenuItem value="Country">{t('Country')}</MenuItem>
                     <MenuItem value="City">{t('City')}</MenuItem>
                     <MenuItem value="User">{t('Person')}</MenuItem>
-                  </SelectField>
+                  </Field>
                   <div className={classes.buttons}>
                     <Button
                       variant="contained"
@@ -258,8 +265,14 @@ class IdentityCreation extends Component {
               >
                 <DialogTitle>{t('Create an entity')}</DialogTitle>
                 <DialogContent>
-                  <TextField name="name" label={t('Name')} fullWidth={true} />
-                  <TextField
+                  <Field
+                    component={TextField}
+                    name="name"
+                    label={t('Name')}
+                    fullWidth={true}
+                  />
+                  <Field
+                    component={TextField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}
@@ -267,7 +280,8 @@ class IdentityCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <SelectField
+                  <Field
+                    component={SelectField}
                     name="type"
                     label={t('Entity type')}
                     fullWidth={true}
@@ -281,7 +295,7 @@ class IdentityCreation extends Component {
                     <MenuItem value="Country">{t('Country')}</MenuItem>
                     <MenuItem value="City">{t('City')}</MenuItem>
                     <MenuItem value="User">{t('Person')}</MenuItem>
-                  </SelectField>
+                  </Field>
                 </DialogContent>
                 <DialogActions>
                   <Button

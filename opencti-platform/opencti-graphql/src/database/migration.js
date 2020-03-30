@@ -2,7 +2,7 @@ import uuid from 'uuid/v4';
 import { filter, head, last, map } from 'ramda';
 import { MigrationSet } from 'migrate';
 import Migration from 'migrate/lib/migration';
-import { executeWrite, find, load, write } from './grakn';
+import { executeWrite, find, load, internalDirectWrite } from './grakn';
 import { logger } from '../config/conf';
 
 const normalizeMigrationName = rawName => {
@@ -34,7 +34,9 @@ const graknStateStorage = {
       const lastExistingMigration = last(retrieveMigrations());
       const [time] = lastExistingMigration.title.split('-');
       const lastRunInit = `${parseInt(time, 10) + 1}-init`;
-      await write(`insert $x isa MigrationStatus, has lastRun "${lastRunInit}", has internal_id_key "${uuid()}";`);
+      await internalDirectWrite(
+        `insert $x isa MigrationStatus, has lastRun "${lastRunInit}", has internal_id_key "${uuid()}";`
+      );
       return fn(null, { lastRun: lastRunInit, migrations: [] });
     }
     // If migrations found, convert to current status

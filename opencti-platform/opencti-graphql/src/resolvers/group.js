@@ -7,32 +7,33 @@ import {
   permissions,
   groupEditField,
   groupDeleteRelation,
-  groupAddRelation
+  groupAddRelation,
+  groupCleanContext,
+  groupEditContext,
 } from '../domain/group';
-import { stixDomainEntityEditContext, stixDomainEntityCleanContext } from '../domain/stixDomainEntity';
 import { fetchEditContext } from '../database/redis';
 
 const groupResolvers = {
   Query: {
     group: (_, { id }) => findById(id),
-    groups: (_, args) => findAll(args)
+    groups: (_, args) => findAll(args),
   },
   Group: {
-    members: group => members(group.id),
-    permissions: group => permissions(group.id),
-    editContext: group => fetchEditContext(group.id)
+    members: (group) => members(group.id),
+    permissions: (group) => permissions(group.id),
+    editContext: (group) => fetchEditContext(group.id),
   },
   Mutation: {
     groupEdit: (_, { id }, { user }) => ({
       delete: () => groupDelete(id),
       fieldPatch: ({ input }) => groupEditField(user, id, input),
-      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
-      contextClean: () => stixDomainEntityCleanContext(user, id),
+      contextPatch: ({ input }) => groupEditContext(user, id, input),
+      contextClean: () => groupCleanContext(user, id),
       relationAdd: ({ input }) => groupAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => groupDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => groupDeleteRelation(user, id, relationId),
     }),
-    groupAdd: (_, { input }, { user }) => addGroup(user, input)
-  }
+    groupAdd: (_, { input }, { user }) => addGroup(user, input),
+  },
 };
 
 export default groupResolvers;

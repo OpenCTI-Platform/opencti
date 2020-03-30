@@ -1,6 +1,6 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import { Form, Formik } from 'formik';
+import { Form, Formik, Field } from 'formik';
 import { TextField } from 'formik-material-ui';
 import Button from '@material-ui/core/Button';
 import graphql from 'babel-plugin-relay/macro';
@@ -71,8 +71,14 @@ const LoginForm = (props) => {
       >
         {({ submitForm, isSubmitting }) => (
           <Form>
-            <TextField name="email" label={t('Login')} fullWidth={true} />
-            <TextField
+            <Field
+              component={TextField}
+              name="email"
+              label={t('Login')}
+              fullWidth={true}
+            />
+            <Field
+              component={TextField}
               name="password"
               label={t('Password')}
               type="password"

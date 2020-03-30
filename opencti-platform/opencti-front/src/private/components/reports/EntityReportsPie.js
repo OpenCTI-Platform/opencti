@@ -38,13 +38,10 @@ const renderCustomizedLabel = ({
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
   return (
-    <text
-      x={x}
-      y={y}
+    <text x={x} y={y}
       fill="white"
       textAnchor={x > cx ? 'start' : 'end'}
-      dominantBaseline="central"
-    >
+      dominantBaseline="central">
       {`${(percent * 100).toFixed(0)}%`}
     </text>
   );

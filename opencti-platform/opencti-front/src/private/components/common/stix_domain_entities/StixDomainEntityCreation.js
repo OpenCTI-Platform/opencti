@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
 import {
   assoc, compose, pipe, pluck, split,
@@ -314,19 +314,22 @@ class StixDomainEntityCreation extends Component {
               }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   {this.renderEntityTypesList()}
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="alias"
                     label={t('Aliases separated by commas')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}
@@ -441,19 +444,22 @@ class StixDomainEntityCreation extends Component {
                 <DialogTitle>{t('Create an entity')}</DialogTitle>
                 <DialogContent>
                   {this.renderEntityTypesList()}
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="alias"
                     label={t('Aliases separated by commas')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}

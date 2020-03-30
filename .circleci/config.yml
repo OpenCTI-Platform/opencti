@@ -23,43 +23,6 @@ jobs:
           root: ~/
           paths:
             - opencti
-  test:
-    working_directory: ~/opencti
-    docker:
-      - image: circleci/node:12.13.1-stretch
-        environment:
-          APP__REACTIVE: false
-          GRAKN__HOSTNAME: 127.0.0.1
-          ELASTICSEARCH__HOSTNAME: 127.0.0.1
-      - image: graknlabs/grakn:1.6.2
-      - image: docker.elastic.co/elasticsearch/elasticsearch:7.5.2
-        environment:
-          - "discovery.type=single-node"
-          - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
-    steps:
-      - attach_workspace:
-          at: ~/
-      - run:
-          name: install dockerize
-          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          environment:
-            DOCKERIZE_VERSION: v0.3.0
-      - run:
-          name: Wait for Grakn
-          command: dockerize -wait tcp://localhost:48555 -timeout 1m
-      - run:
-          name: Wait for ElasticSearch
-          command: dockerize -wait tcp://localhost:9200 -timeout 1m        
-      - run: 
-          name: Setup custom environment variables
-          command: |
-            echo 'export APP__ADMIN__PASSWORD="admin"' >> $BASH_ENV
-            echo 'export APP__ADMIN__TOKEN="bfa014e0-e02e-4aa6-a42b-603b19dcf159"' >> $BASH_ENV
-            source $BASH_ENV
-      - run:
-          working_directory: ~/opencti/opencti-platform/opencti-graphql
-          command: yarn test
-
   package_rolling:
     working_directory: ~/opencti
     docker:
@@ -224,17 +187,12 @@ workflows:
       - build:
           filters:
             tags:
-              only: /.*/
-      - test:
-          requires:
-            - build
-          filters:
-            tags:
-              only: /.*/
+              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
       - package_rolling:
           requires:
             - build
-            - test
           filters:
             branches:
               only:
@@ -244,7 +202,6 @@ workflows:
       - deploy_demo:
           requires:
             - build
-            - test
           filters:
             branches:
               only:
@@ -252,7 +209,6 @@ workflows:
       - deploy_reference:
           requires:
             - build
-            - test
           filters:
             branches:
               only:
@@ -264,16 +220,14 @@ workflows:
                 - master
       - docker_build_rolling:
           requires:
-            - build
-            - test        
+            - build  
           filters:
             branches:
               only:
                 - master
       - docker_build:
           requires:
-            - build
-            - test        
+            - build   
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/

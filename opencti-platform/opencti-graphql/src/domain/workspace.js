@@ -13,12 +13,12 @@ import {
   loadEntityById,
   loadWithConnectedRelations,
   prepareDate,
-  TYPE_OPENCTI_INTERNAL,
   updateAttribute
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { findAll as findAllStixDomains } from './stixDomainEntity';
 import { ForbiddenAccess } from '../config/errors';
+import { TYPE_OPENCTI_INTERNAL } from '../database/utils';
 
 // region grakn fetch
 export const findById = workspaceId => {

@@ -9,7 +9,7 @@ import { isEmpty } from 'ramda';
 import path from 'path';
 import nconf from 'nconf';
 import { isAppRealTime, logger, OPENCTI_TOKEN } from './config/conf';
-import passport from './config/security';
+import passport from './config/providers';
 import { authentication, setAuthenticationCookie } from './domain/user';
 import { downloadFile, loadFile } from './database/minio';
 

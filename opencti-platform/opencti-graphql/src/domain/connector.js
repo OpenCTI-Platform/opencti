@@ -7,10 +7,10 @@ import {
   loadEntityById,
   now,
   sinceNowInMinutes,
-  TYPE_OPENCTI_INTERNAL,
   updateAttribute
 } from '../database/grakn';
 import { connectorConfig, registerConnectorQueues } from '../database/rabbitmq';
+import { TYPE_OPENCTI_INTERNAL } from '../database/utils';
 
 export const CONNECTOR_INTERNAL_IMPORT_FILE = 'INTERNAL_IMPORT_FILE'; // Files mime types to support (application/json, ...) -> import-
 export const CONNECTOR_INTERNAL_EXPORT_FILE = 'INTERNAL_EXPORT_FILE'; // Files mime types to generate (application/pdf, ...) -> export-

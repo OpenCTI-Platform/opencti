@@ -1,5 +1,5 @@
 import { tail } from 'ramda';
-import { find, write } from '../database/grakn';
+import { find, internalDirectWrite } from '../database/grakn';
 import { logger } from '../config/conf';
 
 export const up = async next => {
@@ -11,7 +11,7 @@ export const up = async next => {
         const migrationStatus = migrationStatusEntity.x;
         const deleteQuery = `match $x id ${migrationStatus.grakn_id}; $z($x, $y); delete $z, $x;`;
         logger.info(`[MIGRATION] delete_extra_migration_status > ${deleteQuery}`);
-        return write(deleteQuery);
+        return internalDirectWrite(deleteQuery);
       })
     );
   }

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import { Form, Formik } from 'formik';
+import { Form, Formik, Field } from 'formik';
 import { compose, pick, values } from 'ramda';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
@@ -204,7 +204,8 @@ class Settings extends Component {
                                 {t('Configuration')}
                               </Typography>
                               <Form style={{ marginTop: 20 }}>
-                                <TextField
+                                <Field
+                                  component={TextField}
                                   name="platform_title"
                                   label={t('Name')}
                                   fullWidth={true}
@@ -223,7 +224,8 @@ class Settings extends Component {
                                     />
                                   }
                                 />
-                                <TextField
+                                <Field
+                                  component={TextField}
                                   name="platform_email"
                                   label={t('Sender email address')}
                                   fullWidth={true}
@@ -243,7 +245,8 @@ class Settings extends Component {
                                     />
                                   }
                                 />
-                                <TextField
+                                <Field
+                                  component={TextField}
                                   name="platform_url"
                                   label={t('Base URL')}
                                   fullWidth={true}
@@ -263,7 +266,8 @@ class Settings extends Component {
                                     />
                                   }
                                 />
-                                <SelectField
+                                <Field
+                                  component={SelectField}
                                   name="platform_language"
                                   label={t('Language')}
                                   fullWidth={true}
@@ -291,7 +295,7 @@ class Settings extends Component {
                                   </MenuItem>
                                   <MenuItem value="en">English</MenuItem>
                                   <MenuItem value="fr">Français</MenuItem>
-                                </SelectField>
+                                </Field>
                               </Form>
                             </div>
                           )}
