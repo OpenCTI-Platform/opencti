@@ -104,6 +104,7 @@ const indicatorMutationRelationDelete = graphql`
 
 const indicatorValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  indicator_pattern: Yup.string().required(t('This field is required')),
   valid_from: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
