@@ -4,8 +4,10 @@ jobs:
   build:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:12.13.1-stretch
+      - image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
     steps:
+      - run:
+          command: apk update && apk upgrade && apk --no-cache add git build-base libmagic
       - checkout
       - run: 
           working_directory: ~/opencti/opencti-platform/opencti-front
