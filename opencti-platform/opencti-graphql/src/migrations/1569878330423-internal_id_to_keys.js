@@ -5,7 +5,7 @@ import { logger } from '../config/conf';
 import { elIndex } from '../database/elasticSearch';
 import { inferIndexFromConceptTypes } from '../database/utils';
 
-export const up = async next => {
+export const up = async (next) => {
   logger.info(
     `[MIGRATION] internal_id_to_keys > Starting the migration of all internal_id to keys... /!\\ This migration could take some time!`
   );
@@ -29,7 +29,7 @@ export const up = async next => {
     'Token',
     'Stix-Domain',
     'Stix-Observable',
-    'Stix-Observable-Data'
+    'Stix-Observable-Data',
   ];
 
   logger.info(`[MIGRATION] internal_id_to_keys > Migrating all attributes internal_id to internal_id_key...`);
@@ -37,25 +37,22 @@ export const up = async next => {
   const isExisting = await attributeExists('internal_id');
   if (isExisting) {
     await Promise.all(
-      entities.map(async entity => {
+      entities.map(async (entity) => {
         if (entity !== null) {
           logger.info(`[MIGRATION] internal_id_to_keys > Processing ${entity}...`);
-          await executeWrite(async wTx => {
+          await executeWrite(async (wTx) => {
             const q = `match $x isa ${entity}, has internal_id $s; not { $x has internal_id_key $sn; }; get;`;
             logger.info(`[MIGRATION] internal_id_to_keys > ${q}`);
             const iterator2 = await wTx.tx.query(q);
             const answers2 = await iterator2.collect();
             const internalIds = [];
             const actionsToDo = await Promise.all(
-              answers2.map(async answer => {
+              answers2.map(async (answer) => {
                 const concept = await answer.map().get('x');
                 const types = await conceptTypes(concept);
                 const getIndex = inferIndexFromConceptTypes(types);
                 const conceptId = await concept.id;
-                let entityInternalId = await answer
-                  .map()
-                  .get('s')
-                  .value();
+                let entityInternalId = await answer.map().get('s').value();
                 if (internalIds.includes(entityInternalId)) {
                   logger.info(
                     `[MIGRATION] internal_id_to_keys > ${entityInternalId} is a duplicate, generating a new internal_id`
@@ -66,14 +63,12 @@ export const up = async next => {
                 const graknQuery = `match $x id ${conceptId}; insert $x has internal_id_key "${entityInternalId}";`;
                 let elasticQuery = null;
                 // elReindex if necessary
-                if (getIndex) {
-                  const attributes = await loadEntityByGraknId(concept.id);
-                  const finalAttributes = pipe(
-                    assoc('id', entityInternalId),
-                    assoc('internal_id_key', entityInternalId)
-                  )(attributes);
-                  elasticQuery = { index: getIndex, data: finalAttributes };
-                }
+                const attributes = await loadEntityByGraknId(concept.id);
+                const finalAttributes = pipe(
+                  assoc('id', entityInternalId),
+                  assoc('internal_id_key', entityInternalId)
+                )(attributes);
+                elasticQuery = { index: getIndex, data: finalAttributes };
                 return { id: entityInternalId, graknQuery, elasticQuery };
               })
             );
@@ -82,7 +77,7 @@ export const up = async next => {
             for (const actionsBatch of actionsBatches) {
               // eslint-disable-next-line no-await-in-loop
               await Promise.all(
-                actionsBatch.map(async action => {
+                actionsBatch.map(async (action) => {
                   logger.info(`[MIGRATION] internal_id_to_keys > ${action.graknQuery}`);
                   if (action.elasticQuery !== null) {
                     logger.info(`[MIGRATION] internal_id_to_keys > Reindex ${action.id}`);
@@ -103,6 +98,6 @@ export const up = async next => {
   next();
 };
 
-export const down = async next => {
+export const down = async (next) => {
   next();
 };

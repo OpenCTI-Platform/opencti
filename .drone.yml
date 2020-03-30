@@ -36,15 +36,18 @@ steps:
 
 - name: build-circleci
   image: wesleimp/drone-circleci
-  when:
-    branch:
-    - master
   settings:
     token: 
       from_secret: circleci_token
     user: OpenCTI-Platform
     repo: opencti
-    branch: master
+    branch: master  
+  when:
+    branch:
+    - master
+    event:
+      exclude:
+      - pull_request
 
 services:
 - name: grakn
