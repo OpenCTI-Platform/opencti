@@ -1,11 +1,13 @@
 version: 2.1
 
 jobs:
-  build:
+  build_platform:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:12.13.1-stretch
+      - image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
     steps:
+      - run:
+          command: apk update && apk upgrade && apk --no-cache add git build-base libmagic
       - checkout
       - run: 
           working_directory: ~/opencti/opencti-platform/opencti-front
@@ -184,15 +186,14 @@ jobs:
 workflows:
   opencti:
     jobs:
-      - build:
+      - build_platform:
           filters:
-            tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
             branches:
-              ignore: /.*/
+              only:
+                - master
       - package_rolling:
           requires:
-            - build
+            - build_platform
           filters:
             branches:
               only:
@@ -201,14 +202,14 @@ workflows:
               only: /.*/
       - deploy_demo:
           requires:
-            - build
+            - build_platform
           filters:
             branches:
               only:
                 - master
       - deploy_reference:
           requires:
-            - build
+            - build_platform
           filters:
             branches:
               only:
@@ -220,14 +221,14 @@ workflows:
                 - master
       - docker_build_rolling:
           requires:
-            - build  
+            - build_platform  
           filters:
             branches:
               only:
                 - master
       - docker_build:
           requires:
-            - build   
+            - build_platform   
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/

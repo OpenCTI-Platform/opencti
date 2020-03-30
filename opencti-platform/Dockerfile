@@ -11,8 +11,8 @@ ENV PYTHONUNBUFFERED=1
 
 # Install Python
 RUN apk add --update \
-    python \
-    python-dev \
+    python3 \
+    python3-dev \
     py-pip \
     build-base
 
@@ -33,12 +33,12 @@ RUN BUILD_OPENCTI=noninteractive \
 	  yarn build && \
 	  yarn cache clean && \
 	  cd /opt/opencti-build/opencti-graphql && \
-          pip3 install -r src/utils/stix2/requirements.txt && \
 	  yarn install && \
 	  yarn build && \
 	  yarn cache clean && \
 	  mv /opt/opencti-build/opencti-graphql /opt/opencti && \
-	  rm -rf /opt/opencti-build
+	  rm -rf /opt/opencti-build && \
+      apk del build-base python3-dev
 
 # Expose and entrypoint
 RUN chmod +x /entrypoint.sh
