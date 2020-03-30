@@ -33,7 +33,6 @@ RUN BUILD_OPENCTI=noninteractive \
 	  yarn build && \
 	  yarn cache clean && \
 	  cd /opt/opencti-build/opencti-graphql && \
-          pip3 install -r src/utils/stix2/requirements.txt && \
 	  yarn install && \
 	  yarn build && \
 	  yarn cache clean && \

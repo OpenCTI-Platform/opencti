@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  build:
+  build_platform:
     working_directory: ~/opencti
     docker:
       - image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
@@ -186,16 +186,14 @@ jobs:
 workflows:
   opencti:
     jobs:
-      - build:
+      - build_platform:
           filters:
-            tags:
-              only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
             branches:
               only:
                 - master
       - package_rolling:
           requires:
-            - build
+            - build_platform
           filters:
             branches:
               only:
@@ -204,14 +202,14 @@ workflows:
               only: /.*/
       - deploy_demo:
           requires:
-            - build
+            - build_platform
           filters:
             branches:
               only:
                 - master
       - deploy_reference:
           requires:
-            - build
+            - build_platform
           filters:
             branches:
               only:
@@ -223,14 +221,14 @@ workflows:
                 - master
       - docker_build_rolling:
           requires:
-            - build  
+            - build_platform  
           filters:
             branches:
               only:
                 - master
       - docker_build:
           requires:
-            - build   
+            - build_platform   
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
