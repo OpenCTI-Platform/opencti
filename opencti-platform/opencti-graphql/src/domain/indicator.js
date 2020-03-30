@@ -8,11 +8,11 @@ import {
   listEntities,
   loadEntityById,
   loadEntityByStixId,
-  now
+  now,
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { notify } from '../database/redis';
-import { buildPagination, TYPE_STIX_DOMAIN_ENTITY, TYPE_STIX_OBSERVABLE } from '../database/utils';
+import { buildPagination, TYPE_STIX_DOMAIN_ENTITY, TYPE_STIX_OBSERVABLE, OBSERVABLE_TYPES } from '../database/utils';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { findById as findKillChainPhaseById } from './killChainPhase';
 import { askEnrich } from './enrichment';
@@ -28,7 +28,7 @@ const OpenCTITimeToLive = {
     'TLP:AMBER-yes': 365,
     'TLP:AMBER-no': 365,
     'TLP:RED-yes': 365,
-    'TLP:RED-no': 365
+    'TLP:RED-no': 365,
   },
   'IPv4-Addr': {
     'TLP:WHITE-no': 30,
@@ -38,7 +38,7 @@ const OpenCTITimeToLive = {
     'TLP:AMBER-yes': 15,
     'TLP:AMBER-no': 60,
     'TLP:RED-yes': 120,
-    'TLP:RED-no': 120
+    'TLP:RED-no': 120,
   },
   URL: {
     'TLP:WHITE-no': 60,
@@ -48,7 +48,7 @@ const OpenCTITimeToLive = {
     'TLP:AMBER-yes': 30,
     'TLP:AMBER-no': 180,
     'TLP:RED-yes': 180,
-    'TLP:RED-no': 180
+    'TLP:RED-no': 180,
   },
   default: {
     'TLP:WHITE-no': 365,
@@ -58,11 +58,11 @@ const OpenCTITimeToLive = {
     'TLP:AMBER-yes': 365,
     'TLP:AMBER-no': 365,
     'TLP:RED-yes': 365,
-    'TLP:RED-no': 365
-  }
+    'TLP:RED-no': 365,
+  },
 };
 
-const computeValidUntil = async indicator => {
+const computeValidUntil = async (indicator) => {
   let validFrom = moment().utc();
   if (indicator.valid_from) {
     validFrom = moment(indicator.valid_from).utc();
@@ -71,7 +71,7 @@ const computeValidUntil = async indicator => {
   let markingDefinition = 'TLP:WHITE';
   if (indicator.markingDefinitions && indicator.markingDefinitions.length > 0) {
     const markingDefinitions = await Promise.all(
-      indicator.markingDefinitions.map(markingDefinitionId => {
+      indicator.markingDefinitions.map((markingDefinitionId) => {
         return findMarkingDefinitionById(markingDefinitionId);
       })
     );
@@ -81,11 +81,11 @@ const computeValidUntil = async indicator => {
   let isKillChainPhaseDelivery = 'no';
   if (indicator.killChainPhases && indicator.killChainPhases.length > 0) {
     const killChainPhases = await Promise.all(
-      indicator.killChainPhases.map(killChainPhaseId => {
+      indicator.killChainPhases.map((killChainPhaseId) => {
         return findKillChainPhaseById(killChainPhaseId);
       })
     );
-    const killChainPhasesNames = map(n => n.phase_name, killChainPhases);
+    const killChainPhasesNames = map((n) => n.phase_name, killChainPhases);
     isKillChainPhaseDelivery =
       includes('initial-access', killChainPhasesNames) || includes('execution', killChainPhasesNames) ? 'yes' : 'no';
   }
@@ -103,17 +103,20 @@ const computeValidUntil = async indicator => {
   return validUntil.toDate();
 };
 
-export const findById = indicatorId => {
+export const findById = (indicatorId) => {
   if (indicatorId.match(/[a-z-]+--[\w-]{36}/g)) {
     return loadEntityByStixId(indicatorId, 'Indicator');
   }
   return loadEntityById(indicatorId, 'Indicator');
 };
-export const findAll = args => {
+export const findAll = (args) => {
   return listEntities(['Indicator'], ['name', 'alias'], args);
 };
 
 export const addIndicator = async (user, indicator, createObservables = true) => {
+  if (!OBSERVABLE_TYPES.includes(indicator.main_observable_type)) {
+    throw new Error(`[SCHEMA] Observable type ${indicator.main_observable_type} is not supported.`);
+  }
   const indicatorToCreate = pipe(
     assoc('main_observable_type', indicator.main_observable_type.toLowerCase()),
     assoc('score', indicator.score ? indicator.score : 50),
@@ -127,10 +130,10 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
       const observables = await extractObservables(indicator.indicator_pattern);
       if (observables && observables.length > 0) {
         observablesToLink = await Promise.all(
-          observables.map(async observable => {
+          observables.map(async (observable) => {
             const args = {
               parentType: 'Stix-Observable',
-              filters: [{ key: 'observable_value', values: [observable.value] }]
+              filters: [{ key: 'observable_value', values: [observable.value] }],
             };
             const existingObservables = await listEntities(
               ['Stix-Observable'],
@@ -156,7 +159,7 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
               const stixObservableToCreate = dissoc('type', stixObservable);
               const createdStixObservable = await createEntity(stixObservableToCreate, innerType, {
                 modelType: TYPE_STIX_OBSERVABLE,
-                stixIdType: 'observable'
+                stixIdType: 'observable',
               });
               await askEnrich(createdStixObservable.id, innerType);
               return createdStixObservable.id;
@@ -183,12 +186,12 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 
-export const observableRefs = indicatorId => {
+export const observableRefs = (indicatorId) => {
   return findWithConnectedRelations(
     `match $from isa Indicator; $rel(observables_aggregation:$from, soo:$to) isa observable_refs;
     $to isa Stix-Observable;
     $from has internal_id_key "${escapeString(indicatorId)}"; get;`,
     'to',
     { extraRelKey: 'rel' }
-  ).then(data => buildPagination(0, 0, data, data.length));
+  ).then((data) => buildPagination(0, 0, data, data.length));
 };

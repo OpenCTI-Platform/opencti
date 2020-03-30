@@ -45,13 +45,10 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
         dataValue = data[j].value;
       }
     }
-    const intervalDate = moment(workDate)
-      .startOf(interval)
-      .utc()
-      .toISOString();
+    const intervalDate = moment(workDate).startOf(interval).utc().toISOString();
     newData[i] = {
       date: intervalDate,
-      value: dataValue
+      value: dataValue,
     };
   }
   return newData;
@@ -76,7 +73,7 @@ export const buildPagination = (first, offset, instances, globalCount) => {
     endCursor,
     hasNextPage,
     hasPreviousPage,
-    globalCount
+    globalCount,
   };
   return { edges, pageInfo };
 };
@@ -94,3 +91,29 @@ export const inferIndexFromConceptTypes = (types, parentType = null) => {
   // Everything else in entities index
   return INDEX_STIX_ENTITIES;
 };
+
+export const OBSERVABLE_TYPES = [
+  'Autonomous-System',
+  'Directory',
+  'Domain',
+  'Email-Address',
+  'Email-Subject',
+  'File-Name',
+  'File-Path',
+  'File-MD5',
+  'File-SHA1',
+  'File-SHA256',
+  'IPv4-Addr',
+  'IPv6-Addr',
+  'Mac-Addr',
+  'Mutex',
+  'PDB-Path',
+  'Registry-Key',
+  'Registry-Key-Value',
+  'URL',
+  'Windows-Service-Name',
+  'Windows-Service-Display-Name',
+  'Windows-Scheduled-Task',
+  'X509-Certificate-Issuer',
+  'X509-Certificate-Serial-Number',
+];
