@@ -41,7 +41,7 @@ steps:
       from_secret: circleci_token
     user: OpenCTI-Platform
     repo: opencti
-    branch: master  
+    branch: master
   when:
     branch:
     - master
