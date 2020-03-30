@@ -116,4 +116,5 @@ export const OBSERVABLE_TYPES = [
   'Windows-Scheduled-Task',
   'X509-Certificate-Issuer',
   'X509-Certificate-Serial-Number',
+  'Unknown',
 ];
