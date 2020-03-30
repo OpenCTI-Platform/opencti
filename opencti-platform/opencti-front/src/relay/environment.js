@@ -15,9 +15,9 @@ import {
 } from 'react-relay';
 import * as PropTypes from 'prop-types';
 import {
-  map, isEmpty, difference, filter, pathOr,
+  map, isEmpty, difference, filter, pathOr, isNil,
 } from 'ramda';
-import { urlMiddleware, RelayNetworkLayer } from 'react-relay-network-modern';
+import { urlMiddleware, RelayNetworkLayer } from 'react-relay-network-modern/node8';
 import uploadMiddleware from './uploadMiddleware';
 
 // Dev tools
@@ -42,7 +42,8 @@ export class ApplicationError extends Error {
 }
 
 // Network
-const envBasePath = isEmpty(window.BASE_PATH) || window.BASE_PATH.startsWith('/')
+const noBasePath = isNil(window.BASE_PATH) || isEmpty(window.BASE_PATH);
+const envBasePath = noBasePath || window.BASE_PATH.startsWith('/')
   ? window.BASE_PATH
   : `/${window.BASE_PATH}`;
 export const APP_BASE_PATH = IN_DEV_MODE ? '' : envBasePath;

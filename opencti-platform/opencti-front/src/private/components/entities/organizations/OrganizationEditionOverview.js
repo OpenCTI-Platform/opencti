@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
   assoc,
@@ -271,7 +271,8 @@ class OrganizationEditionOverviewComponent extends Component {
       >
         {({ setFieldValue }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
-            <TextField
+            <Field
+              component={TextField}
               name="name"
               label={t('Name')}
               fullWidth={true}
@@ -281,7 +282,8 @@ class OrganizationEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="name" />
               }
             />
-            <TextField
+            <Field
+              component={TextField}
               name="description"
               label={t('Description')}
               fullWidth={true}
@@ -294,7 +296,8 @@ class OrganizationEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
-            <SelectField
+            <Field
+              component={SelectField}
               name="organization_class"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
@@ -317,8 +320,9 @@ class OrganizationEditionOverviewComponent extends Component {
               <MenuItem value="partner">{t('Partner')}</MenuItem>
               <MenuItem value="vendor">{t('Vendor')}</MenuItem>
               <MenuItem value="other">{t('Other')}</MenuItem>
-            </SelectField>
-            <SelectField
+            </Field>
+            <Field
+              component={SelectField}
               name="reliability"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
@@ -339,7 +343,7 @@ class OrganizationEditionOverviewComponent extends Component {
               <MenuItem value="D">{t('reliability_D')}</MenuItem>
               <MenuItem value="E">{t('reliability_E')}</MenuItem>
               <MenuItem value="F">{t('reliability_F')}</MenuItem>
-            </SelectField>
+            </Field>
             <CreatedByRefField
               name="createdByRef"
               style={{ marginTop: 20, width: '100%' }}

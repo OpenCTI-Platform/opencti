@@ -231,7 +231,11 @@ class EntityIndicators extends Component {
       finalFilters = append(
         {
           key: 'toMainObservableType',
-          values: map((type) => type.toLowerCase(), observableTypes),
+          operator: 'match',
+          values: map(
+            (type) => type.toLowerCase().replace('*', ''),
+            observableTypes,
+          ),
         },
         finalFilters,
       );

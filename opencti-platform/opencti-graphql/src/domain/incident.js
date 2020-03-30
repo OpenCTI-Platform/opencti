@@ -7,12 +7,11 @@ import {
   loadEntityById,
   loadEntityByStixId,
   now,
-  timeSeriesEntities,
-  TYPE_STIX_DOMAIN_ENTITY
+  timeSeriesEntities
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { buildPagination } from '../database/utils';
+import {buildPagination, TYPE_STIX_DOMAIN_ENTITY} from '../database/utils';
 
 export const findById = incidentId => {
   if (incidentId.match(/[a-z-]+--[\w-]{36}/g)) {

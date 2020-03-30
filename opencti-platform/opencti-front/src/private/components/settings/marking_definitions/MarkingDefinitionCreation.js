@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -181,24 +181,28 @@ class MarkingDefinitionCreation extends Component {
             >
               {({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="definition_type"
                     label={t('Type')}
                     fullWidth={true}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="definition"
                     label={t('Definition')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <ColorPickerField
+                  <Field
+                    component={ColorPickerField}
                     name="color"
                     label={t('Color')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="level"
                     label={t('Level')}
                     fullWidth={true}

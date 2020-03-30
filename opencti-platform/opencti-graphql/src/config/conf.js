@@ -13,6 +13,10 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: 'SETTINGS_EDIT_TOPIC',
     ADDED_TOPIC: 'SETTINGS_ADDED_TOPIC'
   },
+  Role: {
+    EDIT_TOPIC: 'ROLE_EDIT_TOPIC',
+    ADDED_TOPIC: 'ROLE_ADDED_TOPIC'
+  },
   Tag: {
     EDIT_TOPIC: 'TAG_EDIT_TOPIC',
     ADDED_TOPIC: 'TAG_ADDED_TOPIC'
@@ -77,7 +81,6 @@ nconf.add('argv', {
   }
 });
 
-// Priority to command line parameter and fallback to DEFAULT_ENV
 const currentPath = process.env.INIT_CWD || process.cwd();
 const resolvePath = relativePath => path.join(currentPath, relativePath);
 const environment = nconf.get('env') || nconf.get('node_env') || DEFAULT_ENV;
@@ -95,8 +98,8 @@ nconf.file(environment, configurationFile);
 nconf.file('default', resolveEnvFile('default'));
 
 // Setup logger
-export const logger = winston.createLogger({
-  level: 'info',
+const loggerInstance = winston.createLogger({
+  level: nconf.get('app:logs_level'),
   format: winston.format.json(),
   transports: [
     new DailyRotateFile({
@@ -109,21 +112,20 @@ export const logger = winston.createLogger({
       filename: 'opencti.log',
       dirname: nconf.get('app:logs'),
       maxFiles: '30'
+    }),
+    new winston.transports.Console({
+      format: winston.format.json()
     })
   ]
 });
 
-// Console logging
-logger.add(
-  new winston.transports.Console({
-    format: winston.format.simple(),
-    level: nconf.get('app:logs_level')
-  })
-);
+// Specific case to fail any test that produce an error log
+if (environment === 'test') {
+  loggerInstance.on('data', log => {
+    if (log.level === 'error') throw Error(log.message);
+  });
+}
 
-// eslint-disable-next-line
-logger.info(
-  `🚀 OpenCTI started in ${environment} mode with ${externalConfigurationFile ? 'external' : 'embedded'} file`
-);
 export const isAppRealTime = nconf.get('app:reactive') && JSON.parse(nconf.get('app:reactive'));
+export const logger = loggerInstance;
 export default nconf;

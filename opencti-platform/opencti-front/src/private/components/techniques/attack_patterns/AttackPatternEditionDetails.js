@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
   assoc, compose, pick, pipe, propOr,
@@ -122,7 +122,8 @@ class AttackPatternEditionDetailsComponent extends Component {
       >
         {() => (
           <Form style={{ margin: '20px 0 20px 0' }}>
-            <TextField
+            <Field
+              component={TextField}
               name="external_id"
               label={t('External ID')}
               fullWidth={true}
@@ -132,7 +133,8 @@ class AttackPatternEditionDetailsComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="external_id" />
               }
             />
-            <SelectField
+            <Field
+              component={SelectField}
               name="platform"
               multiple={true}
               onFocus={this.handleChangeFocus.bind(this)}
@@ -148,8 +150,9 @@ class AttackPatternEditionDetailsComponent extends Component {
               <MenuItem value="macOS">{t('macOS')}</MenuItem>
               <MenuItem value="Linux">{t('Linux')}</MenuItem>
               <MenuItem value="Windows">{t('Windows')}</MenuItem>
-            </SelectField>
-            <SelectField
+            </Field>
+            <Field
+              component={SelectField}
               name="required_permission"
               multiple={true}
               onFocus={this.handleChangeFocus.bind(this)}
@@ -166,7 +169,7 @@ class AttackPatternEditionDetailsComponent extends Component {
             >
               <MenuItem value="User">User</MenuItem>
               <MenuItem value="Administrator">Administrator</MenuItem>
-            </SelectField>
+            </Field>
           </Form>
         )}
       </Formik>

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
   assoc,
@@ -130,7 +130,10 @@ class CampaignEditionOverviewComponent extends Component {
       .then(() => {
         commitMutation({
           mutation: campaignMutationFieldPatch,
-          variables: { id: this.props.campaign.id, input: { key: name, value } },
+          variables: {
+            id: this.props.campaign.id,
+            input: { key: name, value },
+          },
         });
       })
       .catch(() => false);
@@ -229,7 +232,11 @@ class CampaignEditionOverviewComponent extends Component {
       : {
         label: pathOr(null, ['createdByRef', 'node', 'name'], campaign),
         value: pathOr(null, ['createdByRef', 'node', 'id'], campaign),
-        relation: pathOr(null, ['createdByRef', 'relation', 'id'], campaign),
+        relation: pathOr(
+          null,
+          ['createdByRef', 'relation', 'id'],
+          campaign,
+        ),
       };
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
@@ -268,7 +275,8 @@ class CampaignEditionOverviewComponent extends Component {
       >
         {({ setFieldValue }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
-            <TextField
+            <Field
+              component={TextField}
               name="name"
               label={t('Name')}
               fullWidth={true}
@@ -278,7 +286,8 @@ class CampaignEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="name" />
               }
             />
-            <TextField
+            <Field
+              component={TextField}
               name="description"
               label={t('Description')}
               fullWidth={true}

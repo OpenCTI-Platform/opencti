@@ -15,7 +15,7 @@ export const up = async next => {
             'Tag',
             {
               key: 'color',
-              value: ['#5fbc52']
+              value: ['#489044']
             },
             wTx,
             { forceUpdate: true }

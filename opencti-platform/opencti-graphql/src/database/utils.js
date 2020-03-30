@@ -1,12 +1,24 @@
-import moment from 'moment/moment';
-import { head, last, mapObjIndexed, pipe, values } from 'ramda';
+import { head, includes, last, mapObjIndexed, pipe, values } from 'ramda';
 import { offsetToCursor } from 'graphql-relay';
-import { PythonShell } from 'python-shell';
-import { logger } from '../config/conf';
+import moment from 'moment';
+
+export const INDEX_STIX_OBSERVABLE = 'stix_observables';
+export const INDEX_STIX_ENTITIES = 'stix_domain_entities_v2';
+export const INDEX_STIX_RELATIONS = 'stix_relations';
+
+export const TYPE_OPENCTI_INTERNAL = 'Internal';
+export const TYPE_STIX_DOMAIN_ENTITY = 'Stix-Domain-Entity';
+export const TYPE_STIX_OBSERVABLE = 'Stix-Observable';
+export const TYPE_STIX_RELATION = 'stix_relation';
+export const TYPE_STIX_OBSERVABLE_RELATION = 'stix_observable_relation';
+export const TYPE_RELATION_EMBEDDED = 'relation_embedded';
+export const TYPE_STIX_RELATION_EMBEDDED = 'stix_relation_embedded';
+
+export const utcDate = (date = undefined) => (date ? moment(date).utc() : moment().utc());
 
 export const fillTimeSeries = (startDate, endDate, interval, data) => {
-  const startDateParsed = moment(startDate);
-  const endDateParsed = moment(endDate);
+  const startDateParsed = moment.parseZone(startDate);
+  const endDateParsed = moment.parseZone(endDate);
   let dateFormat;
 
   switch (interval) {
@@ -24,29 +36,27 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
 
   const newData = [];
   for (let i = 0; i <= elementsOfInterval; i += 1) {
+    const workDate = moment(startDateParsed).add(i, `${interval}s`);
+
+    // Looking for the value
     let dataValue = 0;
     for (let j = 0; j < data.length; j += 1) {
-      if (data[j].date === startDateParsed.format(dateFormat)) {
+      if (data[j].date === workDate.format(dateFormat)) {
         dataValue = data[j].value;
       }
     }
+    const intervalDate = moment(workDate)
+      .startOf(interval)
+      .utc()
+      .toISOString();
     newData[i] = {
-      date: startDateParsed.startOf(interval).format(),
+      date: intervalDate,
       value: dataValue
     };
-    startDateParsed.add(1, `${interval}s`);
   }
   return newData;
 };
 
-/**
- * Pure building of pagination expected format.
- * @param first
- * @param offset
- * @param instances
- * @param globalCount
- * @returns {{edges: *, pageInfo: *}}
- */
 export const buildPagination = (first, offset, instances, globalCount) => {
   const edges = pipe(
     mapObjIndexed((record, key) => {
@@ -71,70 +81,16 @@ export const buildPagination = (first, offset, instances, globalCount) => {
   return { edges, pageInfo };
 };
 
-export const execPython3 = async (scriptPath, scriptName, args) => {
-  try {
-    return new Promise((resolve, reject) => {
-      const options = {
-        mode: 'text',
-        pythonPath: 'python3',
-        scriptPath,
-        args
-      };
-      return PythonShell.run(scriptName, options, (err, results) => {
-        if (err) {
-          reject(new Error(`Python3 is missing or script not found: ${err}`));
-        }
-        try {
-          let result = results[0];
-          if (result.includes('ANTLR')) {
-            // eslint-disable-next-line prefer-destructuring
-            result = results[2];
-          }
-          result = JSON.parse(result);
-          resolve(result);
-        } catch (err2) {
-          reject(new Error(`No valid JSON from Python script: ${err2}`));
-        }
-      });
-    });
-  } catch (err) {
-    throw new Error(`Python3 is missing or script not found: ${err}`);
-  }
-};
-
-export const checkPythonStix2 = async () => {
-  try {
-    const result = await execPython3('./src/utils/stix2', 'stix2_create_pattern.py', ['check', 'health']);
-    if (result.status !== 'success') {
-      throw new Error('Python3 with STIX2 module is missing');
-    }
-  } catch (err) {
-    throw new Error('Python3 with STIX2 module is missing');
-  }
-};
-
-export const createStixPattern = async (observableType, observableValue) => {
-  try {
-    const result = await execPython3('./src/utils/stix2', 'stix2_create_pattern.py', [observableType, observableValue]);
-    if (result.status === 'success') {
-      return result.data;
-    }
-    return null;
-  } catch (err) {
-    logger.error('[Python3] createStixPattern error > ', err);
-    return null;
-  }
-};
-
-export const extractObservables = async pattern => {
-  try {
-    const result = await execPython3('./src/utils/stix2', 'stix2_extract_observables.py', [pattern]);
-    if (result.status === 'success') {
-      return result.data;
-    }
-    return null;
-  } catch (err) {
-    logger.error('[Python3] extractObservables error > ', err);
-    return null;
-  }
+export const inferIndexFromConceptTypes = (types, parentType = null) => {
+  // Observable index
+  if (includes(TYPE_STIX_OBSERVABLE, types) || parentType === TYPE_STIX_OBSERVABLE) return INDEX_STIX_OBSERVABLE;
+  // Relation index
+  if (includes(TYPE_STIX_RELATION, types) || parentType === TYPE_STIX_RELATION) return INDEX_STIX_RELATIONS;
+  if (includes(TYPE_STIX_OBSERVABLE_RELATION, types) || parentType === TYPE_STIX_OBSERVABLE_RELATION)
+    return INDEX_STIX_RELATIONS;
+  if (includes(TYPE_STIX_RELATION_EMBEDDED, types) || parentType === TYPE_STIX_RELATION_EMBEDDED)
+    return INDEX_STIX_RELATIONS;
+  if (includes(TYPE_RELATION_EMBEDDED, types) || parentType === TYPE_RELATION_EMBEDDED) return INDEX_STIX_RELATIONS;
+  // Everything else in entities index
+  return INDEX_STIX_ENTITIES;
 };

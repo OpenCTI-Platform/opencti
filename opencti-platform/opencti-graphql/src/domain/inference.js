@@ -1,6 +1,7 @@
 import { assoc, map, values } from 'ramda';
 import { executeRead, executeWrite } from '../database/grakn';
 
+export const GATHERING_TARGETS_RULE = '391d08b1-deb5-434f-9a5d-cc2441abd601';
 const inferences = {
   'b5c30c61-beb9-4d45-b742-701963ca1f9a': {
     id: 'b5c30c61-beb9-4d45-b742-701963ca1f9a',
@@ -72,8 +73,8 @@ const inferences = {
     description:
       'This rule can be used to infer the following fact: if an entity A targets an entity B through a relation X, and the relation X is located in an entity C, then the entity A also targets the entity C.'
   },
-  '391d08b1-deb5-434f-9a5d-cc2441abd601': {
-    id: '391d08b1-deb5-434f-9a5d-cc2441abd601',
+  [GATHERING_TARGETS_RULE]: {
+    id: GATHERING_TARGETS_RULE,
     name: 'GatheringTargetsRule',
     rule:
       '    GatheringTargetsRule sub rule,\n' +

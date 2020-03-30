@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
 import {
   compose, map, pipe, pluck, head, assoc,
@@ -387,7 +387,8 @@ class StixRelationCreation extends Component {
                   </div>
                 </div>
               </div>
-              <SelectField
+              <Field
+                component={SelectField}
                 name="relationship_type"
                 label={t('Relationship type')}
                 fullWidth={true}
@@ -401,8 +402,9 @@ class StixRelationCreation extends Component {
                   ),
                   relationshipTypes,
                 )}
-              </SelectField>
-              <SelectField
+              </Field>
+              <Field
+                component={SelectField}
                 name="weight"
                 label={t('Confidence level')}
                 fullWidth={true}
@@ -412,22 +414,25 @@ class StixRelationCreation extends Component {
                 <MenuItem value={2}>{t('Moderate')}</MenuItem>
                 <MenuItem value={3}>{t('Good')}</MenuItem>
                 <MenuItem value={4}>{t('Strong')}</MenuItem>
-              </SelectField>
-              <DatePickerField
+              </Field>
+              <Field
+                component={DatePickerField}
                 name="first_seen"
                 label={t('First seen')}
                 invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
               />
-              <DatePickerField
+              <Field
+                component={DatePickerField}
                 name="last_seen"
                 label={t('Last seen')}
                 invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
               />
-              <TextField
+              <Field
+                component={TextField}
                 name="description"
                 label={t('Description')}
                 fullWidth={true}

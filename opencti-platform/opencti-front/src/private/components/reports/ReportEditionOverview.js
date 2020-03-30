@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Form } from 'formik';
+import { Formik, Field, Form } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
 import {
@@ -281,7 +281,8 @@ class ReportEditionOverviewComponent extends Component {
                   {({ setFieldValue }) => (
                     <div>
                       <Form style={{ margin: '20px 0 20px 0' }}>
-                        <TextField
+                        <Field
+                          component={TextField}
                           name="name"
                           label={t('Name')}
                           fullWidth={true}
@@ -294,7 +295,8 @@ class ReportEditionOverviewComponent extends Component {
                             />
                           }
                         />
-                        <SelectField
+                        <Field
+                          component={SelectField}
                           name="report_class"
                           onFocus={this.handleChangeFocus.bind(this)}
                           onChange={this.handleSubmitField.bind(this)}
@@ -316,8 +318,9 @@ class ReportEditionOverviewComponent extends Component {
                               {reportClassEdge.node.value}
                             </MenuItem>
                           ))}
-                        </SelectField>
-                        <DatePickerField
+                        </Field>
+                        <Field
+                          component={DatePickerField}
                           name="published"
                           label={t('Publication date')}
                           invalidDateMessage={t(
@@ -334,7 +337,8 @@ class ReportEditionOverviewComponent extends Component {
                             />
                           }
                         />
-                        <TextField
+                        <Field
+                          component={TextField}
                           name="description"
                           label={t('Description')}
                           fullWidth={true}
@@ -350,7 +354,8 @@ class ReportEditionOverviewComponent extends Component {
                             />
                           }
                         />
-                        <SelectField
+                        <Field
+                          component={SelectField}
                           name="object_status"
                           onFocus={this.handleChangeFocus.bind(this)}
                           onChange={this.handleSubmitField.bind(this)}
@@ -376,8 +381,9 @@ class ReportEditionOverviewComponent extends Component {
                           <MenuItem key="3" value="3">
                             {t('report_status_3')}
                           </MenuItem>
-                        </SelectField>
-                        <SelectField
+                        </Field>
+                        <Field
+                          component={SelectField}
                           name="source_confidence_level"
                           onFocus={this.handleChangeFocus.bind(this)}
                           onChange={this.handleSubmitField.bind(this)}
@@ -403,7 +409,7 @@ class ReportEditionOverviewComponent extends Component {
                           <MenuItem key="4" value="4">
                             {t('confidence_4')}
                           </MenuItem>
-                        </SelectField>
+                        </Field>
                         <CreatedByRefField
                           name="createdByRef"
                           style={{ marginTop: 20, width: '100%' }}

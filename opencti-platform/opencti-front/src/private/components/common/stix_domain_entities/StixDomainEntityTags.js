@@ -12,7 +12,7 @@ import {
   ascend,
   prop,
 } from 'ramda';
-import { Form, Formik } from 'formik';
+import { Form, Formik, Field } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -29,7 +29,7 @@ import { Tag } from 'mdi-material-ui';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { tagsSearchQuery } from '../../settings/Tags';
-import Autocomplete from '../../../../components/Autocomplete';
+import AutocompleteField from '../../../../components/AutocompleteField';
 import TagCreation from '../../settings/tags/TagCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
@@ -257,7 +257,8 @@ class StixDomainEntityTags extends Component {
               <DialogTitle>{t('Add new tags')}</DialogTitle>
               <DialogContent style={{ overflowY: 'hidden' }}>
                 <Form>
-                  <Autocomplete
+                  <Field
+                    component={AutocompleteField}
                     name="new_tags"
                     multiple={true}
                     textfieldprops={{

@@ -11,9 +11,9 @@ import {
 import { findAll as findAllStixRelations, addStixRelation, stixRelationDelete } from '../domain/stixRelation';
 import { executeWrite, loadByGraknId, updateAttribute } from '../database/grakn';
 import { logger } from '../config/conf';
-import { createStixPattern } from '../database/utils';
 import { addIndicator, findAll as findAllIndicators } from '../domain/indicator';
 import { objectRefs, observableRefs } from '../domain/report';
+import {createStixPattern} from "../python/pythonBridge";
 
 export const up = async next => {
   logger.info(`[MIGRATION] split_observables_indicators > Starting the migration of all observables...`);

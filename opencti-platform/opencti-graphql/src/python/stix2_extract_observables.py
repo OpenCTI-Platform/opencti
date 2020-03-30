@@ -2,7 +2,6 @@ import sys
 import json
 import stix2
 
-from stix2 import ObjectPath, EqualityComparisonExpression, ObservationExpression
 from stix2.pattern_visitor import create_pattern_object
 
 STIX2OPENCTI = {
@@ -20,10 +19,12 @@ STIX2OPENCTI = {
     'email-message:subject': 'Email-Subject'
 }
 
+
 def return_data(data):
     print(json.dumps(data))
     sys.stdout.flush()
     exit(0)
+
 
 def main():
     if len(sys.argv) <= 1:
@@ -49,6 +50,7 @@ def main():
         return_data({'status': 'success', 'data': [{'type': indicator_type, 'value': indicator_value}]})
     else:
         return_data({'status': 'unknown', 'data': None})
+
 
 if __name__ == "__main__":
     main()

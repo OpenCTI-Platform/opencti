@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import {
   compose, propOr, filter, append, take,
 } from 'ramda';
@@ -105,7 +105,10 @@ class StixDomainEntityHeader extends Component {
   }
 
   deleteAlias(alias) {
-    const aliases = filter((a) => a !== alias, this.props.stixDomainEntity.alias);
+    const aliases = filter(
+      (a) => a !== alias,
+      this.props.stixDomainEntity.alias,
+    );
     commitMutation({
       mutation: stixDomainEntityMutation,
       variables: {
@@ -154,16 +157,20 @@ class StixDomainEntityHeader extends Component {
             )))}
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               {alias.length > 5 ? (
-                <IconButton color="primary"
+                <IconButton
+                  color="primary"
                   aria-label="More"
-                  onClick={this.handleToggleOpenAliases.bind(this)}>
+                  onClick={this.handleToggleOpenAliases.bind(this)}
+                >
                   <More fontSize="small" />
                 </IconButton>
               ) : (
-                <IconButton style={{ float: 'left', marginTop: -5 }}
+                <IconButton
+                  style={{ float: 'left', marginTop: -5 }}
                   color="secondary"
                   aria-label="Alias"
-                  onClick={this.handleToggleCreateAlias.bind(this)}>
+                  onClick={this.handleToggleCreateAlias.bind(this)}
+                >
                   {this.state.openAlias ? (
                     <Close fontSize="small" />
                   ) : (
@@ -172,15 +179,20 @@ class StixDomainEntityHeader extends Component {
                 </IconButton>
               )}
             </Security>
-            <Slide direction="left"
+            <Slide
+              direction="left"
               in={this.state.openAlias}
               mountOnEnter={true}
-              unmountOnExit={true}>
+              unmountOnExit={true}
+            >
               <div style={{ float: 'left', marginTop: -5 }}>
-                <Formik initialValues={{ new_alias: '' }}
-                  onSubmit={this.onSubmitCreateAlias.bind(this, 'main')}>
+                <Formik
+                  initialValues={{ new_alias: '' }}
+                  onSubmit={this.onSubmitCreateAlias.bind(this, 'main')}
+                >
                   <Form style={{ float: 'right' }}>
-                    <TextField
+                    <Field
+                      component={TextField}
                       name="new_alias"
                       autoFocus={true}
                       placeholder={t('New alias')}
@@ -195,17 +207,22 @@ class StixDomainEntityHeader extends Component {
           ''
         )}
         <div className="clearfix" />
-        <Dialog open={this.state.openAliases}
+        <Dialog
+          open={this.state.openAliases}
           TransitionComponent={Transition}
           onClose={this.handleToggleOpenAliases.bind(this)}
-          fullWidth={true}>
+          fullWidth={true}
+        >
           <DialogTitle>
             {t('Entity aliases')}
-            <Formik initialValues={{ new_alias: '' }}
-              onSubmit={this.onSubmitCreateAlias.bind(this, 'dialog')}>
+            <Formik
+              initialValues={{ new_alias: '' }}
+              onSubmit={this.onSubmitCreateAlias.bind(this, 'dialog')}
+            >
               {() => (
                 <Form style={{ float: 'right' }}>
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="new_alias"
                     autoFocus={true}
                     placeholder={t('New alias')}
@@ -221,9 +238,11 @@ class StixDomainEntityHeader extends Component {
                   <ListItem key={label} disableGutters={true} dense={true}>
                     <ListItemText primary={label} />
                     <ListItemSecondaryAction>
-                      <IconButton edge="end"
+                      <IconButton
+                        edge="end"
                         aria-label="delete"
-                        onClick={this.deleteAlias.bind(this, label)}>
+                        onClick={this.deleteAlias.bind(this, label)}
+                      >
                         <Delete />
                       </IconButton>
                     </ListItemSecondaryAction>
@@ -232,12 +251,19 @@ class StixDomainEntityHeader extends Component {
                 ''
               )))}
             </List>
-            <div style={{ display: this.state.openAliasesCreate ? 'block' : 'none' }}>
-              <Formik initialValues={{ new_alias: '' }}
-                onSubmit={this.onSubmitCreateAlias.bind(this, 'dialog')}>
+            <div
+              style={{
+                display: this.state.openAliasesCreate ? 'block' : 'none',
+              }}
+            >
+              <Formik
+                initialValues={{ new_alias: '' }}
+                onSubmit={this.onSubmitCreateAlias.bind(this, 'dialog')}
+              >
                 {() => (
                   <Form>
-                    <TextField
+                    <Field
+                      component={TextField}
                       name="new_alias"
                       autoFocus={true}
                       fullWidth={true}
@@ -250,8 +276,10 @@ class StixDomainEntityHeader extends Component {
             </div>
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleToggleOpenAliases.bind(this)}
-              color="primary">
+            <Button
+              onClick={this.handleToggleOpenAliases.bind(this)}
+              color="primary"
+            >
               {t('Close')}
             </Button>
           </DialogActions>

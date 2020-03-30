@@ -62,10 +62,8 @@ type RelationEmbedded {
   entity_type: String
   from: GlobalObject
   fromRole: String
-  fromTypes: [String]
   to: GlobalObject
   toRole: String
-  toTypes: [String]
 }
 type createdByRef {
   node: Identity
@@ -618,6 +616,7 @@ enum StixRelationsFilter {
 input StixRelationsFiltering {
   key: StixRelationsFilter!
   values: [String]
+  operator: String
 }
 type StixRelationConnection {
   pageInfo: PageInfo!
@@ -654,10 +653,8 @@ type StixRelation implements GlobalObject & StixEntity {
   reports: ReportConnection
   from: StixEntity
   fromRole: String
-  fromTypes: [String]
   to: StixEntity
   toRole: String
-  toTypes: [String]
   inferences: StixRelationConnection
   stixRelations(
     first: Int
@@ -2919,6 +2916,7 @@ input RelationsAddInput {
 type Query {
   # Technical
   settings: Settings
+  platform_demo: Boolean
   about: AppInfo @auth(for: [SETTINGS])
   inferences: [Inference] @auth(for: [SETTINGS])
   attribute(id: String): Attribute @auth(for: [KNOWLEDGE])
@@ -2979,7 +2977,7 @@ type Query {
     endDate: DateTime!
     interval: String!
   ): [TimeSeries]  @auth(for: [KNOWLEDGE])
-  stixDomainEntitiesNumber(type: String, endDate: DateTime): Number  @auth(for: [KNOWLEDGE])
+  stixDomainEntitiesNumber(types: [String], endDate: DateTime): Number  @auth(for: [KNOWLEDGE])
   # StixObservables
   stixObservable(id: String): StixObservable @auth(for: [KNOWLEDGE])
   stixObservables(
@@ -2992,7 +2990,7 @@ type Query {
     filterMode: FilterMode
     search: String
   ): StixObservableConnection @auth(for: [KNOWLEDGE])
-  stixObservablesNumber(type: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
+  stixObservablesNumber(types: [String], endDate: DateTime): Number @auth(for: [KNOWLEDGE])
   stixObservablesTimeSeries(type: String): [TimeSeries] @auth(for: [KNOWLEDGE])
   stixObservablesDistribution(type: String): [Distribution] @auth(for: [KNOWLEDGE])
   # StixRelations
@@ -3269,7 +3267,7 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-    relationType: String!
+    relationType: String
     inferred: Boolean
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
   # Incidents
@@ -3290,7 +3288,7 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-    relationType: String!
+    relationType: String
     inferred: Boolean
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
   # Malwares
@@ -3495,9 +3493,7 @@ type PersonEditMutations {
   fieldPatch(input: EditInput): User
   contextPatch(input: EditContext): User
   contextClean: User
-  tokenRenew: User
   relationAdd(input: RelationAddInput): RelationEmbedded
-  removeRole(name: String!): User
   relationDelete(relationId: ID!): User
 }
 

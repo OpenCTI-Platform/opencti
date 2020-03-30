@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -163,7 +163,12 @@ class AttributeCreation extends Component {
             >
               {({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <TextField name="value" label={t('Value')} fullWidth={true} />
+                  <Field
+                    component={TextField}
+                    name="value"
+                    label={t('Value')}
+                    fullWidth={true}
+                  />
                   <div className={classes.buttons}>
                     <Button
                       variant="contained"

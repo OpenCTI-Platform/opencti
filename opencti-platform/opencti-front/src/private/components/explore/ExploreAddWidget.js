@@ -4,7 +4,7 @@ import uuid from 'uuid/v4';
 import {
   compose, pipe, assoc, pathOr, map, union,
 } from 'ramda';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -19,7 +19,7 @@ import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
 import { stixDomainEntitiesLinesSearchQuery } from '../common/stix_domain_entities/StixDomainEntitiesLines';
 import { fetchQuery } from '../../../relay/environment';
-import Autocomplete from '../../../components/Autocomplete';
+import AutocompleteField from '../../../components/AutocompleteField';
 import ItemIcon from '../../../components/ItemIcon';
 
 const styles = (theme) => ({
@@ -176,8 +176,14 @@ class ExploreAddWidget extends Component {
             >
               {({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <TextField name="title" label={t('Title')} fullWidth={true} />
-                  <SelectField
+                  <Field
+                    component={TextField}
+                    name="title"
+                    label={t('Title')}
+                    fullWidth={true}
+                  />
+                  <Field
+                    component={SelectField}
                     name="widget"
                     label={t('Widget')}
                     fullWidth={true}
@@ -204,8 +210,9 @@ class ExploreAddWidget extends Component {
                     <MenuItem value="Killchain">
                       {t('[Killchain] Tactics and procedures')}
                     </MenuItem>
-                  </SelectField>
-                  <Autocomplete
+                  </Field>
+                  <Field
+                    component={AutocompleteField}
                     style={{ marginTop: 20, width: '100%' }}
                     name="entity"
                     multiple={false}
@@ -226,7 +233,8 @@ class ExploreAddWidget extends Component {
                     )}
                   />
                   {this.state.currentWidget.includes('Victimology') ? (
-                    <SelectField
+                    <Field
+                      component={SelectField}
                       name="entity_type"
                       label={t('Entity type')}
                       fullWidth={true}
@@ -238,12 +246,13 @@ class ExploreAddWidget extends Component {
                       </MenuItem>
                       <MenuItem value="Country">{t('Country')}</MenuItem>
                       <MenuItem value="Region">{t('Region')}</MenuItem>
-                    </SelectField>
+                    </Field>
                   ) : (
                     ''
                   )}
                   {this.state.currentWidget.includes('Distribution') ? (
-                    <SelectField
+                    <Field
+                      component={SelectField}
                       name="graph_type"
                       label={t('Graph type')}
                       fullWidth={true}
@@ -253,12 +262,13 @@ class ExploreAddWidget extends Component {
                       <MenuItem value="pie">{t('Pie chart')}</MenuItem>
                       <MenuItem value="donut">{t('Donut chart')}</MenuItem>
                       <MenuItem value="radar">{t('Radar chart')}</MenuItem>
-                    </SelectField>
+                    </Field>
                   ) : (
                     ''
                   )}
                   {this.state.currentWidget.includes('Timeseries') ? (
-                    <SelectField
+                    <Field
+                      component={SelectField}
                       name="graph_type"
                       label={t('Graph type')}
                       fullWidth={true}
@@ -267,7 +277,7 @@ class ExploreAddWidget extends Component {
                       <MenuItem value="table">{t('Table')}</MenuItem>
                       <MenuItem value="line">{t('Line chart')}</MenuItem>
                       <MenuItem value="timeline">{t('Timeline')}</MenuItem>
-                    </SelectField>
+                    </Field>
                   ) : (
                     ''
                   )}
