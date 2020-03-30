@@ -3020,8 +3020,6 @@ type Query {
     fromId: String
     relationType: String
     inferred: Boolean
-    entityTypes: [String]
-    toTypes: [String]
     field: String!
     operation: StatsOperation!
     startDate: DateTime!

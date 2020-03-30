@@ -18,7 +18,7 @@ import EntityStixRelationsDonut from '../stix_relations/EntityStixRelationsDonut
 import EntityStixRelationsChart from '../stix_relations/EntityStixRelationsChart';
 import SimpleEntityStixRelations from '../stix_relations/SimpleEntityStixRelations';
 
-const styles = theme => ({
+const styles = (theme) => ({
   card: {
     width: '100%',
     marginBottom: 20,
@@ -199,7 +199,6 @@ class StixDomainEntityKnowledge extends Component {
           <Grid item={true} xs={6} style={{ marginBottom: 50 }}>
             <EntityStixRelationsChart
               entityId={stixDomainEntityId}
-              entityType="Stix-Domain-Entity"
               title={t('Direct relations creations')}
               field="created_at"
             />
