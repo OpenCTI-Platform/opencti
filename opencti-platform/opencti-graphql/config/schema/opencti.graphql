@@ -3400,8 +3400,6 @@ type TagEditMutations {
   fieldPatch(input: EditInput): Tag
   contextPatch(input: EditContext): Tag
   contextClean: Tag
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): Tag
 }
 
 # StixEntity

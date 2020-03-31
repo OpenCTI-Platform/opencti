@@ -1,10 +1,7 @@
-import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
-  createRelation,
   deleteEntityById,
-  deleteRelationById,
   executeWrite,
   listEntities,
   loadEntityById,
@@ -25,17 +22,7 @@ export const addTag = async (user, tag) => {
   return notify(BUS_TOPICS.Tag.ADDED_TOPIC, created, user);
 };
 export const tagDelete = (tagId) => deleteEntityById(tagId, 'Tag');
-export const tagAddRelation = (user, tagId, input) => {
-  return createRelation(tagId, assoc('through', 'tagged', input), {}, null, 'Tag').then((relationData) => {
-    notify(BUS_TOPICS.Tag.EDIT_TOPIC, relationData, user);
-    return relationData;
-  });
-};
-export const tagDeleteRelation = async (user, tagId, relationId) => {
-  await deleteRelationById(relationId, 'tagged');
-  const data = await loadEntityById(tagId, 'Tag');
-  return notify(BUS_TOPICS.Tag.EDIT_TOPIC, data, user);
-};
+
 export const tagEditField = (user, tagId, input) => {
   return executeWrite((wTx) => {
     return updateAttribute(tagId, 'Tag', input, wTx);
