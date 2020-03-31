@@ -1,4 +1,4 @@
-import { head, includes, invertObj, last, map } from 'ramda';
+import { head, includes, invertObj, last, map, assoc } from 'ramda';
 import { offsetToCursor } from 'graphql-relay';
 import {
   attributeExists,
@@ -532,6 +532,9 @@ describe('Grakn relations listing', () => {
     const args = { noCache, relationFilter };
     const stixRelations = await listRelations('stix_relation', args);
     expect(stixRelations.edges.length).toEqual(11);
+    const argsWithRelationId = { noCache, relationFilter: assoc('relationId', 'c3577e42-29b7-4985-bdb9-0c0b4ce61e43', relationFilter) }
+    const stixRelationsWithInternalId = await listRelations('stix_relation', argsWithRelationId);
+    expect(stixRelationsWithInternalId.edges.length).toEqual(1);
   });
   it.each(noCacheCases)('should list relations with to attribute filtering (noCache = %s)', async noCache => {
     const options = { orderBy: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.name`, orderMode: 'asc', noCache };

@@ -40,11 +40,31 @@ export const objectRefs = (reportId, args) => {
   const finalArgs = assoc('filters', append({ key, values: [reportId] }, propOr([], 'filters', args)), args);
   return findAllStixDomainEntities(finalArgs);
 };
+export const reportContainsStixDomainEntity = async (reportId, objectId) => {
+  const args = {
+    filters: [
+      { key: `${REL_INDEX_PREFIX}object_refs.internal_id_key`, values: [reportId] },
+      { key: 'id', values: [objectId] },
+    ],
+  };
+  const stixDomainEntities = await findAllStixDomainEntities(args);
+  return stixDomainEntities.edges.length > 0;
+};
 // Relation refs
 export const relationRefs = (reportId, args) => {
   const relationFilter = { relation: 'object_refs', fromRole: 'so', toRole: 'knowledge_aggregation', id: reportId };
   const finalArgs = assoc('relationFilter', relationFilter, args);
   return listRelations(args.relationType, finalArgs);
+};
+export const reportContainsStixRelation = async (reportId, objectId) => {
+  const relationFilter = {
+    relation: 'object_refs',
+    fromRole: 'so',
+    toRole: 'knowledge_aggregation',
+    id: reportId,
+  };
+  const stixRelations = await listRelations(null, { fromId: objectId, relationFilter });
+  return stixRelations.edges.length > 0;
 };
 // Observable refs
 export const observableRefs = (reportId, args) => {
@@ -52,15 +72,15 @@ export const observableRefs = (reportId, args) => {
   const finalArgs = assoc('filters', append({ key, values: [reportId] }, propOr([], 'filters', args)), args);
   return findAllStixObservables(finalArgs);
 };
-export const reportContainsStixEntity = (reportId, objectId) => {
+export const reportContainsStixObservable = async (reportId, objectId) => {
   const args = {
     filters: [
-      { key: `${REL_INDEX_PREFIX}object_refs.internal_id_key`, values: [reportId] },
+      { key: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`, values: [reportId] },
       { key: 'id', values: [objectId] },
     ],
   };
-  const stixDomainEntities = findAllStixDomainEntities(args);
-  return stixDomainEntities.edges.length > 0;
+  const stixObservables = await findAllStixObservables(args);
+  return stixObservables.edges.length > 0;
 };
 // region series
 export const reportsTimeSeries = (args) => {

@@ -11,7 +11,9 @@ import {
   reportsTimeSeries,
   reportsTimeSeriesByAuthor,
   reportsTimeSeriesByEntity,
-  reportContainsStixEntity
+  reportContainsStixDomainEntity,
+  reportContainsStixRelation,
+  reportContainsStixObservable,
 } from '../domain/report';
 import {
   stixDomainEntityAddRelation,
@@ -19,7 +21,7 @@ import {
   stixDomainEntityDelete,
   stixDomainEntityDeleteRelation,
   stixDomainEntityEditContext,
-  stixDomainEntityEditField
+  stixDomainEntityEditField,
 } from '../domain/stixDomainEntity';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
@@ -48,25 +50,31 @@ const reportResolvers = {
       }
       return [];
     },
-    reportContainStixEntity: (_, args) => {
-      return reportContainsStixEntity(args.id, args.objectId);
-    }
+    reportContainsStixDomainEntity: (_, args) => {
+      return reportContainsStixDomainEntity(args.id, args.objectId);
+    },
+    reportContainsStixRelation: (_, args) => {
+      return reportContainsStixRelation(args.id, args.objectId);
+    },
+    reportContainsStixObservable: (_, args) => {
+      return reportContainsStixObservable(args.id, args.objectId);
+    },
   },
   ReportsOrdering: {
     markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
     tags: `${REL_INDEX_PREFIX}tagged.value`,
-    createdBy: `${REL_INDEX_PREFIX}created_by_ref.name`
+    createdBy: `${REL_INDEX_PREFIX}created_by_ref.name`,
   },
   ReportsFilter: {
     tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
     createdBy: `${REL_INDEX_PREFIX}created_by_ref.internal_id_key`,
     knowledgeContains: `${REL_INDEX_PREFIX}object_refs.internal_id_key`,
-    observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`
+    observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`,
   },
   Report: {
     objectRefs: (report, args) => objectRefs(report.id, args),
     observableRefs: (report, args) => observableRefs(report.id, args),
-    relationRefs: (report, args) => relationRefs(report.id, args)
+    relationRefs: (report, args) => relationRefs(report.id, args),
   },
   Mutation: {
     reportEdit: (_, { id }, { user }) => ({
@@ -76,10 +84,10 @@ const reportResolvers = {
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
       relationDelete: ({ relationId, toId, relationType }) =>
-        stixDomainEntityDeleteRelation(user, id, relationId, toId, relationType)
+        stixDomainEntityDeleteRelation(user, id, relationId, toId, relationType),
     }),
-    reportAdd: (_, { input }, { user }) => addReport(user, input)
-  }
+    reportAdd: (_, { input }, { user }) => addReport(user, input),
+  },
 };
 
 export default reportResolvers;

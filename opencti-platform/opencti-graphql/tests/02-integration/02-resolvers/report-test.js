@@ -85,6 +85,69 @@ describe('Report resolver standard behavior', () => {
     expect(queryResult.data.report).not.toBeNull();
     expect(queryResult.data.report.id).toEqual(reportInternalId);
   });
+  it('should report stix domain entities accurate', async () => {
+    const REPORT_STIX_DOMAIN_ENTITIES = gql`
+      query report($id: String!) {
+        report(id: $id) {
+          id
+          objectRefs {
+            edges {
+              node {
+                id
+              }
+            }
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({ query: REPORT_STIX_DOMAIN_ENTITIES, variables: { id: reportStixId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.report).not.toBeNull();
+    expect(queryResult.data.report.id).toEqual(reportInternalId);
+    expect(queryResult.data.report.objectRefs.edges.length).toEqual(14);
+  });
+  it('should report stix relations accurate', async () => {
+    const REPORT_STIX_RELATIONS = gql`
+      query report($id: String!) {
+        report(id: $id) {
+          id
+          relationRefs {
+            edges {
+              node {
+                id
+              }
+            }
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({ query: REPORT_STIX_RELATIONS, variables: { id: reportStixId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.report).not.toBeNull();
+    expect(queryResult.data.report.id).toEqual(reportInternalId);
+    expect(queryResult.data.report.relationRefs.edges.length).toEqual(11);
+  });
+  it('should report stix observables accurate', async () => {
+    const REPORT_STIX_OBSERVABLES = gql`
+      query report($id: String!) {
+        report(id: $id) {
+          id
+          observableRefs {
+            edges {
+              node {
+                id
+              }
+            }
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({ query: REPORT_STIX_OBSERVABLES, variables: { id: reportStixId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.report).not.toBeNull();
+    expect(queryResult.data.report.id).toEqual(reportInternalId);
+    expect(queryResult.data.report.observableRefs.edges.length).toEqual(11);
+  });
   it('should list reports', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
     expect(queryResult.data.reports.edges.length).toEqual(2);
