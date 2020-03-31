@@ -8,12 +8,12 @@ export const execPython3 = async (scriptPath, scriptName, args) => {
         mode: 'text',
         pythonPath: 'python3',
         scriptPath,
-        args
+        args,
       };
       const shell = new PythonShell(scriptName, options);
       // Messaging is used to get data out of the python process
       let jsonResult = { status: 'success' };
-      shell.on('message', message => {
+      shell.on('message', (message) => {
         /* istanbul ignore next */
         try {
           jsonResult = JSON.parse(message);
@@ -21,7 +21,7 @@ export const execPython3 = async (scriptPath, scriptName, args) => {
           jsonResult = { status: 'error', message };
         }
       });
-      shell.on('stderr', stderr => {
+      shell.on('stderr', (stderr) => {
         logger.info(`[API-PYTHON] > ${stderr}`);
         /* istanbul ignore if */
         if (DEV_MODE && stderr.startsWith('ERROR:')) {
@@ -29,7 +29,7 @@ export const execPython3 = async (scriptPath, scriptName, args) => {
           shell.terminate();
         }
       });
-      shell.end(err => {
+      shell.end((err) => {
         if (err) reject(err);
         if (jsonResult.status !== 'success') reject(jsonResult);
         resolve(jsonResult);
@@ -55,7 +55,7 @@ export const createStixPattern = async (observableType, observableValue) => {
   }
 };
 
-export const extractObservables = async pattern => {
+export const extractObservables = async (pattern) => {
   try {
     const result = await execPython3('./src/python', 'stix2_extract_observables.py', [pattern]);
     return result.data;

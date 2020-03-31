@@ -10,7 +10,7 @@ import { listenServer, restartServer } from './httpServer';
     if (DEV_MODE && module.hot) {
       /* eslint-disable no-console, global-require, import/no-extraneous-dependencies */
       require('webpack/hot/log').setLogLevel('warning');
-      module.hot.accept(['./httpServer', './initialization'], async updated => {
+      module.hot.accept(['./httpServer', './initialization'], async (updated) => {
         const httpUpdated = updated.includes('./src/httpServer.js');
         const appUpdated = updated.includes('./src/initialization.js');
         if (httpUpdated || appUpdated) {

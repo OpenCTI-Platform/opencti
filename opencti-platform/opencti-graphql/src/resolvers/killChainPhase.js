@@ -9,7 +9,7 @@ import {
   killChainPhaseDelete,
   killChainPhaseDeleteRelation,
   killChainPhaseEditContext,
-  killChainPhaseEditField
+  killChainPhaseEditField,
 } from '../domain/killChainPhase';
 import { markingDefinitions } from '../domain/stixEntity';
 import { fetchEditContext, pubsub } from '../database/redis';
@@ -18,11 +18,11 @@ import withCancel from '../graphql/subscriptionWrapper';
 const killChainPhaseResolvers = {
   Query: {
     killChainPhase: (_, { id }) => findById(id),
-    killChainPhases: (_, args) => findAll(args)
+    killChainPhases: (_, args) => findAll(args),
   },
   KillChainPhase: {
-    markingDefinitions: killChainPhase => markingDefinitions(killChainPhase.id),
-    editContext: killChainPhase => fetchEditContext(killChainPhase.id)
+    markingDefinitions: (killChainPhase) => markingDefinitions(killChainPhase.id),
+    editContext: (killChainPhase) => fetchEditContext(killChainPhase.id),
   },
   Mutation: {
     killChainPhaseEdit: (_, { id }, { user }) => ({
@@ -31,18 +31,18 @@ const killChainPhaseResolvers = {
       contextPatch: ({ input }) => killChainPhaseEditContext(user, id, input),
       contextClean: () => killChainPhaseCleanContext(user, id),
       relationAdd: ({ input }) => killChainPhaseAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => killChainPhaseDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => killChainPhaseDeleteRelation(user, id, relationId),
     }),
-    killChainPhaseAdd: (_, { input }, { user }) => addKillChainPhase(user, input)
+    killChainPhaseAdd: (_, { input }, { user }) => addKillChainPhase(user, input),
   },
   Subscription: {
     killChainPhase: {
-      resolve: payload => payload.instance,
+      resolve: (payload) => payload.instance,
       subscribe: (_, { id }, { user }) => {
         killChainPhaseEditContext(user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.KillChainPhase.EDIT_TOPIC),
-          payload => {
+          (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== user.id && payload.instance.id === id;
           }
@@ -50,9 +50,9 @@ const killChainPhaseResolvers = {
         return withCancel(filtering, () => {
           killChainPhaseCleanContext(user, id);
         });
-      }
-    }
-  }
+      },
+    },
+  },
 };
 
 export default killChainPhaseResolvers;

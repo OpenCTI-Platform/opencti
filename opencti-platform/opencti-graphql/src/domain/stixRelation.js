@@ -13,15 +13,15 @@ import {
   loadRelationById,
   loadRelationByStixId,
   prepareDate,
-  updateAttribute
+  updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
 
-export const findAll = async args => {
+export const findAll = async (args) => {
   return listRelations(propOr('stix_relation', 'relationType', args), args);
 };
-export const findById = stixRelationId => {
+export const findById = (stixRelationId) => {
   if (stixRelationId.match(/[a-z-]+--[\w-]{36}/g)) {
     return loadRelationByStixId(stixRelationId, 'stix_relation');
   }
@@ -31,7 +31,7 @@ export const findById = stixRelationId => {
   return loadRelationById(stixRelationId, 'stix_relation');
 };
 
-export const stixRelationsNumber = args => ({
+export const stixRelationsNumber = (args) => ({
   count: getSingleValueNumber(
     `match $x($y, $z) isa ${args.type ? escape(args.type) : 'stix_relation'};
     ${
@@ -51,7 +51,7 @@ export const stixRelationsNumber = args => ({
     get;
     count;`,
     args.inferred ? args.inferred : false
-  )
+  ),
 });
 
 // region mutations
@@ -62,11 +62,11 @@ export const addStixRelation = async (user, stixRelation, reversedReturn = false
   const created = await createRelation(stixRelation.fromId, stixRelation, { reversedReturn });
   return notify(BUS_TOPICS.StixRelation.ADDED_TOPIC, created, user);
 };
-export const stixRelationDelete = async stixRelationId => {
+export const stixRelationDelete = async (stixRelationId) => {
   return deleteRelationById(stixRelationId, 'stix_relation');
 };
 export const stixRelationEditField = (user, stixRelationId, input) => {
-  return executeWrite(wTx => {
+  return executeWrite((wTx) => {
     return updateAttribute(stixRelationId, 'stix_relation', input, wTx);
   }).then(async () => {
     const stixRelation = await loadRelationById(stixRelationId, 'stix_relation');
@@ -78,7 +78,7 @@ export const stixRelationAddRelation = async (user, stixRelationId, input) => {
   if (!data.parent_types.includes('stix_relation') || !input.through) {
     throw new ForbiddenAccess();
   }
-  return createRelation(stixRelationId, input).then(relationData => {
+  return createRelation(stixRelationId, input).then((relationData) => {
     notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, relationData, user);
     return relationData;
   });
@@ -93,13 +93,13 @@ export const stixRelationDeleteRelation = async (user, stixRelationId, relationI
 // region context
 export const stixRelationCleanContext = (user, stixRelationId) => {
   delEditContext(user, stixRelationId);
-  return loadRelationById(stixRelationId, 'stix_relation').then(stixRelation =>
+  return loadRelationById(stixRelationId, 'stix_relation').then((stixRelation) =>
     notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, stixRelation, user)
   );
 };
 export const stixRelationEditContext = (user, stixRelationId, input) => {
   setEditContext(user, stixRelationId, input);
-  return loadRelationById(stixRelationId, 'stix_relation').then(stixRelation =>
+  return loadRelationById(stixRelationId, 'stix_relation').then((stixRelation) =>
     notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, stixRelation, user)
   );
 };

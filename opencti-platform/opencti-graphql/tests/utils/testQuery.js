@@ -10,15 +10,15 @@ const ADMIN_USER = {
   name: 'admin',
   email: 'admin@opencti.io',
   roles: [{ name: ROLE_ADMINISTRATOR }],
-  capabilities: [{ name: BYPASS }]
+  capabilities: [{ name: BYPASS }],
 };
 
 export const serverFromUser = (user = ADMIN_USER) => {
   return new ApolloServer({
     schema: createSchema(),
-    context: () => ({ user })
+    context: () => ({ user }),
   });
 };
 
 export const queryAsAdmin = createTestClient(serverFromUser()).query;
-export const queryAsUser = user => createTestClient(serverFromUser(user)).query;
+export const queryAsUser = (user) => createTestClient(serverFromUser(user)).query;

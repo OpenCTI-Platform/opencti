@@ -5,16 +5,16 @@ import {
   stixDomainEntityEditField,
   stixDomainEntityAddRelation,
   stixDomainEntityDeleteRelation,
-  stixDomainEntityDelete
+  stixDomainEntityDelete,
 } from '../domain/stixDomainEntity';
 
 const countryResolvers = {
   Query: {
     country: (_, { id }) => findById(id),
-    countries: (_, args) => findAll(args)
+    countries: (_, args) => findAll(args),
   },
   Country: {
-    region: country => region(country.id)
+    region: (country) => region(country.id),
   },
   Mutation: {
     countryEdit: (_, { id }, { user }) => ({
@@ -23,10 +23,10 @@ const countryResolvers = {
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId),
     }),
-    countryAdd: (_, { input }, { user }) => addCountry(user, input)
-  }
+    countryAdd: (_, { input }, { user }) => addCountry(user, input),
+  },
 };
 
 export default countryResolvers;

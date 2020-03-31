@@ -40,9 +40,8 @@ const styles = () => ({
 
 const entityStixRelationsRadarStixRelationDistributionQuery = graphql`
   query EntityStixRelationsRadarStixRelationDistributionQuery(
-    $fromId: String
+    $fromId: String!
     $toTypes: [String]
-    $entityTypes: [String]
     $relationType: String
     $inferred: Boolean
     $startDate: DateTime
@@ -53,7 +52,6 @@ const entityStixRelationsRadarStixRelationDistributionQuery = graphql`
     stixRelationsDistribution(
       fromId: $fromId
       toTypes: $toTypes
-      entityTypes: $entityTypes
       relationType: $relationType
       inferred: $inferred
       startDate: $startDate
@@ -76,7 +74,6 @@ class EntityStixRelationsRadar extends Component {
       relationType,
       field,
       variant,
-      entityTypes,
       inferred,
       startDate,
       endDate,
@@ -84,7 +81,6 @@ class EntityStixRelationsRadar extends Component {
     const stixRelationsDistributionVariables = {
       fromId: entityId,
       toTypes: entityType ? [entityType] : null,
-      entityTypes: entityTypes || null,
       inferred: inferred !== null ? inferred : true,
       startDate: startDate || null,
       endDate: endDate || null,
@@ -218,7 +214,6 @@ EntityStixRelationsRadar.propTypes = {
   inferred: PropTypes.bool,
   startDate: PropTypes.string,
   endDate: PropTypes.string,
-  entityTypes: PropTypes.array,
   field: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,

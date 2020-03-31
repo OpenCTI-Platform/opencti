@@ -100,11 +100,28 @@ describe('Report resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await queryAsAdmin({ query: REPORT_STIX_DOMAIN_ENTITIES, variables: { id: '685aac19-d2f6-4835-a256-0631bb322732' } });
+    const queryResult = await queryAsAdmin({
+      query: REPORT_STIX_DOMAIN_ENTITIES,
+      variables: { id: '685aac19-d2f6-4835-a256-0631bb322732' },
+    });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.report).not.toBeNull();
     expect(queryResult.data.report.id).toEqual('685aac19-d2f6-4835-a256-0631bb322732');
     expect(queryResult.data.report.objectRefs.edges.length).toEqual(14);
+  });
+  it('should report contains stix domain entity accurate', async () => {
+    const REPORT_CONTAINS_STIX_DOMAIN_ENTITY = gql`
+      query reportContainsStixDomainEntity($id: String!, $objectId: String!) {
+        reportContainsStixDomainEntity(id: $id, objectId: $objectId)
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: REPORT_CONTAINS_STIX_DOMAIN_ENTITY,
+      variables: { id: '685aac19-d2f6-4835-a256-0631bb322732', objectId: '9f7f00f9-304b-4055-8c4f-f5eadb00de3b' },
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.reportContainsStixDomainEntity).not.toBeNull();
+    expect(queryResult.data.reportContainsStixDomainEntity).toBeTruthy();
   });
   it('should report stix relations accurate', async () => {
     const REPORT_STIX_RELATIONS = gql`
@@ -121,11 +138,28 @@ describe('Report resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await queryAsAdmin({ query: REPORT_STIX_RELATIONS, variables: { id: '685aac19-d2f6-4835-a256-0631bb322732' } });
+    const queryResult = await queryAsAdmin({
+      query: REPORT_STIX_RELATIONS,
+      variables: { id: '685aac19-d2f6-4835-a256-0631bb322732' },
+    });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.report).not.toBeNull();
     expect(queryResult.data.report.id).toEqual('685aac19-d2f6-4835-a256-0631bb322732');
     expect(queryResult.data.report.relationRefs.edges.length).toEqual(11);
+  });
+  it('should report contains stix relation accurate', async () => {
+    const REPORT_CONTAINS_STIX_RELATION = gql`
+      query reportContainsStixRelation($id: String!, $objectId: String!) {
+        reportContainsStixRelation(id: $id, objectId: $objectId)
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: REPORT_CONTAINS_STIX_RELATION,
+      variables: { id: '685aac19-d2f6-4835-a256-0631bb322732', objectId: 'c094dbfe-7034-45f6-a283-b00b6a740b6c' },
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.reportContainsStixRelation).not.toBeNull();
+    expect(queryResult.data.reportContainsStixRelation).toBeTruthy();
   });
   it('should report stix observables accurate', async () => {
     const REPORT_STIX_OBSERVABLES = gql`
@@ -142,7 +176,10 @@ describe('Report resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await queryAsAdmin({ query: REPORT_STIX_OBSERVABLES, variables: { id: '685aac19-d2f6-4835-a256-0631bb322732' } });
+    const queryResult = await queryAsAdmin({
+      query: REPORT_STIX_OBSERVABLES,
+      variables: { id: '685aac19-d2f6-4835-a256-0631bb322732' },
+    });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.report).not.toBeNull();
     expect(queryResult.data.report.id).toEqual('685aac19-d2f6-4835-a256-0631bb322732');

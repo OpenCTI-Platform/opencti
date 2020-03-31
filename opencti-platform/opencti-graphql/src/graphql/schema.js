@@ -43,7 +43,7 @@ import typeDefs from '../../config/schema/opencti.graphql';
 
 const createSchema = () => {
   const globalResolvers = {
-    DateTime: GraphQLDateTime
+    DateTime: GraphQLDateTime,
   };
 
   const resolvers = mergeResolvers([
@@ -83,7 +83,7 @@ const createSchema = () => {
     toolResolvers,
     vulnerabilityResolvers,
     reportResolvers,
-    indicatorResolvers
+    indicatorResolvers,
   ]);
 
   return makeExecutableSchema({
@@ -91,9 +91,9 @@ const createSchema = () => {
     resolvers,
     schemaDirectives: {
       [AUTH_DIRECTIVE]: AuthDirectives,
-      constraint: ConstraintDirective
+      constraint: ConstraintDirective,
     },
-    inheritResolversFromInterfaces: true
+    inheritResolversFromInterfaces: true,
   });
 };
 

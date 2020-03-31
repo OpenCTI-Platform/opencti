@@ -6,16 +6,16 @@ import {
   createdByRef,
   reports,
   stixEntityAddRelation,
-  stixEntityDeleteRelation
+  stixEntityDeleteRelation,
 } from '../domain/stixEntity';
 import { findAll as findAllStixRelations, addStixRelation, stixRelationDelete } from '../domain/stixRelation';
 import { executeWrite, loadByGraknId, updateAttribute } from '../database/grakn';
 import { logger } from '../config/conf';
 import { addIndicator, findAll as findAllIndicators } from '../domain/indicator';
 import { objectRefs, observableRefs } from '../domain/report';
-import {createStixPattern} from "../python/pythonBridge";
+import { createStixPattern } from '../python/pythonBridge';
 
-export const up = async next => {
+export const up = async (next) => {
   logger.info(`[MIGRATION] split_observables_indicators > Starting the migration of all observables...`);
   const nbOfObservables = stixObservablesNumber();
   const count = await nbOfObservables.total;
@@ -34,30 +34,30 @@ export const up = async next => {
       first: 200,
       after: currentCursor,
       orderAsc: true,
-      orderBy: 'observable_value'
+      orderBy: 'observable_value',
     });
     await Promise.all(
-      stixObservables.edges.map(async stixObservableEdge => {
+      stixObservables.edges.map(async (stixObservableEdge) => {
         const stixObservable = stixObservableEdge.node;
         const stixObservableMarkingDefinitions = await markingDefinitions(stixObservable.id);
-        const markingDefinitionsIds = map(n => n.node.id, stixObservableMarkingDefinitions.edges);
+        const markingDefinitionsIds = map((n) => n.node.id, stixObservableMarkingDefinitions.edges);
         const stixObservableCreatedByRef = await createdByRef(stixObservable.id);
         const createdByRefId = pathOr(null, ['node', 'id'], stixObservableCreatedByRef);
         const stixObservableReports = await reports(stixObservable.id);
         const stixRelations = await findAllStixRelations({
           first: 200,
           relationType: 'indicates',
-          fromId: stixObservable.id
+          fromId: stixObservable.id,
         });
         // Update the stix_id_key
         if (stixObservable.stix_id_key.includes('indicator')) {
-          await executeWrite(wTx => {
+          await executeWrite((wTx) => {
             return updateAttribute(
               stixObservable.id,
               'Stix-Observable',
               {
                 key: 'stix_id_key',
-                value: [stixObservable.stix_id_key.replace('indicator', 'observable')]
+                value: [stixObservable.stix_id_key.replace('indicator', 'observable')],
               },
               wTx
             );
@@ -80,7 +80,7 @@ export const up = async next => {
               modified: stixObservable.updated_at,
               observableRefs: [stixObservable.id],
               markingDefinitions: markingDefinitionsIds,
-              createdByRef: createdByRefId
+              createdByRef: createdByRefId,
             };
             let indicator = await findAllIndicators({ filters: [{ key: 'indicator_pattern', values: [pattern] }] });
             if (indicator.edges.length > 0) {
@@ -95,10 +95,10 @@ export const up = async next => {
             for (let index = 0; index < stixObservableReports.edges.length; index += 1) {
               const stixObservableReportEdge = stixObservableReports.edges[index];
               const stixObservableReportObjectRefs = await objectRefs(stixObservableReportEdge.node.id, {});
-              const stixObservableReportObjectRefsIds = map(n => n.node.id, stixObservableReportObjectRefs.edges);
+              const stixObservableReportObjectRefsIds = map((n) => n.node.id, stixObservableReportObjectRefs.edges);
               const stixObservableReportObservableRefs = await observableRefs(stixObservableReportEdge.node.id, {});
               const stixObservableReportObservableRefsIds = map(
-                n => n.node.id,
+                (n) => n.node.id,
                 stixObservableReportObservableRefs.edges
               );
               // Add indicator to report
@@ -107,7 +107,7 @@ export const up = async next => {
                   fromRole: 'knowledge_aggregation',
                   toId: indicator.id,
                   toRole: 'so',
-                  through: 'object_refs'
+                  through: 'object_refs',
                 });
               }
               // Add observable to report
@@ -116,7 +116,7 @@ export const up = async next => {
                   fromRole: 'observables_aggregation',
                   toId: stixObservable.id,
                   toRole: 'soo',
-                  through: 'observable_refs'
+                  through: 'observable_refs',
                 });
               }
               // Delete observable from report
@@ -145,7 +145,7 @@ export const up = async next => {
                 first_seen: new Date(stixRelation.first_seen),
                 last_seen: new Date(stixRelation.last_seen),
                 created: new Date(stixRelation.created),
-                modified: new Date(stixRelation.modified)
+                modified: new Date(stixRelation.modified),
               });
               // Add the relation to reports
               for (let index2 = 0; index2 < stixRelationReports.edges.length; index2 += 1) {
@@ -154,7 +154,7 @@ export const up = async next => {
                   fromRole: 'knowledge_aggregation',
                   toId: createdStixRelation.id,
                   toRole: 'so',
-                  through: 'object_refs'
+                  through: 'object_refs',
                 });
               }
               // Delete the relation after creation
@@ -178,6 +178,6 @@ export const up = async next => {
   next();
 };
 
-export const down = async next => {
+export const down = async (next) => {
   next();
 };

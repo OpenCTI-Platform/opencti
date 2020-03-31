@@ -5,10 +5,10 @@ import { createBasicRolesAndCapabilities } from '../initialization';
 import { assignRoleToUser, findAll as findAllUsers, ROLE_DEFAULT, SYSTEM_USER, userEditField } from '../domain/user';
 import { logger } from '../config/conf';
 
-export const up = async next => {
+export const up = async (next) => {
   try {
     // Remove user_permission and platform settings
-    await executeWrite(async wTx => {
+    await executeWrite(async (wTx) => {
       await wTx.tx.query('undefine user_permission sub relation;');
       await wTx.tx.query('match $x isa platform_external_auth; delete $x;');
       await wTx.tx.query('undefine platform_external_auth sub attribute;');
@@ -22,11 +22,11 @@ export const up = async next => {
     // Migrate current users.
     // -- Default role for all (admin included)
     const data = await findAllUsers();
-    const users = data && map(e => e.node, data.edges);
-    await Promise.all(map(u => assignRoleToUser(u.id, ROLE_DEFAULT), users));
+    const users = data && map((e) => e.node, data.edges);
+    await Promise.all(map((u) => assignRoleToUser(u.id, ROLE_DEFAULT), users));
     // New field user_email
     await Promise.all(
-      map(u => {
+      map((u) => {
         if (u.email) {
           userEditField(SYSTEM_USER, u.id, { key: 'external', value: [false] });
           return userEditField(SYSTEM_USER, u.id, { key: 'user_email', value: [u.email] });
@@ -35,7 +35,7 @@ export const up = async next => {
       }, users)
     );
     // Remove old field email
-    await executeWrite(async wTx => {
+    await executeWrite(async (wTx) => {
       await wTx.tx.query('match $x isa email; delete $x;');
       await wTx.tx.query('undefine email sub attribute;');
     });
@@ -45,6 +45,6 @@ export const up = async next => {
   next();
 };
 
-export const down = async next => {
+export const down = async (next) => {
   next();
 };

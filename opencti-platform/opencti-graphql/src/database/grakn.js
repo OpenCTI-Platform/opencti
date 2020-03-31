@@ -56,7 +56,6 @@ import {
 } from './utils';
 import { isInversed, resolveNaturalRoles, ROLE_FROM } from './graknRoles';
 import {
-  elAggregationCount,
   elAggregationRelationsCount,
   elBulk,
   elDeleteInstanceIds,
@@ -894,7 +893,7 @@ export const listRelations = async (relationType, args) => {
     const pEid = escapeString(id);
     const relationQueryPart = `$${relationRef}(${fromRole}:$rel, ${toRole}:$pointer) isa ${relation}; $pointer has internal_id_key "${pEid}";`;
     relationsFields.push(relationQueryPart);
-    if(relationId) {
+    if (relationId) {
       attributesFilters.push(`$rel has internal_id_key "${escapeString(relationId)}";`);
     }
   }
@@ -945,8 +944,7 @@ export const internalLoadEntityById = async (id, type = null, args = {}) => {
   const { noCache = false } = args;
   if (!noCache && !forceNoCache()) {
     // [ELASTIC] From cache
-    const fromCache = await elLoadById(id, type);
-    if (fromCache) return fromCache;
+    return elLoadById(id, type);
   }
   const query = `match $x ${type ? `isa ${type},` : ''} has internal_id_key "${escapeString(id)}"; get;`;
   const element = await load(query, ['x'], { noCache });
@@ -961,9 +959,7 @@ export const loadEntityById = async (id, type, args = {}) => {
 export const internalLoadEntityByStixId = async (id, type = null, args = {}) => {
   const { noCache = false } = args;
   if (!noCache && !forceNoCache()) {
-    // [ELASTIC] From cache
-    const fromCache = await elLoadByStixId(id, type);
-    if (fromCache) return fromCache;
+    return elLoadByStixId(id, type);
   }
   const query = `match $x ${type ? `isa ${type},` : ''} has stix_id_key "${escapeString(id)}"; get;`;
   const element = await load(query, ['x']);
@@ -1139,30 +1135,14 @@ export const timeSeriesRelations = async (options) => {
   }
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
-
-export const distributionEntities = async (entityType, filters, options) => {
-  // filters: [
-  //   { isRelation: true, type: stix_relation, start: date, end: date, from: 'role', to: 'role', value: uuid }
-  //   { isRelation: false, type: report_class, value: string }
-  // ]
-  const { order = 'asc', startDate, endDate, field, operation, inferred = false, limit = 10 } = options;
-  let distributionData;
-  if (operation === 'count' && inferred === false) {
-    distributionData = await elAggregationCount(entityType, field, startDate, endDate, filters);
-  } else {
-    const finalQuery = buildAggregationQuery(entityType, filters, options);
-    distributionData = await graknTimeSeries(finalQuery, 'label', 'value', options.inferred);
-  }
-  // Take a maximum amount of distribution depending on the ordering.
-  const orderingFunction = order === 'asc' ? ascend : descend;
-  return take(limit, sortWith([orderingFunction(prop('value'))])(distributionData));
-};
 export const distributionRelations = async (options) => {
-  const { limit = 50, order, inferred = false } = options;
-  const { startDate, endDate, relationType, toTypes, fromId, field, operation } = options;
+  const { fromId, field, operation } = options; // Mandatory fields
+  const { limit = 50, order, noCache = false, inferred = false } = options;
+  const { startDate, endDate, relationType, toTypes = [] } = options;
   let distributionData;
   const entityType = relationType ? escape(relationType) : 'stix_relation';
-  if (operation === 'count' && inferred === false) {
+  // Using elastic can only be done if the distribution is a count on types
+  if (!noCache && field === 'entity_type' && operation === 'count' && inferred === false) {
     distributionData = await elAggregationRelationsCount(entityType, startDate, endDate, toTypes, fromId);
   } else {
     const query = `match $rel($from, $to) isa ${entityType}; ${
@@ -1172,7 +1152,7 @@ export const distributionRelations = async (options) => {
             map((toType) => `{ $to isa ${escape(toType)}; } or`, toTypes)
           )} { $to isa ${escape(head(toTypes))}; };`
         : ''
-    } ${fromId ? `$from has internal_id_key "${escapeString(fromId)}";` : '$from isa Stix-Domain-Entity;'} 
+    } $from has internal_id_key "${escapeString(fromId)}";
     ${
       startDate && endDate
         ? `$rel has first_seen $fs; $fs > ${prepareDate(startDate)}; $fs < ${prepareDate(endDate)};`
@@ -1551,31 +1531,28 @@ export const createEntity = async (entity, type, opts = {}) => {
     const types = await conceptTypes(concept);
     return { id: concept.id, types };
   });
-  if (entityCreated) {
-    // Transaction succeed, complete the result to send it back
-    const completedData = pipe(
-      assoc('id', internalId),
-      assoc('base_type', 'entity'),
-      // Grakn identifiers
-      assoc('grakn_id', entityCreated.id),
-      // Types (entity type directly saved)
-      assoc('parent_types', entityCreated.types)
-    )(data);
-    // Transaction succeed, index the result
-    if (indexable) {
-      await elIndexElements([completedData]);
-    }
-    // Complete with eventual relations (will eventually update the index)
-    await addOwner(internalId, entity.createdByOwner, opts);
-    await addCreatedByRef(internalId, entity.createdByRef, opts);
-    await addMarkingDefs(internalId, entity.markingDefinitions, opts);
-    await addTags(internalId, entity.tags, opts);
-    await addKillChains(internalId, entity.killChainPhases, opts);
-    await addObservableRefs(internalId, entity.observableRefs, opts);
-    // Else simply return the data
-    return completedData;
+  // Transaction succeed, complete the result to send it back
+  const completedData = pipe(
+    assoc('id', internalId),
+    assoc('base_type', 'entity'),
+    // Grakn identifiers
+    assoc('grakn_id', entityCreated.id),
+    // Types (entity type directly saved)
+    assoc('parent_types', entityCreated.types)
+  )(data);
+  // Transaction succeed, index the result
+  if (indexable) {
+    await elIndexElements([completedData]);
   }
-  return null;
+  // Complete with eventual relations (will eventually update the index)
+  await addOwner(internalId, entity.createdByOwner, opts);
+  await addCreatedByRef(internalId, entity.createdByRef, opts);
+  await addMarkingDefs(internalId, entity.markingDefinitions, opts);
+  await addTags(internalId, entity.tags, opts);
+  await addKillChains(internalId, entity.killChainPhases, opts);
+  await addObservableRefs(internalId, entity.observableRefs, opts);
+  // Else simply return the data
+  return completedData;
 };
 // endregion
 

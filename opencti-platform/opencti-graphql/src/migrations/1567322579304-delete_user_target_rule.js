@@ -1,7 +1,7 @@
 import { internalDirectWrite } from '../database/grakn';
 import { logger } from '../config/conf';
 
-export const up = async next => {
+export const up = async (next) => {
   // Delete the default
   try {
     await internalDirectWrite('undefine UserTargetsRule sub rule;');
@@ -11,6 +11,6 @@ export const up = async next => {
   next();
 };
 
-export const down = async next => {
+export const down = async (next) => {
   next();
 };

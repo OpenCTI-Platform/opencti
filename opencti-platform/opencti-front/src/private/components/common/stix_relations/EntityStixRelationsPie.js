@@ -65,9 +65,8 @@ const renderCustomizedLabel = ({
 
 const entityStixRelationsPieStixRelationDistributionQuery = graphql`
   query EntityStixRelationsPieStixRelationDistributionQuery(
-    $fromId: String
+    $fromId: String!
     $toTypes: [String]
-    $entityTypes: [String]
     $relationType: String
     $inferred: Boolean
     $startDate: DateTime
@@ -78,7 +77,6 @@ const entityStixRelationsPieStixRelationDistributionQuery = graphql`
     stixRelationsDistribution(
       fromId: $fromId
       toTypes: $toTypes
-      entityTypes: $entityTypes
       relationType: $relationType
       inferred: $inferred
       startDate: $startDate
@@ -101,7 +99,6 @@ class EntityStixRelationsPie extends Component {
       relationType,
       field,
       variant,
-      entityTypes,
       inferred,
       startDate,
       endDate,
@@ -109,7 +106,6 @@ class EntityStixRelationsPie extends Component {
     const stixRelationsDistributionVariables = {
       fromId: entityId,
       toTypes: entityType ? [entityType] : null,
-      entityTypes: entityTypes || null,
       inferred: inferred !== null ? inferred : true,
       startDate: startDate || null,
       endDate: endDate || null,
@@ -252,7 +248,6 @@ EntityStixRelationsPie.propTypes = {
   inferred: PropTypes.bool,
   startDate: PropTypes.string,
   endDate: PropTypes.string,
-  entityTypes: PropTypes.array,
   field: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,

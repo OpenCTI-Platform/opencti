@@ -3,13 +3,13 @@ import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { TYPE_STIX_DOMAIN_ENTITY } from '../database/utils';
 
-export const findById = regionId => {
+export const findById = (regionId) => {
   if (regionId.match(/[a-z-]+--[\w-]{36}/g)) {
     return loadEntityByStixId(regionId, 'Region');
   }
   return loadEntityById(regionId, 'Region');
 };
-export const findAll = args => {
+export const findAll = (args) => {
   return listEntities(['Region'], ['name', 'alias'], args);
 };
 

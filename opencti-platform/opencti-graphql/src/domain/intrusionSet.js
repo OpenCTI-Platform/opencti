@@ -3,13 +3,13 @@ import { createEntity, listEntities, loadEntityById, loadEntityByStixId, now } f
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 
-export const findById = intrusionSetId => {
+export const findById = (intrusionSetId) => {
   if (intrusionSetId.match(/[a-z-]+--[\w-]{36}/g)) {
     return loadEntityByStixId(intrusionSetId, 'Intrusion-Set');
   }
   return loadEntityById(intrusionSetId, 'Intrusion-Set');
 };
-export const findAll = args => {
+export const findAll = (args) => {
   return listEntities(['Intrusion-Set'], ['name', 'alias'], args);
 };
 

@@ -60,12 +60,12 @@ describe('Threat actor resolver standard behavior', () => {
       input: {
         name: 'Threat actor',
         stix_id_key: threatActorStixId,
-        description: 'Threat actor description'
-      }
+        description: 'Threat actor description',
+      },
     };
     const threatActor = await queryAsAdmin({
       query: CREATE_QUERY,
-      variables: THREAT_ACTOR_TO_CREATE
+      variables: THREAT_ACTOR_TO_CREATE,
     });
     expect(threatActor).not.toBeNull();
     expect(threatActor.data.threatActorAdd).not.toBeNull();
@@ -101,7 +101,7 @@ describe('Threat actor resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
-      variables: { id: threatActorInternalId, input: { key: 'name', value: ['Threat actor - test'] } }
+      variables: { id: threatActorInternalId, input: { key: 'name', value: ['Threat actor - test'] } },
     });
     expect(queryResult.data.threatActorEdit.fieldPatch.name).toEqual('Threat actor - test');
   });
@@ -117,7 +117,7 @@ describe('Threat actor resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
-      variables: { id: threatActorInternalId, input: { focusOn: 'description' } }
+      variables: { id: threatActorInternalId, input: { focusOn: 'description' } },
     });
     expect(queryResult.data.threatActorEdit.contextPatch.id).toEqual(threatActorInternalId);
   });
@@ -133,7 +133,7 @@ describe('Threat actor resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
-      variables: { id: threatActorInternalId }
+      variables: { id: threatActorInternalId },
     });
     expect(queryResult.data.threatActorEdit.contextClean.id).toEqual(threatActorInternalId);
   });
@@ -169,9 +169,9 @@ describe('Threat actor resolver standard behavior', () => {
           fromRole: 'so',
           toRole: 'marking',
           toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs'
-        }
-      }
+          through: 'object_marking_refs',
+        },
+      },
     });
     expect(queryResult.data.threatActorEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
     threatActorMarkingDefinitionRelationId =
@@ -201,8 +201,8 @@ describe('Threat actor resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: threatActorInternalId,
-        relationId: threatActorMarkingDefinitionRelationId
-      }
+        relationId: threatActorMarkingDefinitionRelationId,
+      },
     });
     expect(queryResult.data.threatActorEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
   });
@@ -217,7 +217,7 @@ describe('Threat actor resolver standard behavior', () => {
     // Delete the threat actor
     await queryAsAdmin({
       query: DELETE_QUERY,
-      variables: { id: threatActorInternalId }
+      variables: { id: threatActorInternalId },
     });
     // Verify is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: threatActorStixId } });
