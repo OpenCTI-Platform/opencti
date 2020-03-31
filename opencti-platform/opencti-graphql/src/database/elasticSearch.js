@@ -668,7 +668,7 @@ export const elLoadByTerms = async (terms, relationsMap, indices = PLATFORM_INDI
   if (total > 1) {
     throw new Error(`[ELASTIC] Expect only one response expected for ${terms}`);
   }
-  const response = total === 1 ? head(data.body.hits.hits) : undefined;
+  const response = total === 1 ? head(data.body.hits.hits) : null;
   if (!response) return response;
   const loadedElement = assoc('_index', response._index, response._source);
   if (loadedElement.relationship_type) {
