@@ -785,8 +785,11 @@ export const listRelations = async (relationType, args) => {
   if (useCache) {
     const finalFilters = [];
     if (relationFilter) {
-      const { relation, id } = relationFilter;
+      const { relation, id, relationId } = relationFilter;
       finalFilters.push({ key: `${REL_INDEX_PREFIX}${relation}.internal_id_key`, values: [id] });
+      if (relationId) {
+        finalFilters.push({ key: `internal_id_key`, values: [relationId] });
+      }
     }
     const relationsMap = new Map();
     if (fromId) {
