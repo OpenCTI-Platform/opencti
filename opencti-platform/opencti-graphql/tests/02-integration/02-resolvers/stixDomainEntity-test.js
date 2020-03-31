@@ -1,0 +1,225 @@
+import gql from 'graphql-tag';
+import { queryAsAdmin } from '../../utils/testQuery';
+
+const LIST_QUERY = gql`
+  query stixDomainEntities(
+    $first: Int
+    $after: ID
+    $orderBy: StixDomainEntitiesOrdering
+    $orderMode: OrderingMode
+    $filters: [StixDomainEntitiesFiltering]
+    $filterMode: FilterMode
+    $search: String
+  ) {
+    stixDomainEntities(
+      first: $first
+      after: $after
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+      filterMode: $filterMode
+      search: $search
+    ) {
+      edges {
+        node {
+          id
+          name
+          description
+        }
+      }
+    }
+  }
+`;
+
+const READ_QUERY = gql`
+  query stixDomainEntity($id: String!) {
+    stixDomainEntity(id: $id) {
+      id
+      name
+      description
+    }
+  }
+`;
+
+describe('StixDomainEntity resolver standard behavior', () => {
+  let stixDomainEntityInternalId;
+  let stixDomainEntityMarkingDefinitionRelationId;
+  const stixDomainEntityStixId = 'report--34c9875d-8206-4f4b-bf17-f58d9cf7ebec';
+  it('should stixDomainEntity created', async () => {
+    const CREATE_QUERY = gql`
+      mutation StixDomainEntityAdd($input: StixDomainEntityAddInput) {
+        stixDomainEntityAdd(input: $input) {
+          id
+          name
+          description
+        }
+      }
+    `;
+    // Create the stixDomainEntity
+    const STIX_DOMAIN_ENTITY_TO_CREATE = {
+      input: {
+        name: 'StixDomainEntity',
+        type: 'Report',
+        stix_id_key: stixDomainEntityStixId,
+        description: 'StixDomainEntity description',
+      },
+    };
+    const stixDomainEntity = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: STIX_DOMAIN_ENTITY_TO_CREATE,
+    });
+    expect(stixDomainEntity).not.toBeNull();
+    expect(stixDomainEntity.data.stixDomainEntityAdd).not.toBeNull();
+    expect(stixDomainEntity.data.stixDomainEntityAdd.name).toEqual('StixDomainEntity');
+    stixDomainEntityInternalId = stixDomainEntity.data.stixDomainEntityAdd.id;
+  });
+  it('should stixDomainEntity loaded by internal id', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixDomainEntityInternalId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.stixDomainEntity).not.toBeNull();
+    expect(queryResult.data.stixDomainEntity.id).toEqual(stixDomainEntityInternalId);
+  });
+  it('should stixDomainEntity loaded by stix id', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixDomainEntityStixId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.stixDomainEntity).not.toBeNull();
+    expect(queryResult.data.stixDomainEntity.id).toEqual(stixDomainEntityInternalId);
+  });
+  it('should list stixDomainEntities', async () => {
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
+    expect(queryResult.data.stixDomainEntities.edges.length).toEqual(10);
+  });
+  it('should update stixDomainEntity', async () => {
+    const UPDATE_QUERY = gql`
+      mutation StixDomainEntityEdit($id: ID!, $input: EditInput!) {
+        stixDomainEntityEdit(id: $id) {
+          fieldPatch(input: $input) {
+            id
+            name
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { id: stixDomainEntityInternalId, input: { key: 'name', value: ['StixDomainEntity - test'] } },
+    });
+    expect(queryResult.data.stixDomainEntityEdit.fieldPatch.name).toEqual('StixDomainEntity - test');
+  });
+  it('should context patch stixDomainEntity', async () => {
+    const CONTEXT_PATCH_QUERY = gql`
+      mutation StixDomainEntityEdit($id: ID!, $input: EditContext) {
+        stixDomainEntityEdit(id: $id) {
+          contextPatch(input: $input) {
+            id
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: CONTEXT_PATCH_QUERY,
+      variables: { id: stixDomainEntityInternalId, input: { focusOn: 'description' } },
+    });
+    expect(queryResult.data.stixDomainEntityEdit.contextPatch.id).toEqual(stixDomainEntityInternalId);
+  });
+  it('should context clean stixDomainEntity', async () => {
+    const CONTEXT_PATCH_QUERY = gql`
+      mutation StixDomainEntityEdit($id: ID!) {
+        stixDomainEntityEdit(id: $id) {
+          contextClean {
+            id
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: CONTEXT_PATCH_QUERY,
+      variables: { id: stixDomainEntityInternalId },
+    });
+    expect(queryResult.data.stixDomainEntityEdit.contextClean.id).toEqual(stixDomainEntityInternalId);
+  });
+  it('should add relation in stixDomainEntity', async () => {
+    const RELATION_ADD_QUERY = gql`
+      mutation StixDomainEntityEdit($id: ID!, $input: RelationAddInput!) {
+        stixDomainEntityEdit(id: $id) {
+          relationAdd(input: $input) {
+            id
+            from {
+              ... on StixDomainEntity {
+                markingDefinitions {
+                  edges {
+                    node {
+                      id
+                    }
+                    relation {
+                      id
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: RELATION_ADD_QUERY,
+      variables: {
+        id: stixDomainEntityInternalId,
+        input: {
+          fromRole: 'so',
+          toRole: 'marking',
+          toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
+          through: 'object_marking_refs',
+        },
+      },
+    });
+    expect(queryResult.data.stixDomainEntityEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
+    stixDomainEntityMarkingDefinitionRelationId =
+      queryResult.data.stixDomainEntityEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+  });
+  it('should delete relation in stixDomainEntity', async () => {
+    const RELATION_DELETE_QUERY = gql`
+      mutation StixDomainEntityEdit($id: ID!, $relationId: ID!) {
+        stixDomainEntityEdit(id: $id) {
+          relationDelete(relationId: $relationId) {
+            id
+            markingDefinitions {
+              edges {
+                node {
+                  id
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: RELATION_DELETE_QUERY,
+      variables: {
+        id: stixDomainEntityInternalId,
+        relationId: stixDomainEntityMarkingDefinitionRelationId,
+      },
+    });
+    expect(queryResult.data.stixDomainEntityEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+  });
+  it('should stixDomainEntity deleted', async () => {
+    const DELETE_QUERY = gql`
+      mutation stixDomainEntityDelete($id: ID!) {
+        stixDomainEntityEdit(id: $id) {
+          delete
+        }
+      }
+    `;
+    // Delete the stixDomainEntity
+    await queryAsAdmin({
+      query: DELETE_QUERY,
+      variables: { id: stixDomainEntityInternalId },
+    });
+    // Verify is no longer found
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixDomainEntityStixId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.stixDomainEntity).toBeNull();
+  });
+});

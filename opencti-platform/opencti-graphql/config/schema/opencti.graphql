@@ -488,6 +488,7 @@ interface StixDomainEntity {
 }
 input StixDomainEntityAddInput {
   internal_id_key: String
+  stix_id_key: String
   name: String!
   description: String
   alias: [String]
