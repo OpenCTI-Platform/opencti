@@ -77,7 +77,7 @@ export const indicators = (stixObservableId) => {
 };
 export const addStixObservable = async (user, stixObservable) => {
   const innerType = stixObservable.type;
-  if (!OBSERVABLE_TYPES.includes(innerType)) {
+  if (!OBSERVABLE_TYPES.includes(innerType.toLowerCase())) {
     throw new Error(`[SCHEMA] Observable type ${innerType} is not supported.`);
   }
   const observableToCreate = pipe(dissoc('type'), dissoc('createIndicator'))(stixObservable);
