@@ -100,16 +100,14 @@ describe('StixDomainEntity resolver standard behavior', () => {
   });
   it('should stixDomainEntities number to be accurate', async () => {
     const NUMBER_QUERY = gql`
-      query stixDomainEntitiesNumber($id: String!) {
-        stixDomainEntitiesNumber(id: $id) {
-          id
-          name
-          description
+      query stixDomainEntitiesNumber {
+        stixDomainEntitiesNumber {
+          total
         }
       }
     `;
-    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.stixDomainEntities.edges.length).toEqual(10);
+    const queryResult = await queryAsAdmin({ query: NUMBER_QUERY });
+    expect(queryResult.data.stixDomainEntitiesNumber.total).toEqual(65);
   });
   it('should timeseries stixDomainEntities', async () => {
     const TIMESERIES_QUERY = gql`

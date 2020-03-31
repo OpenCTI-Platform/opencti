@@ -156,7 +156,8 @@ class StixDomainEntityCreation extends Component {
   renderEntityTypesList() {
     const { t, targetEntityTypes } = this.props;
     return (
-      <SelectField
+      <Field
+        component={SelectField}
         name="type"
         label={t('Entity type')}
         fullWidth={true}
@@ -258,7 +259,7 @@ class StixDomainEntityCreation extends Component {
           ) : (
             ''
           )}
-      </SelectField>
+      </Field>
     );
   }
 

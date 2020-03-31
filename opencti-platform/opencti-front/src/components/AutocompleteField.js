@@ -9,7 +9,7 @@ import { isNil } from 'ramda';
 
 const AutocompleteField = (props) => {
   const {
-    form: { setFieldValue },
+    form: { setFieldValue, setTouched },
     field: { name },
     onChange,
     onFocus,
@@ -33,19 +33,24 @@ const AutocompleteField = (props) => {
       onFocus(name);
     }
   }, [onFocus, name]);
+  const internalOnBlur = React.useCallback(
+    () => {
+      setTouched(true);
+    },
+    [setTouched],
+  );
   const fieldProps = fieldToTextField(props);
   delete fieldProps.helperText;
   delete fieldProps.openCreate;
-
   return (
     <div style={{ position: 'relative' }}>
       <MUIAutocomplete
-        {...fieldProps}
         size="small"
         selectOnFocus={true}
         autoHighlight={true}
         getOptionLabel={(option) => (option.label ? option.label : '')}
         noOptionsText={noOptionsText}
+        {...fieldProps}
         renderOption={renderOption}
         renderInput={(params) => (
           <TextField
@@ -59,6 +64,7 @@ const AutocompleteField = (props) => {
         )}
         onChange={internalOnChange}
         onFocus={internalOnFocus}
+        onBlur={internalOnBlur}
       />
       {typeof openCreate === 'function' ? (
         <IconButton

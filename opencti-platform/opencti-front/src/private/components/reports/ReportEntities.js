@@ -156,6 +156,7 @@ class ReportEntitiesComponent extends Component {
           dataColumns={dataColumns}
           handleSort={this.handleSort.bind(this)}
           handleSearch={this.handleSearch.bind(this)}
+          keyword={searchTerm}
           secondaryAction={true}
           numberOfElements={numberOfElements}
         >
