@@ -37,6 +37,7 @@ import {
   sinceNowInMinutes,
   timeSeriesEntities,
   timeSeriesRelations,
+  updateAttribute,
   yearFormat,
 } from '../../../src/database/grakn';
 import { attributeUpdate, findAll as findAllAttributes } from '../../../src/domain/attribute';
@@ -224,6 +225,47 @@ describe('Grakn loaders', () => {
     expect(await countObjects('Stix-Observable')).toEqual(6);
     // Relations
   });
+});
+
+describe('Grakn attribute updater', () => {
+  // campaign--92d46985-17a6-4610-8be8-cc70c82ed214
+  // "name": "A new campaign",
+  // "description": "A test campaign",
+  const campaignId = 'fab6fa99-b07f-4278-86b4-b674edf60877';
+  it('should update fail for read only attributes', async () => {
+    const input = { key: 'observable_value', value: ['test'] };
+    const update = executeWrite((wTx) => {
+      return updateAttribute(campaignId, 'Stix-Domain-Entity', input, wTx);
+    });
+    expect(update).rejects.toThrow();
+  });
+  it('should update dont do anything if already the same', async () => {
+    const input = { key: 'description', value: ['A test campaign'] };
+    const update = await executeWrite((wTx) => {
+      return updateAttribute(campaignId, 'Stix-Domain-Entity', input, wTx);
+    });
+    expect(update).toEqual(campaignId);
+  });
+  const noCacheCases = [[true], [false]];
+  it.each(noCacheCases)('should update date with dependencies', async (noCache) => {
+    // 2020-02-27T08:45:43.365Z
+    const stixId = 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214';
+    let campaign = await internalLoadEntityByStixId(stixId, null, { noCache });
+    expect(campaign.first_seen).toEqual('2020-02-27T08:45:43.365Z');
+    const type = 'Stix-Domain-Entity';
+    let input = { key: 'first_seen', value: ['2020-02-27T08:45:43.366Z'] };
+    let update = await executeWrite((wTx) => updateAttribute(campaignId, type, input, wTx));
+    expect(update).toEqual(campaignId);
+    campaign = await internalLoadEntityByStixId(stixId, null, { noCache });
+    expect(campaign.first_seen).toEqual('2020-02-27T08:45:43.366Z');
+    // Value back to before
+    input = { key: 'first_seen', value: ['2020-02-27T08:45:43.365Z'] };
+    update = await executeWrite((wTx) => updateAttribute(campaignId, type, input, wTx));
+    expect(update).toEqual(campaignId);
+    campaign = await internalLoadEntityByStixId(stixId, null, { noCache });
+    expect(campaign.first_seen).toEqual('2020-02-27T08:45:43.365Z');
+  });
+  // TODO Add test around attribute with multiple values
 });
 
 describe('Grakn entities listing', () => {

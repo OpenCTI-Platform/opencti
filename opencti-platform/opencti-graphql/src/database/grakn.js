@@ -1240,6 +1240,7 @@ const createRelationRaw = async (fromInternalId, input, opts = {}, fromType = nu
   const isStixRelation = includes('stix_id_key', Object.keys(input)) || input.relationship_type;
   const relationshipType = input.relationship_type || input.through;
   if (fromInternalId === input.toId) {
+    /* istanbul ignore next */
     throw new Error(
       `[GRAKN] You cant create a relation with the same source and target (${fromInternalId} - ${relationshipType})`
     );
@@ -1251,6 +1252,7 @@ const createRelationRaw = async (fromInternalId, input, opts = {}, fromType = nu
       : TYPE_STIX_RELATION
     : TYPE_RELATION_EMBEDDED;
   const isInv = isInversed(relationshipType, input.fromRole);
+  /* istanbul ignore if */
   if (isInv) {
     const message = `{ from '${input.fromRole}' to '${input.toRole}' through ${relationshipType} }`;
     throw new Error(`[GRAKN] You cant create a relation in incorrect order ${message}`);
@@ -1282,6 +1284,7 @@ const createRelationRaw = async (fromInternalId, input, opts = {}, fromType = nu
     relationAttributes.created_at = currentDate;
     relationAttributes.first_seen = input.first_seen ? input.first_seen : today;
     relationAttributes.last_seen = input.last_seen ? input.last_seen : today;
+    /* istanbul ignore if */
     if (relationAttributes.first_seen > relationAttributes.last_seen) {
       throw new DatabaseError({
         data: { details: `You cant create a relation with a first seen less than the last_seen` },
@@ -1462,6 +1465,7 @@ export const createRelation = async (fromInternalId, input, opts = {}, fromType 
   }
   return created;
 };
+/* istanbul ignore next */
 export const createRelations = async (fromInternalId, inputs, opts = {}, fromType = null, toType = null) => {
   const createdRelations = [];
   // Relations cannot be created in parallel. (Concurrent indexing on same key)
@@ -1596,10 +1600,7 @@ export const updateAttribute = async (id, type, input, wTx, options = {}) => {
   const labelIterator = await wTx.tx.query(labelTypeQuery);
   const labelAnswer = await labelIterator.next();
   // eslint-disable-next-line prettier/prettier
-  const attrType = await labelAnswer
-    .map()
-    .get('x')
-    .dataType();
+  const attrType = await labelAnswer.map().get('x').dataType();
   const typedValues = map((v) => {
     if (attrType === GraknString) return `"${escapeString(v)}"`;
     if (attrType === GraknDate) return prepareDate(v);
@@ -1652,6 +1653,7 @@ export const updateAttribute = async (id, type, input, wTx, options = {}) => {
   try {
     await elUpdate(currentIndex, currentInstanceData.grakn_id, { doc: updateValueField });
   } catch (e) {
+    /* istanbul ignore next */
     logger.error(`[ELASTIC] ${id} missing, cant update the element, you need to reindex`);
   }
   return id;
@@ -1661,6 +1663,7 @@ export const updateAttribute = async (id, type, input, wTx, options = {}) => {
 // region mutation deletion
 export const deleteEntityById = async (id, type, options = {}) => {
   if (isNil(type)) {
+    /* istanbul ignore next */
     throw new Error(`[GRAKN] deleteEntityById > Missing type`);
   }
   const eid = escapeString(id);
@@ -1682,6 +1685,7 @@ export const deleteEntityById = async (id, type, options = {}) => {
 };
 export const deleteRelationById = async (relationId, type) => {
   if (isNil(type)) {
+    /* istanbul ignore next */
     throw new Error(`[GRAKN] deleteRelationById > Missing type`);
   }
   const eid = escapeString(relationId);
