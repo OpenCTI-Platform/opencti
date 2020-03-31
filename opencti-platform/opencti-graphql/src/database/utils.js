@@ -32,12 +32,12 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
       dateFormat = 'YYYY-MM-DD';
   }
 
-  const elementsOfInterval = endDateParsed.diff(startDateParsed, `${interval}s`, false);
-
+  const startFormatDate = new Date(endDateParsed.format(dateFormat));
+  const endFormatDate = new Date(startDateParsed.format(dateFormat));
+  const elementsOfInterval = moment(startFormatDate).diff(moment(endFormatDate), `${interval}s`);
   const newData = [];
   for (let i = 0; i <= elementsOfInterval; i += 1) {
     const workDate = moment(startDateParsed).add(i, `${interval}s`);
-
     // Looking for the value
     let dataValue = 0;
     for (let j = 0; j < data.length; j += 1) {

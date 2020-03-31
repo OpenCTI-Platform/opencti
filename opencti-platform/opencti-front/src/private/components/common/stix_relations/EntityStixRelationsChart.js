@@ -48,9 +48,7 @@ const styles = () => ({
 const entityStixRelationsChartStixRelationTimeSeriesQuery = graphql`
   query EntityStixRelationsChartStixRelationTimeSeriesQuery(
     $fromId: String
-    $entityTypes: [String]
     $relationType: String
-    $toTypes: [String]
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime!
@@ -59,9 +57,7 @@ const entityStixRelationsChartStixRelationTimeSeriesQuery = graphql`
   ) {
     stixRelationsTimeSeries(
       fromId: $fromId
-      entityTypes: $entityTypes
       relationType: $relationType
-      toTypes: $toTypes
       field: $field
       operation: $operation
       startDate: $startDate
@@ -102,7 +98,6 @@ class EntityStixRelationsChart extends Component {
     const {
       t,
       entityId,
-      toTypes,
       relationType,
       variant,
       md,
@@ -110,13 +105,10 @@ class EntityStixRelationsChart extends Component {
       inferred,
       startDate,
       endDate,
-      entityTypes,
     } = this.props;
     const stixRelationsTimeSeriesVariables = {
       fromId: entityId || null,
-      entityTypes: entityTypes || null,
       relationType,
-      toTypes: toTypes || null,
       field: field || 'first_seen',
       operation: 'count',
       startDate:

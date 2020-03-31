@@ -33,6 +33,7 @@ import {
   REL_CONNECTED_SUFFIX,
   sinceNowInMinutes,
   timeSeriesEntities,
+  timeSeriesRelations,
   yearFormat
 } from '../../../src/database/grakn';
 import { attributeUpdate, findAll as findAllAttributes } from '../../../src/domain/attribute';
@@ -838,7 +839,7 @@ describe('Grakn entities time series', () => {
       noCache
     };
     const series = await timeSeriesEntities('Stix-Domain-Entity', [], options);
-    expect(series.length).toEqual(7);
+    expect(series.length).toEqual(8);
     const aggregationMap = new Map(series.map(i => [i.date, i.value]));
     expect(aggregationMap.get('2020-02-29T23:00:00.000Z')).toEqual(1);
   });
@@ -870,8 +871,48 @@ describe('Grakn entities time series', () => {
       noCache
     };
     const series = await timeSeriesEntities('Stix-Domain-Entity', filters, options);
-    expect(series.length).toEqual(9);
+    expect(series.length).toEqual(10);
     const aggregationMap = new Map(series.map(i => [i.date, i.value]));
     expect(aggregationMap.get('2020-01-31T23:00:00.000Z')).toEqual(1);
+  });
+});
+
+describe('Grakn relations time series', () => {
+  // const { startDate, endDate, operation, relationType, field, interval, fromId, inferred = false } = options;
+  const noCacheCases = [[true], [false]];
+  it.each(noCacheCases)('should relations first seen time series (noCache = %s)', async noCache => {
+    // relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02 > 2020-02-29T23:00:00.000Z
+    // relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de > 2020-02-29T23:00:00.000Z
+    // relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3 > 2020-02-28T23:00:00.000Z
+    const options = {
+      relationType: 'uses',
+      field: 'first_seen',
+      operation: 'count',
+      interval: 'month',
+      startDate: '2019-09-23T00:00:00.000+01:00',
+      endDate: '2020-04-04T00:00:00.000+01:00',
+      noCache
+    };
+    const series = await timeSeriesRelations(options);
+    expect(series.length).toEqual(8);
+    const aggregationMap = new Map(series.map(i => [i.date, i.value]));
+    expect(aggregationMap.get('2020-01-31T23:00:00.000Z')).toEqual(3);
+  });
+  it.each(noCacheCases)('should relations with fromId time series (noCache = %s)', async noCache => {
+    // malware--faa5b705-cf44-4e50-8472-29e5fec43c3c / Paradise Ransomware
+    const options = {
+      fromId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330',
+      relationType: 'uses',
+      field: 'first_seen',
+      operation: 'count',
+      interval: 'year',
+      startDate: '2018-09-23T00:00:00.000+01:00',
+      endDate: '2020-06-04T00:00:00.000+01:00',
+      noCache
+    };
+    const series = await timeSeriesRelations(options);
+    expect(series.length).toEqual(3);
+    const aggregationMap = new Map(series.map(i => [i.date, i.value]));
+    expect(aggregationMap.get('2019-12-31T23:00:00.000Z')).toEqual(3);
   });
 });

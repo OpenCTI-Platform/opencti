@@ -1120,23 +1120,20 @@ export const timeSeriesEntities = async (entityType, filters, options) => {
 export const timeSeriesRelations = async options => {
   // filters: [ { isRelation: true, type: stix_relation, from: 'role', to: 'role', value: uuid } ]
   //            { isRelation: false, type: report_class, value: string } ]
-  const { startDate, endDate, operation, relationType, field, interval, toTypes, fromId, inferred = false } = options;
+  const { startDate, endDate, operation, relationType, field, interval } = options;
+  const { fromId, noCache = false, inferred = false } = options;
   // Check if can be supported by ES
   let histogramData;
   const entityType = relationType ? escape(relationType) : 'stix_relation';
-  if (operation === 'count' && inferred === false) {
-    const filters = [{ isRelation: false, type: 'connections.internal_id_key', value: fromId }];
+  if (!noCache && operation === 'count' && inferred === false) {
+    const filters = [];
+    if (fromId) filters.push({ isRelation: false, type: 'connections.internal_id_key', value: fromId });
     histogramData = await elHistogramCount(entityType, field, interval, startDate, endDate, filters);
   } else {
-    const query = `match $x($from, $to) isa ${entityType}; ${
-      toTypes && toTypes.length > 0
-        ? `${join(
-            ' ',
-            map(toType => `{ $to isa ${escape(toType)}; } or`, toTypes)
-          )} { $to isa ${escape(head(toTypes))}; };`
-        : ''
-    } ${fromId ? `$from has internal_id_key "${escapeString(fromId)}"` : '$from isa Stix-Domain-Entity'}`;
-    const finalQuery = `${query}; $x has ${field}_${interval} $g; get; group $g; ${operation};`;
+    const query = `match $x ${fromId ? '($from)' : ''} isa ${entityType}; ${
+      fromId ? `$from has internal_id_key "${escapeString(fromId)}";` : ''
+    }`;
+    const finalQuery = `${query} $x has ${field}_${interval} $g; get; group $g; ${operation};`;
     histogramData = await graknTimeSeries(finalQuery, 'date', 'value', inferred);
   }
   return fillTimeSeries(startDate, endDate, interval, histogramData);
