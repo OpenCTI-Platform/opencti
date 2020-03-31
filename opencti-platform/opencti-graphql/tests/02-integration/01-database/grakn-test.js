@@ -3,6 +3,8 @@ import { offsetToCursor } from 'graphql-relay';
 import {
   attributeExists,
   dayFormat,
+  distributionEntities,
+  distributionEntitiesThroughRelations,
   distributionRelations,
   escape,
   escapeString,
@@ -924,6 +926,33 @@ describe('Grakn relations time series', () => {
   });
 });
 
+describe('Grakn entities distribution', () => {
+  const noCacheCases = [[true], [false]];
+  it.each(noCacheCases)('should entity distribution (noCache = %s)', async (noCache) => {
+    // const { startDate, endDate, operation, field, inferred, noCache } = options;
+    const options = { field: 'entity_type', operation: 'count', limit: 20, noCache };
+    const distribution = await distributionEntities('Stix-Domain', [], options);
+    expect(distribution.length).toEqual(16);
+    const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
+    expect(aggregationMap.get('malware')).toEqual(2);
+    expect(aggregationMap.get('marking-definition')).toEqual(6);
+    expect(aggregationMap.get('external-reference')).toEqual(7);
+  });
+  it.each(noCacheCases)('should entity distribution with date filtering (noCache = %s)', async (noCache) => {
+    // const { startDate, endDate, operation, field, inferred, noCache } = options;
+    const options = {
+      field: 'entity_type',
+      operation: 'count',
+      limit: 20,
+      startDate: '2018-03-01T00:00:00+01:00',
+      endDate: '2018-03-02T00:00:00+01:00',
+      noCache,
+    };
+    const distribution = await distributionEntities('Stix-Domain', [], options);
+    expect(distribution.length).toEqual(0);
+  });
+});
+
 describe('Grakn relations distribution', () => {
   // Malware Paradise Ransomware
   // --> attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc
@@ -933,7 +962,7 @@ describe('Grakn relations distribution', () => {
   // <-- intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7
   // ----------- relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3 > first_seen: 2020-02-28T23:00:00.000Z
   const noCacheCases = [[true], [false]];
-  it.each(noCacheCases)('should entity distribution (noCache = %s)', async (noCache) => {
+  it.each(noCacheCases)('should relation distribution (noCache = %s)', async (noCache) => {
     // const { limit = 50, order, noCache = false, inferred = false } = options;
     // const { startDate, endDate, relationType, toTypes, fromId, field, operation } = options;
     const options = {
@@ -949,7 +978,7 @@ describe('Grakn relations distribution', () => {
     expect(aggregationMap.get('attack-pattern')).toEqual(2);
     expect(aggregationMap.get('intrusion-set')).toEqual(1);
   });
-  it.each(noCacheCases)('should entity distribution dates filtered (noCache = %s)', async (noCache) => {
+  it.each(noCacheCases)('should relation distribution dates filtered (noCache = %s)', async (noCache) => {
     const options = {
       fromId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330',
       field: 'entity_type',
@@ -962,5 +991,38 @@ describe('Grakn relations distribution', () => {
     expect(distribution.length).toEqual(1);
     const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('intrusion-set')).toEqual(1);
+  });
+  it.each(noCacheCases)('should relation distribution filtered by to (noCache = %s)', async (noCache) => {
+    const options = {
+      fromId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330',
+      field: 'entity_type',
+      operation: 'count',
+      toTypes: ['Attack-Pattern'],
+      noCache,
+    };
+    const distribution = await distributionRelations(options);
+    expect(distribution.length).toEqual(1);
+    const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
+    expect(aggregationMap.get('attack-pattern')).toEqual(2);
+  });
+});
+
+describe('Grakn entities distribution through relation', () => {
+  // const { limit = 10, order, inferred = false } = options;
+  // const { relationType, remoteRelationType, toType, fromId, field, operation } = options;
+  // campaign--92d46985-17a6-4610-8be8-cc70c82ed214
+  it('should relation distribution filtered by to (noCache = %s)', async () => {
+    const options = {
+      fromId: 'fab6fa99-b07f-4278-86b4-b674edf60877',
+      field: 'name',
+      operation: 'count',
+      relationType: 'object_refs',
+      toType: 'Report',
+      remoteRelationType: 'created_by_ref',
+    };
+    const distribution = await distributionEntitiesThroughRelations(options);
+    expect(distribution.length).toEqual(1);
+    const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
+    expect(aggregationMap.get('ANSSI')).toEqual(1);
   });
 });

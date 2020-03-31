@@ -1,6 +1,6 @@
 import { assoc, append, propOr, pipe } from 'ramda';
 import {
-  createEntity,
+  createEntity, distributionEntities,
   distributionEntitiesThroughRelations,
   escapeString,
   getSingleValueNumber,
@@ -141,15 +141,18 @@ export const reportsNumberByEntity = (args) => ({
 });
 export const reportsDistributionByEntity = async (args) => {
   const { objectId, field } = args;
-  if (!field.includes('.')) throw new Error('Report distribution required a relation connected field');
-  const options = pipe(
-    assoc('relationType', 'object_refs'),
-    assoc('toType', 'Report'),
-    assoc('field', field.split('.')[1]),
-    assoc('remoteRelationType', field.split('.')[0]),
-    assoc('fromId', objectId)
-  )(args);
-  return distributionEntitiesThroughRelations(options);
+  if (field.includes('.')) {
+    const options = pipe(
+      assoc('relationType', 'object_refs'),
+      assoc('toType', 'Report'),
+      assoc('field', field.split('.')[1]),
+      assoc('remoteRelationType', field.split('.')[0]),
+      assoc('fromId', objectId)
+    )(args);
+    return distributionEntitiesThroughRelations(options);
+  }
+  const filters = [{ isRelation: true, type: 'object_refs', value: objectId }];
+  return distributionEntities('Report', filters, args);
 };
 // endregion
 
