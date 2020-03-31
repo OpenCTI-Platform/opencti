@@ -52,6 +52,13 @@ describe('StixDomainEntity resolver standard behavior', () => {
           id
           name
           description
+          tags {
+            edges {
+              node {
+                id
+              }
+            }
+          }
         }
       }
     `;
@@ -62,6 +69,7 @@ describe('StixDomainEntity resolver standard behavior', () => {
         type: 'Report',
         stix_id_key: stixDomainEntityStixId,
         description: 'StixDomainEntity description',
+        tags: ['ebd3398f-2189-4597-b994-5d1ab310d4bc', 'd2f32968-7e6a-4a78-b0d7-df4e9e30130c'],
       },
     };
     const stixDomainEntity = await queryAsAdmin({
@@ -71,6 +79,7 @@ describe('StixDomainEntity resolver standard behavior', () => {
     expect(stixDomainEntity).not.toBeNull();
     expect(stixDomainEntity.data.stixDomainEntityAdd).not.toBeNull();
     expect(stixDomainEntity.data.stixDomainEntityAdd.name).toEqual('StixDomainEntity');
+    expect(stixDomainEntity.data.stixDomainEntityAdd.tags.edges.length).toEqual(2);
     stixDomainEntityInternalId = stixDomainEntity.data.stixDomainEntityAdd.id;
   });
   it('should stixDomainEntity loaded by internal id', async () => {
@@ -86,6 +95,19 @@ describe('StixDomainEntity resolver standard behavior', () => {
     expect(queryResult.data.stixDomainEntity.id).toEqual(stixDomainEntityInternalId);
   });
   it('should list stixDomainEntities', async () => {
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
+    expect(queryResult.data.stixDomainEntities.edges.length).toEqual(10);
+  });
+  it('should stixDomainEntities number to be accurate', async () => {
+    const NUMBER_QUERY = gql`
+      query stixDomainEntitiesNumber($id: String!) {
+        stixDomainEntitiesNumber(id: $id) {
+          id
+          name
+          description
+        }
+      }
+    `;
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
     expect(queryResult.data.stixDomainEntities.edges.length).toEqual(10);
   });
