@@ -488,6 +488,7 @@ interface StixDomainEntity {
 }
 input StixDomainEntityAddInput {
   internal_id_key: String
+  stix_id_key: String
   name: String!
   description: String
   alias: [String]
@@ -3020,8 +3021,6 @@ type Query {
     fromId: String
     relationType: String
     inferred: Boolean
-    entityTypes: [String]
-    toTypes: [String]
     field: String!
     operation: StatsOperation!
     startDate: DateTime!
@@ -3353,6 +3352,9 @@ type Query {
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
+  reportContainsStixDomainEntity(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
+  reportContainsStixRelation(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
+  reportContainsStixObservable(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
   # Indicators
   indicator(id: String!): Indicator @auth(for: [KNOWLEDGE])
   indicators(

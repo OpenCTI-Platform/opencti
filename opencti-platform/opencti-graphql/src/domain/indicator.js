@@ -114,7 +114,7 @@ export const findAll = (args) => {
 };
 
 export const addIndicator = async (user, indicator, createObservables = true) => {
-  if (!OBSERVABLE_TYPES.includes(indicator.main_observable_type)) {
+  if (!OBSERVABLE_TYPES.includes(indicator.main_observable_type.toLowerCase())) {
     throw new Error(`[SCHEMA] Observable type ${indicator.main_observable_type} is not supported.`);
   }
   const indicatorToCreate = pipe(

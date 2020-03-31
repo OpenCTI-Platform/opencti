@@ -57,9 +57,7 @@ const styles = () => ({
 const entityStixRelationsTableTimeStixRelationTimeSeriesQuery = graphql`
   query EntityStixRelationsTableTimeStixRelationTimeSeriesQuery(
     $fromId: String
-    $entityTypes: [String]
     $relationType: String
-    $toTypes: [String]
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime!
@@ -69,9 +67,7 @@ const entityStixRelationsTableTimeStixRelationTimeSeriesQuery = graphql`
   ) {
     stixRelationsTimeSeries(
       fromId: $fromId
-      entityTypes: $entityTypes
       relationType: $relationType
-      toTypes: $toTypes
       field: $field
       operation: $operation
       startDate: $startDate
@@ -106,17 +102,13 @@ class EntityStixRelationsTableTime extends Component {
       startDate,
       endDate,
       inferred = true,
-      toTypes,
       relationType,
-      entityTypes,
     } = this.props;
     const monthInterval = this.state.interval === 'month' ? monthsAgo(6) : monthsAgo(12 * 5);
     const finalStartDate = variant === 'explore' && startDate ? startDate : monthInterval;
     const stixRelationsTimeSeriesVariables = {
       fromId: entityId || null,
-      entityTypes: entityTypes || null,
       relationType,
-      toTypes: toTypes || null,
       field: 'first_seen',
       operation: 'count',
       startDate: finalStartDate,
@@ -317,8 +309,6 @@ EntityStixRelationsTableTime.propTypes = {
   endDate: PropTypes.string,
   inferred: PropTypes.bool,
   relationType: PropTypes.string,
-  entityTypes: PropTypes.array,
-  toTypes: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,
   md: PropTypes.func,

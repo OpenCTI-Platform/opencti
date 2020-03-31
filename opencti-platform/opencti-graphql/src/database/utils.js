@@ -32,12 +32,12 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
       dateFormat = 'YYYY-MM-DD';
   }
 
-  const elementsOfInterval = endDateParsed.diff(startDateParsed, `${interval}s`, false);
-
+  const startFormatDate = new Date(endDateParsed.format(dateFormat));
+  const endFormatDate = new Date(startDateParsed.format(dateFormat));
+  const elementsOfInterval = moment(startFormatDate).diff(moment(endFormatDate), `${interval}s`);
   const newData = [];
   for (let i = 0; i <= elementsOfInterval; i += 1) {
     const workDate = moment(startDateParsed).add(i, `${interval}s`);
-
     // Looking for the value
     let dataValue = 0;
     for (let j = 0; j < data.length; j += 1) {
@@ -93,28 +93,28 @@ export const inferIndexFromConceptTypes = (types, parentType = null) => {
 };
 
 export const OBSERVABLE_TYPES = [
-  'Autonomous-System',
-  'Directory',
-  'Domain',
-  'Email-Address',
-  'Email-Subject',
-  'File-Name',
-  'File-Path',
-  'File-MD5',
-  'File-SHA1',
-  'File-SHA256',
-  'IPv4-Addr',
-  'IPv6-Addr',
-  'Mac-Addr',
-  'Mutex',
-  'PDB-Path',
-  'Registry-Key',
-  'Registry-Key-Value',
-  'URL',
-  'Windows-Service-Name',
-  'Windows-Service-Display-Name',
-  'Windows-Scheduled-Task',
-  'X509-Certificate-Issuer',
-  'X509-Certificate-Serial-Number',
-  'Unknown',
+  'autonomous-system',
+  'directory',
+  'domain',
+  'email-address',
+  'email-subject',
+  'file-name',
+  'file-path',
+  'file-md5',
+  'file-sha1',
+  'file-sha256',
+  'ipv4-addr',
+  'ipv6-addr',
+  'mac-addr',
+  'mutex',
+  'pdb-path',
+  'registry-key',
+  'registry-key-value',
+  'url',
+  'windows-service-name',
+  'windows-service-display-name',
+  'windows-scheduled-task',
+  'x509-certificate-issuer',
+  'x509-certificate-serial-number',
+  'unknown',
 ];
