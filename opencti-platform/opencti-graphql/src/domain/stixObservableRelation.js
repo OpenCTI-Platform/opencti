@@ -7,16 +7,16 @@ import {
   stixRelationDelete,
   stixRelationDeleteRelation,
   stixRelationEditContext,
-  stixRelationEditField
+  stixRelationEditField,
 } from './stixRelation';
 import { createRelation } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 
-export const findAll = args =>
+export const findAll = (args) =>
   stixRelationFindAll(args.relationType ? args : assoc('relationType', 'stix_observable_relation', args));
 
-export const findById = id => findByIdStixRelation(id);
+export const findById = (id) => findByIdStixRelation(id);
 
 // region mutations
 export const addStixObservableRelation = async (user, stixObservableRelation, reversedReturn = false) => {
@@ -25,14 +25,14 @@ export const addStixObservableRelation = async (user, stixObservableRelation, re
     stixObservableRelation,
     {
       reversedReturn,
-      isStixObservableRelation: true
+      isStixObservableRelation: true,
     },
     'Stix-Observable',
     'Stix-Observable'
   );
   return notify(BUS_TOPICS.StixObservableRelation.ADDED_TOPIC, created, user);
 };
-export const stixObservableRelationDelete = async stixObservableRelationId =>
+export const stixObservableRelationDelete = async (stixObservableRelationId) =>
   stixRelationDelete(stixObservableRelationId);
 
 export const stixObservableRelationCleanContext = (user, stixObservableRelationId) =>

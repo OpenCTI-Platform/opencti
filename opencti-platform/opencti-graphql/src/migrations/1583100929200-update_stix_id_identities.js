@@ -4,12 +4,12 @@ import { executeWrite, updateAttribute } from '../database/grakn';
 import { findAll as findAllStixDomainEntities } from '../domain/stixDomainEntity';
 import { logger } from '../config/conf';
 
-export const up = async next => {
+export const up = async (next) => {
   try {
     logger.info(`[MIGRATION] update_stix_id_identities > Starting updating...`);
     logger.info(`[MIGRATION] update_stix_id_identities > Updating identities in batchs of 200`);
     await Promise.all(
-      ['sector', 'organization', 'user', 'region', 'country', 'city'].map(async entityType => {
+      ['sector', 'organization', 'user', 'region', 'country', 'city'].map(async (entityType) => {
         let hasMore = true;
         let currentCursor = null;
         while (hasMore) {
@@ -19,18 +19,18 @@ export const up = async next => {
             first: 200,
             after: currentCursor,
             orderAsc: true,
-            orderBy: 'name'
+            orderBy: 'name',
           });
           await Promise.all(
-            entities.edges.map(entityEdge => {
+            entities.edges.map((entityEdge) => {
               const entity = entityEdge.node;
-              return executeWrite(wTx => {
+              return executeWrite((wTx) => {
                 return updateAttribute(
                   entity.id,
                   'Identity',
                   {
                     key: 'stix_id_key',
-                    value: [entity.stix_id_key.replace(entityType, 'identity')]
+                    value: [entity.stix_id_key.replace(entityType, 'identity')],
                   },
                   wTx
                 );
@@ -54,6 +54,6 @@ export const up = async next => {
   next();
 };
 
-export const down = async next => {
+export const down = async (next) => {
   next();
 };

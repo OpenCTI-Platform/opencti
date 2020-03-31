@@ -6,7 +6,7 @@ import {
   getGraknVersion,
   load,
   loadEntityById,
-  updateAttribute
+  updateAttribute,
 } from '../database/grakn';
 import conf, { BUS_TOPICS } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
@@ -23,8 +23,8 @@ export const getApplicationInfo = () => ({
     { name: 'Elasticsearch', version: elVersion() },
     { name: 'RabbitMQ', version: getRabbitMQVersion() },
     { name: 'Redis', version: getRedisVersion() },
-    { name: 'MinIO', version: getMinIOVersion() }
-  ]
+    { name: 'MinIO', version: getMinIOVersion() },
+  ],
 });
 
 export const getSettings = async () => {
@@ -50,26 +50,26 @@ export const addSettings = async (user, settings) => {
   return notify(BUS_TOPICS.Settings.ADDED_TOPIC, created, user);
 };
 
-export const settingsDelete = settingsId => {
+export const settingsDelete = (settingsId) => {
   return deleteEntityById(settingsId, 'Settings');
 };
 
 export const settingsCleanContext = (user, settingsId) => {
   delEditContext(user, settingsId);
-  return loadEntityById(settingsId, 'Settings').then(settings =>
+  return loadEntityById(settingsId, 'Settings').then((settings) =>
     notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
   );
 };
 
 export const settingsEditContext = (user, settingsId, input) => {
   setEditContext(user, settingsId, input);
-  return loadEntityById(settingsId, 'Settings').then(settings =>
+  return loadEntityById(settingsId, 'Settings').then((settings) =>
     notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
   );
 };
 
 export const settingsEditField = (user, settingsId, input) => {
-  return executeWrite(wTx => {
+  return executeWrite((wTx) => {
     return updateAttribute(settingsId, 'Settings', input, wTx);
   }).then(async () => {
     const settings = await loadEntityById(settingsId, 'Settings');

@@ -60,12 +60,12 @@ describe('Intrusion set resolver standard behavior', () => {
       input: {
         name: 'Intrusion set',
         stix_id_key: intrusionSetStixId,
-        description: 'Intrusion set description'
-      }
+        description: 'Intrusion set description',
+      },
     };
     const intrusionSet = await queryAsAdmin({
       query: CREATE_QUERY,
-      variables: INTRUSION_SET_TO_CREATE
+      variables: INTRUSION_SET_TO_CREATE,
     });
     expect(intrusionSet).not.toBeNull();
     expect(intrusionSet.data.intrusionSetAdd).not.toBeNull();
@@ -101,7 +101,7 @@ describe('Intrusion set resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
-      variables: { id: intrusionSetInternalId, input: { key: 'name', value: ['Intrusion set - test'] } }
+      variables: { id: intrusionSetInternalId, input: { key: 'name', value: ['Intrusion set - test'] } },
     });
     expect(queryResult.data.intrusionSetEdit.fieldPatch.name).toEqual('Intrusion set - test');
   });
@@ -117,7 +117,7 @@ describe('Intrusion set resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
-      variables: { id: intrusionSetInternalId, input: { focusOn: 'description' } }
+      variables: { id: intrusionSetInternalId, input: { focusOn: 'description' } },
     });
     expect(queryResult.data.intrusionSetEdit.contextPatch.id).toEqual(intrusionSetInternalId);
   });
@@ -133,7 +133,7 @@ describe('Intrusion set resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
-      variables: { id: intrusionSetInternalId }
+      variables: { id: intrusionSetInternalId },
     });
     expect(queryResult.data.intrusionSetEdit.contextClean.id).toEqual(intrusionSetInternalId);
   });
@@ -169,9 +169,9 @@ describe('Intrusion set resolver standard behavior', () => {
           fromRole: 'so',
           toRole: 'marking',
           toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs'
-        }
-      }
+          through: 'object_marking_refs',
+        },
+      },
     });
     expect(queryResult.data.intrusionSetEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
     intrusionSetMarkingDefinitionRelationId =
@@ -198,8 +198,8 @@ describe('Intrusion set resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: intrusionSetInternalId,
-        relationId: intrusionSetMarkingDefinitionRelationId
-      }
+        relationId: intrusionSetMarkingDefinitionRelationId,
+      },
     });
     expect(queryResult.data.intrusionSetEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
   });
@@ -214,7 +214,7 @@ describe('Intrusion set resolver standard behavior', () => {
     // Delete the intrusion set
     await queryAsAdmin({
       query: DELETE_QUERY,
-      variables: { id: intrusionSetInternalId }
+      variables: { id: intrusionSetInternalId },
     });
     // Verify is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: intrusionSetStixId } });

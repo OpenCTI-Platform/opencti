@@ -1,4 +1,5 @@
 import express from 'express';
+// noinspection NodeJsCodingAssistanceForCoreModules
 import { readFileSync } from 'fs';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
@@ -13,7 +14,7 @@ import passport from './config/providers';
 import { authentication, setAuthenticationCookie } from './domain/user';
 import { downloadFile, loadFile } from './database/minio';
 
-const createApp = apolloServer => {
+const createApp = (apolloServer) => {
   // Init the http server
   const app = express();
   const sessionSecret = nconf.get('app:session_secret') || nconf.get('app:admin:password');
@@ -23,7 +24,7 @@ const createApp = apolloServer => {
   app.use(helmet());
   app.use(bodyParser.json({ limit: '100mb' }));
 
-  const extractTokenFromBearer = bearer => (bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null);
+  const extractTokenFromBearer = (bearer) => (bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null);
   const AppBasePath = nconf.get('app:base_path');
   const basePath = isEmpty(AppBasePath) || AppBasePath.startsWith('/') ? AppBasePath : `/${AppBasePath}`;
   const urlencodedParser = bodyParser.urlencoded({ extended: true });
@@ -82,7 +83,7 @@ const createApp = apolloServer => {
   });
 
   const serverHealthCheck = () => {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       // TODO @Julien Implements a real health function
       // Check grakn and ES connection?
       resolve();

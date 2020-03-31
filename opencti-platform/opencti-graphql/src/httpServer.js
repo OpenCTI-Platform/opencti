@@ -28,20 +28,20 @@ export const listenServer = () => {
     }
   });
 };
-export const restartServer = httpServer => {
+export const restartServer = (httpServer) => {
   return new Promise((resolve, reject) => {
     httpServer.close(() => {
       logger.info('OPENCTI server stopped');
       listenServer()
-        .then(server => resolve(server))
-        .catch(e => reject(e));
+        .then((server) => resolve(server))
+        .catch((e) => reject(e));
     });
     httpServer.emit('close'); // force server close
   });
 };
 
-export const stopServer = httpServer => {
-  return new Promise(resolve => {
+export const stopServer = (httpServer) => {
+  return new Promise((resolve) => {
     httpServer.close(() => {
       resolve();
     });

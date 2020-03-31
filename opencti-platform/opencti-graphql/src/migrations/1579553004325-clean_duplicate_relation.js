@@ -15,13 +15,13 @@ const purgeDuplicates = async (query, relation = false, reportId = null) => {
     } else {
       relations = await findWithConnectedRelations(query, 'to', { extraRelKey: 'rel' });
     }
-    const groupedRelations = groupBy(n => n.node.internal_id_key, relations);
+    const groupedRelations = groupBy((n) => n.node.internal_id_key, relations);
     // eslint-disable-next-line no-restricted-syntax,guard-for-in
     for (const groupedRelationKey in groupedRelations) {
       // noinspection JSUnfilteredForInLoop
       const groupedRelation = groupedRelations[groupedRelationKey];
       if (groupedRelation.length > 1) {
-        const relationsToDelete = map(n => n.relation.internal_id_key, dropLast(1, groupedRelation));
+        const relationsToDelete = map((n) => n.relation.internal_id_key, dropLast(1, groupedRelation));
         // eslint-disable-next-line no-restricted-syntax
         for (const relationToDelete of relationsToDelete) {
           await deleteRelationById(relationToDelete, 'relation');
@@ -33,7 +33,7 @@ const purgeDuplicates = async (query, relation = false, reportId = null) => {
   }
 };
 
-export const up = async next => {
+export const up = async (next) => {
   logger.info(`[MIGRATION] clean_duplicate_embedded_relations > Starting cleaning...`);
   logger.info(`[MIGRATION] clean_duplicate_embedded_relations > Cleaning reports in batchs of 100`);
   let hasMore = true;
@@ -44,10 +44,10 @@ export const up = async next => {
       first: 100,
       after: currentCursor,
       orderAsc: true,
-      orderBy: 'name'
+      orderBy: 'name',
     });
     await Promise.all(
-      reports.edges.map(reportEdge => {
+      reports.edges.map((reportEdge) => {
         const report = reportEdge.node;
         return purgeDuplicates(
           `match $from isa Report, has internal_id_key "${report.id}"; $rel(observables_aggregation:$from, soo:$to) isa observable_refs; $to isa Stix-Observable; get;`
@@ -55,7 +55,7 @@ export const up = async next => {
       })
     );
     await Promise.all(
-      reports.edges.map(reportEdge => {
+      reports.edges.map((reportEdge) => {
         const report = reportEdge.node;
         return purgeDuplicates(
           `match $from isa Report, has internal_id_key "${report.id}"; $rel(knowledge_aggregation:$from, so:$to) isa object_refs; $to isa Stix-Domain-Entity; get;`
@@ -63,7 +63,7 @@ export const up = async next => {
       })
     );
     await Promise.all(
-      reports.edges.map(reportEdge => {
+      reports.edges.map((reportEdge) => {
         const report = reportEdge.node;
         return purgeDuplicates(null, true, report.id);
       })
@@ -86,10 +86,10 @@ export const up = async next => {
       first: 100,
       after: currentCursor,
       orderAsc: true,
-      orderBy: 'name'
+      orderBy: 'name',
     });
     await Promise.all(
-      stixDomainEntities.edges.map(stixDomainEntityEdge => {
+      stixDomainEntities.edges.map((stixDomainEntityEdge) => {
         const stixDomainEntity = stixDomainEntityEdge.node;
         return purgeDuplicates(
           `match $from isa Stix-Domain-Entity, has internal_id_key "${stixDomainEntity.id}"; $rel(so:$from, external_reference:$to) isa external_references; $to isa External-Reference; get;`
@@ -97,7 +97,7 @@ export const up = async next => {
       })
     );
     await Promise.all(
-      stixDomainEntities.edges.map(stixDomainEntityEdge => {
+      stixDomainEntities.edges.map((stixDomainEntityEdge) => {
         const stixDomainEntity = stixDomainEntityEdge.node;
         return purgeDuplicates(
           `match $from isa Stix-Domain-Entity, has internal_id_key "${stixDomainEntity.id}"; $rel(so:$from, marking:$to) isa object_marking_refs; $to isa Marking-Definition; get;`
@@ -105,7 +105,7 @@ export const up = async next => {
       })
     );
     await Promise.all(
-      stixDomainEntities.edges.map(stixDomainEntityEdge => {
+      stixDomainEntities.edges.map((stixDomainEntityEdge) => {
         const stixDomainEntity = stixDomainEntityEdge.node;
         return purgeDuplicates(
           `match $from isa Stix-Domain-Entity, has internal_id_key "${stixDomainEntity.id}"; $rel(so:$from, creator:$to) isa created_by_ref; $to isa Identity; get;`
@@ -123,6 +123,6 @@ export const up = async next => {
   next();
 };
 
-export const down = async next => {
+export const down = async (next) => {
   next();
 };

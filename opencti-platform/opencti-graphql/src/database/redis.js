@@ -7,20 +7,20 @@ const redisOptions = {
   port: conf.get('redis:port'),
   host: conf.get('redis:hostname'),
   password: conf.get('redis:password'),
-  retryStrategy: times => Math.min(times * 50, 2000),
-  maxRetriesPerRequest: 2
+  retryStrategy: (times) => Math.min(times * 50, 2000),
+  maxRetriesPerRequest: 2,
 };
 
 export const pubsub = isAppRealTime
   ? new RedisPubSub({
       publisher: new Redis(redisOptions),
-      subscriber: new Redis(redisOptions)
+      subscriber: new Redis(redisOptions),
     })
   : null;
 
 const client = isAppRealTime && new Redis(redisOptions);
 if (client) {
-  client.on('error', error => {
+  client.on('error', (error) => {
     logger.error('[REDIS] An error occurred on redis > ', error);
   });
 }
@@ -51,20 +51,20 @@ export const delEditContext = (user, instanceId) => {
  * @param user the user
  * @returns {Promise<>}
  */
-export const delUserContext = user => {
+export const delUserContext = (user) => {
   return isActive()
     ? new Promise((resolve, reject) => {
         const stream = client.scanStream({
           match: `*:*:${user.id}`,
-          count: 100
+          count: 100,
         });
         const keys = [];
-        stream.on('data', resultKeys => {
+        stream.on('data', (resultKeys) => {
           for (let index = 0; index < resultKeys.length; index += 1) {
             keys.push(resultKeys[index]);
           }
         });
-        stream.on('error', error => {
+        stream.on('error', (error) => {
           reject(error);
         });
         stream.on('end', () => {
@@ -100,25 +100,25 @@ export const setEditContext = (user, instanceId, input) => {
  * @param instanceId
  * @returns {Promise<any>}
  */
-export const fetchEditContext = instanceId => {
+export const fetchEditContext = (instanceId) => {
   return isActive()
     ? new Promise((resolve, reject) => {
         const elementsPromise = [];
         const stream = client.scanStream({
           match: `edit:${instanceId}:*`,
-          count: 100
+          count: 100,
         });
-        stream.on('data', resultKeys => {
+        stream.on('data', (resultKeys) => {
           for (let i = 0; i < resultKeys.length; i += 1) {
             elementsPromise.push(client.get(resultKeys[i]));
           }
         });
-        stream.on('error', error => {
+        stream.on('error', (error) => {
           reject(error);
         });
         stream.on('end', () => {
-          Promise.all(elementsPromise).then(data => {
-            const elements = map(d => JSON.parse(d), data);
+          Promise.all(elementsPromise).then((data) => {
+            const elements = map((d) => JSON.parse(d), data);
             resolve(elements);
           });
         });
@@ -127,7 +127,7 @@ export const fetchEditContext = instanceId => {
 };
 
 // region cache for access token
-export const getAccessCache = async tokenUUID => {
+export const getAccessCache = async (tokenUUID) => {
   if (isActive()) {
     const data = await client.get(tokenUUID);
     return data && JSON.parse(data);
@@ -142,7 +142,7 @@ export const storeAccessCache = async (tokenUUID, access) => {
   }
   return undefined;
 };
-export const clearAccessCache = async tokenUUID => {
+export const clearAccessCache = async (tokenUUID) => {
   if (isActive()) {
     await client.del(tokenUUID);
   }

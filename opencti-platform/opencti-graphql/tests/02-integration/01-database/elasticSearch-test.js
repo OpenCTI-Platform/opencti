@@ -22,7 +22,7 @@ import {
   elReconstructRelation,
   elVersion,
   forceNoCache,
-  specialElasticCharsEscape
+  specialElasticCharsEscape,
 } from '../../../src/database/elasticSearch';
 import { INDEX_STIX_ENTITIES, INDEX_STIX_RELATIONS, utcDate } from '../../../src/database/utils';
 
@@ -64,7 +64,7 @@ describe('Elasticsearch document loader', () => {
       internal_id_key: internalIdKey,
       stix_id_key: stixId,
       name: 'Germany - Maze - October 2019',
-      parent_types: ['Campaign', 'Stix-Domain-Entity', 'Stix-Domain']
+      parent_types: ['Campaign', 'Stix-Domain-Entity', 'Stix-Domain'],
     };
     const indexedData = await elIndex('test_index', documentBody);
     expect(indexedData).toEqual(documentBody);
@@ -95,7 +95,7 @@ describe('Elasticsearch computation', () => {
     const mostRecentMalware = await elLoadByStixId('malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
     const malwaresCount = await elCount(INDEX_STIX_ENTITIES, {
       types: ['Malware'],
-      endDate: mostRecentMalware.created_at
+      endDate: mostRecentMalware.created_at,
     });
     expect(malwaresCount).toEqual(1);
   });
@@ -110,7 +110,7 @@ describe('Elasticsearch computation', () => {
       undefined, // No end
       [] // No filters
     );
-    const aggregationMap = new Map(malwaresAggregation.map(i => [i.label, i.value]));
+    const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('malware')).toEqual(2);
     expect(aggregationMap.get('marking-definition')).toEqual(6);
   });
@@ -123,7 +123,7 @@ describe('Elasticsearch computation', () => {
       new Date(mostRecentMalware.created_at).getTime() - 1,
       [{ type: 'name', value: 'Paradise Ransomware' }] // Filter on name
     );
-    const aggregationMap = new Map(malwaresAggregation.map(i => [i.label, i.value]));
+    const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.size).toEqual(1);
     expect(aggregationMap.get('malware')).toEqual(1);
   });
@@ -137,7 +137,7 @@ describe('Elasticsearch computation', () => {
       undefined, // No end
       [{ isRelation: true, type: 'object_marking_refs', value: marking.internal_id_key }]
     );
-    const aggregationMap = new Map(malwaresAggregation.map(i => [i.label, i.value]));
+    const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('malware')).toEqual(1);
     expect(aggregationMap.get('report')).toEqual(1);
   });
@@ -150,7 +150,7 @@ describe('Elasticsearch computation', () => {
       ['Stix-Domain'], //
       testingReport.internal_id_key
     );
-    const aggregationMap = new Map(reportRelationsAggregation.map(i => [i.label, i.value]));
+    const aggregationMap = new Map(reportRelationsAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('indicator')).toEqual(3);
     expect(aggregationMap.get('organization')).toEqual(3);
     expect(aggregationMap.get('attack-pattern')).toEqual(2);
@@ -170,7 +170,7 @@ describe('Elasticsearch computation', () => {
       ['Stix-Domain'], //
       intrusionSet.internal_id_key
     );
-    const aggregationMap = new Map(intrusionRelationsAggregation.map(i => [i.label, i.value]));
+    const aggregationMap = new Map(intrusionRelationsAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('city')).toEqual(1);
     expect(aggregationMap.get('indicator')).toEqual(1);
     expect(aggregationMap.get('organization')).toEqual(1);
@@ -206,7 +206,7 @@ describe('Elasticsearch computation', () => {
       []
     );
     expect(data.length).toEqual(7);
-    const aggregationMap = new Map(data.map(i => [i.date, i.value]));
+    const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
     expect(aggregationMap.get('2019-08')).toEqual(undefined);
     expect(aggregationMap.get('2019-09')).toEqual(2);
     expect(aggregationMap.get('2019-10')).toEqual(1);
@@ -226,7 +226,7 @@ describe('Elasticsearch computation', () => {
       []
     );
     expect(data.length).toEqual(2);
-    const aggregationMap = new Map(data.map(i => [i.date, i.value]));
+    const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
     expect(aggregationMap.get('2019')).toEqual(3);
     expect(aggregationMap.get('2020')).toEqual(14);
   });
@@ -240,7 +240,7 @@ describe('Elasticsearch computation', () => {
       [{ isRelation: true, type: 'uses', value: '9f7f00f9-304b-4055-8c4f-f5eadb00de3b' }]
     );
     expect(data.length).toEqual(1);
-    const aggregationMap = new Map(data.map(i => [i.date, i.value]));
+    const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
     expect(aggregationMap.get('2019')).toEqual(1);
   });
   it('should year histogram with relation filter accurate', async () => {
@@ -253,7 +253,7 @@ describe('Elasticsearch computation', () => {
       [{ isRelation: true, type: undefined, value: '9f7f00f9-304b-4055-8c4f-f5eadb00de3b' }]
     );
     expect(data.length).toEqual(2);
-    const aggregationMap = new Map(data.map(i => [i.date, i.value]));
+    const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
     expect(aggregationMap.get('2019')).toEqual(1);
     expect(aggregationMap.get('2020')).toEqual(1);
   });
@@ -267,7 +267,7 @@ describe('Elasticsearch computation', () => {
       [{ isRelation: false, type: 'name', value: 'The MITRE Corporation' }]
     );
     expect(data.length).toEqual(1);
-    const aggregationMap = new Map(data.map(i => [i.date, i.value]));
+    const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
     expect(aggregationMap.get('2017')).toEqual(1);
   });
 });
@@ -280,7 +280,7 @@ describe('Elasticsearch relation reconstruction', () => {
   const CONN_MARKING_ID = '63309927-48f6-45c2-aee0-4d92b403cee5';
   const CONN_MARKING_GRAKN_ID = 'V409696';
   const CONN_MARKING_ROLE = 'marking';
-  const buildRelationConcept = relationType => ({
+  const buildRelationConcept = (relationType) => ({
     internal_id_key: RELATION_ID,
     entity_type: 'relation_embedded',
     relationship_type: relationType,
@@ -289,15 +289,15 @@ describe('Elasticsearch relation reconstruction', () => {
         internal_id_key: CONN_MALWARE_ID,
         grakn_id: CONN_MALWARE_GRAKN_ID,
         role: CONN_MALWARE_ROLE,
-        types: ['Malware', 'Stix-Domain-Entity', 'Stix-Domain']
+        types: ['Malware', 'Stix-Domain-Entity', 'Stix-Domain'],
       },
       {
         internal_id_key: CONN_MARKING_ID,
         grakn_id: CONN_MARKING_GRAKN_ID,
         role: CONN_MARKING_ROLE,
-        types: ['Marking-Definition', 'Stix-Domain']
-      }
-    ]
+        types: ['Marking-Definition', 'Stix-Domain'],
+      },
+    ],
   });
   it('Relation reconstruct natural', async () => {
     const concept = buildRelationConcept('object_marking_refs');
@@ -388,7 +388,7 @@ describe('Elasticsearch pagination', () => {
     const data = await elPaginate(INDEX_STIX_ENTITIES);
     expect(data).not.toBeNull();
     expect(data.edges.length).toEqual(61);
-    const filterBaseTypes = uniq(map(e => e.node.base_type, data.edges));
+    const filterBaseTypes = uniq(map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('entity');
   });
@@ -405,7 +405,7 @@ describe('Elasticsearch pagination', () => {
     const data = await elPaginate(INDEX_STIX_ENTITIES, { types: ['Malware'] });
     expect(data).not.toBeNull();
     expect(data.edges.length).toEqual(2);
-    const nodes = map(e => e.node, data.edges);
+    const nodes = map((e) => e.node, data.edges);
     const malware = find(propEq('stix_id_key', 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c'))(nodes);
     expect(malware.internal_id_key).not.toBeNull();
     expect(malware.name).toEqual('Paradise Ransomware');
@@ -473,13 +473,13 @@ describe('Elasticsearch pagination', () => {
     expect(data.edges.length).toEqual(2); // The 4 Default TLP + MITRE Corporation
     filters = [
       { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
-      { key: 'color', operator: undefined, values: [null] }
+      { key: 'color', operator: undefined, values: [null] },
     ];
     data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
     expect(data.edges.length).toEqual(3);
     filters = [
       { key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] },
-      { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] }
+      { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
     ];
     data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
     expect(data.edges.length).toEqual(0);
@@ -487,7 +487,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate with date ordering', async () => {
     const data = await elPaginate(INDEX_STIX_ENTITIES, { orderBy: 'created', orderMode: 'asc' });
     expect(data.edges.length).toEqual(39);
-    const createdDates = map(e => e.node.created, data.edges);
+    const createdDates = map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
       const createdDate = createdDates[index];
@@ -506,7 +506,7 @@ describe('Elasticsearch pagination', () => {
     const filters = [{ key: 'color', operator: undefined, values: ['EXISTS'] }];
     const data = await elPaginate(INDEX_STIX_ENTITIES, { filters, orderBy: 'definition', orderMode: 'desc' });
     expect(data.edges.length).toEqual(4);
-    const markings = map(e => e.node.definition, data.edges);
+    const markings = map((e) => e.node.definition, data.edges);
     expect(markings[0]).toEqual('TLP:WHITE');
     expect(markings[1]).toEqual('TLP:RED');
     expect(markings[2]).toEqual('TLP:GREEN');
@@ -516,14 +516,14 @@ describe('Elasticsearch pagination', () => {
     let data = await elPaginate(INDEX_STIX_RELATIONS);
     expect(data).not.toBeNull();
     expect(data.edges.length).toEqual(95);
-    let filterBaseTypes = uniq(map(e => e.node.base_type, data.edges));
+    let filterBaseTypes = uniq(map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('relation');
     // Same query with no pagination
     data = await elPaginate(INDEX_STIX_RELATIONS, { connectionFormat: false });
     expect(data).not.toBeNull();
     expect(data.length).toEqual(95);
-    filterBaseTypes = uniq(map(e => e.base_type, data));
+    filterBaseTypes = uniq(map((e) => e.base_type, data));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('relation');
   });
@@ -587,7 +587,7 @@ describe('Elasticsearch reindex', () => {
     const data = await elLoadByStixId('relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de', 'stix_relation');
     expect(data).not.toBeNull();
     expect(data.connections.length).toEqual(2);
-    const connections = map(c => c.internal_id_key, data.connections);
+    const connections = map((c) => c.internal_id_key, data.connections);
     expect(includes(malwareInternalId, connections)).toBeTruthy(); // malware--faa5b705-cf44-4e50-8472-29e5fec43c3c
     expect(includes(attackId, connections)).toBeTruthy(); // attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17
     // Malware must be find by the relation

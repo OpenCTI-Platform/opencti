@@ -100,7 +100,10 @@ describe('Report resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await queryAsAdmin({ query: REPORT_STIX_DOMAIN_ENTITIES, variables: { id: '685aac19-d2f6-4835-a256-0631bb322732' } });
+    const queryResult = await queryAsAdmin({
+      query: REPORT_STIX_DOMAIN_ENTITIES,
+      variables: { id: '685aac19-d2f6-4835-a256-0631bb322732' },
+    });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.report).not.toBeNull();
     expect(queryResult.data.report.id).toEqual('685aac19-d2f6-4835-a256-0631bb322732');
@@ -121,7 +124,10 @@ describe('Report resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await queryAsAdmin({ query: REPORT_STIX_RELATIONS, variables: { id: '685aac19-d2f6-4835-a256-0631bb322732' } });
+    const queryResult = await queryAsAdmin({
+      query: REPORT_STIX_RELATIONS,
+      variables: { id: '685aac19-d2f6-4835-a256-0631bb322732' },
+    });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.report).not.toBeNull();
     expect(queryResult.data.report.id).toEqual('685aac19-d2f6-4835-a256-0631bb322732');
@@ -142,7 +148,10 @@ describe('Report resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await queryAsAdmin({ query: REPORT_STIX_OBSERVABLES, variables: { id: '685aac19-d2f6-4835-a256-0631bb322732' } });
+    const queryResult = await queryAsAdmin({
+      query: REPORT_STIX_OBSERVABLES,
+      variables: { id: '685aac19-d2f6-4835-a256-0631bb322732' },
+    });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.report).not.toBeNull();
     expect(queryResult.data.report.id).toEqual('685aac19-d2f6-4835-a256-0631bb322732');

@@ -62,7 +62,6 @@ class ReportComponent extends Component {
           <Grid item={true} xs={6}>
             <EntityStixRelationsPie
               entityId={report.id}
-              entityType="Stix-Domain-Entity"
               relationType="object_refs"
               field="entity_type"
             />
