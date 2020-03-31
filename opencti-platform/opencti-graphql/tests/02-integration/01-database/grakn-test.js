@@ -212,7 +212,7 @@ describe('Grakn loaders', () => {
     const countObjects = (type) => getSingleValueNumber(`match $c isa ${type}; get; count;`);
     // Entities
     expect(await countObjects('Settings')).toEqual(1);
-    expect(await countObjects('Tag')).toEqual(0);
+    expect(await countObjects('Tag')).toEqual(3);
     expect(await countObjects('Connector')).toEqual(0);
     expect(await countObjects('Group')).toEqual(0);
     expect(await countObjects('Workspace')).toEqual(0);
@@ -221,7 +221,7 @@ describe('Grakn loaders', () => {
     expect(await countObjects('Stix-Domain')).toEqual(39);
     expect(await countObjects('Role')).toEqual(2);
     expect(await countObjects('Capability')).toEqual(19);
-    expect(await countObjects('Stix-Observable')).toEqual(4);
+    expect(await countObjects('Stix-Observable')).toEqual(6);
     // Relations
   });
 });
@@ -405,7 +405,7 @@ describe('Grakn relations listing', () => {
     expect(stixRelations.edges.length).toEqual(19);
     const embeddedRelations = await listRelations('stix_relation_embedded', { noCache });
     expect(embeddedRelations).not.toBeNull();
-    expect(embeddedRelations.edges.length).toEqual(76);
+    expect(embeddedRelations.edges.length).toEqual(78);
   });
   it.each(noCacheCases)('should list relations with no id (noCache = %s)', (noCache) => {
     expect(listRelations('uses', { noCache, fromTypes: ['Attack-Pattern'] })).rejects.toThrow();

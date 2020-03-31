@@ -29,6 +29,7 @@ const tagResolvers = {
       delete: () => tagDelete(id),
       fieldPatch: ({ input }) => tagEditField(user, id, input),
       contextPatch: ({ input }) => tagEditContext(user, id, input),
+      contextClean: () => tagCleanContext(user, id),
     }),
     tagAdd: (_, { input }, { user }) => addTag(user, input),
   },

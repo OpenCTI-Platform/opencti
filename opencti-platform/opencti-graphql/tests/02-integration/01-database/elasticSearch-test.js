@@ -387,7 +387,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything', async () => {
     const data = await elPaginate(INDEX_STIX_ENTITIES);
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(61);
+    expect(data.edges.length).toEqual(64);
     const filterBaseTypes = uniq(map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('entity');
@@ -395,7 +395,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything after', async () => {
     const data = await elPaginate(INDEX_STIX_ENTITIES, { after: offsetToCursor(30) });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(31);
+    expect(data.edges.length).toEqual(34);
   });
   it('should entity paginate with single type', async () => {
     // first = 200, after, types = null, filters = [], search = null,
@@ -446,7 +446,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate with field exist filter', async () => {
     const filters = [{ key: 'color', operator: undefined, values: ['EXISTS'] }];
     const data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
-    expect(data.edges.length).toEqual(4); // The 4 Default TLP Marking definitions
+    expect(data.edges.length).toEqual(7); // The 4 Default TLP Marking definitions
   });
   it('should entity paginate with equality filter', async () => {
     // eq operation will use the field.keyword to do an exact field equality
@@ -515,14 +515,14 @@ describe('Elasticsearch pagination', () => {
   it('should relation paginate everything', async () => {
     let data = await elPaginate(INDEX_STIX_RELATIONS);
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(95);
+    expect(data.edges.length).toEqual(103);
     let filterBaseTypes = uniq(map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('relation');
     // Same query with no pagination
     data = await elPaginate(INDEX_STIX_RELATIONS, { connectionFormat: false });
     expect(data).not.toBeNull();
-    expect(data.length).toEqual(95);
+    expect(data.length).toEqual(103);
     filterBaseTypes = uniq(map((e) => e.base_type, data));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('relation');

@@ -33,7 +33,9 @@
       "objects": {
         "0": {
           "hashes": {
-            "MD5": "757a71f0fbd6b3d993be2a213338d1f2"
+            "MD5": "757a71f0fbd6b3d993be2a213338d1f2",
+            "SHA-1": "ebe874c468d4b1b78fa4b3a7b3653b45db0da0e7",
+            "SHA-256": "19640e31073a3b929e0ea434652f3d6d560a06bf653f60530141bf4660227e02"
           },
           "type": "file"
         }
@@ -188,7 +190,27 @@
       "created": "2020-02-04T14:48:31.601Z",
       "modified": "2020-02-04T14:48:31.601Z",
       "x_opencti_id": "6fb84f02-f095-430e-87a0-394d41955eee",
-      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"],
+      "x_opencti_tags": [
+        {
+          "id": "d403a132-5322-4581-a847-77d431f32766",
+          "tag_type": "AlienVault",
+          "value": "ryuk",
+          "color": "#489044"
+        },
+        {
+          "id": "ebd3398f-2189-4597-b994-5d1ab310d4bc",
+          "tag_type": "AlienVault",
+          "value": "TrickBot",
+          "color": "#489044"
+        },
+        {
+          "id": "d2f32968-7e6a-4a78-b0d7-df4e9e30130c",
+          "tag_type": "AlienVault",
+          "value": "COVID-19",
+          "color": "#489044"
+        }
+      ]
     },
     {
       "id": "campaign--92d46985-17a6-4610-8be8-cc70c82ed214",

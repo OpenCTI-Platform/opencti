@@ -63,7 +63,7 @@ describe('Tag resolver standard behavior', () => {
   });
   it('should list tags', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.tags.edges.length).toEqual(1);
+    expect(queryResult.data.tags.edges.length).toEqual(4);
   });
   it('should update tag', async () => {
     const UPDATE_QUERY = gql`
