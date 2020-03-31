@@ -252,6 +252,73 @@ class Report:
         return object_result
 
     """
+        Check if a report already contains a STIX entity
+        
+        :return Boolean
+    """
+
+    def contains_stix_entity(self, **kwargs):
+        id = kwargs.get("id", None)
+        entity_id = kwargs.get("entity_id", None)
+        if id is not None and entity_id is not None:
+            self.opencti.log(
+                "info",
+                "Checking Stix-Entity {" + entity_id + "} in Report {" + id + "}",
+            )
+            query = (
+                """
+                query ReportContainsStixDomainEntity($id: String!, $objectId: String!) {
+                    reportContainsStixDomainEntity(id: $id, objectId: $objectId)
+                }
+            """
+            )
+            result = self.opencti.query(query, {"id": id, "objectId": entity_id})
+            if not result["data"]["reportContainsStixDomainEntity"]:
+                query = (
+                    """
+                    query ReportContainsStixRelation($id: String!, $objectId: String!) {
+                        reportContainsStixRelation(id: $id, objectId: $objectId)
+                    }
+                """
+                )
+                result = self.opencti.query(query, {"id": id, "objectId": entity_id})
+                return result["data"]["reportContainsStixRelation"]
+        else:
+            self.opencti.log(
+                "error",
+                "[opencti_report] Missing parameters: id or entity_id",
+            )
+
+    """
+        Check if a report already contains a STIX observable
+
+        :return Boolean
+    """
+
+    def contains_stix_observable(self, **kwargs):
+        id = kwargs.get("id", None)
+        stix_observable_id = kwargs.get("stix_observable_id", None)
+        if id is not None and stix_observable_id is not None:
+            self.opencti.log(
+                "info",
+                "Checking Stix-Observable {" + stix_observable_id + "} in Report {" + id + "}",
+            )
+            query = (
+                """
+                query ReportContainsStixObservable($id: String!, $objectId: String!) {
+                    reportContainsStixObservable(id: $id, objectId: $objectId)
+                }
+            """
+            )
+            result = self.opencti.query(query, {"id": id, "objectId": stix_observable_id})
+            return result["data"]["reportContainsStixObservable"]
+        else:
+            self.opencti.log(
+                "error",
+                "[opencti_report] Missing parameters: id or stix_observable_id",
+            )
+
+    """
         Create a Report object
 
         :param name: the name of the Report
@@ -437,33 +504,8 @@ class Report:
         entity_id = kwargs.get("entity_id", None)
         if id is not None and entity_id is not None:
             if report is None:
-                custom_attributes = """
-                    id
-                    objectRefs(first: 10000) {
-                        edges {
-                            node {
-                                id
-                                stix_id_key
-                                entity_type
-                            }
-                        }
-                    }
-                    relationRefs(first: 10000) {
-                        edges {
-                            node {
-                                id
-                                stix_id_key
-                            }
-                        }
-                    }
-                """
-                report = self.read(id=id, customAttributes=custom_attributes)
-            if report is None:
-                self.opencti.log(
-                    "error", "[opencti_report] Cannot add Object Ref, report not found"
-                )
-                return False
-            if (
+                return self.contains_stix_entity(id=id, entity_id=entity_id)
+            elif (
                 entity_id in report["objectRefsIds"]
                 or entity_id in report["relationRefsIds"]
             ):
@@ -515,20 +557,7 @@ class Report:
         stix_observable_id = kwargs.get("stix_observable_id", None)
         if id is not None and stix_observable_id is not None:
             if report is None:
-                custom_attributes = """
-                    id
-                    observableRefs {
-                        edges {
-                            node {
-                                id
-                                stix_id_key
-                                entity_type
-                                observable_value
-                            }
-                        }
-                    }
-                """
-                report = self.read(id=id, customAttributes=custom_attributes)
+                return self.contains_stix_observable(id=id, stix_observable_id=stix_observable_id)
             if report is None:
                 self.opencti.log(
                     "error", "[opencti_report] Cannot add Object Ref, report not found"
