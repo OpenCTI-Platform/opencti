@@ -100,10 +100,10 @@ describe('Report resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await queryAsAdmin({ query: REPORT_STIX_DOMAIN_ENTITIES, variables: { id: reportStixId } });
+    const queryResult = await queryAsAdmin({ query: REPORT_STIX_DOMAIN_ENTITIES, variables: { id: '685aac19-d2f6-4835-a256-0631bb322732' } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.report).not.toBeNull();
-    expect(queryResult.data.report.id).toEqual(reportInternalId);
+    expect(queryResult.data.report.id).toEqual('685aac19-d2f6-4835-a256-0631bb322732');
     expect(queryResult.data.report.objectRefs.edges.length).toEqual(14);
   });
   it('should report stix relations accurate', async () => {
@@ -121,10 +121,10 @@ describe('Report resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await queryAsAdmin({ query: REPORT_STIX_RELATIONS, variables: { id: reportStixId } });
+    const queryResult = await queryAsAdmin({ query: REPORT_STIX_RELATIONS, variables: { id: '685aac19-d2f6-4835-a256-0631bb322732' } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.report).not.toBeNull();
-    expect(queryResult.data.report.id).toEqual(reportInternalId);
+    expect(queryResult.data.report.id).toEqual('685aac19-d2f6-4835-a256-0631bb322732');
     expect(queryResult.data.report.relationRefs.edges.length).toEqual(11);
   });
   it('should report stix observables accurate', async () => {
@@ -142,11 +142,11 @@ describe('Report resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await queryAsAdmin({ query: REPORT_STIX_OBSERVABLES, variables: { id: reportStixId } });
+    const queryResult = await queryAsAdmin({ query: REPORT_STIX_OBSERVABLES, variables: { id: '685aac19-d2f6-4835-a256-0631bb322732' } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.report).not.toBeNull();
-    expect(queryResult.data.report.id).toEqual(reportInternalId);
-    expect(queryResult.data.report.observableRefs.edges.length).toEqual(11);
+    expect(queryResult.data.report.id).toEqual('685aac19-d2f6-4835-a256-0631bb322732');
+    expect(queryResult.data.report.observableRefs.edges.length).toEqual(4);
   });
   it('should list reports', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });

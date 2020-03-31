@@ -62,8 +62,9 @@ export const reportContainsStixRelation = async (reportId, objectId) => {
     fromRole: 'so',
     toRole: 'knowledge_aggregation',
     id: reportId,
+    relationId: objectId,
   };
-  const stixRelations = await listRelations(null, { fromId: objectId, relationFilter });
+  const stixRelations = await listRelations(null, { relationFilter });
   return stixRelations.edges.length > 0;
 };
 // Observable refs
