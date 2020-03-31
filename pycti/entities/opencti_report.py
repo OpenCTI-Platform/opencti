@@ -271,14 +271,15 @@ class Report:
                 }
             """
             result = self.opencti.query(query, {"id": id, "objectId": entity_id})
-            if not result["data"]["reportContainsStixDomainEntity"]:
-                query = """
-                    query ReportContainsStixRelation($id: String!, $objectId: String!) {
-                        reportContainsStixRelation(id: $id, objectId: $objectId)
-                    }
-                """
-                result = self.opencti.query(query, {"id": id, "objectId": entity_id})
-                return result["data"]["reportContainsStixRelation"]
+            if result["data"]["reportContainsStixDomainEntity"]:
+                return True
+            query = """
+                query ReportContainsStixRelation($id: String!, $objectId: String!) {
+                    reportContainsStixRelation(id: $id, objectId: $objectId)
+                }
+            """
+            result = self.opencti.query(query, {"id": id, "objectId": entity_id})
+            return result["data"]["reportContainsStixRelation"]
         else:
             self.opencti.log(
                 "error", "[opencti_report] Missing parameters: id or entity_id",
@@ -502,40 +503,40 @@ class Report:
         report = kwargs.get("report", None)
         entity_id = kwargs.get("entity_id", None)
         if id is not None and entity_id is not None:
-            if report is None:
-                return self.contains_stix_entity(id=id, entity_id=entity_id)
-            elif (
-                entity_id in report["objectRefsIds"]
-                or entity_id in report["relationRefsIds"]
-            ):
-                return True
+            if report is not None:
+                if (
+                    entity_id in report["objectRefsIds"]
+                    or entity_id in report["relationRefsIds"]
+                ):
+                    return True
             else:
-                self.opencti.log(
-                    "info",
-                    "Adding Stix-Entity {" + entity_id + "} to Report {" + id + "}",
-                )
-                query = """
-                   mutation ReportEdit($id: ID!, $input: RelationAddInput) {
-                       reportEdit(id: $id) {
-                            relationAdd(input: $input) {
-                                id
-                            }
-                       }
+                if self.contains_stix_entity(id=id, entity_id=entity_id):
+                    return True
+            self.opencti.log(
+                "info", "Adding Stix-Entity {" + entity_id + "} to Report {" + id + "}",
+            )
+            query = """
+               mutation ReportEdit($id: ID!, $input: RelationAddInput) {
+                   reportEdit(id: $id) {
+                        relationAdd(input: $input) {
+                            id
+                        }
                    }
-                """
-                self.opencti.query(
-                    query,
-                    {
-                        "id": id,
-                        "input": {
-                            "fromRole": "knowledge_aggregation",
-                            "toId": entity_id,
-                            "toRole": "so",
-                            "through": "object_refs",
-                        },
+               }
+            """
+            self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "input": {
+                        "fromRole": "knowledge_aggregation",
+                        "toId": entity_id,
+                        "toRole": "so",
+                        "through": "object_refs",
                     },
-                )
-                return True
+                },
+            )
+            return True
         else:
             self.opencti.log(
                 "error", "[opencti_report] Missing parameters: id and entity_id"
@@ -555,48 +556,44 @@ class Report:
         report = kwargs.get("report", None)
         stix_observable_id = kwargs.get("stix_observable_id", None)
         if id is not None and stix_observable_id is not None:
-            if report is None:
-                return self.contains_stix_observable(
-                    id=id, stix_observable_id=stix_observable_id
-                )
-            if report is None:
-                self.opencti.log(
-                    "error", "[opencti_report] Cannot add Object Ref, report not found"
-                )
-                return False
-            if stix_observable_id in report["observableRefsIds"]:
-                return True
+            if report is not None:
+                if stix_observable_id in report["observableRefsIds"]:
+                    return True
             else:
-                self.opencti.log(
-                    "info",
-                    "Adding Stix-Observable {"
-                    + stix_observable_id
-                    + "} to Report {"
-                    + id
-                    + "}",
-                )
-                query = """
-                   mutation ReportEdit($id: ID!, $input: RelationAddInput) {
-                       reportEdit(id: $id) {
-                            relationAdd(input: $input) {
-                                id
-                            }
-                       }
+                if self.contains_stix_observable(
+                    id=id, stix_observable_id=stix_observable_id
+                ):
+                    return True
+            self.opencti.log(
+                "info",
+                "Adding Stix-Observable {"
+                + stix_observable_id
+                + "} to Report {"
+                + id
+                + "}",
+            )
+            query = """
+               mutation ReportEdit($id: ID!, $input: RelationAddInput) {
+                   reportEdit(id: $id) {
+                        relationAdd(input: $input) {
+                            id
+                        }
                    }
-                """
-                self.opencti.query(
-                    query,
-                    {
-                        "id": id,
-                        "input": {
-                            "fromRole": "observables_aggregation",
-                            "toId": stix_observable_id,
-                            "toRole": "soo",
-                            "through": "observable_refs",
-                        },
+               }
+            """
+            self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "input": {
+                        "fromRole": "observables_aggregation",
+                        "toId": stix_observable_id,
+                        "toRole": "soo",
+                        "through": "observable_refs",
                     },
-                )
-                return True
+                },
+            )
+            return True
         else:
             self.opencti.log(
                 "error",
