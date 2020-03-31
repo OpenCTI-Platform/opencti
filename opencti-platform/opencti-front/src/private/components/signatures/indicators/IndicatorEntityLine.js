@@ -102,7 +102,9 @@ class IndicatorEntityLineComponent extends Component {
               >
                 {node.to.entity_type === 'stix_relation'
                 || node.to.entity_type === 'stix-relation'
-                  ? `${node.to.from.name} ${String.fromCharCode(8594)} ${node.to.to.name}`
+                  ? `${node.to.from.name} ${String.fromCharCode(8594)} ${
+                    node.to.to.name
+                  }`
                   : node.to.name}
               </div>
               {!displayRelation ? (
@@ -181,21 +183,14 @@ const IndicatorEntityLineFragment = createFragmentContainer(
         role_played
         inferred
         to {
-          ... on StixDomainEntity {
-            id
-            entity_type
-            parent_types
-            name
-            description
-            created_at
-            updated_at
-          }
+          id
+          name
+          description
+          parent_types
+          entity_type
+          created_at
+          updated_at
           ... on StixRelation {
-            id
-            parent_types
-            entity_type
-            created_at
-            updated_at
             from {
               name
             }
