@@ -1,4 +1,4 @@
-import uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
 import { assoc, pipe, splitEvery } from 'ramda';
 import { attributeExists, conceptTypes, executeWrite, loadEntityByGraknId } from '../database/grakn';
 import { logger } from '../config/conf';

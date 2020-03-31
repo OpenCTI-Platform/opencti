@@ -22,7 +22,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import List from '@material-ui/core/List';
 import Paper from '@material-ui/core/Paper';
-import uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';

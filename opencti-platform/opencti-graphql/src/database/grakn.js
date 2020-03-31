@@ -1,5 +1,4 @@
-import uuid from 'uuid/v4';
-import uuid5 from 'uuid/v5';
+import { v4 as uuid, v5 as uuid5 } from 'uuid';
 import {
   __,
   append,
@@ -56,6 +55,7 @@ import {
 } from './utils';
 import { isInversed, resolveNaturalRoles, ROLE_FROM } from './graknRoles';
 import {
+  elAggregationCount,
   elAggregationRelationsCount,
   elBulk,
   elDeleteInstanceIds,
@@ -1061,8 +1061,10 @@ export const reindexRelationAttribute = (type, value) => reindexAttributeValue('
 
 // region Graphics
 const buildAggregationQuery = (entityType, filters, options) => {
-  const { operation, field, interval } = options;
-  const baseQuery = `match $from isa ${entityType};`;
+  const { operation, field, interval, startDate, endDate } = options;
+  let baseQuery = `match $from isa ${entityType}; ${startDate || endDate ? '$from has created_at $created;' : ''}`;
+  if (startDate) baseQuery = `${baseQuery} $created > ${prepareDate(startDate)};`;
+  if (endDate) baseQuery = `${baseQuery} $created < ${prepareDate(endDate)};`;
   const filterQuery = pipe(
     map((filterElement) => {
       const { isRelation, value, from, to, start, end, type } = filterElement;
@@ -1135,6 +1137,24 @@ export const timeSeriesRelations = async (options) => {
   }
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
+export const distributionEntities = async (entityType, filters = [], options) => {
+  // filters: { isRelation: true, type: stix_relation, start: date, end: date, from: 'role', to: 'role', value: uuid }
+  const { noCache = false, inferred = false, limit = 10, order = 'asc' } = options;
+  const { startDate, endDate, field, operation } = options;
+  let distributionData;
+  // Unsupported in cache: const { isRelation, value, from, to, start, end, type };
+  if (field.includes('.')) throw new Error('Distribution entities doesnt support relation aggregation field');
+  const supportedFilters = filter((f) => f.start || f.end || f.from || f.to, filters).length === 0;
+  if (!noCache && operation === 'count' && supportedFilters && inferred === false) {
+    distributionData = await elAggregationCount(entityType, field, startDate, endDate, filters);
+  } else {
+    const finalQuery = buildAggregationQuery(entityType, filters, options);
+    distributionData = await graknTimeSeries(finalQuery, 'label', 'value', inferred);
+  }
+  // Take a maximum amount of distribution depending on the ordering.
+  const orderingFunction = order === 'asc' ? ascend : descend;
+  return take(limit, sortWith([orderingFunction(prop('value'))])(distributionData));
+};
 export const distributionRelations = async (options) => {
   const { fromId, field, operation } = options; // Mandatory fields
   const { limit = 50, order, noCache = false, inferred = false } = options;
@@ -1168,9 +1188,10 @@ export const distributionRelations = async (options) => {
 export const distributionEntitiesThroughRelations = async (options) => {
   const { limit = 10, order, inferred = false } = options;
   const { relationType, remoteRelationType, toType, fromId, field, operation } = options;
-  const query = `match $rel($from, $to) isa ${relationType}; $to isa ${toType}; $from has internal_id_key "${escapeString(
-    fromId
-  )}"; $rel2($to, $to2) isa ${remoteRelationType}; $to2 has ${escape(field)} $g; get; group $g; ${escape(operation)};`;
+  let query = `match $rel($from, $to) isa ${relationType}; $to isa ${toType};`;
+  query += `$from has internal_id_key "${escapeString(fromId)}";`;
+  query += `$rel2($to, $to2) isa ${remoteRelationType};`;
+  query += `$to2 has ${escape(field)} $g; get; group $g; ${escape(operation)};`;
   const distributionData = await graknTimeSeries(query, 'label', 'value', inferred);
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? ascend : descend;
