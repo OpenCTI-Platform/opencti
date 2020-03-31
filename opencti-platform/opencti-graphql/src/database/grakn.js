@@ -895,7 +895,7 @@ export const listRelations = async (relationType, args) => {
     const relationQueryPart = `$${relationRef}(${fromRole}:$rel, ${toRole}:$pointer) isa ${relation}; $pointer has internal_id_key "${pEid}";`;
     relationsFields.push(relationQueryPart);
     if(relationId) {
-      attributesFilters.push(`$rel has internal_id_key "${escapeString(relationId)}";`);
+      attributesFilters.push(`$rel has internal_id_key "${escapeString(relationId)}";`)
     }
   }
   if (filters.length > 0) {
@@ -945,8 +945,7 @@ export const internalLoadEntityById = async (id, type = null, args = {}) => {
   const { noCache = false } = args;
   if (!noCache && !forceNoCache()) {
     // [ELASTIC] From cache
-    const fromCache = await elLoadById(id, type);
-    if (fromCache) return fromCache;
+    return elLoadById(id, type);
   }
   const query = `match $x ${type ? `isa ${type},` : ''} has internal_id_key "${escapeString(id)}"; get;`;
   const element = await load(query, ['x'], { noCache });
@@ -961,9 +960,7 @@ export const loadEntityById = async (id, type, args = {}) => {
 export const internalLoadEntityByStixId = async (id, type = null, args = {}) => {
   const { noCache = false } = args;
   if (!noCache && !forceNoCache()) {
-    // [ELASTIC] From cache
-    const fromCache = await elLoadByStixId(id, type);
-    if (fromCache) return fromCache;
+    return elLoadByStixId(id, type);
   }
   const query = `match $x ${type ? `isa ${type},` : ''} has stix_id_key "${escapeString(id)}"; get;`;
   const element = await load(query, ['x']);
