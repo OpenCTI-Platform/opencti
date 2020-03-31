@@ -81,7 +81,7 @@ describe('Elasticsearch document loader', () => {
     // Try to delete
     await elDeleteByField('test_index', 'internal_id_key', internalIdKey);
     const removedInternal = await elLoadById(internalIdKey, null, null, ['test_index']);
-    expect(removedInternal).toBeUndefined();
+    expect(removedInternal).toBeNull();
   });
 });
 
