@@ -10,7 +10,7 @@ import {
   loadEntityById,
   loadEntityByStixId,
   prepareDate,
-  timeSeriesEntities
+  timeSeriesEntities,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
@@ -24,13 +24,13 @@ export const STATUS_STATUS_PROGRESS = 1;
 export const STATUS_STATUS_ANALYZED = 2;
 export const STATUS_STATUS_CLOSED = 3;
 
-export const findById = reportId => {
+export const findById = (reportId) => {
   if (reportId.match(/[a-z-]+--[\w-]{36}/g)) {
     return loadEntityByStixId(reportId, 'Report');
   }
   return loadEntityById(reportId, 'Report');
 };
-export const findAll = async args => {
+export const findAll = async (args) => {
   return listEntities(['Report'], ['name', 'description'], args);
 };
 
@@ -40,11 +40,32 @@ export const objectRefs = (reportId, args) => {
   const finalArgs = assoc('filters', append({ key, values: [reportId] }, propOr([], 'filters', args)), args);
   return findAllStixDomainEntities(finalArgs);
 };
+export const reportContainsStixDomainEntity = async (reportId, objectId) => {
+  const args = {
+    filters: [
+      { key: `${REL_INDEX_PREFIX}object_refs.internal_id_key`, values: [reportId] },
+      { key: 'id', values: [objectId] },
+    ],
+  };
+  const stixDomainEntities = await findAllStixDomainEntities(args);
+  return stixDomainEntities.edges.length > 0;
+};
 // Relation refs
 export const relationRefs = (reportId, args) => {
   const relationFilter = { relation: 'object_refs', fromRole: 'so', toRole: 'knowledge_aggregation', id: reportId };
   const finalArgs = assoc('relationFilter', relationFilter, args);
   return listRelations(args.relationType, finalArgs);
+};
+export const reportContainsStixRelation = async (reportId, objectId) => {
+  const relationFilter = {
+    relation: 'object_refs',
+    fromRole: 'so',
+    toRole: 'knowledge_aggregation',
+    id: reportId,
+    relationId: objectId,
+  };
+  const stixRelations = await listRelations(null, { relationFilter });
+  return stixRelations.edges.length > 0;
 };
 // Observable refs
 export const observableRefs = (reportId, args) => {
@@ -52,33 +73,42 @@ export const observableRefs = (reportId, args) => {
   const finalArgs = assoc('filters', append({ key, values: [reportId] }, propOr([], 'filters', args)), args);
   return findAllStixObservables(finalArgs);
 };
-
+export const reportContainsStixObservable = async (reportId, objectId) => {
+  const args = {
+    filters: [
+      { key: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`, values: [reportId] },
+      { key: 'id', values: [objectId] },
+    ],
+  };
+  const stixObservables = await findAllStixObservables(args);
+  return stixObservables.edges.length > 0;
+};
 // region series
-export const reportsTimeSeries = args => {
+export const reportsTimeSeries = (args) => {
   const { reportClass } = args;
   const filters = reportClass ? [{ isRelation: false, type: 'report_class', value: args.reportClass }] : [];
   return timeSeriesEntities('Incident', filters, args);
 };
-export const reportsNumber = args => ({
+export const reportsNumber = (args) => ({
   count: getSingleValueNumber(`match $x isa Report;
    ${args.reportClass ? `; $x has report_class "${escapeString(args.reportClass)}"` : ''} 
    ${args.endDate ? `$x has created_at $date; $date < ${prepareDate(args.endDate)};` : ''}
    get; count;`),
   total: getSingleValueNumber(`match $x isa Report;
     ${args.reportClass ? `; $x has report_class "${escapeString(args.reportClass)}"` : ''}
-    get; count;`)
+    get; count;`),
 });
-export const reportsTimeSeriesByEntity = args => {
+export const reportsTimeSeriesByEntity = (args) => {
   const filters = [{ isRelation: true, type: 'object_refs', value: args.objectId }];
   return timeSeriesEntities('Report', filters, args);
 };
-export const reportsTimeSeriesByAuthor = async args => {
+export const reportsTimeSeriesByAuthor = async (args) => {
   const { authorId, reportClass } = args;
   const filters = [{ isRelation: true, from: 'so', to: 'creator', type: 'created_by_ref', value: authorId }];
   if (reportClass) filters.push({ isRelation: false, type: 'report_class', value: reportClass });
   return timeSeriesEntities('Report', filters, args);
 };
-export const reportsNumberByEntity = args => ({
+export const reportsNumberByEntity = (args) => ({
   count: getSingleValueNumber(
     `match $x isa Report;
     $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
@@ -108,9 +138,9 @@ export const reportsNumberByEntity = args => ({
     }
     get;
     count;`
-  )
+  ),
 });
-export const reportsDistributionByEntity = async args => {
+export const reportsDistributionByEntity = async (args) => {
   const { objectId, field } = args;
   if (field.includes('.')) {
     const options = pipe(

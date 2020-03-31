@@ -358,6 +358,7 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) =
   });
 };
 export const elHistogramCount = async (type, field, interval, start, end, filters) => {
+  // const tzStart = moment.parseZone(start).format('Z');
   const histoFilters = map(f => {
     // eslint-disable-next-line no-nested-ternary
     const key = f.isRelation
@@ -419,6 +420,7 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
           date_histogram: {
             field,
             calendar_interval: interval,
+            // time_zone: tzStart,
             format: dateFormat,
             keyed: true
           }
