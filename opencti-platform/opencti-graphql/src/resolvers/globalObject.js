@@ -9,8 +9,8 @@ const globalObjectResolvers = {
         return obj.entity_type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
       }
       return 'Unknown';
-    }
-  }
+    },
+  },
 };
 
 export default globalObjectResolvers;

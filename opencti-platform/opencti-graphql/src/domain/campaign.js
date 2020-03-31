@@ -5,26 +5,26 @@ import {
   loadEntityById,
   loadEntityByStixId,
   now,
-  timeSeriesEntities
+  timeSeriesEntities,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 
-export const findById = campaignId => {
+export const findById = (campaignId) => {
   if (campaignId.match(/[a-z-]+--[\w-]{36}/g)) {
     return loadEntityByStixId(campaignId, 'Campaign');
   }
   return loadEntityById(campaignId, 'Campaign');
 };
-export const findAll = args => {
+export const findAll = (args) => {
   return listEntities(['Campaign'], ['name', 'alias'], args);
 };
 
 // region time series
-export const campaignsTimeSeries = args => {
+export const campaignsTimeSeries = (args) => {
   return timeSeriesEntities('Campaign', [], args);
 };
-export const campaignsTimeSeriesByEntity = args => {
+export const campaignsTimeSeriesByEntity = (args) => {
   const filters = [{ isRelation: true, type: args.relationType, value: args.objectId }];
   return timeSeriesEntities('Campaign', filters, args);
 };

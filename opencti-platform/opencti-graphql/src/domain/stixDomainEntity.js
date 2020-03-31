@@ -1,4 +1,4 @@
-import { assoc, dissoc, map, propOr, pipe, invertObj, isNil, head } from 'ramda';
+import { assoc, dissoc, map, propOr, pipe, invertObj, isNil } from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
@@ -16,7 +16,6 @@ import {
   updateAttribute,
   deleteRelationsByFromAndTo,
   loadRelationById,
-  distributionEntities
 } from '../database/grakn';
 import { findById as findMarkingDefintionById } from './markingDefinition';
 import { elCount } from '../database/elasticSearch';
@@ -29,7 +28,7 @@ import { findAll as findAllStixRelations, addStixRelation } from './stixRelation
 import { ForbiddenAccess } from '../config/errors';
 import { INDEX_STIX_ENTITIES, TYPE_STIX_DOMAIN_ENTITY } from '../database/utils';
 
-export const findAll = async args => {
+export const findAll = async (args) => {
   const noTypes = !args.types || args.types.length === 0;
   const entityTypes = noTypes ? ['Stix-Domain-Entity'] : args.types;
   const finalArgs = assoc('parentType', 'Stix-Domain-Entity', args);
@@ -37,10 +36,10 @@ export const findAll = async args => {
   data = assoc(
     'edges',
     map(
-      n => ({
+      (n) => ({
         cursor: n.cursor,
         node: pipe(dissoc('user_email'), dissoc('password'))(n.node),
-        relation: n.relation
+        relation: n.relation,
       }),
       data.edges
     ),
@@ -48,12 +47,15 @@ export const findAll = async args => {
   );
   return data;
 };
-export const findAllDuplicates = args => {
-  const noTypes = !args.types || args.types.length === 0;
-  const entityTypes = noTypes ? ['Stix-Domain-Entity'] : args.types;
-  return distributionEntities(head(entityTypes), [], { field: 'name', operation: 'count' });
+
+// eslint-disable-next-line no-unused-vars
+export const findAllDuplicates = (args) => {
+  // TODO @Sam, implement findAllDuplicates
+  // const noTypes = !args.types || args.types.length === 0;
+  // const entityTypes = noTypes ? ['Stix-Domain-Entity'] : args.types;
+  return [];
 };
-export const findById = async stixDomainEntityId => {
+export const findById = async (stixDomainEntityId) => {
   let data;
   if (stixDomainEntityId.match(/[a-z-]+--[\w-]{36}/g)) {
     data = await loadEntityByStixId(stixDomainEntityId, 'Stix-Domain-Entity');
@@ -70,17 +72,17 @@ export const findById = async stixDomainEntityId => {
 // region time series
 export const reportsTimeSeries = (stixDomainEntityId, args) => {
   const filters = [
-    { isRelation: true, from: 'knowledge_aggregation', to: 'so', type: 'object_refs', value: stixDomainEntityId }
+    { isRelation: true, from: 'knowledge_aggregation', to: 'so', type: 'object_refs', value: stixDomainEntityId },
   ];
   return timeSeriesEntities('Report', filters, args);
 };
-export const stixDomainEntitiesTimeSeries = args => {
+export const stixDomainEntitiesTimeSeries = (args) => {
   return timeSeriesEntities(args.type ? escape(args.type) : 'Stix-Domain-Entity', [], args);
 };
 
-export const stixDomainEntitiesNumber = args => ({
+export const stixDomainEntitiesNumber = (args) => ({
   count: elCount(INDEX_STIX_ENTITIES, args),
-  total: elCount(INDEX_STIX_ENTITIES, dissoc('endDate', args))
+  total: elCount(INDEX_STIX_ENTITIES, dissoc('endDate', args)),
 });
 // endregion
 
@@ -102,7 +104,7 @@ const askJobExports = async (
       : null;
   const finalEntityType = entity ? entity.entity_type : type.toLowerCase();
   const workList = await Promise.all(
-    map(connector => {
+    map((connector) => {
       const fileName = generateFileExportName(
         format,
         connector,
@@ -115,7 +117,7 @@ const askJobExports = async (
         ({ work, job }) => ({
           connector,
           job,
-          work
+          work,
         })
       );
     }, connectors)
@@ -128,9 +130,9 @@ const askJobExports = async (
       assoc(
         'filters',
         map(
-          n => ({
+          (n) => ({
             key: n.key in stixDomainEntitiesFiltersInversed ? stixDomainEntitiesFiltersInversed[n.key] : n.key,
-            values: n.values
+            values: n.values,
           }),
           propOr([], 'filters', listArgs)
         )
@@ -145,7 +147,7 @@ const askJobExports = async (
   }
   // Send message to all correct connectors queues
   await Promise.all(
-    map(data => {
+    map((data) => {
       const { connector, job, work } = data;
       const message = {
         work_id: work.internal_id_key, // work(id)
@@ -156,7 +158,7 @@ const askJobExports = async (
         entity_id: entity ? entity.id : null, // report(id), thread(id), ...
         list_args: finalListArgs,
         file_context: work.work_context,
-        file_name: work.work_file // Base path for the upload
+        file_name: work.work_file, // Base path for the upload
       };
       return pushToConnector(connector, message);
     }, workList)
@@ -171,19 +173,19 @@ const askJobExports = async (
  * @param args
  * @returns {*}
  */
-export const stixDomainEntityExportAsk = async args => {
+export const stixDomainEntityExportAsk = async (args) => {
   const {
     format,
     type = null,
     stixDomainEntityId = null,
     exportType = null,
     maxMarkingDefinition = null,
-    context = null
+    context = null,
   } = args;
   const entity = stixDomainEntityId ? await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity') : null;
   const workList = await askJobExports(format, entity, type, exportType, maxMarkingDefinition, context, args);
   // Return the work list to do
-  return map(w => workToExportFile(w.work), workList);
+  return map((w) => workToExportFile(w.work), workList);
 };
 export const stixDomainEntityImportPush = (user, entityType = null, entityId = null, file) => {
   return upload(user, 'import', file, entityType, entityId);
@@ -217,7 +219,7 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
   const created = await createEntity(domainToCreate, innerType, args);
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
-export const stixDomainEntityDelete = async stixDomainEntityId => {
+export const stixDomainEntityDelete = async (stixDomainEntityId) => {
   const stixDomainEntity = await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
   if (!stixDomainEntity) {
     return stixDomainEntityId;
@@ -227,8 +229,8 @@ export const stixDomainEntityDelete = async stixDomainEntityId => {
   }
   return deleteEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
 };
-export const stixDomainEntitiesDelete = async stixDomainEntitiesIds => {
-  return Promise.all(stixDomainEntitiesIds.map(stixDomainEntityId => stixDomainEntityDelete(stixDomainEntityId)));
+export const stixDomainEntitiesDelete = async (stixDomainEntitiesIds) => {
+  return Promise.all(stixDomainEntitiesIds.map((stixDomainEntityId) => stixDomainEntityDelete(stixDomainEntityId)));
 };
 
 export const stixDomainEntityAddRelation = async (user, stixDomainEntityId, input) => {
@@ -255,16 +257,16 @@ export const stixDomainEntityAddRelations = async (user, stixDomainEntityId, inp
     throw new ForbiddenAccess();
   }
   const finalInput = map(
-    n => ({
+    (n) => ({
       toId: n,
       fromRole: input.fromRole,
       toRole: input.toRole,
-      through: input.through
+      through: input.through,
     }),
     input.toIds
   );
   await createRelations(stixDomainEntityId, finalInput, {}, 'Stix-Domain-Entity', null);
-  return loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity').then(entity =>
+  return loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity').then((entity) =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, entity, user)
   );
 };
@@ -307,7 +309,7 @@ export const stixDomainEntityEditField = async (user, stixDomainEntityId, input)
   if (stixDomainEntity.entity_type === 'user' && !isNil(stixDomainEntity.external)) {
     throw new ForbiddenAccess();
   }
-  return executeWrite(wTx => {
+  return executeWrite((wTx) => {
     return updateAttribute(stixDomainEntityId, 'Stix-Domain-Entity', input, wTx);
   }).then(async () => {
     const stixDomain = await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
@@ -319,10 +321,10 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
   await stixDomainEntityEditField(user, stixDomainEntityId, { key: 'alias', value: alias });
   // 2. Copy the relationships
   await Promise.all(
-    stixDomainEntitiesIds.map(async id => {
+    stixDomainEntitiesIds.map(async (id) => {
       const relations = await findAllStixRelations({ fromId: id, forceNatural: true });
       return Promise.all(
-        relations.edges.map(relationEdge => {
+        relations.edges.map((relationEdge) => {
           const relation = relationEdge.node;
           const relationToCreate = {
             fromId: id === relation.fromInternalId ? stixDomainEntityId : relation.fromInternalId,
@@ -336,7 +338,7 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
             first_seen: relation.first_seen,
             last_seen: relation.last_seen,
             created: relation.created,
-            modified: relation.modified
+            modified: relation.modified,
           };
           if (relationToCreate.fromId !== relationToCreate.toId) {
             return addStixRelation(user, relationToCreate);
@@ -349,7 +351,7 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
   // 3. Delete entities
   await stixDomainEntitiesDelete(stixDomainEntitiesIds);
   // 4. Return entity
-  return loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity').then(stixDomainEntity =>
+  return loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity').then((stixDomainEntity) =>
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomainEntity, user)
   );
 };
@@ -358,13 +360,13 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
 // region context
 export const stixDomainEntityCleanContext = (user, stixDomainEntityId) => {
   delEditContext(user, stixDomainEntityId);
-  return loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity').then(stixDomainEntity =>
+  return loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity').then((stixDomainEntity) =>
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomainEntity, user)
   );
 };
 export const stixDomainEntityEditContext = (user, stixDomainEntityId, input) => {
   setEditContext(user, stixDomainEntityId, input);
-  return loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity').then(stixDomainEntity =>
+  return loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity').then((stixDomainEntity) =>
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomainEntity, user)
   );
 };

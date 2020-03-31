@@ -7,7 +7,7 @@ import {
   settingsEditField,
   settingsEditContext,
   settingsCleanContext,
-  getApplicationInfo
+  getApplicationInfo,
 } from '../domain/settings';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -16,28 +16,28 @@ import { PROVIDERS } from '../config/providers';
 const settingsResolvers = {
   Query: {
     about: () => getApplicationInfo(),
-    settings: () => getSettings()
+    settings: () => getSettings(),
   },
   Settings: {
     platform_providers: () => PROVIDERS,
     platform_demo: () => nconf.get('app:platform_demo') || false,
-    editContext: settings => fetchEditContext(settings.id)
+    editContext: (settings) => fetchEditContext(settings.id),
   },
   Mutation: {
     settingsEdit: (_, { id }, { user }) => ({
       delete: () => settingsDelete(id),
       fieldPatch: ({ input }) => settingsEditField(user, id, input),
-      contextPatch: ({ input }) => settingsEditContext(user, id, input)
-    })
+      contextPatch: ({ input }) => settingsEditContext(user, id, input),
+    }),
   },
   Subscription: {
     settings: {
-      resolve: payload => payload.instance,
+      resolve: (payload) => payload.instance,
       subscribe: (_, { id }, { user }) => {
         settingsEditContext(user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.Settings.EDIT_TOPIC),
-          payload => {
+          (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== user.id && payload.instance.id === id;
           }
@@ -45,9 +45,9 @@ const settingsResolvers = {
         return withCancel(filtering, () => {
           settingsCleanContext(user, id);
         });
-      }
-    }
-  }
+      },
+    },
+  },
 };
 
 export default settingsResolvers;

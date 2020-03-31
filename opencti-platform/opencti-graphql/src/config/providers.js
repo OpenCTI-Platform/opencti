@@ -53,14 +53,14 @@ const configurationMapping = {
   tls_options: 'tlsOptions',
   username_field: 'usernameField',
   password_field: 'passwordField',
-  credentials_lookup: 'credentialsLookup'
+  credentials_lookup: 'credentialsLookup',
   // OpenID Client - everything is already in snake case
 };
-const configRemapping = config => {
+const configRemapping = (config) => {
   if (!config) return config;
   if (typeof config === 'object') {
     const n = {};
-    Object.keys(config).forEach(key => {
+    Object.keys(config).forEach((key) => {
       const remapKey = configurationMapping[key] ? configurationMapping[key] : key;
       n[remapKey] = configRemapping(config[key]);
     });
@@ -84,7 +84,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
   if (strategy === 'LocalStrategy') {
     const localStrategy = new LocalStrategy((username, password, done) => {
       return login(username, password)
-        .then(token => {
+        .then((token) => {
           return done(null, token);
         })
         .catch(() => done(null, false));
@@ -99,10 +99,10 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const userName = mappedConfig.account_attribute ? user[mappedConfig.account_attribute] : user.givenName;
       logger.debug(`[LDAP_AUTH] Successfully logged with ${userMail} and ${userName}`);
       loginFromProvider(userMail, userName || userMail)
-        .then(token => {
+        .then((token) => {
           done(null, token);
         })
-        .catch(err => {
+        .catch((err) => {
           done(err);
         });
     });
@@ -112,17 +112,17 @@ for (let i = 0; i < providerKeys.length; i += 1) {
   if (strategy === 'OpenIDConnectStrategy') {
     // Here we use directly the config and not the mapped one.
     // All config of openid lib use snake case.
-    OpenIDIssuer.discover(config.issuer).then(issuer => {
+    OpenIDIssuer.discover(config.issuer).then((issuer) => {
       const { Client } = issuer;
       const client = new Client(config);
       const options = { client, params: { scope: 'openid email profile' } };
       const openIDStrategy = new OpenIDStrategy(options, (tokenset, userinfo, done) => {
         const { email, name } = userinfo;
         loginFromProvider(email, name || email)
-          .then(token => {
+          .then((token) => {
             done(null, token);
           })
-          .catch(err => {
+          .catch((err) => {
             done(err);
           });
       });
@@ -139,10 +139,10 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const name = `${data.last_name} ${data.first_name}`;
       const { email } = data;
       loginFromProvider(email, data.first_name && data.last_name ? name : email)
-        .then(token => {
+        .then((token) => {
           done(null, token);
         })
-        .catch(err => {
+        .catch((err) => {
           done(err);
         });
     });
@@ -157,10 +157,10 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const name = profile.displayNamel;
       // let picture = head(profile.photos).value;
       loginFromProvider(email, name || email)
-        .then(loggedToken => {
+        .then((loggedToken) => {
           done(null, loggedToken);
         })
-        .catch(err => {
+        .catch((err) => {
           done(err);
         });
     });
@@ -175,10 +175,10 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const email = head(profile.emails).value;
       // let picture = profile.avatar_url;
       loginFromProvider(email, displayName || email)
-        .then(loggedToken => {
+        .then((loggedToken) => {
           done(null, loggedToken);
         })
-        .catch(err => {
+        .catch((err) => {
           done(err);
         });
     });
@@ -190,10 +190,10 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const userName = profile.displayName;
       const email = head(profile.emails).value;
       loginFromProvider(email, userName || email)
-        .then(token => {
+        .then((token) => {
           done(null, token);
         })
-        .catch(err => {
+        .catch((err) => {
           done(err);
         });
     });

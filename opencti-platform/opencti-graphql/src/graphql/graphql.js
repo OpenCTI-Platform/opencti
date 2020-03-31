@@ -8,15 +8,15 @@ import { DEV_MODE, logger, OPENCTI_TOKEN } from '../config/conf';
 import { authentication } from '../domain/user';
 import { buildValidationError, LEVEL_ERROR, LEVEL_WARNING, Unknown } from '../config/errors';
 
-const extractTokenFromBearer = bearer => (bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null);
+const extractTokenFromBearer = (bearer) => (bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null);
 const createApolloServer = () => {
   return new ApolloServer({
     schema: createSchema(),
     introspection: true,
     playground: {
       settings: {
-        'request.credentials': 'same-origin'
-      }
+        'request.credentials': 'same-origin',
+      },
     },
     async context({ req, res, connection }) {
       if (connection) return { user: connection.context.user }; // For websocket connection.
@@ -26,7 +26,7 @@ const createApolloServer = () => {
       return { res, user: auth };
     },
     tracing: DEV_MODE,
-    formatError: error => {
+    formatError: (error) => {
       let e = apolloFormatError(error);
       if (e instanceof GraphQLError) {
         const errorCode = e.extensions.exception.code;
@@ -56,8 +56,8 @@ const createApolloServer = () => {
         token = token || extractTokenFromBearer(connectionParams.authorization);
         const user = await authentication(token);
         return { user };
-      }
-    }
+      },
+    },
   });
 };
 

@@ -92,7 +92,10 @@ describe('CourseOfAction resolver standard behavior', () => {
     expect(queryResult.data.courseOfAction.id).toEqual(courseOfActionInternalId);
   });
   it('should courseOfAction coursesOfAction be accurate', async () => {
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: '326b7708-d4cf-4020-8cd1-9726b99895db' } });
+    const queryResult = await queryAsAdmin({
+      query: READ_QUERY,
+      variables: { id: '326b7708-d4cf-4020-8cd1-9726b99895db' },
+    });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.courseOfAction).not.toBeNull();
     expect(queryResult.data.courseOfAction.id).toEqual('326b7708-d4cf-4020-8cd1-9726b99895db');

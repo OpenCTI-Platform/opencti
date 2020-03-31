@@ -19,7 +19,7 @@ import {
   stixDomainEntityExportAsk,
   stixDomainEntityExportPush,
   stixDomainEntityImportPush,
-  stixDomainEntityMerge
+  stixDomainEntityMerge,
 } from '../domain/stixDomainEntity';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -33,11 +33,11 @@ const stixDomainEntityResolvers = {
     duplicateStixDomainEntities: (_, args) => findAllDuplicates(args),
     stixDomainEntitiesTimeSeries: (_, args) => stixDomainEntitiesTimeSeries(args),
     stixDomainEntitiesNumber: (_, args) => stixDomainEntitiesNumber(args),
-    stixDomainEntitiesExportFiles: (_, { type, first, context }) => filesListing(first, 'export', type, null, context)
+    stixDomainEntitiesExportFiles: (_, { type, first, context }) => filesListing(first, 'export', type, null, context),
   },
   StixDomainEntitiesOrdering: {
     markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
-    tags: `${REL_INDEX_PREFIX}tagged.value`
+    tags: `${REL_INDEX_PREFIX}tagged.value`,
   },
   StixDomainEntitiesFilter: {
     tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
@@ -45,7 +45,7 @@ const stixDomainEntityResolvers = {
     knowledgeContains: `${REL_INDEX_PREFIX}object_refs.internal_id_key`,
     observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`,
     hasExternalReference: `${REL_INDEX_PREFIX}external_references.internal_id_key`,
-    indicates: `${REL_INDEX_PREFIX}indicates.internal_id_key`
+    indicates: `${REL_INDEX_PREFIX}indicates.internal_id_key`,
   },
   StixDomainEntity: {
     // eslint-disable-next-line no-underscore-dangle
@@ -56,7 +56,7 @@ const stixDomainEntityResolvers = {
       return 'Unknown';
     },
     importFiles: (entity, { first }) => filesListing(first, 'import', entity.entity_type, entity),
-    exportFiles: (entity, { first }) => filesListing(first, 'export', entity.entity_type, entity)
+    exportFiles: (entity, { first }) => filesListing(first, 'export', entity.entity_type, entity),
   },
   Mutation: {
     stixDomainEntityEdit: (_, { id }, { user }) => ({
@@ -69,24 +69,25 @@ const stixDomainEntityResolvers = {
       relationDelete: ({ relationId, toId, relationType }) =>
         stixDomainEntityDeleteRelation(user, id, relationId, toId, relationType),
       importPush: ({ file }) => stixDomainEntityImportPush(user, null, id, file),
-      exportAsk: args => stixDomainEntityExportAsk(assoc('stixDomainEntityId', id, args)),
+      exportAsk: (args) => stixDomainEntityExportAsk(assoc('stixDomainEntityId', id, args)),
       exportPush: ({ file }) => stixDomainEntityExportPush(user, null, id, file),
-      mergeEntities: ({ stixDomainEntitiesIds, alias }) => stixDomainEntityMerge(user, id, stixDomainEntitiesIds, alias)
+      mergeEntities: ({ stixDomainEntitiesIds, alias }) =>
+        stixDomainEntityMerge(user, id, stixDomainEntitiesIds, alias),
     }),
     stixDomainEntitiesDelete: (_, { id }) => stixDomainEntitiesDelete(id),
     stixDomainEntityAdd: (_, { input }, { user }) => addStixDomainEntity(user, input),
     stixDomainEntitiesExportAsk: (_, args) => stixDomainEntityExportAsk(args),
     stixDomainEntitiesExportPush: (_, { type, file, context, listArgs }, { user }) =>
-      stixDomainEntityExportPush(user, type, null, file, context, listArgs)
+      stixDomainEntityExportPush(user, type, null, file, context, listArgs),
   },
   Subscription: {
     stixDomainEntity: {
-      resolve: payload => payload.instance,
+      resolve: (payload) => payload.instance,
       subscribe: (_, { id }, { user }) => {
         stixDomainEntityEditContext(user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC),
-          payload => {
+          (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== user.id && payload.instance.id === id;
           }
@@ -94,9 +95,9 @@ const stixDomainEntityResolvers = {
         return withCancel(filtering, () => {
           stixDomainEntityCleanContext(user, id);
         });
-      }
-    }
-  }
+      },
+    },
+  },
 };
 
 export default stixDomainEntityResolvers;

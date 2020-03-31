@@ -3028,15 +3028,14 @@ type Query {
     interval: String!
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
   stixRelationsDistribution(
-    fromId: String
+    fromId: String!
+    field: String!
+    operation: StatsOperation!
     relationType: String
     inferred: Boolean
-    entityTypes: [String]
     toTypes: [String]
     startDate: DateTime
     endDate: DateTime
-    field: String!
-    operation: StatsOperation!
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])

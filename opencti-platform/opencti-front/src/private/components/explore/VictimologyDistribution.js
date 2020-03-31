@@ -80,7 +80,6 @@ class VictimologyDistribution extends Component {
             handleOpenConfig={handleOpenConfig.bind(this)}
             title={propOr('Widget', 'title', configuration)}
             entityId={pathOr(null, ['entity', 'id'], configuration)}
-            entityType={propOr('Sector', 'entity_type', configuration)}
             relationType="targets"
             field="name"
             inferred={inferred}

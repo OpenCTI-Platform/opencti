@@ -3,8 +3,8 @@ import { createEntity, listEntities, loadEntityById, loadEntityByStixId } from '
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 
-export const findById = async identityId => {
-  let data = null;
+export const findById = async (identityId) => {
+  let data;
   if (identityId.match(/[a-z-]+--[\w-]{36}/g)) {
     data = await loadEntityByStixId(identityId, 'Identity');
   } else {
@@ -16,7 +16,7 @@ export const findById = async identityId => {
   data = pipe(dissoc('user_email'), dissoc('password'))(data);
   return data;
 };
-export const findAll = async args => {
+export const findAll = async (args) => {
   const noTypes = !args.types || args.types.length === 0;
   const entityTypes = noTypes ? ['Identity'] : args.types;
   const finalArgs = assoc('parentType', 'Stix-Domain-Entity', args);
@@ -24,10 +24,10 @@ export const findAll = async args => {
   data = assoc(
     'edges',
     map(
-      n => ({
+      (n) => ({
         cursor: n.cursor,
         node: pipe(dissoc('user_email'), dissoc('password'))(n.node),
-        relation: n.relation
+        relation: n.relation,
       }),
       data.edges
     ),
@@ -39,7 +39,7 @@ export const findAll = async args => {
 export const addIdentity = async (user, identity) => {
   const identityToCreate = dissoc('type', identity);
   const created = await createEntity(identityToCreate, identity.type, {
-    stixIdType: identity.type !== 'Threat-Actor' ? 'identity' : 'threat-actor'
+    stixIdType: identity.type !== 'Threat-Actor' ? 'identity' : 'threat-actor',
   });
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };

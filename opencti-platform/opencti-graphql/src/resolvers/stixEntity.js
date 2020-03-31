@@ -7,13 +7,13 @@ import {
   tags,
   externalReferences,
   stixEntityAddRelation,
-  stixEntityDeleteRelation
+  stixEntityDeleteRelation,
 } from '../domain/stixEntity';
 import { fetchEditContext } from '../database/redis';
 
 const stixEntityResolvers = {
   Query: {
-    stixEntity: (_, { id }) => findById(id)
+    stixEntity: (_, { id }) => findById(id),
   },
   StixEntity: {
     // eslint-disable-next-line
@@ -26,20 +26,20 @@ const stixEntityResolvers = {
       }
       return 'Unknown';
     },
-    createdByRef: stixEntity => createdByRef(stixEntity.id),
-    editContext: stixEntity => fetchEditContext(stixEntity.id),
-    externalReferences: stixEntity => externalReferences(stixEntity.id),
-    tags: stixEntity => tags(stixEntity.id),
-    reports: stixEntity => reports(stixEntity.id),
-    markingDefinitions: stixEntity => markingDefinitions(stixEntity.id),
-    stixRelations: (stixEntity, args) => stixRelations(stixEntity.id, args)
+    createdByRef: (stixEntity) => createdByRef(stixEntity.id),
+    editContext: (stixEntity) => fetchEditContext(stixEntity.id),
+    externalReferences: (stixEntity) => externalReferences(stixEntity.id),
+    tags: (stixEntity) => tags(stixEntity.id),
+    reports: (stixEntity) => reports(stixEntity.id),
+    markingDefinitions: (stixEntity) => markingDefinitions(stixEntity.id),
+    stixRelations: (stixEntity, args) => stixRelations(stixEntity.id, args),
   },
   Mutation: {
     stixEntityEdit: (_, { id }, { user }) => ({
       relationAdd: ({ input }) => stixEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixEntityDeleteRelation(user, id, relationId)
-    })
-  }
+      relationDelete: ({ relationId }) => stixEntityDeleteRelation(user, id, relationId),
+    }),
+  },
 };
 
 export default stixEntityResolvers;

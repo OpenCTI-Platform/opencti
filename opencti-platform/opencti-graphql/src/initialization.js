@@ -13,6 +13,7 @@ import { addAttribute } from './domain/attribute';
 import { checkPythonStix2 } from './python/pythonBridge';
 import { INDEX_STIX_ENTITIES } from './database/utils';
 
+// noinspection NodeJsCodingAssistanceForCoreModules
 const fs = require('fs');
 
 // Platform capabilities definition
@@ -28,7 +29,7 @@ export const CAPABILITIES = [
         name: 'KNUPDATE',
         description: 'Create / Update knowledge',
         ordering: 200,
-        dependencies: [{ name: 'KNDELETE', description: 'Delete knowledge', ordering: 300 }]
+        dependencies: [{ name: 'KNDELETE', description: 'Delete knowledge', ordering: 300 }],
       },
       { name: 'KNUPLOAD', description: 'Upload knowledge files', ordering: 400 },
       { name: 'KNASKIMPORT', description: 'Import knowledge', ordering: 500 },
@@ -36,10 +37,10 @@ export const CAPABILITIES = [
         name: 'KNGETEXPORT',
         description: 'Download knowledge export',
         ordering: 700,
-        dependencies: [{ name: 'KNASKEXPORT', description: 'Generate knowledge export', ordering: 710 }]
+        dependencies: [{ name: 'KNASKEXPORT', description: 'Generate knowledge export', ordering: 710 }],
       },
-      { name: 'KNENRICHMENT', description: 'Ask for knowledge enrichment', ordering: 800 }
-    ]
+      { name: 'KNENRICHMENT', description: 'Ask for knowledge enrichment', ordering: 800 },
+    ],
   },
   {
     name: 'EXPLORE',
@@ -50,15 +51,15 @@ export const CAPABILITIES = [
         name: 'EXUPDATE',
         description: 'Create  / Update exploration',
         ordering: 1100,
-        dependencies: [{ name: 'EXDELETE', description: 'Delete exploration', ordering: 1200 }]
-      }
-    ]
+        dependencies: [{ name: 'EXDELETE', description: 'Delete exploration', ordering: 1200 }],
+      },
+    ],
   },
   {
     name: 'MODULES',
     description: 'Access connectors',
     ordering: 2000,
-    dependencies: [{ name: 'MODMANAGE', description: 'Manage connector state', ordering: 2100 }]
+    dependencies: [{ name: 'MODMANAGE', description: 'Manage connector state', ordering: 2100 }],
   },
   {
     name: 'SETTINGS',
@@ -67,14 +68,14 @@ export const CAPABILITIES = [
     dependencies: [
       { name: 'SETINFERENCES', description: 'Manage inference rules', ordering: 3100 },
       { name: 'SETACCESSES', description: 'Manage credentials', ordering: 3200 },
-      { name: 'SETMARKINGS', description: 'Manage marking definitions', ordering: 3300 }
-    ]
+      { name: 'SETMARKINGS', description: 'Manage marking definitions', ordering: 3300 },
+    ],
   },
   {
     name: 'CONNECTORAPI',
     ordering: 4000,
-    description: 'Connectors API usage: register, ping, export push ...'
-  }
+    description: 'Connectors API usage: register, ping, export push ...',
+  },
 ];
 
 // Check every dependencies
@@ -120,28 +121,28 @@ const createMarkingDefinitions = async () => {
     definition_type: 'TLP',
     definition: 'TLP:WHITE',
     color: '#ffffff',
-    level: 1
+    level: 1,
   });
   await addMarkingDefinition(SYSTEM_USER, {
     stix_id_key: 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
     definition_type: 'TLP',
     definition: 'TLP:GREEN',
     color: '#2e7d32',
-    level: 2
+    level: 2,
   });
   await addMarkingDefinition(SYSTEM_USER, {
     stix_id_key: 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
     definition_type: 'TLP',
     definition: 'TLP:AMBER',
     color: '#d84315',
-    level: 3
+    level: 3,
   });
   await addMarkingDefinition(SYSTEM_USER, {
     stix_id_key: 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
     definition_type: 'TLP',
     definition: 'TLP:RED',
     color: '#c62828',
-    level: 4
+    level: 4,
   });
 };
 
@@ -167,12 +168,12 @@ export const createBasicRolesAndCapabilities = async () => {
     name: ROLE_DEFAULT,
     description: 'Default role associated to all users',
     capabilities: [KNOWLEDGE_CAPABILITY],
-    default_assignation: true
+    default_assignation: true,
   });
   await addRole({
     name: ROLE_ADMINISTRATOR,
     description: 'Administrator role that bypass every capabilities',
-    capabilities: [BYPASS]
+    capabilities: [BYPASS],
   });
 };
 
@@ -183,7 +184,7 @@ const initializeDefaultValues = async () => {
     platform_title: 'Cyber threat intelligence platform',
     platform_email: 'admin@opencti.io',
     platform_url: '',
-    platform_language: 'auto'
+    platform_language: 'auto',
   });
   await createAttributesTypes();
   await createMarkingDefinitions();
