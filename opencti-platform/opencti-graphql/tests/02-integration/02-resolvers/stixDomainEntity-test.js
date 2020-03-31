@@ -89,6 +89,42 @@ describe('StixDomainEntity resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
     expect(queryResult.data.stixDomainEntities.edges.length).toEqual(10);
   });
+  it('should timeseries stixDomainEntities', async () => {
+    const TIMESERIES_QUERY = gql`
+      query stixDomainEntitiesTimeSeries(
+        $type: String
+        $field: String!
+        $operation: StatsOperation!
+        $startDate: DateTime!
+        $endDate: DateTime!
+        $interval: String!
+      ) {
+        stixDomainEntitiesTimeSeries(
+          type: $type
+          field: $field
+          operation: $operation
+          startDate: $startDate
+          endDate: $endDate
+          interval: $interval
+        ) {
+          date
+          value
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: TIMESERIES_QUERY,
+      variables: {
+        field: 'created_at',
+        operation: 'count',
+        startDate: '2020-01-01T00:00:00+00:00',
+        endDate: '2021-01-01T00:00:00+00:00',
+        interval: 'month',
+      },
+    });
+    expect(queryResult.data.stixDomainEntitiesTimeSeries.length).toEqual(13);
+    expect(queryResult.data.stixDomainEntitiesTimeSeries[2].value).toEqual(25);
+  });
   it('should update stixDomainEntity', async () => {
     const UPDATE_QUERY = gql`
       mutation StixDomainEntityEdit($id: ID!, $input: EditInput!) {
