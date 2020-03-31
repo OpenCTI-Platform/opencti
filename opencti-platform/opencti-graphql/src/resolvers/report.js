@@ -10,7 +10,8 @@ import {
   reportsNumberByEntity,
   reportsTimeSeries,
   reportsTimeSeriesByAuthor,
-  reportsTimeSeriesByEntity
+  reportsTimeSeriesByEntity,
+  reportContainsStixEntity
 } from '../domain/report';
 import {
   stixDomainEntityAddRelation,
@@ -46,6 +47,9 @@ const reportResolvers = {
         return reportsDistributionByEntity(args);
       }
       return [];
+    },
+    reportContainStixEntity: (_, args) => {
+      return reportContainsStixEntity(args.id, args.objectId);
     }
   },
   ReportsOrdering: {

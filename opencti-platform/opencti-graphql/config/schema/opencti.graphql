@@ -3353,6 +3353,7 @@ type Query {
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
+  eportContainStixEntity(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
   # Indicators
   indicator(id: String!): Indicator @auth(for: [KNOWLEDGE])
   indicators(
