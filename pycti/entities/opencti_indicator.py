@@ -292,6 +292,8 @@ class Indicator:
                 }
             """
             )
+            if pattern_type is None:
+                pattern_type = "stix2"
             result = self.opencti.query(
                 query,
                 {
@@ -363,16 +365,18 @@ class Indicator:
                         }
                     }
                 """
-        object_result = self.opencti.indicator.read(
-            id=stix_id_key, customAttributes=custom_attributes
-        )
+        object_result = None
+        if stix_id_key is not None:
+            object_result = self.opencti.indicator.read(
+                id=stix_id_key, customAttributes=custom_attributes
+            )
         if object_result is None:
             object_result = self.read(
                 filters=[
                     {
                         "key": "indicator_pattern",
                         "values": [indicator_pattern],
-                        "operator": "match",
+                        "operator": "match" if len(indicator_pattern) > 500 else "eq",
                     }
                 ],
                 customAttributes=custom_attributes,
