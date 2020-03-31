@@ -180,6 +180,7 @@ class OpenCTIStix2:
                         tag_type=tag["tag_type"],
                         value=tag["value"],
                         color=tag["color"],
+                        id=tag["id"] if "id" in tag else None,
                     )
                 if tag_result is not None:
                     tags_ids.append(tag_result["id"])

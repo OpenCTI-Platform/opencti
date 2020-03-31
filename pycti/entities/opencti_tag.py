@@ -120,6 +120,7 @@ class Tag:
         tag_type = kwargs.get("tag_type", None)
         value = kwargs.get("value", None)
         color = kwargs.get("color", None)
+        id = kwargs.get("id", None)
 
         if tag_type is not None and value is not None and color is not None:
             query = (
@@ -134,7 +135,15 @@ class Tag:
             """
             )
             result = self.opencti.query(
-                query, {"input": {"tag_type": tag_type, "value": value, "color": color}}
+                query,
+                {
+                    "input": {
+                        "tag_type": tag_type,
+                        "value": value,
+                        "color": color,
+                        "internal_id_key": id,
+                    }
+                },
             )
             return self.opencti.process_multiple_fields(result["data"]["tagAdd"])
         else:
@@ -156,9 +165,10 @@ class Tag:
         tag_type = kwargs.get("tag_type", None)
         value = kwargs.get("value", None)
         color = kwargs.get("color", None)
+        id = kwargs.get("id", None)
 
         object_result = self.read(filters=[{"key": "value", "values": [value]}])
         if object_result is not None:
             return object_result
         else:
-            return self.create_raw(tag_type=tag_type, value=value, color=color,)
+            return self.create_raw(tag_type=tag_type, value=value, color=color, id=id)
