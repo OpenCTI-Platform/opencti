@@ -5,7 +5,7 @@ import Migration from 'migrate/lib/migration';
 import { executeWrite, find, load, internalDirectWrite } from './grakn';
 import { logger } from '../config/conf';
 
-const normalizeMigrationName = rawName => {
+const normalizeMigrationName = (rawName) => {
   if (rawName.startsWith('./')) {
     return rawName.substring(2);
   }
@@ -17,7 +17,7 @@ const retrieveMigrations = () => {
   return webpackMigrationsContext
     .keys()
     .sort()
-    .map(name => {
+    .map((name) => {
       const title = normalizeMigrationName(name);
       const migration = webpackMigrationsContext(name);
       return { title, up: migration.up, down: migration.down };
@@ -49,20 +49,20 @@ const graknStateStorage = {
     const migrationStatus = {
       lastRun: migration.status.lastRun,
       migrations: map(
-        record => ({
+        (record) => ({
           title: record.to.title,
-          timestamp: record.to.timestamp
+          timestamp: record.to.timestamp,
         }),
         migrations
-      )
+      ),
     };
     return fn(null, migrationStatus);
   },
   async save(set, fn) {
     try {
-      await executeWrite(async wTx => {
+      await executeWrite(async (wTx) => {
         // Get current done migration
-        const mig = head(filter(m => m.title === set.lastRun, set.migrations));
+        const mig = head(filter((m) => m.title === set.lastRun, set.migrations));
         // We have only one instance of migration status.
         const q1 = `match $x isa MigrationStatus, has lastRun $run; delete $run;`;
         logger.debug(`[MIGRATION] > ${q1}`);
@@ -91,7 +91,7 @@ const graknStateStorage = {
       logger.error('[MIGRATION] > Error saving the migration state');
       return fn();
     }
-  }
+  },
 };
 
 const applyMigration = () => {
@@ -107,12 +107,12 @@ const applyMigration = () => {
       // Filter migration to apply. Should be > lastRun
       const [platformTime] = state.lastRun.split('-');
       const platformDate = new Date(parseInt(platformTime, 10));
-      const migrationToApply = filter(file => {
+      const migrationToApply = filter((file) => {
         const [time] = file.title.split('-');
         const fileDate = new Date(parseInt(time, 10));
         return fileDate > platformDate;
       }, filesMigrationSet);
-      const alreadyAppliedMigrations = new Map(state.migrations ? state.migrations.map(i => [i.title, i]) : null);
+      const alreadyAppliedMigrations = new Map(state.migrations ? state.migrations.map((i) => [i.title, i]) : null);
       /** Match the files migrations to the database migrations.
        Plays migrations that doesnt have matching name / timestamp */
       if (migrationToApply.length > 0) {
@@ -128,7 +128,7 @@ const applyMigration = () => {
         set.addMigration(migration);
       }
       // Start the set migration
-      set.up(migrationError => {
+      set.up((migrationError) => {
         if (migrationError) {
           logger.error('[GRAKN] Error during migration');
           reject(migrationError);

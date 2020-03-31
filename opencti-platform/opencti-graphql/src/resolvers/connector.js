@@ -5,7 +5,7 @@ import {
   connectorsForImport,
   pingConnector,
   registerConnector,
-  resetStateConnector
+  resetStateConnector,
 } from '../domain/connector';
 import { computeWorkStatus, connectorForWork, deleteWork, initiateJob, jobsForWork, updateJob } from '../domain/work';
 
@@ -13,12 +13,12 @@ const connectorResolvers = {
   Query: {
     connectors: () => connectors(),
     connectorsForExport: () => connectorsForExport(),
-    connectorsForImport: () => connectorsForImport()
+    connectorsForImport: () => connectorsForImport(),
   },
   Work: {
-    jobs: work => jobsForWork(work.id),
-    status: work => computeWorkStatus(work.id),
-    connector: work => connectorForWork(work.id)
+    jobs: (work) => jobsForWork(work.id),
+    status: (work) => computeWorkStatus(work.id),
+    connector: (work) => connectorForWork(work.id),
   },
   Mutation: {
     deleteConnector: (_, { id }) => connectorDelete(id),
@@ -27,8 +27,8 @@ const connectorResolvers = {
     pingConnector: (_, { id, state }) => pingConnector(id, state),
     initiateJob: (_, { workId }) => initiateJob(workId),
     updateJob: (_, { jobId, status, messages }) => updateJob(jobId, status, messages),
-    deleteWork: (_, { id }) => deleteWork(id)
-  }
+    deleteWork: (_, { id }) => deleteWork(id),
+  },
 };
 
 export default connectorResolvers;

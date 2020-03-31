@@ -19,14 +19,14 @@ import {
   mergeAll,
   pipe,
   toPairs,
-  uniq
+  uniq,
 } from 'ramda';
 import {
   buildPagination,
   INDEX_STIX_ENTITIES,
   INDEX_STIX_OBSERVABLE,
   INDEX_STIX_RELATIONS,
-  inferIndexFromConceptTypes
+  inferIndexFromConceptTypes,
 } from './utils';
 import conf, { logger } from '../config/conf';
 import { resolveNaturalRoles } from './graknRoles';
@@ -54,7 +54,7 @@ const dateFields = [
   'valid_until_day',
   'valid_until_month',
   'observable_date',
-  'default_assignation' // TODO @JRI Ask @Sam for this.
+  'default_assignation', // TODO @JRI Ask @Sam for this.
 ];
 const numberFields = ['object_status', 'phase_order', 'level', 'weight', 'ordering', 'base_score'];
 const virtualTypes = ['Identity', 'Email', 'File', 'Stix-Domain-Entity', 'Stix-Domain', 'Stix-Observable'];
@@ -70,7 +70,7 @@ export const el = new Client({ node: conf.get('elasticsearch:url') });
 export const elIsAlive = async () => {
   return el
     .info()
-    .then(info => {
+    .then((info) => {
       /* istanbul ignore if */
       if (info.meta.connection.status !== 'alive') {
         logger.error(`[ELASTICSEARCH] Seems down`);
@@ -88,37 +88,37 @@ export const elIsAlive = async () => {
 export const elVersion = () => {
   return el
     .info()
-    .then(info => info.body.version.number)
+    .then((info) => info.body.version.number)
     .catch(
       /* istanbul ignore next */ () => {
         return 'Disconnected';
       }
     );
 };
-export const elIndexExists = async indexName => {
+export const elIndexExists = async (indexName) => {
   const existIndex = await el.indices.exists({ index: indexName });
   return existIndex.body === true;
 };
 export const elCreateIndexes = async (indexesToCreate = PLATFORM_INDICES) => {
   return Promise.all(
-    indexesToCreate.map(index => {
-      return el.indices.exists({ index }).then(result => {
+    indexesToCreate.map((index) => {
+      return el.indices.exists({ index }).then((result) => {
         if (result.body === false) {
           return el.indices.create({
             index,
             body: {
               settings: {
                 index: {
-                  max_result_window: 100000
+                  max_result_window: 100000,
                 },
                 analysis: {
                   normalizer: {
                     string_normalizer: {
                       type: 'custom',
-                      filter: ['lowercase', 'asciifolding']
-                    }
-                  }
-                }
+                      filter: ['lowercase', 'asciifolding'],
+                    },
+                  },
+                },
               },
               mappings: {
                 dynamic_templates: [
@@ -126,9 +126,9 @@ export const elCreateIndexes = async (indexesToCreate = PLATFORM_INDICES) => {
                     integers: {
                       match_mapping_type: 'long',
                       mapping: {
-                        type: 'integer'
-                      }
-                    }
+                        type: 'integer',
+                      },
+                    },
                   },
                   {
                     strings: {
@@ -139,45 +139,45 @@ export const elCreateIndexes = async (indexesToCreate = PLATFORM_INDICES) => {
                           keyword: {
                             type: 'keyword',
                             normalizer: 'string_normalizer',
-                            ignore_above: 512
-                          }
-                        }
-                      }
-                    }
-                  }
+                            ignore_above: 512,
+                          },
+                        },
+                      },
+                    },
+                  },
                 ],
                 properties: {
                   created_at_month: {
                     type: 'date',
                     format: 'strict_year_month',
-                    ignore_malformed: true
+                    ignore_malformed: true,
                   },
                   first_seen_month: {
                     type: 'date',
                     format: 'strict_year_month',
-                    ignore_malformed: true
+                    ignore_malformed: true,
                   },
                   last_seen_month: {
                     type: 'date',
                     format: 'strict_year_month',
-                    ignore_malformed: true
+                    ignore_malformed: true,
                   },
                   expiration_month: {
                     type: 'date',
                     format: 'strict_year_month',
-                    ignore_malformed: true
+                    ignore_malformed: true,
                   },
                   published_month: {
                     type: 'date',
                     format: 'strict_year_month',
-                    ignore_malformed: true
+                    ignore_malformed: true,
                   },
                   object_status: {
-                    type: 'integer'
-                  }
-                }
-              }
-            }
+                    type: 'integer',
+                  },
+                },
+              },
+            },
           });
         }
         /* istanbul ignore next */
@@ -188,8 +188,8 @@ export const elCreateIndexes = async (indexesToCreate = PLATFORM_INDICES) => {
 };
 export const elDeleteIndexes = async (indexesToDelete = PLATFORM_INDICES) => {
   return Promise.all(
-    indexesToDelete.map(index => {
-      return el.indices.delete({ index }).catch(err => {
+    indexesToDelete.map((index) => {
+      return el.indices.delete({ index }).catch((err) => {
         /* istanbul ignore next */
         logger.error(`[ELASTICSEARCH] Delete indices fail > ${err}`);
       });
@@ -206,27 +206,27 @@ export const elCount = (indexName, options = {}) => {
         range: {
           created_at: {
             format: 'strict_date_optional_time',
-            lt: endDate
-          }
-        }
+            lt: endDate,
+          },
+        },
       },
       must
     );
   }
   if (types !== null && types.length > 0) {
-    const should = types.map(typeValue => {
+    const should = types.map((typeValue) => {
       return {
         match_phrase: {
-          entity_type: typeValue
-        }
+          entity_type: typeValue,
+        },
       };
     });
     must = append(
       {
         bool: {
           should,
-          minimum_should_match: 1
-        }
+          minimum_should_match: 1,
+        },
       },
       must
     );
@@ -236,13 +236,13 @@ export const elCount = (indexName, options = {}) => {
     body: {
       query: {
         bool: {
-          must
-        }
-      }
-    }
+          must,
+        },
+      },
+    },
   };
   logger.debug(`[ELASTICSEARCH] countEntities > ${JSON.stringify(query)}`);
-  return el.count(query).then(data => {
+  return el.count(query).then((data) => {
     return data.body.count;
   });
 };
@@ -254,19 +254,19 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
       range: {
         created_at: {
           gte: start,
-          lte: end
-        }
-      }
+          lte: end,
+        },
+      },
     });
   }
-  const histoFilters = map(f => {
+  const histoFilters = map((f) => {
     const key = f.isRelation ? 'rel_*.internal_id_key.keyword' : `${f.type}.keyword`;
     return {
       multi_match: {
         fields: [key],
         type: 'phrase',
-        query: f.value
-      }
+        query: f.value,
+      },
     };
   }, filters);
   const query = {
@@ -277,24 +277,24 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
           must: concat(dateFilter, histoFilters),
           should: [
             { match_phrase: { 'entity_type.keyword': type } },
-            { match_phrase: { 'parent_types.keyword': type } }
+            { match_phrase: { 'parent_types.keyword': type } },
           ],
-          minimum_should_match: 1
-        }
+          minimum_should_match: 1,
+        },
       },
       aggs: {
         genres: {
           terms: {
-            field: `${aggregationField}.keyword`
-          }
-        }
-      }
-    }
+            field: `${aggregationField}.keyword`,
+          },
+        },
+      },
+    },
   };
   logger.debug(`[ELASTICSEARCH] aggregationCount > ${JSON.stringify(query)}`);
-  return el.search(query).then(data => {
+  return el.search(query).then((data) => {
     const { buckets } = data.body.aggregations.genres;
-    return map(b => ({ label: b.key, value: b.doc_count }), buckets);
+    return map((b) => ({ label: b.key, value: b.doc_count }), buckets);
   });
 };
 export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) => {
@@ -305,17 +305,17 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) =
       range: {
         first_seen: {
           gte: start,
-          lte: end
-        }
-      }
+          lte: end,
+        },
+      },
     });
   }
   filters.push({
-    match_phrase: { 'connections.internal_id_key': fromId }
+    match_phrase: { 'connections.internal_id_key': fromId },
   });
   for (let index = 0; index < toTypes.length; index += 1) {
     filters.push({
-      match_phrase: { 'connections.types': toTypes[index] }
+      match_phrase: { 'connections.types': toTypes[index] },
     });
   }
   const query = {
@@ -326,40 +326,41 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) =
         bool: {
           must: filters,
           should: [{ match_phrase: { relationship_type: type } }, { match_phrase: { parent_types: type } }],
-          minimum_should_match: 1
-        }
+          minimum_should_match: 1,
+        },
       },
       aggs: {
         genres: {
           terms: {
             field: `connections.types.keyword`,
-            size: 100
-          }
-        }
-      }
-    }
+            size: 100,
+          },
+        },
+      },
+    },
   };
   logger.debug(`[ELASTICSEARCH] aggregationRelationsCount > ${JSON.stringify(query)}`);
-  return el.search(query).then(data => {
+  return el.search(query).then((data) => {
     // First need to find all types relations to the fromId
     const types = pipe(
-      map(h => h._source.connections),
+      map((h) => h._source.connections),
       flatten(),
-      filter(c => c.internal_id_key !== fromId && includes(head(toTypes), c.types)),
-      map(e => e.types),
+      filter((c) => c.internal_id_key !== fromId),
+      filter((c) => toTypes.length === 0 || includes(head(toTypes), c.types)),
+      map((e) => e.types),
       flatten(),
       uniq(),
-      filter(f => !includes(f, virtualTypes)),
-      map(u => u.toLowerCase())
+      filter((f) => !includes(f, virtualTypes)),
+      map((u) => u.toLowerCase())
     )(data.body.hits.hits);
     const { buckets } = data.body.aggregations.genres;
-    const filteredBuckets = filter(b => includes(b.key, types), buckets);
-    return map(b => ({ label: b.key, value: b.doc_count }), filteredBuckets);
+    const filteredBuckets = filter((b) => includes(b.key, types), buckets);
+    return map((b) => ({ label: b.key, value: b.doc_count }), filteredBuckets);
   });
 };
 export const elHistogramCount = async (type, field, interval, start, end, filters) => {
   // const tzStart = moment.parseZone(start).format('Z');
-  const histoFilters = map(f => {
+  const histoFilters = map((f) => {
     // eslint-disable-next-line no-nested-ternary
     const key = f.isRelation
       ? f.type
@@ -370,8 +371,8 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
       multi_match: {
         fields: [key],
         type: 'phrase',
-        query: f.value
-      }
+        query: f.value,
+      },
     };
   }, filters);
   let dateFormat;
@@ -399,21 +400,21 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
               {
                 bool: {
                   should: [{ match_phrase: { entity_type: type } }, { match_phrase: { parent_types: type } }],
-                  minimum_should_match: 1
-                }
+                  minimum_should_match: 1,
+                },
               },
               {
                 range: {
                   [field]: {
                     gte: start,
-                    lte: end
-                  }
-                }
-              }
+                    lte: end,
+                  },
+                },
+              },
             ],
             histoFilters
-          )
-        }
+          ),
+        },
       },
       aggs: {
         count_over_time: {
@@ -422,17 +423,17 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
             calendar_interval: interval,
             // time_zone: tzStart,
             format: dateFormat,
-            keyed: true
-          }
-        }
-      }
-    }
+            keyed: true,
+          },
+        },
+      },
+    },
   };
   logger.debug(`[ELASTICSEARCH] histogramCount > ${JSON.stringify(query)}`);
-  return el.search(query).then(data => {
+  return el.search(query).then((data) => {
     const { buckets } = data.body.aggregations.count_over_time;
     const dataToPairs = toPairs(buckets);
-    return map(b => ({ date: head(b), value: last(b).doc_count }), dataToPairs);
+    return map((b) => ({ date: head(b), value: last(b).doc_count }), dataToPairs);
   });
 };
 
@@ -444,7 +445,7 @@ const elBuildRelation = (type, connection) => {
     [`${type}Id`]: connection.grakn_id,
     [`${type}InternalId`]: connection.internal_id_key,
     [`${type}Role`]: connection.role,
-    [`${type}Types`]: connection.types
+    [`${type}Types`]: connection.types,
   };
 };
 const elMergeRelation = (concept, fromConnection, toConnection) => {
@@ -464,41 +465,41 @@ export const elReconstructRelation = (concept, relationsMap = null, forceNatural
   let fromConnection;
   if (relationsMap === null || relationsMap.size === 0) {
     // We dont know anything, force from and to from roles map
-    fromConnection = Rfind(connection => connection.role === bindingByAlias.from, connections);
-    toConnection = Rfind(connection => connection.role === bindingByAlias.to, connections);
+    fromConnection = Rfind((connection) => connection.role === bindingByAlias.from, connections);
+    toConnection = Rfind((connection) => connection.role === bindingByAlias.to, connections);
     return elMergeRelation(concept, fromConnection, toConnection);
   }
   // If map is specified, decide the resolution.
   const relationValues = Array.from(relationsMap.values());
-  const queryFrom = Rfind(v => v.alias === 'from', relationValues);
-  const queryTo = Rfind(v => v.alias === 'to', relationValues);
+  const queryFrom = Rfind((v) => v.alias === 'from', relationValues);
+  const queryTo = Rfind((v) => v.alias === 'to', relationValues);
   // If map contains a key filtering
   if (queryFrom && queryFrom.internalIdKey && forceNatural !== true) {
-    fromConnection = Rfind(connection => connection.internal_id_key === queryFrom.internalIdKey, connections);
-    toConnection = Rfind(connection => connection.internal_id_key !== queryFrom.internalIdKey, connections);
+    fromConnection = Rfind((connection) => connection.internal_id_key === queryFrom.internalIdKey, connections);
+    toConnection = Rfind((connection) => connection.internal_id_key !== queryFrom.internalIdKey, connections);
     return elMergeRelation(concept, fromConnection, toConnection);
   }
   if (queryTo && queryTo.internalIdKey && forceNatural !== true) {
-    fromConnection = Rfind(connection => connection.internal_id_key !== queryTo.internalIdKey, connections);
-    toConnection = Rfind(connection => connection.internal_id_key === queryTo.internalIdKey, connections);
+    fromConnection = Rfind((connection) => connection.internal_id_key !== queryTo.internalIdKey, connections);
+    toConnection = Rfind((connection) => connection.internal_id_key === queryTo.internalIdKey, connections);
     return elMergeRelation(concept, fromConnection, toConnection);
   }
   // If map contains a role filtering.
   // Only need to check on one side, the 2 roles are provisioned in this case.
   if (queryFrom && queryFrom.role && forceNatural !== true) {
-    fromConnection = Rfind(connection => connection.role === queryFrom.role, connections);
-    toConnection = Rfind(connection => connection.role === queryTo.role, connections);
+    fromConnection = Rfind((connection) => connection.role === queryFrom.role, connections);
+    toConnection = Rfind((connection) => connection.role === queryTo.role, connections);
     return elMergeRelation(concept, fromConnection, toConnection);
   }
   // If nothing in map to reconstruct
-  fromConnection = Rfind(connection => connection.role === bindingByAlias.from, connections);
-  toConnection = Rfind(connection => connection.role === bindingByAlias.to, connections);
+  fromConnection = Rfind((connection) => connection.role === bindingByAlias.from, connections);
+  toConnection = Rfind((connection) => connection.role === bindingByAlias.to, connections);
   return elMergeRelation(concept, fromConnection, toConnection);
 };
 // endregion
 
 // region elastic common loader.
-export const specialElasticCharsEscape = query => {
+export const specialElasticCharsEscape = (query) => {
   return query.replace(/([+|\-*()~={}[\]:?\\])/g, '\\$1');
 };
 export const elPaginate = async (indexName, options = {}) => {
@@ -512,7 +513,7 @@ export const elPaginate = async (indexName, options = {}) => {
     orderMode = 'asc',
     relationsMap = null,
     forceNatural = false,
-    connectionFormat = true // TODO @Julien Refactor that
+    connectionFormat = true, // TODO @Julien Refactor that
   } = options;
   const offset = after ? cursorToOffset(after) : 0;
   let must = [];
@@ -537,7 +538,7 @@ export const elPaginate = async (indexName, options = {}) => {
     } else {
       const splitSearch = cleanSearch.split(/[\s]+/);
       finalSearch = pipe(
-        map(n => `*${n}*`),
+        map((n) => `*${n}*`),
         join(' ')
       )(splitSearch);
     }
@@ -546,8 +547,8 @@ export const elPaginate = async (indexName, options = {}) => {
         query_string: {
           query: finalSearch,
           analyze_wildcard: true,
-          fields: ['name^5', '*']
-        }
+          fields: ['name^5', '*'],
+        },
       },
       must
     );
@@ -556,13 +557,13 @@ export const elPaginate = async (indexName, options = {}) => {
   }
   if (types !== null && types.length > 0) {
     const should = flatten(
-      types.map(typeValue => {
+      types.map((typeValue) => {
         return [{ match_phrase: { entity_type: typeValue } }, { match_phrase: { parent_types: typeValue } }];
       })
     );
     must = append({ bool: { should, minimum_should_match: 1 } }, must);
   }
-  const validFilters = filter(f => f && f.values.length > 0, filters || []);
+  const validFilters = filter((f) => f && f.values.length > 0, filters || []);
   if (validFilters.length > 0) {
     for (let index = 0; index < validFilters.length; index += 1) {
       const valuesFiltering = [];
@@ -577,8 +578,8 @@ export const elPaginate = async (indexName, options = {}) => {
             match_phrase: {
               [`${
                 dateFields.includes(key) || numberFields.includes(key) || operator === 'match' ? key : `${key}.keyword`
-              }`]: values[i].toString()
-            }
+              }`]: values[i].toString(),
+            },
           });
         } else {
           valuesFiltering.push({ range: { [key]: { [operator]: values[i] } } });
@@ -607,16 +608,16 @@ export const elPaginate = async (indexName, options = {}) => {
       query: {
         bool: {
           must,
-          must_not: mustnot
-        }
-      }
-    }
+          must_not: mustnot,
+        },
+      },
+    },
   };
   logger.debug(`[ELASTICSEARCH] paginate > ${JSON.stringify(query)}`);
   return el
     .search(query)
-    .then(data => {
-      const dataWithIds = map(n => {
+    .then((data) => {
+      const dataWithIds = map((n) => {
         const loadedElement = pipe(assoc('id', n._source.internal_id_key), assoc('_index', n._index))(n._source);
         if (loadedElement.relationship_type) {
           return elReconstructRelation(loadedElement, relationsMap, forceNatural);
@@ -624,19 +625,19 @@ export const elPaginate = async (indexName, options = {}) => {
         return loadedElement;
       }, data.body.hits.hits);
       if (connectionFormat) {
-        const nodeHits = map(n => ({ node: n }), dataWithIds);
+        const nodeHits = map((n) => ({ node: n }), dataWithIds);
         return buildPagination(first, offset, nodeHits, data.body.hits.total.value);
       }
       return dataWithIds;
     })
     .catch(
-      /* istanbul ignore next */ err => {
+      /* istanbul ignore next */ (err) => {
         // Because we create the mapping at element creation
         // We log the error only if its not a mapping not found error
         const numberOfCauses = err.meta.body.error.root_cause.length;
         const invalidMappingCauses = pipe(
-          map(r => r.reason),
-          filter(r => includes('No mapping found for', r))
+          map((r) => r.reason),
+          filter((r) => includes('No mapping found for', r))
         )(err.meta.body.error.root_cause);
         // If uncontrolled error, log and propagate
         if (numberOfCauses > invalidMappingCauses.length) {
@@ -655,10 +656,10 @@ export const elLoadByTerms = async (terms, relationsMap, indices = PLATFORM_INDI
     body: {
       query: {
         bool: {
-          must: map(x => ({ term: x }), terms)
-        }
-      }
-    }
+          must: map((x) => ({ term: x }), terms),
+        },
+      },
+    },
   };
   logger.debug(`[ELASTICSEARCH] loadByTerms > ${JSON.stringify(query)}`);
   const data = await el.search(query);
@@ -667,7 +668,7 @@ export const elLoadByTerms = async (terms, relationsMap, indices = PLATFORM_INDI
   if (total > 1) {
     throw new Error(`[ELASTIC] Expect only one response expected for ${terms}`);
   }
-  const response = total === 1 ? head(data.body.hits.hits) : undefined;
+  const response = total === 1 ? head(data.body.hits.hits) : null;
   if (!response) return response;
   const loadedElement = assoc('_index', response._index, response._source);
   if (loadedElement.relationship_type) {
@@ -699,24 +700,24 @@ export const elLoadByGraknId = (id, type = null, relationsMap = null, indices = 
   return elLoadByTerms(terms, relationsMap, indices);
 };
 
-export const elBulk = async args => {
+export const elBulk = async (args) => {
   return el.bulk(args);
 };
 
 /* istanbul ignore next */
-export const elReindex = async indices => {
+export const elReindex = async (indices) => {
   return Promise.all(
-    indices.map(indexMap => {
+    indices.map((indexMap) => {
       return el.reindex({
         timeout: '60m',
         body: {
           source: {
-            index: indexMap.source
+            index: indexMap.source,
           },
           dest: {
-            index: indexMap.dest
-          }
-        }
+            index: indexMap.dest,
+          },
+        },
       });
     })
   );
@@ -730,7 +731,7 @@ export const elIndex = async (indexName, documentBody, refresh = true) => {
     id: documentBody.grakn_id,
     refresh,
     timeout: '60m',
-    body: dissoc('_index', documentBody)
+    body: dissoc('_index', documentBody),
   });
   return documentBody;
 };
@@ -742,37 +743,37 @@ export const elUpdate = (indexName, documentId, documentBody, retry = 2) => {
     retry_on_conflict: retry,
     timeout: '60m',
     refresh: true,
-    body: dissoc('_index', documentBody)
+    body: dissoc('_index', documentBody),
   });
 };
 
 export const elDeleteByField = async (indexName, fieldName, value) => {
   const query = {
-    match: { [fieldName]: value }
+    match: { [fieldName]: value },
   };
   await el.deleteByQuery({
     index: indexName,
     refresh: true,
-    body: { query }
+    body: { query },
   });
   return value;
 };
 export const elDeleteInstanceIds = async (ids, indexesToHandle = PLATFORM_INDICES) => {
   logger.debug(`[ELASTICSEARCH] elDeleteInstanceIds > ${ids}`);
-  const terms = map(id => ({ term: { 'internal_id_key.keyword': id } }), ids);
+  const terms = map((id) => ({ term: { 'internal_id_key.keyword': id } }), ids);
   return el.deleteByQuery({
     index: indexesToHandle,
     refresh: true,
     body: {
       query: {
         bool: {
-          should: terms
-        }
-      }
-    }
+          should: terms,
+        },
+      },
+    },
   });
 };
-export const elRemoveRelationConnection = async relationId => {
+export const elRemoveRelationConnection = async (relationId) => {
   const relation = await elLoadById(relationId);
   const from = await elLoadByGraknId(relation.fromId);
   const to = await elLoadByGraknId(relation.toId);
@@ -782,30 +783,30 @@ export const elRemoveRelationConnection = async relationId => {
     script: {
       source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
       params: {
-        key: to.internal_id_key
-      }
-    }
+        key: to.internal_id_key,
+      },
+    },
   });
   // Update to to entity
   await elUpdate(to._index, to.grakn_id, {
     script: {
       source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
       params: {
-        key: from.internal_id_key
-      }
-    }
+        key: from.internal_id_key,
+      },
+    },
   });
 };
 
-const prepareIndexing = async elements => {
+const prepareIndexing = async (elements) => {
   return Promise.all(
-    map(async element => {
+    map(async (element) => {
       // Ensure empty list are not indexed
       const thing = {};
-      Object.keys(element).forEach(key => {
+      Object.keys(element).forEach((key) => {
         const value = element[key];
         if (Array.isArray(value)) {
-          const filteredArray = value.filter(i => i);
+          const filteredArray = value.filter((i) => i);
           thing[key] = filteredArray.length > 0 ? filteredArray : [];
         } else {
           thing[key] = value;
@@ -821,19 +822,19 @@ const prepareIndexing = async elements => {
         const connections = [];
         const [from, to] = await Promise.all([
           elLoadByGraknId(thing.fromId), //
-          elLoadByGraknId(thing.toId)
+          elLoadByGraknId(thing.toId),
         ]);
         connections.push({
           grakn_id: thing.fromId,
           internal_id_key: from.internal_id_key,
           types: thing.fromTypes,
-          role: thing.fromRole
+          role: thing.fromRole,
         });
         connections.push({
           grakn_id: thing.toId,
           internal_id_key: to.internal_id_key,
           types: thing.toTypes,
-          role: thing.toRole
+          role: thing.toRole,
         });
         return pipe(
           assoc('connections', connections),
@@ -855,17 +856,17 @@ export const elIndexElements = async (elements, retry = 2) => {
   // 00. Relations must be transformed before indexing.
   const transformedElements = await prepareIndexing(elements);
   // 01. Bulk the indexing of row elements
-  const body = transformedElements.flatMap(doc => [
+  const body = transformedElements.flatMap((doc) => [
     { index: { _index: inferIndexFromConceptTypes(doc.parent_types), _id: doc.grakn_id } },
-    dissoc('_index', doc)
+    dissoc('_index', doc),
   ]);
   if (body.length > 0) {
     await elBulk({ refresh: true, body });
   }
   // 02. If relation, generate impacts for from and to sides
   const impactedEntities = pipe(
-    filter(e => e.relationship_type !== undefined),
-    map(e => {
+    filter((e) => e.relationship_type !== undefined),
+    map((e) => {
       const { fromRole, toRole } = e;
       const relationshipType = e.relationship_type;
       const impacts = [];
@@ -876,21 +877,21 @@ export const elIndexElements = async (elements, retry = 2) => {
       return impacts;
     }),
     flatten,
-    groupBy(i => i.from)
+    groupBy((i) => i.from)
   )(elements);
   const elementsToUpdate = await Promise.all(
     // For each from, generate the
-    map(async entityGraknId => {
+    map(async (entityGraknId) => {
       const entity = await elLoadByGraknId(entityGraknId);
       const targets = impactedEntities[entityGraknId];
       // Build document fields to update ( per relation type )
       // rel_membership: [{ internal_id_key: ID, types: [] }]
-      const targetsByRelation = groupBy(i => i.relationshipType, targets);
+      const targetsByRelation = groupBy((i) => i.relationshipType, targets);
       const targetsElements = await Promise.all(
-        map(async relType => {
+        map(async (relType) => {
           const data = targetsByRelation[relType];
           const resolvedData = await Promise.all(
-            map(async d => {
+            map(async (d) => {
               const resolvedTarget = await elLoadByGraknId(d.to);
               return resolvedTarget.internal_id_key;
             }, data)
@@ -900,7 +901,7 @@ export const elIndexElements = async (elements, retry = 2) => {
       );
       // Create params and scripted update
       const params = {};
-      const sources = map(t => {
+      const sources = map((t) => {
         const field = `${REL_INDEX_PREFIX + t.relation}.internal_id_key`;
         const createIfNotExist = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
         const addAllElements = `ctx._source['${field}'].addAll(params['${field}'])`;
@@ -915,10 +916,10 @@ export const elIndexElements = async (elements, retry = 2) => {
       return { _index: entity._index, id: entityGraknId, data: { script: { source, params } } };
     }, Object.keys(impactedEntities))
   );
-  const bodyUpdate = elementsToUpdate.flatMap(doc => [
+  const bodyUpdate = elementsToUpdate.flatMap((doc) => [
     // eslint-disable-next-line no-underscore-dangle
     { update: { _index: doc._index, _id: doc.id, retry_on_conflict: retry } },
-    dissoc('_index', doc.data)
+    dissoc('_index', doc.data),
   ]);
   if (bodyUpdate.length > 0) {
     await elBulk({ refresh: true, timeout: '60m', body: bodyUpdate });

@@ -4,7 +4,7 @@ module.exports = {
   testRegex: 'tests/.*-test.js$',
   transform: {
     '\\.js$': ['babel-jest'],
-    '\\.graphql$': 'jest-transform-graphql'
+    '\\.graphql$': 'jest-transform-graphql',
   },
   reporters: ['default', ['jest-junit', { outputDirectory: './test-results/jest/', outputName: 'results.xml' }]],
   collectCoverageFrom: ['src/**/*.js'],
@@ -19,6 +19,6 @@ module.exports = {
     '/src/httpServer.js',
     '/src/index.js',
     '/src/indexer.js',
-    '/src/initialization.js'
-  ]
+    '/src/initialization.js',
+  ],
 };

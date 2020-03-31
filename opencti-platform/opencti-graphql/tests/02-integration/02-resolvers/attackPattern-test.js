@@ -104,7 +104,10 @@ describe('AttackPattern resolver standard behavior', () => {
     expect(queryResult.data.attackPattern.id).toEqual(attackPatternInternalId);
   });
   it('should attackPattern coursesOfAction be accurate', async () => {
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: 'dcbadcd2-9359-48ac-8b86-88e38a092a2b' } });
+    const queryResult = await queryAsAdmin({
+      query: READ_QUERY,
+      variables: { id: 'dcbadcd2-9359-48ac-8b86-88e38a092a2b' },
+    });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.attackPattern).not.toBeNull();
     expect(queryResult.data.attackPattern.id).toEqual('dcbadcd2-9359-48ac-8b86-88e38a092a2b');

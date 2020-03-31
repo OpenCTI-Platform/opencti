@@ -5,16 +5,16 @@ import {
   queryAttributeValueByGraknId,
   queryAttributeValues,
   reindexEntityAttribute,
-  reindexRelationAttribute
+  reindexRelationAttribute,
 } from '../database/grakn';
 import { logger } from '../config/conf';
 
-export const findById = attributeId => queryAttributeValueByGraknId(attributeId);
+export const findById = (attributeId) => queryAttributeValueByGraknId(attributeId);
 
-export const findAll = args => queryAttributeValues(args.type);
+export const findAll = (args) => queryAttributeValues(args.type);
 
-export const addAttribute = async attribute => {
-  return executeWrite(async wTx => {
+export const addAttribute = async (attribute) => {
+  return executeWrite(async (wTx) => {
     const query = `insert $attribute isa ${attribute.type}; $attribute "${escapeString(attribute.value)}";`;
     logger.debug(`[GRAKN - infer: false] addAttribute > ${query}`);
     const attributeIterator = await wTx.tx.query(query);
@@ -23,12 +23,12 @@ export const addAttribute = async attribute => {
     return {
       id: createdAttributeId,
       type: attribute.type,
-      value: attribute.value
+      value: attribute.value,
     };
   });
 };
 
-export const attributeDelete = async id => {
+export const attributeDelete = async (id) => {
   return deleteAttributeById(id);
 };
 
@@ -36,10 +36,10 @@ export const attributeUpdate = async (id, input) => {
   // Add the new attribute
   const newAttribute = await addAttribute({
     type: input.type,
-    value: input.newValue
+    value: input.newValue,
   });
   // Link new attribute to every entities
-  await executeWrite(async wTx => {
+  await executeWrite(async (wTx) => {
     const writeQuery = `match $e isa entity, has ${escape(input.type)} $a; $a "${escapeString(
       input.value
     )}"; insert $e has ${escape(input.type)} $attribute; $attribute "${escapeString(input.newValue)}";`;
@@ -47,7 +47,7 @@ export const attributeUpdate = async (id, input) => {
     await wTx.tx.query(writeQuery);
   });
   // Link new attribute to every relations
-  await executeWrite(async wTx => {
+  await executeWrite(async (wTx) => {
     const writeQuery = `match $e isa relation, has ${escape(input.type)} $a; $a "${escapeString(
       input.value
     )}"; insert $e has ${escape(input.type)} $attribute; $attribute "${escapeString(input.newValue)}";`;

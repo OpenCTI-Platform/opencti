@@ -9,7 +9,7 @@ import {
   stixObservableRelationDelete,
   stixObservableRelationDeleteRelation,
   stixObservableRelationEditContext,
-  stixObservableRelationEditField
+  stixObservableRelationEditField,
 } from '../domain/stixObservableRelation';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -23,11 +23,11 @@ const stixObservableRelationResolvers = {
         return findById(args.stix_id_key);
       }
       return findAll(args);
-    }
+    },
   },
   StixObservableRelation: {
-    from: rel => loadByGraknId(rel.fromId),
-    to: rel => loadByGraknId(rel.toId)
+    from: (rel) => loadByGraknId(rel.fromId),
+    to: (rel) => loadByGraknId(rel.toId),
   },
   Mutation: {
     stixObservableRelationEdit: (_, { id }, { user }) => ({
@@ -36,18 +36,18 @@ const stixObservableRelationResolvers = {
       contextPatch: ({ input }) => stixObservableRelationEditContext(user, id, input),
       contextClean: () => stixObservableRelationCleanContext(user, id),
       relationAdd: ({ input }) => stixObservableRelationAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixObservableRelationDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => stixObservableRelationDeleteRelation(user, id, relationId),
     }),
-    stixObservableRelationAdd: (_, { input }, { user }) => addStixObservableRelation(user, input)
+    stixObservableRelationAdd: (_, { input }, { user }) => addStixObservableRelation(user, input),
   },
   Subscription: {
     stixObservableRelation: {
-      resolve: payload => payload.instance,
+      resolve: (payload) => payload.instance,
       subscribe: (_, { id }, { user }) => {
         stixObservableRelationEditContext(user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.StixObservableRelation.EDIT_TOPIC),
-          payload => {
+          (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== user.id && payload.instance.id === id;
           }
@@ -55,9 +55,9 @@ const stixObservableRelationResolvers = {
         return withCancel(filtering, () => {
           stixObservableRelationCleanContext(user, id);
         });
-      }
-    }
-  }
+      },
+    },
+  },
 };
 
 export default stixObservableRelationResolvers;

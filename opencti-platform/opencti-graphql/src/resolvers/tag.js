@@ -9,7 +9,7 @@ import {
   tagDelete,
   tagDeleteRelation,
   tagEditContext,
-  tagEditField
+  tagEditField,
 } from '../domain/tag';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -18,13 +18,13 @@ import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 const tagResolvers = {
   Query: {
     tag: (_, { id }) => findById(id),
-    tags: (_, args) => findAll(args)
+    tags: (_, args) => findAll(args),
   },
   TagsFilter: {
-    tagsFor: `${REL_INDEX_PREFIX}tagged.internal_id_key`
+    tagsFor: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
   },
   Tag: {
-    editContext: tag => fetchEditContext(tag.id)
+    editContext: (tag) => fetchEditContext(tag.id),
   },
   Mutation: {
     tagEdit: (_, { id }, { user }) => ({
@@ -32,18 +32,18 @@ const tagResolvers = {
       fieldPatch: ({ input }) => tagEditField(user, id, input),
       contextPatch: ({ input }) => tagEditContext(user, id, input),
       relationAdd: ({ input }) => tagAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => tagDeleteRelation(user, id, relationId)
+      relationDelete: ({ relationId }) => tagDeleteRelation(user, id, relationId),
     }),
-    tagAdd: (_, { input }, { user }) => addTag(user, input)
+    tagAdd: (_, { input }, { user }) => addTag(user, input),
   },
   Subscription: {
     tag: {
-      resolve: payload => payload.instance,
+      resolve: (payload) => payload.instance,
       subscribe: (_, { id }, { user }) => {
         tagEditContext(user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.Tag.EDIT_TOPIC),
-          payload => {
+          (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== user.id && payload.instance.id === id;
           }
@@ -51,9 +51,9 @@ const tagResolvers = {
         return withCancel(filtering, () => {
           tagCleanContext(user, id);
         });
-      }
-    }
-  }
+      },
+    },
+  },
 };
 
 export default tagResolvers;

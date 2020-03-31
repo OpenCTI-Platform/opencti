@@ -4,15 +4,15 @@ import { logger } from '../config/conf';
 import { findAll } from '../domain/stixObservableRelation';
 import { executeWrite, updateAttribute } from '../database/grakn';
 
-const updateRelation = async stixObservableRelation => {
+const updateRelation = async (stixObservableRelation) => {
   if (stixObservableRelation.entity_type === 'stix_relation') {
-    return executeWrite(wTx => {
+    return executeWrite((wTx) => {
       return updateAttribute(
         stixObservableRelation.id,
         'stix_relation',
         {
           key: 'entity_type',
-          value: ['stix_observable_relation']
+          value: ['stix_observable_relation'],
         },
         wTx
       );
@@ -21,7 +21,7 @@ const updateRelation = async stixObservableRelation => {
   return Promise.resolve(true);
 };
 
-export const up = async next => {
+export const up = async (next) => {
   try {
     logger.info(`[MIGRATION] change_bad_entity_type > Starting changing...`);
     logger.info(`[MIGRATION] change_bad_entity_type > Changing stix relations in batchs of 200`);
@@ -33,10 +33,10 @@ export const up = async next => {
         first: 200,
         after: currentCursor,
         orderAsc: true,
-        orderBy: 'created_at'
+        orderBy: 'created_at',
       });
       await Promise.all(
-        stixObservableRelations.edges.map(stixObservableRelationEdge => {
+        stixObservableRelations.edges.map((stixObservableRelationEdge) => {
           const stixObservableRelation = stixObservableRelationEdge.node;
           return updateRelation(stixObservableRelation);
         })
@@ -55,6 +55,6 @@ export const up = async next => {
   next();
 };
 
-export const down = async next => {
+export const down = async (next) => {
   next();
 };

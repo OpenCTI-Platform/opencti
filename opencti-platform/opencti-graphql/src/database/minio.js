@@ -15,7 +15,7 @@ const minioClient = new Minio.Client({
   port: conf.get('minio:port') || 9000,
   useSSL: conf.get('minio:use_ssl') || false,
   accessKey: conf.get('minio:access_key'),
-  secretKey: conf.get('minio:secret_key')
+  secretKey: conf.get('minio:secret_key'),
 });
 
 export const isStorageAlive = () => {
@@ -23,7 +23,7 @@ export const isStorageAlive = () => {
     minioClient.bucketExists(bucketName, (existErr, exists) => {
       if (existErr) reject(existErr);
       if (!exists) {
-        minioClient.makeBucket(bucketName, bucketRegion, createErr => {
+        minioClient.makeBucket(bucketName, bucketRegion, (createErr) => {
           if (createErr) reject(createErr);
           resolve(true);
         });
@@ -77,9 +77,9 @@ export const deleteFile = async (id, user) => {
   return true;
 };
 
-export const downloadFile = id => minioClient.getObject(bucketName, id);
+export const downloadFile = (id) => minioClient.getObject(bucketName, id);
 
-export const loadFile = async filename => {
+export const loadFile = async (filename) => {
   const stat = await minioClient.statObject(bucketName, filename);
   return {
     id: filename,
@@ -89,22 +89,22 @@ export const loadFile = async filename => {
     lastModified: stat.lastModified,
     lastModifiedSinceMin: sinceNowInMinutes(stat.lastModified),
     metaData: stat.metaData,
-    uploadStatus: 'complete'
+    uploadStatus: 'complete',
   };
 };
 
-const rawFilesListing = directory => {
+const rawFilesListing = (directory) => {
   return new Promise((resolve, reject) => {
     const files = [];
     const stream = minioClient.listObjectsV2(bucketName, directory);
-    stream.on('data', async obj => files.push(assoc('id', obj.name, obj)));
-    stream.on('error', e => {
+    stream.on('data', async (obj) => files.push(assoc('id', obj.name, obj)));
+    stream.on('error', (e) => {
       logger.error('MINIO > Error listing files', e);
       reject(e);
     });
     stream.on('end', () => resolve(files));
-  }).then(files => {
-    return Promise.all(map(elem => loadFile(elem.name), files));
+  }).then((files) => {
+    return Promise.all(map((elem) => loadFile(elem.name), files));
   });
 };
 
@@ -117,7 +117,7 @@ export const filesListing = async (first, category, entityType, entity = null, c
     allFiles = concat(inExport, files);
   }
   const sortedFiles = sort((a, b) => b.lastModified - a.lastModified, allFiles);
-  const fileNodes = map(f => ({ node: f }), sortedFiles);
+  const fileNodes = map((f) => ({ node: f }), sortedFiles);
   return buildPagination(first, 0, fileNodes, allFiles.length);
 };
 
@@ -137,7 +137,7 @@ export const upload = async (
     mimetype,
     encoding,
     context,
-    listArgs
+    listArgs,
   };
   let finalEntityType = entityType;
   if (entityId && !finalEntityType) {
@@ -149,7 +149,7 @@ export const upload = async (
   logger.debug(`FileManager > upload file ${filename} to ${fileDirName} by ${user.user_email}`);
   // Upload the file in the storage
   return new Promise((resolve, reject) => {
-    return minioClient.putObject(bucketName, fileDirName, createReadStream(), null, metadata, err => {
+    return minioClient.putObject(bucketName, fileDirName, createReadStream(), null, metadata, (err) => {
       if (err) return reject(err);
       return resolve(loadFile(fileDirName));
     });
@@ -158,7 +158,7 @@ export const upload = async (
 
 export const getMinIOVersion = () => {
   const serverHeaderPrefix = 'MinIO/';
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     // MinIO server information is included in the "Server" header of the
     // response. Make "bucketExists" request to get the header value.
     minioClient.makeRequest({ method: 'HEAD', bucketName }, '', 200, '', true, (err, response) => {

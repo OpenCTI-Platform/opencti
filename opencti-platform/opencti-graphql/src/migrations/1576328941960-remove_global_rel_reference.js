@@ -6,18 +6,18 @@ const removeAttributeForEntityType = async (entityType, role) => {
     index: INDEX_STIX_ENTITIES,
     body: {
       script: {
-        source: `if (ctx._source['rel_${role}.internal_id_key'] != null) ctx._source.remove('rel_${role}.internal_id_key')`
+        source: `if (ctx._source['rel_${role}.internal_id_key'] != null) ctx._source.remove('rel_${role}.internal_id_key')`,
       },
       query: {
         bool: {
-          must: { match_phrase: { entity_type: entityType } }
-        }
-      }
-    }
+          must: { match_phrase: { entity_type: entityType } },
+        },
+      },
+    },
   });
 };
 
-export const up = async next => {
+export const up = async (next) => {
   await removeAttributeForEntityType('tag', 'tagged');
   await removeAttributeForEntityType('kill-chain-phase', 'kill_chain_phases');
   await removeAttributeForEntityType('marking-definition', 'object_marking_refs');
@@ -25,6 +25,6 @@ export const up = async next => {
   next();
 };
 
-export const down = async next => {
+export const down = async (next) => {
   next();
 };

@@ -10,18 +10,18 @@ import {
   loadEntityById,
   loadEntityByStixId,
   TYPE_STIX_DOMAIN,
-  updateAttribute
+  updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 
-export const findById = markingDefinitionId => {
+export const findById = (markingDefinitionId) => {
   if (markingDefinitionId.match(/[a-z-]+--[\w-]{36}/g)) {
     return loadEntityByStixId(markingDefinitionId, 'Marking-Definition');
   }
   return loadEntityById(markingDefinitionId, 'Marking-Definition');
 };
 
-export const findAll = args => {
+export const findAll = (args) => {
   return listEntities(['Marking-Definition'], ['definition_type', 'definition'], args);
 };
 
@@ -30,7 +30,7 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
   return notify(BUS_TOPICS.MarkingDefinition.ADDED_TOPIC, created, user);
 };
 
-export const markingDefinitionDelete = markingDefinitionId =>
+export const markingDefinitionDelete = (markingDefinitionId) =>
   deleteEntityById(markingDefinitionId, 'Marking-Definition');
 export const markingDefinitionAddRelation = (user, markingDefinitionId, input) => {
   return createRelation(
@@ -39,7 +39,7 @@ export const markingDefinitionAddRelation = (user, markingDefinitionId, input) =
     {},
     null,
     'Marking-Definition'
-  ).then(relationData => {
+  ).then((relationData) => {
     notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, relationData, user);
     return relationData;
   });
@@ -50,7 +50,7 @@ export const markingDefinitionDeleteRelation = async (user, markingDefinitionId,
   return notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, data, user);
 };
 export const markingDefinitionEditField = (user, markingDefinitionId, input) => {
-  return executeWrite(wTx => {
+  return executeWrite((wTx) => {
     return updateAttribute(markingDefinitionId, 'Marking-Definition', input, wTx);
   }).then(async () => {
     const markingDefinition = await loadEntityById(markingDefinitionId, 'Marking-Definition');
@@ -60,13 +60,13 @@ export const markingDefinitionEditField = (user, markingDefinitionId, input) => 
 
 export const markingDefinitionCleanContext = (user, markingDefinitionId) => {
   delEditContext(user, markingDefinitionId);
-  return loadEntityById(markingDefinitionId, 'Marking-Definition').then(markingDefinition =>
+  return loadEntityById(markingDefinitionId, 'Marking-Definition').then((markingDefinition) =>
     notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user)
   );
 };
 export const markingDefinitionEditContext = (user, markingDefinitionId, input) => {
   setEditContext(user, markingDefinitionId, input);
-  return loadEntityById(markingDefinitionId, 'Marking-Definition').then(markingDefinition =>
+  return loadEntityById(markingDefinitionId, 'Marking-Definition').then((markingDefinition) =>
     notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user)
   );
 };

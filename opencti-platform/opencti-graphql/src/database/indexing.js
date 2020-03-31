@@ -42,13 +42,13 @@ const indexElement = async (type, isRelation = false, fromType = null, toType = 
   // Fetch grakn with concurrency limit.
   await Promise.map(
     queries,
-    query => {
+    (query) => {
       return find(query, [isRelation ? 'rel' : 'elem'], { noCache: true })
-        .then(fetchedGroupElements => {
+        .then((fetchedGroupElements) => {
           const fetchedElements = pipe(
             flatten,
-            map(e => e[isRelation ? 'rel' : 'elem']),
-            uniqBy(u => u.grakn_id)
+            map((e) => e[isRelation ? 'rel' : 'elem']),
+            uniqBy((u) => u.grakn_id)
           )(fetchedGroupElements);
           return elIndexElements(fetchedElements, GROUP_INDEX_MAX_RETRY);
         })

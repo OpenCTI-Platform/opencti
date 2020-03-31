@@ -11,18 +11,18 @@ const uploadJobImport = async (fileId, fileMime, context = null) => {
     // Create job and send ask to broker
     const workList = await Promise.all(
       map(
-        connector =>
+        (connector) =>
           createWork(connector, null, null, context, fileId).then(({ work, job }) => ({
             connector,
             work,
-            job
+            job,
           })),
         connectors
       )
     );
     // Send message to all correct connectors queues
     await Promise.all(
-      map(data => {
+      map((data) => {
         const { connector, work, job } = data;
         const message = {
           work_id: work.internal_id_key, // work(id)
@@ -30,7 +30,7 @@ const uploadJobImport = async (fileId, fileMime, context = null) => {
           job_id: job.internal_id_key, // job(id)
           file_mime: fileMime, // Ex. application/json
           file_path: `/storage/get/${fileId}`, // Path to get the file
-          update: true
+          update: true,
         };
         return pushToConnector(connector, message);
       }, workList)

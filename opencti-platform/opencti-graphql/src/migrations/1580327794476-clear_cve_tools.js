@@ -4,7 +4,7 @@ import { findAll as findAllTools } from '../domain/tool';
 import { stixDomainEntityDelete } from '../domain/stixDomainEntity';
 import { logger } from '../config/conf';
 
-export const up = async next => {
+export const up = async (next) => {
   try {
     logger.info(`[MIGRATION] clean_cve_tool > Starting cleaning...`);
     logger.info(`[MIGRATION] clean_cve_tool > Cleaning tools in batchs of 200`);
@@ -17,10 +17,10 @@ export const up = async next => {
         first: 200,
         after: currentCursor,
         orderAsc: true,
-        orderBy: 'name'
+        orderBy: 'name',
       });
       await Promise.all(
-        tools.edges.map(toolEdge => {
+        tools.edges.map((toolEdge) => {
           const tool = toolEdge.node;
           return stixDomainEntityDelete(tool.id);
         })
@@ -39,6 +39,6 @@ export const up = async next => {
   next();
 };
 
-export const down = async next => {
+export const down = async (next) => {
   next();
 };
