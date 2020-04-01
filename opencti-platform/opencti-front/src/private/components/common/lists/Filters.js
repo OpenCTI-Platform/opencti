@@ -20,7 +20,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 const styles = (theme) => ({
   filters: {
     float: 'left',
-    margin: '-8px 0 0 0',
+    margin: '-8px 0 0 -5px',
   },
   container: {
     width: 490,

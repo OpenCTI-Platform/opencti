@@ -79,6 +79,9 @@ const styles = (theme) => ({
     float: 'left',
     margin: '2px 0 0 10px',
   },
+  filter: {
+    marginRight: 10,
+  },
 });
 
 class ListLines extends Component {

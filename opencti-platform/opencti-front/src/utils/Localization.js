@@ -851,6 +851,10 @@ const i18n = {
       filter_tags: 'Tag',
       filter_createdBy: 'Auteur',
       filter_markingDefinitions: 'Marquage',
+      EXTERNAL_IMPORT: 'Import de données',
+      INTERNAL_IMPORT_FILE: 'Import de fichiers',
+      INTERNAL_EXPORT_FILE: 'Export de fichiers',
+      INTERNAL_ENRICHMENT: 'Enrichissement',
     },
     en: {
       progress: 'In progress',
@@ -982,6 +986,10 @@ const i18n = {
       filter_tags: 'Tag',
       filter_createdBy: 'Author',
       filter_markingDefinitions: 'Marking definition',
+      EXTERNAL_IMPORT: 'Data import',
+      INTERNAL_IMPORT_FILE: 'Files import',
+      INTERNAL_EXPORT_FILE: 'Files export',
+      INTERNAL_ENRICHMENT: 'Enrichment',
     },
   },
 };
