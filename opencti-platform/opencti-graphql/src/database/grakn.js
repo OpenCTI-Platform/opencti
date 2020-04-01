@@ -1361,6 +1361,7 @@ const createRelationRaw = async (fromInternalId, input, opts = {}, fromType = nu
     return createdRel;
   }
   // 07. Return result inversed if asked
+  /* istanbul ignore next */
   return pipe(
     assoc('fromId', createdRel.toId),
     assoc('fromRole', createdRel.toRole),

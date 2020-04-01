@@ -650,8 +650,8 @@
       "x_opencti_target_ref": "attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17",
       "created": "2020-03-01T14:05:16.797Z",
       "modified": "2020-03-01T14:05:16.797Z",
-      "x_opencti_first_seen": "2020-02-29T23:00:00.000Z",
-      "x_opencti_last_seen": "2020-02-29T23:00:00.000Z",
+      "x_opencti_first_seen": "2020-02-29T22:30:00.000Z",
+      "x_opencti_last_seen": "2020-02-29T22:30:00.000Z",
       "x_opencti_weight": 3,
       "x_opencti_role_played": "Unknown",
       "x_opencti_id": "50a205fa-92ec-4ec9-bf62-e065dd85f5d4"
