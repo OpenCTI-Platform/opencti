@@ -1669,7 +1669,7 @@ export const deleteEntityById = async (id, type, options = {}) => {
   const eid = escapeString(id);
   // 00. Load everything we need to remove in elastic
   const read = `match $from isa ${type}, has internal_id_key "${eid}"; $rel($from, $to);
-   { $rel isa stix_relation; } or { $rel isa stix_relation_embedded; }; get;`;
+   { $rel isa stix_relation; } or { $rel isa stix_relation_embedded; } or { $rel isa relation_embedded; }; get;`;
   const relationsToDeIndex = await find(read, ['rel'], options);
   const relationsIds = map((r) => r.rel.id, relationsToDeIndex);
   // 01. Execute the delete in grakn and elastic

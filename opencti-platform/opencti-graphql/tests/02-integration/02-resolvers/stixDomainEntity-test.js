@@ -143,7 +143,7 @@ describe('StixDomainEntity resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.stixDomainEntitiesTimeSeries.length).toEqual(13);
-    expect(queryResult.data.stixDomainEntitiesTimeSeries[2].value).toEqual(25);
+    expect(queryResult.data.stixDomainEntitiesTimeSeries[3].value).toEqual(25);
   });
   it('should update stixDomainEntity', async () => {
     const UPDATE_QUERY = gql`
@@ -277,5 +277,6 @@ describe('StixDomainEntity resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixDomainEntityStixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.stixDomainEntity).toBeNull();
+    // TODO Verify is no relations are linked to the deleted entity
   });
 });
