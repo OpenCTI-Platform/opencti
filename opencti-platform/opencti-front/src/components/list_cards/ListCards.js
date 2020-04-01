@@ -146,7 +146,7 @@ class ListCards extends Component {
                     <Chip
                       key={filter[0]}
                       classes={{ root: classes.filter }}
-                      label={`${filter[0]}: ${
+                      label={`${t(`filter_${filter[0]}`)}: ${
                         f.value === null ? t('No tag') : f.value
                       }`}
                       onDelete={handleRemoveFilter.bind(this, filter[0])}
