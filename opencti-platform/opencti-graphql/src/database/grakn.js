@@ -1708,6 +1708,7 @@ export const deleteRelationById = async (relationId, type) => {
   });
 };
 export const deleteRelationsByFromAndTo = async (fromId, toId, relationType, scopeType) => {
+  /* istanbul ignore if */
   if (isNil(scopeType)) {
     throw new Error(`[GRAKN] deleteRelationsByFromAndTo > Missing scopeType`);
   }
