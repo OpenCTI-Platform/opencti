@@ -55,6 +55,7 @@ import {
 } from './utils';
 import { isInversed, resolveNaturalRoles, ROLE_FROM } from './graknRoles';
 import {
+  elAggregationCount,
   elAggregationRelationsCount,
   elBulk,
   elDeleteInstanceIds,
