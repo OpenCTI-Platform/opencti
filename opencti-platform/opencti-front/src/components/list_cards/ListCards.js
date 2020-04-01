@@ -64,6 +64,9 @@ const styles = (theme) => ({
     float: 'left',
     margin: '2px 0 0 15px',
   },
+  filter: {
+    marginRight: 10,
+  },
 });
 
 class ListCards extends Component {
