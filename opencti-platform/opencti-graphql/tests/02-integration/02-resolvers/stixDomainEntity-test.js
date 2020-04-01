@@ -260,6 +260,33 @@ describe('StixDomainEntity resolver standard behavior', () => {
     });
     expect(queryResult.data.stixDomainEntityEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
   });
+  it('should delete relation with toId in stixDomainEntity', async () => {
+    const RELATION_TOID_DELETE_QUERY = gql`
+      mutation StixDomainEntityEdit($id: ID!, $toId: String, $relationType: String) {
+        stixDomainEntityEdit(id: $id) {
+          relationDelete(toId: $toId, relationType: $relationType) {
+            id
+            tags {
+              edges {
+                node {
+                  id
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: RELATION_TOID_DELETE_QUERY,
+      variables: {
+        id: stixDomainEntityInternalId,
+        toId: 'ebd3398f-2189-4597-b994-5d1ab310d4bc',
+        relationType: 'tagged',
+      },
+    });
+    expect(queryResult.data.stixDomainEntityEdit.relationDelete.tags.edges.length).toEqual(1);
+  });
   it('should stixDomainEntity deleted', async () => {
     const DELETE_QUERY = gql`
       mutation stixDomainEntityDelete($id: ID!) {
