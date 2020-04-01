@@ -848,6 +848,9 @@ const i18n = {
       organization_partner: 'Partenaire',
       organization_vendor: 'Editeur',
       organization_other: 'Autre',
+      filter_tags: 'Tag',
+      filter_createdBy: 'Auteur',
+      filter_markingDefinitions: 'Marquage',
     },
     en: {
       progress: 'In progress',
@@ -976,6 +979,9 @@ const i18n = {
       organization_partner: 'Partner',
       organization_vendor: 'Vendor',
       organization_other: 'Other',
+      filter_tags: 'Tag',
+      filter_createdBy: 'Author',
+      filter_markingDefinitions: 'Marking definition',
     },
   },
 };

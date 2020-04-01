@@ -138,6 +138,7 @@ class Reports extends Component {
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
+        handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
@@ -148,6 +149,7 @@ class Reports extends Component {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        availableFilterKeys={['tags', 'createdBy', 'markingDefinitions']}
       >
         <QueryRenderer
           query={reportsLinesQuery}

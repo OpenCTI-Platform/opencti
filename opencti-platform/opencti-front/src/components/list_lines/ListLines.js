@@ -21,6 +21,7 @@ import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainEntitiesExports from '../../private/components/common/stix_domain_entities/StixDomainEntitiesExports';
 import Security, { KNOWLEDGE_KNGETEXPORT } from '../../utils/Security';
+import Filters from '../../private/components/common/lists/Filters';
 
 const styles = (theme) => ({
   container: {
@@ -122,6 +123,7 @@ class ListLines extends Component {
       handleChangeView,
       disableCards,
       enableDuplicates,
+      handleAddFilter,
       handleRemoveFilter,
       handleToggleExports,
       openExports,
@@ -136,6 +138,7 @@ class ListLines extends Component {
       exportEntityType,
       exportContext,
       numberOfElements,
+      availableFilterKeys,
     } = this.props;
     return (
       <div
@@ -154,6 +157,14 @@ class ListLines extends Component {
                 keyword={keyword}
               />
             </div>
+          ) : (
+            ''
+          )}
+          {availableFilterKeys && availableFilterKeys.length > 0 ? (
+            <Filters
+              availableFilterKeys={availableFilterKeys}
+              handleAddFilter={handleAddFilter}
+            />
           ) : (
             ''
           )}
@@ -309,6 +320,7 @@ ListLines.propTypes = {
   handleChangeView: PropTypes.func,
   disableCards: PropTypes.bool,
   enableDuplicates: PropTypes.bool,
+  handleAddFilter: PropTypes.func,
   handleRemoveFilter: PropTypes.func,
   handleToggleExports: PropTypes.func,
   openExports: PropTypes.bool,
@@ -325,6 +337,7 @@ ListLines.propTypes = {
   secondaryAction: PropTypes.bool,
   bottomNav: PropTypes.bool,
   numberOfElements: PropTypes.object,
+  availableFilterKeys: PropTypes.array,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

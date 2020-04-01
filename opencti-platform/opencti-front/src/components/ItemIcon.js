@@ -10,6 +10,7 @@ import {
   BugReport,
   Description,
   Map,
+  CenterFocusStrong,
 } from '@material-ui/icons';
 import {
   Biohazard,
@@ -81,6 +82,8 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <ShieldSearch style={style} fontSize={fontSize} role="img" />;
     case 'tag':
       return <Tag style={style} fontSize={fontSize} role="img" />;
+    case 'marking-definition':
+      return <CenterFocusStrong style={style} fontSize={fontSize} role="img" />;
     case 'autonomous-system':
     case 'domain':
     case 'ipv4-addr':
