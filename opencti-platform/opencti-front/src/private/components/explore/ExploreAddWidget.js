@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
 import {
   compose, pipe, assoc, pathOr, map, union,
 } from 'ramda';

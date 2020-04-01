@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import {
   propOr, compose, last, join,
 } from 'ramda';
-import uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core';

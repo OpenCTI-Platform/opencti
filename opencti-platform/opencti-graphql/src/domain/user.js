@@ -1,8 +1,7 @@
 import { assoc, find as rFind, head, isNil, pipe, map, dissoc, append, flatten, propOr, propEq } from 'ramda';
-import uuid from 'uuid/v4';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
-import uuidv5 from 'uuid/v5';
+import { v4 as uuid, v5 as uuidv5 } from 'uuid';
 import {
   clearAccessCache,
   delEditContext,

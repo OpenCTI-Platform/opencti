@@ -52,6 +52,13 @@ describe('StixDomainEntity resolver standard behavior', () => {
           id
           name
           description
+          tags {
+            edges {
+              node {
+                id
+              }
+            }
+          }
         }
       }
     `;
@@ -62,6 +69,7 @@ describe('StixDomainEntity resolver standard behavior', () => {
         type: 'Report',
         stix_id_key: stixDomainEntityStixId,
         description: 'StixDomainEntity description',
+        tags: ['ebd3398f-2189-4597-b994-5d1ab310d4bc', 'd2f32968-7e6a-4a78-b0d7-df4e9e30130c'],
       },
     };
     const stixDomainEntity = await queryAsAdmin({
@@ -71,6 +79,7 @@ describe('StixDomainEntity resolver standard behavior', () => {
     expect(stixDomainEntity).not.toBeNull();
     expect(stixDomainEntity.data.stixDomainEntityAdd).not.toBeNull();
     expect(stixDomainEntity.data.stixDomainEntityAdd.name).toEqual('StixDomainEntity');
+    expect(stixDomainEntity.data.stixDomainEntityAdd.tags.edges.length).toEqual(2);
     stixDomainEntityInternalId = stixDomainEntity.data.stixDomainEntityAdd.id;
   });
   it('should stixDomainEntity loaded by internal id', async () => {
@@ -88,6 +97,17 @@ describe('StixDomainEntity resolver standard behavior', () => {
   it('should list stixDomainEntities', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
     expect(queryResult.data.stixDomainEntities.edges.length).toEqual(10);
+  });
+  it('should stixDomainEntities number to be accurate', async () => {
+    const NUMBER_QUERY = gql`
+      query stixDomainEntitiesNumber {
+        stixDomainEntitiesNumber {
+          total
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({ query: NUMBER_QUERY });
+    expect(queryResult.data.stixDomainEntitiesNumber.total).toEqual(65);
   });
   it('should timeseries stixDomainEntities', async () => {
     const TIMESERIES_QUERY = gql`
@@ -123,7 +143,7 @@ describe('StixDomainEntity resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.stixDomainEntitiesTimeSeries.length).toEqual(13);
-    expect(queryResult.data.stixDomainEntitiesTimeSeries[2].value).toEqual(25);
+    expect(queryResult.data.stixDomainEntitiesTimeSeries[3].value).toEqual(25);
   });
   it('should update stixDomainEntity', async () => {
     const UPDATE_QUERY = gql`
@@ -240,6 +260,33 @@ describe('StixDomainEntity resolver standard behavior', () => {
     });
     expect(queryResult.data.stixDomainEntityEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
   });
+  it('should delete relation with toId in stixDomainEntity', async () => {
+    const RELATION_TOID_DELETE_QUERY = gql`
+      mutation StixDomainEntityEdit($id: ID!, $toId: String, $relationType: String) {
+        stixDomainEntityEdit(id: $id) {
+          relationDelete(toId: $toId, relationType: $relationType) {
+            id
+            tags {
+              edges {
+                node {
+                  id
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: RELATION_TOID_DELETE_QUERY,
+      variables: {
+        id: stixDomainEntityInternalId,
+        toId: 'ebd3398f-2189-4597-b994-5d1ab310d4bc',
+        relationType: 'tagged',
+      },
+    });
+    expect(queryResult.data.stixDomainEntityEdit.relationDelete.tags.edges.length).toEqual(1);
+  });
   it('should stixDomainEntity deleted', async () => {
     const DELETE_QUERY = gql`
       mutation stixDomainEntityDelete($id: ID!) {
@@ -257,5 +304,6 @@ describe('StixDomainEntity resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixDomainEntityStixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.stixDomainEntity).toBeNull();
+    // TODO Verify is no relations are linked to the deleted entity
   });
 });

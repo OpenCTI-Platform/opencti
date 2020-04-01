@@ -1,5 +1,5 @@
 import { assoc, dissoc, map, propOr, pipe } from 'ramda';
-import uuidv5 from 'uuid/v5';
+import { v5 as uuidv5 } from 'uuid';
 import { createEntity, createRelation, deleteEntityById } from '../database/grakn';
 import { TYPE_OPENCTI_INTERNAL } from '../database/utils';
 

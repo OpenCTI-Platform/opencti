@@ -272,6 +272,7 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
   const query = {
     index: PLATFORM_INDICES,
     body: {
+      size: 10000,
       query: {
         bool: {
           must: concat(dateFilter, histoFilters),
@@ -286,6 +287,7 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
         genres: {
           terms: {
             field: `${aggregationField}.keyword`,
+            size: 100,
           },
         },
       },

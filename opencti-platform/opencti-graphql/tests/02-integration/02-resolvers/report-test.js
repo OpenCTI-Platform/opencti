@@ -183,7 +183,7 @@ describe('Report resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.report).not.toBeNull();
     expect(queryResult.data.report.id).toEqual('685aac19-d2f6-4835-a256-0631bb322732');
-    expect(queryResult.data.report.observableRefs.edges.length).toEqual(4);
+    expect(queryResult.data.report.observableRefs.edges.length).toEqual(6);
   });
   it('should list reports', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });

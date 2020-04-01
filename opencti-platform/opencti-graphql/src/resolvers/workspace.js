@@ -37,6 +37,7 @@ const workspaceResolvers = {
       delete: () => workspaceDelete(id),
       fieldPatch: ({ input }) => workspaceEditField(user, id, input),
       contextPatch: ({ input }) => workspaceEditContext(user, id, input),
+      contextClean: () => workspaceCleanContext(user, id),
       relationAdd: ({ input }) => workspaceAddRelation(user, id, input),
       relationsAdd: ({ input }) => workspaceAddRelations(user, id, input),
       relationDelete: ({ relationId }) => workspaceDeleteRelation(user, id, relationId),
