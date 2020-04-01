@@ -1,5 +1,4 @@
-import uuid from 'uuid/v4';
-import uuid5 from 'uuid/v5';
+import { v4 as uuid, v5 as uuid5 } from 'uuid';
 import {
   __,
   append,
@@ -56,6 +55,7 @@ import {
 } from './utils';
 import { isInversed, resolveNaturalRoles, ROLE_FROM } from './graknRoles';
 import {
+  elAggregationCount,
   elAggregationRelationsCount,
   elBulk,
   elDeleteInstanceIds,
@@ -1061,8 +1061,10 @@ export const reindexRelationAttribute = (type, value) => reindexAttributeValue('
 
 // region Graphics
 const buildAggregationQuery = (entityType, filters, options) => {
-  const { operation, field, interval } = options;
-  const baseQuery = `match $from isa ${entityType};`;
+  const { operation, field, interval, startDate, endDate } = options;
+  let baseQuery = `match $from isa ${entityType}; ${startDate || endDate ? '$from has created_at $created;' : ''}`;
+  if (startDate) baseQuery = `${baseQuery} $created > ${prepareDate(startDate)};`;
+  if (endDate) baseQuery = `${baseQuery} $created < ${prepareDate(endDate)};`;
   const filterQuery = pipe(
     map((filterElement) => {
       const { isRelation, value, from, to, start, end, type } = filterElement;
@@ -1135,6 +1137,24 @@ export const timeSeriesRelations = async (options) => {
   }
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
+export const distributionEntities = async (entityType, filters = [], options) => {
+  // filters: { isRelation: true, type: stix_relation, start: date, end: date, from: 'role', to: 'role', value: uuid }
+  const { noCache = false, inferred = false, limit = 10, order = 'asc' } = options;
+  const { startDate, endDate, field, operation } = options;
+  let distributionData;
+  // Unsupported in cache: const { isRelation, value, from, to, start, end, type };
+  if (field.includes('.')) throw new Error('Distribution entities doesnt support relation aggregation field');
+  const supportedFilters = filter((f) => f.start || f.end || f.from || f.to, filters).length === 0;
+  if (!noCache && operation === 'count' && supportedFilters && inferred === false) {
+    distributionData = await elAggregationCount(entityType, field, startDate, endDate, filters);
+  } else {
+    const finalQuery = buildAggregationQuery(entityType, filters, options);
+    distributionData = await graknTimeSeries(finalQuery, 'label', 'value', inferred);
+  }
+  // Take a maximum amount of distribution depending on the ordering.
+  const orderingFunction = order === 'asc' ? ascend : descend;
+  return take(limit, sortWith([orderingFunction(prop('value'))])(distributionData));
+};
 export const distributionRelations = async (options) => {
   const { fromId, field, operation } = options; // Mandatory fields
   const { limit = 50, order, noCache = false, inferred = false } = options;
@@ -1168,9 +1188,10 @@ export const distributionRelations = async (options) => {
 export const distributionEntitiesThroughRelations = async (options) => {
   const { limit = 10, order, inferred = false } = options;
   const { relationType, remoteRelationType, toType, fromId, field, operation } = options;
-  const query = `match $rel($from, $to) isa ${relationType}; $to isa ${toType}; $from has internal_id_key "${escapeString(
-    fromId
-  )}"; $rel2($to, $to2) isa ${remoteRelationType}; $to2 has ${escape(field)} $g; get; group $g; ${escape(operation)};`;
+  let query = `match $rel($from, $to) isa ${relationType}; $to isa ${toType};`;
+  query += `$from has internal_id_key "${escapeString(fromId)}";`;
+  query += `$rel2($to, $to2) isa ${remoteRelationType};`;
+  query += `$to2 has ${escape(field)} $g; get; group $g; ${escape(operation)};`;
   const distributionData = await graknTimeSeries(query, 'label', 'value', inferred);
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? ascend : descend;
@@ -1219,6 +1240,7 @@ const createRelationRaw = async (fromInternalId, input, opts = {}, fromType = nu
   const isStixRelation = includes('stix_id_key', Object.keys(input)) || input.relationship_type;
   const relationshipType = input.relationship_type || input.through;
   if (fromInternalId === input.toId) {
+    /* istanbul ignore next */
     throw new Error(
       `[GRAKN] You cant create a relation with the same source and target (${fromInternalId} - ${relationshipType})`
     );
@@ -1230,6 +1252,7 @@ const createRelationRaw = async (fromInternalId, input, opts = {}, fromType = nu
       : TYPE_STIX_RELATION
     : TYPE_RELATION_EMBEDDED;
   const isInv = isInversed(relationshipType, input.fromRole);
+  /* istanbul ignore if */
   if (isInv) {
     const message = `{ from '${input.fromRole}' to '${input.toRole}' through ${relationshipType} }`;
     throw new Error(`[GRAKN] You cant create a relation in incorrect order ${message}`);
@@ -1261,6 +1284,7 @@ const createRelationRaw = async (fromInternalId, input, opts = {}, fromType = nu
     relationAttributes.created_at = currentDate;
     relationAttributes.first_seen = input.first_seen ? input.first_seen : today;
     relationAttributes.last_seen = input.last_seen ? input.last_seen : today;
+    /* istanbul ignore if */
     if (relationAttributes.first_seen > relationAttributes.last_seen) {
       throw new DatabaseError({
         data: { details: `You cant create a relation with a first seen less than the last_seen` },
@@ -1337,6 +1361,7 @@ const createRelationRaw = async (fromInternalId, input, opts = {}, fromType = nu
     return createdRel;
   }
   // 07. Return result inversed if asked
+  /* istanbul ignore next */
   return pipe(
     assoc('fromId', createdRel.toId),
     assoc('fromRole', createdRel.toRole),
@@ -1441,6 +1466,7 @@ export const createRelation = async (fromInternalId, input, opts = {}, fromType 
   }
   return created;
 };
+/* istanbul ignore next */
 export const createRelations = async (fromInternalId, inputs, opts = {}, fromType = null, toType = null) => {
   const createdRelations = [];
   // Relations cannot be created in parallel. (Concurrent indexing on same key)
@@ -1575,10 +1601,7 @@ export const updateAttribute = async (id, type, input, wTx, options = {}) => {
   const labelIterator = await wTx.tx.query(labelTypeQuery);
   const labelAnswer = await labelIterator.next();
   // eslint-disable-next-line prettier/prettier
-  const attrType = await labelAnswer
-    .map()
-    .get('x')
-    .dataType();
+  const attrType = await labelAnswer.map().get('x').dataType();
   const typedValues = map((v) => {
     if (attrType === GraknString) return `"${escapeString(v)}"`;
     if (attrType === GraknDate) return prepareDate(v);
@@ -1631,6 +1654,7 @@ export const updateAttribute = async (id, type, input, wTx, options = {}) => {
   try {
     await elUpdate(currentIndex, currentInstanceData.grakn_id, { doc: updateValueField });
   } catch (e) {
+    /* istanbul ignore next */
     logger.error(`[ELASTIC] ${id} missing, cant update the element, you need to reindex`);
   }
   return id;
@@ -1640,12 +1664,13 @@ export const updateAttribute = async (id, type, input, wTx, options = {}) => {
 // region mutation deletion
 export const deleteEntityById = async (id, type, options = {}) => {
   if (isNil(type)) {
+    /* istanbul ignore next */
     throw new Error(`[GRAKN] deleteEntityById > Missing type`);
   }
   const eid = escapeString(id);
   // 00. Load everything we need to remove in elastic
   const read = `match $from isa ${type}, has internal_id_key "${eid}"; $rel($from, $to);
-   { $rel isa stix_relation; } or { $rel isa stix_relation_embedded; }; get;`;
+   { $rel isa stix_relation; } or { $rel isa stix_relation_embedded; } or { $rel isa relation_embedded; }; get;`;
   const relationsToDeIndex = await find(read, ['rel'], options);
   const relationsIds = map((r) => r.rel.id, relationsToDeIndex);
   // 01. Execute the delete in grakn and elastic
@@ -1661,6 +1686,7 @@ export const deleteEntityById = async (id, type, options = {}) => {
 };
 export const deleteRelationById = async (relationId, type) => {
   if (isNil(type)) {
+    /* istanbul ignore next */
     throw new Error(`[GRAKN] deleteRelationById > Missing type`);
   }
   const eid = escapeString(relationId);
@@ -1682,6 +1708,7 @@ export const deleteRelationById = async (relationId, type) => {
   });
 };
 export const deleteRelationsByFromAndTo = async (fromId, toId, relationType, scopeType) => {
+  /* istanbul ignore if */
   if (isNil(scopeType)) {
     throw new Error(`[GRAKN] deleteRelationsByFromAndTo > Missing scopeType`);
   }

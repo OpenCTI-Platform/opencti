@@ -1,4 +1,4 @@
-import uuid from 'uuid/v4';
+import { v4 as uuid } from 'uuid';
 import { map } from 'ramda';
 import { executeWrite } from '../database/grakn';
 import { createBasicRolesAndCapabilities } from '../initialization';
