@@ -296,7 +296,7 @@ class ConnectorsStatusComponent extends Component {
                         className={classes.bodyItem}
                         style={inlineStyles.connector_type}
                       >
-                        {connector.connector_type}
+                        {t(connector.connector_type)}
                       </div>
                       <div
                         className={classes.bodyItem}

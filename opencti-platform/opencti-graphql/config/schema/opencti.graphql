@@ -2663,6 +2663,7 @@ enum ReportsFilter {
   report_class
   tags
   createdBy
+  markingDefinitions
   knowledgeContains
   observablesContains
 }

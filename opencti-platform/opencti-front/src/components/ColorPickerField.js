@@ -45,7 +45,7 @@ const ColorPickerField = (props) => {
     [setTouched, onSubmit, name],
   );
   const handleChange = (color) => {
-    setFieldValue(color.hex);
+    setFieldValue(name, color.hex);
     if (typeof onChange === 'function') {
       onChange(name, color.hex);
     }
