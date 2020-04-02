@@ -186,7 +186,10 @@ jobs:
 workflows:
   opencti:
     jobs:
-      - build_platform
+      - build_platform:
+          filters:
+            tags:
+              only: /.*/
       - package_rolling:
           requires:
             - build_platform
