@@ -186,11 +186,7 @@ jobs:
 workflows:
   opencti:
     jobs:
-      - build_platform:
-          filters:
-            branches:
-              only:
-                - master
+      - build_platform
       - package_rolling:
           requires:
             - build_platform
@@ -198,8 +194,6 @@ workflows:
             branches:
               only:
                 - master
-            tags:
-              only: /.*/
       - deploy_demo:
           requires:
             - build_platform

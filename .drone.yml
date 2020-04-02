@@ -37,7 +37,7 @@ steps:
 - name: build-circleci
   image: curlimages/curl
   commands:
-  - curl -X POST https://circleci.com/api/v1.1/project/github/OpenCTI-Platform/opencti/build?circle-token=$CIRCLECI_TOKEN
+  - curl -X POST --data "branch=master" https://circleci.com/api/v1.1/project/github/OpenCTI-Platform/opencti/build?circle-token=$CIRCLECI_TOKEN
   environment:
     CIRCLECI_TOKEN:
       from_secret: circleci_token
@@ -47,6 +47,18 @@ steps:
     event:
       exclude:
       - pull_request
+      - tag
+
+- name: build-circleci-release
+  image: curlimages/curl
+  commands:
+  - curl -X POST --data "tag=$DRONE_TAG" https://circleci.com/api/v1.1/project/github/OpenCTI-Platform/opencti/build?circle-token=$CIRCLECI_TOKEN
+  environment:
+    CIRCLECI_TOKEN:
+      from_secret: circleci_token
+  when:
+    event:
+      - tag
 
 services:
 - name: grakn
