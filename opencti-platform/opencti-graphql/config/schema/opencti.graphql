@@ -2791,6 +2791,7 @@ enum IndicatorsOrdering {
   markingDefinitions
 }
 enum IndicatorsFilter {
+  name
   indicator_pattern
   main_observable_type
   pattern_type
