@@ -15,7 +15,7 @@ You can also import knowledge manually in the user interface of the platform. Yo
 - the global import button at the top right of the screen, entities and relations from files will be imported as they are. 
 - the import button available on files uploaded in `reports`, all the knowledge imported from here will be linked to the report itself.
 
-![Import data](assets/usage/import_data.png "Import data")
+![Import data](../assets/usage/import_data.png "Import data")
 
 ## Clients / API
 
