@@ -1,15 +1,11 @@
 /* eslint-disable prettier/prettier */
 import { checkSystemDependencies, initializeData, initializeSchema } from '../../../src/initialization';
 import { listenServer, stopServer } from '../../../src/httpServer';
-import conf from '../../../src/config/conf';
-import { ONE_MINUTE, FIVE_MINUTES } from '../../utils/testQuery';
+import {ONE_MINUTE, FIVE_MINUTES, PYTHON_PATH, API_TOKEN, API_URI} from '../../utils/testQuery';
 import { execPython3 } from "../../../src/python/pythonBridge";
 
 describe('Database provision', () => {
-  const path = './src/python';
-  const apiUri = `http://localhost:${conf.get('app:port')}`;
-  const apiToken = conf.get('app:admin:token');
-  const importOpts = [apiUri, apiToken, '/tests/data/DATA-TEST-STIX2_v2.json'];
+  const importOpts = [API_URI, API_TOKEN, '/tests/data/DATA-TEST-STIX2_v2.json'];
 
   it('should dependencies accessible',  () => {
     return expect(checkSystemDependencies()).resolves.toBe(true);
@@ -25,7 +21,7 @@ describe('Database provision', () => {
 
   it('Should import creation succeed', async () => {
     const httpServer = await listenServer();
-    const execution = await execPython3(path, 'local_importer.py', importOpts);
+    const execution = await execPython3(PYTHON_PATH, 'local_importer.py', importOpts);
     expect(execution).not.toBeNull();
     expect(execution.status).toEqual('success');
     await stopServer(httpServer);
@@ -34,7 +30,7 @@ describe('Database provision', () => {
   // Python lib is fixed but we need to wait for a new release
   it('Should import update succeed', async () => {
     const httpServer = await listenServer();
-    const execution = await execPython3(path, 'local_importer.py', importOpts);
+    const execution = await execPython3(PYTHON_PATH, 'local_importer.py', importOpts);
     expect(execution).not.toBeNull();
     expect(execution.status).toEqual('success');
     await stopServer(httpServer);

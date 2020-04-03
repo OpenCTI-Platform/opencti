@@ -17,7 +17,7 @@ import {
   deleteRelationsByFromAndTo,
   loadRelationById,
 } from '../database/grakn';
-import { findById as findMarkingDefintionById } from './markingDefinition';
+import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { elCount } from '../database/elasticSearch';
 import { generateFileExportName, upload } from '../database/minio';
 import { connectorsForExport } from './connector';
@@ -98,10 +98,8 @@ const askJobExports = async (
 ) => {
   const connectors = await connectorsForExport(format, true);
   // Create job for every connectors
-  const maxMarkingDefinitionEntity =
-    maxMarkingDefinition && maxMarkingDefinition.length > 0
-      ? await findMarkingDefintionById(maxMarkingDefinition)
-      : null;
+  const haveMarking = maxMarkingDefinition && maxMarkingDefinition.length > 0;
+  const maxMarkingDefinitionEntity = haveMarking ? await findMarkingDefinitionById(maxMarkingDefinition) : null;
   const finalEntityType = entity ? entity.entity_type : type.toLowerCase();
   const workList = await Promise.all(
     map((connector) => {
