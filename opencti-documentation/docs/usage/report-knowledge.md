@@ -13,17 +13,17 @@ To start adding knowledge to report you should:
 1. Go the reports section and select the report you want to analyze.
 2. At first you arrive in the overview section of the report. If your report has not been processed by anyone before, this section should be almost empty. The external reference box on the report dashboard allows you to access the PDF file of the report through the URL.
 
-![Report overview](assets/usage/report_overview.png "Report overview")
+![Report overview](../assets/usage/report_overview.png "Report overview")
 
 3. Go to the knowledge tab at the top middle left of the window.
 
-![Report knowledge](assets/usage/report_knowledge.png "Report knowledge")
+![Report knowledge](../assets/usage/report_knowledge.png "Report knowledge")
 
 ## Knowledge management
 
 In this space, you can start selecting entities in order to link them, on the basis of what is written in the report (*in this example, knowledge created does not reflect the content of the report*). First, click on the orange bottom right button. A window will unroll on the right side. You can use the "search" bar to find the information relevant to the report (TTPs, malwares, countries, sectors etc.).
 
-![Report add knowledge](assets/usage/report_knowledge_add.png "Report add knowledge")
+![Report add knowledge](../assets/usage/report_knowledge_add.png "Report add knowledge")
 
 > *Note*: all the TTPs displayed in the demonstration or in this documentation are from the [MITRE ATT&CK framework](https://attack.mitre.org). But you can add any framework you want or build your own by adding TTPs on the platform.
 
@@ -43,18 +43,18 @@ In some cases, a relation already exists between two entities. For instance, the
 
 > We advise you create a new relation everytime it is mentionned, with the date matching the information in the report, instead of using always the same relation.
 
-![Report existing relation](assets/usage/report_existing_relation.png "Report existing relation")
+![Report existing relation](../assets/usage/report_existing_relation.png "Report existing relation")
 
 ## Results
 
 Once you have added all the entities and the relationships between them, the report knowledge is now complete:
 
-![Report knowledge complete](assets/usage/report_knowledge_complete.png "Report knowledge complete")
+![Report knowledge complete](../assets/usage/report_knowledge_complete.png "Report knowledge complete")
 
 All these new entities will be added to the "entities" section belonging to the report and will also appears in the stats in the "overview" section.
 
-![Report entities](assets/usage/report_entities_complete.png "Report entities")
+![Report entities](../assets/usage/report_entities_complete.png "Report entities")
 
 Obviously, you can update or suppress relations and suppress TTPs and entities if needed from anywhere in the platform. After you created knowledge of a report, the overview of the report will be updated.
 
-![Report overview complete](assets/usage/report_overview_complete.png "Report overview complete")
+![Report overview complete](../assets/usage/report_overview_complete.png "Report overview complete")
