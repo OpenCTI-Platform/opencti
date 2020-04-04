@@ -924,7 +924,6 @@ describe('Grakn entities time series', () => {
     const series = await timeSeriesEntities('Stix-Domain-Entity', [], options);
     expect(series.length).toEqual(8);
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
-    console.log(aggregationMap);
     expect(aggregationMap.get('2020-02-29T23:00:00.000Z')).toEqual(1);
   });
   it.each(noCacheCases)('should first seen relation time series (noCache = %s)', async (noCache) => {
