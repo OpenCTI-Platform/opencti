@@ -33,16 +33,6 @@ export const isStorageAlive = () => {
   });
 };
 
-const extractName = (entityType = null, entityId = null, filename = '') => {
-  if (isEmpty(entityType) || isNil(entityType)) {
-    return `global/${filename}`;
-  }
-  if (isEmpty(entityId) || isNil(entityId)) {
-    return `${entityType.toLowerCase()}/lists/${filename}`;
-  }
-  return `${entityType.toLowerCase()}/${entityId}/${filename}`;
-};
-
 /**
  * Generate a filename for the export
  * @param format mime type like application/json*
@@ -64,10 +54,21 @@ export const generateFileExportName = (
 ) => {
   const creation = now();
   const fileExt = mime.extension(format);
+  // entity and export type required when exporting a specific entity
+  // type is required when exporting list
   const fileNamePart = entity && exportType ? `${entity.entity_type}-${entity.name}_${exportType}` : type;
-  return `${creation}${maxMarkingDefinitionEntity ? `_${maxMarkingDefinitionEntity.definition}` : ''}_(${
-    connector.name
-  })_${fileNamePart}.${fileExt}`;
+  const maxMarking = maxMarkingDefinitionEntity ? `_${maxMarkingDefinitionEntity.definition}` : '';
+  return `${creation}${maxMarking}_(${connector.name})_${fileNamePart}.${fileExt}`;
+};
+
+export const extractName = (entityType = null, entityId = null, filename = '') => {
+  if (isEmpty(entityType) || isNil(entityType)) {
+    return `global/${filename}`;
+  }
+  if (isEmpty(entityId) || isNil(entityId)) {
+    return `${entityType.toLowerCase()}/lists/${filename}`;
+  }
+  return `${entityType.toLowerCase()}/${entityId}/${filename}`;
 };
 
 export const deleteFile = async (id, user) => {
@@ -98,6 +99,7 @@ const rawFilesListing = (directory) => {
     const files = [];
     const stream = minioClient.listObjectsV2(bucketName, directory);
     stream.on('data', async (obj) => files.push(assoc('id', obj.name, obj)));
+    /* istanbul ignore next */
     stream.on('error', (e) => {
       logger.error('MINIO > Error listing files', e);
       reject(e);
@@ -162,12 +164,14 @@ export const getMinIOVersion = () => {
     // MinIO server information is included in the "Server" header of the
     // response. Make "bucketExists" request to get the header value.
     minioClient.makeRequest({ method: 'HEAD', bucketName }, '', 200, '', true, (err, response) => {
+      /* istanbul ignore if */
       if (err) {
         logger.error('[MINIO] Error requesting server version: ', err);
         resolve('Disconnected');
         return;
       }
       const serverHeader = response.headers.server || '';
+      /* istanbul ignore else */
       if (serverHeader.startsWith(serverHeaderPrefix)) {
         const version = serverHeader.substring(serverHeaderPrefix.length);
         resolve(version);

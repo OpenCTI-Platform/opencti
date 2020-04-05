@@ -1062,7 +1062,7 @@ export const reindexRelationAttribute = (type, value) => reindexAttributeValue('
 // region Graphics
 const buildAggregationQuery = (entityType, filters, options) => {
   const { operation, field, interval, startDate, endDate } = options;
-  let baseQuery = `match $from isa ${entityType}; ${startDate || endDate ? '$from has created_at $created;' : ''}`;
+  let baseQuery = `match $from isa ${entityType}; ${startDate || endDate ? `$from has ${field} $created;` : ''}`;
   if (startDate) baseQuery = `${baseQuery} $created > ${prepareDate(startDate)};`;
   if (endDate) baseQuery = `${baseQuery} $created < ${prepareDate(endDate)};`;
   const filterQuery = pipe(
