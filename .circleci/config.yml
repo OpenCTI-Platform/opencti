@@ -17,7 +17,7 @@ jobs:
           command: yarn build
       - run:
           working_directory: ~/opencti/opencti-platform/opencti-graphql
-          command: yarn install --target_libc=glibc
+          command: yarn install
       - run:
           working_directory: ~/opencti/opencti-platform/opencti-graphql
           command: yarn build
@@ -41,7 +41,7 @@ jobs:
           command: yarn build
       - run:
           working_directory: ~/opencti_musl/opencti-platform/opencti-graphql
-          command: yarn install --target_libc=glibc
+          command: yarn install
       - run:
           working_directory: ~/opencti_musl/opencti-platform/opencti-graphql
           command: yarn build
