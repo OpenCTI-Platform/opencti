@@ -4,7 +4,7 @@ jobs:
   build_platform:
     working_directory: ~/opencti
     docker:
-      - image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
+      - image: nikolaik/python-nodejs:python3.8-nodejs12
     steps:
       - run:
           command: apk update && apk upgrade && apk --no-cache add git build-base libmagic
@@ -17,7 +17,7 @@ jobs:
           command: yarn build
       - run:
           working_directory: ~/opencti/opencti-platform/opencti-graphql
-          command: yarn install
+          command: yarn install --target_libc=glibc
       - run:
           working_directory: ~/opencti/opencti-platform/opencti-graphql
           command: yarn build
@@ -25,6 +25,30 @@ jobs:
           root: ~/
           paths:
             - opencti
+  build_platform_musl:
+    working_directory: ~/opencti_musl
+    docker:
+      - image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
+    steps:
+      - run:
+          command: apk update && apk upgrade && apk --no-cache add git build-base libmagic
+      - checkout
+      - run: 
+          working_directory: ~/opencti_musl/opencti-platform/opencti-front
+          command: yarn install
+      - run:
+          working_directory: ~/opencti_musl/opencti-platform/opencti-front
+          command: yarn build
+      - run:
+          working_directory: ~/opencti_musl/opencti-platform/opencti-graphql
+          command: yarn install --target_libc=glibc
+      - run:
+          working_directory: ~/opencti_musl/opencti-platform/opencti-graphql
+          command: yarn build
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - opencti_musl         
   package_rolling:
     working_directory: ~/opencti
     docker:
@@ -47,6 +71,29 @@ jobs:
       - run: 
           working_directory: ~/opencti/release
           command: scp "opencti-$(date '+%Y%m%d').tar.gz" git-OLOszi5F@opencti.io:/dns/io/opencti/releases/
+
+  package_rolling_musl:
+    working_directory: ~/opencti_musl
+    docker:
+      - image: circleci/node:12.13.1-stretch
+    steps:
+      - attach_workspace:
+          at: ~/
+      - add_ssh_keys
+      - run: ssh-keyscan -H opencti.io >> ~/.ssh/known_hosts
+      - run: git config --global user.email "ci@opencti.io" && git config --global user.name "OpenCTI CircleCI"
+      - run: git remote add opencti ssh://git-OLOszi5F@opencti.io:/~/git-OLOszi5F.git && git push --force opencti master
+      - run: mkdir release
+      - run: cp -a ./opencti-platform/opencti-graphql release/opencti
+      - run: cp -a ./opencti-worker/src release/opencti/worker
+      - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/docker
+      - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/connectors
+      - run:
+          working_directory: ~/opencti_musl/release
+          command: tar -zcvf "opencti-$(date '+%Y%m%d')_musl.tar.gz" opencti
+      - run: 
+          working_directory: ~/opencti_musl/release
+          command: scp "opencti-$(date '+%Y%m%d')_musl.tar.gz" git-OLOszi5F@opencti.io:/dns/io/opencti/releases/
 
   deploy_demo:
     working_directory: ~/opencti
@@ -190,6 +237,10 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - build_platform_musl:
+          filters:
+            tags:
+              only: /.*/           
       - package_rolling:
           requires:
             - build_platform
@@ -197,6 +248,13 @@ workflows:
             branches:
               only:
                 - master
+      - package_rolling_musl:
+          requires:
+            - build_platform_musl
+          filters:
+            branches:
+              only:
+                - master                
       - deploy_demo:
           requires:
             - build_platform
