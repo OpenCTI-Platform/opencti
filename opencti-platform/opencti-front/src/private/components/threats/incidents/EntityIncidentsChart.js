@@ -109,7 +109,7 @@ class EntityIncidentsChart extends Component {
       endDate: now(),
       interval: 'month',
       relationType: relationType || 'targets',
-      inferred,
+      inferred: inferred || false,
     };
     return (
       <QueryRenderer
