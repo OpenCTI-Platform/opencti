@@ -305,6 +305,9 @@ class CurationToolBar extends Component {
                     secondary={truncate(element.description, 60)}
                   />
                   <div style={{ marginRight: 50 }}>
+                    {pathOr('', ['createdByRef', 'node', 'name'], element)}
+                  </div>
+                  <div style={{ marginRight: 50 }}>
                     {pathOr([], ['markingDefinitions', 'edges'], element)
                       .length > 0 ? (
                         map(
@@ -371,6 +374,14 @@ class CurationToolBar extends Component {
             ) : (
               ''
             )))}
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
+            >
+              {t('Author')}
+            </Typography>
+            {pathOr('', ['createdByRef', 'node', 'name'], keptElement)}
             <Typography
               variant="h3"
               gutterBottom={true}

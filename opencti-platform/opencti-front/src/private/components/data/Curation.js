@@ -144,13 +144,18 @@ class StixObservables extends Component {
     const dataColumns = {
       entity_type: {
         label: 'Type',
-        width: '15%',
+        width: '10%',
         isSortable: true,
       },
       name: {
         label: 'Name',
-        width: '35%',
+        width: '25%',
         isSortable: true,
+      },
+      createdBy: {
+        label: 'Author',
+        width: '15%',
+        isSortable: false,
       },
       tags: {
         label: 'Tags',

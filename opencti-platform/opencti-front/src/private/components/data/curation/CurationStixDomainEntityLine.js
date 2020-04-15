@@ -88,6 +88,12 @@ class CurationStixDomainEntityLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.createdBy.width }}
+              >
+                {pathOr('', ['createdByRef', 'node', 'name'], node)}
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.tags.width }}
               >
                 <StixObjectTags
@@ -146,6 +152,11 @@ const CurationStixDomainEntityLineFragment = createFragmentContainer(
         description
         alias
         created_at
+        createdByRef {
+          node {
+            name
+          }
+        }
         markingDefinitions {
           edges {
             node {
@@ -197,6 +208,12 @@ class CurationStixDomainEntityLineDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
+              >
+                <div className="fakeItem" style={{ width: '70%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.createdBy.width }}
               >
                 <div className="fakeItem" style={{ width: '70%' }} />
               </div>

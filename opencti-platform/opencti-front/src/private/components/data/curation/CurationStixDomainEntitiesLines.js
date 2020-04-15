@@ -102,6 +102,11 @@ export const curationStixDomainEntitiesLinesSearchQuery = graphql`
           name
           created_at
           updated_at
+          createdByRef {
+            node {
+              name
+            }
+          }
         }
       }
     }
@@ -138,6 +143,11 @@ export default createPaginationContainer(
               name
               alias
               created_at
+              createdByRef {
+                node {
+                  name
+                }
+              }
               markingDefinitions {
                 edges {
                   node {

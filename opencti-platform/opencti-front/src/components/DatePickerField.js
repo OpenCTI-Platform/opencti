@@ -22,7 +22,7 @@ const DatePickerField = (props) => {
   );
   const internalOnChange = React.useCallback(
     (date) => {
-      setFieldValue(date);
+      setFieldValue(name, date);
       if (typeof onChange === 'function') {
         onChange(name, date);
       }
