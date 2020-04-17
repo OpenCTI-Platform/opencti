@@ -392,6 +392,13 @@ describe('Elasticsearch pagination', () => {
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('entity');
   });
+  it('should entity search with trailing slash', async () => {
+    const data = await elPaginate(INDEX_STIX_ENTITIES, { search: 'groups/G0096' });
+    expect(data).not.toBeNull();
+    // external-reference--d1b50d16-2c9c-45f2-8ae0-d5b554e0fbf5 | url
+    // intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7 | description
+    expect(data.edges.length).toEqual(2);
+  });
   it('should entity paginate everything after', async () => {
     const data = await elPaginate(INDEX_STIX_ENTITIES, { after: offsetToCursor(30) });
     expect(data).not.toBeNull();
