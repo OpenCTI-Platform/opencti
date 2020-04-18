@@ -1,3 +1,4 @@
+import { assoc } from 'ramda';
 import {
   createEntity,
   createRelation,
@@ -56,7 +57,8 @@ export const groupEditField = (user, groupId, input) => {
 };
 
 export const groupAddRelation = async (user, groupId, input) => {
-  const data = await createRelation(groupId, input, {}, 'Group', null);
+  const finalInput = assoc('fromType', 'Group', input);
+  const data = await createRelation(groupId, finalInput);
   return notify(BUS_TOPICS.Group.EDIT_TOPIC, data, user);
 };
 

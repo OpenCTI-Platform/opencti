@@ -1,4 +1,4 @@
-import { assoc } from 'ramda';
+import { assoc, pipe } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
@@ -33,13 +33,8 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
 export const markingDefinitionDelete = (markingDefinitionId) =>
   deleteEntityById(markingDefinitionId, 'Marking-Definition');
 export const markingDefinitionAddRelation = (user, markingDefinitionId, input) => {
-  return createRelation(
-    markingDefinitionId,
-    assoc('through', 'object_marking_refs', input),
-    {},
-    null,
-    'Marking-Definition'
-  ).then((relationData) => {
+  const finalInput = pipe(assoc('through', 'object_marking_refs'), assoc('toType', 'Marking-Definition'))(input);
+  return createRelation(markingDefinitionId, finalInput).then((relationData) => {
     notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, relationData, user);
     return relationData;
   });

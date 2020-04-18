@@ -35,9 +35,13 @@ export const killChainPhaseDelete = (killChainPhaseId) => {
   return deleteEntityById(killChainPhaseId, 'Kill-Chain-Phase');
 };
 export const killChainPhaseAddRelation = (user, killChainPhaseId, input) => {
+  const finalInput = pipe(
+    assoc('through', 'kill_chain_phases'),
+
+  )(input);
   return createRelation(
     killChainPhaseId,
-    assoc('through', 'kill_chain_phases', input),
+
     {},
     null,
     'Kill-Chain-Phase'

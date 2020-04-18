@@ -43,7 +43,7 @@
     "react-markdown": "^4.3.1",
     "react-particles-js": "^2.7.1",
     "react-relay": "^9.0.0",
-    "react-relay-network-modern": "^4.6.0",
+    "react-relay-network-modern": "^4.6.1",
     "react-router-dom": "^5.1.2",
     "react-swipeable-views": "^0.13.9",
     "react-virtualized": "^9.21.2",

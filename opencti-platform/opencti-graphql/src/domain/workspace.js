@@ -68,7 +68,8 @@ export const workspaceAddRelation = (user, workspaceId, input) => {
   if (!input.through) {
     throw new ForbiddenAccess();
   }
-  return createRelation(workspaceId, input, {}, 'Workspace', null).then((relationData) => {
+  const finalInput = assoc('fromType', 'Workspace', input);
+  return createRelation(workspaceId, finalInput).then((relationData) => {
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, relationData, user);
     return relationData;
   });

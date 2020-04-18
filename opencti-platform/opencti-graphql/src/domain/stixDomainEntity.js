@@ -228,7 +228,7 @@ export const stixDomainEntityDelete = async (stixDomainEntityId) => {
   }
   return deleteEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
 };
-export const stixDomainEntitiesDelete = async (stixDomainEntitiesIds) => {
+export const stixDomainEntitiesDelete = (stixDomainEntitiesIds) => {
   return Promise.all(stixDomainEntitiesIds.map((stixDomainEntityId) => stixDomainEntityDelete(stixDomainEntityId)));
 };
 
@@ -242,7 +242,8 @@ export const stixDomainEntityAddRelation = async (user, stixDomainEntityId, inpu
   ) {
     throw new ForbiddenAccess();
   }
-  const data = await createRelation(stixDomainEntityId, input, {}, 'Stix-Domain-Entity', null, true);
+  const finalInput = assoc('fromType', 'Stix-Domain-Entity', input)
+  const data = await createRelation(stixDomainEntityId, finalInput);
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
 };
 export const stixDomainEntityAddRelations = async (user, stixDomainEntityId, input) => {

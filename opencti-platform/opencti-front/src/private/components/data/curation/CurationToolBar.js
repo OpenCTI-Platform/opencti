@@ -414,7 +414,7 @@ class CurationToolBar extends Component {
                 color="primary"
                 onClick={this.submitMerge.bind(this)}
                 classes={{ root: classes.button }}
-                disabled={this.state.merging}
+                disabled={true}
               >
                 {t('Merge')}
               </Button>

@@ -22,14 +22,14 @@ export const addRole = async (role) => {
       createRelation(
         roleEntity.id,
         {
-          toId: uuidv5(capabilityName, uuidv5.DNS),
+          fromType: 'Role',
           fromRole: 'position',
+          toId: uuidv5(capabilityName, uuidv5.DNS),
+          toType: 'Capability',
           toRole: 'capability',
           through: 'role_capability',
         },
-        { indexable: false },
-        'Role',
-        'Capability'
+        { indexable: false }
       ),
     capabilities
   );

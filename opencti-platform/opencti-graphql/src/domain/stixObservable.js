@@ -123,7 +123,8 @@ export const stixObservableAddRelation = (user, stixObservableId, input) => {
   if (!input.through) {
     throw new ForbiddenAccess();
   }
-  return createRelation(stixObservableId, input, {}, 'Stix-Observable', null).then((relationData) => {
+  const finalInput = assoc('fromType', 'Stix-Observable', input);
+  return createRelation(stixObservableId, finalInput).then((relationData) => {
     notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, relationData, user);
     return relationData;
   });
