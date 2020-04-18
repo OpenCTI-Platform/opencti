@@ -1,5 +1,5 @@
 import { assoc, dissoc, map, propOr, pipe, invertObj, isNil, pathOr } from 'ramda';
-import { BUS_TOPICS, logger } from '../config/conf';
+import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
@@ -242,7 +242,7 @@ export const stixDomainEntityAddRelation = async (user, stixDomainEntityId, inpu
   ) {
     throw new ForbiddenAccess();
   }
-  const finalInput = assoc('fromType', 'Stix-Domain-Entity', input)
+  const finalInput = assoc('fromType', 'Stix-Domain-Entity', input);
   const data = await createRelation(stixDomainEntityId, finalInput);
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
 };
@@ -258,14 +258,15 @@ export const stixDomainEntityAddRelations = async (user, stixDomainEntityId, inp
   }
   const finalInput = map(
     (n) => ({
-      toId: n,
+      fromType: 'Stix-Domain-Entity',
       fromRole: input.fromRole,
+      toId: n,
       toRole: input.toRole,
       through: input.through,
     }),
     input.toIds
   );
-  await createRelations(stixDomainEntityId, finalInput, {}, 'Stix-Domain-Entity', null, true);
+  await createRelations(stixDomainEntityId, finalInput);
   return loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity').then((entity) =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, entity, user)
   );

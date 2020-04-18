@@ -21,16 +21,10 @@ export const findById = (id) => findByIdStixRelation(id);
 // region mutations
 export const addStixObservableRelation = async (user, input, reversedReturn = false) => {
   const finalInput = pipe(assoc('fromType', 'Stix-Observable'), assoc('toType', 'Stix-Observable'))(input);
-  const created = await createRelation(
-    finalInput.fromId,
-    finalInput,
-    {
-      reversedReturn,
-      isStixObservableRelation: true,
-    },
-    'Stix-Observable',
-    'Stix-Observable'
-  );
+  const created = await createRelation(finalInput.fromId, finalInput, {
+    reversedReturn,
+    isStixObservableRelation: true,
+  });
   return notify(BUS_TOPICS.StixObservableRelation.ADDED_TOPIC, created, user);
 };
 export const stixObservableRelationDelete = async (stixObservableRelationId) =>

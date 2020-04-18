@@ -80,14 +80,15 @@ export const workspaceAddRelations = async (user, workspaceId, input) => {
   }
   const finalInputs = map(
     (n) => ({
-      toId: n,
+      fromType: 'Workspace',
       fromRole: input.fromRole,
+      toId: n,
       toRole: input.toRole,
       through: input.through,
     }),
     input.toIds
   );
-  await createRelations(workspaceId, finalInputs, {}, 'Workspace', null);
+  await createRelations(workspaceId, finalInputs);
   return loadEntityById(workspaceId, 'Workspace').then((workspace) =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
   );
