@@ -117,7 +117,7 @@ class EntityStixRelationsChart extends Component {
           : monthsAgo(this.state.period),
       endDate: variant === 'explore' && endDate ? endDate : now(),
       interval: 'month',
-      inferred,
+      inferred: inferred || false,
     };
     return (
       <QueryRenderer

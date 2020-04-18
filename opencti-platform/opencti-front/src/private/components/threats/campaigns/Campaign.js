@@ -57,7 +57,10 @@ class CampaignComponent extends Component {
           style={{ marginTop: 30 }}
         >
           <Grid item={true} xs={4}>
-            <EntityIncidentsChart entityId={campaign.id} />
+            <EntityIncidentsChart
+              entityId={campaign.id}
+              relationType="attributed-to"
+            />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityStixRelationsDonut

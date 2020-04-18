@@ -81,7 +81,7 @@ class EntityStixRelationsRadar extends Component {
     const stixRelationsDistributionVariables = {
       fromId: entityId,
       toTypes: entityType ? [entityType] : null,
-      inferred: inferred !== null ? inferred : true,
+      inferred: inferred || false,
       startDate: startDate || null,
       endDate: endDate || null,
       relationType,

@@ -170,11 +170,14 @@ const takeWriteTx = async (retry = false) => {
       }
     );
 };
-const commitWriteTx = async (wTx) => {
+const commitWriteTx = async (wTx, ignoreDuplicateError = false) => {
   return wTx.tx.commit().catch(
     /* istanbul ignore next */ (err) => {
       logger.error('[GRAKN] CommitWriteTx error > ', err);
       if (err.code === 3) {
+        if (ignoreDuplicateError) {
+          return;
+        }
         throw new DatabaseError({
           data: { details: split('\n', err.details)[1] },
         });
@@ -183,11 +186,11 @@ const commitWriteTx = async (wTx) => {
     }
   );
 };
-export const executeWrite = async (executeFunction) => {
+export const executeWrite = async (executeFunction, ignoreDuplicateError = false) => {
   const wTx = await takeWriteTx();
   try {
     const result = await executeFunction(wTx);
-    await commitWriteTx(wTx);
+    await commitWriteTx(wTx, ignoreDuplicateError);
     return result;
   } catch (err) {
     await closeTx(wTx);
@@ -447,9 +450,7 @@ const loadConcept = async (concept, args = {}) => {
       const rolesPromises = Promise.all(
         map(async (roleItem) => {
           // eslint-disable-next-line prettier/prettier
-          const roleTargetId = last(roleItem)
-            .values()
-            .next().value.id;
+          const roleTargetId = last(roleItem).values().next().value.id;
           const conceptFromMap = relationsMap.get(roleTargetId);
           if (conceptFromMap && conceptFromMap.forceNatural !== true) {
             const { alias } = conceptFromMap;
@@ -1234,7 +1235,14 @@ const flatAttributesForObject = (data) => {
 // endregion
 
 // region mutation relation
-const createRelationRaw = async (fromInternalId, input, opts = {}, fromType = null, toType = null) => {
+const createRelationRaw = async (
+  fromInternalId,
+  input,
+  opts = {},
+  fromType = null,
+  toType = null,
+  ignoreDuplicateError = false
+) => {
   const { indexable = true, reversedReturn = false, isStixObservableRelation = false } = opts;
   // 01. First fix the direction of the relation
   const isStixRelation = includes('stix_id_key', Object.keys(input)) || input.relationship_type;
@@ -1332,7 +1340,7 @@ const createRelationRaw = async (fromInternalId, input, opts = {}, fromType = nu
     const graknToId = conceptTo.id;
     const toTypes = await conceptTypes(conceptTo);
     return { graknRelationId, graknFromId, graknToId, relationTypes, fromTypes, toTypes };
-  });
+  }, ignoreDuplicateError);
   // 03. Prepare the final data with grakn IDS
   const createdRel = pipe(
     assoc('id', relationId),
@@ -1455,8 +1463,15 @@ const addObservableRefs = async (internalId, observableIds, opts = {}) => {
   }
   return observableRefs;
 };
-export const createRelation = async (fromInternalId, input, opts = {}, fromType = null, toType = null) => {
-  const created = await createRelationRaw(fromInternalId, input, opts, fromType, toType);
+export const createRelation = async (
+  fromInternalId,
+  input,
+  opts = {},
+  fromType = null,
+  toType = null,
+  ignoreDuplicateError = false
+) => {
+  const created = await createRelationRaw(fromInternalId, input, opts, fromType, toType, ignoreDuplicateError);
   if (created) {
     // 05. Complete with eventual relations (will eventually update the index)
     await addOwner(created.id, input.createdByOwner, opts);

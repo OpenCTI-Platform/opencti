@@ -538,7 +538,7 @@ export const elPaginate = async (indexName, options = {}) => {
     } else if (cleanSearch.startsWith('"')) {
       finalSearch = `${cleanSearch}`;
     } else {
-      const splitSearch = cleanSearch.split(/[\s]+/);
+      const splitSearch = cleanSearch.split(/[\s/]+/);
       finalSearch = pipe(
         map((n) => `*${n}*`),
         join(' ')

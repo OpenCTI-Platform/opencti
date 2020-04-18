@@ -8,6 +8,7 @@ config/development.json
 config/production.json
 config/test.json
 config/local.json
+config/development.demo.json
 coverage
 test-results
 logs
