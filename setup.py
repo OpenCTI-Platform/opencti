@@ -5,15 +5,10 @@ import sys
 from setuptools import setup
 from setuptools.command.install import install
 
-try:
-    from pypandoc import convert
-
-    read_md = lambda f: convert(f, "rst")
-except ImportError:
-    print("warning: pypandoc module not found, could not convert Markdown to RST")
-    read_md = lambda f: open(f, "r").read()
-
 VERSION = "3.1.1"
+
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
 
 class VerifyVersionCommand(install):
@@ -32,7 +27,8 @@ setup(
     name="pycti",
     version=VERSION,
     description="Python API client for OpenCTI.",
-    long_description="Official Python client for the OpenCTI platform.",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     author="OpenCTI",
     author_email="contact@opencti.io",
     maintainer="OpenCTI",
@@ -65,6 +61,6 @@ setup(
         "python-magic==0.4.15;sys.platform=='linux' or sys.platform=='darwin'",
         "python-magic-bin==0.4.14;sys.platform=='win32'",
     ],
-    cmdclass={"verify": VerifyVersionCommand,},
-    extras_require={"dev": ["black", "wheel"],},  # Optional
+    cmdclass={"verify": VerifyVersionCommand},
+    extras_require={"dev": ["black", "wheel"]},  # Optional
 )

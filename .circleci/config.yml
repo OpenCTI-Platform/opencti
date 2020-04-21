@@ -36,7 +36,7 @@ jobs:
           command: pip3 install -r requirements.txt --user
       - run:
           name: build
-          command: python3 setup.py sdist
+          command: python3 setup.py sdist bdist_wheel
       - persist_to_workspace:
           root: ~/opencti-client
           paths:
