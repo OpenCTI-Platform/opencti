@@ -27,7 +27,7 @@ export const addKillChainPhase = async (user, killChainPhase) => {
     killChainPhase.phase_order ? killChainPhase.phase_order : 0,
     killChainPhase
   );
-  const created = await createEntity(killChainPhaseToCreate, 'Kill-Chain-Phase', { modelType: TYPE_STIX_DOMAIN });
+  const created = await createEntity(user, killChainPhaseToCreate, 'Kill-Chain-Phase', { modelType: TYPE_STIX_DOMAIN });
   return notify(BUS_TOPICS.KillChainPhase.ADDED_TOPIC, created, user);
 };
 

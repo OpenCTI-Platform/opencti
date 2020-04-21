@@ -37,7 +37,7 @@ export const connectorsFor = async (type, scope, onlyAlive = false) => {
     filter((c) => c.connector_type === type),
     filter((c) => (onlyAlive ? c.active === true : true)),
     // eslint-disable-next-line prettier/prettier
-    filter(c =>
+    filter((c) =>
       scope
         ? includes(
             scope.toLowerCase(),
@@ -99,7 +99,9 @@ export const registerConnector = async ({ id, name, type, scope }) => {
   }
   // Need to create the connector
   const connectorToCreate = { internal_id_key: id, name, connector_type: type, connector_scope: scope.join(',') };
-  const createdConnector = await createEntity(connectorToCreate, 'Connector', { modelType: TYPE_OPENCTI_INTERNAL });
+  const createdConnector = await createEntity(null, connectorToCreate, 'Connector', {
+    modelType: TYPE_OPENCTI_INTERNAL,
+  });
   // Return the connector
   return completeConnector(createdConnector);
 };

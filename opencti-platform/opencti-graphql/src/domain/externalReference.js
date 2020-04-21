@@ -21,7 +21,7 @@ export const findAll = (args) => {
 };
 
 export const addExternalReference = async (user, externalReference) => {
-  const created = await createEntity(externalReference, 'External-Reference', { modelType: TYPE_STIX_DOMAIN });
+  const created = await createEntity(user, externalReference, 'External-Reference', { modelType: TYPE_STIX_DOMAIN });
   return notify(BUS_TOPICS.ExternalReference.ADDED_TOPIC, created, user);
 };
 

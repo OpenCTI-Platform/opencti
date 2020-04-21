@@ -215,7 +215,7 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
   ) {
     args = { modelType: TYPE_STIX_DOMAIN_ENTITY, stixIdType: 'identity' };
   }
-  const created = await createEntity(domainToCreate, innerType, args);
+  const created = await createEntity(user, domainToCreate, innerType, args);
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 export const stixDomainEntityDelete = async (stixDomainEntityId) => {

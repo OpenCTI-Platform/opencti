@@ -29,6 +29,9 @@ export const country = (cityId) => {
 };
 
 export const addCity = async (user, city) => {
-  const created = await createEntity(city, 'City', { modelType: TYPE_STIX_DOMAIN_ENTITY, stixIdType: 'identity' });
+  const created = await createEntity(user, city, 'City', {
+    modelType: TYPE_STIX_DOMAIN_ENTITY,
+    stixIdType: 'identity',
+  });
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };

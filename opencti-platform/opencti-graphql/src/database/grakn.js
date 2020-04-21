@@ -253,13 +253,9 @@ const getAliasInternalIdFilter = (query, alias) => {
   const keyVars = Array.from(query.matchAll(reg));
   return keyVars.length > 0 ? last(head(keyVars)) : undefined;
 };
-const extractRelationAlias = (alias, role, relationType) => {
+const extractRelationAlias = (alias, role, oppositeAlias, relationType) => {
   const variables = [];
-  if (alias !== 'from' && alias !== 'to') {
-    throw new Error('[GRAKN] Query cant have relation alias without roles (except for from/to)');
-  }
   const naturalRoles = resolveNaturalRoles(relationType);
-  const oppositeAlias = alias === 'from' ? 'to' : 'from';
   const oppositeRole = head(Rfind((n) => head(n) !== role, Object.entries(naturalRoles)));
   // Control the role specified in the query.
   variables.push({ role, alias, forceNatural: false });
@@ -292,11 +288,11 @@ export const extractQueryVars = (query) => {
       // If no filtering, roles must be fully specified or not specified.
       // If missing left role
       if (leftRole === null && rightRole !== null) {
-        return extractRelationAlias(rAlias, rightRole, relationType);
+        return extractRelationAlias(rAlias, rightRole, lAlias, relationType);
       }
       // If missing right role
       if (leftRole !== null && rightRole === null) {
-        return extractRelationAlias(lAlias, leftRole, relationType);
+        return extractRelationAlias(lAlias, leftRole, rAlias, relationType);
       }
       // Else, we have both or nothing
       const roleForRight = rightRole ? rightRole.trim() : undefined;
@@ -1493,7 +1489,7 @@ export const createRelations = async (fromInternalId, inputs, opts = {}) => {
 // endregion
 
 // region mutation entity
-export const createEntity = async (entity, type, opts = {}) => {
+export const createEntity = async (user, entity, type, opts = {}) => {
   const { modelType = TYPE_STIX_DOMAIN_ENTITY, stixIdType, indexable = true } = opts;
   const internalId = entity.internal_id_key ? entity.internal_id_key : uuid();
   const stixType = stixIdType || type.toLowerCase();
@@ -1584,11 +1580,13 @@ export const createEntity = async (entity, type, opts = {}) => {
   }
   // Complete with eventual relations (will eventually update the index)
   await addOwner(internalId, entity.createdByOwner, opts);
-  await addCreatedByRef(internalId, entity.createdByRef, opts);
-  await addMarkingDefs(internalId, entity.markingDefinitions, opts);
-  await addTags(internalId, entity.tags, opts);
-  await addKillChains(internalId, entity.killChainPhases, opts);
-  await addObservableRefs(internalId, entity.observableRefs, opts);
+  if (modelType === TYPE_STIX_DOMAIN || modelType === TYPE_STIX_DOMAIN_ENTITY) {
+    await addCreatedByRef(internalId, entity.createdByRef || user.id, opts);
+    await addMarkingDefs(internalId, entity.markingDefinitions, opts);
+    await addTags(internalId, entity.tags, opts);
+    await addKillChains(internalId, entity.killChainPhases, opts);
+    await addObservableRefs(internalId, entity.observableRefs, opts);
+  }
   // Else simply return the data
   return completedData;
 };

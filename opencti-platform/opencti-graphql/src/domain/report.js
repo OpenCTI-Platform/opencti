@@ -1,6 +1,7 @@
 import { assoc, append, propOr, pipe } from 'ramda';
 import {
-  createEntity, distributionEntities,
+  createEntity,
+  distributionEntities,
   distributionEntitiesThroughRelations,
   escapeString,
   getSingleValueNumber,
@@ -86,8 +87,9 @@ export const reportContainsStixObservable = async (reportId, objectId) => {
 export const reportsTimeSeries = (args) => {
   const { reportClass } = args;
   const filters = reportClass ? [{ isRelation: false, type: 'report_class', value: args.reportClass }] : [];
-  return timeSeriesEntities('Incident', filters, args);
+  return timeSeriesEntities('Report', filters, args);
 };
+// TODO Migrate to ElasticSearch
 export const reportsNumber = (args) => ({
   count: getSingleValueNumber(`match $x isa Report;
    ${args.reportClass ? `; $x has report_class "${escapeString(args.reportClass)}"` : ''} 
@@ -107,6 +109,7 @@ export const reportsTimeSeriesByAuthor = async (args) => {
   if (reportClass) filters.push({ isRelation: false, type: 'report_class', value: reportClass });
   return timeSeriesEntities('Report', filters, args);
 };
+// TODO Migrate to ElasticSearch
 export const reportsNumberByEntity = (args) => ({
   count: getSingleValueNumber(
     `match $x isa Report;
@@ -182,7 +185,7 @@ export const addReport = async (user, report) => {
     assoc('object_status', propOr(STATUS_STATUS_NEW, 'object_status', report)),
     assoc('source_confidence_level', propOr(sourceConfidenceLevel, 'source_confidence_level', report))
   )(report);
-  const created = await createEntity(finalReport, 'Report');
+  const created = await createEntity(user, finalReport, 'Report');
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 // endregion

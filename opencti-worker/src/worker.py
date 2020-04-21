@@ -100,7 +100,7 @@ class Consumer(threading.Thread):
             logging.info('Thread for queue ' + self.queue_name + ' started')
             self.channel.basic_consume(queue=self.queue_name, on_message_callback=self._process_message)
             self.channel.start_consuming()
-        finally:
+        finally: 
             self.channel.stop_consuming()
             logging.info('Thread for queue ' + self.queue_name + ' terminated')
 
