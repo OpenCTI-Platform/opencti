@@ -62,7 +62,6 @@ setup(
         "stix2-validator",
         "pytz",
         "pika",
-        "deprecated",
         "python-magic",
     ],
     cmdclass={"verify": VerifyVersionCommand,},
