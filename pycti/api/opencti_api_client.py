@@ -32,6 +32,8 @@ from pycti.entities.opencti_vulnerability import Vulnerability
 from pycti.entities.opencti_attack_pattern import AttackPattern
 from pycti.entities.opencti_course_of_action import CourseOfAction
 from pycti.entities.opencti_report import Report
+from pycti.entities.opencti_note import Note
+from pycti.entities.opencti_opinion import Opinion
 from pycti.entities.opencti_indicator import Indicator
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -98,6 +100,8 @@ class OpenCTIApiClient:
         self.attack_pattern = AttackPattern(self)
         self.course_of_action = CourseOfAction(self)
         self.report = Report(self)
+        self.note = Note(self)
+        self.opinion = Opinion(self)
         self.indicator = Indicator(self)
 
         # Check if openCTI is available
@@ -483,6 +487,7 @@ class OpenCTIApiClient:
                     "country": {"from_role": "source", "to_role": "target"},
                     "city": {"from_role": "source", "to_role": "target"},
                     "organization": {"from_role": "source", "to_role": "target"},
+                    "user": {"from_role": "source", "to_role": "target"},
                     "vulnerability": {"from_role": "source", "to_role": "target"},
                 },
                 "intrusion-set": {
@@ -492,6 +497,7 @@ class OpenCTIApiClient:
                     "country": {"from_role": "source", "to_role": "target"},
                     "city": {"from_role": "source", "to_role": "target"},
                     "organization": {"from_role": "source", "to_role": "target"},
+                    "user": {"from_role": "source", "to_role": "target"},
                     "vulnerability": {"from_role": "source", "to_role": "target"},
                 },
                 "campaign": {
@@ -501,6 +507,7 @@ class OpenCTIApiClient:
                     "country": {"from_role": "source", "to_role": "target"},
                     "city": {"from_role": "source", "to_role": "target"},
                     "organization": {"from_role": "source", "to_role": "target"},
+                    "user": {"from_role": "source", "to_role": "target"},
                     "vulnerability": {"from_role": "source", "to_role": "target"},
                 },
                 "incident": {
@@ -510,6 +517,7 @@ class OpenCTIApiClient:
                     "country": {"from_role": "source", "to_role": "target"},
                     "city": {"from_role": "source", "to_role": "target"},
                     "organization": {"from_role": "source", "to_role": "target"},
+                    "user": {"from_role": "source", "to_role": "target"},
                     "vulnerability": {"from_role": "source", "to_role": "target"},
                 },
                 "malware": {
@@ -519,6 +527,7 @@ class OpenCTIApiClient:
                     "country": {"from_role": "source", "to_role": "target"},
                     "city": {"from_role": "source", "to_role": "target"},
                     "organization": {"from_role": "source", "to_role": "target"},
+                    "user": {"from_role": "source", "to_role": "target"},
                     "vulnerability": {"from_role": "source", "to_role": "target"},
                 },
                 "attack-pattern": {
@@ -529,6 +538,7 @@ class OpenCTIApiClient:
                 "threat-actor": {
                     "identity": {"from_role": "attribution", "to_role": "origin"},
                     "organization": {"from_role": "attribution", "to_role": "origin"},
+                    "user": {"from_role": "attribution", "to_role": "origin"},
                 },
                 "intrusion-set": {
                     "identity": {"from_role": "attribution", "to_role": "origin"},

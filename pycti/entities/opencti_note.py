@@ -2,12 +2,11 @@
 
 import json
 
-from dateutil.parser import parse
 from pycti.utils.constants import CustomProperties
 from pycti.utils.opencti_stix2 import SPEC_VERSION
 
 
-class Report:
+class Note:
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """
@@ -18,10 +17,7 @@ class Report:
             name
             alias
             description
-            report_class
-            published
-            object_status
-            source_confidence_level
+            content
             graph_data
             created
             modified
@@ -126,13 +122,13 @@ class Report:
         """
 
     """
-        List Report objects
+        List Note objects
 
         :param filters: the filters to apply
         :param search: the search keyword
         :param first: return the first n rows from the after ID (or the beginning if not set)
         :param after: ID of the first row for pagination
-        :return List of Report objects
+        :return List of Note objects
     """
 
     def list(self, **kwargs):
@@ -147,12 +143,12 @@ class Report:
             first = 500
 
         self.opencti.log(
-            "info", "Listing Reports with filters " + json.dumps(filters) + "."
+            "info", "Listing Notes with filters " + json.dumps(filters) + "."
         )
         query = (
             """
-            query Reports($filters: [ReportsFiltering], $search: String, $first: Int, $after: ID, $orderBy: ReportsOrdering, $orderMode: OrderingMode) {
-                reports(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+            query Notes($filters: [NotesFiltering], $search: String, $first: Int, $after: ID, $orderBy: NotesOrdering, $orderMode: OrderingMode) {
+                notes(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
                             """
@@ -182,14 +178,14 @@ class Report:
                 "orderMode": order_mode,
             },
         )
-        return self.opencti.process_multiple(result["data"]["reports"])
+        return self.opencti.process_multiple(result["data"]["notes"])
 
     """
-        Read a Report object
+        Read a Note object
 
-        :param id: the id of the Report
+        :param id: the id of the Note
         :param filters: the filters to apply if no id provided
-        :return Report object
+        :return Note object
     """
 
     def read(self, **kwargs):
@@ -197,11 +193,11 @@ class Report:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            self.opencti.log("info", "Reading Report {" + id + "}.")
+            self.opencti.log("info", "Reading Note {" + id + "}.")
             query = (
                 """
-                query Report($id: String!) {
-                    report(id: $id) {
+                query Note($id: String!) {
+                    note(id: $id) {
                         """
                 + (
                     custom_attributes
@@ -214,7 +210,7 @@ class Report:
             """
             )
             result = self.opencti.query(query, {"id": id})
-            return self.opencti.process_multiple_fields(result["data"]["report"])
+            return self.opencti.process_multiple_fields(result["data"]["note"])
         elif filters is not None:
             result = self.list(filters=filters)
             if len(result) > 0:
@@ -223,7 +219,7 @@ class Report:
                 return None
 
     """
-        Read a Report object by stix_id or name
+        Read a Note object by stix_id or name
 
         :param type: the Stix-Domain-Entity type
         :param stix_id_key: the STIX ID of the Stix-Domain-Entity
@@ -233,27 +229,26 @@ class Report:
 
     def get_by_stix_id_or_name(self, **kwargs):
         stix_id_key = kwargs.get("stix_id_key", None)
-        name = kwargs.get("name", None)
-        published = kwargs.get("published", None)
+        description = kwargs.get("description", None)
+        content = kwargs.get("content", None)
         custom_attributes = kwargs.get("customAttributes", None)
         object_result = None
         if stix_id_key is not None:
             object_result = self.read(
                 id=stix_id_key, customAttributes=custom_attributes
             )
-        if object_result is None and name is not None and published is not None:
-            published_final = parse(published).strftime("%Y-%m-%d")
+        if object_result is None and description is not None and content is not None:
             object_result = self.read(
                 filters=[
-                    {"key": "name", "values": [name]},
-                    {"key": "published_day", "values": [published_final]},
+                    {"key": "description", "values": [description]},
+                    {"key": "content", "values": [content]},
                 ],
                 customAttributes=custom_attributes,
             )
         return object_result
 
     """
-        Check if a report already contains a STIX entity
+        Check if a note already contains a STIX entity
         
         :return Boolean
     """
@@ -263,31 +258,30 @@ class Report:
         entity_id = kwargs.get("entity_id", None)
         if id is not None and entity_id is not None:
             self.opencti.log(
-                "info",
-                "Checking Stix-Entity {" + entity_id + "} in Report {" + id + "}",
+                "info", "Checking Stix-Entity {" + entity_id + "} in Note {" + id + "}",
             )
             query = """
-                query ReportContainsStixDomainEntity($id: String!, $objectId: String!) {
-                    reportContainsStixDomainEntity(id: $id, objectId: $objectId)
+                query NoteContainsStixDomainEntity($id: String!, $objectId: String!) {
+                    noteContainsStixDomainEntity(id: $id, objectId: $objectId)
                 }
             """
             result = self.opencti.query(query, {"id": id, "objectId": entity_id})
-            if result["data"]["reportContainsStixDomainEntity"]:
+            if result["data"]["noteContainsStixDomainEntity"]:
                 return True
             query = """
-                query ReportContainsStixRelation($id: String!, $objectId: String!) {
-                    reportContainsStixRelation(id: $id, objectId: $objectId)
+                query NoteContainsStixRelation($id: String!, $objectId: String!) {
+                    noteContainsStixRelation(id: $id, objectId: $objectId)
                 }
             """
             result = self.opencti.query(query, {"id": id, "objectId": entity_id})
-            return result["data"]["reportContainsStixRelation"]
+            return result["data"]["noteContainsStixRelation"]
         else:
             self.opencti.log(
-                "error", "[opencti_report] Missing parameters: id or entity_id",
+                "error", "[opencti_note] Missing parameters: id or entity_id",
             )
 
     """
-        Check if a report already contains a STIX observable
+        Check if a note already contains a STIX observable
 
         :return Boolean
     """
@@ -300,39 +294,35 @@ class Report:
                 "info",
                 "Checking Stix-Observable {"
                 + stix_observable_id
-                + "} in Report {"
+                + "} in Note {"
                 + id
                 + "}",
             )
             query = """
-                query ReportContainsStixObservable($id: String!, $objectId: String!) {
-                    reportContainsStixObservable(id: $id, objectId: $objectId)
+                query NoteContainsStixObservable($id: String!, $objectId: String!) {
+                    noteContainsStixObservable(id: $id, objectId: $objectId)
                 }
             """
             result = self.opencti.query(
                 query, {"id": id, "objectId": stix_observable_id}
             )
-            return result["data"]["reportContainsStixObservable"]
+            return result["data"]["noteContainsStixObservable"]
         else:
             self.opencti.log(
-                "error",
-                "[opencti_report] Missing parameters: id or stix_observable_id",
+                "error", "[opencti_note] Missing parameters: id or stix_observable_id",
             )
 
     """
-        Create a Report object
+        Create a Note object
 
-        :param name: the name of the Report
-        :return Report object
+        :param name: the name of the Note
+        :return Note object
     """
 
     def create_raw(self, **kwargs):
         name = kwargs.get("name", None)
         description = kwargs.get("description", None)
-        published = kwargs.get("published", None)
-        report_class = kwargs.get("report_class", None)
-        object_status = kwargs.get("object_status", None)
-        source_confidence_level = kwargs.get("source_confidence_level", None)
+        content = kwargs.get("content", None)
         graph_data = kwargs.get("graph_data", None)
         id = kwargs.get("id", None)
         stix_id_key = kwargs.get("stix_id_key", None)
@@ -341,17 +331,12 @@ class Report:
         created_by_ref = kwargs.get("createdByRef", None)
         marking_definitions = kwargs.get("markingDefinitions", None)
 
-        if (
-            name is not None
-            and description is not None
-            and published is not None
-            and report_class is not None
-        ):
-            self.opencti.log("info", "Creating Report {" + name + "}.")
+        if name is not None and description is not None and content is not None:
+            self.opencti.log("info", "Creating Note {" + description + "}.")
             query = (
                 """
-                mutation ReportAdd($input: ReportAddInput) {
-                    reportAdd(input: $input) {
+                mutation NoteAdd($input: NoteAddInput) {
+                    noteAdd(input: $input) {
                         """
                 + self.properties
                 + """
@@ -365,10 +350,7 @@ class Report:
                     "input": {
                         "name": name,
                         "description": description,
-                        "published": published,
-                        "report_class": report_class,
-                        "object_status": object_status,
-                        "source_confidence_level": source_confidence_level,
+                        "content": content,
                         "graph_data": graph_data,
                         "internal_id_key": id,
                         "stix_id_key": stix_id_key,
@@ -379,30 +361,27 @@ class Report:
                     }
                 },
             )
-            return self.opencti.process_multiple_fields(result["data"]["reportAdd"])
+            return self.opencti.process_multiple_fields(result["data"]["noteAdd"])
         else:
             self.opencti.log(
                 "error",
-                "[opencti_report] Missing parameters: name and description and published and report_class",
+                "[opencti_note] Missing parameters: name and description and published and note_class",
             )
 
     """
-         Create a Report object only if it not exists, update it on request
+         Create a Note object only if it not exists, update it on request
 
-         :param name: the name of the Report
-         :param description: the description of the Report
-         :param published: the publication date of the Report
-         :return Report object
+         :param name: the name of the Note
+         :param description: the description of the Note
+         :param published: the publication date of the Note
+         :return Note object
      """
 
     def create(self, **kwargs):
         name = kwargs.get("name", None)
         external_reference_id = kwargs.get("external_reference_id", None)
         description = kwargs.get("description", None)
-        published = kwargs.get("published", None)
-        report_class = kwargs.get("report_class", None)
-        object_status = kwargs.get("object_status", None)
-        source_confidence_level = kwargs.get("source_confidence_level", None)
+        content = kwargs.get("content", None)
         graph_data = kwargs.get("graph_data", None)
         id = kwargs.get("id", None)
         stix_id_key = kwargs.get("stix_id_key", None)
@@ -416,7 +395,7 @@ class Report:
             entity_type
             name
             description 
-            ... on Report {
+            ... on Note {
                 observableRefs {
                     edges {
                         node {
@@ -435,17 +414,17 @@ class Report:
         object_result = None
         if external_reference_id is not None:
             object_result = self.opencti.stix_domain_entity.read(
-                types=["Report"],
+                types=["Note"],
                 filters=[
                     {"key": "hasExternalReference", "values": [external_reference_id]}
                 ],
                 customAttributes=custom_attributes,
             )
-        if object_result is None and name is not None:
+        if object_result is None and description is not None and content is not None:
             object_result = self.get_by_stix_id_or_name(
                 stix_id_key=stix_id_key,
-                name=name,
-                published=published,
+                description=description,
+                content=content,
                 custom_attributes=custom_attributes,
             )
         if object_result is not None:
@@ -460,6 +439,11 @@ class Report:
                         id=object_result["id"], key="description", value=description
                     )
                     object_result["description"] = description
+                if object_result["content"] != content:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result["id"], key="content", value=content
+                    )
+                    object_result["content"] = content
             if external_reference_id is not None:
                 self.opencti.stix_entity.add_external_reference(
                     id=object_result["id"],
@@ -468,13 +452,10 @@ class Report:
                 )
             return object_result
         else:
-            report = self.create_raw(
+            note = self.create_raw(
                 name=name,
                 description=description,
-                published=published,
-                report_class=report_class,
-                object_status=object_status,
-                source_confidence_level=source_confidence_level,
+                content=content,
                 graph_data=graph_data,
                 id=id,
                 stix_id_key=stix_id_key,
@@ -485,40 +466,40 @@ class Report:
             )
             if external_reference_id is not None:
                 self.opencti.stix_entity.add_external_reference(
-                    id=report["id"],
-                    entity=report,
+                    id=note["id"],
+                    entity=note,
                     external_reference_id=external_reference_id,
                 )
-            return report
+            return note
 
     """
-        Add a Stix-Entity object to Report object (object_refs)
+        Add a Stix-Entity object to Note object (object_refs)
 
-        :param id: the id of the Report
+        :param id: the id of the Note
         :param entity_id: the id of the Stix-Entity
         :return Boolean
     """
 
     def add_stix_entity(self, **kwargs):
         id = kwargs.get("id", None)
-        report = kwargs.get("report", None)
+        note = kwargs.get("note", None)
         entity_id = kwargs.get("entity_id", None)
         if id is not None and entity_id is not None:
-            if report is not None:
+            if note is not None:
                 if (
-                    entity_id in report["objectRefsIds"]
-                    or entity_id in report["relationRefsIds"]
+                    entity_id in note["objectRefsIds"]
+                    or entity_id in note["relationRefsIds"]
                 ):
                     return True
             else:
                 if self.contains_stix_entity(id=id, entity_id=entity_id):
                     return True
             self.opencti.log(
-                "info", "Adding Stix-Entity {" + entity_id + "} to Report {" + id + "}",
+                "info", "Adding Stix-Entity {" + entity_id + "} to Note {" + id + "}",
             )
             query = """
-               mutation ReportEdit($id: ID!, $input: RelationAddInput) {
-                   reportEdit(id: $id) {
+               mutation NoteEdit($id: ID!, $input: RelationAddInput) {
+                   noteEdit(id: $id) {
                         relationAdd(input: $input) {
                             id
                         }
@@ -540,25 +521,25 @@ class Report:
             return True
         else:
             self.opencti.log(
-                "error", "[opencti_report] Missing parameters: id and entity_id"
+                "error", "[opencti_note] Missing parameters: id and entity_id"
             )
             return False
 
     """
-        Add a Stix-Observable object to Report object (observable_refs)
+        Add a Stix-Observable object to Note object (observable_refs)
 
-        :param id: the id of the Report
+        :param id: the id of the Note
         :param entity_id: the id of the Stix-Observable
         :return Boolean
     """
 
     def add_stix_observable(self, **kwargs):
         id = kwargs.get("id", None)
-        report = kwargs.get("report", None)
+        note = kwargs.get("note", None)
         stix_observable_id = kwargs.get("stix_observable_id", None)
         if id is not None and stix_observable_id is not None:
-            if report is not None:
-                if stix_observable_id in report["observableRefsIds"]:
+            if note is not None:
+                if stix_observable_id in note["observableRefsIds"]:
                     return True
             else:
                 if self.contains_stix_observable(
@@ -569,13 +550,13 @@ class Report:
                 "info",
                 "Adding Stix-Observable {"
                 + stix_observable_id
-                + "} to Report {"
+                + "} to Note {"
                 + id
                 + "}",
             )
             query = """
-               mutation ReportEdit($id: ID!, $input: RelationAddInput) {
-                   reportEdit(id: $id) {
+               mutation NoteEdit($id: ID!, $input: RelationAddInput) {
+                   noteEdit(id: $id) {
                         relationAdd(input: $input) {
                             id
                         }
@@ -597,16 +578,15 @@ class Report:
             return True
         else:
             self.opencti.log(
-                "error",
-                "[opencti_report] Missing parameters: id and stix_observable_id",
+                "error", "[opencti_note] Missing parameters: id and stix_observable_id",
             )
             return False
 
     """
-        Import a Report object from a STIX2 object
+        Import a Note object from a STIX2 object
 
-        :param stixObject: the Stix-Object Report
-        :return Report object
+        :param stixObject: the Stix-Object Note
+        :return Note object
     """
 
     def import_from_stix2(self, **kwargs):
@@ -615,24 +595,15 @@ class Report:
         update = kwargs.get("update", False)
         if stix_object is not None:
             return self.create(
-                name=stix_object["name"],
-                description=self.opencti.stix2.convert_markdown(
-                    stix_object["description"]
-                )
-                if "description" in stix_object
+                description=self.opencti.stix2.convert_markdown(stix_object["abstract"])
+                if "abstract" in stix_object
                 else "",
-                published=stix_object["published"]
-                if "published" in stix_object
+                content=self.opencti.stix2.convert_markdown(stix_object["content"])
+                if "content" in stix_object
                 else "",
-                report_class=stix_object[CustomProperties.REPORT_CLASS]
-                if CustomProperties.REPORT_CLASS in stix_object
-                else "Threat Report",
-                object_status=stix_object[CustomProperties.OBJECT_STATUS]
-                if CustomProperties.OBJECT_STATUS in stix_object
-                else 0,
-                source_confidence_level=stix_object[CustomProperties.SRC_CONF_LEVEL]
-                if CustomProperties.SRC_CONF_LEVEL in stix_object
-                else 1,
+                name=stix_object[CustomProperties.NAME]
+                if CustomProperties.NAME in stix_object
+                else "",
                 graph_data=stix_object[CustomProperties.GRAPH_DATA]
                 if CustomProperties.GRAPH_DATA in stix_object
                 else "",
@@ -656,10 +627,10 @@ class Report:
             )
 
     """
-        Export an Threat-Actor object in STIX2
+        Export a Note object in STIX2
 
-        :param id: the id of the Threat-Actor
-        :return Threat-Actor object
+        :param id: the id of the Note
+        :return Note object
     """
 
     def to_stix2(self, **kwargs):
@@ -672,37 +643,29 @@ class Report:
         if id is not None and entity is None:
             entity = self.read(id=id)
         if entity is not None:
-            report = dict()
-            report["id"] = entity["stix_id_key"]
-            report["type"] = "report"
-            report["spec_version"] = SPEC_VERSION
-            report["name"] = entity["name"]
+            note = dict()
+            note["id"] = entity["stix_id_key"]
+            note["type"] = "note"
+            note["spec_version"] = SPEC_VERSION
+            note["abstract"] = entity["description"]
+            note["content"] = entity["content"]
             if self.opencti.not_empty(entity["stix_label"]):
-                report["labels"] = entity["stix_label"]
+                note["labels"] = entity["stix_label"]
             else:
-                report["labels"] = ["report"]
+                note["labels"] = ["note"]
             if self.opencti.not_empty(entity["description"]):
-                report["description"] = entity["description"]
-            report["published"] = self.opencti.stix2.format_date(entity["published"])
-            report["created"] = self.opencti.stix2.format_date(entity["created"])
-            report["modified"] = self.opencti.stix2.format_date(entity["modified"])
+                note["abstract"] = entity["description"]
+            note["created"] = self.opencti.stix2.format_date(entity["created"])
+            note["modified"] = self.opencti.stix2.format_date(entity["modified"])
             if self.opencti.not_empty(entity["alias"]):
-                report[CustomProperties.ALIASES] = entity["alias"]
-            if self.opencti.not_empty(entity["report_class"]):
-                report[CustomProperties.REPORT_CLASS] = entity["report_class"]
-            if self.opencti.not_empty(entity["object_status"]):
-                report[CustomProperties.OBJECT_STATUS] = entity["object_status"]
-            if self.opencti.not_empty(entity["source_confidence_level"]):
-                report[CustomProperties.SRC_CONF_LEVEL] = entity[
-                    "source_confidence_level"
-                ]
+                note[CustomProperties.ALIASES] = entity["alias"]
+            if self.opencti.not_empty(entity["name"]):
+                note[CustomProperties.NAME] = entity["name"]
             if self.opencti.not_empty(entity["graph_data"]):
-                report[CustomProperties.GRAPH_DATA] = entity["graph_data"]
-            report[CustomProperties.ID] = entity["id"]
+                note[CustomProperties.GRAPH_DATA] = entity["graph_data"]
+            note[CustomProperties.ID] = entity["id"]
             return self.opencti.stix2.prepare_export(
-                entity, report, mode, max_marking_definition_entity
+                entity, note, mode, max_marking_definition_entity
             )
         else:
-            self.opencti.log(
-                "error", "[opencti_report] Missing parameters: id or entity"
-            )
+            self.opencti.log("error", "[opencti_note] Missing parameters: id or entity")

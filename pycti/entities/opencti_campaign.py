@@ -2,6 +2,7 @@
 
 import json
 from pycti.utils.constants import CustomProperties
+from pycti.utils.opencti_stix2 import SPEC_VERSION
 
 
 class Campaign:
@@ -376,6 +377,7 @@ class Campaign:
             campaign = dict()
             campaign["id"] = entity["stix_id_key"]
             campaign["type"] = "campaign"
+            campaign["spec_version"] = SPEC_VERSION
             campaign["name"] = entity["name"]
             if self.opencti.not_empty(entity["stix_label"]):
                 campaign["labels"] = entity["stix_label"]

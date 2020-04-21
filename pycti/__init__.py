@@ -30,6 +30,8 @@ from .entities.opencti_vulnerability import Vulnerability
 from .entities.opencti_attack_pattern import AttackPattern
 from .entities.opencti_course_of_action import CourseOfAction
 from .entities.opencti_report import Report
+from .entities.opencti_note import Note
+from .entities.opencti_opinion import Opinion
 from .entities.opencti_indicator import Indicator
 
 from .utils.opencti_stix2 import OpenCTIStix2
@@ -64,6 +66,8 @@ __all__ = [
     "AttackPattern",
     "CourseOfAction",
     "Report",
+    "Note",
+    "Opinion",
     "Indicator",
     "OpenCTIStix2",
     "ObservableTypes",

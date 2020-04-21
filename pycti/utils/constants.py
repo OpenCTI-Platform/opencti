@@ -141,3 +141,6 @@ class CustomProperties:
     OBJECT_STATUS = "x_opencti_object_status"
     SRC_CONF_LEVEL = "x_opencti_source_confidence_level"
     GRAPH_DATA = "x_opencti_graph_data"
+
+    # applies to STIX note
+    NAME = "x_opencti_name"

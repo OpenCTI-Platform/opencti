@@ -2,6 +2,7 @@
 
 import json
 from pycti.utils.constants import CustomProperties
+from pycti.utils.opencti_stix2 import SPEC_VERSION
 
 
 class CourseOfAction:
@@ -344,6 +345,7 @@ class CourseOfAction:
             course_of_action = dict()
             course_of_action["id"] = entity["stix_id_key"]
             course_of_action["type"] = "course-of-action"
+            course_of_action["spec_version"] = SPEC_VERSION
             course_of_action["name"] = entity["name"]
             if self.opencti.not_empty(entity["stix_label"]):
                 course_of_action["labels"] = entity["stix_label"]

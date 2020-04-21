@@ -2,6 +2,7 @@
 
 import json
 from pycti.utils.constants import CustomProperties
+from pycti.utils.opencti_stix2 import SPEC_VERSION
 
 
 class Indicator:
@@ -494,6 +495,7 @@ class Indicator:
             indicator = dict()
             indicator["id"] = entity["stix_id_key"]
             indicator["type"] = "indicator"
+            indicator["spec_version"] = SPEC_VERSION
             indicator["name"] = entity["name"]
             if self.opencti.not_empty(entity["stix_label"]):
                 indicator["labels"] = entity["stix_label"]
