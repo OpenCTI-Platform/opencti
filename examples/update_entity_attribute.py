@@ -1,6 +1,5 @@
 # coding: utf-8
 
-import json
 from pycti import OpenCTIApiClient
 
 # Variables

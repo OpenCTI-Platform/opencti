@@ -1,6 +1,5 @@
 # coding: utf-8
 
-import json
 import dateutil.parser
 import datetime
 from pycti.utils.constants import CustomProperties
@@ -41,7 +40,7 @@ class StixRelation:
                 ...on StixDomainEntity {
                     name
                     description
-                }       
+                }
             }
             createdByRef {
                 node {
@@ -130,7 +129,7 @@ class StixRelation:
         :param lastSeenStop: the last_seen date stop filter
         :param inferred: includes inferred relations
         :param first: return the first n rows from the after ID (or the beginning if not set)
-        :param after: ID of the first row for pagination        
+        :param after: ID of the first row for pagination
         :return List of stix_relation objects
     """
 
@@ -182,7 +181,7 @@ class StixRelation:
                         hasNextPage
                         hasPreviousPage
                         globalCount
-                    }                        
+                    }
                 }
             }
          """
@@ -212,7 +211,7 @@ class StixRelation:
 
     """
         Read a stix_relation object
-        
+
         :param id: the id of the stix_relation
         :param fromId: the id of the source entity of the relation
         :param toId: the id of the target entity of the relation
@@ -380,7 +379,7 @@ class StixRelation:
             id
             entity_type
             name
-            description 
+            description
             weight
             first_seen
             last_seen
@@ -533,7 +532,7 @@ class StixRelation:
                     mutation StixRelationEdit($id: ID!, $input: EditInput!) {
                         stixRelationEdit(id: $id) {
                             fieldPatch(input: $input) {
-                                id    
+                                id
                             }
                         }
                     }

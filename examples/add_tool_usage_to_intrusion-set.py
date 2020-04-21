@@ -1,8 +1,5 @@
 # coding: utf-8
 
-import datetime
-from dateutil.parser import parse
-
 from pycti import OpenCTIApiClient
 
 # Variables
