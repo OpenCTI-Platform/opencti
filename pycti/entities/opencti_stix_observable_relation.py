@@ -1,9 +1,7 @@
 # coding: utf-8
 
-import json
 import dateutil.parser
 import datetime
-from pycti.utils.constants import CustomProperties
 
 
 class StixObservableRelation:
@@ -24,16 +22,16 @@ class StixObservableRelation:
             created_at
             updated_at
             from {
-                id  
+                id
                 stix_id_key
                 entity_type
                 observable_value
             }
             to {
-                id  
+                id
                 stix_id_key
                 entity_type
-                observable_value              
+                observable_value
             }
             createdByRef {
                 node {
@@ -102,7 +100,7 @@ class StixObservableRelation:
         :param lastSeenStop: the last_seen date stop filter
         :param inferred: includes inferred relations
         :param first: return the first n rows from the after ID (or the beginning if not set)
-        :param after: ID of the first row for pagination        
+        :param after: ID of the first row for pagination
         :return List of stix_observable_relation objects
     """
 
@@ -154,7 +152,7 @@ class StixObservableRelation:
                         hasNextPage
                         hasPreviousPage
                         globalCount
-                    }                        
+                    }
                 }
             }
          """
@@ -184,7 +182,7 @@ class StixObservableRelation:
 
     """
         Read a stix_observable_relation object
-        
+
         :param id: the id of the stix_observable_relation
         :param stix_id_key: the STIX id of the stix_observable_relation
         :param fromId: the id of the source entity of the relation
@@ -351,7 +349,7 @@ class StixObservableRelation:
             id
             entity_type
             name
-            description 
+            description
             weight
             first_seen
             last_seen

@@ -1,6 +1,30 @@
 version: 2.1
 
 jobs:
+  ensure_formatting:
+    docker:
+      - image: circleci/python:3.7.7
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run:
+          name: install dependencies
+          command: sudo pip3 install black
+      - run:
+          name: confirm black version
+          command: black --version
+      - run:
+          name: run black check
+          command: black --check .
+  linter:
+    docker:
+      - image: alpine/flake8
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run:
+          name: flake8
+          command: flake8 --ignore=E,W ~/repo
   build:
     working_directory: ~/opencti-client
     docker:
@@ -10,9 +34,6 @@ jobs:
       - run:
           name: install dependencies
           command: pip3 install -r requirements.txt --user
-      - run:
-          name: install dependencies
-          command: black --check .
       - run:
           name: build
           command: python3 setup.py sdist
@@ -30,7 +51,7 @@ jobs:
           at: ~/opencti-client
       - run:
           name: install dependencies
-          command: pip3 install -r requirements.txt --user    
+          command: pip3 install -r requirements.txt --user
       - run:
           name: verify git tag vs. version
           command: python3 setup.py verify
@@ -48,6 +69,11 @@ jobs:
           command: twine upload dist/*
 
 workflows:
+  version: 2
+  check-code:
+    jobs:
+      - ensure_formatting
+      - linter
   opencti_client_python:
     jobs:
       - build:

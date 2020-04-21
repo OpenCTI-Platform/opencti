@@ -1,6 +1,5 @@
 import json
 import logging
-from typing import Dict
 
 from pycti.connector.opencti_connector import OpenCTIConnector
 
