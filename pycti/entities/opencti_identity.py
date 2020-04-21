@@ -2,6 +2,7 @@
 
 import json
 from pycti.utils.constants import CustomProperties
+from pycti.utils.opencti_stix2 import SPEC_VERSION
 
 
 class Identity:
@@ -351,6 +352,7 @@ class Identity:
             identity = dict()
             identity["id"] = entity["stix_id_key"]
             identity["type"] = "identity"
+            identity["spec_version"] = SPEC_VERSION
             identity["name"] = entity["name"]
             identity["identity_class"] = identity_class
             if self.opencti.not_empty(entity["stix_label"]):
@@ -366,6 +368,7 @@ class Identity:
             if (
                 entity["entity_type"] == "organization"
                 and "organization_class" in entity
+                and self.opencti.not_empty(entity["organization_class"])
             ):
                 identity[CustomProperties.ORG_CLASS] = entity["organization_class"]
             identity[CustomProperties.IDENTITY_TYPE] = entity["entity_type"]

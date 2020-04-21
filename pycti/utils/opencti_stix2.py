@@ -25,6 +25,9 @@ utc = pytz.UTC
 # ObservableRelations
 OBSERVABLE_RELATIONS = ["corresponds", "belongs"]
 
+# Spec version
+SPEC_VERSION = "2.1"
+
 
 class OpenCTIStix2:
     """
@@ -417,6 +420,8 @@ class OpenCTIStix2:
             "attack-pattern": self.create_attack_pattern,
             "course-of-action": self.create_course_of_action,
             "report": self.create_report,
+            "note": self.create_note,
+            "opinion": self.create_opinion,
             "indicator": self.create_indicator,
         }
         do_import = importer.get(
@@ -469,14 +474,34 @@ class OpenCTIStix2:
                 if "observed-data" in object_refs_id:
                     if object_refs_id in self.mapping_cache:
                         for observable in self.mapping_cache[object_refs_id]:
-                            self.opencti.report.add_stix_observable(
-                                id=stix_object_result["id"],
-                                stix_observable_id=observable["id"],
-                            )
+                            if stix_object_result["entity_type"] == "report":
+                                self.opencti.report.add_stix_observable(
+                                    id=stix_object_result["id"],
+                                    stix_observable_id=observable["id"],
+                                )
+                            elif stix_object_result["entity_type"] == "note":
+                                self.opencti.note.add_stix_observable(
+                                    id=stix_object_result["id"],
+                                    stix_observable_id=observable["id"],
+                                )
+                            elif stix_object_result["entity_type"] == "opinion":
+                                self.opencti.opinion.add_stix_observable(
+                                    id=stix_object_result["id"],
+                                    stix_observable_id=observable["id"],
+                                )
                 else:
-                    self.opencti.report.add_stix_entity(
-                        id=stix_object_result["id"], entity_id=object_refs_id,
-                    )
+                    if stix_object_result["entity_type"] == "report":
+                        self.opencti.report.add_stix_entity(
+                            id=stix_object_result["id"], entity_id=object_refs_id,
+                        )
+                    elif stix_object_result["entity_type"] == "note":
+                        self.opencti.note.add_stix_entity(
+                            id=stix_object_result["id"], entity_id=object_refs_id,
+                        )
+                    elif stix_object_result["entity_type"] == "opinion":
+                        self.opencti.opinion.add_stix_entity(
+                            id=stix_object_result["id"], entity_id=object_refs_id,
+                        )
                     if (
                         object_refs_id in self.mapping_cache
                         and "observableRefs" in self.mapping_cache[object_refs_id]
@@ -489,10 +514,21 @@ class OpenCTIStix2:
                         for observable_ref in self.mapping_cache[object_refs_id][
                             "observableRefs"
                         ]:
-                            self.opencti.report.add_stix_observable(
-                                id=stix_object_result["id"],
-                                stix_observable_id=observable_ref["id"],
-                            )
+                            if stix_object_result["entity_type"] == "report":
+                                self.opencti.report.add_stix_observable(
+                                    id=stix_object_result["id"],
+                                    stix_observable_id=observable_ref["id"],
+                                )
+                            elif stix_object_result["entity_type"] == "note":
+                                self.opencti.note.add_stix_observable(
+                                    id=stix_object_result["id"],
+                                    stix_observable_id=observable_ref["id"],
+                                )
+                            elif stix_object_result["entity_type"] == "opinion":
+                                self.opencti.opinion.add_stix_observable(
+                                    id=stix_object_result["id"],
+                                    stix_observable_id=observable_ref["id"],
+                                )
             # Add files
             if CustomProperties.FILES in stix_object:
                 for file in stix_object[CustomProperties.FILES]:
@@ -995,7 +1031,6 @@ class OpenCTIStix2:
         bundle = {
             "type": "bundle",
             "id": "bundle--" + str(uuid.uuid4()),
-            "spec_version": "2.0",
             "objects": [],
         }
         # Map types
@@ -1015,6 +1050,8 @@ class OpenCTIStix2:
             "attack-pattern": self.opencti.attack_pattern.to_stix2,
             "course-of-action": self.opencti.course_of_action.to_stix2,
             "report": self.opencti.report.to_stix2,
+            "note": self.opencti.note.to_stix2,
+            "opinion": self.opencti.opinion.to_stix2,
             "indicator": self.opencti.indicator.to_stix2,
         }
         do_export = exporter.get(
@@ -1046,7 +1083,6 @@ class OpenCTIStix2:
         bundle = {
             "type": "bundle",
             "id": "bundle--" + str(uuid.uuid4()),
-            "spec_version": "2.0",
             "objects": [],
         }
 
@@ -1070,6 +1106,8 @@ class OpenCTIStix2:
             "attack-pattern": self.opencti.attack_pattern.list,
             "course-of-action": self.opencti.course_of_action.list,
             "report": self.opencti.report.list,
+            "note": self.opencti.note.list,
+            "opinion": self.opencti.opinion.list,
             "indicator": self.opencti.indicator.list,
         }
         do_list = lister.get(
@@ -1097,6 +1135,8 @@ class OpenCTIStix2:
                 "attack-pattern": self.opencti.attack_pattern.to_stix2,
                 "course-of-action": self.opencti.course_of_action.to_stix2,
                 "report": self.opencti.report.to_stix2,
+                "note": self.opencti.note.to_stix2,
+                "opinion": self.opencti.opinion.to_stix2,
                 "indicator": self.opencti.indicator.to_stix2,
             }
             do_export = exporter.get(
@@ -1185,7 +1225,9 @@ class OpenCTIStix2:
                 marking_definition = {
                     "id": entity_marking_definition["stix_id_key"],
                     "type": "marking-definition",
-                    "definition_type": entity_marking_definition["definition_type"],
+                    "definition_type": entity_marking_definition[
+                        "definition_type"
+                    ].lower(),
                     "definition": {
                         entity_marking_definition[
                             "definition_type"
@@ -1347,6 +1389,8 @@ class OpenCTIStix2:
                 "attack-pattern": self.opencti.attack_pattern.to_stix2,
                 "course-of-action": self.opencti.course_of_action.to_stix2,
                 "report": self.opencti.report.to_stix2,
+                "note": self.opencti.note.to_stix2,
+                "opinion": self.opencti.opinion.to_stix2,
                 "indicator": self.opencti.indicator.to_stix2,
             }
 
@@ -1735,39 +1779,19 @@ class OpenCTIStix2:
             update=update,
         )
 
-    # TODO move in Report
     def create_report(self, stix_object, extras, update=False):
-        return self.opencti.report.create(
-            name=stix_object["name"],
-            description=self.convert_markdown(stix_object["description"])
-            if "description" in stix_object
-            else "",
-            published=stix_object["published"] if "published" in stix_object else "",
-            report_class=stix_object[CustomProperties.REPORT_CLASS]
-            if CustomProperties.REPORT_CLASS in stix_object
-            else "Threat Report",
-            object_status=stix_object[CustomProperties.OBJECT_STATUS]
-            if CustomProperties.OBJECT_STATUS in stix_object
-            else 0,
-            source_confidence_level=stix_object[CustomProperties.SRC_CONF_LEVEL]
-            if CustomProperties.SRC_CONF_LEVEL in stix_object
-            else 1,
-            graph_data=stix_object[CustomProperties.GRAPH_DATA]
-            if CustomProperties.GRAPH_DATA in stix_object
-            else "",
-            id=stix_object[CustomProperties.ID]
-            if CustomProperties.ID in stix_object
-            else None,
-            stix_id_key=stix_object["id"] if "id" in stix_object else None,
-            created=stix_object["created"] if "created" in stix_object else None,
-            modified=stix_object["modified"] if "modified" in stix_object else None,
-            createdByRef=extras["created_by_ref_id"]
-            if "created_by_ref_id" in extras
-            else None,
-            markingDefinitions=extras["marking_definitions_ids"]
-            if "marking_definitions_ids" in extras
-            else [],
-            update=update,
+        return self.opencti.report.import_from_stix2(
+            stixObject=stix_object, extras=extras, update=update
+        )
+
+    def create_note(self, stix_object, extras, update=False):
+        return self.opencti.note.import_from_stix2(
+            stixObject=stix_object, extras=extras, update=update
+        )
+
+    def create_opinion(self, stix_object, extras, update=False):
+        return self.opencti.opinion.import_from_stix2(
+            stixObject=stix_object, extras=extras, update=update
         )
 
     def export_stix_observables(self, entity):
@@ -1921,12 +1945,14 @@ class OpenCTIStix2:
             "info", "Identities imported in: %ssecs" % round(end_time - start_time)
         )
 
-        # StixDomainObjects except Report
+        # StixDomainObjects except Report/Opinion/Notes
         start_time = time.time()
         for item in stix_bundle["objects"]:
             if (
                 item["type"] != "relationship"
                 and item["type"] != "report"
+                and item["type"] != "note"
+                and item["type"] != "opinion"
                 and item["type"] != "observed-data"
                 and (len(types) == 0 or item["type"] in types)
             ):
@@ -2018,5 +2044,27 @@ class OpenCTIStix2:
         end_time = time.time()
         self.opencti.log(
             "info", "Reports imported in: %ssecs" % round(end_time - start_time)
+        )
+
+        # Notes
+        start_time = time.time()
+        for item in stix_bundle["objects"]:
+            if item["type"] == "note" and (len(types) == 0 or "note" in types):
+                self.import_object(item, update, types)
+                imported_elements.append({"id": item["id"], "type": item["type"]})
+        end_time = time.time()
+        self.opencti.log(
+            "info", "Notes imported in: %ssecs" % round(end_time - start_time)
+        )
+
+        # Opinions
+        start_time = time.time()
+        for item in stix_bundle["objects"]:
+            if item["type"] == "opinion" and (len(types) == 0 or "opinion" in types):
+                self.import_object(item, update, types)
+                imported_elements.append({"id": item["id"], "type": item["type"]})
+        end_time = time.time()
+        self.opencti.log(
+            "info", "Opinions imported in: %ssecs" % round(end_time - start_time)
         )
         return imported_elements

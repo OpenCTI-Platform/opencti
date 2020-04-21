@@ -13,7 +13,7 @@ except ImportError:
     print("warning: pypandoc module not found, could not convert Markdown to RST")
     read_md = lambda f: open(f, "r").read()
 
-VERSION = "3.1.0"
+VERSION = "3.1.1"
 
 
 class VerifyVersionCommand(install):
@@ -54,15 +54,16 @@ setup(
     ],
     include_package_data=True,
     install_requires=[
-        "requests",
-        "PyYAML",
-        "python-dateutil",
-        "datefinder",
-        "stix2",
-        "stix2-validator",
-        "pytz",
-        "pika",
-        "python-magic",
+        "requests==2.23.0",
+        "PyYAML==5.3.1",
+        "python-dateutil==2.8.1",
+        "datefinder==0.7.0",
+        "stix2==1.4.0",
+        "stix2-validator==1.1.2",
+        "pytz==2019.3",
+        "pika==1.1.0",
+        "python-magic==0.4.15;sys.platform=='linux' or sys.platform=='darwin'",
+        "python-magic-bin==0.4.14;sys.platform=='win32'",
     ],
     cmdclass={"verify": VerifyVersionCommand,},
     extras_require={"dev": ["black", "wheel"],},  # Optional
