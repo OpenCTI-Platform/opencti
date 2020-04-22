@@ -115,6 +115,7 @@ describe('Note resolver standard behavior', () => {
         description: 'Note description',
         content: 'Test content',
         objectRefs: ['fab6fa99-b07f-4278-86b4-b674edf60877'],
+        relationRefs: ['209cbdf0-fc5e-47c9-8023-dd724993ae55'],
       },
     };
     const note = await queryAsAdmin({
