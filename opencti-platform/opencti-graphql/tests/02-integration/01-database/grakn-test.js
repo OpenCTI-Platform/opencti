@@ -357,13 +357,17 @@ describe('Grakn entities listing', () => {
     let options = { orderBy: 'rel_localization.name', orderMode: 'desc', noCache };
     let identities = await listEntities(['Identity'], ['name'], options);
     expect(identities.edges.length).toEqual(6);
-    expect(head(identities.edges).node.name).toEqual('Europe');
+    const firstDescResult =
+      head(identities.edges).node.name === 'Europe' || head(identities.edges).node.name === 'France';
+    expect(firstDescResult).toBeTruthy();
     expect(last(identities.edges).node.name).toEqual('Western Europe');
     options = { orderBy: 'rel_localization.name', orderMode: 'asc', noCache };
     identities = await listEntities(['Identity'], ['name'], options);
     expect(identities.edges.length).toEqual(6);
     expect(head(identities.edges).node.name).toEqual('Western Europe');
-    expect(last(identities.edges).node.name).toEqual('France');
+    const lastAscResult =
+      last(identities.edges).node.name === 'Europe' || last(identities.edges).node.name === 'France';
+    expect(lastAscResult).toBeTruthy();
   });
   it.each(noCacheCases)('should list entities order by relation id (noCache = %s)', async (noCache) => {
     // France (f2ea7d37-996d-4313-8f73-42a8782d39a0) < localization > Hietzing (d1881166-f431-4335-bfed-b1c647e59f89)
@@ -373,7 +377,9 @@ describe('Grakn entities listing', () => {
       const options = { orderBy: 'rel_localization.internal_id_key', orderMode: 'desc', noCache };
       const identities = await listEntities(['Identity'], ['name'], options);
       expect(identities.edges.length).toEqual(6);
-      expect(head(identities.edges).node.name).toEqual('Western Europe');
+      const result =
+        head(identities.edges).node.name === 'Western Europe' || head(identities.edges).node.name === 'Hietzing';
+      expect(result).toBeTruthy();
       expect(last(identities.edges).node.name).toEqual('Western Europe');
     } else {
       const options = { orderBy: 'rel_localization.internal_id_key', orderMode: 'desc', noCache };
