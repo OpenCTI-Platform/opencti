@@ -417,7 +417,7 @@ describe('Note resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.noteEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(2);
+    expect(queryResult.data.noteEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
     noteMarkingDefinitionRelationId =
       queryResult.data.noteEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
   });

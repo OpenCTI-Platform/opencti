@@ -89,7 +89,7 @@ class StixObjectNoteCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = pipe(
       assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
-      assoc(this.props.inputType ? this.props.inputType : 'object_refs', [this.props.entityId]),
+      assoc(this.props.inputType ? this.props.inputType : 'objectRefs', [this.props.entityId]),
     )(values);
     commitMutation({
       mutation: noteMutation,
