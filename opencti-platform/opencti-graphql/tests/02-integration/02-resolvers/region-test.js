@@ -37,6 +37,21 @@ const READ_QUERY = gql`
       id
       name
       description
+      subRegions {
+        edges {
+          node {
+            id
+          }
+        }
+      }
+      parentRegions {
+        edges {
+          node {
+            id
+          }
+        }
+      }
+      isSubRegion
     }
   }
 `;
@@ -84,9 +99,33 @@ describe('Region resolver standard behavior', () => {
     expect(queryResult.data.region).not.toBeNull();
     expect(queryResult.data.region.id).toEqual(regionInternalId);
   });
+  it('should region subregions be accurate', async () => {
+    const queryResult = await queryAsAdmin({
+      query: READ_QUERY,
+      variables: { id: '98cbf59d-f079-4eb9-8a88-2095d0d336c1' },
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.region).not.toBeNull();
+    expect(queryResult.data.region.id).toEqual('98cbf59d-f079-4eb9-8a88-2095d0d336c1');
+    expect(queryResult.data.region.isSubRegion).toBeFalsy();
+    expect(queryResult.data.region.subRegions.edges.length).toEqual(1);
+    expect(queryResult.data.region.subRegions.edges[0].node.id).toEqual('ccbbd430-f264-4dae-b4db-d5c02e1edeb7');
+  });
+  it('should region parent regions be accurate', async () => {
+    const queryResult = await queryAsAdmin({
+      query: READ_QUERY,
+      variables: { id: 'ccbbd430-f264-4dae-b4db-d5c02e1edeb7' },
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.region).not.toBeNull();
+    expect(queryResult.data.region.id).toEqual('ccbbd430-f264-4dae-b4db-d5c02e1edeb7');
+    expect(queryResult.data.region.isSubRegion).toBeTruthy();
+    expect(queryResult.data.region.parentRegions.edges.length).toEqual(1);
+    expect(queryResult.data.region.parentRegions.edges[0].node.id).toEqual('98cbf59d-f079-4eb9-8a88-2095d0d336c1');
+  });
   it('should list regions', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.regions.edges.length).toEqual(1);
+    expect(queryResult.data.regions.edges.length).toEqual(3);
   });
   it('should update region', async () => {
     const UPDATE_QUERY = gql`

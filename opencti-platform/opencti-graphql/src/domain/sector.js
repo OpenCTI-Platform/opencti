@@ -37,12 +37,6 @@ export const subSectors = (sectorId) => {
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
 
-export const addSector = async (user, sector) => {
-  const created = await createEntity(user, sector, 'Sector', { modelType: TYPE_STIX_DOMAIN_ENTITY, stixIdType: 'identity' });
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
-};
-
-// region metrics and counting
 export const isSubSector = async (sectorId, args) => {
   const numberOfParents = await getSingleValueNumber(
     `match $parent isa Sector; 
@@ -52,4 +46,7 @@ export const isSubSector = async (sectorId, args) => {
   );
   return numberOfParents > 0;
 };
-// endregion
+export const addSector = async (user, sector) => {
+  const created = await createEntity(user, sector, 'Sector', { modelType: TYPE_STIX_DOMAIN_ENTITY, stixIdType: 'identity' });
+  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+};

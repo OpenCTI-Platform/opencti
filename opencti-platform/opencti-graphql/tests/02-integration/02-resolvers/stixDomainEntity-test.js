@@ -107,7 +107,7 @@ describe('StixDomainEntity resolver standard behavior', () => {
       }
     `;
     const queryResult = await queryAsAdmin({ query: NUMBER_QUERY });
-    expect(queryResult.data.stixDomainEntitiesNumber.total).toEqual(67);
+    expect(queryResult.data.stixDomainEntitiesNumber.total).toEqual(69);
   });
   it('should timeseries stixDomainEntities to be accurate', async () => {
     const TIMESERIES_QUERY = gql`
@@ -143,7 +143,7 @@ describe('StixDomainEntity resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.stixDomainEntitiesTimeSeries.length).toEqual(13);
-    expect(queryResult.data.stixDomainEntitiesTimeSeries[3].value).toEqual(27);
+    expect(queryResult.data.stixDomainEntitiesTimeSeries[3].value).toEqual(29);
   });
   it('should update stixDomainEntity', async () => {
     const UPDATE_QUERY = gql`

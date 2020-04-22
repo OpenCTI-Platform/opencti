@@ -10,7 +10,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { Description } from '@material-ui/icons';
+import { DescriptionOutlined } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
 import { QueryRenderer } from '../../../relay/environment';
@@ -24,9 +24,9 @@ const styles = (theme) => ({
     borderRadius: 6,
   },
   item: {
-    height: 60,
-    minHeight: 60,
-    maxHeight: 60,
+    height: 50,
+    minHeight: 50,
+    maxHeight: 50,
     paddingRight: 0,
   },
   itemText: {
@@ -46,14 +46,26 @@ const styles = (theme) => ({
 });
 
 const inlineStyles = {
-  itemDate: {
-    fontSize: 11,
+  itemAuthor: {
     width: 80,
     minWidth: 80,
     maxWidth: 80,
     marginRight: 24,
-    textAlign: 'right',
+    marginLeft: 24,
     color: '#ffffff',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  itemDate: {
+    width: 80,
+    minWidth: 80,
+    maxWidth: 80,
+    marginRight: 24,
+    color: '#ffffff',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
 };
 
@@ -76,6 +88,11 @@ const entityLastReportsQuery = graphql`
           name
           description
           published
+          createdByRef {
+            node {
+              name
+            }
+          }
           markingDefinitions {
             edges {
               node {
@@ -138,26 +155,36 @@ class EntityLastReports extends Component {
                           component={Link}
                           to={`/dashboard/reports/all/${report.id}`}
                         >
-                          <ListItemIcon classes={{ root: classes.itemIcon }}>
-                            <Description />
+                          <ListItemIcon>
+                            <DescriptionOutlined color="primary" />
                           </ListItemIcon>
                           <ListItemText
-                            classes={{ root: classes.itemText }}
-                            primary={report.name}
-                            secondary={report.description}
+                            primary={
+                              <div className={classes.itemText}>
+                                {report.name}
+                              </div>
+                            }
                           />
-                          <div style={{ minWidth: 100 }}>
-                            {markingDefinition ? (
-                              <ItemMarking
-                                key={markingDefinition.node.id}
-                                label={markingDefinition.node.definition}
-                              />
-                            ) : (
-                              ''
+                          <div style={inlineStyles.itemAuthor}>
+                            {pathOr(
+                              '',
+                              ['createdByRef', 'node', 'name'],
+                              report,
                             )}
                           </div>
                           <div style={inlineStyles.itemDate}>
                             {nsd(report.published)}
+                          </div>
+                          <div style={{ width: 110, paddingRight: 20 }}>
+                            {markingDefinition ? (
+                              <ItemMarking
+                                key={markingDefinition.node.id}
+                                label={markingDefinition.node.definition}
+                                variant="inList"
+                              />
+                            ) : (
+                              ''
+                            )}
                           </div>
                         </ListItem>
                       );
@@ -177,7 +204,7 @@ class EntityLastReports extends Component {
                       <ListItemIcon
                         classes={{ root: classes.itemIconDisabled }}
                       >
-                        <Description />
+                        <DescriptionOutlined />
                       </ListItemIcon>
                       <ListItemText
                         primary={

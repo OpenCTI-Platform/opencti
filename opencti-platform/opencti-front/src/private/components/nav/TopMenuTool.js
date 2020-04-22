@@ -4,7 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIos } from '@material-ui/icons';
+import { ArrowForwardIosOutlined } from '@material-ui/icons';
 import { Application } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import Security, {
@@ -60,7 +60,7 @@ class TopMenuTool extends Component {
           <Application className={classes.icon} fontSize="small" />
           {t('Tools')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined color="inherit" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
           to={`/dashboard/techniques/tools/${toolId}`}

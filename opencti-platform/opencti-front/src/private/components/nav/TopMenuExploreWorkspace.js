@@ -4,10 +4,10 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIos, Work } from '@material-ui/icons';
+import { ArrowForwardIosOutlined, WorkOutlined } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
     padding: '2px 5px 2px 5px',
@@ -52,10 +52,10 @@ class TopMenuExploreWorkspace extends Component {
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <Work className={classes.icon} fontSize="small" />
+          <WorkOutlined className={classes.icon} fontSize="small" />
           {t('Workspaces')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined color="inherit" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
           to={`/dashboard/investigate/${workspaceId}`}

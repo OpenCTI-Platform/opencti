@@ -216,7 +216,7 @@ describe('Grakn loaders', () => {
     expect(await countObjects('Workspace')).toEqual(0);
     expect(await countObjects('Token')).toEqual(1);
     expect(await countObjects('Marking-Definition')).toEqual(6);
-    expect(await countObjects('Stix-Domain')).toEqual(41);
+    expect(await countObjects('Stix-Domain')).toEqual(43);
     expect(await countObjects('Role')).toEqual(2);
     expect(await countObjects('Capability')).toEqual(19);
     expect(await countObjects('Stix-Observable')).toEqual(6);
@@ -354,25 +354,40 @@ describe('Grakn entities listing', () => {
   it.each(noCacheCases)('should list entities order by relation (noCache = %s)', async (noCache) => {
     // France (f2ea7d37-996d-4313-8f73-42a8782d39a0) < localization > Hietzing (d1881166-f431-4335-bfed-b1c647e59f89)
     // Hietzing (d1881166-f431-4335-bfed-b1c647e59f89) < localization > France (f2ea7d37-996d-4313-8f73-42a8782d39a0)
-    let options = { orderBy: 'localization.name', orderMode: 'desc', noCache };
+    let options = { orderBy: 'rel_localization.name', orderMode: 'desc', noCache };
     let identities = await listEntities(['Identity'], ['name'], options);
-    expect(identities.edges.length).toEqual(2);
-    expect(head(identities.edges).node.name).toEqual('France');
-    expect(last(identities.edges).node.name).toEqual('Hietzing');
-    options = { orderBy: 'localization.name', orderMode: 'asc', noCache };
+    expect(identities.edges.length).toEqual(6);
+    const firstDescResult =
+      head(identities.edges).node.name === 'Europe' || head(identities.edges).node.name === 'France';
+    expect(firstDescResult).toBeTruthy();
+    expect(last(identities.edges).node.name).toEqual('Western Europe');
+    options = { orderBy: 'rel_localization.name', orderMode: 'asc', noCache };
     identities = await listEntities(['Identity'], ['name'], options);
-    expect(identities.edges.length).toEqual(2);
-    expect(head(identities.edges).node.name).toEqual('Hietzing');
-    expect(last(identities.edges).node.name).toEqual('France');
+    expect(identities.edges.length).toEqual(6);
+    expect(head(identities.edges).node.name).toEqual('Western Europe');
+    const lastAscResult =
+      last(identities.edges).node.name === 'Europe' || last(identities.edges).node.name === 'France';
+    expect(lastAscResult).toBeTruthy();
   });
   it.each(noCacheCases)('should list entities order by relation id (noCache = %s)', async (noCache) => {
     // France (f2ea7d37-996d-4313-8f73-42a8782d39a0) < localization > Hietzing (d1881166-f431-4335-bfed-b1c647e59f89)
     // Hietzing (d1881166-f431-4335-bfed-b1c647e59f89) < localization > France (f2ea7d37-996d-4313-8f73-42a8782d39a0)
-    const options = { orderBy: 'rel_localization.internal_id_key', orderMode: 'desc', noCache };
-    const identities = await listEntities(['Identity'], ['name'], options);
-    expect(identities.edges.length).toEqual(2);
-    expect(head(identities.edges).node.name).toEqual('Hietzing');
-    expect(last(identities.edges).node.name).toEqual('France');
+    // We accept that ElasticSearch is not able to have both direction of the relattions
+    if (noCache) {
+      const options = { orderBy: 'rel_localization.internal_id_key', orderMode: 'desc', noCache };
+      const identities = await listEntities(['Identity'], ['name'], options);
+      expect(identities.edges.length).toEqual(6);
+      const result =
+        head(identities.edges).node.name === 'Western Europe' || head(identities.edges).node.name === 'Hietzing';
+      expect(result).toBeTruthy();
+      expect(last(identities.edges).node.name).toEqual('Western Europe');
+    } else {
+      const options = { orderBy: 'rel_localization.internal_id_key', orderMode: 'desc', noCache };
+      const identities = await listEntities(['Identity'], ['name'], options);
+      expect(identities.edges.length).toEqual(4);
+      expect(head(identities.edges).node.name).toEqual('Hietzing');
+      expect(last(identities.edges).node.name).toEqual('Europe');
+    }
   });
   it.each(noCacheCases)('should list entities with attribute filters (noCache = %s)', async (noCache) => {
     const filters = [
@@ -444,7 +459,11 @@ describe('Grakn relations listing', () => {
     expect(relations).not.toBeNull();
     expect(relations.length).toEqual(3);
     // eslint-disable-next-line prettier/prettier
-    checkRoles(relations.map(r => r.rel), 'user', 'usage'); // Roles with be set according to query specification
+    checkRoles(
+      relations.map((r) => r.rel),
+      'user',
+      'usage'
+    ); // Roles with be set according to query specification
   });
   it.each(noCacheCases)('should find relations inverse roles in grakn (noCache = %s)', async (noCache) => {
     // Getting everything specifying all roles respect the roles of the query
@@ -452,7 +471,11 @@ describe('Grakn relations listing', () => {
     expect(relations).not.toBeNull();
     expect(relations.length).toEqual(3);
     // eslint-disable-next-line prettier/prettier
-    checkRoles(relations.map(r => r.rel), 'usage', 'user');
+    checkRoles(
+      relations.map((r) => r.rel),
+      'usage',
+      'user'
+    );
   });
   it.each(noCacheCases)('should find relations partial right roles in grakn (noCache = %s)', async (noCache) => {
     // Getting everything with partial roles respect the roles of the query
@@ -460,7 +483,11 @@ describe('Grakn relations listing', () => {
     expect(relations).not.toBeNull();
     expect(relations.length).toEqual(3);
     // eslint-disable-next-line prettier/prettier
-    checkRoles(relations.map(r => r.rel), 'usage', 'user');
+    checkRoles(
+      relations.map((r) => r.rel),
+      'usage',
+      'user'
+    );
   });
   it.each(noCacheCases)('should find relations partial left roles in grakn (noCache = %s)', async (noCache) => {
     // Getting everything with partial roles respect the roles of the query
@@ -468,15 +495,19 @@ describe('Grakn relations listing', () => {
     expect(relations).not.toBeNull();
     expect(relations.length).toEqual(3);
     // eslint-disable-next-line prettier/prettier
-    checkRoles(relations.map(r => r.rel), 'usage', 'user');
+    checkRoles(
+      relations.map((r) => r.rel),
+      'usage',
+      'user'
+    );
   });
   it.each(noCacheCases)('should list relations (noCache = %s)', async (noCache) => {
     const stixRelations = await listRelations('stix_relation', { noCache });
     expect(stixRelations).not.toBeNull();
-    expect(stixRelations.edges.length).toEqual(19);
+    expect(stixRelations.edges.length).toEqual(21);
     const embeddedRelations = await listRelations('stix_relation_embedded', { noCache });
     expect(embeddedRelations).not.toBeNull();
-    expect(embeddedRelations.edges.length).toEqual(115);
+    expect(embeddedRelations.edges.length).toEqual(121);
   });
   it.each(noCacheCases)('should list relations with no id (noCache = %s)', (noCache) => {
     expect(listRelations('uses', { noCache, fromTypes: ['Attack-Pattern'] })).rejects.toThrow();
@@ -1003,7 +1034,7 @@ describe('Grakn entities distribution', () => {
     // const { startDate, endDate, operation, field, inferred, noCache } = options;
     const options = { field: 'entity_type', operation: 'count', limit: 20, noCache };
     const distribution = await distributionEntities('Stix-Domain', [], options);
-    expect(distribution.length).toEqual(18);
+    expect(distribution.length).toEqual(19);
     const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('malware')).toEqual(2);
     expect(aggregationMap.get('marking-definition')).toEqual(6);

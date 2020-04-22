@@ -9,7 +9,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { Link } from 'react-router-dom';
-import { Domain } from '@material-ui/icons';
+import { MapOutlined } from '@material-ui/icons';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { truncate } from '../../../../utils/String';
@@ -39,33 +39,33 @@ const styles = (theme) => ({
   },
 });
 
-class SectorParentSectorsComponent extends Component {
+class RegionSubRegionsComponent extends Component {
   render() {
-    const { t, classes, sector } = this.props;
+    const { t, classes, region } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {t('Parent sectors')}
+          {t('Subregions')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <List>
-            {sector.parentSectors.edges.map((parentSectorEdge) => {
-              const parentSector = parentSectorEdge.node;
+            {region.subRegions.edges.map((subRegionEdge) => {
+              const subRegion = subRegionEdge.node;
               return (
                 <ListItem
-                  key={parentSector.id}
+                  key={subRegion.id}
                   dense={true}
                   divider={true}
                   button={true}
                   component={Link}
-                  to={`/dashboard/entities/sectors/${parentSector.id}`}
+                  to={`/dashboard/entities/regions/${subRegion.id}`}
                 >
                   <ListItemIcon>
-                    <Domain color="primary" />
+                    <MapOutlined color="primary" />
                   </ListItemIcon>
                   <ListItemText
-                    primary={parentSector.name}
-                    secondary={truncate(parentSector.description, 50)}
+                    primary={subRegion.name}
+                    secondary={truncate(subRegion.description, 50)}
                   />
                 </ListItem>
               );
@@ -77,34 +77,31 @@ class SectorParentSectorsComponent extends Component {
   }
 }
 
-SectorParentSectorsComponent.propTypes = {
+RegionSubRegionsComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
-  attackPattern: PropTypes.object,
+  region: PropTypes.object,
 };
 
-const SectorParentSectors = createFragmentContainer(
-  SectorParentSectorsComponent,
-  {
-    sector: graphql`
-      fragment SectorParentSectors_sector on Sector {
-        id
-        parentSectors {
-          edges {
-            node {
-              id
-              name
-              description
-            }
-            relation {
-              id
-            }
+const RegionSubRegions = createFragmentContainer(RegionSubRegionsComponent, {
+  region: graphql`
+    fragment RegionSubRegions_region on Region {
+      id
+      subRegions {
+        edges {
+          node {
+            id
+            name
+            description
+          }
+          relation {
+            id
           }
         }
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
-export default compose(inject18n, withStyles(styles))(SectorParentSectors);
+export default compose(inject18n, withStyles(styles))(RegionSubRegions);

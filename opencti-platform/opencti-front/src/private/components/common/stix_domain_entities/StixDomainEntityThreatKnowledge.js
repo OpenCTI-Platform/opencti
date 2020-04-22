@@ -8,7 +8,7 @@ import CardContent from '@material-ui/core/CardContent';
 import Grid from '@material-ui/core/Grid';
 import { withStyles } from '@material-ui/core/styles';
 import { ShieldSearch } from 'mdi-material-ui';
-import { Assignment, DeviceHub } from '@material-ui/icons';
+import { AssignmentOutlined, DeviceHubOutlined } from '@material-ui/icons';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
@@ -154,7 +154,7 @@ class StixDomainEntityThreatKnowledge extends Component {
             </Grid>
           </Grid>
         </Drawer>
-        <Grid container={true} spacing={2}>
+        <Grid container={true} spacing={3}>
           <Grid item={true} xs={4}>
             <Card
               raised={true}
@@ -183,7 +183,10 @@ class StixDomainEntityThreatKnowledge extends Component {
                           {t('Total reports')}
                         </div>
                         <div className={classes.icon}>
-                          <Assignment color="inherit" fontSize="large" />
+                          <AssignmentOutlined
+                            color="inherit"
+                            fontSize="large"
+                          />
                         </div>
                       </CardContent>
                     );
@@ -270,7 +273,7 @@ class StixDomainEntityThreatKnowledge extends Component {
                           {t('Total relations')}
                         </div>
                         <div className={classes.icon}>
-                          <DeviceHub color="inherit" fontSize="large" />
+                          <DeviceHubOutlined color="inherit" fontSize="large" />
                         </div>
                       </CardContent>
                     );
@@ -285,7 +288,7 @@ class StixDomainEntityThreatKnowledge extends Component {
             </Card>
           </Grid>
         </Grid>
-        <Grid container={true} spacing={2}>
+        <Grid container={true} spacing={3}>
           <Grid item={true} xs={4} style={{ marginBottom: 50 }}>
             <EntityReportsPie
               entityId={stixDomainEntityId}

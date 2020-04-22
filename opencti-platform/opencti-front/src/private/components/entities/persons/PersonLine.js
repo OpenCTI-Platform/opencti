@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRight, Person } from '@material-ui/icons';
+import { KeyboardArrowRightOutlined, PersonOutlined } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import StixObjectTags from '../../common/stix_object/StixObjectTags';
@@ -57,7 +57,7 @@ class PersonLineComponent extends Component {
         to={`/dashboard/entities/persons/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Person />
+          <PersonOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -94,7 +94,7 @@ class PersonLineComponent extends Component {
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
+          <KeyboardArrowRightOutlined />
         </ListItemIcon>
       </ListItem>
     );
@@ -144,7 +144,7 @@ class PersonLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Person />
+          <PersonOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -177,7 +177,7 @@ class PersonLineDummyComponent extends Component {
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
+          <KeyboardArrowRightOutlined />
         </ListItemIcon>
       </ListItem>
     );

@@ -34,10 +34,11 @@ const inlineStyles = {
     color: '#5c7bf5',
   },
   grey: {
-    backgroundColor: '#424242',
+    backgroundColor: 'rgba(96, 125, 139, 0.08)',
+    color: '#607d8b',
   },
   orange: {
-    backgroundColor: 'gba(255, 152, 0, 0.08)',
+    backgroundColor: 'rgba(255, 152, 0, 0.08)',
     color: '#ff9800',
   },
 };

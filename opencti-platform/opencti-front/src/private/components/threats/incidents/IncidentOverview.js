@@ -3,14 +3,13 @@ import * as PropTypes from 'prop-types';
 import { compose, map, pathOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import Markdown from 'react-markdown';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
 import ItemCreator from '../../../../components/ItemCreator';
-import { truncate } from '../../../../utils/String';
 import ItemMarking from '../../../../components/ItemMarking';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
 const styles = () => ({
   paper: {
@@ -82,9 +81,10 @@ class IncidentOverviewComponent extends Component {
           >
             {t('Description')}
           </Typography>
-          <Markdown
+          <ExpandableMarkdown
             className="markdown"
-            source={truncate(incident.description, 250)}
+            source={incident.description}
+            limit={250}
           />
         </Paper>
       </div>
@@ -126,7 +126,4 @@ const IncidentOverview = createFragmentContainer(IncidentOverviewComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(IncidentOverview);
+export default compose(inject18n, withStyles(styles))(IncidentOverview);

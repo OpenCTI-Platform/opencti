@@ -1493,6 +1493,7 @@ type RegionConnection {
 type RegionEdge {
   cursor: String!
   node: Region!
+  relation: RelationEmbedded
 }
 type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
@@ -1508,6 +1509,9 @@ type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   modified: DateTime
   revoked: Boolean
   graph_data: String
+  parentRegions: RegionConnection
+  subRegions: RegionConnection
+  isSubRegion: Boolean
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
@@ -3873,8 +3877,6 @@ type MarkingDefinitionEditMutations {
   fieldPatch(input: EditInput): MarkingDefinition
   contextPatch(input: EditContext): MarkingDefinition
   contextClean: MarkingDefinition
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): MarkingDefinition
 }
 
 # ExternalReference

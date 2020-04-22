@@ -294,7 +294,7 @@ class CurationToolBar extends Component {
           </div>
           <div className={classes.container}>
             <Typography
-              variant="h2"
+              variant="h4"
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
@@ -350,7 +350,7 @@ class CurationToolBar extends Component {
               ))}
             </List>
             <Typography
-              variant="h2"
+              variant="h4"
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >

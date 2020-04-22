@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import Markdown from 'react-markdown';
 import { ExpandMore, ExpandLess } from '@material-ui/icons';
 import IconButton from '@material-ui/core/IconButton';
-import Grid from '@material-ui/core/Grid';
 import { truncate } from '../utils/String';
 
 const ExpandableMarkdown = (props) => {
@@ -15,21 +14,17 @@ const ExpandableMarkdown = (props) => {
   const shouldBeTruncated = (source || '').length > limit;
 
   return (
-    <Grid container={true} spacing={1}>
-      <Grid item xs={shouldBeTruncated ? 11 : 12}>
-        <Markdown
-          {...props}
-          source={expand ? source : truncate(source, limit)}
-        />
-      </Grid>
+    <div style={{ position: 'relative' }}>
       {shouldBeTruncated && (
-        <Grid item xs={1}>
+        <div style={{ position: 'absolute', top: -30, right: 0 }}>
           <IconButton onClick={onClick}>
             {expand ? <ExpandLess /> : <ExpandMore />}
           </IconButton>
-        </Grid>
+        </div>
       )}
-    </Grid>
+      <Markdown {...props} source={expand ? source : truncate(source, limit)} />
+      <div className="clearfix" />
+    </div>
   );
 };
 
