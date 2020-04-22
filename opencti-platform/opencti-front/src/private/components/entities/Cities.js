@@ -19,7 +19,7 @@ class Cities extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'Cities-view',
+      'view-cities',
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
@@ -35,7 +35,7 @@ class Cities extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'Cities-view',
+      'view-cities',
       this.state,
     );
   }

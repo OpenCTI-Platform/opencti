@@ -101,6 +101,9 @@ const inlineStyles = {
     marginRight: 24,
     marginLeft: 24,
     color: '#ffffff',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   itemType: {
     width: 100,
@@ -109,6 +112,9 @@ const inlineStyles = {
     marginRight: 24,
     marginLeft: 24,
     color: '#ffffff',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   itemDate: {
     width: 80,
@@ -116,6 +122,9 @@ const inlineStyles = {
     maxWidth: 80,
     marginRight: 24,
     color: '#ffffff',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
 };
 
@@ -242,7 +251,7 @@ class Dashboard extends Component {
             'You do not have any access to the knowledge of this OpenCTI instance.',
           )}
         >
-          <Grid container={true} spacing={2}>
+          <Grid container={true} spacing={3}>
             <Grid item={true} lg={3} xs={6}>
               <Card classes={{ root: classes.card }} style={{ height: 110 }}>
                 <QueryRenderer
@@ -414,9 +423,9 @@ class Dashboard extends Component {
               </Card>
             </Grid>
           </Grid>
-          <Grid container={true} spacing={2}>
+          <Grid container={true} spacing={3}>
             <Grid item={true} lg={6} xs={12} style={{ marginBottom: 30 }}>
-              <Typography variant="h2" gutterBottom={true}>
+              <Typography variant="h4" gutterBottom={true}>
                 {t('Last reports')}
               </Typography>
               <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -470,7 +479,7 @@ class Dashboard extends Component {
                                 <div style={inlineStyles.itemDate}>
                                   {nsd(report.published)}
                                 </div>
-                                <div style={{ marginRight: 20 }}>
+                                <div style={{ width: 110, paddingRight: 20 }}>
                                   {markingDefinition ? (
                                     <ItemMarking
                                       key={markingDefinition.node.id}
@@ -493,7 +502,7 @@ class Dashboard extends Component {
               </Paper>
             </Grid>
             <Grid item={true} lg={6} xs={12} style={{ marginBottom: 30 }}>
-              <Typography variant="h2" gutterBottom={true}>
+              <Typography variant="h4" gutterBottom={true}>
                 {t('Last observables')}
               </Typography>
               <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -546,7 +555,7 @@ class Dashboard extends Component {
                                   <div style={inlineStyles.itemDate}>
                                     {nsd(stixObservable.created_at)}
                                   </div>
-                                  <div style={{ marginRight: 20 }}>
+                                  <div style={{ width: 110, paddingRight: 20 }}>
                                     {markingDefinition ? (
                                       <ItemMarking
                                         key={markingDefinition.node.id}

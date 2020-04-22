@@ -41,7 +41,7 @@ class Sectors extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'Sectors-view',
+      'view-sectors',
     );
     this.state = {
       searchTerm: propOr('', 'searchTerm', params),
@@ -53,7 +53,7 @@ class Sectors extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'Sectors-view',
+      'view-sectors',
       this.state,
     );
   }

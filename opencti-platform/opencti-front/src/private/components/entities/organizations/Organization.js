@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose, contains } from 'ramda';
+import { compose, dissoc, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -17,6 +17,10 @@ import EntityIncidentsChart from '../../threats/incidents/EntityIncidentsChart';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 
 const styles = () => ({
   container: {
@@ -27,19 +31,43 @@ const styles = () => ({
   },
 });
 
-const organizationTypesForAuthorMode = ['vendor', 'csirt', 'partner'];
-
 class OrganizationComponent extends Component {
+  constructor(props) {
+    super(props);
+    const params = buildViewParamsFromUrlAndStorage(
+      props.history,
+      props.location,
+      'view-organization',
+    );
+    this.state = {
+      viewAs: propOr('knowledge', 'viewAs', params),
+    };
+  }
+
+  saveView() {
+    saveViewParameters(
+      this.props.history,
+      this.props.location,
+      'view-organization',
+      dissoc('filters', this.state),
+    );
+  }
+
+  handleChangeViewAs(event) {
+    this.setState({ viewAs: event.target.value }, () => this.saveView());
+  }
+
   render() {
     const { classes, organization } = this.props;
-    if (
-      contains(organization.organization_class, organizationTypesForAuthorMode)
-    ) {
+    const { viewAs } = this.state;
+    if (viewAs === 'author') {
       return (
         <div className={classes.container}>
           <StixDomainEntityHeader
             stixDomainEntity={organization}
             PopoverComponent={<OrganizationPopover />}
+            onViewAs={this.handleChangeViewAs.bind(this)}
+            viewAs={this.state.viewAs}
           />
           <Grid
             container={true}
@@ -78,6 +106,8 @@ class OrganizationComponent extends Component {
         <StixDomainEntityHeader
           stixDomainEntity={organization}
           PopoverComponent={<OrganizationPopover />}
+          onViewAs={this.handleChangeViewAs.bind(this)}
+          viewAs={this.state.viewAs}
         />
         <Grid
           container={true}
@@ -94,6 +124,7 @@ class OrganizationComponent extends Component {
             <EntityLastReports entityId={organization.id} />
           </Grid>
         </Grid>
+        <StixObjectNotes entityId={organization.id} />
         <Grid
           container={true}
           spacing={3}

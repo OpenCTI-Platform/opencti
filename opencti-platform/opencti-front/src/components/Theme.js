@@ -33,13 +33,6 @@ export default {
       fontWeight: 400,
       fontSize: 22,
     },
-    h2: {
-      margin: '0 0 10px 0',
-      padding: 0,
-      color: '#ffffff',
-      fontWeight: 400,
-      fontSize: 15,
-    },
     h3: {
       margin: '0 0 10px 0',
       padding: 0,
@@ -50,9 +43,10 @@ export default {
     h4: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: '#ffffff',
-      fontWeight: 400,
-      fontSize: 13,
+      textTransform: 'uppercase',
+      fontSize: 12,
+      fontWeight: 500,
+      color: '#a8a8a8',
     },
     h5: {
       color: '#ffffff',

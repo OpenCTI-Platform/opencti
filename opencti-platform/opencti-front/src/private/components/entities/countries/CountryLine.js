@@ -7,11 +7,11 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRight, Flag } from '@material-ui/icons';
+import { KeyboardArrowRightOutlined, FlagOutlined } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
@@ -56,7 +56,7 @@ class CountryLineComponent extends Component {
         to={`/dashboard/entities/countries/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Flag />
+          <FlagOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -83,7 +83,7 @@ class CountryLineComponent extends Component {
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
+          <KeyboardArrowRightOutlined />
         </ListItemIcon>
       </ListItem>
     );
@@ -119,7 +119,7 @@ class CountryLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Flag />
+          <FlagOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -146,7 +146,7 @@ class CountryLineDummyComponent extends Component {
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
+          <KeyboardArrowRightOutlined />
         </ListItemIcon>
       </ListItem>
     );

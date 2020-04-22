@@ -4,7 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { Person, ArrowForwardIos } from '@material-ui/icons';
+import { PersonOutlined, ArrowForwardIosOutlined } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -56,10 +56,10 @@ class TopMenuPerson extends Component {
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <Person className={classes.icon} fontSize="small" />
+          <PersonOutlined className={classes.icon} fontSize="small" />
           {t('Persons')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined color="inherit" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
           to={`/dashboard/entities/persons/${personId}`}

@@ -115,6 +115,9 @@ const i18n = {
       Roles: 'Rôles',
       Subsectors: 'Sous-secteurs',
       'Parent sectors': 'Secteurs parents',
+      Subregions: 'Sous-régions',
+      'Parent regions': 'Régions parentes',
+      'View as': 'Voir comme',
       Registration: 'Inscription',
       'are updating...': 'modifient actuellement...',
       'is updating...': 'modifie actuellement...',
@@ -504,6 +507,7 @@ const i18n = {
       Date: 'Date',
       'Start date': 'Date de début',
       'End date': 'Date de fin',
+      'Knowledge entity': 'Entité de connaissance',
       // Properties
       Entity: 'Entité',
       Widget: 'Widget',

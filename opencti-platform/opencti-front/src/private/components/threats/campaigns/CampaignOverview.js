@@ -10,6 +10,7 @@ import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
 import ItemCreator from '../../../../components/ItemCreator';
 import ItemMarking from '../../../../components/ItemMarking';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
 const styles = () => ({
   paper: {
@@ -81,7 +82,11 @@ class CampaignOverviewComponent extends Component {
           >
             {t('Description')}
           </Typography>
-          <Markdown className="markdown" source={campaign.description} />
+          <ExpandableMarkdown
+            className="markdown"
+            source={campaign.description}
+            limit={250}
+          />
         </Paper>
       </div>
     );
@@ -122,7 +127,4 @@ const CampaignOverview = createFragmentContainer(CampaignOverviewComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(CampaignOverview);
+export default compose(inject18n, withStyles(styles))(CampaignOverview);

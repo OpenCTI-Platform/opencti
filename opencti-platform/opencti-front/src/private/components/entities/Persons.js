@@ -29,7 +29,7 @@ class Persons extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'Persons-view',
+      'view-persons',
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
@@ -46,7 +46,7 @@ class Persons extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'Persons-view',
+      'view-persons',
       dissoc('filters', this.state),
     );
   }

@@ -4,11 +4,11 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { BugReport } from '@material-ui/icons';
+import { BugReportOutlined } from '@material-ui/icons';
 import { LockPattern, Application, ProgressWrench } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   button: {
     marginRight: theme.spacing(2),
     padding: '2px 5px 2px 5px',
@@ -99,7 +99,7 @@ class TopMenuTechniques extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <BugReport className={classes.icon} fontSize="small" />
+          <BugReportOutlined className={classes.icon} fontSize="small" />
           {t('Vulnerabilities')}
         </Button>
       </div>

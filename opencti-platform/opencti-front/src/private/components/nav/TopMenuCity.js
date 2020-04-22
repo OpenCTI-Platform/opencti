@@ -4,8 +4,8 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIos } from '@material-ui/icons';
-import { CityVariant } from 'mdi-material-ui';
+import { ArrowForwardIosOutlined } from '@material-ui/icons';
+import { CityVariantOutline } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -57,10 +57,10 @@ class TopMenuCity extends Component {
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <CityVariant className={classes.icon} fontSize="small" />
+          <CityVariantOutline className={classes.icon} fontSize="small" />
           {t('Cities')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined color="inherit" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
           to={`/dashboard/entities/cities/${cityId}`}

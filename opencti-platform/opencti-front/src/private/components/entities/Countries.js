@@ -21,7 +21,7 @@ class Countries extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'Countries-view',
+      'view-countries',
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
@@ -37,7 +37,7 @@ class Countries extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'Countries-view',
+      'view-countries',
       this.state,
     );
   }

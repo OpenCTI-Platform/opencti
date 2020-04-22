@@ -88,7 +88,7 @@ class Inferences extends Component {
         <Typography variant="h1" gutterBottom={true}>
           {t('Inference rules')}
         </Typography>
-        <Grid container={true} spacing={2}>
+        <Grid container={true} spacing={3}>
           <QueryRenderer
             query={inferencesQuery}
             render={({ props }) => {

@@ -26,7 +26,7 @@ The goal is to create a comprehensive tool allowing users to capitalize technica
 
 Once data has been capitalized and processed by the analysts within OpenCTI, new relations [may be inferred](https://www.notion.so/luatix/Relations-8313e7bbec8b4c9397099f84d5e78b27#def25059b54740a789bc848dcfb8d526) from existing ones to facilitate the understanding and the representation of this information. This allow the user to extract and leverage meaningful knowledge from the raw data.
 
-OpenCTI not only allows [imports](https://www.notion.so/luatix/Import-Export-7dc143dfbb6147b0881080487ed9db33#4ffd142e88ad489abc3370ea8f738a82) but also [exports of data](https://www.notion.so/luatix/Import-Export-7dc143dfbb6147b0881080487ed9db33#8dfec135e334415fb18f1f169fe89804) under different formats (CSV, STIX2 bundles, etc.). [Connectors](https://www.notion.so/luatix/3bb8723a91cc42488387ce6a9f06385f?v=f20da28ed8aa4adf879fd9ea6ee7faa0) are currently developped to accelerate interactions between the tool and other platforms.
+OpenCTI not only allows [imports](https://www.notion.so/luatix/Import-Export-7dc143dfbb6147b0881080487ed9db33#4ffd142e88ad489abc3370ea8f738a82) but also [exports of data](https://www.notion.so/luatix/Import-Export-7dc143dfbb6147b0881080487ed9db33#8dfec135e334415fb18f1f169fe89804) under different formats (CSV, STIX2 bundles, etc.). [Connectors](https://www.notion.so/luatix/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76) are currently developped to accelerate interactions between the tool and other platforms.
 
 ## Documentation and demonstration
 

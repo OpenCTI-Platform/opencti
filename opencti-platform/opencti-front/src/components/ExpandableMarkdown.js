@@ -15,21 +15,17 @@ const ExpandableMarkdown = (props) => {
   const shouldBeTruncated = (source || '').length > limit;
 
   return (
-    <Grid container={true} spacing={1}>
-      <Grid item xs={shouldBeTruncated ? 11 : 12}>
-        <Markdown
-          {...props}
-          source={expand ? source : truncate(source, limit)}
-        />
-      </Grid>
+    <div style={{ position: 'relative' }}>
       {shouldBeTruncated && (
-        <Grid item xs={1}>
+        <div style={{ position: 'absolute', top: -30, right: 0 }}>
           <IconButton onClick={onClick}>
             {expand ? <ExpandLess /> : <ExpandMore />}
           </IconButton>
-        </Grid>
+        </div>
       )}
-    </Grid>
+      <Markdown {...props} source={expand ? source : truncate(source, limit)} />
+      <div className="clearfix" />
+    </div>
   );
 };
 

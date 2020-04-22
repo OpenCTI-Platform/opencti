@@ -14,7 +14,7 @@ const styles = () => ({
     fontSize: 12,
   },
   diffDescription: {
-    margin: '5px 0 0 10px',
+    margin: '0 0 0 10px',
     float: 'left',
   },
   diffIcon: {
@@ -39,7 +39,6 @@ const inlineStyles = {
   blueGrey: {
     backgroundColor: 'rgba(96, 125, 139, 0.08)',
     color: '#607d8b',
-    fontStyle: 'italic',
   },
 };
 

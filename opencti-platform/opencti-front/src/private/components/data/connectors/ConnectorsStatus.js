@@ -232,7 +232,6 @@ class ConnectorsStatusComponent extends Component {
     const sortedConnectors = sort(data.connectors);
     return (
       <Card
-        raised={true}
         classes={{ root: classes.card }}
         style={{ maxHeight: '100vh', height: '100%' }}
       >

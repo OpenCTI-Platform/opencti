@@ -5,9 +5,13 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import {
-  Person, AccountBalance, Flag, Domain, Map,
+  PersonOutlined,
+  AccountBalanceOutlined,
+  FlagOutlined,
+  DomainOutlined,
+  MapOutlined,
 } from '@material-ui/icons';
-import { CityVariant } from 'mdi-material-ui';
+import { CityVariantOutline } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = (theme) => ({
@@ -44,7 +48,7 @@ class TopMenuTechniques extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <Domain className={classes.icon} fontSize="small" />
+          <DomainOutlined className={classes.icon} fontSize="small" />
           {t('Sectors')}
         </Button>
         <Button
@@ -63,7 +67,7 @@ class TopMenuTechniques extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <Map className={classes.icon} fontSize="small" />
+          <MapOutlined className={classes.icon} fontSize="small" />
           {t('Regions')}
         </Button>
         <Button
@@ -82,7 +86,7 @@ class TopMenuTechniques extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <Flag className={classes.icon} fontSize="small" />
+          <FlagOutlined className={classes.icon} fontSize="small" />
           {t('Countries')}
         </Button>
         <Button
@@ -101,7 +105,7 @@ class TopMenuTechniques extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <CityVariant className={classes.icon} fontSize="small" />
+          <CityVariantOutline className={classes.icon} fontSize="small" />
           {t('Cities')}
         </Button>
         <Button
@@ -120,7 +124,7 @@ class TopMenuTechniques extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <AccountBalance className={classes.icon} fontSize="small" />
+          <AccountBalanceOutlined className={classes.icon} fontSize="small" />
           {t('Organizations')}
         </Button>
         <Button
@@ -139,7 +143,7 @@ class TopMenuTechniques extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <Person className={classes.icon} fontSize="small" />
+          <PersonOutlined className={classes.icon} fontSize="small" />
           {t('Persons')}
         </Button>
       </div>

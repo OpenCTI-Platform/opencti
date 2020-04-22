@@ -7,7 +7,7 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Grid from '@material-ui/core/Grid';
 import { withStyles } from '@material-ui/core/styles';
-import { Assignment, DeviceHub } from '@material-ui/icons';
+import { AssignmentOutlined, DeviceHubOutlined } from '@material-ui/icons';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
@@ -94,7 +94,7 @@ class StixDomainEntityKnowledge extends Component {
     )}/${stixDomainEntityId}/knowledge`;
     return (
       <div>
-        <Grid container={true} spacing={2}>
+        <Grid container={true} spacing={3}>
           <Grid item={true} xs={6}>
             <Card
               raised={true}
@@ -123,7 +123,7 @@ class StixDomainEntityKnowledge extends Component {
                           {t('Total reports')}
                         </div>
                         <div className={classes.icon}>
-                          <Assignment color="inherit" fontSize="large" />
+                          <AssignmentOutlined color="inherit" fontSize="large" />
                         </div>
                       </CardContent>
                     );
@@ -166,7 +166,7 @@ class StixDomainEntityKnowledge extends Component {
                           {t('Total direct relations')}
                         </div>
                         <div className={classes.icon}>
-                          <DeviceHub color="inherit" fontSize="large" />
+                          <DeviceHubOutlined color="inherit" fontSize="large" />
                         </div>
                       </CardContent>
                     );
@@ -181,7 +181,7 @@ class StixDomainEntityKnowledge extends Component {
             </Card>
           </Grid>
         </Grid>
-        <Grid container={true} spacing={2}>
+        <Grid container={true} spacing={3}>
           <Grid item={true} xs={6} style={{ marginBottom: 50 }}>
             <EntityReportsPie entityId={stixDomainEntityId} />
           </Grid>
@@ -195,7 +195,7 @@ class StixDomainEntityKnowledge extends Component {
             />
           </Grid>
         </Grid>
-        <Grid container={true} spacing={2}>
+        <Grid container={true} spacing={3}>
           <Grid item={true} xs={6} style={{ marginBottom: 50 }}>
             <EntityStixRelationsChart
               entityId={stixDomainEntityId}

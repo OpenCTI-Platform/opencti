@@ -16,7 +16,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import { FileOutline, ProgressUpload } from 'mdi-material-ui';
-import { Delete, GetApp } from '@material-ui/icons';
+import { DeleteOutlined, GetAppOutlined } from '@material-ui/icons';
 import Tooltip from '@material-ui/core/Tooltip';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -171,7 +171,7 @@ class FileLineComponent extends Component {
                     aria-haspopup="true"
                     color="primary"
                   >
-                    <GetApp />
+                    <GetAppOutlined />
                   </IconButton>
                 </span>
               </Tooltip>
@@ -185,7 +185,7 @@ class FileLineComponent extends Component {
                     color="secondary"
                     onClick={this.handleRemoveJob.bind(this, file.id)}
                   >
-                    <Delete />
+                    <DeleteOutlined />
                   </IconButton>
                 </span>
               </Tooltip>
@@ -197,7 +197,7 @@ class FileLineComponent extends Component {
                     color="primary"
                     onClick={this.handleRemoveFile.bind(this, file.id)}
                   >
-                    <Delete />
+                    <DeleteOutlined />
                   </IconButton>
                 </span>
               </Tooltip>

@@ -1,4 +1,4 @@
-import { addRegion, findAll, findById } from '../domain/region';
+import { addRegion, findAll, findById, parentRegions, subRegions, isSubRegion } from '../domain/region';
 import {
   stixDomainEntityEditContext,
   stixDomainEntityCleanContext,
@@ -12,6 +12,11 @@ const regionResolvers = {
   Query: {
     region: (_, { id }) => findById(id),
     regions: (_, args) => findAll(args),
+  },
+  Region: {
+    parentRegions: (region) => parentRegions(region.id),
+    subRegions: (region) => subRegions(region.id),
+    isSubRegion: (region, args) => isSubRegion(region.id, args),
   },
   Mutation: {
     regionEdit: (_, { id }, { user }) => ({

@@ -63,7 +63,6 @@ class WorkersStatusComponent extends Component {
     const { consumers, overview } = data.rabbitMQMetrics;
     return (
       <Card
-        raised={true}
         classes={{ root: classes.card }}
         style={{ maxHeight: '100vh', height: '100%' }}
       >
@@ -75,14 +74,12 @@ class WorkersStatusComponent extends Component {
         <CardContent style={{ paddingTop: 0, height: '100%' }}>
           <Grid
             container={true}
-            spacing={2}
+            spacing={3}
             style={{ paddingBottom: 0, height: '100%' }}
           >
             <Grid item={true} xs={3} style={{ height: '25%' }}>
               <div className={classes.metric}>
-                <div className={classes.number}>
-                  {n(consumers)}
-                </div>
+                <div className={classes.number}>{n(consumers)}</div>
                 <div className={classes.title}>{t('Connected workers')}</div>
               </div>
             </Grid>
@@ -164,7 +161,4 @@ const WorkersStatus = createRefetchContainer(
   workersStatusQuery,
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(WorkersStatus);
+export default compose(inject18n, withStyles(styles))(WorkersStatus);

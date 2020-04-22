@@ -121,7 +121,11 @@ const TopBar = ({
     }
   };
   return (
-    <AppBar position="fixed" className={classes.appBar}>
+    <AppBar
+      position="fixed"
+      className={classes.appBar}
+      style={{ backgroundColor: '#1b2226' }}
+    >
       <Toolbar>
         <IconButton
           classes={{ root: classes.logoButton }}

@@ -4,7 +4,7 @@ import { Link, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIos, Public } from '@material-ui/icons';
+import { ArrowForwardIosOutlined, PublicOutlined } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/Security';
 
@@ -53,10 +53,10 @@ class TopMenuThreatActor extends Component {
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <Public className={classes.icon} fontSize="small" />
+          <PublicOutlined className={classes.icon} fontSize="small" />
           {t('Threat actors')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined color="inherit" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
           to={`/dashboard/threats/threat_actors/${threatActorId}`}
