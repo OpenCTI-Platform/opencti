@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { Public } from '@material-ui/icons';
 import {
-  Biohazard, Diamond, Fire, ChessKnight,
+  Biohazard, DiamondOutline, Fire, ChessKnight,
 } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
@@ -69,7 +69,7 @@ class TopMenuThreats extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <Diamond
+          <DiamondOutline
             className={width > 950 ? classes.icon : ''}
             fontSize="small"
           />

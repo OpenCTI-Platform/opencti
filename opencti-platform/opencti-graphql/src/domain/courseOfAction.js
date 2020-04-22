@@ -21,7 +21,7 @@ export const findAll = (args) => {
 };
 
 export const addCourseOfAction = async (user, courseOfAction) => {
-  const created = await createEntity(courseOfAction, 'Course-Of-Action');
+  const created = await createEntity(user, courseOfAction, 'Course-Of-Action');
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 

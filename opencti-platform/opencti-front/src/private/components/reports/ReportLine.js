@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRight, Description } from '@material-ui/icons';
+import { KeyboardArrowRightOutlined, DescriptionOutlined } from '@material-ui/icons';
 import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
@@ -59,7 +59,7 @@ class ReportLineComponent extends Component {
         to={`/dashboard/reports/all/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Description />
+          <DescriptionOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -125,7 +125,7 @@ class ReportLineComponent extends Component {
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
+          <KeyboardArrowRightOutlined />
         </ListItemIcon>
       </ListItem>
     );
@@ -190,7 +190,7 @@ class ReportLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Description />
+          <DescriptionOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -235,7 +235,7 @@ class ReportLineDummyComponent extends Component {
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
+          <KeyboardArrowRightOutlined />
         </ListItemIcon>
       </ListItem>
     );

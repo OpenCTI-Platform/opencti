@@ -14,7 +14,10 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import CardContent from '@material-ui/core/CardContent';
 import {
-  Assignment, Layers, Work, Description,
+  AssignmentOutlined,
+  LayersOutlined,
+  WorkOutline,
+  DescriptionOutlined,
 } from '@material-ui/icons';
 import { Database, HexagonOutline } from 'mdi-material-ui';
 import BarChart from 'recharts/lib/chart/BarChart';
@@ -45,15 +48,15 @@ const styles = (theme) => ({
   },
   paper: {
     height: '100%',
-    minHeight: '100%',
+    minHeight: 200,
     margin: '10px 0 20px 0',
     padding: 0,
     borderRadius: 6,
   },
   item: {
-    height: 60,
-    minHeight: 60,
-    maxHeight: 60,
+    height: 50,
+    minHeight: 50,
+    maxHeight: 50,
     paddingRight: 0,
   },
   itemText: {
@@ -67,18 +70,21 @@ const styles = (theme) => ({
     color: theme.palette.secondary.main,
   },
   number: {
+    marginTop: 10,
     float: 'left',
-    color: theme.palette.primary.main,
-    fontSize: 40,
+    fontSize: 30,
   },
   title: {
     marginTop: 5,
     textTransform: 'uppercase',
     fontSize: 12,
+    fontWeight: 500,
+    color: '#a8a8a8',
   },
   icon: {
     position: 'absolute',
-    top: 30,
+    color: theme.palette.primary.main,
+    top: 35,
     right: 20,
   },
   graphContainer: {
@@ -88,13 +94,27 @@ const styles = (theme) => ({
 });
 
 const inlineStyles = {
-  itemDate: {
-    fontSize: 11,
+  itemAuthor: {
     width: 80,
     minWidth: 80,
     maxWidth: 80,
     marginRight: 24,
-    textAlign: 'right',
+    marginLeft: 24,
+    color: '#ffffff',
+  },
+  itemType: {
+    width: 100,
+    minWidth: 100,
+    maxWidth: 100,
+    marginRight: 24,
+    marginLeft: 24,
+    color: '#ffffff',
+  },
+  itemDate: {
+    width: 80,
+    minWidth: 80,
+    maxWidth: 80,
+    marginRight: 24,
     color: '#ffffff',
   },
 };
@@ -133,6 +153,11 @@ const dashboardLastReportsQuery = graphql`
           name
           description
           published
+          createdByRef {
+            node {
+              name
+            }
+          }
           markingDefinitions {
             edges {
               node {
@@ -174,7 +199,10 @@ const dashboardLastObservablesQuery = graphql`
 `;
 
 const dashboardStixDomainEntitiesNumberQuery = graphql`
-  query DashboardStixDomainEntitiesNumberQuery($types: [String]$endDate: DateTime) {
+  query DashboardStixDomainEntitiesNumberQuery(
+    $types: [String]
+    $endDate: DateTime
+  ) {
     stixDomainEntitiesNumber(types: $types, endDate: $endDate) {
       total
       count
@@ -183,7 +211,10 @@ const dashboardStixDomainEntitiesNumberQuery = graphql`
 `;
 
 const dashboardStixObservablesNumberQuery = graphql`
-  query DashboardStixObservablesNumberQuery($types: [String], $endDate: DateTime) {
+  query DashboardStixObservablesNumberQuery(
+    $types: [String]
+    $endDate: DateTime
+  ) {
     stixObservablesNumber(types: $types, endDate: $endDate) {
       total
       count
@@ -213,11 +244,7 @@ class Dashboard extends Component {
         >
           <Grid container={true} spacing={2}>
             <Grid item={true} lg={3} xs={6}>
-              <Card
-                raised={true}
-                classes={{ root: classes.card }}
-                style={{ height: 120 }}
-              >
+              <Card classes={{ root: classes.card }} style={{ height: 110 }}>
                 <QueryRenderer
                   query={dashboardStixDomainEntitiesNumberQuery}
                   variables={{ endDate: dayAgo() }}
@@ -227,15 +254,11 @@ class Dashboard extends Component {
                       const difference = total - props.stixDomainEntitiesNumber.count;
                       return (
                         <CardContent>
-                          <div className={classes.number}>{n(total)}</div>
-                          <ItemNumberDifference
-                            difference={difference}
-                            description="24h"
-                          />
-                          <div className="clearfix" />
                           <div className={classes.title}>
                             {t('Total entities')}
                           </div>
+                          <div className={classes.number}>{n(total)}</div>
+                          <ItemNumberDifference difference={difference} />
                           <div className={classes.icon}>
                             <Database color="inherit" fontSize="large" />
                           </div>
@@ -246,11 +269,7 @@ class Dashboard extends Component {
                   }}
                 />
               </Card>
-              <Card
-                raised={true}
-                classes={{ root: classes.card }}
-                style={{ height: 120 }}
-              >
+              <Card classes={{ root: classes.card }} style={{ height: 110 }}>
                 <QueryRenderer
                   query={dashboardStixDomainEntitiesNumberQuery}
                   variables={{ types: ['report'], endDate: dayAgo() }}
@@ -260,17 +279,16 @@ class Dashboard extends Component {
                       const difference = total - props.stixDomainEntitiesNumber.count;
                       return (
                         <CardContent>
-                          <div className={classes.number}>{n(total)}</div>
-                          <ItemNumberDifference
-                            difference={difference}
-                            description="24h"
-                          />
-                          <div className="clearfix" />
                           <div className={classes.title}>
                             {t('Total reports')}
                           </div>
+                          <div className={classes.number}>{n(total)}</div>
+                          <ItemNumberDifference difference={difference} />
                           <div className={classes.icon}>
-                            <Assignment color="inherit" fontSize="large" />
+                            <AssignmentOutlined
+                              color="inherit"
+                              fontSize="large"
+                            />
                           </div>
                         </CardContent>
                       );
@@ -281,11 +299,7 @@ class Dashboard extends Component {
               </Card>
             </Grid>
             <Grid item={true} lg={3} xs={6}>
-              <Card
-                raised={true}
-                classes={{ root: classes.card }}
-                style={{ height: 120 }}
-              >
+              <Card classes={{ root: classes.card }} style={{ height: 110 }}>
                 <QueryRenderer
                   query={dashboardStixObservablesNumberQuery}
                   variables={{ endDate: dayAgo() }}
@@ -295,17 +309,13 @@ class Dashboard extends Component {
                       const difference = total - props.stixObservablesNumber.count;
                       return (
                         <CardContent>
-                          <div className={classes.number}>{n(total)}</div>
-                          <ItemNumberDifference
-                            difference={difference}
-                            description="24h"
-                          />
-                          <div className="clearfix" />
                           <div className={classes.title}>
                             {t('Total observables')}
                           </div>
+                          <div className={classes.number}>{n(total)}</div>
+                          <ItemNumberDifference difference={difference} />
                           <div className={classes.icon}>
-                            <Layers color="inherit" fontSize="large" />
+                            <LayersOutlined color="inherit" fontSize="large" />
                           </div>
                         </CardContent>
                       );
@@ -314,31 +324,23 @@ class Dashboard extends Component {
                   }}
                 />
               </Card>
-              <Card
-                raised={true}
-                classes={{ root: classes.card }}
-                style={{ height: 120 }}
-              >
+              <Card classes={{ root: classes.card }} style={{ height: 110 }}>
                 <QueryRenderer
                   query={dashboardStixDomainEntitiesNumberQuery}
-                  variables={{ types: ['workspace'], endDate: dayAgo() }}
+                  variables={{ types: ['note'], endDate: dayAgo() }}
                   render={({ props }) => {
                     if (props && props.stixDomainEntitiesNumber) {
                       const { total } = props.stixDomainEntitiesNumber;
                       const difference = total - props.stixDomainEntitiesNumber.count;
                       return (
                         <CardContent>
-                          <div className={classes.number}>{n(total)}</div>
-                          <ItemNumberDifference
-                            difference={difference}
-                            description="24h"
-                          />
-                          <div className="clearfix" />
                           <div className={classes.title}>
-                            {t('Total workspaces')}
+                            {t('Total notes')}
                           </div>
+                          <div className={classes.number}>{n(total)}</div>
+                          <ItemNumberDifference difference={difference} />
                           <div className={classes.icon}>
-                            <Work color="inherit" fontSize="large" />
+                            <WorkOutline color="inherit" fontSize="large" />
                           </div>
                         </CardContent>
                       );
@@ -349,11 +351,7 @@ class Dashboard extends Component {
               </Card>
             </Grid>
             <Grid item={true} lg={6} xs={12}>
-              <Card
-                raised={true}
-                classes={{ root: classes.card }}
-                style={{ height: 260 }}
-              >
+              <Card classes={{ root: classes.card }} style={{ height: 240 }}>
                 <CardContent>
                   <div className={classes.title}>{t('Ingested entities')}</div>
                   <div className={classes.graphContainer}>
@@ -363,14 +361,14 @@ class Dashboard extends Component {
                       render={({ props }) => {
                         if (props && props.stixDomainEntitiesTimeSeries) {
                           return (
-                            <ResponsiveContainer height={180} width="100%">
+                            <ResponsiveContainer height={170} width="100%">
                               <BarChart
                                 data={props.stixDomainEntitiesTimeSeries}
                                 margin={{
                                   top: 5,
                                   right: 5,
                                   bottom: 25,
-                                  left: 5,
+                                  left: 20,
                                 }}
                               >
                                 <XAxis
@@ -425,7 +423,7 @@ class Dashboard extends Component {
                 <QueryRenderer
                   query={dashboardLastReportsQuery}
                   variables={{
-                    first: 10,
+                    first: 20,
                     orderBy: 'published',
                     orderMode: 'desc',
                   }}
@@ -453,25 +451,35 @@ class Dashboard extends Component {
                                 to={`/dashboard/reports/all/${report.id}`}
                               >
                                 <ListItemIcon>
-                                  <Description color="primary" />
+                                  <DescriptionOutlined color="primary" />
                                 </ListItemIcon>
                                 <ListItemText
-                                  classes={{ root: classes.itemText }}
-                                  primary={report.name}
-                                  secondary={report.description}
+                                  primary={
+                                    <div className={classes.itemText}>
+                                      {report.name}
+                                    </div>
+                                  }
                                 />
-                                <div style={{ minWidth: 100 }}>
-                                  {markingDefinition ? (
-                                    <ItemMarking
-                                      key={markingDefinition.node.id}
-                                      label={markingDefinition.node.definition}
-                                    />
-                                  ) : (
-                                    ''
+                                <div style={inlineStyles.itemAuthor}>
+                                  {pathOr(
+                                    '',
+                                    ['createdByRef', 'node', 'name'],
+                                    report,
                                   )}
                                 </div>
                                 <div style={inlineStyles.itemDate}>
                                   {nsd(report.published)}
+                                </div>
+                                <div style={{ marginRight: 20 }}>
+                                  {markingDefinition ? (
+                                    <ItemMarking
+                                      key={markingDefinition.node.id}
+                                      label={markingDefinition.node.definition}
+                                      variant="inList"
+                                    />
+                                  ) : (
+                                    ''
+                                  )}
                                 </div>
                               </ListItem>
                             );
@@ -492,7 +500,7 @@ class Dashboard extends Component {
                 <QueryRenderer
                   query={dashboardLastObservablesQuery}
                   variables={{
-                    first: 10,
+                    first: 20,
                     orderBy: 'created_at',
                     orderMode: 'desc',
                   }}
@@ -524,26 +532,32 @@ class Dashboard extends Component {
                                     <HexagonOutline color="primary" />
                                   </ListItemIcon>
                                   <ListItemText
-                                    classes={{ root: classes.itemText }}
-                                    primary={stixObservable.observable_value}
-                                    secondary={t(
+                                    primary={
+                                      <div className={classes.itemText}>
+                                        {stixObservable.observable_value}
+                                      </div>
+                                    }
+                                  />
+                                  <div style={inlineStyles.itemType}>
+                                    {t(
                                       `observable_${stixObservable.entity_type}`,
                                     )}
-                                  />
-                                  <div style={{ minWidth: 100 }}>
+                                  </div>
+                                  <div style={inlineStyles.itemDate}>
+                                    {nsd(stixObservable.created_at)}
+                                  </div>
+                                  <div style={{ marginRight: 20 }}>
                                     {markingDefinition ? (
                                       <ItemMarking
                                         key={markingDefinition.node.id}
                                         label={
                                           markingDefinition.node.definition
                                         }
+                                        variant="inList"
                                       />
                                     ) : (
                                       ''
                                     )}
-                                  </div>
-                                  <div style={inlineStyles.itemDate}>
-                                    {nsd(stixObservable.created_at)}
                                   </div>
                                 </ListItem>
                               );

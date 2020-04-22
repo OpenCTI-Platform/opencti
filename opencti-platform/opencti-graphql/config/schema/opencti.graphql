@@ -2680,9 +2680,6 @@ type ReportEdge {
   node: Report!
   relation: RelationEmbedded
 }
-type ReportPayload {
-  reportEdge: ReportEdge
-}
 type Report implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
   internal_id_key: String!
@@ -2765,6 +2762,246 @@ input ReportAddInput {
   graph_data: String
   object_status: Int
   source_confidence_level: Int
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### Notes
+enum NotesOrdering {
+  stix_id_key
+  name
+  created
+  modified
+  published
+  object_status
+  created_at
+  updated_at
+  createdBy
+  tags
+  markingDefinitions
+}
+enum NotesFilter {
+  description
+  content
+  tags
+  createdBy
+  markingDefinitions
+  knowledgeContains
+  observablesContains
+}
+input NotesFiltering {
+  key: NotesFilter!
+  values: [String]!
+}
+type NoteConnection {
+  pageInfo: PageInfo!
+  edges: [NoteEdge]
+}
+type NoteEdge {
+  cursor: String!
+  node: Note!
+  relation: RelationEmbedded
+}
+type Note implements GlobalObject & StixEntity & StixDomainEntity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  stix_label: [String]
+  description: String
+  content: String
+  alias: [String]
+  graph_data: String
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  reports: ReportConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  tags: TagConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  objectRefs(
+    first: Int
+    after: ID
+    orderBy: StixDomainEntitiesOrdering
+    orderMode: OrderingMode
+    filters: [StixDomainEntitiesFiltering]
+    filterMode: FilterMode
+    search: String
+    types: [String]
+  ): StixDomainEntityConnection
+  observableRefs(
+    first: Int
+    after: ID
+    orderBy: StixObservablesOrdering
+    orderMode: OrderingMode
+    filters: [StixObservablesFiltering]
+    filterMode: FilterMode
+    search: String
+    types: [String]
+  ): StixObservableConnection
+  relationRefs(first: Int, relationType: String, knowledgeLevels: [String]): StixRelationConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input NoteAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String!
+  description: String
+  content: String
+  graph_data: String
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+  objectRefs: [String]
+  observableRefs: [String]
+  relationRefs: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### Opinions
+enum OpinionsOrdering {
+  stix_id_key
+  created
+  modified
+  created_at
+  updated_at
+  createdBy
+  tags
+  markingDefinitions
+}
+enum OpinionsFilter {
+  description
+  explanation
+  tags
+  createdBy
+  markingDefinitions
+  knowledgeContains
+  observablesContains
+}
+input OpinionsFiltering {
+  key: OpinionsFilter!
+  values: [String]!
+}
+type OpinionConnection {
+  pageInfo: PageInfo!
+  edges: [OpinionEdge]
+}
+type OpinionEdge {
+  cursor: String!
+  node: Opinion!
+  relation: RelationEmbedded
+}
+type Opinion implements GlobalObject & StixEntity & StixDomainEntity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  stix_label: [String]
+  description: String
+  explanation: String
+  alias: [String]
+  graph_data: String
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  reports: ReportConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  tags: TagConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  objectRefs(
+    first: Int
+    after: ID
+    orderBy: StixDomainEntitiesOrdering
+    orderMode: OrderingMode
+    filters: [StixDomainEntitiesFiltering]
+    filterMode: FilterMode
+    search: String
+    types: [String]
+  ): StixDomainEntityConnection
+  observableRefs(
+    first: Int
+    after: ID
+    orderBy: StixObservablesOrdering
+    orderMode: OrderingMode
+    filters: [StixObservablesFiltering]
+    filterMode: FilterMode
+    search: String
+    types: [String]
+  ): StixObservableConnection
+  relationRefs(first: Int, relationType: String, knowledgeLevels: [String]): StixRelationConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input OpinionAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String!
+  description: String!
+  explanation: String
+  graph_data: String
   createdByRef: String
   markingDefinitions: [String]
   tags: [String]
@@ -3356,6 +3593,68 @@ type Query {
   reportContainsStixDomainEntity(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
   reportContainsStixRelation(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
   reportContainsStixObservable(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
+  # Notes
+  note(id: String!): Note @auth(for: [KNOWLEDGE])
+  notes(
+    first: Int
+    after: ID
+    orderBy: NotesOrdering
+    orderMode: OrderingMode
+    filters: [NotesFiltering]
+    filterMode: FilterMode
+    search: String
+  ): NoteConnection @auth(for: [KNOWLEDGE])
+  notesTimeSeries(
+    objectId: String
+    authorId: String
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime!
+    endDate: DateTime!
+    interval: String!
+  ): [TimeSeries] @auth(for: [KNOWLEDGE])
+  notesNumber(objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
+  notesDistribution(
+    objectId: String
+    field: String!
+    operation: StatsOperation!
+    limit: Int
+    order: String
+  ): [Distribution] @auth(for: [KNOWLEDGE])
+  noteContainsStixDomainEntity(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
+  noteContainsStixRelation(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
+  noteContainsStixObservable(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
+  # Opinions
+  opinion(id: String!): Opinion @auth(for: [KNOWLEDGE])
+  opinions(
+    first: Int
+    after: ID
+    orderBy: OpinionsOrdering
+    orderMode: OrderingMode
+    filters: [OpinionsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): OpinionConnection @auth(for: [KNOWLEDGE])
+  opinionsTimeSeries(
+    objectId: String
+    authorId: String
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime!
+    endDate: DateTime!
+    interval: String!
+  ): [TimeSeries] @auth(for: [KNOWLEDGE])
+  opinionsNumber(objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
+  opinionsDistribution(
+    objectId: String
+    field: String!
+    operation: StatsOperation!
+    limit: Int
+    order: String
+  ): [Distribution] @auth(for: [KNOWLEDGE])
+  opinionContainsStixDomainEntity(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
+  opinionContainsStixRelation(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
+  opinionContainsStixObservable(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
   # Indicators
   indicator(id: String!): Indicator @auth(for: [KNOWLEDGE])
   indicators(
@@ -3698,6 +3997,26 @@ type ReportEditMutations {
   relationDelete(relationId: ID, toId: String, relationType: String): Report @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
+# Note
+type NoteEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): Note @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Note @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Note @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID, toId: String, relationType: String): Note @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+
+# Opinion
+type OpinionEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID, toId: String, relationType: String): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+
 # Indicator
 type IndicatorEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -3852,6 +4171,12 @@ type Mutation {
   # Report
   reportAdd(input: ReportAddInput): Report @auth(for: [KNOWLEDGE_KNUPDATE])
   reportEdit(id: ID!): ReportEditMutations
+  # Note
+  noteAdd(input: NoteAddInput): Note @auth(for: [KNOWLEDGE_KNUPDATE])
+  noteEdit(id: ID!): NoteEditMutations
+  # Report
+  opinionAdd(input: OpinionAddInput): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+  opinionEdit(id: ID!): OpinionEditMutations
   # Indicator
   indicatorAdd(input: IndicatorAddInput): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
   indicatorEdit(id: ID!): IndicatorEditMutations

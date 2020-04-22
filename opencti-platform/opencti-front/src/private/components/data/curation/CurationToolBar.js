@@ -190,7 +190,10 @@ class CurationToolBar extends Component {
       : head(selectedElementsList);
     const names = pluck('name', selectedElementsList);
     const aliases = flatten(pluck('alias', selectedElementsList));
-    const newAliases = filter((n) => n.length > 0, uniq(concat(names, aliases)));
+    const newAliases = filter(
+      (n) => n.length > 0,
+      uniq(concat(names, aliases)),
+    );
     const filteredStixDomainEntitiesIds = keptEntityId
       ? filter((n) => n !== keptEntityId, stixDomainEntitiesIds)
       : tail(stixDomainEntitiesIds);
@@ -230,7 +233,10 @@ class CurationToolBar extends Component {
       : head(selectedElementsList);
     const names = pluck('name', selectedElementsList);
     const aliases = flatten(pluck('alias', selectedElementsList));
-    const newAliases = filter((n) => n.length > 0, uniq(concat(names, aliases)));
+    const newAliases = filter(
+      (n) => n.length > 0,
+      uniq(concat(names, aliases)),
+    );
     return (
       <Drawer
         anchor="bottom"
@@ -414,7 +420,7 @@ class CurationToolBar extends Component {
                 color="primary"
                 onClick={this.submitMerge.bind(this)}
                 classes={{ root: classes.button }}
-                disabled={true}
+                disabled={this.state.merging}
               >
                 {t('Merge')}
               </Button>

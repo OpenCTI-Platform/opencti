@@ -1,11 +1,11 @@
 {
   "type": "bundle",
   "id": "bundle--8c939929-688f-4a72-badb-3dd1bd6af0fa",
-  "spec_version": "2.0",
   "objects": [
     {
       "id": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
       "type": "identity",
+      "spec_version": "2.1",
       "name": "ANSSI",
       "identity_class": "organization",
       "labels": ["identity"],
@@ -18,6 +18,7 @@
     {
       "id": "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27",
       "type": "marking-definition",
+      "spec_version": "2.1",
       "definition_type": "TLP",
       "definition": {
         "TLP": "TLP:TEST"
@@ -29,6 +30,7 @@
     {
       "id": "observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be",
       "type": "observed-data",
+      "spec_version": "2.1",
       "number_observed": 1,
       "objects": {
         "0": {
@@ -44,6 +46,7 @@
     {
       "id": "identity--5556c4ab-3e5e-4d56-8410-60b29cecbeb6",
       "type": "identity",
+      "spec_version": "2.1",
       "name": "Consulting",
       "identity_class": "class",
       "labels": [
@@ -58,6 +61,7 @@
     {
       "id": "identity--360f3368-b911-4bb1-a7f9-0a8e4ef4e023",
       "type": "identity",
+      "spec_version": "2.1",
       "name": "Information Technologies Consulting",
       "identity_class": "class",
       "labels": [
@@ -72,6 +76,7 @@
     {
       "id": "relationship--10e8c71d-a1b4-4e35-bca8-2e4a3785ea04",
       "type": "relationship",
+      "spec_version": "2.1",
       "relationship_type": "gathering",
       "description": "Sector Information Technologies Consulting is a subsector of Consulting",
       "source_ref": "identity--360f3368-b911-4bb1-a7f9-0a8e4ef4e023",
@@ -89,6 +94,7 @@
     {
       "id": "report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7",
       "type": "report",
+      "spec_version": "2.1",
       "name": "A demo report for testing purposes",
       "labels": ["report"],
       "description": "Report for testing purposes (random data).",
@@ -132,8 +138,49 @@
       ]
     },
     {
+      "id": "note--573f623c-bf68-4f19-9500-d618f0d00af0",
+      "type": "note",
+      "spec_version": "2.1",
+      "abstract": "This is a note",
+      "content": "This is a note about a malware and an intrusion set",
+      "labels": ["note"],
+      "created": "2020-03-02T15:02:55.327Z",
+      "modified": "2020-03-02T15:09:48.078Z",
+      "x_opencti_id": "ce216266-4962-4b5a-9e48-cdf3453f5281",
+      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"],
+      "object_refs": [
+        "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
+        "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
+        "relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3",
+        "observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be"
+      ]
+    },
+    {
+      "id": "opinion--fab0d63d-e1be-4771-9c14-043b76f71d4f",
+      "type": "opinion",
+      "spec_version": "2.1",
+      "explanation": "This is the explanation of the opinion",
+      "opinion": "strongly-agree",
+      "labels": ["opinion"],
+      "created": "2020-03-02T15:02:55.327Z",
+      "modified": "2020-03-02T15:09:48.078Z",
+      "x_opencti_id": "3391d309-0479-45e8-8fa6-e632d9c89d6d",
+      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"],
+      "object_refs": [
+        "incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4",
+        "note--573f623c-bf68-4f19-9500-d618f0d00af0",
+        "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
+        "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
+        "relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3",
+        "observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be"
+      ]
+    },
+    {
       "id": "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
       "type": "malware",
+      "spec_version": "2.1",
       "name": "Paradise Ransomware",
       "labels": ["malware"],
       "description": "MalwareHunterTeam discovered a new Paradise Ransomware variant that uses the extension _V.0.0.0.1{paradise@all-ransomware.info}.prt and drops a ransom note named PARADISE_README_paradise@all-ransomware.info.txt.",
@@ -184,6 +231,7 @@
     {
       "id": "malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88",
       "type": "malware",
+      "spec_version": "2.1",
       "name": "Spelevo EK",
       "labels": ["malware"],
       "description": "Exploit Kit",
@@ -215,6 +263,7 @@
     {
       "id": "campaign--92d46985-17a6-4610-8be8-cc70c82ed214",
       "type": "campaign",
+      "spec_version": "2.1",
       "name": "A new campaign",
       "labels": ["campaign"],
       "description": "A test campaign",
@@ -228,6 +277,7 @@
     {
       "id": "incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4",
       "type": "x-opencti-incident",
+      "spec_version": "2.1",
       "name": "A new incident",
       "labels": ["x-opencti-incident"],
       "description": "A test incident",
@@ -241,6 +291,7 @@
     {
       "id": "identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132",
       "type": "identity",
+      "spec_version": "2.1",
       "name": "CIRCL",
       "identity_class": "organization",
       "labels": ["identity"],
@@ -254,6 +305,7 @@
     {
       "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
       "type": "marking-definition",
+      "spec_version": "2.1",
       "definition_type": "TLP",
       "definition": {
         "TLP": "TLP:WHITE"
@@ -265,6 +317,7 @@
     {
       "id": "indicator--10e9a46e-7edb-496b-a167-e27ea3ed0079",
       "type": "indicator",
+      "spec_version": "2.1",
       "name": "www.xolod-teplo.ru",
       "labels": ["indicator"],
       "description": "download location",
@@ -281,6 +334,7 @@
     {
       "id": "indicator--51640662-9c78-4402-932f-1d4531624723",
       "type": "indicator",
+      "spec_version": "2.1",
       "name": "www.one-clap.jp",
       "labels": ["indicator"],
       "description": "download location",
@@ -297,6 +351,7 @@
     {
       "id": "indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf",
       "type": "indicator",
+      "spec_version": "2.1",
       "name": "2a0169c72c84e6d3fa49af701fd46ee7aaf1d1d9e107798d93a6ca8df5d25957",
       "labels": ["indicator"],
       "description": "CMSTAR Variants Identified in Phishing Campaign",
@@ -313,6 +368,7 @@
     {
       "id": "identity--c017f212-546b-4f21-999d-97d3dc558f7b",
       "type": "identity",
+      "spec_version": "2.1",
       "name": "Allied Universal",
       "identity_class": "organization",
       "labels": ["identity"],
@@ -327,6 +383,7 @@
     {
       "id": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
       "type": "identity",
+      "spec_version": "2.1",
       "name": "John Doe",
       "identity_class": "individual",
       "labels": ["identity"],
@@ -338,6 +395,7 @@
     {
       "id": "relationship--10f2228d-cc68-45e3-bce2-53b1841b01c2",
       "type": "relationship",
+      "spec_version": "2.1",
       "relationship_type": "gathering",
       "description": "John Doe works for Allied Universal",
       "source_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
@@ -355,6 +413,7 @@
     {
       "id": "relationship--9315a197-fe15-4c96-b77c-edcaa5e22ecb",
       "type": "relationship",
+      "spec_version": "2.1",
       "relationship_type": "gathering",
       "description": "Allied Universal is part of the Consulting sector",
       "source_ref": "identity--c017f212-546b-4f21-999d-97d3dc558f7b",
@@ -372,6 +431,7 @@
     {
       "id": "identity--5a510e41-5cb2-45cc-a191-a4844ea0a141",
       "type": "identity",
+      "spec_version": "2.1",
       "name": "Southwire",
       "identity_class": "organization",
       "labels": ["identity"],
@@ -386,6 +446,7 @@
     {
       "id": "identity--062f72b1-7caf-4112-ab92-6211f7e7abc8",
       "type": "identity",
+      "spec_version": "2.1",
       "name": "Energy",
       "identity_class": "class",
       "labels": ["identity"],
@@ -399,6 +460,7 @@
     {
       "id": "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5",
       "type": "identity",
+      "spec_version": "2.1",
       "name": "The MITRE Corporation",
       "identity_class": "organization",
       "labels": ["identity"],
@@ -411,6 +473,7 @@
     {
       "id": "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168",
       "type": "marking-definition",
+      "spec_version": "2.1",
       "definition_type": "statement",
       "definition": {
         "statement": "Copyright 2017, The MITRE Corporation"
@@ -422,6 +485,7 @@
     {
       "id": "attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc",
       "type": "attack-pattern",
+      "spec_version": "2.1",
       "x_opencti_external_id": "T1369",
       "name": "Spear phishing messages with malicious links",
       "labels": ["attack-pattern"],
@@ -457,6 +521,7 @@
     {
       "id": "identity--c3794ffd-0e71-4670-aa4d-978b4cbdc72c",
       "type": "identity",
+      "spec_version": "2.1",
       "name": "Hietzing",
       "identity_class": "organization",
       "labels": ["identity"],
@@ -468,6 +533,7 @@
     {
       "id": "identity--5acd8b26-51c2-4608-86ed-e9edd43ad971",
       "type": "identity",
+      "spec_version": "2.1",
       "name": "France",
       "identity_class": "organization",
       "labels": ["identity"],
@@ -481,6 +547,7 @@
     {
       "id": "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
       "type": "intrusion-set",
+      "spec_version": "2.1",
       "name": "APT41",
       "aliases": ["Winnti"],
       "labels": ["intrusion-set"],
@@ -516,6 +583,7 @@
     {
       "id": "attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17",
       "type": "attack-pattern",
+      "spec_version": "2.1",
       "x_opencti_external_id": "T1368",
       "name": "Spear phishing messages with text only",
       "labels": ["attack-pattern"],
@@ -551,6 +619,7 @@
     {
       "id": "course-of-action--ae56a49d-5281-45c5-ab95-70a1439c338e",
       "type": "course-of-action",
+      "spec_version": "2.1",
       "name": "Compile After Delivery Mitigation",
       "labels": [
         "course-of-action"
@@ -579,6 +648,7 @@
     {
       "id": "relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02",
       "type": "relationship",
+      "spec_version": "2.1",
       "relationship_type": "uses",
       "source_ref": "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
       "target_ref": "attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc",
@@ -595,6 +665,7 @@
     {
       "id": "relationship--6d59077d-a2fb-4217-846f-c7cf038672fa",
       "type": "relationship",
+      "spec_version": "2.1",
       "relationship_type": "attributed-to",
       "source_ref": "campaign--92d46985-17a6-4610-8be8-cc70c82ed214",
       "target_ref": "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
@@ -611,6 +682,7 @@
     {
       "id": "relationship--55119cba-8fbe-450b-bb47-3af8db29c187",
       "type": "relationship",
+      "spec_version": "2.1",
       "relationship_type": "attributed-to",
       "source_ref": "incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4",
       "target_ref": "campaign--92d46985-17a6-4610-8be8-cc70c82ed214",
@@ -627,6 +699,7 @@
     {
       "id": "relationship--e50087ed-906a-4d9f-b5c0-39c1d23ca0b2",
       "type": "relationship",
+      "spec_version": "2.1",
       "relationship_type": "related-to",
       "source_ref": "observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be",
       "target_ref": "incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4",
@@ -643,6 +716,7 @@
     {
       "id": "relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de",
       "type": "relationship",
+      "spec_version": "2.1",
       "relationship_type": "uses",
       "source_ref": "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
       "target_ref": "attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17",
@@ -659,6 +733,7 @@
     {
       "id": "relationship--b703f822-f6f0-4d96-9c9b-3fc0bb61e69c",
       "type": "relationship",
+      "spec_version": "2.1",
       "relationship_type": "indicates",
       "source_ref": "indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf",
       "target_ref": "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
@@ -675,6 +750,7 @@
     {
       "id": "relationship--c32d553c-e22f-40ce-93e6-eb62dd145f3b",
       "type": "relationship",
+      "spec_version": "2.1",
       "relationship_type": "indicates",
       "source_ref": "indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf",
       "target_ref": "relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02",
@@ -691,6 +767,7 @@
     {
       "id": "relationship--8d2200a8-f9ef-4345-95d1-ba3ed49606f9",
       "type": "relationship",
+      "spec_version": "2.1",
       "relationship_type": "indicates",
       "source_ref": "indicator--51640662-9c78-4402-932f-1d4531624723",
       "target_ref": "relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de",
@@ -707,6 +784,7 @@
     {
       "id": "relationship--eedcea8f-a464-4977-955c-5113aa3c0896",
       "type": "relationship",
+      "spec_version": "2.1",
       "relationship_type": "indicates",
       "source_ref": "indicator--10e9a46e-7edb-496b-a167-e27ea3ed0079",
       "target_ref": "relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de",
@@ -723,6 +801,7 @@
     {
       "id": "relationship--2326c8b3-ef45-4978-98d0-0059728275c4",
       "type": "relationship",
+      "spec_version": "2.1",
       "relationship_type": "targets",
       "source_ref": "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
       "target_ref": "identity--c3794ffd-0e71-4670-aa4d-978b4cbdc72c",
@@ -739,6 +818,7 @@
     {
       "id": "relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3",
       "type": "relationship",
+      "spec_version": "2.1",
       "relationship_type": "uses",
       "source_ref": "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
       "target_ref": "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
@@ -755,6 +835,7 @@
     {
       "id": "relationship--3541149d-1af6-4688-993c-dc32c7ee3880",
       "type": "relationship",
+      "spec_version": "2.1",
       "relationship_type": "targets",
       "source_ref": "intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7",
       "target_ref": "identity--c017f212-546b-4f21-999d-97d3dc558f7b",
@@ -773,6 +854,7 @@
     {
       "id": "relationship--3e10618c-a301-43db-87f3-91b9e397c30d",
       "type": "relationship",
+      "spec_version": "2.1",
       "relationship_type": "localization",
       "source_ref": "identity--c3794ffd-0e71-4670-aa4d-978b4cbdc72c",
       "target_ref": "identity--5acd8b26-51c2-4608-86ed-e9edd43ad971",
@@ -791,6 +873,7 @@
     {
       "id": "relationship--d861deab-84b6-4dc9-bcce-594e3d1c904f",
       "type": "relationship",
+      "spec_version": "2.1",
       "relationship_type": "gathering",
       "source_ref": "identity--5a510e41-5cb2-45cc-a191-a4844ea0a141",
       "target_ref": "identity--062f72b1-7caf-4112-ab92-6211f7e7abc8",
@@ -809,6 +892,7 @@
     {
       "id": "relationship--307058e3-84f3-4e9c-8776-2e4fe4d6c6c7",
       "type": "relationship",
+      "spec_version": "2.1",
       "relationship_type": "gathering",
       "source_ref": "identity--c017f212-546b-4f21-999d-97d3dc558f7b",
       "target_ref": "identity--5a510e41-5cb2-45cc-a191-a4844ea0a141",

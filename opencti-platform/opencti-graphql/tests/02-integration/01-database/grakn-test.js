@@ -162,11 +162,8 @@ describe('Grakn low level commands', () => {
     expect(aggregationMap.get('to').role).toEqual('gather');
   });
   it('should query vars check inconsistency', async () => {
-    // Query must have a from and a to
-    let query = 'match $to isa Sector; $rel(part_of:$part, $to) isa gathering; get;';
-    expect(() => extractQueryVars(query)).toThrowError();
     // Relation is not found
-    query = 'match $to isa Sector; $rel(part_of:$from, $to) isa undefined; get;';
+    let query = 'match $to isa Sector; $rel(part_of:$from, $to) isa undefined; get;';
     expect(() => extractQueryVars(query)).toThrowError();
     // Relation is found, one role is ok, the other is missing
     query = 'match $to isa Sector; $rel($to, source:$from) isa role_test_missing; get;';
@@ -219,7 +216,7 @@ describe('Grakn loaders', () => {
     expect(await countObjects('Workspace')).toEqual(0);
     expect(await countObjects('Token')).toEqual(1);
     expect(await countObjects('Marking-Definition')).toEqual(6);
-    expect(await countObjects('Stix-Domain')).toEqual(39);
+    expect(await countObjects('Stix-Domain')).toEqual(41);
     expect(await countObjects('Role')).toEqual(2);
     expect(await countObjects('Capability')).toEqual(19);
     expect(await countObjects('Stix-Observable')).toEqual(6);
@@ -405,7 +402,7 @@ describe('Grakn entities listing', () => {
   it.each(relationFilterUseCases)(
     'should list entities with ref relation %s=%s filters (noCache = %s)',
     async (field, val, noCache) => {
-      const filters = [{ key: `rel_created_by_ref.${field}`, values: [val] }];
+      const filters = [{ key: `rel_created_by_ref.${field}`, values: [val], toRole: 'creator' }];
       const options = { filters, noCache };
       const entities = await listEntities(['Stix-Domain-Entity'], ['name'], options);
       expect(entities).not.toBeNull();
@@ -479,7 +476,7 @@ describe('Grakn relations listing', () => {
     expect(stixRelations.edges.length).toEqual(19);
     const embeddedRelations = await listRelations('stix_relation_embedded', { noCache });
     expect(embeddedRelations).not.toBeNull();
-    expect(embeddedRelations.edges.length).toEqual(78);
+    expect(embeddedRelations.edges.length).toEqual(115);
   });
   it.each(noCacheCases)('should list relations with no id (noCache = %s)', (noCache) => {
     expect(listRelations('uses', { noCache, fromTypes: ['Attack-Pattern'] })).rejects.toThrow();
@@ -1006,7 +1003,7 @@ describe('Grakn entities distribution', () => {
     // const { startDate, endDate, operation, field, inferred, noCache } = options;
     const options = { field: 'entity_type', operation: 'count', limit: 20, noCache };
     const distribution = await distributionEntities('Stix-Domain', [], options);
-    expect(distribution.length).toEqual(16);
+    expect(distribution.length).toEqual(18);
     const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('malware')).toEqual(2);
     expect(aggregationMap.get('marking-definition')).toEqual(6);

@@ -12,8 +12,8 @@ import ReportIdentity from './ReportDetails';
 import ReportEdition from './ReportEdition';
 import EntityExternalReferences from '../common/external_references/EntityExternalReferences';
 import EntityStixRelationsDonut from '../common/stix_relations/EntityStixRelationsDonut';
-import EntityStixRelationsPie from '../common/stix_relations/EntityStixRelationsPie';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+import StixObjectNotes from '../common/stix_object/StixObjectNotes';
 
 const styles = () => ({
   container: {
@@ -45,11 +45,12 @@ class ReportComponent extends Component {
             <EntityExternalReferences entityId={report.id} />
           </Grid>
         </Grid>
+        <StixObjectNotes entityId={report.id} />
         <Grid
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 30 }}
+          style={{ marginTop: 15 }}
         >
           <Grid item={true} xs={6}>
             <EntityStixRelationsDonut
@@ -57,14 +58,16 @@ class ReportComponent extends Component {
               entityType="Stix-Observable"
               relationType="observable_refs"
               field="entity_type"
+              height={150}
             />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityStixRelationsPie
+            <EntityStixRelationsDonut
               entityId={report.id}
               entityType="Stix-Domain-Entity"
               relationType="object_refs"
               field="entity_type"
+              height={150}
             />
           </Grid>
         </Grid>

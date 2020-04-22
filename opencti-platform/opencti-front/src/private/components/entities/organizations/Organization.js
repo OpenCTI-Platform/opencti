@@ -16,6 +16,7 @@ import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityIncidentsChart from '../../threats/incidents/EntityIncidentsChart';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
 
 const styles = () => ({
   container: {
@@ -55,11 +56,12 @@ class OrganizationComponent extends Component {
               <EntityLastReports authorId={organization.id} />
             </Grid>
           </Grid>
+          <StixObjectNotes entityId={organization.id} />
           <Grid
             container={true}
             spacing={3}
             classes={{ container: classes.gridContainer }}
-            style={{ marginTop: 30 }}
+            style={{ marginTop: 15 }}
           >
             <Grid item={true} xs={12}>
               <EntityReportsChart authorId={organization.id} />

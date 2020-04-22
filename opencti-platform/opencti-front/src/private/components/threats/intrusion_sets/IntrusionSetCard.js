@@ -11,7 +11,7 @@ import CardActionArea from '@material-ui/core/CardActionArea';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import Avatar from '@material-ui/core/Avatar';
-import { Diamond } from 'mdi-material-ui';
+import { DiamondOutline } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import StixObjectTags from '../../common/stix_object/StixObjectTags';
 
@@ -101,7 +101,7 @@ class IntrusionSetCardComponent extends Component {
             }
             title={node.name}
             subheader={`${t('Updated the')} ${fsd(node.modified)}`}
-            action={<Diamond className={classes.icon} />}
+            action={<DiamondOutline className={classes.icon} />}
           />
           <CardContent className={classes.content}>
             <div className={classes.description}>
@@ -195,7 +195,7 @@ class IntrusionSetCardDummyComponent extends Component {
                 style={{ width: '70%' }}
               />
             }
-            action={<Diamond className={classes.icon} />}
+            action={<DiamondOutline className={classes.icon} />}
           />
           <CardContent classes={{ root: classes.contentDummy }}>
             <div className="fakeItem" style={{ width: '90%' }} />

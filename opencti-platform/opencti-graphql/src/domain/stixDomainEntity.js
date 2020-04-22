@@ -215,7 +215,7 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
   ) {
     args = { modelType: TYPE_STIX_DOMAIN_ENTITY, stixIdType: 'identity' };
   }
-  const created = await createEntity(domainToCreate, innerType, args);
+  const created = await createEntity(user, domainToCreate, innerType, args);
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 export const stixDomainEntityDelete = async (stixDomainEntityId) => {
@@ -228,8 +228,13 @@ export const stixDomainEntityDelete = async (stixDomainEntityId) => {
   }
   return deleteEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
 };
-export const stixDomainEntitiesDelete = (stixDomainEntitiesIds) => {
-  return Promise.all(stixDomainEntitiesIds.map((stixDomainEntityId) => stixDomainEntityDelete(stixDomainEntityId)));
+export const stixDomainEntitiesDelete = async (stixDomainEntitiesIds) => {
+  // Relations cannot be created in parallel.
+  for (let i = 0; i < stixDomainEntitiesIds.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    await stixDomainEntityDelete(stixDomainEntitiesIds[i]);
+  }
+  return stixDomainEntitiesIds;
 };
 
 export const stixDomainEntityAddRelation = async (user, stixDomainEntityId, input) => {

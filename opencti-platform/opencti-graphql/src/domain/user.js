@@ -187,11 +187,8 @@ export const getRoleCapabilities = async (roleId) => {
   return map((r) => r.capability, data);
 };
 
-export const findRoleById = (toolId) => {
-  if (toolId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(toolId, 'Role');
-  }
-  return loadEntityById(toolId, 'Role');
+export const findRoleById = (roleId) => {
+  return loadEntityById(roleId, 'Role');
 };
 export const findRoles = (args) => {
   return listEntities(['Role'], ['name'], args);
@@ -242,7 +239,7 @@ export const roleEditContext = (user, roleId, input) => {
 // endregion
 
 export const addPerson = async (user, newUser) => {
-  const created = await createEntity(newUser, 'User', {
+  const created = await createEntity(user, newUser, 'User', {
     modelType: TYPE_STIX_DOMAIN_ENTITY,
     stixIdType: 'identity',
   });
@@ -280,10 +277,10 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
     dissoc('roles')
   )(newUser);
   const userOptions = { modelType: TYPE_STIX_DOMAIN_ENTITY, stixIdType: 'identity' };
-  const userCreated = await createEntity(userToCreate, 'User', userOptions);
+  const userCreated = await createEntity(user, userToCreate, 'User', userOptions);
   // Create token and link it to the user
   const tokenOptions = { modelType: TYPE_OPENCTI_INTERNAL, indexable: false };
-  const defaultToken = await createEntity(newToken, 'Token', tokenOptions);
+  const defaultToken = await createEntity(user, newToken, 'Token', tokenOptions);
   const input = {
     fromType: 'User',
     fromRole: 'client',
@@ -447,7 +444,7 @@ export const logout = async (user, res) => {
 };
 
 // Token related
-export const userRenewToken = async (userId, newToken = generateOpenCTIWebToken()) => {
+export const userRenewToken = async (user, userId, newToken = generateOpenCTIWebToken()) => {
   // 01. Get current token
   const currentToken = await internalGetToken(userId);
   // 02. Remove the token
@@ -461,7 +458,7 @@ export const userRenewToken = async (userId, newToken = generateOpenCTIWebToken(
     }
   }
   // 03. Create a new one
-  const defaultToken = await createEntity(newToken, 'Token', { modelType: TYPE_OPENCTI_INTERNAL, indexable: false });
+  const defaultToken = await createEntity(user, newToken, 'Token', { modelType: TYPE_OPENCTI_INTERNAL, indexable: false });
   // 04. Associate new token to user.
   const input = {
     fromType: 'User',
@@ -530,7 +527,7 @@ export const initAdmin = async (email, password, tokenValue) => {
       await updateAttribute(admin.id, 'User', { key: 'external', value: [true] }, wTx);
     });
     // Renew the token
-    await userRenewToken(admin.id, tokenAdmin);
+    await userRenewToken(null, admin.id, tokenAdmin);
   } else {
     const userToCreate = {
       internal_id_key: OPENCTI_ADMIN_UUID,

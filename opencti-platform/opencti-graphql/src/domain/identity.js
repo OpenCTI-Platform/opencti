@@ -38,7 +38,7 @@ export const findAll = async (args) => {
 
 export const addIdentity = async (user, identity) => {
   const identityToCreate = dissoc('type', identity);
-  const created = await createEntity(identityToCreate, identity.type, {
+  const created = await createEntity(user, identityToCreate, identity.type, {
     stixIdType: identity.type !== 'Threat-Actor' ? 'identity' : 'threat-actor',
   });
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);

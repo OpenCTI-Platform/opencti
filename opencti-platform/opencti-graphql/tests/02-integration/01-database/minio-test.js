@@ -82,7 +82,7 @@ describe('Minio file listing', () => {
     let file = head(list.edges).node;
     expect(file.id).toEqual(exportFileId);
     expect(file.name).toEqual(exportFileName);
-    expect(file.size).toEqual(13176);
+    expect(file.size).toEqual(13846);
     expect(file.metaData).not.toBeNull();
     expect(file.metaData['content-type']).toEqual('application/octet-stream');
     expect(file.metaData.category).toEqual('export');
@@ -94,7 +94,7 @@ describe('Minio file listing', () => {
     expect(list.edges.length).toEqual(1);
     file = head(list.edges).node;
     expect(file.id).toEqual(importFileId);
-    expect(file.size).toEqual(13176);
+    expect(file.size).toEqual(13846);
     expect(file.name).toEqual(exportFileName);
   });
   it('should file download', async () => {
@@ -104,17 +104,17 @@ describe('Minio file listing', () => {
     expect(data).not.toBeNull();
     const jsonData = JSON.parse(data);
     expect(jsonData).not.toBeNull();
-    expect(jsonData.objects.length).toEqual(9);
-    const malware = head(jsonData.objects);
-    expect(malware.name).toEqual('Paradise Ransomware');
-    expect(malware.x_opencti_id).toEqual(malwareId);
+    expect(jsonData.objects.length).toEqual(10);
+    const user = head(jsonData.objects);
+    expect(user.name).toEqual('admin');
+    expect(user.x_opencti_id).toEqual('88ec0c6a-13ce-5e39-b486-354fe4a7084f');
   });
   it('should load file', async () => {
     const file = await loadFile(exportFileId);
     expect(file).not.toBeNull();
     expect(file.id).toEqual(exportFileId);
     expect(file.name).toEqual(exportFileName);
-    expect(file.size).toEqual(13176);
+    expect(file.size).toEqual(13846);
   });
   it('should delete file', async () => {
     let deleted = await deleteFile(exportFileId, { user_email: 'test@opencti.io' });

@@ -10,7 +10,7 @@ import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import { withRouter } from 'react-router-dom';
 import {
-  Google, Key, FacebookBox, GithubCircle,
+  Google, Key, Facebook, Github,
 } from 'mdi-material-ui';
 import { Close } from '@material-ui/icons';
 import { QueryRenderer } from '../../relay/environment';
@@ -131,11 +131,11 @@ const Login = ({ location, classes }) => {
   const renderExternalAuthButton = (provider) => {
     switch (provider) {
       case 'facebook':
-        return <FacebookBox className={classes.iconSmall} />;
+        return <Facebook className={classes.iconSmall} />;
       case 'google':
         return <Google className={classes.iconSmall} />;
       case 'github':
-        return <GithubCircle className={classes.iconSmall} />;
+        return <Github className={classes.iconSmall} />;
       default:
         return <Key className={classes.iconSmall} />;
     }

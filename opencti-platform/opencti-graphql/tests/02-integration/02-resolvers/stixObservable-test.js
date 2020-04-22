@@ -198,6 +198,60 @@ describe('StixObservable resolver standard behavior', () => {
     });
     expect(queryResult.data.stixObservableEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
   });
+  it('should add observable in note', async () => {
+    const CREATE_QUERY = gql`
+      mutation NoteAdd($input: NoteAddInput) {
+        noteAdd(input: $input) {
+          id
+          name
+          description
+          content
+        }
+      }
+    `;
+    // Create the note
+    const NOTE_TO_CREATE = {
+      input: {
+        name: 'Note',
+        description: 'Note description',
+        content: 'Test content',
+        observableRefs: [stixObservableInternalId],
+      },
+    };
+    const note = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: NOTE_TO_CREATE,
+    });
+    expect(note).not.toBeNull();
+    expect(note.data.noteAdd).not.toBeNull();
+    expect(note.data.noteAdd.name).toEqual('Note');
+    const noteInternalId = note.data.noteAdd.id;
+    const DELETE_QUERY = gql`
+      mutation noteDelete($id: ID!) {
+        noteEdit(id: $id) {
+          delete
+        }
+      }
+    `;
+    // Delete the note
+    await queryAsAdmin({
+      query: DELETE_QUERY,
+      variables: { id: noteInternalId },
+    });
+    const READ_NOTE_QUERY = gql`
+      query note($id: String!) {
+        note(id: $id) {
+          id
+          name
+          description
+        }
+      }
+    `;
+    // Verify is no longer found
+    const queryResult = await queryAsAdmin({ query: READ_NOTE_QUERY, variables: { id: noteInternalId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.note).toBeNull();
+  });
   it('should stixObservable deleted', async () => {
     const DELETE_QUERY = gql`
       mutation stixObservableDelete($id: ID!) {

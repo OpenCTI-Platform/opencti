@@ -5,7 +5,7 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { ArrowForwardIos } from '@material-ui/icons';
-import { Diamond } from 'mdi-material-ui';
+import { DiamondOutline } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -57,7 +57,7 @@ class TopMenuIntrusionSet extends Component {
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <Diamond className={classes.icon} fontSize="small" />
+          <DiamondOutline className={classes.icon} fontSize="small" />
           {t('Intrusion sets')}
         </Button>
         <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />

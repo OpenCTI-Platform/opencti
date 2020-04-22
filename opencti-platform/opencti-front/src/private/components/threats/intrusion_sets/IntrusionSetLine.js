@@ -9,7 +9,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight } from '@material-ui/icons';
-import { Diamond } from 'mdi-material-ui';
+import { DiamondOutline } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import StixObjectTags from '../../common/stix_object/StixObjectTags';
 
@@ -58,7 +58,7 @@ class IntrusionSetLineComponent extends Component {
         to={`/dashboard/threats/intrusion_sets/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Diamond />
+          <DiamondOutline />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -157,7 +157,7 @@ class IntrusionSetLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Diamond />
+          <DiamondOutline />
         </ListItemIcon>
         <ListItemText
           primary={

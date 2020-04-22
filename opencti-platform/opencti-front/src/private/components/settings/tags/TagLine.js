@@ -8,7 +8,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
-import { Tag } from 'mdi-material-ui';
+import { TagOutline } from 'mdi-material-ui';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TagPopover from './TagPopover';
@@ -50,7 +50,7 @@ class TagLineComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true} button={true}>
         <ListItemIcon style={{ color: node.color }}>
-          <Tag />
+          <TagOutline />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -122,7 +122,7 @@ class TagLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Tag />
+          <TagOutline />
         </ListItemIcon>
         <ListItemText
           primary={

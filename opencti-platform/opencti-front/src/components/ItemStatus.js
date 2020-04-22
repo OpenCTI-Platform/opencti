@@ -8,11 +8,15 @@ const styles = () => ({
     fontSize: 12,
     height: 25,
     marginRight: 7,
+    textTransform: 'uppercase',
+    borderRadius: '0',
   },
   chipInList: {
     fontSize: 12,
     height: 20,
     float: 'left',
+    textTransform: 'uppercase',
+    borderRadius: '0',
   },
 });
 
@@ -22,16 +26,19 @@ const inlineStyles = {
     color: '#2b2b2b',
   },
   green: {
-    backgroundColor: '#1b5e20',
+    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+    color: '#4caf50',
   },
   blue: {
-    backgroundColor: '#283593',
+    backgroundColor: 'rgba(92, 123, 245, 0.08)',
+    color: '#5c7bf5',
   },
   grey: {
     backgroundColor: '#424242',
   },
   orange: {
-    backgroundColor: '#d84315',
+    backgroundColor: 'gba(255, 152, 0, 0.08)',
+    color: '#ff9800',
   },
 };
 

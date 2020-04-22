@@ -60,7 +60,7 @@ export const workspacesNumber = (args) => {
 // region mutations
 export const addWorkspace = async (user, workspace) => {
   const workspaceToCreate = assoc('createdByOwner', user.id, workspace);
-  const created = await createEntity(workspaceToCreate, 'Workspace', { modelType: TYPE_OPENCTI_INTERNAL });
+  const created = await createEntity(user, workspaceToCreate, 'Workspace', { modelType: TYPE_OPENCTI_INTERNAL });
   return notify(BUS_TOPICS.Workspace.ADDED_TOPIC, created, user);
 };
 export const workspaceDelete = (workspaceId) => deleteEntityById(workspaceId, 'Workspace');

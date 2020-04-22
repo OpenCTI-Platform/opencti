@@ -200,6 +200,13 @@ class StixDomainEntityTags extends Component {
     this.handleCloseAdd();
   }
 
+  hexToRGB(hex) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgb(${r}, ${g}, ${b}, 0.08)`;
+  }
+
   render() {
     const { classes, tags, t } = this.props;
     const tagsNodes = pipe(
@@ -227,9 +234,14 @@ class StixDomainEntityTags extends Component {
             (tag) => (
               <Chip
                 key={tag.id}
+                variant="outlined"
                 classes={{ root: classes.tag }}
                 label={tag.value}
-                style={{ backgroundColor: tag.color }}
+                style={{
+                  color: tag.color,
+                  borderColor: tag.color,
+                  backgroundColor: this.hexToRGB(tag.color),
+                }}
                 onDelete={this.handleRemoveTag.bind(this, tag.id)}
               />
             ),

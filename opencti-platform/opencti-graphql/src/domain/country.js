@@ -29,7 +29,7 @@ export const region = (countryId) => {
 };
 
 export const addCountry = async (user, country) => {
-  const created = await createEntity(country, 'Country', {
+  const created = await createEntity(user, country, 'Country', {
     modelType: TYPE_STIX_DOMAIN_ENTITY,
     stixIdType: 'identity',
   });

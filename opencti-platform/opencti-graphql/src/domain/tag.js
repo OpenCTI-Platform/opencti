@@ -18,7 +18,7 @@ export const findAll = (args) => {
 };
 
 export const addTag = async (user, tag) => {
-  const created = await createEntity(tag, 'Tag', { modelType: TYPE_OPENCTI_INTERNAL });
+  const created = await createEntity(user, tag, 'Tag', { modelType: TYPE_OPENCTI_INTERNAL });
   return notify(BUS_TOPICS.Tag.ADDED_TOPIC, created, user);
 };
 export const tagDelete = (tagId) => deleteEntityById(tagId, 'Tag');

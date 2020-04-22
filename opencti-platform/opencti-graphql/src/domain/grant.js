@@ -5,7 +5,7 @@ import { TYPE_OPENCTI_INTERNAL } from '../database/utils';
 
 export const addCapability = async (capability) => {
   const capabilityToCreate = assoc('internal_id_key', uuidv5(capability.name, uuidv5.DNS), capability);
-  return createEntity(capabilityToCreate, 'Capability', { modelType: TYPE_OPENCTI_INTERNAL });
+  return createEntity(null, capabilityToCreate, 'Capability', { modelType: TYPE_OPENCTI_INTERNAL });
 };
 
 export const addRole = async (role) => {
@@ -16,7 +16,7 @@ export const addRole = async (role) => {
     assoc('default_assignation', role.default_assignation ? role.default_assignation : false),
     dissoc('capabilities')
   )(role);
-  const roleEntity = await createEntity(roleToCreate, 'Role', { modelType: TYPE_OPENCTI_INTERNAL });
+  const roleEntity = await createEntity(null, roleToCreate, 'Role', { modelType: TYPE_OPENCTI_INTERNAL });
   const relationPromises = map(
     (capabilityName) =>
       createRelation(

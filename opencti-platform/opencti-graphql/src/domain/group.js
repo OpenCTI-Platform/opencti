@@ -42,7 +42,7 @@ export const permissions = async (groupId) => {
 };
 
 export const addGroup = async (user, group) => {
-  const created = await createEntity(group, 'Group', { modelType: TYPE_OPENCTI_INTERNAL });
+  const created = await createEntity(user, group, 'Group', { modelType: TYPE_OPENCTI_INTERNAL });
   return notify(BUS_TOPICS.Group.ADDED_TOPIC, created, user);
 };
 export const groupDelete = (groupId) => deleteEntityById(groupId, 'Group');

@@ -1,26 +1,26 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  Flag,
-  Person,
-  AccountBalance,
-  Domain,
-  Public,
-  Help,
-  BugReport,
-  Description,
-  Map,
-  CenterFocusStrong,
+  FlagOutlined,
+  PersonOutlined,
+  AccountBalanceOutlined,
+  DomainOutlined,
+  PublicOutlined,
+  HelpOutlined,
+  BugReportOutlined,
+  DescriptionOutlined,
+  MapOutlined,
+  CenterFocusStrongOutlined,
 } from '@material-ui/icons';
 import {
   Biohazard,
-  Diamond,
+  DiamondOutline,
   ChessKnight,
   LockPattern,
   Application,
   Fire,
-  CityVariant,
-  Tag,
+  CityVariantOutline,
+  TagOutline,
   ProgressWrench,
   HexagonOutline,
   VectorRadius,
@@ -47,25 +47,29 @@ const iconSelector = (type, variant, fontSize, color) => {
 
   switch (type) {
     case 'region':
-      return <Map style={style} fontSize={fontSize} role="img" />;
+      return <MapOutlined style={style} fontSize={fontSize} role="img" />;
     case 'country':
-      return <Flag style={style} fontSize={fontSize} role="img" />;
+      return <FlagOutlined style={style} fontSize={fontSize} role="img" />;
     case 'sector':
-      return <Domain style={style} fontSize={fontSize} role="img" />;
+      return <DomainOutlined style={style} fontSize={fontSize} role="img" />;
     case 'city':
-      return <CityVariant style={style} fontSize={fontSize} role="img" />;
+      return (
+        <CityVariantOutline style={style} fontSize={fontSize} role="img" />
+      );
     case 'threat-actor':
-      return <Public style={style} fontSize={fontSize} role="img" />;
+      return <PublicOutlined style={style} fontSize={fontSize} role="img" />;
     case 'intrusion-set':
-      return <Diamond style={style} fontSize={fontSize} role="img" />;
+      return <DiamondOutline style={style} fontSize={fontSize} role="img" />;
     case 'campaign':
       return <ChessKnight style={style} fontSize={fontSize} role="img" />;
     case 'incident':
       return <Fire style={style} fontSize={fontSize} role="img" />;
     case 'user':
-      return <Person style={style} fontSize={fontSize} role="img" />;
+      return <PersonOutlined style={style} fontSize={fontSize} role="img" />;
     case 'organization':
-      return <AccountBalance style={style} fontSize={fontSize} role="img" />;
+      return (
+        <AccountBalanceOutlined style={style} fontSize={fontSize} role="img" />
+      );
     case 'attack-pattern':
       return <LockPattern style={style} fontSize={fontSize} role="img" />;
     case 'course-of-action':
@@ -75,15 +79,23 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'tool':
       return <Application style={style} fontSize={fontSize} role="img" />;
     case 'vulnerability':
-      return <BugReport style={style} fontSize={fontSize} role="img" />;
+      return <BugReportOutlined style={style} fontSize={fontSize} role="img" />;
     case 'report':
-      return <Description style={style} fontSize={fontSize} role="img" />;
+      return (
+        <DescriptionOutlined style={style} fontSize={fontSize} role="img" />
+      );
     case 'indicator':
       return <ShieldSearch style={style} fontSize={fontSize} role="img" />;
     case 'tag':
-      return <Tag style={style} fontSize={fontSize} role="img" />;
+      return <TagOutline style={style} fontSize={fontSize} role="img" />;
     case 'marking-definition':
-      return <CenterFocusStrong style={style} fontSize={fontSize} role="img" />;
+      return (
+        <CenterFocusStrongOutlined
+          style={style}
+          fontSize={fontSize}
+          role="img"
+        />
+      );
     case 'autonomous-system':
     case 'domain':
     case 'ipv4-addr':
@@ -123,7 +135,7 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'drops':
       return <VectorRadius style={style} fontSize={fontSize} role="img" />;
     default:
-      return <Help style={style} fontSize={fontSize} role="img" />;
+      return <HelpOutlined style={style} fontSize={fontSize} role="img" />;
   }
 };
 

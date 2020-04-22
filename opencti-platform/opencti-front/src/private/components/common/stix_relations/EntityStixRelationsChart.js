@@ -23,7 +23,7 @@ import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   paper: {
-    minHeight: 340,
+    minHeight: 280,
     height: '100%',
     margin: '4px 0 0 0',
     borderRadius: 6,
@@ -127,7 +127,7 @@ class EntityStixRelationsChart extends Component {
           if (props && props.stixRelationsTimeSeries) {
             return (
               <ResponsiveContainer
-                height={variant === 'explore' ? '90%' : 330}
+                height={variant === 'explore' ? '90%' : 300}
                 width="100%"
               >
                 <AreaChart

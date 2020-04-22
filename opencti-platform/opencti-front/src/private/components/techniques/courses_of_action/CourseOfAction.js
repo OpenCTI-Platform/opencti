@@ -16,6 +16,7 @@ import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityStixRelationsChart from '../../common/stix_relations/EntityStixRelationsChart';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
 
 const styles = () => ({
   container: {
@@ -50,11 +51,12 @@ class CourseOfActionComponent extends Component {
             <EntityExternalReferences entityId={courseOfAction.id} />
           </Grid>
         </Grid>
+        <StixObjectNotes entityId={courseOfAction.id} />
         <Grid
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 30 }}
+          style={{ marginTop: 15 }}
         >
           <Grid item={true} xs={4}>
             <EntityStixRelationsChart
