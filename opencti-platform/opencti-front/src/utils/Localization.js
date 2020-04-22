@@ -671,6 +671,7 @@ const i18n = {
       'Total observables': "Nombre d'observables",
       'Total reports': 'Nombre de rapports',
       'Total workspaces': "Nombre d'espaces de travail",
+      'Total notes': "Nombre de notes",
       'Total relations': 'Nombre de relations',
       'Total indicators': "Nombre d'indicateurs",
       'Total direct relations': 'Nombre de relations directes',
