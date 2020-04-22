@@ -43,7 +43,6 @@ const READ_QUERY = gql`
 
 describe('MarkingDefinition resolver standard behavior', () => {
   let markingDefinitionInternalId;
-  let markingDefinitionMarkingDefinitionRelationId;
   const markingDefinitionStixId = 'marking-definition--35ee3df2-dc60-4bf3-9b57-98222b827a83';
   it('should markingDefinition created', async () => {
     const CREATE_QUERY = gql`
