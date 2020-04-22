@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types';
 import Markdown from 'react-markdown';
 import { ExpandMore, ExpandLess } from '@material-ui/icons';
 import IconButton from '@material-ui/core/IconButton';
-import Grid from '@material-ui/core/Grid';
 import { truncate } from '../utils/String';
 
 const ExpandableMarkdown = (props) => {

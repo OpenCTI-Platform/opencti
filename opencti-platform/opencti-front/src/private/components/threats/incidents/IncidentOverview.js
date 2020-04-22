@@ -3,13 +3,11 @@ import * as PropTypes from 'prop-types';
 import { compose, map, pathOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import Markdown from 'react-markdown';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
 import ItemCreator from '../../../../components/ItemCreator';
-import { truncate } from '../../../../utils/String';
 import ItemMarking from '../../../../components/ItemMarking';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
