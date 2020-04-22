@@ -21,7 +21,7 @@ import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   paper: {
-    minHeight: 300,
+    minHeight: 280,
     height: '100%',
     margin: '10px 0 0 0',
     borderRadius: 6,
@@ -100,7 +100,7 @@ class EntityStixRelationsRadar extends Component {
           ) {
             return (
               <ResponsiveContainer
-                height={variant === 'explore' ? '90%' : 300}
+                height={variant === 'explore' ? '90%' : 280}
                 width="100%"
               >
                 <RadarChart

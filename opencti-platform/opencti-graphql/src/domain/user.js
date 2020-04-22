@@ -187,11 +187,8 @@ export const getRoleCapabilities = async (roleId) => {
   return map((r) => r.capability, data);
 };
 
-export const findRoleById = (toolId) => {
-  if (toolId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(toolId, 'Role');
-  }
-  return loadEntityById(toolId, 'Role');
+export const findRoleById = (roleId) => {
+  return loadEntityById(roleId, 'Role');
 };
 export const findRoles = (args) => {
   return listEntities(['Role'], ['name'], args);

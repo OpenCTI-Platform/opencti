@@ -17,7 +17,7 @@ import { itemColor } from '../../../utils/Colors';
 
 const styles = () => ({
   paper: {
-    minHeight: 300,
+    minHeight: 280,
     height: '100%',
     margin: '10px 0 0 0',
     padding: 0,
@@ -38,10 +38,13 @@ const renderCustomizedLabel = ({
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
   return (
-    <text x={x} y={y}
+    <text
+      x={x}
+      y={y}
       fill="white"
       textAnchor={x > cx ? 'start' : 'end'}
-      dominantBaseline="central">
+      dominantBaseline="central"
+    >
       {`${(percent * 100).toFixed(0)}%`}
     </text>
   );
@@ -90,7 +93,7 @@ class EntityReportsPie extends Component {
                 && props.reportsDistribution.length > 0
               ) {
                 return (
-                  <ResponsiveContainer height={300} width="100%">
+                  <ResponsiveContainer height={280} width="100%">
                     <PieChart
                       margin={{
                         top: 50,

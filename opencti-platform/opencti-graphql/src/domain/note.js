@@ -25,7 +25,7 @@ export const findById = (noteId) => {
   return loadEntityById(noteId, 'Note');
 };
 export const findAll = async (args) => {
-  return listEntities(['Note'], ['name', 'description'], args);
+  return listEntities(['Note'], ['name', 'content'], args);
 };
 
 // Entities tab

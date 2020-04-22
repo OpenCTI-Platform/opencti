@@ -114,6 +114,7 @@ describe('Note resolver standard behavior', () => {
         stix_id_key: noteStixId,
         description: 'Note description',
         content: 'Test content',
+        objectRefs: ['fab6fa99-b07f-4278-86b4-b674edf60877'],
       },
     };
     const note = await queryAsAdmin({
@@ -416,7 +417,7 @@ describe('Note resolver standard behavior', () => {
         },
       },
     });
-    expect(queryResult.data.noteEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
+    expect(queryResult.data.noteEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(2);
     noteMarkingDefinitionRelationId =
       queryResult.data.noteEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
   });

@@ -2885,6 +2885,9 @@ input NoteAddInput {
   createdByRef: String
   markingDefinitions: [String]
   tags: [String]
+  objectRefs: [String]
+  observableRefs: [String]
+  relationRefs: [String]
   clientMutationId: String
   created: DateTime
   modified: DateTime

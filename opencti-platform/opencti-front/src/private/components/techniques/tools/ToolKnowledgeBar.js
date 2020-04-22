@@ -9,11 +9,11 @@ import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import {
-  Gauge, ChessKnight, Fire, Diamond, Biohazard,
+  Gauge, ChessKnight, Fire, DiamondOutline, Biohazard,
 } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawer: {
     minHeight: '100vh',
     width: 260,
@@ -68,7 +68,7 @@ class ToolKnowledgeBar extends Component {
             classes={{ root: classes.item }}
           >
             <ListItemIcon>
-              <Diamond />
+              <DiamondOutline />
             </ListItemIcon>
             <ListItemText
               primary={t('Intrusion sets')}

@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link, withRouter } from 'react-router-dom';
-import { compose, includes, map, pathOr } from "ramda";
+import {
+  compose, includes, map, pathOr,
+} from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import graphql from 'babel-plugin-relay/macro';
 import { DiagramEngine } from 'storm-react-diagrams';
@@ -31,7 +33,8 @@ import ItemMarking from '../../../../components/ItemMarking';
 import StixRelationInferences from './StixRelationInferences';
 import StixRelationStixRelations from './StixRelationStixRelations';
 import EntityLastReports from '../../reports/EntityLastReports';
-import ItemCreator from "../../../../components/ItemCreator";
+import ItemCreator from '../../../../components/ItemCreator';
+import StixObjectNotes from '../stix_object/StixObjectNotes';
 
 const styles = () => ({
   container: {
@@ -359,7 +362,11 @@ class StixRelationContainer extends Component {
                 {t('Creator')}
               </Typography>
               <ItemCreator
-                createdByRef={pathOr(null, ['createdByRef', 'node'], stixRelation)}
+                createdByRef={pathOr(
+                  null,
+                  ['createdByRef', 'node'],
+                  stixRelation,
+                )}
               />
             </Paper>
           </Grid>
@@ -424,18 +431,24 @@ class StixRelationContainer extends Component {
               </Paper>
             </div>
           ) : (
-            <Grid
-              container={true}
-              spacing={2}
-              style={{ margin: '40px 0 60px 0' }}
-            >
-              <Grid item={true} xs={6}>
-                <StixRelationStixRelations entityId={stixRelation.id} />
+            <div>
+              <Grid
+                container={true}
+                spacing={2}
+                style={{ margin: '40px 0 0px 0' }}
+              >
+                <Grid item={true} xs={6}>
+                  <StixRelationStixRelations entityId={stixRelation.id} />
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <EntityLastReports entityId={stixRelation.id} />
+                </Grid>
               </Grid>
-              <Grid item={true} xs={6}>
-                <EntityLastReports entityId={stixRelation.id} />
-              </Grid>
-            </Grid>
+              <StixObjectNotes
+                entityId={stixRelation.id}
+                inputType="relationRefs"
+              />
+            </div>
           )}
         </div>
         {stixRelation.inferred ? (

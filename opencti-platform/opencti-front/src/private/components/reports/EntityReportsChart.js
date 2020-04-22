@@ -21,7 +21,7 @@ import inject18n from '../../../components/i18n';
 
 const styles = () => ({
   paper: {
-    minHeight: 300,
+    minHeight: 280,
     height: '100%',
     margin: '4px 0 0 0',
     padding: '0 0 10px 0',
@@ -156,13 +156,13 @@ class EntityReportsChart extends Component {
             render={({ props }) => {
               if (props && props.reportsTimeSeries) {
                 return (
-                  <ResponsiveContainer height={330} width="100%">
+                  <ResponsiveContainer height={280} width="100%">
                     <BarChart
                       data={props.reportsTimeSeries}
                       margin={{
                         top: 20,
                         right: 50,
-                        bottom: 20,
+                        bottom: 0,
                         left: -10,
                       }}
                     >

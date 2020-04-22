@@ -10,10 +10,15 @@ const styles = () => ({
     fontSize: 12,
     height: 25,
     marginRight: 7,
+    textTransform: 'uppercase',
+    borderRadius: '0',
   },
   chipInList: {
     fontSize: 12,
     height: 20,
+    float: 'left',
+    textTransform: 'uppercase',
+    borderRadius: '0',
   },
 });
 
@@ -23,22 +28,24 @@ const inlineStyles = {
     color: '#2b2b2b',
   },
   green: {
-    backgroundColor: '#2e7d32',
-  },
-  darkGreen: {
-    backgroundColor: '#1b5e20',
+    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+    color: '#4caf50',
   },
   blue: {
-    backgroundColor: '#3f51b5',
+    backgroundColor: 'rgba(92, 123, 245, 0.08)',
+    color: '#5c7bf5',
   },
   red: {
-    backgroundColor: '#f44336',
+    backgroundColor: 'rgba(244, 67, 54, 0.08)',
+    color: '#f44336',
   },
   orange: {
-    backgroundColor: '#ff9800',
+    backgroundColor: 'rgba(255, 152, 0, 0.08)',
+    color: '#ff9800',
   },
   blueGrey: {
-    backgroundColor: '#607d8b',
+    backgroundColor: 'rgba(96, 125, 139, 0.08)',
+    color: '#607d8b',
     fontStyle: 'italic',
   },
 };
@@ -48,7 +55,7 @@ class ItemConfidenceLevel extends Component {
     const {
       t, level, classes, variant,
     } = this.props;
-    const style = (variant === 'inList') ? classes.chipInList : classes.chip;
+    const style = variant === 'inList' ? classes.chipInList : classes.chip;
     switch (level) {
       case 1:
         return (
@@ -108,7 +115,4 @@ ItemConfidenceLevel.propTypes = {
   level: PropTypes.number,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(ItemConfidenceLevel);
+export default compose(inject18n, withStyles(styles))(ItemConfidenceLevel);

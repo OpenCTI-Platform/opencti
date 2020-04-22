@@ -14,7 +14,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import CardContent from '@material-ui/core/CardContent';
 import {
-  Assignment, Layers, Work, Description,
+  AssignmentOutlined, LayersOutlined, WorkOutline, DescriptionOutlined,
 } from '@material-ui/icons';
 import { Database, HexagonOutline } from 'mdi-material-ui';
 import BarChart from 'recharts/lib/chart/BarChart';
@@ -270,7 +270,7 @@ class Dashboard extends Component {
                             {t('Total reports')}
                           </div>
                           <div className={classes.icon}>
-                            <Assignment color="inherit" fontSize="large" />
+                            <AssignmentOutlined color="inherit" fontSize="large" />
                           </div>
                         </CardContent>
                       );
@@ -305,7 +305,7 @@ class Dashboard extends Component {
                             {t('Total observables')}
                           </div>
                           <div className={classes.icon}>
-                            <Layers color="inherit" fontSize="large" />
+                            <LayersOutlined color="inherit" fontSize="large" />
                           </div>
                         </CardContent>
                       );
@@ -338,7 +338,7 @@ class Dashboard extends Component {
                             {t('Total workspaces')}
                           </div>
                           <div className={classes.icon}>
-                            <Work color="inherit" fontSize="large" />
+                            <WorkOutline color="inherit" fontSize="large" />
                           </div>
                         </CardContent>
                       );
@@ -453,7 +453,7 @@ class Dashboard extends Component {
                                 to={`/dashboard/reports/all/${report.id}`}
                               >
                                 <ListItemIcon>
-                                  <Description color="primary" />
+                                  <DescriptionOutlined color="primary" />
                                 </ListItemIcon>
                                 <ListItemText
                                   classes={{ root: classes.itemText }}

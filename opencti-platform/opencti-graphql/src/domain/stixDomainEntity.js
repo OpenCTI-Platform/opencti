@@ -228,8 +228,13 @@ export const stixDomainEntityDelete = async (stixDomainEntityId) => {
   }
   return deleteEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
 };
-export const stixDomainEntitiesDelete = (stixDomainEntitiesIds) => {
-  return Promise.all(stixDomainEntitiesIds.map((stixDomainEntityId) => stixDomainEntityDelete(stixDomainEntityId)));
+export const stixDomainEntitiesDelete = async (stixDomainEntitiesIds) => {
+  // Relations cannot be created in parallel.
+  for (let i = 0; i < stixDomainEntitiesIds.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    await stixDomainEntityDelete(stixDomainEntitiesIds[i]);
+  }
+  return stixDomainEntitiesIds;
 };
 
 export const stixDomainEntityAddRelation = async (user, stixDomainEntityId, input) => {

@@ -17,7 +17,7 @@ import SimpleEntityStixRelationsLines, {
 
 const styles = (theme) => ({
   paper: {
-    minHeight: 300,
+    minHeight: 280,
     height: '100%',
     margin: '10px 0 0 0',
     borderRadius: 6,
