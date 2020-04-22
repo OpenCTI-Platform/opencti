@@ -3877,8 +3877,6 @@ type MarkingDefinitionEditMutations {
   fieldPatch(input: EditInput): MarkingDefinition
   contextPatch(input: EditContext): MarkingDefinition
   contextClean: MarkingDefinition
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): MarkingDefinition
 }
 
 # ExternalReference
