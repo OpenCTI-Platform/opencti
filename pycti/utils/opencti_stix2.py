@@ -1439,9 +1439,9 @@ class OpenCTIStix2:
             """
 
             # Get notes
-            for uuid in uuids:
+            for export_uuid in uuids:
                 if "marking-definition" not in uuid:
-                    notes = self.opencti.stix_entity.notes(id=uuid)
+                    notes = self.opencti.stix_entity.notes(id=export_uuid)
                     for note in notes:
                         note_object_data = self.opencti.note.to_stix2(
                             entity=note,
