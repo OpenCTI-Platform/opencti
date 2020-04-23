@@ -39,10 +39,8 @@ const externalReferenceResolvers = {
   },
   Subscription: {
     externalReference: {
-      /* istanbul ignore next */
-      resolve: (payload) => payload.instance,
-      /* istanbul ignore next */
-      subscribe: (_, { id }, { user }) => {
+      resolve: /* istanbul ignore next */ (payload) => payload.instance,
+      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
         externalReferenceEditContext(user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.ExternalReference.EDIT_TOPIC),
