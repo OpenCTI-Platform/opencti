@@ -273,7 +273,7 @@ export const stixDomainEntityAddRelations = async (user, stixDomainEntityId, inp
   );
   await createRelations(stixDomainEntityId, finalInput);
   return loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity').then((entity) =>
-    notify(BUS_TOPICS.Workspace.EDIT_TOPIC, entity, user)
+    notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, entity, user)
   );
 };
 export const stixDomainEntityDeleteRelation = async (
@@ -284,6 +284,9 @@ export const stixDomainEntityDeleteRelation = async (
   relationType = 'stix_relation_embedded'
 ) => {
   const stixDomainEntity = await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
+  if (!stixDomainEntity) {
+    throw new Error('Cannot delete the relation, Stix-Domain-Entity cannot be found.');
+  }
   if (relationId) {
     const data = await loadRelationById(relationId, 'relation');
     if (
@@ -312,6 +315,9 @@ export const stixDomainEntityDeleteRelation = async (
 };
 export const stixDomainEntityEditField = async (user, stixDomainEntityId, input) => {
   const stixDomainEntity = await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
+  if (!stixDomainEntity) {
+    throw new Error('Cannot edit field, Stix-Domain-Entity cannot be found.');
+  }
   if (stixDomainEntity.entity_type === 'user' && !isNil(stixDomainEntity.external)) {
     throw new ForbiddenAccess();
   }

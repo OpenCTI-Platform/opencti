@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
-import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
+import StixObservableTags from '../../common/stix_observables/StixObservableTags';
 
 const styles = () => ({
   paper: {
@@ -33,7 +33,7 @@ class StixObservableDetailsComponent extends Component {
           </Typography>
           <pre>{stixObservable.observable_value}</pre>
           <div style={{ marginTop: 20 }}>
-            <StixDomainEntityTags
+            <StixObservableTags
               tags={stixObservable.tags}
               id={stixObservable.id}
             />
@@ -75,7 +75,4 @@ const StixObservableDetails = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixObservableDetails);
+export default compose(inject18n, withStyles(styles))(StixObservableDetails);

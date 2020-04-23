@@ -1626,7 +1626,7 @@ export const createEntity = async (user, entity, type, opts = {}) => {
   }
   // Complete with eventual relations (will eventually update the index)
   await addOwner(internalId, entity.createdByOwner, opts);
-  if (modelType === TYPE_STIX_DOMAIN || modelType === TYPE_STIX_DOMAIN_ENTITY) {
+  if (modelType === TYPE_STIX_DOMAIN || modelType === TYPE_STIX_DOMAIN_ENTITY || modelType === TYPE_STIX_OBSERVABLE) {
     await addCreatedByRef(internalId, entity.createdByRef || user.id, opts);
     await addMarkingDefs(internalId, entity.markingDefinitions, opts);
     await addTags(internalId, entity.tags, opts);

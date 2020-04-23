@@ -65,7 +65,7 @@ export const countriesLinesQuery = graphql`
     $cursor: ID
     $orderBy: CountriesOrdering
     $orderMode: OrderingMode
-    $filters: [OrganizationsFiltering]
+    $filters: [CountriesFiltering]
   ) {
     ...CountriesLines_data
       @arguments(

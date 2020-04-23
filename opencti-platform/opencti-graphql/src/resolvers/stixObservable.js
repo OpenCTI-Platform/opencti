@@ -6,6 +6,7 @@ import {
   findById,
   indicators,
   stixObservableAddRelation,
+  stixObservableAddRelations,
   stixObservableAskEnrichment,
   stixObservableCleanContext,
   stixObservableDelete,
@@ -52,7 +53,9 @@ const stixObservableResolvers = {
       contextPatch: ({ input }) => stixObservableEditContext(user, id, input),
       contextClean: () => stixObservableCleanContext(user, id),
       relationAdd: ({ input }) => stixObservableAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixObservableDeleteRelation(user, id, relationId),
+      relationsAdd: ({ input }) => stixObservableAddRelations(user, id, input),
+      relationDelete: ({ relationId, toId, relationType }) =>
+        stixObservableDeleteRelation(user, id, relationId, toId, relationType),
       askEnrichment: ({ connectorId }) => stixObservableAskEnrichment(id, connectorId),
     }),
     stixObservableAdd: (_, { input }, { user }) => addStixObservable(user, input),

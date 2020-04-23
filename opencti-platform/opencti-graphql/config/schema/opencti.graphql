@@ -3864,7 +3864,7 @@ type StixDomainEntityEditMutations {
   contextPatch(input: EditContext): StixDomainEntity @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: StixDomainEntity @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationsAdd(input: RelationsAddInput): StixEntity @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationsAdd(input: RelationsAddInput): StixDomainEntity @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(relationId: ID, toId: String, relationType: String): StixEntity @auth(for: [KNOWLEDGE_KNUPDATE])
   importPush(file: Upload!): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
@@ -3880,7 +3880,8 @@ type StixObservableEditMutations {
   contextPatch(input: EditContext): StixObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: StixObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(relationId: ID!): StixObservable @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationsAdd(input: RelationsAddInput): StixObservable @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID, toId: String, relationType: String): StixObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
 }
 
