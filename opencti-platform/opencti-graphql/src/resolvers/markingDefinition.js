@@ -33,6 +33,7 @@ const markingDefinitionResolvers = {
     }),
     markingDefinitionAdd: (_, { input }, { user }) => addMarkingDefinition(user, input),
   },
+  /* istanbul ignore next */
   Subscription: {
     markingDefinition: {
       resolve: (payload) => payload.instance,

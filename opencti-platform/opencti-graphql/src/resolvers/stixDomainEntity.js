@@ -81,6 +81,7 @@ const stixDomainEntityResolvers = {
     stixDomainEntitiesExportPush: (_, { type, file, context, listArgs }, { user }) =>
       stixDomainEntityExportPush(user, type, null, file, context, listArgs),
   },
+  /* istanbul ignore next */
   Subscription: {
     stixDomainEntity: {
       resolve: (payload) => payload.instance,
