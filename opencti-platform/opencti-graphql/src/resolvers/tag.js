@@ -35,8 +35,8 @@ const tagResolvers = {
   },
   Subscription: {
     tag: {
-      resolve: (payload) => payload.instance,
-      subscribe: (_, { id }, { user }) => {
+      resolve: /* istanbul ignore next */ (payload) => payload.instance,
+      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
         tagEditContext(user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.Tag.EDIT_TOPIC),

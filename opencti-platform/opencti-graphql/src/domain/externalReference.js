@@ -1,4 +1,4 @@
-import { assoc } from 'ramda';
+import { pipe, assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
@@ -21,7 +21,7 @@ export const findAll = (args) => {
 };
 
 export const addExternalReference = async (user, externalReference) => {
-  const created = await createEntity(externalReference, 'External-Reference', { modelType: TYPE_STIX_DOMAIN });
+  const created = await createEntity(user, externalReference, 'External-Reference', { modelType: TYPE_STIX_DOMAIN });
   return notify(BUS_TOPICS.ExternalReference.ADDED_TOPIC, created, user);
 };
 
@@ -29,13 +29,8 @@ export const externalReferenceDelete = async (externalReferenceId) => {
   return deleteEntityById(externalReferenceId, 'External-Reference');
 };
 export const externalReferenceAddRelation = (user, externalReferenceId, input) => {
-  return createRelation(
-    externalReferenceId,
-    assoc('through', 'external_references', input),
-    {},
-    null,
-    'External-Reference'
-  ).then((relationData) => {
+  const finalInput = pipe(assoc('through', 'external_references'), assoc('toType', 'External-Reference'))(input);
+  return createRelation(externalReferenceId, finalInput).then((relationData) => {
     notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, relationData, user);
     return relationData;
   });

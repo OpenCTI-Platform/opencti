@@ -65,6 +65,7 @@ export const citiesLinesQuery = graphql`
     $cursor: ID
     $orderBy: CitiesOrdering
     $orderMode: OrderingMode
+    $filters: [OrganizationsFiltering]
   ) {
     ...CitiesLines_data
       @arguments(
@@ -73,6 +74,7 @@ export const citiesLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -88,6 +90,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "CitiesOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          filters: { type: "[CitiesFiltering]" }
         ) {
         cities(
           search: $search
@@ -95,6 +98,7 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_cities") {
           edges {
             node {
@@ -131,6 +135,7 @@ export default createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: citiesLinesQuery,

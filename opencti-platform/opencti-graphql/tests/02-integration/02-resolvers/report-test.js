@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
+import { now } from '../../../src/database/grakn';
 
 const LIST_QUERY = gql`
   query reports(
@@ -27,6 +28,55 @@ const LIST_QUERY = gql`
           description
         }
       }
+    }
+  }
+`;
+
+const TIMESERIES_QUERY = gql`
+  query reportsTimeSeries(
+    $objectId: String
+    $authorId: String
+    $field: String!
+    $operation: StatsOperation!
+    $startDate: DateTime!
+    $endDate: DateTime!
+    $interval: String!
+  ) {
+    reportsTimeSeries(
+      objectId: $objectId
+      authorId: $authorId
+      field: $field
+      operation: $operation
+      startDate: $startDate
+      endDate: $endDate
+      interval: $interval
+    ) {
+      date
+      value
+    }
+  }
+`;
+
+const NUMBER_QUERY = gql`
+  query reportsNumber($objectId: String, $endDate: DateTime!) {
+    reportsNumber(objectId: $objectId, endDate: $endDate) {
+      total
+      count
+    }
+  }
+`;
+
+const DISTRIBUTION_QUERY = gql`
+  query reportsDistribution(
+    $objectId: String
+    $field: String!
+    $operation: StatsOperation!
+    $limit: Int
+    $order: String
+  ) {
+    reportsDistribution(objectId: $objectId, field: $field, operation: $operation, limit: $limit, order: $order) {
+      label
+      value
     }
   }
 `;
@@ -188,6 +238,96 @@ describe('Report resolver standard behavior', () => {
   it('should list reports', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
     expect(queryResult.data.reports.edges.length).toEqual(2);
+  });
+  it('should timeseries reports to be accurate', async () => {
+    const queryResult = await queryAsAdmin({
+      query: TIMESERIES_QUERY,
+      variables: {
+        field: 'published',
+        operation: 'count',
+        startDate: '2020-01-01T00:00:00+00:00',
+        endDate: '2021-01-01T00:00:00+00:00',
+        interval: 'month',
+      },
+    });
+    expect(queryResult.data.reportsTimeSeries.length).toEqual(13);
+    expect(queryResult.data.reportsTimeSeries[1].value).toEqual(1);
+    expect(queryResult.data.reportsTimeSeries[2].value).toEqual(1);
+  });
+  it('should timeseries reports for entity to be accurate', async () => {
+    const queryResult = await queryAsAdmin({
+      query: TIMESERIES_QUERY,
+      variables: {
+        objectId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330',
+        field: 'published',
+        operation: 'count',
+        startDate: '2020-01-01T00:00:00+00:00',
+        endDate: '2021-01-01T00:00:00+00:00',
+        interval: 'month',
+      },
+    });
+    expect(queryResult.data.reportsTimeSeries.length).toEqual(13);
+    expect(queryResult.data.reportsTimeSeries[1].value).toEqual(0);
+    expect(queryResult.data.reportsTimeSeries[2].value).toEqual(1);
+  });
+  it('should timeseries reports for author to be accurate', async () => {
+    const queryResult = await queryAsAdmin({
+      query: TIMESERIES_QUERY,
+      variables: {
+        authorId: 'c79e5d9f-4321-4174-b120-7cd9342ec88a',
+        field: 'published',
+        operation: 'count',
+        startDate: '2020-01-01T00:00:00+00:00',
+        endDate: '2021-01-01T00:00:00+00:00',
+        interval: 'month',
+      },
+    });
+    expect(queryResult.data.reportsTimeSeries.length).toEqual(13);
+    expect(queryResult.data.reportsTimeSeries[1].value).toEqual(0);
+    expect(queryResult.data.reportsTimeSeries[2].value).toEqual(1);
+  });
+  it('should reports number to be accurate', async () => {
+    const queryResult = await queryAsAdmin({
+      query: NUMBER_QUERY,
+      variables: {
+        endDate: now(),
+      },
+    });
+    expect(queryResult.data.reportsNumber.total).toEqual(2);
+    expect(queryResult.data.reportsNumber.count).toEqual(2);
+  });
+  it('should reports number by entity to be accurate', async () => {
+    const queryResult = await queryAsAdmin({
+      query: NUMBER_QUERY,
+      variables: {
+        objectId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330',
+        endDate: now(),
+      },
+    });
+    expect(queryResult.data.reportsNumber.total).toEqual(1);
+    expect(queryResult.data.reportsNumber.count).toEqual(1);
+  });
+  it('should reports distribution to be accurate', async () => {
+    const queryResult = await queryAsAdmin({
+      query: DISTRIBUTION_QUERY,
+      variables: {
+        field: 'created_by_ref.name',
+        operation: 'count',
+      },
+    });
+    expect(queryResult.data.reportsDistribution.length).toEqual(0);
+  });
+  it('should reports distribution by entity to be accurate', async () => {
+    const queryResult = await queryAsAdmin({
+      query: DISTRIBUTION_QUERY,
+      variables: {
+        objectId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330',
+        field: 'created_by_ref.name',
+        operation: 'count',
+      },
+    });
+    expect(queryResult.data.reportsDistribution[0].label).toEqual('ANSSI');
+    expect(queryResult.data.reportsDistribution[0].value).toEqual(1);
   });
   it('should update report', async () => {
     const UPDATE_QUERY = gql`

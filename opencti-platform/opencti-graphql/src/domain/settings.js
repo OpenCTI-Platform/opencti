@@ -46,7 +46,7 @@ export const getSettings = async () => {
 };
 
 export const addSettings = async (user, settings) => {
-  const created = await createEntity(settings, 'Settings', { modelType: TYPE_OPENCTI_INTERNAL });
+  const created = await createEntity(user, settings, 'Settings', { modelType: TYPE_OPENCTI_INTERNAL });
   return notify(BUS_TOPICS.Settings.ADDED_TOPIC, created, user);
 };
 

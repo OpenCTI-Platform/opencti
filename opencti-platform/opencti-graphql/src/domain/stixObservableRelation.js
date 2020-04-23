@@ -1,4 +1,4 @@
-import { assoc } from 'ramda';
+import { pipe, assoc } from 'ramda';
 import {
   findAll as stixRelationFindAll,
   findById as findByIdStixRelation,
@@ -19,17 +19,12 @@ export const findAll = (args) =>
 export const findById = (id) => findByIdStixRelation(id);
 
 // region mutations
-export const addStixObservableRelation = async (user, stixObservableRelation, reversedReturn = false) => {
-  const created = await createRelation(
-    stixObservableRelation.fromId,
-    stixObservableRelation,
-    {
-      reversedReturn,
-      isStixObservableRelation: true,
-    },
-    'Stix-Observable',
-    'Stix-Observable'
-  );
+export const addStixObservableRelation = async (user, input, reversedReturn = false) => {
+  const finalInput = pipe(assoc('fromType', 'Stix-Observable'), assoc('toType', 'Stix-Observable'))(input);
+  const created = await createRelation(finalInput.fromId, finalInput, {
+    reversedReturn,
+    isStixObservableRelation: true,
+  });
   return notify(BUS_TOPICS.StixObservableRelation.ADDED_TOPIC, created, user);
 };
 export const stixObservableRelationDelete = async (stixObservableRelationId) =>

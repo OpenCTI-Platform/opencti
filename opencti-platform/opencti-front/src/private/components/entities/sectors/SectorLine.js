@@ -5,7 +5,7 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRight, Domain } from '@material-ui/icons';
+import { KeyboardArrowRightOutlined, DomainOutlined } from '@material-ui/icons';
 import { compose, map } from 'ramda';
 import List from '@material-ui/core/List';
 import inject18n from '../../../../components/i18n';
@@ -67,7 +67,7 @@ class SectorLineComponent extends Component {
           to={`/dashboard/entities/sectors/${node.id}`}
         >
           <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <Domain fontSize={isSubSector ? 'small' : 'default'} />
+            <DomainOutlined fontSize={isSubSector ? 'small' : 'default'} />
           </ListItemIcon>
           <ListItemText
             primary={
@@ -90,7 +90,7 @@ class SectorLineComponent extends Component {
             }
           />
           <ListItemIcon classes={{ root: classes.goIcon }}>
-            <KeyboardArrowRight />
+            <KeyboardArrowRightOutlined />
           </ListItemIcon>
         </ListItem>
         {subSectors ? (
@@ -133,13 +133,13 @@ class SectorLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Domain />
+          <DomainOutlined />
         </ListItemIcon>
         <ListItemText
           primary={<span className="fakeItem" style={{ width: '80%' }} />}
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
+          <KeyboardArrowRightOutlined />
         </ListItemIcon>
       </ListItem>
     );

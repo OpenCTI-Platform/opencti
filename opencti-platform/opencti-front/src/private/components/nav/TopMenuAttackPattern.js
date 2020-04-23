@@ -4,11 +4,11 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIos } from '@material-ui/icons';
+import { ArrowForwardIosOutlined } from '@material-ui/icons';
 import { LockPattern } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
     padding: '2px 5px 2px 5px',
@@ -56,7 +56,7 @@ class TopMenuAttackPattern extends Component {
           <LockPattern className={classes.icon} fontSize="small" />
           {t('Attack patterns')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined color="inherit" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
           to={`/dashboard/techniques/attack_patterns/${attackPatternId}`}

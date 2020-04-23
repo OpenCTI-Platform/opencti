@@ -11,18 +11,21 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
 import {
-  Dashboard,
-  Explore,
-  Assignment,
-  DeviceHub,
-  KeyboardArrowLeft,
-  KeyboardArrowRight,
-  Layers,
-  ListAlt,
-  GroupWork,
+  DashboardOutlined,
+  ExploreOutlined,
+  AssignmentOutlined,
+  DeviceHubOutlined,
+  KeyboardArrowLeftOutlined,
+  KeyboardArrowRightOutlined,
+  LayersOutlined,
+  GroupWorkOutlined,
 } from '@material-ui/icons';
 import {
-  Settings, Database, Binoculars, Flask,
+  CogOutline,
+  Database,
+  Binoculars,
+  FlaskOutline,
+  FolderTableOutline
 } from 'mdi-material-ui';
 import { compose } from 'ramda';
 import logo from '../../../resources/images/logo_text.png';
@@ -83,7 +86,7 @@ const LeftBar = ({ t, location, classes }) => {
             classes={{ root: classes.menuItem }}
           >
             <ListItemIcon>
-              <Dashboard />
+              <DashboardOutlined />
             </ListItemIcon>
           </MenuItem>
           <Security needs={[KNOWLEDGE]}>
@@ -95,7 +98,7 @@ const LeftBar = ({ t, location, classes }) => {
               classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
-                <Flask />
+                <FlaskOutline />
               </ListItemIcon>
             </MenuItem>
             <MenuItem
@@ -106,7 +109,7 @@ const LeftBar = ({ t, location, classes }) => {
               classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
-                <Layers />
+                <LayersOutlined />
               </ListItemIcon>
             </MenuItem>
             <MenuItem
@@ -128,7 +131,7 @@ const LeftBar = ({ t, location, classes }) => {
               classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
-                <Assignment />
+                <AssignmentOutlined />
               </ListItemIcon>
             </MenuItem>
             <MenuItem
@@ -139,7 +142,7 @@ const LeftBar = ({ t, location, classes }) => {
               classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
-                <ListAlt />
+                <FolderTableOutline />
               </ListItemIcon>
             </MenuItem>
           </Security>
@@ -155,7 +158,7 @@ const LeftBar = ({ t, location, classes }) => {
               classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
-                <Explore />
+                <ExploreOutlined />
               </ListItemIcon>
             </MenuItem>
             <MenuItem
@@ -167,7 +170,7 @@ const LeftBar = ({ t, location, classes }) => {
               classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
-                <DeviceHub />
+                <DeviceHubOutlined />
               </ListItemIcon>
             </MenuItem>
             <MenuItem
@@ -178,7 +181,7 @@ const LeftBar = ({ t, location, classes }) => {
               dense={false}
             >
               <ListItemIcon>
-                <GroupWork />
+                <GroupWorkOutlined />
               </ListItemIcon>
             </MenuItem>
           </MenuList>
@@ -209,7 +212,7 @@ const LeftBar = ({ t, location, classes }) => {
                 classes={{ root: classes.menuItem }}
               >
                 <ListItemIcon>
-                  <Settings />
+                  <CogOutline />
                 </ListItemIcon>
               </MenuItem>
             </Security>
@@ -223,7 +226,7 @@ const LeftBar = ({ t, location, classes }) => {
             classes={{ root: classes.menuItem }}
           >
             <ListItemIcon>
-              <KeyboardArrowRight />
+              <KeyboardArrowRightOutlined />
             </ListItemIcon>
           </MenuItem>
         </MenuList>
@@ -254,7 +257,7 @@ const LeftBar = ({ t, location, classes }) => {
             classes={{ root: classes.menuItem }}
           >
             <ListItemIcon>
-              <Dashboard />
+              <DashboardOutlined />
             </ListItemIcon>
             <ListItemText primary={t('Dashboard')} />
           </MenuItem>
@@ -267,7 +270,7 @@ const LeftBar = ({ t, location, classes }) => {
             classes={{ root: classes.menuItem }}
           >
             <ListItemIcon>
-              <Flask />
+              <FlaskOutline />
             </ListItemIcon>
             <ListItemText primary={t('Threats')} />
           </MenuItem>
@@ -280,7 +283,7 @@ const LeftBar = ({ t, location, classes }) => {
             classes={{ root: classes.menuItem }}
           >
             <ListItemIcon>
-              <Layers />
+              <LayersOutlined />
             </ListItemIcon>
             <ListItemText primary={t('Techniques')} />
           </MenuItem>
@@ -306,7 +309,7 @@ const LeftBar = ({ t, location, classes }) => {
             classes={{ root: classes.menuItem }}
           >
             <ListItemIcon>
-              <Assignment />
+              <AssignmentOutlined />
             </ListItemIcon>
             <ListItemText primary={t('Reports')} />
           </MenuItem>
@@ -319,7 +322,7 @@ const LeftBar = ({ t, location, classes }) => {
             classes={{ root: classes.menuItem }}
           >
             <ListItemIcon>
-              <ListAlt />
+              <FolderTableOutline />
             </ListItemIcon>
             <ListItemText primary={t('Entities')} />
           </MenuItem>
@@ -336,7 +339,7 @@ const LeftBar = ({ t, location, classes }) => {
               classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
-                <Explore />
+                <ExploreOutlined />
               </ListItemIcon>
               <ListItemText primary={t('Explore')} />
             </MenuItem>
@@ -350,7 +353,7 @@ const LeftBar = ({ t, location, classes }) => {
               classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
-                <DeviceHub />
+                <DeviceHubOutlined />
               </ListItemIcon>
               <ListItemText primary={t('Investigate')} />
             </MenuItem>
@@ -364,7 +367,7 @@ const LeftBar = ({ t, location, classes }) => {
               classes={{ root: classes.menuItem }}
             >
               <ListItemIcon>
-                <GroupWork />
+                <GroupWorkOutlined />
               </ListItemIcon>
               <ListItemText primary={t('Correlate')} />
             </MenuItem>
@@ -396,7 +399,7 @@ const LeftBar = ({ t, location, classes }) => {
               style={{ marginBottom: 50 }}
             >
               <ListItemIcon>
-                <Settings />
+                <CogOutline />
               </ListItemIcon>
               <ListItemText primary={t('Settings')} />
             </MenuItem>
@@ -409,7 +412,7 @@ const LeftBar = ({ t, location, classes }) => {
             style={{ position: 'absolute', bottom: 10, width: '100%' }}
           >
             <ListItemIcon>
-              <KeyboardArrowLeft />
+              <KeyboardArrowLeftOutlined />
             </ListItemIcon>
           </MenuItem>
         </MenuList>

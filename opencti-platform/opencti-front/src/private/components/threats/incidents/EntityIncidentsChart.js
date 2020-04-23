@@ -23,7 +23,7 @@ import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   paper: {
-    minHeight: 300,
+    minHeight: 280,
     height: '100%',
     margin: '4px 0 0 0',
     padding: 0,
@@ -119,7 +119,7 @@ class EntityIncidentsChart extends Component {
           if (props && props.incidentsTimeSeries) {
             return (
               <ResponsiveContainer
-                height={variant === 'explore' ? '90%' : 330}
+                height={variant === 'explore' ? '90%' : 280}
                 width="100%"
               >
                 <LineChart
@@ -127,7 +127,7 @@ class EntityIncidentsChart extends Component {
                   margin={{
                     top: 20,
                     right: 50,
-                    bottom: 20,
+                    bottom: 0,
                     left: -10,
                   }}
                 >

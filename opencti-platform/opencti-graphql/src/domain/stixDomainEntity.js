@@ -1,5 +1,5 @@
 import { assoc, dissoc, map, propOr, pipe, invertObj, isNil, pathOr } from 'ramda';
-import { BUS_TOPICS, logger } from '../config/conf';
+import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
@@ -215,7 +215,7 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
   ) {
     args = { modelType: TYPE_STIX_DOMAIN_ENTITY, stixIdType: 'identity' };
   }
-  const created = await createEntity(domainToCreate, innerType, args);
+  const created = await createEntity(user, domainToCreate, innerType, args);
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 export const stixDomainEntityDelete = async (stixDomainEntityId) => {
@@ -229,7 +229,12 @@ export const stixDomainEntityDelete = async (stixDomainEntityId) => {
   return deleteEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
 };
 export const stixDomainEntitiesDelete = async (stixDomainEntitiesIds) => {
-  return Promise.all(stixDomainEntitiesIds.map((stixDomainEntityId) => stixDomainEntityDelete(stixDomainEntityId)));
+  // Relations cannot be created in parallel.
+  for (let i = 0; i < stixDomainEntitiesIds.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    await stixDomainEntityDelete(stixDomainEntitiesIds[i]);
+  }
+  return stixDomainEntitiesIds;
 };
 
 export const stixDomainEntityAddRelation = async (user, stixDomainEntityId, input) => {
@@ -242,7 +247,8 @@ export const stixDomainEntityAddRelation = async (user, stixDomainEntityId, inpu
   ) {
     throw new ForbiddenAccess();
   }
-  const data = await createRelation(stixDomainEntityId, input, {}, 'Stix-Domain-Entity', null, true);
+  const finalInput = assoc('fromType', 'Stix-Domain-Entity', input);
+  const data = await createRelation(stixDomainEntityId, finalInput);
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
 };
 export const stixDomainEntityAddRelations = async (user, stixDomainEntityId, input) => {
@@ -257,14 +263,15 @@ export const stixDomainEntityAddRelations = async (user, stixDomainEntityId, inp
   }
   const finalInput = map(
     (n) => ({
-      toId: n,
+      fromType: 'Stix-Domain-Entity',
       fromRole: input.fromRole,
+      toId: n,
       toRole: input.toRole,
       through: input.through,
     }),
     input.toIds
   );
-  await createRelations(stixDomainEntityId, finalInput, {}, 'Stix-Domain-Entity', null, true);
+  await createRelations(stixDomainEntityId, finalInput);
   return loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity').then((entity) =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, entity, user)
   );

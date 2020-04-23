@@ -37,6 +37,9 @@ const READ_QUERY = gql`
       id
       name
       description
+      region {
+        id
+      }
     }
   }
 `;
@@ -83,6 +86,17 @@ describe('Country resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.country).not.toBeNull();
     expect(queryResult.data.country.id).toEqual(countryInternalId);
+  });
+  it('should country region be accurate', async () => {
+    const queryResult = await queryAsAdmin({
+      query: READ_QUERY,
+      variables: { id: 'f2ea7d37-996d-4313-8f73-42a8782d39a0' },
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.country).not.toBeNull();
+    expect(queryResult.data.country.id).toEqual('f2ea7d37-996d-4313-8f73-42a8782d39a0');
+    expect(queryResult.data.country.region).not.toBeNull();
+    expect(queryResult.data.country.region.id).toEqual('ccbbd430-f264-4dae-b4db-d5c02e1edeb7');
   });
   it('should list countries', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });

@@ -21,7 +21,7 @@ export const findAll = (args) => {
 };
 
 export const addAttackPattern = async (user, attackPattern) => {
-  const created = await createEntity(attackPattern, 'Attack-Pattern');
+  const created = await createEntity(user, attackPattern, 'Attack-Pattern');
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 

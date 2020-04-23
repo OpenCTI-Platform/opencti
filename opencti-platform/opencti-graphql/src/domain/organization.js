@@ -29,7 +29,7 @@ export const sectors = (organizationId) => {
 };
 
 export const addOrganization = async (user, organization) => {
-  const created = await createEntity(organization, 'Organization', {
+  const created = await createEntity(user, organization, 'Organization', {
     modelType: TYPE_STIX_DOMAIN_ENTITY,
     stixIdType: 'identity',
   });

@@ -60,7 +60,7 @@ export const workspacesNumber = (args) => {
 // region mutations
 export const addWorkspace = async (user, workspace) => {
   const workspaceToCreate = assoc('createdByOwner', user.id, workspace);
-  const created = await createEntity(workspaceToCreate, 'Workspace', { modelType: TYPE_OPENCTI_INTERNAL });
+  const created = await createEntity(user, workspaceToCreate, 'Workspace', { modelType: TYPE_OPENCTI_INTERNAL });
   return notify(BUS_TOPICS.Workspace.ADDED_TOPIC, created, user);
 };
 export const workspaceDelete = (workspaceId) => deleteEntityById(workspaceId, 'Workspace');
@@ -68,7 +68,8 @@ export const workspaceAddRelation = (user, workspaceId, input) => {
   if (!input.through) {
     throw new ForbiddenAccess();
   }
-  return createRelation(workspaceId, input, {}, 'Workspace', null).then((relationData) => {
+  const finalInput = assoc('fromType', 'Workspace', input);
+  return createRelation(workspaceId, finalInput).then((relationData) => {
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, relationData, user);
     return relationData;
   });
@@ -79,14 +80,15 @@ export const workspaceAddRelations = async (user, workspaceId, input) => {
   }
   const finalInputs = map(
     (n) => ({
-      toId: n,
+      fromType: 'Workspace',
       fromRole: input.fromRole,
+      toId: n,
       toRole: input.toRole,
       through: input.through,
     }),
     input.toIds
   );
-  await createRelations(workspaceId, finalInputs, {}, 'Workspace', null);
+  await createRelations(workspaceId, finalInputs);
   return loadEntityById(workspaceId, 'Workspace').then((workspace) =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
   );

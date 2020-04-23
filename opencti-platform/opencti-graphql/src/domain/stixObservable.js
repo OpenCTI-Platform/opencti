@@ -81,7 +81,7 @@ export const addStixObservable = async (user, stixObservable) => {
     throw new Error(`[SCHEMA] Observable type ${innerType} is not supported.`);
   }
   const observableToCreate = pipe(dissoc('type'), dissoc('createIndicator'))(stixObservable);
-  const created = await createEntity(observableToCreate, innerType, {
+  const created = await createEntity(user, observableToCreate, innerType, {
     modelType: TYPE_STIX_OBSERVABLE,
     stixIdType: 'observable',
   });
@@ -123,7 +123,8 @@ export const stixObservableAddRelation = (user, stixObservableId, input) => {
   if (!input.through) {
     throw new ForbiddenAccess();
   }
-  return createRelation(stixObservableId, input, {}, 'Stix-Observable', null).then((relationData) => {
+  const finalInput = assoc('fromType', 'Stix-Observable', input);
+  return createRelation(stixObservableId, finalInput).then((relationData) => {
     notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, relationData, user);
     return relationData;
   });

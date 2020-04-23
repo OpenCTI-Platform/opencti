@@ -170,14 +170,11 @@ const takeWriteTx = async (retry = false) => {
       }
     );
 };
-const commitWriteTx = async (wTx, ignoreDuplicateError = false) => {
+const commitWriteTx = async (wTx) => {
   return wTx.tx.commit().catch(
     /* istanbul ignore next */ (err) => {
       logger.error('[GRAKN] CommitWriteTx error > ', err);
       if (err.code === 3) {
-        if (ignoreDuplicateError) {
-          return;
-        }
         throw new DatabaseError({
           data: { details: split('\n', err.details)[1] },
         });
@@ -186,11 +183,11 @@ const commitWriteTx = async (wTx, ignoreDuplicateError = false) => {
     }
   );
 };
-export const executeWrite = async (executeFunction, ignoreDuplicateError = false) => {
+export const executeWrite = async (executeFunction) => {
   const wTx = await takeWriteTx();
   try {
     const result = await executeFunction(wTx);
-    await commitWriteTx(wTx, ignoreDuplicateError);
+    await commitWriteTx(wTx);
     return result;
   } catch (err) {
     await closeTx(wTx);
@@ -256,13 +253,9 @@ const getAliasInternalIdFilter = (query, alias) => {
   const keyVars = Array.from(query.matchAll(reg));
   return keyVars.length > 0 ? last(head(keyVars)) : undefined;
 };
-const extractRelationAlias = (alias, role, relationType) => {
+const extractRelationAlias = (alias, role, oppositeAlias, relationType) => {
   const variables = [];
-  if (alias !== 'from' && alias !== 'to') {
-    throw new Error('[GRAKN] Query cant have relation alias without roles (except for from/to)');
-  }
   const naturalRoles = resolveNaturalRoles(relationType);
-  const oppositeAlias = alias === 'from' ? 'to' : 'from';
   const oppositeRole = head(Rfind((n) => head(n) !== role, Object.entries(naturalRoles)));
   // Control the role specified in the query.
   variables.push({ role, alias, forceNatural: false });
@@ -295,11 +288,11 @@ export const extractQueryVars = (query) => {
       // If no filtering, roles must be fully specified or not specified.
       // If missing left role
       if (leftRole === null && rightRole !== null) {
-        return extractRelationAlias(rAlias, rightRole, relationType);
+        return extractRelationAlias(rAlias, rightRole, lAlias, relationType);
       }
       // If missing right role
       if (leftRole !== null && rightRole === null) {
-        return extractRelationAlias(lAlias, leftRole, relationType);
+        return extractRelationAlias(lAlias, leftRole, rAlias, relationType);
       }
       // Else, we have both or nothing
       const roleForRight = rightRole ? rightRole.trim() : undefined;
@@ -333,7 +326,7 @@ export const queryAttributeValues = async (type) => {
         const attributeType = await attribute.type();
         const value = await attribute.value();
         const attributeTypeLabel = await attributeType.label();
-        const replacedValue = value.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+        const replacedValue = typeof value === 'string' ? value.replace(/\\"/g, '"').replace(/\\\\/g, '\\') : value;
         return {
           node: {
             id: attribute.id,
@@ -1235,14 +1228,7 @@ const flatAttributesForObject = (data) => {
 // endregion
 
 // region mutation relation
-const createRelationRaw = async (
-  fromInternalId,
-  input,
-  opts = {},
-  fromType = null,
-  toType = null,
-  ignoreDuplicateError = false
-) => {
+const createRelationRaw = async (fromInternalId, input, opts = {}) => {
   const { indexable = true, reversedReturn = false, isStixObservableRelation = false } = opts;
   // 01. First fix the direction of the relation
   const isStixRelation = includes('stix_id_key', Object.keys(input)) || input.relationship_type;
@@ -1316,8 +1302,8 @@ const createRelationRaw = async (
   }
   // 02. Create the relation
   const graknRelation = await executeWrite(async (wTx) => {
-    let query = `match $from ${fromType ? `isa ${fromType},` : ''} has internal_id_key "${fromInternalId}";
-      $to ${toType ? `isa ${toType},` : ''} has internal_id_key "${input.toId}";
+    let query = `match $from ${input.fromType ? `isa ${input.fromType},` : ''} has internal_id_key "${fromInternalId}";
+      $to ${input.toType ? `isa ${input.toType},` : ''} has internal_id_key "${input.toId}";
       insert $rel(${input.fromRole}: $from, ${input.toRole}: $to) isa ${relationshipType},`;
     const queryElements = flatAttributesForObject(relationAttributes);
     const nbElements = queryElements.length;
@@ -1340,7 +1326,7 @@ const createRelationRaw = async (
     const graknToId = conceptTo.id;
     const toTypes = await conceptTypes(conceptTo);
     return { graknRelationId, graknFromId, graknToId, relationTypes, fromTypes, toTypes };
-  }, ignoreDuplicateError);
+  });
   // 03. Prepare the final data with grakn IDS
   const createdRel = pipe(
     assoc('id', relationId),
@@ -1381,18 +1367,30 @@ const createRelationRaw = async (
 };
 const addOwner = async (fromInternalId, createdByOwnerId, opts = {}) => {
   if (!createdByOwnerId) return undefined;
-  const input = { fromRole: 'so', toId: createdByOwnerId, toRole: 'owner', through: 'owned_by' };
-  return createRelationRaw(fromInternalId, input, opts, null, 'Identity');
+  const input = { fromRole: 'so', toId: createdByOwnerId, toType: 'Identity', toRole: 'owner', through: 'owned_by' };
+  return createRelationRaw(fromInternalId, input, opts);
 };
 const addCreatedByRef = async (fromInternalId, createdByRefId, opts = {}) => {
   if (!createdByRefId) return undefined;
-  const input = { fromRole: 'so', toId: createdByRefId, toRole: 'creator', through: 'created_by_ref' };
-  return createRelationRaw(fromInternalId, input, opts, null, 'Identity');
+  const input = {
+    fromRole: 'so',
+    toId: createdByRefId,
+    toType: 'Identity',
+    toRole: 'creator',
+    through: 'created_by_ref',
+  };
+  return createRelationRaw(fromInternalId, input, opts);
 };
 const addMarkingDef = async (fromInternalId, markingDefId, opts = {}) => {
   if (!markingDefId) return undefined;
-  const input = { fromRole: 'so', toId: markingDefId, toRole: 'marking', through: 'object_marking_refs' };
-  return createRelationRaw(fromInternalId, input, opts, null, 'Marking-Definition');
+  const input = {
+    fromRole: 'so',
+    toId: markingDefId,
+    toType: 'Marking-Definition',
+    toRole: 'marking',
+    through: 'object_marking_refs',
+  };
+  return createRelationRaw(fromInternalId, input, opts);
 };
 const addMarkingDefs = async (internalId, markingDefIds, opts = {}) => {
   if (!markingDefIds || isEmpty(markingDefIds)) return undefined;
@@ -1407,8 +1405,8 @@ const addMarkingDefs = async (internalId, markingDefIds, opts = {}) => {
 };
 const addTag = async (fromInternalId, tagId, opts = {}) => {
   if (!tagId) return undefined;
-  const input = { fromRole: 'so', toId: tagId, toRole: 'tagging', through: 'tagged' };
-  return createRelationRaw(fromInternalId, input, opts, null, 'Tag');
+  const input = { fromRole: 'so', toId: tagId, toType: 'Tag', toRole: 'tagging', through: 'tagged' };
+  return createRelationRaw(fromInternalId, input, opts);
 };
 const addTags = async (internalId, tagsIds, opts = {}) => {
   if (!tagsIds || isEmpty(tagsIds)) return undefined;
@@ -1426,10 +1424,11 @@ const addKillChain = async (fromInternalId, killChainId, opts = {}) => {
   const input = {
     fromRole: 'phase_belonging',
     toId: killChainId,
+    toType: 'Kill-Chain-Phase',
     toRole: 'kill_chain_phase',
     through: 'kill_chain_phases',
   };
-  return createRelationRaw(fromInternalId, input, opts, null, 'Kill-Chain-Phase');
+  return createRelationRaw(fromInternalId, input, opts);
 };
 const addKillChains = async (internalId, killChainIds, opts = {}) => {
   if (!killChainIds || isEmpty(killChainIds)) return undefined;
@@ -1442,15 +1441,38 @@ const addKillChains = async (internalId, killChainIds, opts = {}) => {
   }
   return killChains;
 };
+const addObjectRef = async (fromInternalId, stixObjectId, opts = {}) => {
+  if (!stixObjectId) return undefined;
+  const input = {
+    fromRole: 'knowledge_aggregation',
+    toId: stixObjectId,
+    toType: 'Stix-Domain-Entity',
+    toRole: 'so',
+    through: 'object_refs',
+  };
+  return createRelationRaw(fromInternalId, input, opts);
+};
+const addObjectRefs = async (internalId, stixObjectIds, opts = {}) => {
+  if (!stixObjectIds || isEmpty(stixObjectIds)) return undefined;
+  const objectRefs = [];
+  // Relations cannot be created in parallel.
+  for (let i = 0; i < stixObjectIds.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    const objectRef = await addObjectRef(internalId, stixObjectIds[i], opts);
+    objectRefs.push(objectRef);
+  }
+  return objectRefs;
+};
 const addObservableRef = async (fromInternalId, observableId, opts = {}) => {
   if (!observableId) return undefined;
   const input = {
     fromRole: 'observables_aggregation',
     toId: observableId,
+    toType: 'Stix-Observable',
     toRole: 'soo',
     through: 'observable_refs',
   };
-  return createRelationRaw(fromInternalId, input, opts, null, 'Stix-Observable');
+  return createRelationRaw(fromInternalId, input, opts);
 };
 const addObservableRefs = async (internalId, observableIds, opts = {}) => {
   if (!observableIds || isEmpty(observableIds)) return undefined;
@@ -1463,15 +1485,30 @@ const addObservableRefs = async (internalId, observableIds, opts = {}) => {
   }
   return observableRefs;
 };
-export const createRelation = async (
-  fromInternalId,
-  input,
-  opts = {},
-  fromType = null,
-  toType = null,
-  ignoreDuplicateError = false
-) => {
-  const created = await createRelationRaw(fromInternalId, input, opts, fromType, toType, ignoreDuplicateError);
+const addRelationRef = async (fromInternalId, stixRelationId, opts = {}) => {
+  if (!stixRelationId) return undefined;
+  const input = {
+    fromRole: 'knowledge_aggregation',
+    toId: stixRelationId,
+    toType: 'stix_relation',
+    toRole: 'so',
+    through: 'object_refs',
+  };
+  return createRelationRaw(fromInternalId, input, opts);
+};
+const addRelationRefs = async (internalId, stixRelationIds, opts = {}) => {
+  if (!stixRelationIds || isEmpty(stixRelationIds)) return undefined;
+  const relationRefs = [];
+  // Relations cannot be created in parallel.
+  for (let i = 0; i < stixRelationIds.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    const relationRef = await addRelationRef(internalId, stixRelationIds[i], opts);
+    relationRefs.push(relationRef);
+  }
+  return relationRefs;
+};
+export const createRelation = async (fromInternalId, input, opts = {}) => {
+  const created = await createRelationRaw(fromInternalId, input, opts);
   if (created) {
     // 05. Complete with eventual relations (will eventually update the index)
     await addOwner(created.id, input.createdByOwner, opts);
@@ -1482,13 +1519,13 @@ export const createRelation = async (
   return created;
 };
 /* istanbul ignore next */
-export const createRelations = async (fromInternalId, inputs, opts = {}, fromType = null, toType = null) => {
+export const createRelations = async (fromInternalId, inputs, opts = {}) => {
   const createdRelations = [];
   // Relations cannot be created in parallel. (Concurrent indexing on same key)
   // Could be improve by grouping and indexing in one shot.
   for (let i = 0; i < inputs.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
-    const relation = await createRelation(fromInternalId, inputs[i], opts, fromType, toType);
+    const relation = await createRelation(fromInternalId, inputs[i], opts);
     createdRelations.push(relation);
   }
   return createdRelations;
@@ -1496,7 +1533,7 @@ export const createRelations = async (fromInternalId, inputs, opts = {}, fromTyp
 // endregion
 
 // region mutation entity
-export const createEntity = async (entity, type, opts = {}) => {
+export const createEntity = async (user, entity, type, opts = {}) => {
   const { modelType = TYPE_STIX_DOMAIN_ENTITY, stixIdType, indexable = true } = opts;
   const internalId = entity.internal_id_key ? entity.internal_id_key : uuid();
   const stixType = stixIdType || type.toLowerCase();
@@ -1513,6 +1550,8 @@ export const createEntity = async (entity, type, opts = {}) => {
     dissoc('markingDefinitions'),
     dissoc('tags'),
     dissoc('killChainPhases'),
+    dissoc('objectRefs'),
+    dissoc('relationRefs'),
     dissoc('observableRefs')
   )(entity);
   if (type === 'User' && !entity.user_email) {
@@ -1587,11 +1626,15 @@ export const createEntity = async (entity, type, opts = {}) => {
   }
   // Complete with eventual relations (will eventually update the index)
   await addOwner(internalId, entity.createdByOwner, opts);
-  await addCreatedByRef(internalId, entity.createdByRef, opts);
-  await addMarkingDefs(internalId, entity.markingDefinitions, opts);
-  await addTags(internalId, entity.tags, opts);
-  await addKillChains(internalId, entity.killChainPhases, opts);
-  await addObservableRefs(internalId, entity.observableRefs, opts);
+  if (modelType === TYPE_STIX_DOMAIN || modelType === TYPE_STIX_DOMAIN_ENTITY) {
+    await addCreatedByRef(internalId, entity.createdByRef || user.id, opts);
+    await addMarkingDefs(internalId, entity.markingDefinitions, opts);
+    await addTags(internalId, entity.tags, opts);
+    await addKillChains(internalId, entity.killChainPhases, opts);
+    await addObjectRefs(internalId, entity.objectRefs, opts);
+    await addObservableRefs(internalId, entity.observableRefs, opts);
+    await addRelationRefs(internalId, entity.relationRefs, opts);
+  }
   // Else simply return the data
   return completedData;
 };

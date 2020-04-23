@@ -187,11 +187,8 @@ export const getRoleCapabilities = async (roleId) => {
   return map((r) => r.capability, data);
 };
 
-export const findRoleById = (toolId) => {
-  if (toolId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(toolId, 'Role');
-  }
-  return loadEntityById(toolId, 'Role');
+export const findRoleById = (roleId) => {
+  return loadEntityById(roleId, 'Role');
 };
 export const findRoles = (args) => {
   return listEntities(['Role'], ['name'], args);
@@ -242,7 +239,7 @@ export const roleEditContext = (user, roleId, input) => {
 // endregion
 
 export const addPerson = async (user, newUser) => {
-  const created = await createEntity(newUser, 'User', {
+  const created = await createEntity(user, newUser, 'User', {
     modelType: TYPE_STIX_DOMAIN_ENTITY,
     stixIdType: 'identity',
   });
@@ -252,14 +249,14 @@ export const assignRoleToUser = (userId, roleName) => {
   return createRelation(
     userId,
     {
+      fromType: 'User',
       fromRole: 'client',
       toId: uuidv5(roleName, uuidv5.DNS),
+      toType: 'Role',
       toRole: 'position',
       through: 'user_role',
     },
-    { indexable: false },
-    'User',
-    'Role'
+    { indexable: false }
   );
 };
 export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken()) => {
@@ -280,12 +277,19 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
     dissoc('roles')
   )(newUser);
   const userOptions = { modelType: TYPE_STIX_DOMAIN_ENTITY, stixIdType: 'identity' };
-  const userCreated = await createEntity(userToCreate, 'User', userOptions);
+  const userCreated = await createEntity(user, userToCreate, 'User', userOptions);
   // Create token and link it to the user
   const tokenOptions = { modelType: TYPE_OPENCTI_INTERNAL, indexable: false };
-  const defaultToken = await createEntity(newToken, 'Token', tokenOptions);
-  const input = { fromRole: 'client', toId: defaultToken.id, toRole: 'authorization', through: 'authorize' };
-  await createRelation(userCreated.id, input, { indexable: false }, 'User', 'Token');
+  const defaultToken = await createEntity(user, newToken, 'Token', tokenOptions);
+  const input = {
+    fromType: 'User',
+    fromRole: 'client',
+    toId: defaultToken.id,
+    toType: 'Token',
+    toRole: 'authorization',
+    through: 'authorize',
+  };
+  await createRelation(userCreated.id, input, { indexable: false });
   // Link to the roles
   await Promise.all(map((role) => assignRoleToUser(userCreated.id, role), userRoles));
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, userCreated, user);
@@ -299,13 +303,8 @@ export const roleEditField = (user, roleId, input) => {
   });
 };
 export const roleAddRelation = async (user, roleId, input) => {
-  const data = await createRelation(
-    roleId,
-    assoc('through', 'role_capability', input),
-    { indexable: false },
-    'Role',
-    null
-  );
+  const finalInput = pipe(assoc('through', 'role_capability'), assoc('fromType', 'Role'))(input);
+  const data = await createRelation(roleId, finalInput, { indexable: false });
   // Clear cache of every user with this modified role
   const impactedUsers = await findAll({ filters: [{ key: 'rel_user_role.internal_id_key', values: [roleId] }] });
   await Promise.all(map((e) => clearUserTokenCache(e.node.id), impactedUsers.edges));
@@ -352,7 +351,8 @@ export const personDelete = async (personId) => {
   return personId;
 };
 export const userAddRelation = async (user, userId, input) => {
-  const data = await createRelation(userId, input, {}, 'User', null);
+  const finalInput = assoc('fromType', 'User', input);
+  const data = await createRelation(userId, finalInput);
   await clearUserTokenCache(userId);
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
 };
@@ -372,7 +372,8 @@ export const personAddRelation = async (user, userId, input) => {
   if (!['tagged', 'created_by_ref', 'object_marking_refs'].includes(input.through)) {
     throw new ForbiddenAccess();
   }
-  const data = await createRelation(userId, input, {}, 'User', null);
+  const finalInput = assoc('fromType', 'User', input);
+  const data = await createRelation(userId, finalInput);
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
 };
 export const personDeleteRelation = async (
@@ -443,7 +444,7 @@ export const logout = async (user, res) => {
 };
 
 // Token related
-export const userRenewToken = async (userId, newToken = generateOpenCTIWebToken()) => {
+export const userRenewToken = async (user, userId, newToken = generateOpenCTIWebToken()) => {
   // 01. Get current token
   const currentToken = await internalGetToken(userId);
   // 02. Remove the token
@@ -457,9 +458,16 @@ export const userRenewToken = async (userId, newToken = generateOpenCTIWebToken(
     }
   }
   // 03. Create a new one
-  const defaultToken = await createEntity(newToken, 'Token', { modelType: TYPE_OPENCTI_INTERNAL, indexable: false });
+  const defaultToken = await createEntity(user, newToken, 'Token', { modelType: TYPE_OPENCTI_INTERNAL, indexable: false });
   // 04. Associate new token to user.
-  const input = { fromRole: 'client', toId: defaultToken.id, toRole: 'authorization', through: 'authorize' };
+  const input = {
+    fromType: 'User',
+    fromRole: 'client',
+    toId: defaultToken.id,
+    toType: 'Token',
+    toRole: 'authorization',
+    through: 'authorize',
+  };
   await createRelation(userId, input, { indexable: false });
   return loadEntityById(userId, 'User');
 };
@@ -519,7 +527,7 @@ export const initAdmin = async (email, password, tokenValue) => {
       await updateAttribute(admin.id, 'User', { key: 'external', value: [true] }, wTx);
     });
     // Renew the token
-    await userRenewToken(admin.id, tokenAdmin);
+    await userRenewToken(null, admin.id, tokenAdmin);
   } else {
     const userToCreate = {
       internal_id_key: OPENCTI_ADMIN_UUID,

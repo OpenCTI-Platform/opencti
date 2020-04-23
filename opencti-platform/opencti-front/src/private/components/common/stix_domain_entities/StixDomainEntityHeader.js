@@ -22,6 +22,10 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
 import { DialogTitle } from '@material-ui/core';
+import InputLabel from '@material-ui/core/InputLabel/InputLabel';
+import FormControl from '@material-ui/core/FormControl';
+import Select from '@material-ui/core/Select/Select';
+import MenuItem from '@material-ui/core/MenuItem';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import inject18n from '../../../../components/i18n';
@@ -51,6 +55,15 @@ const styles = () => ({
   aliasInput: {
     margin: '4px 15px 0 10px',
     float: 'right',
+  },
+  viewAsField: {
+    marginTop: -5,
+    float: 'left',
+  },
+  viewAsFieldLabel: {
+    margin: '5px 15px 0 0',
+    fontSize: 14,
+    float: 'left',
   },
 });
 
@@ -125,6 +138,9 @@ class StixDomainEntityHeader extends Component {
       variant,
       stixDomainEntity,
       PopoverComponent,
+      viewAs,
+      onViewAs,
+      disablePopover,
     } = this.props;
     const alias = propOr([], 'alias', stixDomainEntity);
     return (
@@ -140,9 +156,33 @@ class StixDomainEntityHeader extends Component {
           <div className={classes.popover}>
             {React.cloneElement(PopoverComponent, {
               id: stixDomainEntity.id,
+              disabled: disablePopover,
             })}
           </div>
         </Security>
+        {typeof onViewAs === 'function' ? (
+          <div>
+            <InputLabel classes={{ root: classes.viewAsFieldLabel }}>
+              {t('Display as')}
+            </InputLabel>
+            <FormControl classes={{ root: classes.viewAsField }}>
+              <Select
+                name="view-as"
+                value={viewAs}
+                onChange={onViewAs.bind(this)}
+                inputProps={{
+                  name: 'view-as',
+                  id: 'view-as',
+                }}
+              >
+                <MenuItem value="knowledge">{t('Knowledge entity')}</MenuItem>
+                <MenuItem value="author">{t('Author')}</MenuItem>
+              </Select>
+            </FormControl>
+          </div>
+        ) : (
+          ''
+        )}
         {variant !== 'noalias' ? (
           <div className={classes.aliases}>
             {take(5, alias).map((label) => (label.length > 0 ? (
@@ -296,6 +336,9 @@ StixDomainEntityHeader.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
+  viewAs: PropTypes.string,
+  onViewAs: PropTypes.func,
+  disablePopover: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(StixDomainEntityHeader);

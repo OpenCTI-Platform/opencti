@@ -4,10 +4,8 @@ import {
   addMarkingDefinition,
   findAll,
   findById,
-  markingDefinitionAddRelation,
   markingDefinitionCleanContext,
   markingDefinitionDelete,
-  markingDefinitionDeleteRelation,
   markingDefinitionEditContext,
   markingDefinitionEditField,
 } from '../domain/markingDefinition';
@@ -31,15 +29,14 @@ const markingDefinitionResolvers = {
       delete: () => markingDefinitionDelete(id),
       fieldPatch: ({ input }) => markingDefinitionEditField(user, id, input),
       contextPatch: ({ input }) => markingDefinitionEditContext(user, id, input),
-      relationAdd: ({ input }) => markingDefinitionAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => markingDefinitionDeleteRelation(user, id, relationId),
+      contextClean: () => markingDefinitionCleanContext(user, id),
     }),
     markingDefinitionAdd: (_, { input }, { user }) => addMarkingDefinition(user, input),
   },
   Subscription: {
     markingDefinition: {
-      resolve: (payload) => payload.instance,
-      subscribe: (_, { id }, { user }) => {
+      resolve: /* istanbul ignore next */ (payload) => payload.instance,
+      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
         markingDefinitionEditContext(user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC),

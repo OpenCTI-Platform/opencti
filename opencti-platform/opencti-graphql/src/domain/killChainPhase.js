@@ -1,4 +1,4 @@
-import { assoc } from 'ramda';
+import { pipe, assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
@@ -27,7 +27,7 @@ export const addKillChainPhase = async (user, killChainPhase) => {
     killChainPhase.phase_order ? killChainPhase.phase_order : 0,
     killChainPhase
   );
-  const created = await createEntity(killChainPhaseToCreate, 'Kill-Chain-Phase', { modelType: TYPE_STIX_DOMAIN });
+  const created = await createEntity(user, killChainPhaseToCreate, 'Kill-Chain-Phase', { modelType: TYPE_STIX_DOMAIN });
   return notify(BUS_TOPICS.KillChainPhase.ADDED_TOPIC, created, user);
 };
 
@@ -35,13 +35,8 @@ export const killChainPhaseDelete = (killChainPhaseId) => {
   return deleteEntityById(killChainPhaseId, 'Kill-Chain-Phase');
 };
 export const killChainPhaseAddRelation = (user, killChainPhaseId, input) => {
-  return createRelation(
-    killChainPhaseId,
-    assoc('through', 'kill_chain_phases', input),
-    {},
-    null,
-    'Kill-Chain-Phase'
-  ).then((relationData) => {
+  const finalInput = pipe(assoc('through', 'kill_chain_phases'), assoc('toType', 'kill_chain_phases'))(input);
+  return createRelation(killChainPhaseId, finalInput).then((relationData) => {
     notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, relationData, user);
     return relationData;
   });

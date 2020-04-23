@@ -5,13 +5,13 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { Public } from '@material-ui/icons';
+import { PublicOutlined } from '@material-ui/icons';
 import {
-  Biohazard, Diamond, Fire, ChessKnight,
+  Biohazard, DiamondOutline, Fire, ChessKnight,
 } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   button: {
     marginRight: theme.spacing(2),
     padding: '2px 5px 2px 5px',
@@ -47,7 +47,7 @@ class TopMenuThreats extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <Public
+          <PublicOutlined
             className={width > 950 ? classes.icon : ''}
             fontSize="small"
           />
@@ -69,7 +69,7 @@ class TopMenuThreats extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <Diamond
+          <DiamondOutline
             className={width > 950 ? classes.icon : ''}
             fontSize="small"
           />

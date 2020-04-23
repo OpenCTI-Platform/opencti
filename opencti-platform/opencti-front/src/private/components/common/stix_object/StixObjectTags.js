@@ -41,6 +41,13 @@ const styles = () => ({
 });
 
 class StixObjectTags extends Component {
+  hexToRGB(hex) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgb(${r}, ${g}, ${b}, 0.08)`;
+  }
+
   render() {
     const {
       classes, tags, t, onClick, variant,
@@ -63,9 +70,14 @@ class StixObjectTags extends Component {
             (tag) => (
               <Chip
                 key={tag.id}
+                variant="outlined"
                 classes={{ root: style }}
                 label={tag.value}
-                style={{ backgroundColor: tag.color }}
+                style={{
+                  color: tag.color,
+                  borderColor: tag.color,
+                  backgroundColor: this.hexToRGB(tag.color),
+                }}
                 onClick={
                   typeof onClick === 'function'
                     ? onClick.bind(this, 'tags', tag.id, tag.value)
@@ -78,8 +90,13 @@ class StixObjectTags extends Component {
         ) : (
           <Chip
             classes={{ root: style }}
+            variant="outlined"
             label={t('No tag')}
-            style={{ backgroundColor: '#ffffff', color: '#000000' }}
+            style={{
+              color: '#ffffff',
+              borderColor: '#ffffff',
+              backgroundColor: this.hexToRGB('#ffffff'),
+            }}
             onClick={
               typeof onClick === 'function'
                 ? onClick.bind(this, 'tags', null, null)

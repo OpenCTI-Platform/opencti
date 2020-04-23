@@ -190,7 +190,10 @@ class CurationToolBar extends Component {
       : head(selectedElementsList);
     const names = pluck('name', selectedElementsList);
     const aliases = flatten(pluck('alias', selectedElementsList));
-    const newAliases = filter((n) => n.length > 0, uniq(concat(names, aliases)));
+    const newAliases = filter(
+      (n) => n.length > 0,
+      uniq(concat(names, aliases)),
+    );
     const filteredStixDomainEntitiesIds = keptEntityId
       ? filter((n) => n !== keptEntityId, stixDomainEntitiesIds)
       : tail(stixDomainEntitiesIds);
@@ -230,7 +233,10 @@ class CurationToolBar extends Component {
       : head(selectedElementsList);
     const names = pluck('name', selectedElementsList);
     const aliases = flatten(pluck('alias', selectedElementsList));
-    const newAliases = filter((n) => n.length > 0, uniq(concat(names, aliases)));
+    const newAliases = filter(
+      (n) => n.length > 0,
+      uniq(concat(names, aliases)),
+    );
     return (
       <Drawer
         anchor="bottom"
@@ -288,7 +294,7 @@ class CurationToolBar extends Component {
           </div>
           <div className={classes.container}>
             <Typography
-              variant="h2"
+              variant="h4"
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
@@ -344,7 +350,7 @@ class CurationToolBar extends Component {
               ))}
             </List>
             <Typography
-              variant="h2"
+              variant="h4"
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >

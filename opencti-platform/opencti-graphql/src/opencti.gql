@@ -41,6 +41,7 @@ define
   stix_id_key sub attribute, datatype string;
   stix_label sub attribute, datatype string;
   entity_type sub attribute, datatype string;
+  spec_version sub attribute, datatype string;
   created sub attribute, datatype date;
   modified sub attribute, datatype date;
   revoked sub attribute, datatype boolean;
@@ -108,6 +109,8 @@ define
   attack_vector sub attribute, datatype string;
   integrity_impact sub attribute, datatype string;
   availability_impact sub attribute, datatype string;
+  content sub attribute, datatype string;
+  explanation sub attribute, datatype string;
 
   # STIX SRO
   relationship_type sub attribute, datatype string;
@@ -779,6 +782,16 @@ define
     has published_year,
     has published_month,
     has source_confidence_level,
+    plays knowledge_aggregation,
+    plays observables_aggregation;
+
+  Note sub Stix-Domain-Entity,
+    has content,
+    plays knowledge_aggregation,
+    plays observables_aggregation;
+
+  Opinion sub Stix-Domain-Entity,
+    has explanation,
     plays knowledge_aggregation,
     plays observables_aggregation;
 

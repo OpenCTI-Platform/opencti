@@ -35,6 +35,8 @@ import malwareResolvers from '../resolvers/malware';
 import toolResolvers from '../resolvers/tool';
 import vulnerabilityResolvers from '../resolvers/vulnerability';
 import reportResolvers from '../resolvers/report';
+import noteResolvers from '../resolvers/note';
+import opinionResolvers from '../resolvers/opinion';
 import indicatorResolvers from '../resolvers/indicator';
 import AuthDirectives, { AUTH_DIRECTIVE } from './authDirective';
 import connectorResolvers from '../resolvers/connector';
@@ -83,6 +85,8 @@ const createSchema = () => {
     toolResolvers,
     vulnerabilityResolvers,
     reportResolvers,
+    noteResolvers,
+    opinionResolvers,
     indicatorResolvers,
   ]);
 

@@ -157,7 +157,7 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
               )(indicatorToCreate);
               const innerType = stixObservable.type;
               const stixObservableToCreate = dissoc('type', stixObservable);
-              const createdStixObservable = await createEntity(stixObservableToCreate, innerType, {
+              const createdStixObservable = await createEntity(user, stixObservableToCreate, innerType, {
                 modelType: TYPE_STIX_OBSERVABLE,
                 stixIdType: 'observable',
               });
@@ -179,6 +179,7 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
     observableRefs = observablesToLink;
   }
   const created = await createEntity(
+    user,
     assoc('observableRefs', observableRefs, indicatorToCreate),
     'Indicator',
     TYPE_STIX_DOMAIN_ENTITY

@@ -19,7 +19,7 @@ const styles = (theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
-    margin: '-4px 0 0 0',
+    margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 6,
   },
@@ -44,10 +44,9 @@ class SectorParentSectorsComponent extends Component {
     const { t, classes, sector } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+        <Typography variant="h4" gutterBottom={true}>
           {t('Parent sectors')}
         </Typography>
-        <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <List>
             {sector.parentSectors.edges.map((parentSectorEdge) => {

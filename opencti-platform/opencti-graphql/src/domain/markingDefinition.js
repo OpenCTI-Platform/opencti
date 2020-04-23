@@ -1,10 +1,7 @@
-import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
-  createRelation,
   deleteEntityById,
-  deleteRelationById,
   executeWrite,
   listEntities,
   loadEntityById,
@@ -26,29 +23,13 @@ export const findAll = (args) => {
 };
 
 export const addMarkingDefinition = async (user, markingDefinition) => {
-  const created = await createEntity(markingDefinition, 'Marking-Definition', { modelType: TYPE_STIX_DOMAIN });
+  const created = await createEntity(user, markingDefinition, 'Marking-Definition', { modelType: TYPE_STIX_DOMAIN });
   return notify(BUS_TOPICS.MarkingDefinition.ADDED_TOPIC, created, user);
 };
 
 export const markingDefinitionDelete = (markingDefinitionId) =>
   deleteEntityById(markingDefinitionId, 'Marking-Definition');
-export const markingDefinitionAddRelation = (user, markingDefinitionId, input) => {
-  return createRelation(
-    markingDefinitionId,
-    assoc('through', 'object_marking_refs', input),
-    {},
-    null,
-    'Marking-Definition'
-  ).then((relationData) => {
-    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, relationData, user);
-    return relationData;
-  });
-};
-export const markingDefinitionDeleteRelation = async (user, markingDefinitionId, relationId) => {
-  await deleteRelationById(relationId, 'stix_relation_embedded');
-  const data = await loadEntityById(markingDefinitionId, 'Marking-Definition');
-  return notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, data, user);
-};
+
 export const markingDefinitionEditField = (user, markingDefinitionId, input) => {
   return executeWrite((wTx) => {
     return updateAttribute(markingDefinitionId, 'Marking-Definition', input, wTx);

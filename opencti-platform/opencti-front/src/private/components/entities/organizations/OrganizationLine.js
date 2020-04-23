@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRight, AccountBalance } from '@material-ui/icons';
+import { KeyboardArrowRightOutlined, AccountBalanceOutlined } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import StixObjectTags from '../../common/stix_object/StixObjectTags';
@@ -57,7 +57,7 @@ class OrganizationLineComponent extends Component {
         to={`/dashboard/entities/organizations/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <AccountBalance />
+          <AccountBalanceOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -102,7 +102,7 @@ class OrganizationLineComponent extends Component {
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
+          <KeyboardArrowRightOutlined />
         </ListItemIcon>
       </ListItem>
     );
@@ -156,7 +156,7 @@ class OrganizationLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <AccountBalance />
+          <AccountBalanceOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -195,7 +195,7 @@ class OrganizationLineDummyComponent extends Component {
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
+          <KeyboardArrowRightOutlined />
         </ListItemIcon>
       </ListItem>
     );

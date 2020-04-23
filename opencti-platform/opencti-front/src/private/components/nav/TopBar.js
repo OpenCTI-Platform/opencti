@@ -6,8 +6,8 @@ import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
-import { AccountCircle } from '@material-ui/icons';
-import { UploadNetworkOutline } from 'mdi-material-ui';
+import { AccountCircleOutlined } from '@material-ui/icons';
+import { UploadOutline } from 'mdi-material-ui';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -71,9 +71,6 @@ const styles = (theme) => ({
     cursor: 'pointer',
     height: 35,
   },
-  progressBar: {
-    height: 2,
-  },
   menuContainer: {
     float: 'left',
   },
@@ -124,7 +121,11 @@ const TopBar = ({
     }
   };
   return (
-    <AppBar position="fixed" className={classes.appBar}>
+    <AppBar
+      position="fixed"
+      className={classes.appBar}
+      style={{ backgroundColor: '#1b2226' }}
+    >
       <Toolbar>
         <IconButton
           classes={{ root: classes.logoButton }}
@@ -326,7 +327,7 @@ const TopBar = ({
                 }
                 classes={{ root: classes.button }}
               >
-                <UploadNetworkOutline fontSize="large" />
+                <UploadOutline fontSize="large" />
               </IconButton>
             </Tooltip>
           </Security>
@@ -338,7 +339,7 @@ const TopBar = ({
             onClick={handleOpenMenu}
             color="inherit"
           >
-            <AccountCircle fontSize="large" />
+            <AccountCircleOutlined fontSize="large" />
           </IconButton>
           <Menu
             id="menu-appbar"

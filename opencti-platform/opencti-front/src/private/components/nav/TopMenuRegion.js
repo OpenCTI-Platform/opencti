@@ -4,7 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { Flag, ArrowForwardIos } from '@material-ui/icons';
+import { FlagOutlined, ArrowForwardIosOutlined } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -56,10 +56,10 @@ class TopMenuRegion extends Component {
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <Flag className={classes.icon} fontSize="small" />
+          <FlagOutlined className={classes.icon} fontSize="small" />
           {t('Regions')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined color="inherit" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
           to={`/dashboard/entities/regions/${regionId}`}

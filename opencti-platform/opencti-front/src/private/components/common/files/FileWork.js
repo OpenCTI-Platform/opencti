@@ -12,8 +12,11 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { CheckCircle, Delete, Warning } from '@material-ui/icons';
-
+import {
+  CheckCircleOutlined,
+  DeleteOutlined,
+  WarningOutlined,
+} from '@material-ui/icons';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -65,10 +68,14 @@ class FileWorkComponent extends Component {
                 >
                   <ListItemIcon>
                     {(work.status === 'error' || work.status === 'partial') && (
-                      <Warning style={{ fontSize: 15, color: '#f44336' }} />
+                      <WarningOutlined
+                        style={{ fontSize: 15, color: '#f44336' }}
+                      />
                     )}
                     {work.status === 'complete' && (
-                      <CheckCircle style={{ fontSize: 15, color: '#4caf50' }} />
+                      <CheckCircleOutlined
+                        style={{ fontSize: 15, color: '#4caf50' }}
+                      />
                     )}
                     {work.status === 'progress' && (
                       <CircularProgress
@@ -84,7 +91,7 @@ class FileWorkComponent extends Component {
                   />
                   <ListItemSecondaryAction style={{ right: 0 }}>
                     <IconButton onClick={this.deleteWork.bind(this, work.id)}>
-                      <Delete color="primary" />
+                      <DeleteOutlined color="primary" />
                     </IconButton>
                   </ListItemSecondaryAction>
                 </ListItem>

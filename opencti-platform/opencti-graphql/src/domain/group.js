@@ -1,3 +1,4 @@
+import { assoc } from 'ramda';
 import {
   createEntity,
   createRelation,
@@ -41,7 +42,7 @@ export const permissions = async (groupId) => {
 };
 
 export const addGroup = async (user, group) => {
-  const created = await createEntity(group, 'Group', { modelType: TYPE_OPENCTI_INTERNAL });
+  const created = await createEntity(user, group, 'Group', { modelType: TYPE_OPENCTI_INTERNAL });
   return notify(BUS_TOPICS.Group.ADDED_TOPIC, created, user);
 };
 export const groupDelete = (groupId) => deleteEntityById(groupId, 'Group');
@@ -56,7 +57,8 @@ export const groupEditField = (user, groupId, input) => {
 };
 
 export const groupAddRelation = async (user, groupId, input) => {
-  const data = await createRelation(groupId, input, {}, 'Group', null);
+  const finalInput = assoc('fromType', 'Group', input);
+  const data = await createRelation(groupId, finalInput);
   return notify(BUS_TOPICS.Group.EDIT_TOPIC, data, user);
 };
 

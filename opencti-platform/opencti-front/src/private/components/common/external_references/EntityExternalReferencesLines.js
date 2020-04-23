@@ -156,7 +156,7 @@ class EntityExternalReferencesLinesContainer extends Component {
                             && externalReference.description.length > 0
                             ? externalReference.description
                             : externalReference.url,
-                          120,
+                          90,
                         )}
                       />
                       <ListItemSecondaryAction>

@@ -15,6 +15,9 @@ import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityIncidentsChart from '../../threats/incidents/EntityIncidentsChart';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
+import RegionParentRegions from './RegionParentRegions';
+import RegionSubRegions from './RegionSubRegions';
 
 const styles = () => ({
   container: {
@@ -39,24 +42,32 @@ class RegionComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={3}>
             <RegionOverview region={region} />
+          </Grid>
+          <Grid item={true} xs={3}>
+            {region.isSubRegion ? (
+              <RegionParentRegions region={region} />
+            ) : (
+              <RegionSubRegions region={region} />
+            )}
           </Grid>
           <Grid item={true} xs={6}>
             <EntityLastReports entityId={region.id} />
           </Grid>
         </Grid>
+        <StixObjectNotes entityId={region.id} />
         <Grid
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 30 }}
+          style={{ marginTop: 15 }}
         >
           <Grid item={true} xs={4}>
-            <EntityCampaignsChart entityId={region.id} />
+            <EntityCampaignsChart entityId={region.id} inferred={true} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityIncidentsChart entityId={region.id} />
+            <EntityIncidentsChart entityId={region.id} inferred={true} />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={region.id} />
@@ -80,9 +91,19 @@ const Region = createFragmentContainer(RegionComponent, {
   region: graphql`
     fragment Region_region on Region {
       id
+      isSubRegion
+      subRegions {
+        edges {
+          node {
+            id
+          }
+        }
+      }
       name
       alias
       ...RegionOverview_region
+      ...RegionSubRegions_region
+      ...RegionParentRegions_region
     }
   `,
 });

@@ -15,6 +15,7 @@ import EntityStixRelationsChart from '../../common/stix_relations/EntityStixRela
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
 
 const styles = () => ({
   container: {
@@ -49,11 +50,12 @@ class ToolComponent extends Component {
             <EntityLastReports entityId={tool.id} />
           </Grid>
         </Grid>
+        <StixObjectNotes entityId={tool.id} />
         <Grid
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 30 }}
+          style={{ marginTop: 15 }}
         >
           <Grid item={true} xs={6}>
             <EntityStixRelationsChart entityId={tool.id} relationType="uses" />

@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
-import { compose, isNil } from 'ramda';
+import * as PropTypes from 'prop-types';
+import {
+  compose, dissoc, isNil, propOr,
+} from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -16,6 +18,11 @@ import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityIncidentsChart from '../../threats/incidents/EntityIncidentsChart';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 
 const styles = () => ({
   container: {
@@ -27,15 +34,88 @@ const styles = () => ({
 });
 
 class PersonComponent extends Component {
+  constructor(props) {
+    super(props);
+    const params = buildViewParamsFromUrlAndStorage(
+      props.history,
+      props.location,
+      'view-person',
+    );
+    this.state = {
+      viewAs: propOr('knowledge', 'viewAs', params),
+    };
+  }
+
+  saveView() {
+    saveViewParameters(
+      this.props.history,
+      this.props.location,
+      'view-person',
+      dissoc('filters', this.state),
+    );
+  }
+
+  handleChangeViewAs(event) {
+    this.setState({ viewAs: event.target.value }, () => this.saveView());
+  }
+
   render() {
     const { classes, person } = this.props;
+    const { viewAs } = this.state;
+    if (viewAs === 'author') {
+      return (
+        <div className={classes.container}>
+          <StixDomainEntityHeader
+            stixDomainEntity={person}
+            PopoverComponent={<PersonPopover />}
+            onViewAs={this.handleChangeViewAs.bind(this)}
+            viewAs={this.state.viewAs}
+            disablePopover={!isNil(person.external)}
+          />
+          <Grid
+            container={true}
+            spacing={3}
+            classes={{ container: classes.gridContainer }}
+          >
+            <Grid item={true} xs={3}>
+              <PersonOverview person={person} />
+            </Grid>
+            <Grid item={true} xs={3}>
+              <PersonDetails person={person} />
+            </Grid>
+            <Grid item={true} xs={6}>
+              <EntityLastReports authorId={person.id} />
+            </Grid>
+          </Grid>
+          <StixObjectNotes entityId={person.id} />
+          <Grid
+            container={true}
+            spacing={3}
+            classes={{ container: classes.gridContainer }}
+            style={{ marginTop: 15 }}
+          >
+            <Grid item={true} xs={12}>
+              <EntityReportsChart authorId={person.id} />
+            </Grid>
+          </Grid>
+          {isNil(person.external) ? (
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <PersonEdition personId={person.id} />
+            </Security>
+          ) : (
+            ''
+          )}
+        </div>
+      );
+    }
     return (
       <div className={classes.container}>
         <StixDomainEntityHeader
           stixDomainEntity={person}
-          PopoverComponent={
-            isNil(person.external) ? <PersonPopover /> : <div />
-          }
+          PopoverComponent={<PersonPopover />}
+          onViewAs={this.handleChangeViewAs.bind(this)}
+          viewAs={this.state.viewAs}
+          disablePopover={!isNil(person.external)}
         />
         <Grid
           container={true}
@@ -52,11 +132,12 @@ class PersonComponent extends Component {
             <EntityLastReports entityId={person.id} />
           </Grid>
         </Grid>
+        <StixObjectNotes entityId={person.id} />
         <Grid
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 30 }}
+          style={{ marginTop: 15 }}
         >
           <Grid item={true} xs={4}>
             <EntityCampaignsChart entityId={person.id} />

@@ -169,21 +169,6 @@ jobs:
           working_directory: ~/opencti/deploy
           command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
 
-  deploy_documentation:
-    working_directory: ~/opencti
-    docker:
-      - image: circleci/node:12.13.1-stretch
-    steps:
-      - checkout
-      - run:
-          working_directory: ~/opencti/opencti-documentation
-          name: Deploying the documentation to Github pages
-          command: |
-            git config --global user.email "SamuelHassine@users.noreply.github.com"
-            git config --global user.name "Samuel Hassine"
-            echo "machine github.com login SamuelHassine password $GITHUB_TOKEN" > ~/.netrc
-            cd website && yarn install && ORGANIZATION_NAME=OpenCTI-Platform PROJECT_NAME=docs GIT_USER=SamuelHassine yarn run publish-gh-pages
-
   docker_build:
     working_directory: ~/opencti
     docker:
@@ -265,11 +250,6 @@ workflows:
       - deploy_reference:
           requires:
             - build_platform
-          filters:
-            branches:
-              only:
-                - master             
-      - deploy_documentation:
           filters:
             branches:
               only:

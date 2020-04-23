@@ -1,107 +1,123 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import {
+  compose,
+  pipe,
+  map,
+  propOr,
+  pathOr,
+  sortBy,
+  toLower,
+  prop,
+  filter,
+  join,
+  assoc,
+} from 'ramda';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { pathOr } from 'ramda';
-import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
+import { withStyles } from '@material-ui/core';
+import List from '@material-ui/core/List';
 import { RegionLine, RegionLineDummy } from './RegionLine';
-import { setNumberOfElements } from '../../../../utils/Number';
+import inject18n from '../../../../components/i18n';
 
-const nbOfRowsToLoad = 25;
+const styles = () => ({
+  root: {
+    margin: 0,
+  },
+});
 
-class RegionsLines extends Component {
-  componentDidUpdate(prevProps) {
-    setNumberOfElements(
-      prevProps,
-      this.props,
-      'regions',
-      this.props.setNumberOfElements.bind(this),
-    );
-  }
-
+class RegionsLinesComponent extends Component {
   render() {
-    const {
-      initialLoading,
-      dataColumns,
-      relay,
-      paginationOptions,
-    } = this.props;
+    const { data, keyword, classes } = this.props;
+    const sortByNameCaseInsensitive = sortBy(compose(toLower, prop('name')));
+    const filterSubregion = (n) => n.isSubRegion === false;
+    const filterByKeyword = (n) => keyword === ''
+      || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
+      || n.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
+      || propOr('', 'subregions_text', n)
+        .toLowerCase()
+        .indexOf(keyword.toLowerCase()) !== -1;
+    const regions = pipe(
+      pathOr([], ['regions', 'edges']),
+      map((n) => n.node),
+      map((n) => assoc(
+        'subregions_text',
+        pipe(
+          map((o) => `${o.node.name} ${o.node.description}`),
+          join(' | '),
+        )(pathOr([], ['subRegions', 'edges'], n)),
+        n,
+      )),
+      filter(filterSubregion),
+      filter(filterByKeyword),
+      sortByNameCaseInsensitive,
+    )(data);
     return (
-      <ListLinesContent
-        initialLoading={initialLoading}
-        loadMore={relay.loadMore.bind(this)}
-        hasMore={relay.hasMore.bind(this)}
-        isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['regions', 'edges'], this.props.data)}
-        globalCount={pathOr(
-          nbOfRowsToLoad,
-          ['regions', 'pageInfo', 'globalCount'],
-          this.props.data,
-        )}
-        LineComponent={<RegionLine />}
-        DummyLineComponent={<RegionLineDummy />}
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-        paginationOptions={paginationOptions}
-      />
+      <List
+        component="nav"
+        aria-labelledby="nested-list-subheader"
+        className={classes.root}
+      >
+        {data
+          ? map((region) => {
+            const subRegions = pipe(
+              pathOr([], ['subRegions', 'edges']),
+              map((n) => n.node),
+              filter(filterByKeyword),
+              sortByNameCaseInsensitive,
+            )(region);
+            return (
+                <RegionLine
+                  key={region.id}
+                  node={region}
+                  subRegions={subRegions}
+                />
+            );
+          }, regions)
+          : Array.from(Array(20), (e, i) => <RegionLineDummy key={i} />)}
+      </List>
     );
   }
 }
 
-RegionsLines.propTypes = {
+RegionsLinesComponent.propTypes = {
   classes: PropTypes.object,
-  paginationOptions: PropTypes.object,
-  dataColumns: PropTypes.object.isRequired,
+  keyword: PropTypes.string,
   data: PropTypes.object,
-  relay: PropTypes.object,
-  initialLoading: PropTypes.bool,
-  setNumberOfElements: PropTypes.func,
 };
 
 export const regionsLinesQuery = graphql`
-  query RegionsLinesPaginationQuery(
-    $search: String
-    $count: Int!
-    $cursor: ID
-    $orderBy: RegionsOrdering
-    $orderMode: OrderingMode
-  ) {
-    ...RegionsLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+  query RegionsLinesPaginationQuery($count: Int!, $cursor: ID) {
+    ...RegionsLines_data @arguments(count: $count, cursor: $cursor)
   }
 `;
 
-export default createPaginationContainer(
-  RegionsLines,
+const RegionsLinesFragment = createPaginationContainer(
+  RegionsLinesComponent,
   {
     data: graphql`
       fragment RegionsLines_data on Query
         @argumentDefinitions(
-          search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "RegionsOrdering", defaultValue: "name" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
-        regions(
-          search: $search
-          first: $count
-          after: $cursor
-          orderBy: $orderBy
-          orderMode: $orderMode
-        ) @connection(key: "Pagination_regions") {
+        regions(first: $count, after: $cursor)
+          @connection(key: "Pagination_regions") {
           edges {
             node {
               id
               name
               description
-              ...RegionLine_node
+              isSubRegion
+              subRegions {
+                edges {
+                  node {
+                    id
+                    name
+                    description
+                  }
+                }
+              }
             }
           }
           pageInfo {
@@ -124,14 +140,14 @@ export default createPaginationContainer(
         count: totalCount,
       };
     },
-    getVariables(props, { count, cursor }, fragmentVariables) {
+    getVariables(props, { count, cursor }) {
       return {
         count,
         cursor,
-        orderBy: fragmentVariables.orderBy,
-        orderMode: fragmentVariables.orderMode,
       };
     },
     query: regionsLinesQuery,
   },
 );
+
+export default compose(inject18n, withStyles(styles))(RegionsLinesFragment);

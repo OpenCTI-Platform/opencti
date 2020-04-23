@@ -9,12 +9,16 @@ const styles = () => ({
     fontSize: 12,
     height: 25,
     margin: '0 7px 7px 0',
+    borderRadius: 5,
+    width: 90,
   },
   chipInList: {
     fontSize: 12,
     height: 20,
     float: 'left',
     marginRight: 7,
+    borderRadius: 5,
+    width: 90,
   },
 });
 

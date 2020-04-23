@@ -263,6 +263,7 @@ type TagConnection {
 input TagsFiltering {
   key: TagsFilter!
   values: [String]
+  operator: String
 }
 type TagEdge {
   cursor: String!
@@ -444,11 +445,15 @@ enum StixDomainEntitiesFilter {
   name
   alias
   stix_id_key
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
+  tags
   hasExternalReference
   knowledgeContains
   observablesContains
-  tags
-  createdBy
   indicates
 }
 input StixDomainEntitiesFiltering {
@@ -516,6 +521,11 @@ enum StixObservablesFilter {
   entity_type
   stix_id_key
   observable_value
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
   tags
   relatedTo
   observablesContained
@@ -523,6 +533,7 @@ enum StixObservablesFilter {
 input StixObservablesFiltering {
   key: StixObservablesFilter!
   values: [String]
+  operator: String
 }
 type StixObservableConnection {
   pageInfo: PageInfo!
@@ -611,6 +622,12 @@ enum StixRelationsOrdering {
   toCreatedAt
 }
 enum StixRelationsFilter {
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
+  tags
   toPatternType
   toMainObservableType
 }
@@ -809,6 +826,7 @@ enum WorkspacesFilter {
 input WorkspacesFiltering {
   key: WorkspacesFilter!
   values: [String]
+  operator: String
 }
 type WorkspaceConnection {
   pageInfo: PageInfo!
@@ -857,11 +875,17 @@ enum IdentitiesFilter {
   name
   alias
   entity_type
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
   tags
 }
 input IdentitiesFiltering {
   key: IdentitiesFilter!
   values: [String]
+  operator: String
 }
 type IdentityConnection {
   pageInfo: PageInfo!
@@ -944,11 +968,17 @@ enum UsersFilter {
   name
   alias
   entity_type
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
   tags
 }
 input UsersFiltering {
   key: UsersFilter!
   values: [String]
+  operator: String
 }
 type UserConnection {
   pageInfo: PageInfo!
@@ -1117,12 +1147,18 @@ enum OrganizationsOrdering {
 }
 enum OrganizationsFilter {
   name
-  tags
   reliability
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
+  tags
 }
 input OrganizationsFiltering {
   key: OrganizationsFilter!
   values: [String]
+  operator: String
 }
 type OrganizationConnection {
   pageInfo: PageInfo!
@@ -1219,11 +1255,18 @@ enum SectorsOrdering {
   markingDefinitions
 }
 enum SectorsFilter {
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
+  tags
   gatheredBy
 }
 input SectorsFiltering {
   key: SectorsFilter!
   values: [String]
+  operator: String
 }
 type SectorConnection {
   pageInfo: PageInfo!
@@ -1310,9 +1353,18 @@ enum CitiesOrdering {
   tags
   markingDefinitions
 }
+enum CitiesFilter {
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
+  tags
+}
 input CitiesFiltering {
-  key: String!
+  key: CitiesFilter!
   values: [String]
+  operator: String
 }
 type CityConnection {
   pageInfo: PageInfo!
@@ -1396,9 +1448,18 @@ enum CountriesOrdering {
   tags
   markingDefinitions
 }
+enum CountriesFilter {
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
+  tags
+}
 input CountriesFiltering {
-  key: String!
+  key: CountriesFilter!
   values: [String]
+  operator: String
 }
 type CountryConnection {
   pageInfo: PageInfo!
@@ -1482,9 +1543,18 @@ enum RegionsOrdering {
   tags
   markingDefinitions
 }
+enum RegionsFilter {
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
+  tags
+}
 input RegionsFiltering {
-  key: String!
+  key: RegionsFilter!
   values: [String]
+  operator: String
 }
 type RegionConnection {
   pageInfo: PageInfo!
@@ -1493,6 +1563,7 @@ type RegionConnection {
 type RegionEdge {
   cursor: String!
   node: Region!
+  relation: RelationEmbedded
 }
 type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   id: ID!
@@ -1508,6 +1579,9 @@ type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   modified: DateTime
   revoked: Boolean
   graph_data: String
+  parentRegions: RegionConnection
+  subRegions: RegionConnection
+  isSubRegion: Boolean
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
@@ -1612,6 +1686,7 @@ enum MarkingDefinitionsFilter {
 input MarkingDefinitionsFiltering {
   key: MarkingDefinitionsFilter!
   values: [String]
+  operator: String
 }
 type MarkingDefinitionConnection {
   pageInfo: PageInfo!
@@ -1670,6 +1745,7 @@ enum ExternalReferencesFilter {
 input ExternalReferencesFiltering {
   key: ExternalReferencesFilter!
   values: [String]
+  operator: String
 }
 type ExternalReferenceConnection {
   pageInfo: PageInfo!
@@ -1727,6 +1803,7 @@ enum KillChainPhasesFilter {
 input KillChainPhasesFiltering {
   key: KillChainPhasesFilter!
   values: [String]
+  operator: String
 }
 type KillChainPhaseConnection {
   pageInfo: PageInfo!
@@ -1781,12 +1858,18 @@ enum AttackPatternsOrdering {
 enum AttackPatternsFilter {
   external_id
   name
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
   tags
   mitigateBy
 }
 input AttackPatternsFiltering {
   key: AttackPatternsFilter!
   values: [String]
+  operator: String
 }
 type AttackPatternConnection {
   pageInfo: PageInfo!
@@ -1879,12 +1962,18 @@ enum CoursesOfActionOrdering {
   markingDefinitions
 }
 enum CoursesOfActionFilter {
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
   tags
   mitigateBy
 }
 input CoursesOfActionFiltering {
   key: CoursesOfActionFilter!
   values: [String]
+  operator: String
 }
 type CourseOfActionConnection {
   pageInfo: PageInfo!
@@ -1971,11 +2060,17 @@ enum ThreatActorsOrdering {
 enum ThreatActorsFilter {
   name
   alias
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
   tags
 }
 input ThreatActorsFiltering {
   key: ThreatActorsFilter!
   values: [String]
+  operator: String
 }
 type ThreatActorConnection {
   pageInfo: PageInfo!
@@ -2073,11 +2168,17 @@ enum IntrusionSetsOrdering {
 enum IntrusionSetsFilter {
   name
   alias
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
   tags
 }
 input IntrusionSetsFiltering {
   key: IntrusionSetsFilter!
   values: [String]
+  operator: String
 }
 type IntrusionSetConnection {
   pageInfo: PageInfo!
@@ -2179,11 +2280,17 @@ enum CampaignsOrdering {
 enum CampaignsFilter {
   name
   alias
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
   tags
 }
 input CampaignsFiltering {
   key: CampaignsFilter!
   values: [String]
+  operator: String
 }
 type CampaignConnection {
   pageInfo: PageInfo!
@@ -2276,11 +2383,17 @@ enum IncidentsOrdering {
 enum IncidentsFilter {
   name
   alias
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
   tags
 }
 input IncidentsFiltering {
   key: IncidentsFilter!
   values: [String]
+  operator: String
 }
 type IncidentConnection {
   pageInfo: PageInfo!
@@ -2372,11 +2485,17 @@ enum MalwaresOrdering {
 enum MalwaresFilter {
   name
   alias
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
   tags
 }
 input MalwaresFiltering {
   key: MalwaresFilter!
   values: [String]
+  operator: String
 }
 type MalwareConnection {
   pageInfo: PageInfo!
@@ -2463,6 +2582,11 @@ enum ToolsOrdering {
 enum ToolsFilter {
   name
   alias
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
   tags
 }
 input ToolsFiltering {
@@ -2557,11 +2681,17 @@ enum VulnerabilitiesOrdering {
 enum VulnerabilitiesFilter {
   name
   alias
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
   tags
 }
 input VulnerabilitiesFiltering {
   key: VulnerabilitiesFilter!
   values: [String]
+  operator: String
 }
 type VulnerabilityConnection {
   pageInfo: PageInfo!
@@ -2660,7 +2790,10 @@ enum ReportsFilter {
   name
   published
   published_day
+  created
+  created_at
   report_class
+  object_status
   tags
   createdBy
   markingDefinitions
@@ -2670,6 +2803,7 @@ enum ReportsFilter {
 input ReportsFiltering {
   key: ReportsFilter!
   values: [String]!
+  operator: String
 }
 type ReportConnection {
   pageInfo: PageInfo!
@@ -2679,9 +2813,6 @@ type ReportEdge {
   cursor: String!
   node: Report!
   relation: RelationEmbedded
-}
-type ReportPayload {
-  reportEdge: ReportEdge
 }
 type Report implements GlobalObject & StixEntity & StixDomainEntity {
   id: ID!
@@ -2773,6 +2904,254 @@ input ReportAddInput {
   modified: DateTime
 }
 
+### Notes
+enum NotesOrdering {
+  stix_id_key
+  name
+  created
+  modified
+  published
+  object_status
+  created_at
+  updated_at
+  createdBy
+  tags
+  markingDefinitions
+}
+enum NotesFilter {
+  description
+  content
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
+  tags
+  knowledgeContains
+  observablesContains
+}
+input NotesFiltering {
+  key: NotesFilter!
+  values: [String]!
+  operator: String
+}
+type NoteConnection {
+  pageInfo: PageInfo!
+  edges: [NoteEdge]
+}
+type NoteEdge {
+  cursor: String!
+  node: Note!
+  relation: RelationEmbedded
+}
+type Note implements GlobalObject & StixEntity & StixDomainEntity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  stix_label: [String]
+  description: String
+  content: String
+  alias: [String]
+  graph_data: String
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  reports: ReportConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  tags: TagConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  objectRefs(
+    first: Int
+    after: ID
+    orderBy: StixDomainEntitiesOrdering
+    orderMode: OrderingMode
+    filters: [StixDomainEntitiesFiltering]
+    filterMode: FilterMode
+    search: String
+    types: [String]
+  ): StixDomainEntityConnection
+  observableRefs(
+    first: Int
+    after: ID
+    orderBy: StixObservablesOrdering
+    orderMode: OrderingMode
+    filters: [StixObservablesFiltering]
+    filterMode: FilterMode
+    search: String
+    types: [String]
+  ): StixObservableConnection
+  relationRefs(first: Int, relationType: String, knowledgeLevels: [String]): StixRelationConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input NoteAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String!
+  description: String
+  content: String
+  graph_data: String
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+  objectRefs: [String]
+  observableRefs: [String]
+  relationRefs: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+### Opinions
+enum OpinionsOrdering {
+  stix_id_key
+  created
+  modified
+  created_at
+  updated_at
+  createdBy
+  tags
+  markingDefinitions
+}
+enum OpinionsFilter {
+  description
+  explanation
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
+  tags
+  knowledgeContains
+  observablesContains
+}
+input OpinionsFiltering {
+  key: OpinionsFilter!
+  values: [String]!
+  operator: String
+}
+type OpinionConnection {
+  pageInfo: PageInfo!
+  edges: [OpinionEdge]
+}
+type OpinionEdge {
+  cursor: String!
+  node: Opinion!
+  relation: RelationEmbedded
+}
+type Opinion implements GlobalObject & StixEntity & StixDomainEntity {
+  id: ID!
+  internal_id_key: String!
+  stix_id_key: String!
+  entity_type: String!
+  parent_types: [String]!
+  name: String!
+  stix_label: [String]
+  description: String
+  explanation: String
+  alias: [String]
+  graph_data: String
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  editContext: [EditUserContext]
+  createdByRef: createdByRef
+  markingDefinitions: MarkingDefinitionConnection
+  reports: ReportConnection
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  tags: TagConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  objectRefs(
+    first: Int
+    after: ID
+    orderBy: StixDomainEntitiesOrdering
+    orderMode: OrderingMode
+    filters: [StixDomainEntitiesFiltering]
+    filterMode: FilterMode
+    search: String
+    types: [String]
+  ): StixDomainEntityConnection
+  observableRefs(
+    first: Int
+    after: ID
+    orderBy: StixObservablesOrdering
+    orderMode: OrderingMode
+    filters: [StixObservablesFiltering]
+    filterMode: FilterMode
+    search: String
+    types: [String]
+  ): StixObservableConnection
+  relationRefs(first: Int, relationType: String, knowledgeLevels: [String]): StixRelationConnection
+  stixRelations(
+    first: Int
+    after: ID
+    orderBy: StixRelationsOrdering
+    orderMode: OrderingMode
+    stix_id_key: String
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixRelationsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixRelationConnection
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+input OpinionAddInput {
+  internal_id_key: String
+  stix_id_key: String
+  name: String!
+  description: String!
+  explanation: String
+  graph_data: String
+  createdByRef: String
+  markingDefinitions: [String]
+  tags: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
 ### Indicators
 enum IndicatorsOrdering {
   stix_id_key
@@ -2792,19 +3171,20 @@ enum IndicatorsOrdering {
 }
 enum IndicatorsFilter {
   name
+  score
   indicator_pattern
   main_observable_type
   pattern_type
-  tags
-  observablesContains
-  indicates
-  score
+  valid_from
+  valid_until
   created
   modified
   created_at
-  updated_at
-  valid_from
-  valid_until
+  createdBy
+  markingDefinitions
+  tags
+  observablesContains
+  indicates
 }
 input IndicatorsFiltering {
   key: IndicatorsFilter!
@@ -2960,7 +3340,7 @@ type Query {
     filters: [StixDomainEntitiesFiltering]
     filterMode: FilterMode
     search: String
-  ): StixDomainEntityConnection  @auth(for: [KNOWLEDGE])
+  ): StixDomainEntityConnection @auth(for: [KNOWLEDGE])
   duplicateStixDomainEntities(
     first: Int
     after: ID
@@ -2970,8 +3350,9 @@ type Query {
     filters: [StixDomainEntitiesFiltering]
     filterMode: FilterMode
     search: String
-  ): [Distribution]  @auth(for: [KNOWLEDGE])
-  stixDomainEntitiesExportFiles(first: Int, type: String!, context: String): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
+  ): [Distribution] @auth(for: [KNOWLEDGE])
+  stixDomainEntitiesExportFiles(first: Int, type: String!, context: String): FileConnection
+    @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixDomainEntitiesTimeSeries(
     type: String
     field: String!
@@ -2979,8 +3360,8 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-  ): [TimeSeries]  @auth(for: [KNOWLEDGE])
-  stixDomainEntitiesNumber(types: [String], endDate: DateTime): Number  @auth(for: [KNOWLEDGE])
+  ): [TimeSeries] @auth(for: [KNOWLEDGE])
+  stixDomainEntitiesNumber(types: [String], endDate: DateTime): Number @auth(for: [KNOWLEDGE])
   # StixObservables
   stixObservable(id: String): StixObservable @auth(for: [KNOWLEDGE])
   stixObservables(
@@ -3041,7 +3422,8 @@ type Query {
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
-  stixRelationsNumber(type: String, fromId: String, endDate: DateTime, inferred: Boolean): Number @auth(for: [KNOWLEDGE])
+  stixRelationsNumber(type: String, fromId: String, endDate: DateTime, inferred: Boolean): Number
+    @auth(for: [KNOWLEDGE])
   # StixObservableRelations
   stixObservableRelation(id: String!): StixObservableRelation @auth(for: [KNOWLEDGE])
   stixObservableRelations(
@@ -3169,8 +3551,10 @@ type Query {
   ): RegionConnection @auth(for: [KNOWLEDGE])
   # Groups
   group(id: String!): Group @auth(for: [SETTINGS_SETACCESSES])
-  groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection @auth(for: [SETTINGS_SETACCESSES])
-  roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection @auth(for: [SETTINGS_SETACCESSES])
+  groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
+    @auth(for: [SETTINGS_SETACCESSES])
+  roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
+    @auth(for: [SETTINGS_SETACCESSES])
   capabilities(first: Int): CapabilityConnection @auth(for: [SETTINGS_SETACCESSES])
   # MarkingDefinitions
   markingDefinition(id: String!): MarkingDefinition @auth(for: [KNOWLEDGE])
@@ -3356,6 +3740,68 @@ type Query {
   reportContainsStixDomainEntity(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
   reportContainsStixRelation(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
   reportContainsStixObservable(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
+  # Notes
+  note(id: String!): Note @auth(for: [KNOWLEDGE])
+  notes(
+    first: Int
+    after: ID
+    orderBy: NotesOrdering
+    orderMode: OrderingMode
+    filters: [NotesFiltering]
+    filterMode: FilterMode
+    search: String
+  ): NoteConnection @auth(for: [KNOWLEDGE])
+  notesTimeSeries(
+    objectId: String
+    authorId: String
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime!
+    endDate: DateTime!
+    interval: String!
+  ): [TimeSeries] @auth(for: [KNOWLEDGE])
+  notesNumber(objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
+  notesDistribution(
+    objectId: String
+    field: String!
+    operation: StatsOperation!
+    limit: Int
+    order: String
+  ): [Distribution] @auth(for: [KNOWLEDGE])
+  noteContainsStixDomainEntity(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
+  noteContainsStixRelation(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
+  noteContainsStixObservable(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
+  # Opinions
+  opinion(id: String!): Opinion @auth(for: [KNOWLEDGE])
+  opinions(
+    first: Int
+    after: ID
+    orderBy: OpinionsOrdering
+    orderMode: OrderingMode
+    filters: [OpinionsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): OpinionConnection @auth(for: [KNOWLEDGE])
+  opinionsTimeSeries(
+    objectId: String
+    authorId: String
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime!
+    endDate: DateTime!
+    interval: String!
+  ): [TimeSeries] @auth(for: [KNOWLEDGE])
+  opinionsNumber(objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
+  opinionsDistribution(
+    objectId: String
+    field: String!
+    operation: StatsOperation!
+    limit: Int
+    order: String
+  ): [Distribution] @auth(for: [KNOWLEDGE])
+  opinionContainsStixDomainEntity(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
+  opinionContainsStixRelation(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
+  opinionContainsStixObservable(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
   # Indicators
   indicator(id: String!): Indicator @auth(for: [KNOWLEDGE])
   indicators(
@@ -3421,7 +3867,8 @@ type StixDomainEntityEditMutations {
   relationsAdd(input: RelationsAddInput): StixEntity @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(relationId: ID, toId: String, relationType: String): StixEntity @auth(for: [KNOWLEDGE_KNUPDATE])
   importPush(file: Upload!): File @auth(for: [KNOWLEDGE_KNUPLOAD])
-  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
+    @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
   mergeEntities(stixDomainEntitiesIds: [String]!, alias: [String]): StixDomainEntity @auth(for: [KNOWLEDGE_KNUPDATE])
 }
@@ -3459,7 +3906,7 @@ type StixObservableRelationEditMutations {
 
 # Workspace
 type WorkspaceEditMutations {
-  delete: ID  @auth(for: [EXPLORE_EXUPDATE_EXDELETE])
+  delete: ID @auth(for: [EXPLORE_EXUPDATE_EXDELETE])
   fieldPatch(input: EditInput): Workspace @auth(for: [EXPLORE_EXUPDATE])
   contextPatch(input: EditContext): Workspace @auth(for: [EXPLORE_EXUPDATE])
   contextClean: Workspace @auth(for: [EXPLORE_EXUPDATE])
@@ -3574,8 +4021,6 @@ type MarkingDefinitionEditMutations {
   fieldPatch(input: EditInput): MarkingDefinition
   contextPatch(input: EditContext): MarkingDefinition
   contextClean: MarkingDefinition
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): MarkingDefinition
 }
 
 # ExternalReference
@@ -3698,6 +4143,26 @@ type ReportEditMutations {
   relationDelete(relationId: ID, toId: String, relationType: String): Report @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
+# Note
+type NoteEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): Note @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Note @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Note @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID, toId: String, relationType: String): Note @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+
+# Opinion
+type OpinionEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: RelationAddInput): RelationEmbedded @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID, toId: String, relationType: String): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+
 # Indicator
 type IndicatorEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -3759,7 +4224,8 @@ type Mutation {
     mergeAliases: Boolean
   ): StixDomainEntity @auth(for: [KNOWLEDGE_KNUPDATE])
   stixDomainEntitiesDelete(id: [ID]!): [ID]!
-  stixDomainEntitiesExportPush(type: String!, file: Upload!, context: String, listArgs: String): Boolean @auth(for: [CONNECTORAPI])
+  stixDomainEntitiesExportPush(type: String!, file: Upload!, context: String, listArgs: String): Boolean
+    @auth(for: [CONNECTORAPI])
   # StixObservable
   stixObservableAdd(input: StixObservableAddInput): StixObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   stixObservableEdit(id: ID!): StixObservableEditMutations
@@ -3777,7 +4243,8 @@ type Mutation {
   stixRelationAdd(input: StixRelationAddInput, reversedReturn: Boolean): StixRelation @auth(for: [KNOWLEDGE_KNUPDATE])
   stixRelationEdit(id: ID!): StixRelationEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
   # StixObservableRelation
-  stixObservableRelationAdd(input: StixObservableRelationAddInput): StixObservableRelation @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixObservableRelationAdd(input: StixObservableRelationAddInput): StixObservableRelation
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   stixObservableRelationEdit(id: ID!): StixObservableRelationEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
   # Workspace
   workspaceAdd(input: WorkspaceAddInput): Workspace @auth(for: [EXPLORE_EXUPDATE])
@@ -3788,7 +4255,7 @@ type Mutation {
   # User
   userAdd(input: UserAddInput): User @auth(for: [SETTINGS_SETACCESSES])
   userEdit(id: ID!): UserEditMutations @auth(for: [SETTINGS_SETACCESSES])
-  personAdd(input: PersonAddInput): User @auth (for: [KNOWLEDGE_KNUPDATE])
+  personAdd(input: PersonAddInput): User @auth(for: [KNOWLEDGE_KNUPDATE])
   personEdit(id: ID!): PersonEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
   meEdit(input: EditInput): User @auth
   logout: ID @auth
@@ -3852,6 +4319,12 @@ type Mutation {
   # Report
   reportAdd(input: ReportAddInput): Report @auth(for: [KNOWLEDGE_KNUPDATE])
   reportEdit(id: ID!): ReportEditMutations
+  # Note
+  noteAdd(input: NoteAddInput): Note @auth(for: [KNOWLEDGE_KNUPDATE])
+  noteEdit(id: ID!): NoteEditMutations
+  # Report
+  opinionAdd(input: OpinionAddInput): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+  opinionEdit(id: ID!): OpinionEditMutations
   # Indicator
   indicatorAdd(input: IndicatorAddInput): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
   indicatorEdit(id: ID!): IndicatorEditMutations

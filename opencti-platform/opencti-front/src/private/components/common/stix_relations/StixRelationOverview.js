@@ -34,6 +34,7 @@ import StixRelationInferences from './StixRelationInferences';
 import StixRelationStixRelations from './StixRelationStixRelations';
 import EntityLastReports from '../../reports/EntityLastReports';
 import ItemCreator from '../../../../components/ItemCreator';
+import StixObjectNotes from '../stix_object/StixObjectNotes';
 
 const styles = () => ({
   container: {
@@ -313,7 +314,7 @@ class StixRelationContainer extends Component {
           </div>
         </Link>
         <div className="clearfix" style={{ height: 20 }} />
-        <Grid container={true} spacing={2}>
+        <Grid container={true} spacing={3}>
           <Grid item={true} xs={6}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Information')}
@@ -359,7 +360,11 @@ class StixRelationContainer extends Component {
                 {t('Creator')}
               </Typography>
               <ItemCreator
-                createdByRef={pathOr(null, ['createdByRef', 'node'], stixRelation)}
+                createdByRef={pathOr(
+                  null,
+                  ['createdByRef', 'node'],
+                  stixRelation,
+                )}
               />
             </Paper>
           </Grid>
@@ -424,18 +429,20 @@ class StixRelationContainer extends Component {
               </Paper>
             </div>
           ) : (
-            <Grid
-              container={true}
-              spacing={2}
-              style={{ margin: '40px 0 60px 0' }}
-            >
-              <Grid item={true} xs={6}>
-                <StixRelationStixRelations entityId={stixRelation.id} />
+            <div style={{ margin: '40px 0 0px 0' }}>
+              <Grid container={true} spacing={3}>
+                <Grid item={true} xs={6}>
+                  <StixRelationStixRelations entityId={stixRelation.id} />
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <EntityLastReports entityId={stixRelation.id} />
+                </Grid>
               </Grid>
-              <Grid item={true} xs={6}>
-                <EntityLastReports entityId={stixRelation.id} />
-              </Grid>
-            </Grid>
+              <StixObjectNotes
+                entityId={stixRelation.id}
+                inputType="relationRefs"
+              />
+            </div>
           )}
         </div>
         {stixRelation.inferred ? (

@@ -9,30 +9,35 @@ import inject18n from './i18n';
 const styles = () => ({
   diff: {
     float: 'left',
-    margin: '18px 0 0 10px',
-    fontSize: 13,
+    margin: '21px 0 0 10px',
+    padding: '2px 5px 2px 5px',
+    fontSize: 12,
   },
   diffDescription: {
-    margin: '5px 0 0 10px',
+    margin: '0 0 0 10px',
     float: 'left',
   },
   diffIcon: {
     float: 'left',
+    margin: '1px 5px 0 0',
+    fontSize: 13,
   },
   diffNumber: {
-    marginTop: 5,
     float: 'left',
   },
 });
 
 const inlineStyles = {
   green: {
+    backgroundColor: 'rgba(76, 175, 80, 0.08)',
     color: '#4caf50',
   },
   red: {
+    backgroundColor: 'rgba(244, 67, 54, 0.08)',
     color: '#f44336',
   },
   blueGrey: {
+    backgroundColor: 'rgba(96, 125, 139, 0.08)',
     color: '#607d8b',
   },
 };
@@ -44,45 +49,39 @@ class ItemNumberDifference extends Component {
     } = this.props;
     if (difference < 0) {
       return (
-        <div className={classes.diff}>
-          <ArrowDownward
-            color="inherit"
-            classes={{ root: classes.diffIcon }}
-            style={inlineStyles.red}
-          />
-          <div className={classes.diffNumber} style={inlineStyles.red}>
-            {difference}
-          </div>
-          <div className={classes.diffDescription}>({t(description)})</div>
+        <div className={classes.diff} style={inlineStyles.red}>
+          <ArrowDownward color="inherit" classes={{ root: classes.diffIcon }} />
+          <div className={classes.diffNumber}>{difference}</div>
+          {description ? (
+            <div className={classes.diffDescription}>({t(description)})</div>
+          ) : (
+            ''
+          )}
         </div>
       );
     }
     if (difference === 0) {
       return (
-        <div className={classes.diff}>
-          <ArrowForward
-            color="inherit"
-            classes={{ root: classes.diffIcon }}
-            style={inlineStyles.blueGrey}
-          />
-          <div className={classes.diffNumber} style={inlineStyles.blueGrey}>
-            {difference}
-          </div>
-          <div className={classes.diffDescription}>({t(description)})</div>
+        <div className={classes.diff} style={inlineStyles.blueGrey}>
+          <ArrowForward color="inherit" classes={{ root: classes.diffIcon }} />
+          <div className={classes.diffNumber}>{difference}</div>
+          {description ? (
+            <div className={classes.diffDescription}>({t(description)})</div>
+          ) : (
+            ''
+          )}
         </div>
       );
     }
     return (
-      <div className={classes.diff}>
-        <ArrowUpward
-          color="inherit"
-          classes={{ root: classes.diffIcon }}
-          style={inlineStyles.green}
-        />
-        <div className={classes.diffNumber} style={inlineStyles.green}>
-          {difference}
-        </div>
-        <div className={classes.diffDescription}>({t(description)})</div>
+      <div className={classes.diff} style={inlineStyles.green}>
+        <ArrowUpward color="inherit" classes={{ root: classes.diffIcon }} />
+        <div className={classes.diffNumber}>{difference}</div>
+        {description ? (
+          <div className={classes.diffDescription}>({t(description)})</div>
+        ) : (
+          ''
+        )}
       </div>
     );
   }
@@ -95,7 +94,4 @@ ItemNumberDifference.propTypes = {
   description: PropTypes.string.isRequired,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(ItemNumberDifference);
+export default compose(inject18n, withStyles(styles))(ItemNumberDifference);

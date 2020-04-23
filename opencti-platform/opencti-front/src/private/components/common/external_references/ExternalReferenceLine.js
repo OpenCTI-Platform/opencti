@@ -8,7 +8,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Avatar from '@material-ui/core/Avatar';
-import { MoreVert } from '@material-ui/icons';
+import { MoreVertOutlined } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ExternalReferencePopover from './ExternalReferencePopover';
@@ -175,7 +175,7 @@ class ExternalReferenceLineDummyComponent extends Component {
           }
         />
         <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVert />
+          <MoreVertOutlined />
         </ListItemSecondaryAction>
       </ListItem>
     );

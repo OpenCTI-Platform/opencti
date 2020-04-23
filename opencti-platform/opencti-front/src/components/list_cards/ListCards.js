@@ -20,6 +20,7 @@ import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainEntitiesExports from '../../private/components/common/stix_domain_entities/StixDomainEntitiesExports';
 import Security, { KNOWLEDGE_KNGETEXPORT } from '../../utils/Security';
+import Filters from '../../private/components/common/lists/Filters';
 
 const styles = (theme) => ({
   container: {
@@ -84,6 +85,7 @@ class ListCards extends Component {
       classes,
       handleSearch,
       handleChangeView,
+      handleAddFilter,
       handleRemoveFilter,
       handleToggleExports,
       openExports,
@@ -97,6 +99,7 @@ class ListCards extends Component {
       exportEntityType,
       exportContext,
       numberOfElements,
+      availableFilterKeys,
     } = this.props;
     return (
       <div
@@ -112,7 +115,22 @@ class ListCards extends Component {
               keyword={keyword}
             />
           </div>
-          <InputLabel classes={{ root: classes.sortFieldLabel }}>
+          {availableFilterKeys && availableFilterKeys.length > 0 ? (
+            <Filters
+              availableFilterKeys={availableFilterKeys}
+              handleAddFilter={handleAddFilter}
+              currentFilters={filters}
+            />
+          ) : (
+            ''
+          )}
+          <InputLabel
+            classes={{ root: classes.sortFieldLabel }}
+            style={{
+              marginLeft:
+                availableFilterKeys && availableFilterKeys.length > 0 ? 10 : 0,
+            }}
+          >
             {t('Sort by')}
           </InputLabel>
           <FormControl classes={{ root: classes.sortField }}>
@@ -235,6 +253,7 @@ ListCards.propTypes = {
   handleSearch: PropTypes.func.isRequired,
   handleSort: PropTypes.func.isRequired,
   handleChangeView: PropTypes.func,
+  handleAddFilter: PropTypes.func,
   handleRemoveFilter: PropTypes.func,
   handleToggleExports: PropTypes.func,
   openExports: PropTypes.bool,
@@ -248,6 +267,7 @@ ListCards.propTypes = {
   dataColumns: PropTypes.object.isRequired,
   paginationOptions: PropTypes.object,
   numberOfElements: PropTypes.object,
+  availableFilterKeys: PropTypes.array,
 };
 
 export default compose(inject18n, withStyles(styles))(ListCards);
