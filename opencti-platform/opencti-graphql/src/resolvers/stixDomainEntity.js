@@ -54,7 +54,6 @@ const stixDomainEntityResolvers = {
       if (obj.entity_type) {
         return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) => letter.toUpperCase());
       }
-      /* istanbul ignore next */
       return 'Unknown';
     },
     importFiles: (entity, { first }) => filesListing(first, 'import', entity.entity_type, entity),
@@ -84,11 +83,11 @@ const stixDomainEntityResolvers = {
   },
   Subscription: {
     stixDomainEntity: {
-      /* istanbul ignore next */
-      resolve: (payload) => payload.instance,
-      /* istanbul ignore next */
+      resolve: (payload) => /* istanbul ignore next */ payload.instance,
       subscribe: (_, { id }, { user }) => {
+        /* istanbul ignore next */
         stixDomainEntityEditContext(user, id);
+        /* istanbul ignore next */
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC),
           (payload) => {
@@ -96,6 +95,7 @@ const stixDomainEntityResolvers = {
             return payload.user.id !== user.id && payload.instance.id === id;
           }
         )(_, { id }, { user });
+        /* istanbul ignore next */
         return withCancel(filtering, () => {
           stixDomainEntityCleanContext(user, id);
         });
