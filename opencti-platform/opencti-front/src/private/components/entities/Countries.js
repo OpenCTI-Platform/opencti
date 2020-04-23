@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import {
+  assoc, compose, dissoc, propOr,
+} from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
+  convertFilters,
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
@@ -29,6 +32,7 @@ class Countries extends Component {
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
       openExports: false,
+      filters: {},
       numberOfElements: { number: 0, symbol: '' },
     };
   }
@@ -38,7 +42,7 @@ class Countries extends Component {
       this.props.history,
       this.props.location,
       'view-countries',
-      this.state,
+      dissoc('filters', this.state),
     );
   }
 
@@ -52,6 +56,20 @@ class Countries extends Component {
 
   handleToggleExports() {
     this.setState({ openExports: !this.state.openExports });
+  }
+
+  handleAddFilter(key, id, value, event = null) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    this.setState({
+      filters: assoc(key, [{ id, value }], this.state.filters),
+    });
+  }
+
+  handleRemoveFilter(key) {
+    this.setState({ filters: dissoc(key, this.state.filters) });
   }
 
   setNumberOfElements(numberOfElements) {
@@ -90,12 +108,19 @@ class Countries extends Component {
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
+        handleAddFilter={this.handleAddFilter.bind(this)}
+        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
         exportEntityType="Country"
         keyword={searchTerm}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        availableFilterKeys={[
+          'created_start_date',
+          'created_end_date',
+          'createdBy',
+        ]}
       >
         <QueryRenderer
           query={countriesLinesQuery}
@@ -116,12 +141,14 @@ class Countries extends Component {
 
   render() {
     const {
-      view, sortBy, orderAsc, searchTerm,
+      view, sortBy, orderAsc, searchTerm, filters,
     } = this.state;
+    const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
+      filters: finalFilters,
     };
     return (
       <div>

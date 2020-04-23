@@ -7,6 +7,7 @@ import {
   stixDomainEntityDeleteRelation,
   stixDomainEntityDelete,
 } from '../domain/stixDomainEntity';
+import { REL_INDEX_PREFIX } from "../database/elasticSearch";
 
 const regionResolvers = {
   Query: {
@@ -17,6 +18,11 @@ const regionResolvers = {
     parentRegions: (region) => parentRegions(region.id),
     subRegions: (region) => subRegions(region.id),
     isSubRegion: (region, args) => isSubRegion(region.id, args),
+  },
+  RegionsFilter: {
+    createdBy: `${REL_INDEX_PREFIX}created_by_ref.internal_id_key`,
+    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.internal_id_key`,
+    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
   },
   Mutation: {
     regionEdit: (_, { id }, { user }) => ({

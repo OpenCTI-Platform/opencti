@@ -65,8 +65,12 @@ const styles = (theme) => ({
 });
 
 export const identityCreationIdentitiesSearchQuery = graphql`
-  query IdentityCreationIdentitiesSearchQuery($search: String, $first: Int) {
-    identities(search: $search, first: $first) {
+  query IdentityCreationIdentitiesSearchQuery(
+    $types: [String]
+    $search: String
+    $first: Int
+  ) {
+    identities(types: $types, search: $search, first: $first) {
       edges {
         node {
           id
@@ -241,7 +245,7 @@ class IdentityCreation extends Component {
 
   renderContextual() {
     const {
-      t, classes, inputValue, open,
+      t, classes, inputValue, open, onlyAuthors,
     } = this.props;
     return (
       <div>
@@ -287,13 +291,29 @@ class IdentityCreation extends Component {
                     fullWidth={true}
                     containerstyle={{ marginTop: 20, width: '100%' }}
                   >
-                    <MenuItem value="Sector">{t('Sector')}</MenuItem>
+                    {!onlyAuthors ? (
+                      <MenuItem value="Sector">{t('Sector')}</MenuItem>
+                    ) : (
+                      ''
+                    )}
                     <MenuItem value="Organization">
                       {t('Organization')}
                     </MenuItem>
-                    <MenuItem value="Region">{t('Region')}</MenuItem>
-                    <MenuItem value="Country">{t('Country')}</MenuItem>
-                    <MenuItem value="City">{t('City')}</MenuItem>
+                    {!onlyAuthors ? (
+                      <MenuItem value="Region">{t('Region')}</MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {!onlyAuthors ? (
+                      <MenuItem value="Country">{t('Country')}</MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {!onlyAuthors ? (
+                      <MenuItem value="City">{t('City')}</MenuItem>
+                    ) : (
+                      ''
+                    )}
                     <MenuItem value="User">{t('Person')}</MenuItem>
                   </Field>
                 </DialogContent>
@@ -337,6 +357,7 @@ IdentityCreation.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   contextual: PropTypes.bool,
+  onlyAuthors: PropTypes.bool,
   open: PropTypes.bool,
   handleClose: PropTypes.func,
   inputValue: PropTypes.string,

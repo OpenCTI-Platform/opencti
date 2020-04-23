@@ -167,6 +167,7 @@ class ListLines extends Component {
             <Filters
               availableFilterKeys={availableFilterKeys}
               handleAddFilter={handleAddFilter}
+              currentFilters={filters}
             />
           ) : (
             ''

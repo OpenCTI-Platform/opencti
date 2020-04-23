@@ -57,9 +57,11 @@ class CreatedByRefField extends Component {
 
   searchIdentities(event) {
     this.setState({
-      identityInput: event && event.target.value !== 0 ? event.target.value : '',
+      identityInput:
+        event && event.target.value !== 0 ? event.target.value : '',
     });
     fetchQuery(identityCreationIdentitiesSearchQuery, {
+      types: ['User', 'Organization'],
       search: event && event.target.value !== 0 ? event.target.value : '',
       first: 10,
     }).then((data) => {
@@ -113,6 +115,7 @@ class CreatedByRefField extends Component {
         />
         <IdentityCreation
           contextual={true}
+          onlyAuthors={true}
           inputValue={this.state.identityInput}
           open={this.state.identityCreation}
           handleClose={this.handleCloseIdentityCreation.bind(this)}

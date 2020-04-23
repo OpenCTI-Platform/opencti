@@ -35,8 +35,8 @@ const markingDefinitionResolvers = {
   },
   Subscription: {
     markingDefinition: {
-      resolve: (payload) => payload.instance,
-      subscribe: (_, { id }, { user }) => {
+      resolve: /* istanbul ignore next */ (payload) => payload.instance,
+      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
         markingDefinitionEditContext(user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC),

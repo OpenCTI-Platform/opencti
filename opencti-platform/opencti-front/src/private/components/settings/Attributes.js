@@ -25,8 +25,8 @@ const styles = () => ({
 });
 
 export const attributesSearchQuery = graphql`
-  query AttributesSearchQuery($search: String) {
-    attributes(search: $search) {
+  query AttributesSearchQuery($type: String!, $search: String, $first: Int) {
+    attributes(type: $type, search: $search, first: $first) {
       edges {
         node {
           id
@@ -43,7 +43,7 @@ class Attributes extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'Attributes-view',
+      'view-attributes',
     );
     this.state = {
       sortBy: propOr('definition', 'sortBy', params),
@@ -57,7 +57,7 @@ class Attributes extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'Attributes-view',
+      'view-attributes',
       this.state,
     );
   }
@@ -139,8 +139,4 @@ Attributes.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(Attributes);
+export default compose(inject18n, withRouter, withStyles(styles))(Attributes);

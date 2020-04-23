@@ -8,6 +8,7 @@ const globalObjectResolvers = {
       if (obj.entity_type) {
         return obj.entity_type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
       }
+      /* istanbul ignore next */
       return 'Unknown';
     },
   },

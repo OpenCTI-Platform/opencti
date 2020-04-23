@@ -11,6 +11,7 @@ import {
   DescriptionOutlined,
   MapOutlined,
   CenterFocusStrongOutlined,
+  ShortTextOutlined,
 } from '@material-ui/icons';
 import {
   Biohazard,
@@ -88,6 +89,8 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <ShieldSearch style={style} fontSize={fontSize} role="img" />;
     case 'tag':
       return <TagOutline style={style} fontSize={fontSize} role="img" />;
+    case 'attribute':
+      return <ShortTextOutlined style={style} fontSize={fontSize} role="img" />;
     case 'marking-definition':
       return (
         <CenterFocusStrongOutlined

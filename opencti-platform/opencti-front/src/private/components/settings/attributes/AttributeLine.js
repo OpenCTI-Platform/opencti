@@ -7,7 +7,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { MoreVert, ShortText } from '@material-ui/icons';
+import { MoreVertOutlined, ShortTextOutlined } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import AttributePopover from './AttributePopover';
@@ -52,7 +52,7 @@ class AttributeLineComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true} button={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ShortText />
+          <ShortTextOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -106,7 +106,7 @@ class AttributeLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <ShortText />
+          <ShortTextOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -121,7 +121,7 @@ class AttributeLineDummyComponent extends Component {
           }
         />
         <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVert />
+          <MoreVertOutlined />
         </ListItemSecondaryAction>
       </ListItem>
     );

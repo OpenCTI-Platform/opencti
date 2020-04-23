@@ -163,7 +163,7 @@ class StixDomainEntityHeader extends Component {
         {typeof onViewAs === 'function' ? (
           <div>
             <InputLabel classes={{ root: classes.viewAsFieldLabel }}>
-              {t('View as')}
+              {t('Display as')}
             </InputLabel>
             <FormControl classes={{ root: classes.viewAsField }}>
               <Select

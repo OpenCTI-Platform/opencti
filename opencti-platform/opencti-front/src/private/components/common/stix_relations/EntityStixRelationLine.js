@@ -9,7 +9,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { MoreVert, Help } from '@material-ui/icons';
+import { MoreVertOutlined, HelpOutlined } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidenceLevel from '../../../../components/ItemConfidenceLevel';
@@ -204,7 +204,7 @@ class EntityStixRelationLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Help />
+          <HelpOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -243,7 +243,7 @@ class EntityStixRelationLineDummyComponent extends Component {
           }
         />
         <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVert />
+          <MoreVertOutlined />
         </ListItemSecondaryAction>
       </ListItem>
     );

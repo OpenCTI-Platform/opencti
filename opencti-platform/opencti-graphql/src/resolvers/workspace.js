@@ -46,8 +46,8 @@ const workspaceResolvers = {
   },
   Subscription: {
     workspace: {
-      resolve: (payload) => payload.instance,
-      subscribe: (_, { id }, { user }) => {
+      resolve: /* istanbul ignore next */ (payload) => payload.instance,
+      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
         workspaceEditContext(user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.Workspace.EDIT_TOPIC),

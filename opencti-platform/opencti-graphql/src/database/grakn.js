@@ -326,7 +326,7 @@ export const queryAttributeValues = async (type) => {
         const attributeType = await attribute.type();
         const value = await attribute.value();
         const attributeTypeLabel = await attributeType.label();
-        const replacedValue = value.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+        const replacedValue = typeof value === 'string' ? value.replace(/\\"/g, '"').replace(/\\\\/g, '\\') : value;
         return {
           node: {
             id: attribute.id,

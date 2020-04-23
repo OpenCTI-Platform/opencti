@@ -1,20 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  assoc,
-  compose,
-  dissoc,
-  head,
-  last,
-  map,
-  pipe,
-  propOr,
-  toPairs,
+  assoc, compose, dissoc, propOr,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
+  convertFilters,
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
@@ -63,9 +56,11 @@ class Tools extends Component {
     this.setState({ openExports: !this.state.openExports });
   }
 
-  handleAddFilter(key, id, value, event) {
-    event.stopPropagation();
-    event.preventDefault();
+  handleAddFilter(key, id, value, event = null) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
     this.setState({
       filters: assoc(key, [{ id, value }], this.state.filters),
     });
@@ -117,6 +112,7 @@ class Tools extends Component {
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
+        handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
@@ -125,6 +121,13 @@ class Tools extends Component {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        availableFilterKeys={[
+          'tags',
+          'markingDefinitions',
+          'created_start_date',
+          'created_end_date',
+          'createdBy',
+        ]}
       >
         <QueryRenderer
           query={toolsLinesQuery}
@@ -148,19 +151,12 @@ class Tools extends Component {
     const {
       view, sortBy, orderAsc, searchTerm, filters,
     } = this.state;
-    const buildQueryFilters = pipe(
-      toPairs,
-      map((pair) => {
-        const values = last(pair);
-        const valIds = map((v) => v.id, values);
-        return { key: head(pair), values: valIds };
-      }),
-    )(filters);
+    const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
-      filters: buildQueryFilters,
+      filters: finalFilters,
     };
     return (
       <div>
