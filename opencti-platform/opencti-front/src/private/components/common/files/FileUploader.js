@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { CloudUpload } from '@material-ui/icons';
+import { CloudUploadOutlined } from '@material-ui/icons';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -80,7 +80,7 @@ const FileUploader = (props) => {
             aria-haspopup="true"
             color="primary"
           >
-            <CloudUpload />
+            <CloudUploadOutlined />
           </IconButton>
         </Tooltip>
       )}

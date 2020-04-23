@@ -394,6 +394,7 @@ interface StixEntity {
   description: String
   tags: TagConnection
   reports: ReportConnection
+  notes: NoteConnection
   editContext: [EditUserContext]
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
@@ -486,6 +487,7 @@ interface StixDomainEntity {
   externalReferences(first: Int): ExternalReferenceConnection
   tags: TagConnection
   reports: ReportConnection
+  notes: NoteConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   created_at: DateTime!
@@ -562,6 +564,7 @@ type StixObservable implements GlobalObject & StixEntity {
   externalReferences(first: Int): ExternalReferenceConnection
   tags: TagConnection
   reports: ReportConnection
+  notes: NoteConnection
   indicators: IndicatorConnection
   stixRelations(
     first: Int
@@ -669,6 +672,7 @@ type StixRelation implements GlobalObject & StixEntity {
   externalReferences(first: Int): ExternalReferenceConnection
   tags: TagConnection
   reports: ReportConnection
+  notes: NoteConnection
   from: StixEntity
   fromRole: String
   to: StixEntity
@@ -763,6 +767,7 @@ type StixObservableRelation implements GlobalObject & StixEntity {
   externalReferences(first: Int): ExternalReferenceConnection
   tags: TagConnection
   reports: ReportConnection
+  notes: NoteConnection
   from: StixObservable
   fromRole: String
   to: StixObservable
@@ -913,6 +918,7 @@ interface Identity {
   externalReferences(first: Int): ExternalReferenceConnection
   tags: TagConnection
   reports: ReportConnection
+  notes: NoteConnection
   stixRelations(
     first: Int
     after: ID
@@ -1071,6 +1077,7 @@ type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   token: String
   groups: GroupConnection
   reports: ReportConnection
+  notes: NoteConnection
   organizations: OrganizationConnection
   stixRelations(
     first: Int
@@ -1200,6 +1207,7 @@ type Organization implements GlobalObject & StixEntity & StixDomainEntity & Iden
   exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  notes: NoteConnection
   sectors: SectorConnection
   stixRelations(
     first: Int
@@ -1302,6 +1310,7 @@ type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  notes: NoteConnection
   stixRelations(
     first: Int
     after: ID
@@ -1396,6 +1405,7 @@ type City implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  notes: NoteConnection
   country: Country
   stixRelations(
     first: Int
@@ -1491,6 +1501,7 @@ type Country implements GlobalObject & StixEntity & StixDomainEntity & Identity 
   exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  notes: NoteConnection
   region: Region
   stixRelations(
     first: Int
@@ -1590,6 +1601,7 @@ type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  notes: NoteConnection
   stixRelations(
     first: Int
     after: ID
@@ -1906,6 +1918,7 @@ type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
   tags: TagConnection
   killChainPhases: KillChainPhaseConnection
   reports: ReportConnection
+  notes: NoteConnection
   coursesOfAction: CourseOfActionConnection
   stixRelations(
     first: Int
@@ -2006,6 +2019,7 @@ type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
   exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  notes: NoteConnection
   attackPatterns: AttackPatternConnection
   stixRelations(
     first: Int
@@ -2109,6 +2123,7 @@ type ThreatActor implements GlobalObject & StixEntity & StixDomainEntity & Ident
   exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  notes: NoteConnection
   stixRelations(
     first: Int
     after: ID
@@ -2217,6 +2232,7 @@ type IntrusionSet implements GlobalObject & StixEntity & StixDomainEntity {
   exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  notes: NoteConnection
   stixRelations(
     first: Int
     after: ID
@@ -2325,6 +2341,7 @@ type Campaign implements GlobalObject & StixEntity & StixDomainEntity {
   exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  notes: NoteConnection
   stixRelations(
     first: Int
     after: ID
@@ -2429,6 +2446,7 @@ type Incident implements GlobalObject & StixEntity & StixDomainEntity {
   exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  notes: NoteConnection
   stixRelations(
     first: Int
     after: ID
@@ -2528,6 +2546,7 @@ type Malware implements GlobalObject & StixEntity & StixDomainEntity {
   tags: TagConnection
   killChainPhases: KillChainPhaseConnection
   reports: ReportConnection
+  notes: NoteConnection
   stixRelations(
     first: Int
     after: ID
@@ -2626,6 +2645,7 @@ type Tool implements GlobalObject & StixEntity & StixDomainEntity {
   tags: TagConnection
   killChainPhases: KillChainPhaseConnection
   reports: ReportConnection
+  notes: NoteConnection
   stixRelations(
     first: Int
     after: ID
@@ -2728,6 +2748,7 @@ type Vulnerability implements GlobalObject & StixEntity & StixDomainEntity {
   exportFiles(first: Int): FileConnection
   tags: TagConnection
   reports: ReportConnection
+  notes: NoteConnection
   stixRelations(
     first: Int
     after: ID
@@ -2836,6 +2857,7 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   reports: ReportConnection
+  notes: NoteConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   tags: TagConnection
@@ -2963,6 +2985,7 @@ type Note implements GlobalObject & StixEntity & StixDomainEntity {
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   reports: ReportConnection
+  notes: NoteConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   tags: TagConnection
@@ -3087,6 +3110,7 @@ type Opinion implements GlobalObject & StixEntity & StixDomainEntity {
   createdByRef: createdByRef
   markingDefinitions: MarkingDefinitionConnection
   reports: ReportConnection
+  notes: NoteConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
   tags: TagConnection
@@ -3230,6 +3254,7 @@ type Indicator implements GlobalObject & StixEntity & StixDomainEntity {
   tags: TagConnection
   killChainPhases: KillChainPhaseConnection
   reports: ReportConnection
+  notes: NoteConnection
   stixRelations(
     first: Int
     after: ID
