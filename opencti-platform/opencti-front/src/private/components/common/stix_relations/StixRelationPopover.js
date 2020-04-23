@@ -12,7 +12,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
-import MoreVert from '@material-ui/icons/MoreVert';
+import { MoreVertOutlined } from '@material-ui/icons';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -128,7 +128,7 @@ class StixRelationPopover extends Component {
           aria-haspopup="true"
           disabled={disabled}
         >
-          <MoreVert />
+          <MoreVertOutlined />
         </IconButton>
         <Menu
           anchorEl={this.state.anchorEl}

@@ -27,6 +27,9 @@ const stixRelationResolvers = {
     stixRelationsNumber: (_, args) => stixRelationsNumber(args),
   },
   StixRelationsFilter: {
+    createdBy: `${REL_INDEX_PREFIX}created_by_ref.internal_id_key`,
+    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.internal_id_key`,
+    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
     toPatternType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.pattern_type`,
     toMainObservableType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.main_observable_type`,
   },

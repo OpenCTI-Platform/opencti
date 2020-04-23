@@ -1,5 +1,12 @@
 import {
-  mergeLeft, dissoc, pipe, split,
+  mergeLeft,
+  dissoc,
+  pipe,
+  split,
+  toPairs,
+  map,
+  head,
+  last,
 } from 'ramda';
 
 export const saveViewParameters = (
@@ -62,3 +69,21 @@ export const buildViewParamsFromUrlAndStorage = (
   saveViewParameters(history, location, localStorageKey, finalParams);
   return finalParams;
 };
+
+export const convertFilters = (filters) => pipe(
+  toPairs,
+  map((pair) => {
+    let key = head(pair);
+    let operator = 'eq';
+    if (key.endsWith('start_date')) {
+      key = key.replace('_start_date', '');
+      operator = 'gt';
+    } else if (key.endsWith('end_date')) {
+      key = key.replace('_end_date', '');
+      operator = 'lt';
+    }
+    const values = last(pair);
+    const valIds = map((v) => v.id, values);
+    return { key, values: valIds, operator };
+  }),
+)(filters);

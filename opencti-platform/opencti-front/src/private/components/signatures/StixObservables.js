@@ -1,17 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose,
-  append,
-  filter,
-  propOr,
-  assoc,
-  dissoc,
-  pipe,
-  toPairs,
-  map,
-  last,
-  head,
+  compose, append, filter, propOr, assoc, dissoc,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
@@ -25,6 +15,7 @@ import StixObservableCreation from './stix_observables/StixObservableCreation';
 import StixObservablesRightBar from './stix_observables/StixObservablesRightBar';
 import {
   buildViewParamsFromUrlAndStorage,
+  convertFilters,
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
@@ -80,7 +71,10 @@ class StixObservables extends Component {
     if (this.state.observableTypes.includes(type)) {
       this.setState(
         {
-          observableTypes: filter((t) => t !== type, this.state.observableTypes),
+          observableTypes: filter(
+            (t) => t !== type,
+            this.state.observableTypes,
+          ),
         },
         () => this.saveView(),
       );
@@ -92,9 +86,11 @@ class StixObservables extends Component {
     }
   }
 
-  handleAddFilter(key, id, value, event) {
-    event.stopPropagation();
-    event.preventDefault();
+  handleAddFilter(key, id, value, event = null) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
     this.setState({
       filters: assoc(key, [{ id, value }], this.state.filters),
     });
@@ -149,6 +145,7 @@ class StixObservables extends Component {
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
+        handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         exportEntityType="Stix-Observable"
         exportContext={null}
@@ -156,6 +153,13 @@ class StixObservables extends Component {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        availableFilterKeys={[
+          'tags',
+          'markingDefinitions',
+          'created_at_start_date',
+          'created_at_end_date',
+          'createdBy',
+        ]}
       >
         <QueryRenderer
           query={stixObservablesLinesQuery}
@@ -186,14 +190,7 @@ class StixObservables extends Component {
       filters,
       openExports,
     } = this.state;
-    const finalFilters = pipe(
-      toPairs,
-      map((pair) => {
-        const values = last(pair);
-        const valIds = map((v) => v.id, values);
-        return { key: head(pair), values: valIds };
-      }),
-    )(filters);
+    const finalFilters = convertFilters(filters);
     const paginationOptions = {
       types: observableTypes.length > 0 ? observableTypes : null,
       search: searchTerm,

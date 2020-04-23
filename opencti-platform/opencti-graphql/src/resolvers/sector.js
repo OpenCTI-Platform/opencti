@@ -20,6 +20,9 @@ const sectorResolvers = {
     isSubSector: (sector, args) => isSubSector(sector.id, args),
   },
   SectorsFilter: {
+    createdBy: `${REL_INDEX_PREFIX}created_by_ref.internal_id_key`,
+    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.internal_id_key`,
+    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
     gatheredBy: `${REL_INDEX_PREFIX}gathering.internal_id_key`,
   },
   Mutation: {

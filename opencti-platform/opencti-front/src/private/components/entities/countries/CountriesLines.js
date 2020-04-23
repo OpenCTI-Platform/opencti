@@ -65,6 +65,7 @@ export const countriesLinesQuery = graphql`
     $cursor: ID
     $orderBy: CountriesOrdering
     $orderMode: OrderingMode
+    $filters: [OrganizationsFiltering]
   ) {
     ...CountriesLines_data
       @arguments(
@@ -73,6 +74,7 @@ export const countriesLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -88,6 +90,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "CountriesOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          filters: { type: "[CountriesFiltering]" }
         ) {
         countries(
           search: $search
@@ -95,6 +98,7 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_countries") {
           edges {
             node {
@@ -131,6 +135,7 @@ export default createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: countriesLinesQuery,

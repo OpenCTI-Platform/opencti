@@ -1,23 +1,14 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  append,
-  assoc,
-  compose,
-  dissoc,
-  filter,
-  head,
-  last,
-  map,
-  pipe,
-  propOr,
-  toPairs,
+  append, assoc, compose, dissoc, filter, propOr,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
+  convertFilters,
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
@@ -99,7 +90,10 @@ class Indicators extends Component {
     if (this.state.observableTypes.includes(type)) {
       this.setState(
         {
-          observableTypes: filter((t) => t !== type, this.state.observableTypes),
+          observableTypes: filter(
+            (t) => t !== type,
+            this.state.observableTypes,
+          ),
         },
         () => this.saveView(),
       );
@@ -113,9 +107,11 @@ class Indicators extends Component {
     }
   }
 
-  handleAddFilter(key, id, value, event) {
-    event.stopPropagation();
-    event.preventDefault();
+  handleAddFilter(key, id, value, event = null) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
     this.setState({
       filters: assoc(key, [{ id, value }], this.state.filters),
     });
@@ -176,6 +172,7 @@ class Indicators extends Component {
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
+        handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
@@ -185,6 +182,15 @@ class Indicators extends Component {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        availableFilterKeys={[
+          'tags',
+          'markingDefinitions',
+          'created_start_date',
+          'created_end_date',
+          'valid_from_start_date',
+          'valid_until_end_date',
+          'createdBy',
+        ]}
       >
         <QueryRenderer
           query={indicatorsLinesQuery}
@@ -216,14 +222,7 @@ class Indicators extends Component {
       observableTypes,
       openExports,
     } = this.state;
-    let finalFilters = pipe(
-      toPairs,
-      map((pair) => {
-        const values = last(pair);
-        const valIds = map((v) => v.id, values);
-        return { key: head(pair), values: valIds };
-      }),
-    )(filters);
+    let finalFilters = convertFilters(filters);
     if (indicatorTypes.length > 0) {
       finalFilters = append(
         { key: 'pattern_type', values: indicatorTypes, operator: 'match' },

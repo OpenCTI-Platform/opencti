@@ -16,13 +16,18 @@ const ExpandableMarkdown = (props) => {
   return (
     <div style={{ position: 'relative' }}>
       {shouldBeTruncated && (
-        <div style={{ position: 'absolute', top: -30, right: 0 }}>
+        <div style={{ position: 'absolute', top: -32, right: 0 }}>
           <IconButton onClick={onClick}>
             {expand ? <ExpandLess /> : <ExpandMore />}
           </IconButton>
         </div>
       )}
-      <Markdown {...props} source={expand ? source : truncate(source, limit)} />
+      <div style={{ paddingTop: 10 }}>
+        <Markdown
+          {...props}
+          source={expand ? source : truncate(source, limit)}
+        />
+      </div>
       <div className="clearfix" />
     </div>
   );

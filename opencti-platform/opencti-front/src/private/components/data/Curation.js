@@ -1,18 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose,
-  append,
-  filter,
-  propOr,
-  assoc,
-  dissoc,
-  pipe,
-  toPairs,
-  map,
-  last,
-  head,
-  omit,
+  compose, append, filter, propOr, assoc, dissoc, omit,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
@@ -25,6 +14,7 @@ import CurationStixDomainEntitiesLines, {
 import inject18n from '../../../components/i18n';
 import {
   buildViewParamsFromUrlAndStorage,
+  convertFilters,
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import StixDomainEntitiesRightBar from '../common/stix_domain_entities/StixDomainEntitiesRightBar';
@@ -104,9 +94,11 @@ class StixObservables extends Component {
     }
   }
 
-  handleAddFilter(key, id, value, event) {
-    event.stopPropagation();
-    event.preventDefault();
+  handleAddFilter(key, id, value, event = null) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
     this.setState({
       filters: assoc(key, [{ id, value }], this.state.filters),
     });
@@ -180,13 +172,21 @@ class StixObservables extends Component {
           dataColumns={dataColumns}
           handleSort={this.handleSort.bind(this)}
           handleSearch={this.handleSearch.bind(this)}
+          handleAddFilter={this.handleAddFilter.bind(this)}
+          handleRemoveFilter={this.handleRemoveFilter.bind(this)}
           handleChangeView={this.handleChangeView.bind(this)}
           disableCards={true}
-          handleRemoveFilter={this.handleRemoveFilter.bind(this)}
           keyword={searchTerm}
           filters={filters}
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}
+          availableFilterKeys={[
+            'tags',
+            'markingDefinitions',
+            'created_start_date',
+            'created_end_date',
+            'createdBy',
+          ]}
         >
           <QueryRenderer
             query={curationStixDomainEntitiesLinesQuery}
@@ -208,7 +208,9 @@ class StixObservables extends Component {
         <CurationToolBar
           paginationOptions={paginationOptions}
           selectedElements={selectedElements}
-          handleResetSelectedElements={this.handleResetSelectedElements.bind(this)}
+          handleResetSelectedElements={this.handleResetSelectedElements.bind(
+            this,
+          )}
         />
       </div>
     );
@@ -224,14 +226,7 @@ class StixObservables extends Component {
       searchTerm,
       filters,
     } = this.state;
-    const finalFilters = pipe(
-      toPairs,
-      map((pair) => {
-        const values = last(pair);
-        const valIds = map((v) => v.id, values);
-        return { key: head(pair), values: valIds };
-      }),
-    )(filters);
+    const finalFilters = convertFilters(filters);
     const paginationOptions = {
       types:
         stixDomainEntitiesTypes.length > 0 ? stixDomainEntitiesTypes : null,
