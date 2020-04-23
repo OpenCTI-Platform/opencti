@@ -849,3 +849,153 @@ class StixEntity:
         else:
             self.opencti.log("error", "Missing parameters: id")
             return None
+
+    """
+        Get the notes about a Stix-Entity object
+
+        :param id: the id of the Stix-Entity
+        :return Stix-Entity object
+    """
+
+    def notes(self, **kwargs):
+        id = kwargs.get("id", None)
+        if id is not None:
+            self.opencti.log("info", "Getting notes of the Stix-Entity {" + id + "}.")
+            query = """
+                query StixEntity($id: String!) {
+                    stixEntity(id: $id) {
+                        notes {
+                            edges {
+                                node {
+                                    id
+                                    stix_id_key
+                                    entity_type
+                                    stix_label
+                                    name
+                                    alias
+                                    description
+                                    content
+                                    graph_data
+                                    created
+                                    modified
+                                    created_at
+                                    updated_at
+                                    createdByRef {
+                                        node {
+                                            id
+                                            entity_type
+                                            stix_id_key
+                                            stix_label
+                                            name
+                                            alias
+                                            description
+                                            created
+                                            modified
+                                        }
+                                        relation {
+                                            id
+                                        }
+                                    }
+                                    markingDefinitions {
+                                        edges {
+                                            node {
+                                                id
+                                                entity_type
+                                                stix_id_key
+                                                definition_type
+                                                definition
+                                                level
+                                                color
+                                                created
+                                                modified
+                                            }
+                                            relation {
+                                                id
+                                            }
+                                        }
+                                    }
+                                    tags {
+                                        edges {
+                                            node {
+                                                id
+                                                tag_type
+                                                value
+                                                color
+                                            }
+                                            relation {
+                                                id
+                                            }
+                                        }
+                                    }            
+                                    externalReferences {
+                                        edges {
+                                            node {
+                                                id
+                                                entity_type
+                                                stix_id_key
+                                                source_name
+                                                description
+                                                url
+                                                hash
+                                                external_id
+                                                created
+                                                modified
+                                            }
+                                            relation {
+                                                id
+                                            }
+                                        }
+                                    }
+                                    objectRefs {
+                                        edges {
+                                            node {
+                                                id
+                                                stix_id_key
+                                                entity_type
+                                            }
+                                            relation {
+                                                id
+                                            }
+                                        }
+                                    }
+                                    observableRefs {
+                                        edges {
+                                            node {
+                                                id
+                                                stix_id_key
+                                                entity_type
+                                                observable_value
+                                            }
+                                            relation {
+                                                id
+                                            }
+                                        }
+                                    }
+                                    relationRefs {
+                                        edges {
+                                            node {
+                                                id
+                                                stix_id_key
+                                            }
+                                            relation {
+                                                id
+                                            }
+                                        }
+                                    }
+                                }
+                                relation {
+                                    id
+                                }
+                            }
+                        }
+                    }
+                }
+             """
+            result = self.opencti.query(query, {"id": id})
+            processed_result = self.opencti.process_multiple_fields(
+                result["data"]["stixEntity"]
+            )
+            return processed_result["notes"]
+        else:
+            self.opencti.log("error", "Missing parameters: id")
+            return None
