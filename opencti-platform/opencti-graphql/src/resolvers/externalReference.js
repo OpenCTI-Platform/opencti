@@ -39,7 +39,9 @@ const externalReferenceResolvers = {
   },
   Subscription: {
     externalReference: {
+      /* istanbul ignore next */
       resolve: (payload) => payload.instance,
+      /* istanbul ignore next */
       subscribe: (_, { id }, { user }) => {
         externalReferenceEditContext(user, id);
         const filtering = withFilter(

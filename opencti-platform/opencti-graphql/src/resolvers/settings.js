@@ -32,7 +32,9 @@ const settingsResolvers = {
   },
   Subscription: {
     settings: {
+      /* istanbul ignore next */
       resolve: (payload) => payload.instance,
+      /* istanbul ignore next */
       subscribe: (_, { id }, { user }) => {
         settingsEditContext(user, id);
         const filtering = withFilter(

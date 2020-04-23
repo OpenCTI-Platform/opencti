@@ -42,7 +42,9 @@ const stixObservableRelationResolvers = {
   },
   Subscription: {
     stixObservableRelation: {
+      /* istanbul ignore next */
       resolve: (payload) => payload.instance,
+      /* istanbul ignore next */
       subscribe: (_, { id }, { user }) => {
         stixObservableRelationEditContext(user, id);
         const filtering = withFilter(

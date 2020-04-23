@@ -59,7 +59,9 @@ const stixObservableResolvers = {
   },
   Subscription: {
     stixObservable: {
+      /* istanbul ignore next */
       resolve: (payload) => payload.instance,
+      /* istanbul ignore next */
       subscribe: (_, { id }, { user }) => {
         stixObservableEditContext(user, id);
         const filtering = withFilter(

@@ -147,7 +147,6 @@ class Filters extends Component {
 
   handleChange(filterKey, event, value) {
     this.props.handleAddFilter(filterKey, value.value, value.label, event);
-    this.handleCloseFilters();
   }
 
   handleChangeDate(filterKey, date, value) {

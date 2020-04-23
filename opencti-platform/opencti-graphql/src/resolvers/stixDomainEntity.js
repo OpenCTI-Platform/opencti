@@ -81,10 +81,11 @@ const stixDomainEntityResolvers = {
     stixDomainEntitiesExportPush: (_, { type, file, context, listArgs }, { user }) =>
       stixDomainEntityExportPush(user, type, null, file, context, listArgs),
   },
-  /* istanbul ignore next */
   Subscription: {
     stixDomainEntity: {
+      /* istanbul ignore next */
       resolve: (payload) => payload.instance,
+      /* istanbul ignore next */
       subscribe: (_, { id }, { user }) => {
         stixDomainEntityEditContext(user, id);
         const filtering = withFilter(

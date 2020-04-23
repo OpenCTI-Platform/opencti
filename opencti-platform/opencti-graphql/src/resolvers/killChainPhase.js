@@ -37,7 +37,9 @@ const killChainPhaseResolvers = {
   },
   Subscription: {
     killChainPhase: {
+      /* istanbul ignore next */
       resolve: (payload) => payload.instance,
+      /* istanbul ignore next */
       subscribe: (_, { id }, { user }) => {
         killChainPhaseEditContext(user, id);
         const filtering = withFilter(
