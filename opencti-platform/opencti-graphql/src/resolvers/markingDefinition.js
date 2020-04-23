@@ -33,10 +33,11 @@ const markingDefinitionResolvers = {
     }),
     markingDefinitionAdd: (_, { input }, { user }) => addMarkingDefinition(user, input),
   },
-  /* istanbul ignore next */
   Subscription: {
     markingDefinition: {
+      /* istanbul ignore next */
       resolve: (payload) => payload.instance,
+      /* istanbul ignore next */
       subscribe: (_, { id }, { user }) => {
         markingDefinitionEditContext(user, id);
         const filtering = withFilter(

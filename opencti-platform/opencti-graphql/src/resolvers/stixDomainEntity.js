@@ -54,6 +54,7 @@ const stixDomainEntityResolvers = {
       if (obj.entity_type) {
         return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) => letter.toUpperCase());
       }
+      /* istanbul ignore next */
       return 'Unknown';
     },
     importFiles: (entity, { first }) => filesListing(first, 'import', entity.entity_type, entity),
