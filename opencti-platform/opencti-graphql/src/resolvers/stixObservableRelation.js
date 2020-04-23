@@ -42,10 +42,8 @@ const stixObservableRelationResolvers = {
   },
   Subscription: {
     stixObservableRelation: {
-      /* istanbul ignore next */
-      resolve: (payload) => payload.instance,
-      /* istanbul ignore next */
-      subscribe: (_, { id }, { user }) => {
+      resolve: /* istanbul ignore next */ (payload) => payload.instance,
+      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
         stixObservableRelationEditContext(user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.StixObservableRelation.EDIT_TOPIC),
