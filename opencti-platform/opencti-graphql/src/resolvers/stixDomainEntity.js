@@ -83,11 +83,9 @@ const stixDomainEntityResolvers = {
   },
   Subscription: {
     stixDomainEntity: {
-      resolve: (payload) => /* istanbul ignore next */ payload.instance,
-      subscribe: (_, { id }, { user }) => {
-        /* istanbul ignore next */
+      resolve: /* istanbul ignore next */ (payload) => payload.instance,
+      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
         stixDomainEntityEditContext(user, id);
-        /* istanbul ignore next */
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC),
           (payload) => {
@@ -95,7 +93,6 @@ const stixDomainEntityResolvers = {
             return payload.user.id !== user.id && payload.instance.id === id;
           }
         )(_, { id }, { user });
-        /* istanbul ignore next */
         return withCancel(filtering, () => {
           stixDomainEntityCleanContext(user, id);
         });

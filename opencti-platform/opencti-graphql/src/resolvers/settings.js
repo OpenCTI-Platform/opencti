@@ -32,10 +32,8 @@ const settingsResolvers = {
   },
   Subscription: {
     settings: {
-      /* istanbul ignore next */
-      resolve: (payload) => payload.instance,
-      /* istanbul ignore next */
-      subscribe: (_, { id }, { user }) => {
+      resolve: /* istanbul ignore next */ (payload) => payload.instance,
+      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
         settingsEditContext(user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.Settings.EDIT_TOPIC),
