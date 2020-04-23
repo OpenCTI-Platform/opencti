@@ -311,6 +311,12 @@ class OpenCTIApiClient:
         if "reports" in data:
             data["reports"] = self.process_multiple(data["reports"])
             data["reportsIds"] = self.process_multiple_ids(data["reports"])
+        if "notes" in data:
+            data["notes"] = self.process_multiple(data["notes"])
+            data["notesIds"] = self.process_multiple_ids(data["notes"])
+        if "opinions" in data:
+            data["opinions"] = self.process_multiple(data["opinions"])
+            data["opinionsIds"] = self.process_multiple_ids(data["opinions"])
         if "killChainPhases" in data:
             data["killChainPhases"] = self.process_multiple(data["killChainPhases"])
             data["killChainPhasesIds"] = self.process_multiple_ids(

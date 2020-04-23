@@ -647,7 +647,6 @@ class Note:
             note["id"] = entity["stix_id_key"]
             note["type"] = "note"
             note["spec_version"] = SPEC_VERSION
-            note["abstract"] = entity["description"]
             note["content"] = entity["content"]
             if self.opencti.not_empty(entity["stix_label"]):
                 note["labels"] = entity["stix_label"]

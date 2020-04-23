@@ -1310,7 +1310,7 @@ class OpenCTIStix2:
                         object_refs.append(entity_relation_ref["stix_id_key"])
             stix_object["object_refs"] = object_refs
 
-        uuids = []
+        uuids = [stix_object["id"]]
         for x in result:
             uuids.append(x["id"])
 
@@ -1438,10 +1438,26 @@ class OpenCTIStix2:
                         result = result + report_object_bundle
             """
 
+            # Get notes
+            for uuid in uuids:
+                if "marking-definition" not in uuid:
+                    notes = self.opencti.stix_entity.notes(id=uuid)
+                    for note in notes:
+                        note_object_data = self.opencti.note.to_stix2(
+                            entity=note,
+                            mode="simple",
+                            max_marking_definition_entity=max_marking_definition_entity,
+                        )
+                        note_object_bundle = self.filter_objects(
+                            uuids, note_object_data
+                        )
+                        uuids = uuids + [x["id"] for x in note_object_bundle]
+                        result = result + note_object_bundle
+
             # Refilter all the reports object refs
             final_result = []
             for entity in result:
-                if entity["type"] == "report":
+                if entity["type"] == "report" or entity["type"] == "note":
                     if "object_refs" in entity:
                         entity["object_refs"] = [
                             k for k in entity["object_refs"] if k in uuids
