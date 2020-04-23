@@ -18,7 +18,7 @@ import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import CreatedByRefField from '../../common/form/CreatedByRefField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
@@ -106,17 +106,15 @@ const toolValidation = (t) => Yup.object().shape({
 
 class ToolEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: toolEditionOverviewFocus,
-        variables: {
-          id: this.props.tool.id,
-          input: {
-            focusOn: name,
-          },
+    commitMutation({
+      mutation: toolEditionOverviewFocus,
+      variables: {
+        id: this.props.tool.id,
+        input: {
+          focusOn: name,
         },
-      });
-    }
+      },
+    });
   }
 
   handleSubmitField(name, value) {

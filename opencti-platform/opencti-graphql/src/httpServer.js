@@ -1,5 +1,5 @@
 import http from 'http';
-import conf, { isAppRealTime, logger } from './config/conf';
+import conf, { logger } from './config/conf';
 import createApp from './app';
 import createApolloServer from './graphql/graphql';
 
@@ -9,9 +9,7 @@ const createHttpServer = () => {
   const apolloServer = createApolloServer();
   const app = createApp(apolloServer);
   const httpServer = http.createServer(app);
-  if (isAppRealTime) {
-    apolloServer.installSubscriptionHandlers(httpServer);
-  }
+  apolloServer.installSubscriptionHandlers(httpServer);
   return httpServer;
 };
 

@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link, withRouter } from 'react-router-dom';
-import { compose, includes, map, pathOr } from "ramda";
+import {
+  compose, includes, map, pathOr,
+} from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import graphql from 'babel-plugin-relay/macro';
 import { DiagramEngine } from 'storm-react-diagrams';
@@ -21,7 +23,7 @@ import ItemConfidenceLevel from '../../../../components/ItemConfidenceLevel';
 import StixRelationEdition, {
   stixRelationEditionDeleteMutation,
 } from './StixRelationEdition';
-import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import SimpleLabelFactory from '../../../../components/graph_node/SimpleLabelFactory';
 import SimpleLinkFactory from '../../../../components/graph_node/SimpleLinkFactory';
 import EntityNodeFactory from '../../../../components/graph_node/EntityNodeFactory';
@@ -31,7 +33,7 @@ import ItemMarking from '../../../../components/ItemMarking';
 import StixRelationInferences from './StixRelationInferences';
 import StixRelationStixRelations from './StixRelationStixRelations';
 import EntityLastReports from '../../reports/EntityLastReports';
-import ItemCreator from "../../../../components/ItemCreator";
+import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
   container: {
@@ -128,15 +130,13 @@ class StixRelationContainer extends Component {
         params: { relationId },
       },
     } = this.props;
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: stixRelationEditionFocus,
-        variables: {
-          id: relationId,
-          input: { focusOn: '' },
-        },
-      });
-    }
+    commitMutation({
+      mutation: stixRelationEditionFocus,
+      variables: {
+        id: relationId,
+        input: { focusOn: '' },
+      },
+    });
     this.setState({ openEdit: false });
   }
 

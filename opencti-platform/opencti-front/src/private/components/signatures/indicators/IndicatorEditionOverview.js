@@ -18,7 +18,7 @@ import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import DatePickerField from '../../../../components/DatePickerField';
 import CreatedByRefField from '../../common/form/CreatedByRefField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
@@ -117,17 +117,15 @@ const indicatorValidation = (t) => Yup.object().shape({
 
 class IndicatorEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: indicatorEditionOverviewFocus,
-        variables: {
-          id: this.props.indicator.id,
-          input: {
-            focusOn: name,
-          },
+    commitMutation({
+      mutation: indicatorEditionOverviewFocus,
+      variables: {
+        id: this.props.indicator.id,
+        input: {
+          focusOn: name,
         },
-      });
-    }
+      },
+    });
   }
 
   handleSubmitField(name, value) {

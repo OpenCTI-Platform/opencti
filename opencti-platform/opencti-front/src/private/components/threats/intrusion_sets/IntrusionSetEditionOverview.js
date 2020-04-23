@@ -18,7 +18,7 @@ import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import CreatedByRefField from '../../common/form/CreatedByRefField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
@@ -111,17 +111,15 @@ const intrusionSetValidation = (t) => Yup.object().shape({
 
 class IntrusionSetEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: intrusionSetEditionOverviewFocus,
-        variables: {
-          id: this.props.intrusionSet.id,
-          input: {
-            focusOn: name,
-          },
+    commitMutation({
+      mutation: intrusionSetEditionOverviewFocus,
+      variables: {
+        id: this.props.intrusionSet.id,
+        input: {
+          focusOn: name,
         },
-      });
-    }
+      },
+    });
   }
 
   handleSubmitField(name, value) {

@@ -21,7 +21,6 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import {
   commitMutation,
   fetchQuery,
-  WS_ACTIVATED,
 } from '../../../../relay/environment';
 import { now } from '../../../../utils/Time';
 import { sectorsSearchQuery } from '../Sectors';
@@ -111,17 +110,15 @@ class SectorEditionOverviewComponent extends Component {
   }
 
   handleChangeFocus(name) {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: sectorEditionOverviewFocus,
-        variables: {
-          id: this.props.sector.id,
-          input: {
-            focusOn: name,
-          },
+    commitMutation({
+      mutation: sectorEditionOverviewFocus,
+      variables: {
+        id: this.props.sector.id,
+        input: {
+          focusOn: name,
         },
-      });
-    }
+      },
+    });
   }
 
   handleSubmitField(name, value) {

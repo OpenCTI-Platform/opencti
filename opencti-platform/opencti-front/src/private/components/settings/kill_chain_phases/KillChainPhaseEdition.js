@@ -15,7 +15,6 @@ import inject18n from '../../../../components/i18n';
 import {
   commitMutation,
   requestSubscription,
-  WS_ACTIVATED,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import {
@@ -110,17 +109,15 @@ class KillChainPhaseEditionContainer extends Component {
   }
 
   handleChangeFocus(name) {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: killChainPhaseEditionFocus,
-        variables: {
-          id: this.props.killChainPhase.id,
-          input: {
-            focusOn: name,
-          },
+    commitMutation({
+      mutation: killChainPhaseEditionFocus,
+      variables: {
+        id: this.props.killChainPhase.id,
+        input: {
+          focusOn: name,
         },
-      });
-    }
+      },
+    });
   }
 
   handleSubmitField(name, value) {

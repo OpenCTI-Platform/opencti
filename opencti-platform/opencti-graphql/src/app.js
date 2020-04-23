@@ -9,7 +9,7 @@ import helmet from 'helmet';
 import { isEmpty } from 'ramda';
 import path from 'path';
 import nconf from 'nconf';
-import { isAppRealTime, logger, OPENCTI_TOKEN } from './config/conf';
+import { logger, OPENCTI_TOKEN } from './config/conf';
 import passport from './config/providers';
 import { authentication, setAuthenticationCookie } from './domain/user';
 import { downloadFile, loadFile } from './database/minio';
@@ -94,9 +94,7 @@ const createApp = (apolloServer) => {
   // Other routes
   app.get('*', (req, res) => {
     const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');
-    const withOptionValued = data // Replace all variables
-      .replace(/%BASE_PATH%/g, basePath)
-      .replace(/%WS_ACTIVATED%/g, isAppRealTime);
+    const withOptionValued = data.replace(/%BASE_PATH%/g, basePath);
     res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
     res.header('Expires', '-1');
     res.header('Pragma', 'no-cache');

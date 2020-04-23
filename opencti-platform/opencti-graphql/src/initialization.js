@@ -12,6 +12,7 @@ import { addCapability, addRole } from './domain/grant';
 import { addAttribute } from './domain/attribute';
 import { checkPythonStix2 } from './python/pythonBridge';
 import { INDEX_STIX_ENTITIES } from './database/utils';
+import { initRedisClient, redisIsAlive } from './database/redis';
 
 // noinspection NodeJsCodingAssistanceForCoreModules
 const fs = require('fs');
@@ -89,6 +90,12 @@ export const checkSystemDependencies = async () => {
   // Check if minio is here
   await isStorageAlive();
   logger.info(`[PRE-CHECK] > Minio is alive`);
+  // Check if redis is here
+  // For Redis a specific client init is required
+  await initRedisClient();
+  logger.info(`[PRE-CHECK] > Redis client initialized`);
+  await redisIsAlive();
+  logger.info(`[PRE-CHECK] > Redis is alive`);
   // Check if Python is available
   await checkPythonStix2();
   logger.info(`[PRE-CHECK] > Python3 is available`);

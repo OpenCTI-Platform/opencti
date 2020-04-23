@@ -19,7 +19,6 @@ import inject18n from '../../../../components/i18n';
 import {
   commitMutation,
   QueryRenderer,
-  WS_ACTIVATED,
 } from '../../../../relay/environment';
 import GroupEdition from './GroupEdition';
 import Loader from '../../../../components/Loader';
@@ -98,12 +97,10 @@ class GroupPopover extends Component {
   }
 
   handleCloseUpdate() {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: groupPopoverCleanContext,
-        variables: { id: this.props.groupId },
-      });
-    }
+    commitMutation({
+      mutation: groupPopoverCleanContext,
+      variables: { id: this.props.groupId },
+    });
     this.setState({ displayUpdate: false });
   }
 
