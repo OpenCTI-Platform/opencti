@@ -65,9 +65,9 @@ export const pingConnector = async (user, id, state) => {
   } else {
     await executeWrite(async (wTx) => {
       const updateInput = { key: 'updated_at', value: [creation] };
-      await updateAttribute(user, id, 'Connector', updateInput, wTx);
+      await updateAttribute(user, id, 'Connector', updateInput, wTx, { noLog: true });
       const stateInput = { key: 'connector_state', value: [state] };
-      await updateAttribute(user, id, 'Connector', stateInput, wTx);
+      await updateAttribute(user, id, 'Connector', stateInput, wTx, { noLog: true });
     });
   }
   return loadEntityById(id, 'Connector').then((data) => completeConnector(data));

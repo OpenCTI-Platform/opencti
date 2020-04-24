@@ -7,7 +7,7 @@ export const CONNECTOR_EXCHANGE = 'amqp.connector.exchange';
 export const WORKER_EXCHANGE = 'amqp.worker.exchange';
 export const LOGS_EXCHANGE = 'amqp.logs.exchange';
 
-const amqpUri = () => {
+export const amqpUri = () => {
   const user = conf.get('rabbitmq:username');
   const pass = conf.get('rabbitmq:password');
   const host = conf.get('rabbitmq:hostname');

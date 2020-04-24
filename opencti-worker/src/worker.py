@@ -104,14 +104,14 @@ class Consumer(threading.Thread):
             self.channel.stop_consuming()
             logging.info('Thread for queue ' + self.queue_name + ' terminated')
 
+
 class Logger(threading.Thread):
     def __init__(self, config):
         threading.Thread.__init__(self)
         self.config = config
-        self.queue_name = connector['config']['push']
-        self.pika_connection = pika.BlockingConnection(pika.URLParameters(connector['config']['uri']))
+        self.queue_name = "logs_all"
+        self.pika_connection = pika.BlockingConnection(pika.URLParameters(config['rabbitmq_url']))
         self.channel = self.pika_connection.channel()
-        self.channel.basic_qos(prefetch_count=1)
 
     def get_id(self):
         if hasattr(self, '_thread_id'):
@@ -142,45 +142,8 @@ class Logger(threading.Thread):
     # Callable for consuming a message
     def _process_message(self, channel, method, properties, body):
         data = json.loads(body)
-        logging.info('Processing a new message (delivery_tag=' + str(method.delivery_tag) + '), launching a thread...')
-        thread = threading.Thread(target=self.data_handler,
-                                  args=[self.pika_connection, channel, method.delivery_tag, data])
-        thread.start()
-
-        while thread.is_alive():  # Loop while the thread is processing
-            self.pika_connection.sleep(1.0)
-        logging.info('Message processed, thread terminated')
-
-    # Data handling
-    def data_handler(self, connection, channel, delivery_tag, data):
-        job_id = data['job_id']
-        try:
-            content = base64.b64decode(data['content']).decode('utf-8')
-            types = data['entities_types'] if 'entities_types' in data else []
-            update = data['update'] if 'update' in data else False
-            imported_data = self.api.stix2.import_bundle_from_json(content, update, types)
-            if job_id is not None:
-                messages = []
-                by_types = groupby(imported_data, key=lambda x: x['type'])
-                for key, grp in by_types:
-                    messages.append(str(len(list(grp))) + ' imported ' + key)
-                self.api.job.update_job(job_id, 'complete', messages)
-            cb = functools.partial(self.ack_message, channel, delivery_tag)
-            connection.add_callback_threadsafe(cb)
-            return True
-        except RequestException as re:
-            logging.error('A connection error occurred: { ' + str(re) + ' }')
-            logging.info('Message (delivery_tag=' + str(delivery_tag) + ') NOT acknowledged')
-            cb = functools.partial(self.stop_consume, channel)
-            connection.add_callback_threadsafe(cb)
-            return False
-        except Exception as e:
-            logging.error('An unexpected error occurred: { ' + str(e) + ' }')
-            cb = functools.partial(self.ack_message, channel, delivery_tag)
-            connection.add_callback_threadsafe(cb)
-            if job_id is not None:
-                self.api.job.update_job(job_id, 'error', [str(e)])
-            return False
+        print(data)
+        channel.basic_ack(method.delivery_tag)
 
     def run(self):
         try:
@@ -194,7 +157,9 @@ class Logger(threading.Thread):
 
 class Worker:
     def __init__(self):
+        self.logs_all_queue = 'logs_all'
         self.consumer_threads = {}
+        self.logger_threads = {}
 
         # Get configuration
         config_file_path = os.path.dirname(os.path.abspath(__file__)) + '/config.yml'
@@ -211,6 +176,9 @@ class Worker:
         if not isinstance(numeric_level, int):
             raise ValueError('Invalid log level: ' + self.log_level)
         logging.basicConfig(level=numeric_level)
+
+        # Get logger config
+        self.logger_config = self.api.get_logs_worker_config()
 
         # Initialize variables
         self.connectors = []
@@ -235,6 +203,15 @@ class Worker:
                     else:
                         self.consumer_threads[queue] = Consumer(connector, self.api)
                         self.consumer_threads[queue].start()
+                # Check logs queue is consumed
+                if self.logs_all_queue in self.logger_threads:
+                    if not self.logger_threads[self.logs_all_queue].is_alive():
+                        logging.info('Thread for queue ' + self.logs_all_queue + ' not alive, creating a new one...')
+                        self.logger_threads[self.logs_all_queue] = Logger(self.logger_config)
+                        self.logger_threads[self.logs_all_queue].start()
+                else:
+                    self.logger_threads[self.logs_all_queue] = Logger(self.logger_config)
+                    self.logger_threads[self.logs_all_queue].start()
 
                 # Check if some threads must be stopped
                 for thread in list(self.consumer_threads):

@@ -53,10 +53,11 @@ import {
   TYPE_STIX_RELATION,
   utcDate,
   EVENT_TYPE_CREATE,
+  EVENT_TYPE_ADD_RELATION,
+  EVENT_TYPE_REMOVE_RELATION,
   EVENT_TYPE_UPDATE,
   EVENT_TYPE_DELETE,
   sendLog,
-  EVENT_TYPE_REMOVE_RELATION,
 } from './utils';
 import { isInversed, resolveNaturalRoles, ROLE_FROM } from './graknRoles';
 import {
@@ -1355,18 +1356,19 @@ const createRelationRaw = async (user, fromInternalId, input, opts = {}) => {
     // 04. Index the relation and the modification in the base entity
     await elIndexElements([createdRel]);
   }
-  // 06. Return result
-  if (reversedReturn !== true) {
-    return createdRel;
-  }
-  // 07. Return result inversed if asked
-  /* istanbul ignore next */
+  // 06. Send logs
   await sendLog(EVENT_TYPE_CREATE, user, createdRel.id, createdRel);
   const relation = await elLoadById(createdRel.id);
   const from = await elLoadByGraknId(relation.fromId);
   const to = await elLoadByGraknId(relation.toId);
-  await sendLog(EVENT_TYPE_REMOVE_RELATION, user, from.internal_id_key, to);
-  await sendLog(EVENT_TYPE_REMOVE_RELATION, user, to.internal_id_key, from);
+  await sendLog(EVENT_TYPE_ADD_RELATION, user, from.internal_id_key, to);
+  await sendLog(EVENT_TYPE_ADD_RELATION, user, to.internal_id_key, from);
+  // 07. Return result
+  if (reversedReturn !== true) {
+    return createdRel;
+  }
+  // 08. Return result inversed if asked
+  /* istanbul ignore next */
   return pipe(
     assoc('fromId', createdRel.toId),
     assoc('fromRole', createdRel.toRole),
@@ -1654,7 +1656,7 @@ export const createEntity = async (user, entity, type, opts = {}) => {
 
 // region mutation update
 export const updateAttribute = async (user, id, type, input, wTx, options = {}) => {
-  const { forceUpdate = false } = options;
+  const { forceUpdate = false, noLog = false } = options;
   const { key, value } = input; // value can be multi valued
   if (includes(key, readOnlyAttributes)) {
     throw new DatabaseError({ data: { details: `The field ${key} cannot be modified` } });
@@ -1712,8 +1714,8 @@ export const updateAttribute = async (user, id, type, input, wTx, options = {}) 
   // Update modified / updated_at
   if (currentInstanceData.parent_types.includes(TYPE_STIX_DOMAIN) && key !== 'modified' && key !== 'updated_at') {
     const today = now();
-    await updateAttribute(user, id, type, { key: 'updated_at', value: [today] }, wTx, options);
-    await updateAttribute(user, id, type, { key: 'modified', value: [today] }, wTx, options);
+    await updateAttribute(user, id, type, { key: 'updated_at', value: [today] }, wTx, assoc('noLog', true, options));
+    await updateAttribute(user, id, type, { key: 'modified', value: [today] }, wTx, assoc('noLog', true, options));
   }
 
   // Update elasticsearch
@@ -1727,7 +1729,9 @@ export const updateAttribute = async (user, id, type, input, wTx, options = {}) 
     /* istanbul ignore next */
     logger.error(`[ELASTIC] ${id} missing, cant update the element, you need to reindex`);
   }
-  await sendLog(EVENT_TYPE_UPDATE, user, id, input);
+  if (!noLog) {
+    await sendLog(EVENT_TYPE_UPDATE, user, id, input);
+  }
   return id;
 };
 // endregion

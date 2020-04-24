@@ -209,6 +209,7 @@ input SettingsAddInput {
 ## Logs
 type LogsWorkerConfig {
   elasticsearch_url: String!
+  rabbitmq_url: String!
 }
 enum LogsOrdering {
   event_type

@@ -1,5 +1,6 @@
 import { elPaginate, INDEX_LOGS } from '../database/elasticSearch';
 import conf from '../config/conf';
+import { amqpUri } from '../database/rabbitmq';
 
 export const findAll = async (args) => {
   const filters = [];
@@ -18,4 +19,5 @@ export const findAll = async (args) => {
 
 export const logsWorkerConfig = () => ({
   elasticsearch_url: conf.get('elasticsearch:url'),
+  rabbitmq_url: amqpUri(),
 });

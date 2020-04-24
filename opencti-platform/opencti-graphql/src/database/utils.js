@@ -18,7 +18,7 @@ export const TYPE_STIX_RELATION_EMBEDDED = 'stix_relation_embedded';
 
 export const EVENT_TYPE_CREATE = 'create';
 export const EVENT_TYPE_ADD_RELATION = 'add_relation';
-export const EVENT_TYPE_REMOVE_RELATION = 'add_relation';
+export const EVENT_TYPE_REMOVE_RELATION = 'remove_relation';
 export const EVENT_TYPE_UPDATE = 'update';
 export const EVENT_TYPE_EXPORT = 'export';
 export const EVENT_TYPE_DELETE = 'delete';
@@ -144,6 +144,7 @@ export const sendLog = async (eventType, eventUser, eventEntityId, eventData = n
     event_date: eventDate,
     event_entity_id: eventEntityId,
     event_data: eventData,
+    event_redoable: eventType !== EVENT_TYPE_ADD_RELATION && eventType !== EVENT_TYPE_REMOVE_RELATION,
   };
   // TODO @Sam
   // Here we need to parse the data and send to all declared communities that match the data
