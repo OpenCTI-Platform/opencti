@@ -209,6 +209,7 @@ input SettingsAddInput {
 ## Logs
 type LogsWorkerConfig {
   elasticsearch_url: String!
+  elasticsearch_index: String!
   rabbitmq_url: String!
 }
 enum LogsOrdering {
@@ -459,6 +460,7 @@ interface StixEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -528,6 +530,7 @@ interface StixDomainEntity {
   notes: NoteConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -628,6 +631,7 @@ type StixObservable implements GlobalObject & StixEntity {
   ): StixRelationConnection
   jobs(first: Int): [Work]
   connectors(onlyAlive: Boolean): [Connector]
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -738,6 +742,7 @@ type StixRelation implements GlobalObject & StixEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -833,6 +838,7 @@ type StixObservableRelation implements GlobalObject & StixEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -979,6 +985,7 @@ interface Identity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -1139,6 +1146,7 @@ type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -1269,6 +1277,7 @@ type Organization implements GlobalObject & StixEntity & StixDomainEntity & Iden
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -1371,6 +1380,7 @@ type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -1467,6 +1477,7 @@ type City implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -1563,6 +1574,7 @@ type Country implements GlobalObject & StixEntity & StixDomainEntity & Identity 
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -1662,6 +1674,7 @@ type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -1980,6 +1993,7 @@ type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -2081,6 +2095,7 @@ type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -2184,6 +2199,7 @@ type ThreatActor implements GlobalObject & StixEntity & StixDomainEntity & Ident
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -2293,6 +2309,7 @@ type IntrusionSet implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -2402,6 +2419,7 @@ type Campaign implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -2507,6 +2525,7 @@ type Incident implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -2607,6 +2626,7 @@ type Malware implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -2706,6 +2726,7 @@ type Tool implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -2809,6 +2830,7 @@ type Vulnerability implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -2943,6 +2965,7 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -3071,6 +3094,7 @@ type Note implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -3196,6 +3220,7 @@ type Opinion implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -3315,6 +3340,7 @@ type Indicator implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
+  creator: LogUser
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -3560,7 +3586,6 @@ type Query {
     first: Int
     after: ID
     orderBy: UsersOrdering
-    orderMode: OrderingMode
     orderMode: OrderingMode
     filters: [UsersFiltering]
     filterMode: FilterMode

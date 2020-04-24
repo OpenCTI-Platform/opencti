@@ -10,6 +10,7 @@ import {
   stixEntityAddRelation,
   stixEntityDeleteRelation,
 } from '../domain/stixEntity';
+import { creator } from '../domain/log';
 import { fetchEditContext } from '../database/redis';
 
 const stixEntityResolvers = {
@@ -28,6 +29,7 @@ const stixEntityResolvers = {
       /* istanbul ignore next */
       return 'Unknown';
     },
+    creator: (stixEntity) => creator(stixEntity.id),
     createdByRef: (stixEntity) => createdByRef(stixEntity.id),
     editContext: (stixEntity) => fetchEditContext(stixEntity.id),
     externalReferences: (stixEntity) => externalReferences(stixEntity.id),

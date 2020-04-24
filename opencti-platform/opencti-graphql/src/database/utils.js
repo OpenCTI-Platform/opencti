@@ -131,6 +131,7 @@ export const OBSERVABLE_TYPES = [
 export const sendLog = async (eventType, eventUser, eventEntityId, eventData = null) => {
   const eventDate = utcDate().toISOString();
   const finalEventUser = {
+    id: eventUser.id,
     internal_id_key: eventUser.id,
     name: eventUser.name,
     description: eventUser.description,

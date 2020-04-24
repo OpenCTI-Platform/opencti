@@ -33,7 +33,7 @@ import ItemMarking from '../../../../components/ItemMarking';
 import StixRelationInferences from './StixRelationInferences';
 import StixRelationStixRelations from './StixRelationStixRelations';
 import EntityLastReports from '../../reports/EntityLastReports';
-import ItemCreator from '../../../../components/ItemCreator';
+import ItemAuthor from '../../../../components/ItemAuthor';
 import StixObjectNotes from '../stix_object/StixObjectNotes';
 
 const styles = () => ({
@@ -361,7 +361,7 @@ class StixRelationContainer extends Component {
               >
                 {t('Creator')}
               </Typography>
-              <ItemCreator
+              <ItemAuthor
                 createdByRef={pathOr(
                   null,
                   ['createdByRef', 'node'],

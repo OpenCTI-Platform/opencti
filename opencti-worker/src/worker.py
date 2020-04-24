@@ -10,9 +10,11 @@ import json
 import base64
 import threading
 import ctypes
+import uuid
 
 from requests.exceptions import RequestException
 from itertools import groupby
+from elasticsearch import Elasticsearch
 from pycti import OpenCTIApiClient
 
 
@@ -112,6 +114,8 @@ class Logger(threading.Thread):
         self.queue_name = "logs_all"
         self.pika_connection = pika.BlockingConnection(pika.URLParameters(config['rabbitmq_url']))
         self.channel = self.pika_connection.channel()
+        self.elasticsearch = Elasticsearch([config['elasticsearch_url']])
+        self.elasticsearch_index = config['elasticsearch_index']
 
     def get_id(self):
         if hasattr(self, '_thread_id'):
@@ -127,14 +131,6 @@ class Logger(threading.Thread):
             ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
             logging.info('Unable to kill the thread')
 
-    def ack_message(self, channel, delivery_tag):
-        if channel.is_open:
-            logging.info('Message (delivery_tag=' + str(delivery_tag) + ') acknowledged')
-            channel.basic_ack(delivery_tag)
-        else:
-            logging.info('Message (delivery_tag=' + str(delivery_tag) + ') NOT acknowledged (channel closed)')
-            pass
-
     def stop_consume(self, channel):
         if channel.is_open:
             channel.stop_consuming()
@@ -142,7 +138,7 @@ class Logger(threading.Thread):
     # Callable for consuming a message
     def _process_message(self, channel, method, properties, body):
         data = json.loads(body)
-        print(data)
+        self.elasticsearch.index(index=self.elasticsearch_index, id=uuid.uuid4(), body=data)
         channel.basic_ack(method.delivery_tag)
 
     def run(self):

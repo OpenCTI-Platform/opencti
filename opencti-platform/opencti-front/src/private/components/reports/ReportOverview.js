@@ -9,7 +9,7 @@ import Typography from '@material-ui/core/Typography';
 import Chip from '@material-ui/core/Chip';
 import inject18n from '../../../components/i18n';
 import ExpandableMarkdown from '../../../components/ExpandableMarkdown';
-import ItemCreator from '../../../components/ItemCreator';
+import ItemAuthor from '../../../components/ItemAuthor';
 
 const styles = () => ({
   paper: {
@@ -68,7 +68,7 @@ class ReportOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemCreator
+          <ItemAuthor
             createdByRef={pathOr(null, ['createdByRef', 'node'], report)}
           />
           <Typography
