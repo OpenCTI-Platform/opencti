@@ -16,22 +16,15 @@ To install the Python client library, please use `pip`:
 $ pip3 install pycti
 ```
 
-On Windows, please execute the following after installing `pycti`:
-
-```
-$ pip3 uninstall python-magic
-$ pip3 install python-magic-bin
-```
-
 ## Documentation
 
 ### Client usage
 
-To learn about how to use the OpenCTI Python client and read some examples and cases, refer to [the client documentation](https://opencti-platform.github.io/docs/clients/python/overview).
+To learn about how to use the OpenCTI Python client and read some examples and cases, refer to [the client documentation](https://www.notion.so/luatix/Python-8adaac485c88475a8f465f99a73892b3).
 
 ### API reference
 
-To learn about the methods available for executing queries and retrieving their answers, refer to [the client API Reference](https://opencti-platform.github.io/docs/clients/python/reference).
+To learn about the methods available for executing queries and retrieving their answers, refer to [the client API Reference](https://www.notion.so/luatix/Client-API-Reference-efeeb6deed74452fbf4d328017959d62).
 
 ## About
 
