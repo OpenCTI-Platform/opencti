@@ -441,6 +441,7 @@ class StixRelationContainer extends Component {
                 </Grid>
               </Grid>
               <StixObjectNotes
+                marginTop={55}
                 entityId={stixRelation.id}
                 inputType="relationRefs"
               />
