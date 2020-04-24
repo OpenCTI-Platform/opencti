@@ -1,17 +1,16 @@
 // Admin user initialization
 import { logger } from './config/conf';
-import { elCount, elCreateIndexes, elDeleteIndexes, elIsAlive } from './database/elasticSearch';
-import { graknIsAlive, internalDirectWrite } from './database/grakn';
+import { elCreateIndexes, elDeleteIndexes, elIsAlive } from './database/elasticSearch';
+import { graknIsAlive, internalDirectWrite, executeRead } from './database/grakn';
 import applyMigration from './database/migration';
 import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/minio';
 import { addMarkingDefinition } from './domain/markingDefinition';
-import { addSettings, getSettings } from './domain/settings';
+import { addSettings } from './domain/settings';
 import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from './domain/user';
 import { addCapability, addRole } from './domain/grant';
 import { addAttribute } from './domain/attribute';
 import { checkPythonStix2 } from './python/pythonBridge';
-import { INDEX_STIX_ENTITIES } from './database/utils';
 
 // noinspection NodeJsCodingAssistanceForCoreModules
 const fs = require('fs');
@@ -102,6 +101,7 @@ export const initializeSchema = async () => {
   await internalDirectWrite(schema);
   logger.info(`[INIT] > Grakn schema loaded`);
   // Create default indexes
+  await elDeleteIndexes();
   await elCreateIndexes();
   logger.info(`[INIT] > Elasticsearch indexes loaded`);
   return true;
@@ -192,28 +192,34 @@ const initializeDefaultValues = async () => {
 };
 
 export const initializeData = async () => {
-  // Init default values only if platform as no settings
-  const settings = await getSettings();
-  if (!settings) {
-    // This is a first platform bootstrap
-    const countOfElasticEntities = await elCount(INDEX_STIX_ENTITIES);
-    if (countOfElasticEntities > 0) {
-      logger.info(`[INIT] > Platform started from scratch, reset elastic indices`);
-      await elDeleteIndexes();
-      await elCreateIndexes();
-    }
-    await initializeDefaultValues();
-  }
+  await initializeDefaultValues();
   logger.info(`[INIT] > Platform default initialized`);
-  await initializeAdminUser();
   return true;
+};
+
+const isEmptyPlatform = async () => {
+  const entityCount = await executeRead(async (rTx) => {
+    const iterator = await rTx.tx.query('match $x sub entity; get;');
+    const answers = await iterator.collect();
+    return answers.length;
+  });
+  return entityCount <= 1; // Only type entity is available on an empty platform.
 };
 
 const init = async () => {
   await checkSystemDependencies();
-  await initializeSchema();
-  await applyMigration();
-  await initializeData();
+  const needToBeInitialized = await isEmptyPlatform();
+  if (needToBeInitialized) {
+    logger.info(`[INIT] > New platform detected, initialization...`);
+    await initializeSchema();
+    await initializeData();
+    await initializeAdminUser();
+  } else {
+    logger.info('[INIT] > Existing platform detected, migration...');
+    // Always reset the admin user
+    await initializeAdminUser();
+    await applyMigration();
+  }
 };
 
 export default init;
