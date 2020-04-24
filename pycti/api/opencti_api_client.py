@@ -235,6 +235,18 @@ class OpenCTIApiClient:
             return False
         return False
 
+    def get_logs_worker_config(self):
+        logging.info("Getting logs worker config...")
+        query = """
+            query LogsWorkerConfig {
+                logsWorkerConfig {
+                    elasticsearch_url
+                }
+            }
+        """
+        result = self.query(query)
+        return result["data"]["logsWorkerConfig"]
+
     def not_empty(self, value):
         if value is not None:
             if isinstance(value, str):
