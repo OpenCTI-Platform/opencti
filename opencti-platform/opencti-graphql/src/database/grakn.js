@@ -52,6 +52,11 @@ import {
   TYPE_STIX_OBSERVABLE_RELATION,
   TYPE_STIX_RELATION,
   utcDate,
+  EVENT_TYPE_CREATE,
+  EVENT_TYPE_UPDATE,
+  EVENT_TYPE_DELETE,
+  sendLog,
+  EVENT_TYPE_REMOVE_RELATION,
 } from './utils';
 import { isInversed, resolveNaturalRoles, ROLE_FROM } from './graknRoles';
 import {
@@ -1228,7 +1233,7 @@ const flatAttributesForObject = (data) => {
 // endregion
 
 // region mutation relation
-const createRelationRaw = async (fromInternalId, input, opts = {}) => {
+const createRelationRaw = async (user, fromInternalId, input, opts = {}) => {
   const { indexable = true, reversedReturn = false, isStixObservableRelation = false } = opts;
   // 01. First fix the direction of the relation
   const isStixRelation = includes('stix_id_key', Object.keys(input)) || input.relationship_type;
@@ -1356,6 +1361,12 @@ const createRelationRaw = async (fromInternalId, input, opts = {}) => {
   }
   // 07. Return result inversed if asked
   /* istanbul ignore next */
+  await sendLog(EVENT_TYPE_CREATE, user, createdRel.id, createdRel);
+  const relation = await elLoadById(createdRel.id);
+  const from = await elLoadByGraknId(relation.fromId);
+  const to = await elLoadByGraknId(relation.toId);
+  await sendLog(EVENT_TYPE_REMOVE_RELATION, user, from.internal_id_key, to);
+  await sendLog(EVENT_TYPE_REMOVE_RELATION, user, to.internal_id_key, from);
   return pipe(
     assoc('fromId', createdRel.toId),
     assoc('fromRole', createdRel.toRole),
@@ -1365,12 +1376,12 @@ const createRelationRaw = async (fromInternalId, input, opts = {}) => {
     assoc('toTypes', createdRel.fromTypes)
   )(createdRel);
 };
-const addOwner = async (fromInternalId, createdByOwnerId, opts = {}) => {
+const addOwner = async (user, fromInternalId, createdByOwnerId, opts = {}) => {
   if (!createdByOwnerId) return undefined;
   const input = { fromRole: 'so', toId: createdByOwnerId, toType: 'Identity', toRole: 'owner', through: 'owned_by' };
-  return createRelationRaw(fromInternalId, input, opts);
+  return createRelationRaw(user, fromInternalId, input, opts);
 };
-const addCreatedByRef = async (fromInternalId, createdByRefId, opts = {}) => {
+const addCreatedByRef = async (user, fromInternalId, createdByRefId, opts = {}) => {
   if (!createdByRefId) return undefined;
   const input = {
     fromRole: 'so',
@@ -1379,9 +1390,9 @@ const addCreatedByRef = async (fromInternalId, createdByRefId, opts = {}) => {
     toRole: 'creator',
     through: 'created_by_ref',
   };
-  return createRelationRaw(fromInternalId, input, opts);
+  return createRelationRaw(user, fromInternalId, input, opts);
 };
-const addMarkingDef = async (fromInternalId, markingDefId, opts = {}) => {
+const addMarkingDef = async (user, fromInternalId, markingDefId, opts = {}) => {
   if (!markingDefId) return undefined;
   const input = {
     fromRole: 'so',
@@ -1390,36 +1401,36 @@ const addMarkingDef = async (fromInternalId, markingDefId, opts = {}) => {
     toRole: 'marking',
     through: 'object_marking_refs',
   };
-  return createRelationRaw(fromInternalId, input, opts);
+  return createRelationRaw(user, fromInternalId, input, opts);
 };
-const addMarkingDefs = async (internalId, markingDefIds, opts = {}) => {
+const addMarkingDefs = async (user, internalId, markingDefIds, opts = {}) => {
   if (!markingDefIds || isEmpty(markingDefIds)) return undefined;
   const markings = [];
   // Relations cannot be created in parallel.
   for (let i = 0; i < markingDefIds.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
-    const marking = await addMarkingDef(internalId, markingDefIds[i], opts);
+    const marking = await addMarkingDef(user, internalId, markingDefIds[i], opts);
     markings.push(marking);
   }
   return markings;
 };
-const addTag = async (fromInternalId, tagId, opts = {}) => {
+const addTag = async (user, fromInternalId, tagId, opts = {}) => {
   if (!tagId) return undefined;
   const input = { fromRole: 'so', toId: tagId, toType: 'Tag', toRole: 'tagging', through: 'tagged' };
-  return createRelationRaw(fromInternalId, input, opts);
+  return createRelationRaw(user, fromInternalId, input, opts);
 };
-const addTags = async (internalId, tagsIds, opts = {}) => {
+const addTags = async (user, internalId, tagsIds, opts = {}) => {
   if (!tagsIds || isEmpty(tagsIds)) return undefined;
   const tags = [];
   // Relations cannot be created in parallel.
   for (let i = 0; i < tagsIds.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
-    const tag = await addTag(internalId, tagsIds[i], opts);
+    const tag = await addTag(user, internalId, tagsIds[i], opts);
     tags.push(tag);
   }
   return tags;
 };
-const addKillChain = async (fromInternalId, killChainId, opts = {}) => {
+const addKillChain = async (user, fromInternalId, killChainId, opts = {}) => {
   if (!killChainId) return undefined;
   const input = {
     fromRole: 'phase_belonging',
@@ -1428,20 +1439,20 @@ const addKillChain = async (fromInternalId, killChainId, opts = {}) => {
     toRole: 'kill_chain_phase',
     through: 'kill_chain_phases',
   };
-  return createRelationRaw(fromInternalId, input, opts);
+  return createRelationRaw(user, fromInternalId, input, opts);
 };
-const addKillChains = async (internalId, killChainIds, opts = {}) => {
+const addKillChains = async (user, internalId, killChainIds, opts = {}) => {
   if (!killChainIds || isEmpty(killChainIds)) return undefined;
   const killChains = [];
   // Relations cannot be created in parallel.
   for (let i = 0; i < killChainIds.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
-    const killChain = await addKillChain(internalId, killChainIds[i], opts);
+    const killChain = await addKillChain(user, internalId, killChainIds[i], opts);
     killChains.push(killChain);
   }
   return killChains;
 };
-const addObjectRef = async (fromInternalId, stixObjectId, opts = {}) => {
+const addObjectRef = async (user, fromInternalId, stixObjectId, opts = {}) => {
   if (!stixObjectId) return undefined;
   const input = {
     fromRole: 'knowledge_aggregation',
@@ -1450,20 +1461,20 @@ const addObjectRef = async (fromInternalId, stixObjectId, opts = {}) => {
     toRole: 'so',
     through: 'object_refs',
   };
-  return createRelationRaw(fromInternalId, input, opts);
+  return createRelationRaw(user, fromInternalId, input, opts);
 };
-const addObjectRefs = async (internalId, stixObjectIds, opts = {}) => {
+const addObjectRefs = async (user, internalId, stixObjectIds, opts = {}) => {
   if (!stixObjectIds || isEmpty(stixObjectIds)) return undefined;
   const objectRefs = [];
   // Relations cannot be created in parallel.
   for (let i = 0; i < stixObjectIds.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
-    const objectRef = await addObjectRef(internalId, stixObjectIds[i], opts);
+    const objectRef = await addObjectRef(user, internalId, stixObjectIds[i], opts);
     objectRefs.push(objectRef);
   }
   return objectRefs;
 };
-const addObservableRef = async (fromInternalId, observableId, opts = {}) => {
+const addObservableRef = async (user, fromInternalId, observableId, opts = {}) => {
   if (!observableId) return undefined;
   const input = {
     fromRole: 'observables_aggregation',
@@ -1472,20 +1483,20 @@ const addObservableRef = async (fromInternalId, observableId, opts = {}) => {
     toRole: 'soo',
     through: 'observable_refs',
   };
-  return createRelationRaw(fromInternalId, input, opts);
+  return createRelationRaw(user, fromInternalId, input, opts);
 };
-const addObservableRefs = async (internalId, observableIds, opts = {}) => {
+const addObservableRefs = async (user, internalId, observableIds, opts = {}) => {
   if (!observableIds || isEmpty(observableIds)) return undefined;
   const observableRefs = [];
   // Relations cannot be created in parallel.
   for (let i = 0; i < observableIds.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
-    const observableRef = await addObservableRef(internalId, observableIds[i], opts);
+    const observableRef = await addObservableRef(user, internalId, observableIds[i], opts);
     observableRefs.push(observableRef);
   }
   return observableRefs;
 };
-const addRelationRef = async (fromInternalId, stixRelationId, opts = {}) => {
+const addRelationRef = async (user, fromInternalId, stixRelationId, opts = {}) => {
   if (!stixRelationId) return undefined;
   const input = {
     fromRole: 'knowledge_aggregation',
@@ -1494,38 +1505,38 @@ const addRelationRef = async (fromInternalId, stixRelationId, opts = {}) => {
     toRole: 'so',
     through: 'object_refs',
   };
-  return createRelationRaw(fromInternalId, input, opts);
+  return createRelationRaw(user, fromInternalId, input, opts);
 };
-const addRelationRefs = async (internalId, stixRelationIds, opts = {}) => {
+const addRelationRefs = async (user, internalId, stixRelationIds, opts = {}) => {
   if (!stixRelationIds || isEmpty(stixRelationIds)) return undefined;
   const relationRefs = [];
   // Relations cannot be created in parallel.
   for (let i = 0; i < stixRelationIds.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
-    const relationRef = await addRelationRef(internalId, stixRelationIds[i], opts);
+    const relationRef = await addRelationRef(user, internalId, stixRelationIds[i], opts);
     relationRefs.push(relationRef);
   }
   return relationRefs;
 };
-export const createRelation = async (fromInternalId, input, opts = {}) => {
-  const created = await createRelationRaw(fromInternalId, input, opts);
+export const createRelation = async (user, fromInternalId, input, opts = {}) => {
+  const created = await createRelationRaw(user, fromInternalId, input, opts);
   if (created) {
     // 05. Complete with eventual relations (will eventually update the index)
-    await addOwner(created.id, input.createdByOwner, opts);
-    await addCreatedByRef(created.id, input.createdByRef, opts);
-    await addMarkingDefs(created.id, input.markingDefinitions, opts);
-    await addKillChains(created.id, input.killChainPhases, opts);
+    await addOwner(user, created.id, input.createdByOwner, opts);
+    await addCreatedByRef(user, created.id, input.createdByRef, opts);
+    await addMarkingDefs(user, created.id, input.markingDefinitions, opts);
+    await addKillChains(user, created.id, input.killChainPhases, opts);
   }
   return created;
 };
 /* istanbul ignore next */
-export const createRelations = async (fromInternalId, inputs, opts = {}) => {
+export const createRelations = async (user, fromInternalId, inputs, opts = {}) => {
   const createdRelations = [];
   // Relations cannot be created in parallel. (Concurrent indexing on same key)
   // Could be improve by grouping and indexing in one shot.
   for (let i = 0; i < inputs.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
-    const relation = await createRelation(fromInternalId, inputs[i], opts);
+    const relation = await createRelation(user, fromInternalId, inputs[i], opts);
     createdRelations.push(relation);
   }
   return createdRelations;
@@ -1625,23 +1636,24 @@ export const createEntity = async (user, entity, type, opts = {}) => {
     await elIndexElements([completedData]);
   }
   // Complete with eventual relations (will eventually update the index)
-  await addOwner(internalId, entity.createdByOwner, opts);
+  await addOwner(user, internalId, entity.createdByOwner, opts);
   if (modelType === TYPE_STIX_DOMAIN || modelType === TYPE_STIX_DOMAIN_ENTITY || modelType === TYPE_STIX_OBSERVABLE) {
-    await addCreatedByRef(internalId, entity.createdByRef || user.id, opts);
-    await addMarkingDefs(internalId, entity.markingDefinitions, opts);
-    await addTags(internalId, entity.tags, opts);
-    await addKillChains(internalId, entity.killChainPhases, opts);
-    await addObjectRefs(internalId, entity.objectRefs, opts);
-    await addObservableRefs(internalId, entity.observableRefs, opts);
-    await addRelationRefs(internalId, entity.relationRefs, opts);
+    await addCreatedByRef(user, internalId, entity.createdByRef || user.id, opts);
+    await addMarkingDefs(user, internalId, entity.markingDefinitions, opts);
+    await addTags(user, internalId, entity.tags, opts);
+    await addKillChains(user, internalId, entity.killChainPhases, opts);
+    await addObjectRefs(user, internalId, entity.objectRefs, opts);
+    await addObservableRefs(user, internalId, entity.observableRefs, opts);
+    await addRelationRefs(user, internalId, entity.relationRefs, opts);
   }
-  // Else simply return the data
+  // Simply return the data
+  await sendLog(EVENT_TYPE_CREATE, user, completedData.id, completedData);
   return completedData;
 };
 // endregion
 
 // region mutation update
-export const updateAttribute = async (id, type, input, wTx, options = {}) => {
+export const updateAttribute = async (user, id, type, input, wTx, options = {}) => {
   const { forceUpdate = false } = options;
   const { key, value } = input; // value can be multi valued
   if (includes(key, readOnlyAttributes)) {
@@ -1691,17 +1703,17 @@ export const updateAttribute = async (id, type, input, wTx, options = {}) => {
     const monthValue = monthFormat(head(value));
     const yearValue = yearFormat(head(value));
     const dayInput = { key: `${key}_day`, value: [dayValue] };
-    await updateAttribute(id, type, dayInput, wTx, options);
+    await updateAttribute(user, id, type, dayInput, wTx, options);
     const monthInput = { key: `${key}_month`, value: [monthValue] };
-    await updateAttribute(id, type, monthInput, wTx, options);
+    await updateAttribute(user, id, type, monthInput, wTx, options);
     const yearInput = { key: `${key}_year`, value: [yearValue] };
-    await updateAttribute(id, type, yearInput, wTx, options);
+    await updateAttribute(user, id, type, yearInput, wTx, options);
   }
   // Update modified / updated_at
   if (currentInstanceData.parent_types.includes(TYPE_STIX_DOMAIN) && key !== 'modified' && key !== 'updated_at') {
     const today = now();
-    await updateAttribute(id, type, { key: 'updated_at', value: [today] }, wTx, options);
-    await updateAttribute(id, type, { key: 'modified', value: [today] }, wTx, options);
+    await updateAttribute(user, id, type, { key: 'updated_at', value: [today] }, wTx, options);
+    await updateAttribute(user, id, type, { key: 'modified', value: [today] }, wTx, options);
   }
 
   // Update elasticsearch
@@ -1715,12 +1727,13 @@ export const updateAttribute = async (id, type, input, wTx, options = {}) => {
     /* istanbul ignore next */
     logger.error(`[ELASTIC] ${id} missing, cant update the element, you need to reindex`);
   }
+  await sendLog(EVENT_TYPE_UPDATE, user, id, input);
   return id;
 };
 // endregion
 
 // region mutation deletion
-export const deleteEntityById = async (id, type, options = {}) => {
+export const deleteEntityById = async (user, id, type, options = {}) => {
   if (isNil(type)) {
     /* istanbul ignore next */
     throw new Error(`[GRAKN] deleteEntityById > Missing type`);
@@ -1739,10 +1752,11 @@ export const deleteEntityById = async (id, type, options = {}) => {
   }).then(async () => {
     // [ELASTIC] Delete entity and relations connected to
     await elDeleteInstanceIds(append(eid, relationsIds));
+    await sendLog(EVENT_TYPE_DELETE, user, id);
     return id;
   });
 };
-export const deleteRelationById = async (relationId, type) => {
+export const deleteRelationById = async (user, relationId, type) => {
   if (isNil(type)) {
     /* istanbul ignore next */
     throw new Error(`[GRAKN] deleteRelationById > Missing type`);
@@ -1760,12 +1774,18 @@ export const deleteRelationById = async (relationId, type) => {
     await wTx.tx.query(query, { infer: false });
   }).then(async () => {
     // [ELASTIC] Update - Delete the inner indexed relations in entities
+    const relation = await elLoadById(eid);
+    const from = await elLoadByGraknId(relation.fromId);
+    const to = await elLoadByGraknId(relation.toId);
+    await sendLog(EVENT_TYPE_REMOVE_RELATION, user, from.internal_id_key, to);
+    await sendLog(EVENT_TYPE_REMOVE_RELATION, user, to.internal_id_key, from);
     await elRemoveRelationConnection(eid);
     await elDeleteInstanceIds(append(eid, relationsIds));
+    await sendLog(EVENT_TYPE_DELETE, user, relationId);
     return relationId;
   });
 };
-export const deleteRelationsByFromAndTo = async (fromId, toId, relationType, scopeType) => {
+export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationType, scopeType) => {
   /* istanbul ignore if */
   if (isNil(scopeType)) {
     throw new Error(`[GRAKN] deleteRelationsByFromAndTo > Missing scopeType`);
@@ -1777,7 +1797,7 @@ export const deleteRelationsByFromAndTo = async (fromId, toId, relationType, sco
     $rel($from, $to) isa ${relationType}; get;`;
   const relationsToDelete = await find(read, ['rel']);
   const relationsIds = map((r) => r.rel.id, relationsToDelete);
-  await Promise.all(map((id) => deleteRelationById(id, scopeType), relationsIds));
+  await Promise.all(map((id) => deleteRelationById(user, id, scopeType), relationsIds));
 };
 
 export const deleteAttributeById = async (id) => {

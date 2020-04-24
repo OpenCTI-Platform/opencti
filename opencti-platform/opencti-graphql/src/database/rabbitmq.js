@@ -1,10 +1,11 @@
 import amqp from 'amqplib';
 import axios from 'axios';
 import { filter, includes, pipe, map, reduce, add, divide } from 'ramda';
-import conf from '../config/conf';
+import conf, { logger } from '../config/conf';
 
 export const CONNECTOR_EXCHANGE = 'amqp.connector.exchange';
 export const WORKER_EXCHANGE = 'amqp.worker.exchange';
+export const LOGS_EXCHANGE = 'amqp.logs.exchange';
 
 const amqpUri = () => {
   const user = conf.get('rabbitmq:username');
@@ -139,9 +140,7 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
 
   // 03. bind queue for the each connector scope
   // eslint-disable-next-line prettier/prettier
-  await amqpExecute(c =>
-    c.bindQueue(listenQueue, CONNECTOR_EXCHANGE, listenRouting(id))
-  );
+  await amqpExecute((c) => c.bindQueue(listenQueue, CONNECTOR_EXCHANGE, listenRouting(id)));
 
   // 04. Create stix push queue
   const pushQueue = `push_${id}`;
@@ -163,8 +162,46 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
   return connectorConfig(id);
 };
 
+export const ensureRabbitMQAndLogsQueue = async () => {
+  // 01. Ensure exchange exists
+  await amqpExecute((channel) =>
+    channel.assertExchange(LOGS_EXCHANGE, 'topic', {
+      durable: true,
+    })
+  ).catch(
+    /* istanbul ignore next */ () => {
+      logger.error(`[RABBITMQ] Seems down`);
+      throw new Error('RabbitMQ seems down');
+    }
+  );
+  // 02. Ensure logs queue exists
+  const listenQueue = 'logs_all';
+  await amqpExecute((channel) =>
+    channel.assertQueue(listenQueue, {
+      exclusive: false,
+      durable: true,
+      autoDelete: false,
+      arguments: {
+        name: 'OpenCTI logs queue',
+      },
+    })
+  ).catch(
+    /* istanbul ignore next */ () => {
+      logger.error(`[RABBITMQ] Seems down`);
+      throw new Error('RabbitMQ seems down');
+    }
+  );
+  // 03. bind queue for the each connector scope
+  // eslint-disable-next-line prettier/prettier
+  await amqpExecute((c) => c.bindQueue(listenQueue, LOGS_EXCHANGE, 'community.*'));
+};
+
 export const pushToConnector = (connector, message) => {
   return send(CONNECTOR_EXCHANGE, listenRouting(connector.internal_id_key), JSON.stringify(message));
+};
+
+export const pushToLogs = (communityId, message) => {
+  return send(LOGS_EXCHANGE, `community.${communityId}`, JSON.stringify(message));
 };
 
 export const getRabbitMQVersion = () => {

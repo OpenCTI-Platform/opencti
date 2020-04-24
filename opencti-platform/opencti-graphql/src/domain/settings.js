@@ -50,8 +50,8 @@ export const addSettings = async (user, settings) => {
   return notify(BUS_TOPICS.Settings.ADDED_TOPIC, created, user);
 };
 
-export const settingsDelete = (settingsId) => {
-  return deleteEntityById(settingsId, 'Settings');
+export const settingsDelete = (user, settingsId) => {
+  return deleteEntityById(user, settingsId, 'Settings');
 };
 
 export const settingsCleanContext = (user, settingsId) => {
@@ -70,7 +70,7 @@ export const settingsEditContext = (user, settingsId, input) => {
 
 export const settingsEditField = (user, settingsId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(settingsId, 'Settings', input, wTx);
+    return updateAttribute(user, settingsId, 'Settings', input, wTx);
   }).then(async () => {
     const settings = await loadEntityById(settingsId, 'Settings');
     return notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user);

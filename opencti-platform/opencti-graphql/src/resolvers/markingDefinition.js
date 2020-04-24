@@ -26,7 +26,7 @@ const markingDefinitionResolvers = {
   },
   Mutation: {
     markingDefinitionEdit: (_, { id }, { user }) => ({
-      delete: () => markingDefinitionDelete(id),
+      delete: () => markingDefinitionDelete(user, id),
       fieldPatch: ({ input }) => markingDefinitionEditField(user, id, input),
       contextPatch: ({ input }) => markingDefinitionEditContext(user, id, input),
       contextClean: () => markingDefinitionCleanContext(user, id),

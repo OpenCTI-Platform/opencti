@@ -1,6 +1,8 @@
+import { v4 as uuid } from 'uuid';
 import { head, includes, last, mapObjIndexed, pipe, values } from 'ramda';
 import { offsetToCursor } from 'graphql-relay';
 import moment from 'moment';
+import { pushToLogs } from './rabbitmq';
 
 export const INDEX_STIX_OBSERVABLE = 'stix_observables';
 export const INDEX_STIX_ENTITIES = 'stix_domain_entities_v2';
@@ -13,6 +15,13 @@ export const TYPE_STIX_RELATION = 'stix_relation';
 export const TYPE_STIX_OBSERVABLE_RELATION = 'stix_observable_relation';
 export const TYPE_RELATION_EMBEDDED = 'relation_embedded';
 export const TYPE_STIX_RELATION_EMBEDDED = 'stix_relation_embedded';
+
+export const EVENT_TYPE_CREATE = 'create';
+export const EVENT_TYPE_ADD_RELATION = 'add_relation';
+export const EVENT_TYPE_REMOVE_RELATION = 'add_relation';
+export const EVENT_TYPE_UPDATE = 'update';
+export const EVENT_TYPE_EXPORT = 'export';
+export const EVENT_TYPE_DELETE = 'delete';
 
 export const utcDate = (date = undefined) => (date ? moment(date).utc() : moment().utc());
 
@@ -118,3 +127,27 @@ export const OBSERVABLE_TYPES = [
   'x509-certificate-serial-number',
   'unknown',
 ];
+
+export const sendLog = async (eventType, eventUser, eventEntityId, eventData = null) => {
+  const eventDate = utcDate().toISOString();
+  const finalEventUser = {
+    internal_id_key: eventUser.id,
+    name: eventUser.name,
+    description: eventUser.description,
+    firstname: eventUser.firstname,
+    lastname: eventUser.lastname,
+    user_email: eventUser.user_email,
+  };
+  const message = {
+    event_type: eventType,
+    event_user: finalEventUser,
+    event_date: eventDate,
+    event_entity_id: eventEntityId,
+    event_data: eventData,
+  };
+  // TODO @Sam
+  // Here we need to parse the data and send to all declared communities that match the data
+  const communityId = uuid();
+  const communities = [communityId];
+  await Promise.all(communities.map((community) => pushToLogs(community, message)));
+};

@@ -61,8 +61,16 @@ const virtualTypes = ['Identity', 'Email', 'File', 'Stix-Domain-Entity', 'Stix-D
 
 export const REL_INDEX_PREFIX = 'rel_';
 export const INDEX_WORK_JOBS = 'work_jobs_index';
+export const INDEX_LOGS = 'opencti_logs';
 const UNIMPACTED_ENTITIES_ROLE = ['tagging', 'marking', 'kill_chain_phase', 'creator'];
-export const PLATFORM_INDICES = [INDEX_STIX_ENTITIES, INDEX_STIX_RELATIONS, INDEX_STIX_OBSERVABLE, INDEX_WORK_JOBS];
+export const PLATFORM_INDICES = [
+  INDEX_STIX_ENTITIES,
+  INDEX_STIX_RELATIONS,
+  INDEX_STIX_OBSERVABLE,
+  INDEX_WORK_JOBS,
+  INDEX_LOGS,
+];
+export const KNOWLEDGE_INDICES = [INDEX_STIX_ENTITIES, INDEX_STIX_RELATIONS, INDEX_STIX_OBSERVABLE, INDEX_WORK_JOBS];
 
 export const forceNoCache = () => conf.get('elasticsearch:noQueryCache') || false;
 export const el = new Client({ node: conf.get('elasticsearch:url') });
@@ -74,14 +82,14 @@ export const elIsAlive = async () => {
       /* istanbul ignore if */
       if (info.meta.connection.status !== 'alive') {
         logger.error(`[ELASTICSEARCH] Seems down`);
-        throw new Error('elastic seems down');
+        throw new Error('ElasticSearch seems down');
       }
       return true;
     })
     .catch(
       /* istanbul ignore next */ () => {
         logger.error(`[ELASTICSEARCH] Seems down`);
-        throw new Error('elastic seems down');
+        throw new Error('ElasticSearch seems down');
       }
     );
 };
@@ -186,7 +194,7 @@ export const elCreateIndexes = async (indexesToCreate = PLATFORM_INDICES) => {
     })
   );
 };
-export const elDeleteIndexes = async (indexesToDelete = PLATFORM_INDICES) => {
+export const elDeleteIndexes = async (indexesToDelete = KNOWLEDGE_INDICES) => {
   return Promise.all(
     indexesToDelete.map((index) => {
       return el.indices.delete({ index }).catch((err) => {
@@ -651,7 +659,7 @@ export const elPaginate = async (indexName, options = {}) => {
       }
     );
 };
-export const elLoadByTerms = async (terms, relationsMap, indices = PLATFORM_INDICES) => {
+export const elLoadByTerms = async (terms, relationsMap, indices = KNOWLEDGE_INDICES) => {
   const query = {
     index: indices,
     _source_excludes: `${REL_INDEX_PREFIX}*`,
@@ -680,21 +688,21 @@ export const elLoadByTerms = async (terms, relationsMap, indices = PLATFORM_INDI
 };
 // endregion
 
-export const elLoadById = (id, type = null, relationsMap = null, indices = PLATFORM_INDICES) => {
+export const elLoadById = (id, type = null, relationsMap = null, indices = KNOWLEDGE_INDICES) => {
   const terms = [{ 'internal_id_key.keyword': id }];
   if (type) {
     terms.push({ 'parent_types.keyword': type });
   }
   return elLoadByTerms(terms, relationsMap, indices);
 };
-export const elLoadByStixId = (id, type = null, relationsMap = null, indices = PLATFORM_INDICES) => {
+export const elLoadByStixId = (id, type = null, relationsMap = null, indices = KNOWLEDGE_INDICES) => {
   const terms = [{ 'stix_id_key.keyword': id }];
   if (type) {
     terms.push({ 'parent_types.keyword': type });
   }
   return elLoadByTerms(terms, relationsMap, indices);
 };
-export const elLoadByGraknId = (id, type = null, relationsMap = null, indices = PLATFORM_INDICES) => {
+export const elLoadByGraknId = (id, type = null, relationsMap = null, indices = KNOWLEDGE_INDICES) => {
   const terms = [{ 'grakn_id.keyword': id }];
   if (type) {
     terms.push({ 'parent_types.keyword': type });
@@ -760,7 +768,7 @@ export const elDeleteByField = async (indexName, fieldName, value) => {
   });
   return value;
 };
-export const elDeleteInstanceIds = async (ids, indexesToHandle = PLATFORM_INDICES) => {
+export const elDeleteInstanceIds = async (ids, indexesToHandle = KNOWLEDGE_INDICES) => {
   logger.debug(`[ELASTICSEARCH] elDeleteInstanceIds > ${ids}`);
   const terms = map((id) => ({ term: { 'internal_id_key.keyword': id } }), ids);
   return el.deleteByQuery({

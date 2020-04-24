@@ -119,15 +119,15 @@ export const addStixObservable = async (user, stixObservable) => {
   }
   return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user);
 };
-export const stixObservableDelete = async (stixObservableId) => {
-  return deleteEntityById(stixObservableId, 'Stix-Observable');
+export const stixObservableDelete = async (user, stixObservableId) => {
+  return deleteEntityById(user, stixObservableId, 'Stix-Observable');
 };
 export const stixObservableAddRelation = (user, stixObservableId, input) => {
   if (!input.through) {
     throw new ForbiddenAccess();
   }
   const finalInput = assoc('fromType', 'Stix-Observable', input);
-  return createRelation(stixObservableId, finalInput).then((relationData) => {
+  return createRelation(user, stixObservableId, finalInput).then((relationData) => {
     notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, relationData, user);
     return relationData;
   });
@@ -150,7 +150,7 @@ export const stixObservableAddRelations = async (user, stixObservableId, input) 
 };
 export const stixObservableEditField = (user, stixObservableId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(stixObservableId, 'Stix-Observable', input, wTx);
+    return updateAttribute(user, stixObservableId, 'Stix-Observable', input, wTx);
   }).then(async () => {
     const stixObservable = await loadEntityById(stixObservableId, 'Stix-Observable');
     return notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, stixObservable, user);
@@ -172,9 +172,9 @@ export const stixObservableDeleteRelation = async (
     if (data.fromId !== stixObservable.grakn_id) {
       throw new ForbiddenAccess();
     }
-    await deleteRelationById(relationId, 'relation');
+    await deleteRelationById(user, relationId, 'relation');
   } else if (toId) {
-    await deleteRelationsByFromAndTo(stixObservableId, toId, relationType, 'relation');
+    await deleteRelationsByFromAndTo(user, stixObservableId, toId, relationType, 'relation');
   } else {
     throw new Error('Cannot delete the relation, missing relationId or toId');
   }

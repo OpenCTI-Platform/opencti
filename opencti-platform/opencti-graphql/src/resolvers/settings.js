@@ -25,7 +25,7 @@ const settingsResolvers = {
   },
   Mutation: {
     settingsEdit: (_, { id }, { user }) => ({
-      delete: () => settingsDelete(id),
+      delete: () => settingsDelete(user, id),
       fieldPatch: ({ input }) => settingsEditField(user, id, input),
       contextPatch: ({ input }) => settingsEditContext(user, id, input),
     }),

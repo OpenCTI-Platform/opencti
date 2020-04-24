@@ -31,7 +31,7 @@ const stixObservableRelationResolvers = {
   },
   Mutation: {
     stixObservableRelationEdit: (_, { id }, { user }) => ({
-      delete: () => stixObservableRelationDelete(id),
+      delete: () => stixObservableRelationDelete(user, id),
       fieldPatch: ({ input }) => stixObservableRelationEditField(user, id, input),
       contextPatch: ({ input }) => stixObservableRelationEditContext(user, id, input),
       contextClean: () => stixObservableRelationCleanContext(user, id),

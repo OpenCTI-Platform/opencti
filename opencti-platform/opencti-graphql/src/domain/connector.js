@@ -54,34 +54,34 @@ export const connectorsForImport = async (scope, onlyAlive = false) =>
 // endregion
 
 // region mutations
-export const pingConnector = async (id, state) => {
+export const pingConnector = async (user, id, state) => {
   const creation = now();
   const connector = await loadEntityById(id, 'Connector');
   if (connector.connector_state_reset === true) {
     await executeWrite(async (wTx) => {
       const stateInput = { key: 'connector_state_reset', value: [false] };
-      await updateAttribute(id, 'Connector', stateInput, wTx);
+      await updateAttribute(user, id, 'Connector', stateInput, wTx);
     });
   } else {
     await executeWrite(async (wTx) => {
       const updateInput = { key: 'updated_at', value: [creation] };
-      await updateAttribute(id, 'Connector', updateInput, wTx);
+      await updateAttribute(user, id, 'Connector', updateInput, wTx);
       const stateInput = { key: 'connector_state', value: [state] };
-      await updateAttribute(id, 'Connector', stateInput, wTx);
+      await updateAttribute(user, id, 'Connector', stateInput, wTx);
     });
   }
   return loadEntityById(id, 'Connector').then((data) => completeConnector(data));
 };
-export const resetStateConnector = async (id) => {
+export const resetStateConnector = async (user, id) => {
   await executeWrite(async (wTx) => {
     const stateInput = { key: 'connector_state', value: [''] };
-    await updateAttribute(id, 'Connector', stateInput, wTx);
+    await updateAttribute(user, id, 'Connector', stateInput, wTx);
     const stateResetInput = { key: 'connector_state_reset', value: [true] };
-    await updateAttribute(id, 'Connector', stateResetInput, wTx);
+    await updateAttribute(user, id, 'Connector', stateResetInput, wTx);
   });
   return loadEntityById(id, 'Connector').then((data) => completeConnector(data));
 };
-export const registerConnector = async ({ id, name, type, scope }) => {
+export const registerConnector = async (user, { id, name, type, scope }) => {
   const connector = await loadEntityById(id, 'Connector');
   // Register queues
   await registerConnectorQueues(id, name, type, scope);
@@ -89,11 +89,11 @@ export const registerConnector = async ({ id, name, type, scope }) => {
     // Simple connector update
     await executeWrite(async (wTx) => {
       const inputName = { key: 'name', value: [name] };
-      await updateAttribute(id, 'Connector', inputName, wTx);
+      await updateAttribute(user, id, 'Connector', inputName, wTx);
       const updatedInput = { key: 'updated_at', value: [now()] };
-      await updateAttribute(id, 'Connector', updatedInput, wTx);
+      await updateAttribute(user, id, 'Connector', updatedInput, wTx);
       const scopeInput = { key: 'connector_scope', value: [scope.join(',')] };
-      await updateAttribute(id, 'Connector', scopeInput, wTx);
+      await updateAttribute(user, id, 'Connector', scopeInput, wTx);
     });
     return loadEntityById(id, 'Connector').then((data) => completeConnector(data));
   }
@@ -105,5 +105,5 @@ export const registerConnector = async ({ id, name, type, scope }) => {
   // Return the connector
   return completeConnector(createdConnector);
 };
-export const connectorDelete = async (connectorId) => deleteEntityById(connectorId, 'Connector');
+export const connectorDelete = async (user, connectorId) => deleteEntityById(user, connectorId, 'Connector');
 // endregion

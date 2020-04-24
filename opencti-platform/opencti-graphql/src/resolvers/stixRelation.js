@@ -51,7 +51,7 @@ const stixRelationResolvers = {
   },
   Mutation: {
     stixRelationEdit: (_, { id }, { user }) => ({
-      delete: () => stixRelationDelete(id),
+      delete: () => stixRelationDelete(user, id),
       fieldPatch: ({ input }) => stixRelationEditField(user, id, input),
       contextPatch: ({ input }) => stixRelationEditContext(user, id, input),
       contextClean: () => stixRelationCleanContext(user, id),

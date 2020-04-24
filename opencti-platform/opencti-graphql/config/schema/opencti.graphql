@@ -206,6 +206,43 @@ input SettingsAddInput {
   platform_language: String
 }
 
+## Logs
+type LogsWorkerConfig {
+  elasticsearch_url: String!
+}
+enum LogsOrdering {
+  event_type
+  event_time
+  created_at
+}
+type LogConnection {
+  pageInfo: PageInfo!
+  edges: [LogEdge]
+}
+type LogEdge {
+  cursor: String!
+  node: Log!
+}
+type LogUser {
+  id: ID!
+  internal_id_key: String!
+  name: String!
+  description: String
+  firstname: String
+  lastname: String
+  user_email: String
+}
+type Log {
+  id: ID!
+  entity_type: String!
+  event_type: String!
+  event_time: DateTime!
+  entity_id: String!
+  created_at: DateTime!
+  user: LogUser!
+  data: String!
+}
+
 ### Inferences
 type Inference {
   id: ID!
@@ -3324,6 +3361,16 @@ input RelationsAddInput {
 type Query {
   # Technical
   settings: Settings
+  logsWorkerConfig: LogsWorkerConfig @auth(for: [MODULES])
+  logs(
+    first: Int
+    after: ID
+    orderBy: LogsOrdering
+    orderMode: OrderingMode
+    type: String
+    entityId: String
+    search: String
+  ): LogConnection @auth(for: [KNOWLEDGE])
   platform_demo: Boolean
   about: AppInfo @auth(for: [SETTINGS])
   inferences: [Inference] @auth(for: [SETTINGS])
@@ -3512,6 +3559,7 @@ type Query {
     first: Int
     after: ID
     orderBy: UsersOrdering
+    orderMode: OrderingMode
     orderMode: OrderingMode
     filters: [UsersFiltering]
     filterMode: FilterMode

@@ -45,11 +45,11 @@ export const addGroup = async (user, group) => {
   const created = await createEntity(user, group, 'Group', { modelType: TYPE_OPENCTI_INTERNAL });
   return notify(BUS_TOPICS.Group.ADDED_TOPIC, created, user);
 };
-export const groupDelete = (groupId) => deleteEntityById(groupId, 'Group');
+export const groupDelete = (user, groupId) => deleteEntityById(user, groupId, 'Group');
 
 export const groupEditField = (user, groupId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(groupId, 'Group', input, wTx);
+    return updateAttribute(user, groupId, 'Group', input, wTx);
   }).then(async () => {
     const group = await loadEntityById(groupId, 'Group');
     return notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user);
@@ -58,12 +58,12 @@ export const groupEditField = (user, groupId, input) => {
 
 export const groupAddRelation = async (user, groupId, input) => {
   const finalInput = assoc('fromType', 'Group', input);
-  const data = await createRelation(groupId, finalInput);
+  const data = await createRelation(user, groupId, finalInput);
   return notify(BUS_TOPICS.Group.EDIT_TOPIC, data, user);
 };
 
 export const groupDeleteRelation = async (user, groupId, relationId) => {
-  await deleteRelationById(relationId, 'relation');
+  await deleteRelationById(user, relationId, 'relation');
   const data = await loadEntityById(groupId, 'Group');
   return notify(BUS_TOPICS.Group.EDIT_TOPIC, data, user);
 };

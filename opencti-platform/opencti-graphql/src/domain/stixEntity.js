@@ -113,7 +113,7 @@ export const stixEntityAddRelation = async (user, stixEntityId, input) => {
   ) {
     throw new ForbiddenAccess();
   }
-  return createRelation(stixEntityId, input);
+  return createRelation(user, stixEntityId, input);
 };
 
 export const stixEntityDeleteRelation = async (user, stixEntityId, relationId) => {
@@ -132,6 +132,6 @@ export const stixEntityDeleteRelation = async (user, stixEntityId, relationId) =
   ) {
     throw new ForbiddenAccess();
   }
-  await deleteRelationById(relationId, 'stix_relation_embedded');
+  await deleteRelationById(user, relationId, 'stix_relation_embedded');
   return notify(BUS_TOPICS.StixEntity.EDIT_TOPIC, stixDomainEntity, user);
 };

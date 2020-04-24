@@ -48,7 +48,7 @@ const stixObservableResolvers = {
   },
   Mutation: {
     stixObservableEdit: (_, { id }, { user }) => ({
-      delete: () => stixObservableDelete(id),
+      delete: () => stixObservableDelete(user, id),
       fieldPatch: ({ input }) => stixObservableEditField(user, id, input),
       contextPatch: ({ input }) => stixObservableEditContext(user, id, input),
       contextClean: () => stixObservableCleanContext(user, id),

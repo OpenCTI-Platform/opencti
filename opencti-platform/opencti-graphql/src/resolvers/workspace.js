@@ -34,7 +34,7 @@ const workspaceResolvers = {
   },
   Mutation: {
     workspaceEdit: (_, { id }, { user }) => ({
-      delete: () => workspaceDelete(id),
+      delete: () => workspaceDelete(user, id),
       fieldPatch: ({ input }) => workspaceEditField(user, id, input),
       contextPatch: ({ input }) => workspaceEditContext(user, id, input),
       contextClean: () => workspaceCleanContext(user, id),

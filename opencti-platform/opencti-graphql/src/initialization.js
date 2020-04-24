@@ -5,6 +5,7 @@ import { graknIsAlive, internalDirectWrite } from './database/grakn';
 import applyMigration from './database/migration';
 import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/minio';
+import { ensureRabbitMQAndLogsQueue } from './database/rabbitmq';
 import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings, getSettings } from './domain/settings';
 import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from './domain/user';
@@ -85,10 +86,13 @@ export const checkSystemDependencies = async () => {
   logger.info(`[PRE-CHECK] > Grakn is alive`);
   // Check if elasticsearch is available
   await elIsAlive();
-  logger.info(`[PRE-CHECK] > Elasticsearch is alive`);
+  logger.info(`[PRE-CHECK] > ElasticSearch is alive`);
   // Check if minio is here
   await isStorageAlive();
   logger.info(`[PRE-CHECK] > Minio is alive`);
+  // Check if RabbitMQ is here and create the logs exchange/queue
+  await ensureRabbitMQAndLogsQueue();
+  logger.info(`[PRE-CHECK] > RabbitMQ is alive`);
   // Check if Python is available
   await checkPythonStix2();
   logger.info(`[PRE-CHECK] > Python3 is available`);
@@ -152,7 +156,7 @@ export const createCapabilities = async (capabilities, parentName = '') => {
     const { name, description, ordering } = capability;
     const capabilityName = `${parentName}${name}`;
     // eslint-disable-next-line no-await-in-loop
-    await addCapability({ name: capabilityName, description, ordering });
+    await addCapability(SYSTEM_USER, { name: capabilityName, description, ordering });
     if (capability.dependencies && capability.dependencies.length > 0) {
       // eslint-disable-next-line no-await-in-loop
       await createCapabilities(capability.dependencies, `${capabilityName}_`);
@@ -164,13 +168,13 @@ export const createBasicRolesAndCapabilities = async () => {
   // Create capabilities
   await createCapabilities(CAPABILITIES);
   // Create roles
-  await addRole({
+  await addRole(SYSTEM_USER, {
     name: ROLE_DEFAULT,
     description: 'Default role associated to all users',
     capabilities: [KNOWLEDGE_CAPABILITY],
     default_assignation: true,
   });
-  await addRole({
+  await addRole(SYSTEM_USER, {
     name: ROLE_ADMINISTRATOR,
     description: 'Administrator role that bypass every capabilities',
     capabilities: [BYPASS],

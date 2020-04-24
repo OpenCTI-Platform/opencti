@@ -26,7 +26,7 @@ import { pushToConnector } from '../database/rabbitmq';
 import stixDomainEntityResolvers from '../resolvers/stixDomainEntity';
 import { findAll as findAllStixRelations, addStixRelation } from './stixRelation';
 import { ForbiddenAccess } from '../config/errors';
-import { INDEX_STIX_ENTITIES, TYPE_STIX_DOMAIN_ENTITY } from '../database/utils';
+import { INDEX_STIX_ENTITIES, TYPE_STIX_DOMAIN_ENTITY, EVENT_TYPE_EXPORT, sendLog } from '../database/utils';
 import { createdByRef, markingDefinitions, killChainPhases, reports } from './stixEntity';
 
 export const findAll = async (args) => {
@@ -89,6 +89,7 @@ export const stixDomainEntitiesNumber = (args) => ({
 
 // region export
 const askJobExports = async (
+  user,
   format,
   entity = null,
   type = null,
@@ -172,7 +173,7 @@ const askJobExports = async (
  * @param args
  * @returns {*}
  */
-export const stixDomainEntityExportAsk = async (args) => {
+export const stixDomainEntityExportAsk = async (user, args) => {
   const {
     format,
     type = null,
@@ -182,8 +183,11 @@ export const stixDomainEntityExportAsk = async (args) => {
     context = null,
   } = args;
   const entity = stixDomainEntityId ? await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity') : null;
-  const workList = await askJobExports(format, entity, type, exportType, maxMarkingDefinition, context, args);
+  const workList = await askJobExports(user, format, entity, type, exportType, maxMarkingDefinition, context, args);
   // Return the work list to do
+  if (stixDomainEntityId) {
+    await sendLog(EVENT_TYPE_EXPORT, user, stixDomainEntityId, { type, exportType, maxMarkingDefinition, context });
+  }
   return map((w) => workToExportFile(w.work), workList);
 };
 export const stixDomainEntityImportPush = (user, entityType = null, entityId = null, file) => {
@@ -218,7 +222,7 @@ export const addStixDomainEntity = async (user, stixDomainEntity) => {
   const created = await createEntity(user, domainToCreate, innerType, args);
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
-export const stixDomainEntityDelete = async (stixDomainEntityId) => {
+export const stixDomainEntityDelete = async (user, stixDomainEntityId) => {
   const stixDomainEntity = await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
   if (!stixDomainEntity) {
     return stixDomainEntityId;
@@ -226,7 +230,7 @@ export const stixDomainEntityDelete = async (stixDomainEntityId) => {
   if (stixDomainEntity.entity_type === 'user' && !isNil(stixDomainEntity.external)) {
     throw new ForbiddenAccess();
   }
-  return deleteEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
+  return deleteEntityById(user, stixDomainEntityId, 'Stix-Domain-Entity');
 };
 export const stixDomainEntitiesDelete = async (stixDomainEntitiesIds) => {
   // Relations cannot be created in parallel.
@@ -248,7 +252,7 @@ export const stixDomainEntityAddRelation = async (user, stixDomainEntityId, inpu
     throw new ForbiddenAccess();
   }
   const finalInput = assoc('fromType', 'Stix-Domain-Entity', input);
-  const data = await createRelation(stixDomainEntityId, finalInput);
+  const data = await createRelation(user, stixDomainEntityId, finalInput);
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
 };
 export const stixDomainEntityAddRelations = async (user, stixDomainEntityId, input) => {
@@ -297,7 +301,7 @@ export const stixDomainEntityDeleteRelation = async (
     ) {
       throw new ForbiddenAccess();
     }
-    await deleteRelationById(relationId, 'relation');
+    await deleteRelationById(user, relationId, 'relation');
   } else if (toId) {
     if (
       stixDomainEntity.entity_type === 'user' &&
@@ -306,7 +310,7 @@ export const stixDomainEntityDeleteRelation = async (
     ) {
       throw new ForbiddenAccess();
     }
-    await deleteRelationsByFromAndTo(stixDomainEntityId, toId, relationType, 'relation');
+    await deleteRelationsByFromAndTo(user, stixDomainEntityId, toId, relationType, 'relation');
   } else {
     throw new Error('Cannot delete the relation, missing relationId or toId');
   }
@@ -322,7 +326,7 @@ export const stixDomainEntityEditField = async (user, stixDomainEntityId, input)
     throw new ForbiddenAccess();
   }
   return executeWrite((wTx) => {
-    return updateAttribute(stixDomainEntityId, 'Stix-Domain-Entity', input, wTx);
+    return updateAttribute(user, stixDomainEntityId, 'Stix-Domain-Entity', input, wTx);
   }).then(async () => {
     const stixDomain = await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
     return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomain, user);
