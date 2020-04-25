@@ -4,20 +4,7 @@ import conf from '../config/conf';
 import { amqpUri } from '../database/rabbitmq';
 import { EVENT_TYPE_CREATE } from '../database/utils';
 
-export const findAll = async (args) => {
-  const filters = [];
-  if (args.type) {
-    filters.push({ key: 'event_type', values: [args.type] });
-  }
-  if (args.entityId) {
-    filters.push({ key: 'event_entity_id', values: [args.entityId] });
-  }
-  return elPaginate(INDEX_LOGS, {
-    orderBy: args.orderBy || 'created_at',
-    orderMode: args.orderMode || 'asc',
-    filters,
-  });
-};
+export const findAll = (args) => elPaginate(INDEX_LOGS, args);
 
 export const creator = async (entityId) => {
   return elPaginate(INDEX_LOGS, {

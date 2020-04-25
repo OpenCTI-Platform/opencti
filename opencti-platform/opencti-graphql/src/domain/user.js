@@ -132,7 +132,7 @@ export const token = (userId, args, context) => {
     $client has internal_id_key "${escapeString(userId)}"; get; offset 0; limit 1;`,
     'x',
     { extraRelKey: 'rel', noCache: true }
-  ).then((result) => result.node.uuid);
+  ).then((result) => (result ? result.node.uuid : result));
 };
 
 const internalGetToken = async (userId) => {
@@ -341,8 +341,10 @@ export const meEditField = (user, userId, input) => {
 };
 export const userDelete = async (user, userId) => {
   const userToken = await internalGetToken(userId);
-  await deleteEntityById(user, userToken.id, 'Token', { noCache: true });
-  await clearAccessCache(userToken.uuid);
+  if (userToken) {
+    await deleteEntityById(user, userToken.id, 'Token', { noCache: true });
+    await clearAccessCache(userToken.uuid);
+  }
   await deleteEntityById(user, userId, 'User');
   return userId;
 };

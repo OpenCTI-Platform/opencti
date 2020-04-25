@@ -54,6 +54,7 @@ const dateFields = [
   'valid_until_day',
   'valid_until_month',
   'observable_date',
+  'event_date',
   'default_assignation', // TODO @JRI Ask @Sam for this.
 ];
 const numberFields = ['object_status', 'phase_order', 'level', 'weight', 'ordering', 'base_score'];
@@ -631,6 +632,9 @@ export const elPaginate = async (indexName, options = {}) => {
         const loadedElement = pipe(assoc('id', n._source.internal_id_key), assoc('_index', n._index))(n._source);
         if (loadedElement.relationship_type) {
           return elReconstructRelation(loadedElement, relationsMap, forceNatural);
+        }
+        if (loadedElement.event_data) {
+          return assoc('event_data', JSON.stringify(loadedElement.event_data), loadedElement);
         }
         return loadedElement;
       }, data.body.hits.hits);

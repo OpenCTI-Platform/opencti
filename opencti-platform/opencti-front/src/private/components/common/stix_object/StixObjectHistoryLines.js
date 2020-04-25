@@ -4,108 +4,78 @@ import { compose, pathOr } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import { createRefetchContainer } from 'react-relay';
-import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper/Paper';
 import inject18n from '../../../../components/i18n';
-import StixObjectNoteCard from './StixObjectNoteCard';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixObjectNotesCreation from './StixObjectNoteCreation';
+import StixObjectHistoryLine from './StixObjectHistoryLine';
 
 const styles = () => ({
   paper: {
-    margin: 0,
-    padding: '20px 20px 20px 20px',
+    height: '100%',
+    minHeight: 300,
+    margin: '10px 0 0 0',
+    padding: '15px',
     borderRadius: 6,
   },
 });
 
-class StixObjectNotesComponent extends Component {
+class StixObjectHistoryLinesComponent extends Component {
   render() {
     const {
-      t, classes, entityId, inputType, data, marginTop,
+      t, classes, data, isRelationLog,
     } = this.props;
-    const notes = pathOr([], ['notes', 'edges'], data);
+    const logs = pathOr([], ['logs', 'edges'], data);
     return (
-      <div style={{ height: '100%', marginTop: marginTop || 40 }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Notes about this entity')}
-        </Typography>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixObjectNotesCreation
-            entityId={entityId}
-            onCreate={this.props.relay.refetch.bind(this)}
-            inputType={inputType}
-          />
-        </Security>
-        <div className="clearfix" />
-        <Paper
-          classes={{ root: classes.paper }}
-          elevation={2}
-          style={{ height: notes.length === 0 ? 200 : '100%' }}
-        >
-          {notes.length > 0 ? (
-            <Grid container={true} spacing={3}>
-              {notes.map((noteEdge) => {
-                const note = noteEdge.node;
-                return (
-                  <Grid key={note.id} item={true} xs={3}>
-                    <StixObjectNoteCard
-                      node={note}
-                      onUpdate={this.props.relay.refetch.bind(this)}
-                    />
-                  </Grid>
-                );
-              })}
-            </Grid>
-          ) : (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                {t('No notes about this entity yet.')}
-              </span>
-            </div>
-          )}
-        </Paper>
-      </div>
+      <Paper classes={{ root: classes.paper }} elevation={2}>
+        {logs.length > 0 ? (
+          logs.map((logEdge) => {
+            const log = logEdge.node;
+            return <StixObjectHistoryLine key={log.id} node={log} />;
+          })
+        ) : (
+          <div style={{ display: 'table', height: '100%', width: '100%' }}>
+            <span
+              style={{
+                display: 'table-cell',
+                verticalAlign: 'middle',
+                textAlign: 'center',
+              }}
+            >
+              {isRelationLog ? t('No relations history about this entity.') : t('No history about this entity.')}
+            </span>
+          </div>
+        )}
+      </Paper>
     );
   }
 }
 
-StixObjectNotesComponent.propTypes = {
+StixObjectHistoryLinesComponent.propTypes = {
   entityId: PropTypes.string,
-  inputType: PropTypes.string,
-  marginTop: PropTypes.number,
+  isRelationLog: PropTypes.bool,
   data: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-export const stixObjectNotesCardsQuery = graphql`
-  query StixObjectNotesCardsQuery(
+export const stixObjectHistoryLinesQuery = graphql`
+  query StixObjectHistoryLinesQuery(
     $first: Int
-    $orderBy: NotesOrdering
+    $orderBy: LogsOrdering
     $orderMode: OrderingMode
-    $filters: [NotesFiltering]
+    $filters: [LogsFiltering]
     $filterMode: FilterMode
     $search: String
   ) {
-    ...StixObjectNotesCards_data
+    ...StixObjectHistoryLines_data
   }
 `;
 
-const StixObjectNotesCards = createRefetchContainer(
-  StixObjectNotesComponent,
+const StixObjectHistoryLines = createRefetchContainer(
+  StixObjectHistoryLinesComponent,
   {
     data: graphql`
-      fragment StixObjectNotesCards_data on Query {
+      fragment StixObjectHistoryLines_data on Query {
         logs(
-          entityId: 
           first: $first
           orderBy: $orderBy
           orderMode: $orderMode
@@ -115,14 +85,15 @@ const StixObjectNotesCards = createRefetchContainer(
         ) {
           edges {
             node {
-              ...StixObjectNoteCard_node
+              id
+              ...StixObjectHistoryLine_node
             }
           }
         }
       }
     `,
   },
-  stixObjectNotesCardsQuery,
+  stixObjectHistoryLinesQuery,
 );
 
-export default compose(inject18n, withStyles(styles))(StixObjectNotesCards);
+export default compose(inject18n, withStyles(styles))(StixObjectHistoryLines);

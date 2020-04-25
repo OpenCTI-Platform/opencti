@@ -214,12 +214,21 @@ type LogsWorkerConfig {
 }
 enum LogsOrdering {
   event_type
-  event_time
-  created_at
+  event_date
+}
+enum LogsFilter {
+  event_type
+  event_entity_id
+  event_date
 }
 type LogConnection {
   pageInfo: PageInfo!
   edges: [LogEdge]
+}
+input LogsFiltering {
+  key: LogsFilter!
+  values: [String]
+  operator: String
 }
 type LogEdge {
   cursor: String!
@@ -238,11 +247,10 @@ type Log {
   id: ID!
   entity_type: String!
   event_type: String!
-  event_time: DateTime!
-  entity_id: String!
-  created_at: DateTime!
-  user: LogUser!
-  data: String!
+  event_date: DateTime!
+  event_entity_id: String!
+  event_user: LogUser!
+  event_data: String!
 }
 
 ### Inferences
@@ -3394,8 +3402,8 @@ type Query {
     after: ID
     orderBy: LogsOrdering
     orderMode: OrderingMode
-    type: String
-    entityId: String
+    filters: [LogsFiltering]
+    filterMode: FilterMode
     search: String
   ): LogConnection @auth(for: [KNOWLEDGE])
   platform_demo: Boolean

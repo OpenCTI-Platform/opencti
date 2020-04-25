@@ -1360,8 +1360,20 @@ const createRelationRaw = async (user, fromInternalId, input, opts = {}) => {
   await sendLog(EVENT_TYPE_CREATE, user, createdRel.id, createdRel);
   const from = await elLoadByGraknId(createdRel.fromId);
   const to = await elLoadByGraknId(createdRel.toId);
-  if (from) await sendLog(EVENT_TYPE_ADD_RELATION, user, from.internal_id_key, to);
-  if (to) await sendLog(EVENT_TYPE_ADD_RELATION, user, to.internal_id_key, from);
+  if (from)
+    await sendLog(
+      EVENT_TYPE_ADD_RELATION,
+      user,
+      from.internal_id_key,
+      assoc('relationship_type', createdRel.relationship_type, to)
+    );
+  if (to)
+    await sendLog(
+      EVENT_TYPE_ADD_RELATION,
+      user,
+      to.internal_id_key,
+      assoc('relationship_type', createdRel.relationship_type, from)
+    );
   // 07. Return result
   if (reversedReturn !== true) {
     return createdRel;
@@ -1780,8 +1792,20 @@ export const deleteRelationById = async (user, relationId, type) => {
     const relation = await elLoadById(eid);
     const from = await elLoadByGraknId(relation.fromId);
     const to = await elLoadByGraknId(relation.toId);
-    if (from) await sendLog(EVENT_TYPE_REMOVE_RELATION, user, from.internal_id_key, to);
-    if (to) await sendLog(EVENT_TYPE_REMOVE_RELATION, user, to.internal_id_key, from);
+    if (from)
+      await sendLog(
+        EVENT_TYPE_REMOVE_RELATION,
+        user,
+        from.internal_id_key,
+        assoc('relationship_type', relation.relationship_type, to)
+      );
+    if (to)
+      await sendLog(
+        EVENT_TYPE_REMOVE_RELATION,
+        user,
+        to.internal_id_key,
+        assoc('relationship_type', relation.relationship_type, from)
+      );
     await elRemoveRelationConnection(eid);
     await elDeleteInstanceIds(append(eid, relationsIds));
     await sendLog(EVENT_TYPE_DELETE, user, relationId);
