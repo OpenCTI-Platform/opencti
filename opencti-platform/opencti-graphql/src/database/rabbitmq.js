@@ -20,20 +20,27 @@ const amqpExecute = (execute) => {
     amqp
       .connect(amqpUri())
       .then((connection) => {
-        return connection
-          .createConfirmChannel()
-          .then((channel) => {
-            return execute(channel)
-              .then((response) => {
-                channel.close();
-                connection.close();
-                resolve(response);
-                return true;
-              })
-              .catch((e) => reject(e));
-          })
-          .catch((e) => reject(e));
+        return (
+          connection
+            .createConfirmChannel()
+            .then((channel) => {
+              return (
+                execute(channel)
+                  .then((response) => {
+                    channel.close();
+                    connection.close();
+                    resolve(response);
+                    return true;
+                  })
+                  /* istanbul ignore next */
+                  .catch((e) => reject(e))
+              );
+            })
+            /* istanbul ignore next */
+            .catch((e) => reject(e))
+        );
       })
+      /* istanbul ignore next */
       .catch((e) => reject(e));
   });
 };
