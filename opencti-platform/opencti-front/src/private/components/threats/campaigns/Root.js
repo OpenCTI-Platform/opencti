@@ -15,6 +15,7 @@ import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomain
 import FileManager from '../../common/files/FileManager';
 import CampaignPopover from './CampaignPopover';
 import Loader from '../../../../components/Loader';
+import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
 
 const subscription = graphql`
   subscription RootCampaignSubscription($id: ID!) {
@@ -141,6 +142,22 @@ class RootCampaign extends Component {
                           id={campaignId}
                           connectorsExport={props.connectorsForExport}
                           entity={props.campaign}
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/threats/campaigns/:campaignId/history"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.campaign}
+                          PopoverComponent={<CampaignPopover />}
+                        />
+                        <StixObjectHistory
+                          {...routeProps}
+                          entityId={campaignId}
                         />
                       </React.Fragment>
                     )}

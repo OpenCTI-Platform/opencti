@@ -89,7 +89,6 @@ export const stixDomainEntitiesNumber = (args) => ({
 
 // region export
 const askJobExports = async (
-  user,
   format,
   entity = null,
   type = null,
@@ -183,7 +182,7 @@ export const stixDomainEntityExportAsk = async (user, args) => {
     context = null,
   } = args;
   const entity = stixDomainEntityId ? await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity') : null;
-  const workList = await askJobExports(user, format, entity, type, exportType, maxMarkingDefinition, context, args);
+  const workList = await askJobExports(format, entity, type, exportType, maxMarkingDefinition, context, args);
   // Return the work list to do
   if (stixDomainEntityId) {
     await sendLog(EVENT_TYPE_EXPORT, user, stixDomainEntityId, { type, exportType, maxMarkingDefinition, context });
@@ -275,7 +274,7 @@ export const stixDomainEntityAddRelations = async (user, stixDomainEntityId, inp
     }),
     input.toIds
   );
-  await createRelations(stixDomainEntityId, finalInput);
+  await createRelations(user, stixDomainEntityId, finalInput);
   return loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity').then((entity) =>
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, entity, user)
   );

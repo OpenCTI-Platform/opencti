@@ -142,6 +142,26 @@ class TopMenuSector extends Component {
             {t('Files')}
           </Button>
         </Security>
+        <Button
+          component={Link}
+          to={`/dashboard/entities/sectors/${sectorId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/entities/sectors/${sectorId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/entities/sectors/${sectorId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
+        </Button>
       </div>
     );
   }

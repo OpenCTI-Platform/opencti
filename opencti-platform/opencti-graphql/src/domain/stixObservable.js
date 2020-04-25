@@ -1,4 +1,4 @@
-import { assoc, dissoc, isNil, map, pipe } from 'ramda';
+import { assoc, dissoc, map, pipe } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
@@ -143,7 +143,7 @@ export const stixObservableAddRelations = async (user, stixObservableId, input) 
     }),
     input.toIds
   );
-  await createRelations(stixObservableId, finalInput);
+  await createRelations(user, stixObservableId, finalInput);
   return loadEntityById(stixObservableId, 'Stix-Observable').then((entity) =>
     notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, entity, user)
   );

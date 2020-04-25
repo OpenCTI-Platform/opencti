@@ -11,9 +11,10 @@ import Sector from './Sector';
 import SectorReports from './SectorReports';
 import SectorKnowledge from './SectorKnowledge';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
-import RegionPopover from '../regions/RegionPopover';
+import SectorPopover from './SectorPopover';
 import FileManager from '../../common/files/FileManager';
-import Loader from "../../../../components/Loader";
+import Loader from '../../../../components/Loader';
+import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
 
 const subscription = graphql`
   subscription RootSectorSubscription($id: ID!) {
@@ -117,13 +118,29 @@ class RootSector extends Component {
                       <React.Fragment>
                         <StixDomainEntityHeader
                           stixDomainEntity={props.sector}
-                          PopoverComponent={<RegionPopover />}
+                          PopoverComponent={<SectorPopover />}
                         />
                         <FileManager
                           {...routeProps}
                           id={sectorId}
                           connectorsExport={props.connectorsForExport}
                           entity={props.sector}
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/entities/sectors/:sectorId/history"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.sector}
+                          PopoverComponent={<SectorPopover />}
+                        />
+                        <StixObjectHistory
+                          {...routeProps}
+                          entityId={sectorId}
                         />
                       </React.Fragment>
                     )}

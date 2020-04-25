@@ -57,7 +57,7 @@ class IndicatorOverviewComponent extends Component {
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t('Creator')}
+            {t('Author')}
           </Typography>
           <ItemAuthor
             createdByRef={pathOr(null, ['createdByRef', 'node'], indicator)}

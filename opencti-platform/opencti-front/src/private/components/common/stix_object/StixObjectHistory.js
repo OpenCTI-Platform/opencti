@@ -9,6 +9,7 @@ import StixObjectHistoryLines, {
   stixObjectHistoryLinesQuery,
 } from './StixObjectHistoryLines';
 import { QueryRenderer } from '../../../../relay/environment';
+import SearchInput from '../../../../components/SearchInput';
 
 const styles = () => ({
   container: {
@@ -20,8 +21,22 @@ const styles = () => ({
 });
 
 class StixObjectHistory extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { entitySearchTerm: '', relationsSearchTerm: '' };
+  }
+
+  handleSearchEntity(value) {
+    this.setState({ entitySearchTerm: value });
+  }
+
+  handleSearchRelations(value) {
+    this.setState({ relationsSearchTerm: value });
+  }
+
   render() {
     const { classes, t, entityId } = this.props;
+    const { entitySearchTerm, relationsSearchTerm } = this.state;
     return (
       <Grid
         container={true}
@@ -29,9 +44,21 @@ class StixObjectHistory extends Component {
         classes={{ container: classes.gridContainer }}
       >
         <Grid item={true} xs={6}>
-          <Typography variant="h4" gutterBottom={true}>
+          <Typography
+            variant="h4"
+            gutterBottom={true}
+            style={{ float: 'left', marginTop: 12 }}
+          >
             {t('Entity')}
           </Typography>
+          <div style={{ float: 'right' }}>
+            <SearchInput
+              variant="small"
+              onSubmit={this.handleSearchEntity.bind(this)}
+              keyword={entitySearchTerm}
+            />
+          </div>
+          <div className="clearfix" />
           <QueryRenderer
             query={stixObjectHistoryLinesQuery}
             variables={{
@@ -42,6 +69,7 @@ class StixObjectHistory extends Component {
               first: 200,
               orderBy: 'event_date',
               orderMode: 'desc',
+              search: entitySearchTerm,
             }}
             render={({ props }) => {
               if (props) {
@@ -58,9 +86,21 @@ class StixObjectHistory extends Component {
           />
         </Grid>
         <Grid item={true} xs={6}>
-          <Typography variant="h4" gutterBottom={true}>
+          <Typography
+            variant="h4"
+            gutterBottom={true}
+            style={{ float: 'left', marginTop: 10 }}
+          >
             {t('Relations of the entity')}
           </Typography>
+          <div style={{ float: 'right' }}>
+            <SearchInput
+              variant="small"
+              onSubmit={this.handleSearchRelations.bind(this)}
+              keyword={entitySearchTerm}
+            />
+          </div>
+          <div className="clearfix" />
           <QueryRenderer
             query={stixObjectHistoryLinesQuery}
             variables={{
@@ -74,6 +114,7 @@ class StixObjectHistory extends Component {
               first: 200,
               orderBy: 'event_date',
               orderMode: 'desc',
+              search: relationsSearchTerm,
             }}
             render={({ props }) => {
               if (props) {

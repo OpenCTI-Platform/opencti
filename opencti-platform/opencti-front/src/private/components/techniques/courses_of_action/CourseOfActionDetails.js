@@ -9,6 +9,7 @@ import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
 import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
 import CoursesOfActionAttackPatterns from './CourseOfActionAttackPatterns';
+import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
   paper: {
@@ -40,6 +41,14 @@ class CourseOfActionDetailsComponent extends Component {
             tags={courseOfAction.tags}
             id={courseOfAction.id}
           />
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
+            {t('Creator')}
+          </Typography>
+          <ItemCreator creator={courseOfAction.creator} />
           <CoursesOfActionAttackPatterns courseOfAction={courseOfAction} />
         </Paper>
       </div>
@@ -60,6 +69,11 @@ const CourseOfActionDetails = createFragmentContainer(
     courseOfAction: graphql`
       fragment CourseOfActionDetails_courseOfAction on CourseOfAction {
         id
+        creator {
+          id
+          name
+          user_email
+        }
         tags {
           edges {
             node {
@@ -79,7 +93,4 @@ const CourseOfActionDetails = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(CourseOfActionDetails);
+export default compose(inject18n, withStyles(styles))(CourseOfActionDetails);

@@ -5,7 +5,7 @@ import { connectorsForImport } from './connector';
 import { createWork } from './work';
 import { logger } from '../config/conf';
 
-const uploadJobImport = async (user, fileId, fileMime, context = null) => {
+const uploadJobImport = async (fileId, fileMime, context = null) => {
   const connectors = await connectorsForImport(fileMime, true);
   if (connectors.length > 0) {
     // Create job and send ask to broker
@@ -41,11 +41,11 @@ const uploadJobImport = async (user, fileId, fileMime, context = null) => {
 export const askJobImport = async (user, filename, context) => {
   logger.debug(`Job > ask import for file ${filename} by ${user.user_email}`);
   const file = await loadFile(filename);
-  await uploadJobImport(user, file.id, file.metaData.mimetype, context);
+  await uploadJobImport(file.id, file.metaData.mimetype, context);
   return file;
 };
 export const uploadImport = async (user, file) => {
   const up = await upload(user, 'import', file);
-  await uploadJobImport(user, up.id, up.metaData.mimetype);
+  await uploadJobImport(up.id, up.metaData.mimetype);
   return up;
 };

@@ -69,7 +69,7 @@ class AttackPatternOverviewComponent extends Component {
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t('Creator')}
+            {t('Author')}
           </Typography>
           <ItemAuthor
             createdByRef={pathOr(null, ['createdByRef', 'node'], attackPattern)}
@@ -84,7 +84,7 @@ class AttackPatternOverviewComponent extends Component {
           <ExpandableMarkdown
             className="markdown"
             source={attackPattern.description}
-            limit={500}
+            limit={800}
           />
         </Paper>
       </div>

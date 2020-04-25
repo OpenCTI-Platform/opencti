@@ -15,6 +15,7 @@ import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomain
 import FileManager from '../../common/files/FileManager';
 import IncidentPopover from './IncidentPopover';
 import Loader from '../../../../components/Loader';
+import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -141,6 +142,22 @@ class RootIncident extends Component {
                           id={incidentId}
                           connectorsExport={props.connectorsForExport}
                           entity={props.incident}
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/threats/incidents/:incidentId/history"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.incident}
+                          PopoverComponent={<IncidentPopover />}
+                        />
+                        <StixObjectHistory
+                          {...routeProps}
+                          entityId={incidentId}
                         />
                       </React.Fragment>
                     )}

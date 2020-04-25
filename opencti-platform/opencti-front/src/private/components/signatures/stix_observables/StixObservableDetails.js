@@ -8,6 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
 import StixObservableTags from '../../common/stix_observables/StixObservableTags';
+import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
   paper: {
@@ -38,6 +39,14 @@ class StixObservableDetailsComponent extends Component {
               id={stixObservable.id}
             />
           </div>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
+            {t('Creator')}
+          </Typography>
+          <ItemCreator creator={stixObservable.creator} />
         </Paper>
       </div>
     );
@@ -57,6 +66,11 @@ const StixObservableDetails = createFragmentContainer(
       fragment StixObservableDetails_stixObservable on StixObservable {
         id
         observable_value
+        creator {
+          id
+          name
+          user_email
+        }
         tags {
           edges {
             node {

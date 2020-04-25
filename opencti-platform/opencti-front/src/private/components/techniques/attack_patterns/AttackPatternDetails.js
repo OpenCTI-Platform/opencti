@@ -14,6 +14,7 @@ import Typography from '@material-ui/core/Typography';
 import { Launch, SettingsApplications, PermIdentity } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
+import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
   paper: {
@@ -47,6 +48,14 @@ class AttackPatternDetailsComponent extends Component {
             tags={attackPattern.tags}
             id={attackPattern.id}
           />
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
+            {t('Creator')}
+          </Typography>
+          <ItemCreator creator={attackPattern.creator} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -129,6 +138,11 @@ const AttackPatternDetails = createFragmentContainer(
         external_id
         platform
         required_permission
+        creator {
+          id
+          name
+          user_email
+        }
         tags {
           edges {
             node {

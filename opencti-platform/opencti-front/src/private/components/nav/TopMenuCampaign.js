@@ -60,7 +60,10 @@ class TopMenuCampaign extends Component {
           <ChessKnight className={classes.icon} fontSize="small" />
           {t('Campaigns')}
         </Button>
-        <ArrowForwardIosOutlined color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
           to={`/dashboard/threats/campaigns/${campaignId}`}
@@ -165,6 +168,26 @@ class TopMenuCampaign extends Component {
             {t('Files')}
           </Button>
         </Security>
+        <Button
+          component={Link}
+          to={`/dashboard/threats/campaigns/${campaignId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/threats/campaigns/${campaignId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/threats/campaigns/${campaignId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Files')}
+        </Button>
       </div>
     );
   }

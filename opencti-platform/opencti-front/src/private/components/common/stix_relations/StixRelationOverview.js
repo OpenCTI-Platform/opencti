@@ -359,7 +359,7 @@ class StixRelationContainer extends Component {
                 gutterBottom={true}
                 style={{ marginTop: 20 }}
               >
-                {t('Creator')}
+                {t('Author')}
               </Typography>
               <ItemAuthor
                 createdByRef={pathOr(
