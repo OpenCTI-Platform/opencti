@@ -3,6 +3,7 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { assoc, isEmpty, map } from 'ramda';
 import conf, { logger } from '../config/conf';
 
+const REDIS_EXPIRE_TIME = 90;
 const redisOptions = {
   lazyConnect: true,
   port: conf.get('redis:port'),
@@ -139,9 +140,9 @@ export const getAccessCache = async (tokenUUID) => {
   const data = await client.get(tokenUUID);
   return data && JSON.parse(data);
 };
-export const storeAccessCache = async (tokenUUID, access) => {
+export const storeAccessCache = async (tokenUUID, access, expiration = REDIS_EXPIRE_TIME) => {
   const val = JSON.stringify(access);
-  await client.set(tokenUUID, val, 'ex', 90);
+  await client.set(tokenUUID, val, 'ex', expiration);
   return access;
 };
 export const clearAccessCache = async (tokenUUID) => {
