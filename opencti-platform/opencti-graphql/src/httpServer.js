@@ -2,6 +2,7 @@ import http from 'http';
 import conf, { logger } from './config/conf';
 import createApp from './app';
 import createApolloServer from './graphql/graphql';
+import { initRedisClient } from './database/redis';
 
 const PORT = conf.get('app:port');
 
@@ -13,7 +14,12 @@ const createHttpServer = () => {
   return httpServer;
 };
 
-export const listenServer = () => {
+const connectDependenciesClient = async () => {
+  await initRedisClient();
+};
+
+export const listenServer = async () => {
+  await connectDependenciesClient();
   return new Promise((resolve, reject) => {
     try {
       const httpServer = createHttpServer();

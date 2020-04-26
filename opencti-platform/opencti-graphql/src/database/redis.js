@@ -32,6 +32,7 @@ export const pubsub = new RedisPubSub({
 });
 
 export const redisIsAlive = async () => {
+  await initRedisClient();
   if (client.status !== 'ready') {
     /* istanbul ignore next */
     throw new Error('redis seems down');
