@@ -226,7 +226,7 @@ export const getRabbitMQVersion = () => {
     .catch(() => 'Disconnected');
 };
 
-export const sendLog = async (eventType, eventUser, eventData = null, eventExtraData = null) => {
+export const sendLog = async (eventType, eventUser, eventData, eventExtraData = null) => {
   const finalEventData = await convertDataToStix(eventData, eventType, eventExtraData);
   const message = {
     event_type: eventType,
