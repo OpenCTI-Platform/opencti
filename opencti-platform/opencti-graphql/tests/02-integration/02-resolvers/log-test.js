@@ -35,12 +35,22 @@ const LIST_QUERY = gql`
 `;
 
 describe('Note resolver standard behavior', () => {
-  it('should list notes', async () => {
+  it('should list logs', async () => {
     const queryResult = await queryAsAdmin({
       query: LIST_QUERY,
       variables: {
         first: 100,
         filters: [{ key: 'entity_id', values: ['78ef0cb8-4397-4603-86b4-f1d60be7400d'] }],
+      },
+    });
+    expect(queryResult.data.logs.edges.length).toBeGreaterThanOrEqual(1);
+  });
+  it('should list logs relations', async () => {
+    const queryResult = await queryAsAdmin({
+      query: LIST_QUERY,
+      variables: {
+        first: 100,
+        filters: [{ key: 'connection_id', values: ['639331ab-ae8d-4c69-9037-3b7e5c67e5c5'], operator: 'wildcard' }],
       },
     });
     expect(queryResult.data.logs.edges.length).toBeGreaterThanOrEqual(1);

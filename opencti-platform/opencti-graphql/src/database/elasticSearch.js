@@ -615,19 +615,6 @@ export const elPaginate = async (indexName, options = {}) => {
     ordering = append(order, ordering);
     must = append({ exists: { field: orderKeyword } }, must);
   }
-  let bool;
-  if (orderMode === 'or') {
-    bool = {
-      should: must,
-      must_not: mustnot,
-      minimum_should_match: 1,
-    };
-  } else {
-    bool = {
-      must,
-      must_not: mustnot,
-    };
-  }
   const query = {
     index: indexName,
     _source_excludes: `${REL_INDEX_PREFIX}*`,
@@ -637,7 +624,10 @@ export const elPaginate = async (indexName, options = {}) => {
       size: first,
       sort: ordering,
       query: {
-        bool,
+        bool: {
+          must,
+          must_not: mustnot,
+        },
       },
     },
   };
