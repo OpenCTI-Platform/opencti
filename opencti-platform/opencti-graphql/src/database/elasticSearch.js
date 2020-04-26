@@ -584,12 +584,20 @@ export const elPaginate = async (indexName, options = {}) => {
           mustnot = append({ exists: { field: key } }, mustnot);
         } else if (values[i] === 'EXISTS') {
           valuesFiltering.push({ exists: { field: key } });
-        } else if (operator === 'eq' || operator === 'match') {
+        } else if (operator === 'eq') {
+          const isDateOrNumber = dateFields.includes(key) || numberFields.includes(key);
           valuesFiltering.push({
-            match_phrase: {
-              [`${
-                dateFields.includes(key) || numberFields.includes(key) || operator === 'match' ? key : `${key}.keyword`
-              }`]: values[i].toString(),
+            match_phrase: { [`${isDateOrNumber ? key : `${key}.keyword`}`]: values[i].toString() },
+          });
+        } else if (operator === 'match') {
+          valuesFiltering.push({
+            match_phrase: { [key]: values[i].toString() },
+          });
+        } else if (operator === 'wildcard') {
+          valuesFiltering.push({
+            query_string: {
+              query: values[i].toString(),
+              fields: [key],
             },
           });
         } else {
@@ -607,7 +615,19 @@ export const elPaginate = async (indexName, options = {}) => {
     ordering = append(order, ordering);
     must = append({ exists: { field: orderKeyword } }, must);
   }
-
+  let bool;
+  if (orderMode === 'or') {
+    bool = {
+      should: must,
+      must_not: mustnot,
+      minimum_should_match: 1,
+    };
+  } else {
+    bool = {
+      must,
+      must_not: mustnot,
+    };
+  }
   const query = {
     index: indexName,
     _source_excludes: `${REL_INDEX_PREFIX}*`,
@@ -617,10 +637,7 @@ export const elPaginate = async (indexName, options = {}) => {
       size: first,
       sort: ordering,
       query: {
-        bool: {
-          must,
-          must_not: mustnot,
-        },
+        bool,
       },
     },
   };
@@ -841,12 +858,14 @@ const prepareIndexing = async (elements) => {
         connections.push({
           grakn_id: thing.fromId,
           internal_id_key: from.internal_id_key,
+          stix_id_key: from.stix_id_key,
           types: thing.fromTypes,
           role: thing.fromRole,
         });
         connections.push({
           grakn_id: thing.toId,
           internal_id_key: to.internal_id_key,
+          stix_id_key: to.stix_id_key,
           types: thing.toTypes,
           role: thing.toRole,
         });

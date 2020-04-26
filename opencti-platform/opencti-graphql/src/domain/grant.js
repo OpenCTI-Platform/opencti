@@ -5,7 +5,7 @@ import { TYPE_OPENCTI_INTERNAL } from '../database/utils';
 
 export const addCapability = async (user, capability) => {
   const capabilityToCreate = assoc('internal_id_key', uuidv5(capability.name, uuidv5.DNS), capability);
-  return createEntity(user, capabilityToCreate, 'Capability', { modelType: TYPE_OPENCTI_INTERNAL });
+  return createEntity(user, capabilityToCreate, 'Capability', { modelType: TYPE_OPENCTI_INTERNAL, noLog: true });
 };
 
 export const addRole = async (user, role) => {
@@ -16,7 +16,7 @@ export const addRole = async (user, role) => {
     assoc('default_assignation', role.default_assignation ? role.default_assignation : false),
     dissoc('capabilities')
   )(role);
-  const roleEntity = await createEntity(user, roleToCreate, 'Role', { modelType: TYPE_OPENCTI_INTERNAL });
+  const roleEntity = await createEntity(user, roleToCreate, 'Role', { modelType: TYPE_OPENCTI_INTERNAL, noLog: true });
   const relationPromises = map(
     (capabilityName) =>
       createRelation(
@@ -30,11 +30,11 @@ export const addRole = async (user, role) => {
           toRole: 'capability',
           through: 'role_capability',
         },
-        { indexable: false }
+        { indexable: false, noLog: true }
       ),
     capabilities
   );
   await Promise.all(relationPromises);
   return roleEntity;
 };
-export const roleDelete = (user, roleId) => deleteEntityById(user, roleId, 'Role');
+export const roleDelete = (user, roleId) => deleteEntityById(user, roleId, 'Role', { noLog: true });

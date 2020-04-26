@@ -1,10 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, join } from 'ramda';
-import { Link } from 'react-router-dom';
+import Markdown from 'react-markdown';
+import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import {
-  green, pink, deepOrange, deepPurple,
+  green,
+  pink,
+  deepOrange,
+  deepPurple,
+  yellow,
+  indigo,
 } from '@material-ui/core/colors';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -15,6 +20,7 @@ import {
   EditOutlined,
   LinkOutlined,
   LinkOffOutlined,
+  HelpOutlined,
 } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 
@@ -62,9 +68,9 @@ const styles = (theme) => ({
 });
 
 class StixObjectHistoryLineComponent extends Component {
-  renderIcon(eventType) {
-    switch (eventType) {
-      case 'create':
+  renderIcon(eventType, isRelation) {
+    if (isRelation) {
+      if (eventType === 'create') {
         return (
           <Avatar
             style={{
@@ -73,22 +79,11 @@ class StixObjectHistoryLineComponent extends Component {
               color: '#ffffff',
             }}
           >
-            <AddOutlined />
-          </Avatar>
-        );
-      case 'add_relation':
-        return (
-          <Avatar
-            style={{
-              marginTop: 5,
-              backgroundColor: deepOrange[500],
-              color: '#ffffff',
-            }}
-          >
             <LinkOutlined />
           </Avatar>
         );
-      case 'remove_relation':
+      }
+      if (eventType === 'delete') {
         return (
           <Avatar
             style={{
@@ -100,7 +95,22 @@ class StixObjectHistoryLineComponent extends Component {
             <LinkOffOutlined />
           </Avatar>
         );
-      default:
+      }
+    } else {
+      if (eventType === 'create') {
+        return (
+          <Avatar
+            style={{
+              marginTop: 5,
+              backgroundColor: pink[500],
+              color: '#ffffff',
+            }}
+          >
+            <AddOutlined />
+          </Avatar>
+        );
+      }
+      if (eventType === 'update') {
         return (
           <Avatar
             style={{
@@ -112,128 +122,62 @@ class StixObjectHistoryLineComponent extends Component {
             <EditOutlined />
           </Avatar>
         );
-    }
-  }
-
-  renderDescription(eventType, eventUser, eventData) {
-    const { t, classes } = this.props;
-    const data = JSON.parse(eventData);
-    const userName = eventUser.firstname && eventUser.lastname
-      ? `${eventUser.firstname} ${eventUser.lastname}`
-      : eventUser.name;
-
-    let fieldName;
-    let fieldValue;
-    let relationType;
-    let name;
-    if (eventType === 'update') {
-      fieldName = data.key;
-      fieldValue = data.value ? join(', ', data.value) : '';
-    }
-    if (eventType === 'add_relation' || eventType === 'remove_relation') {
-      relationType = data.relationship_type;
-      if (data.definition) {
-        name = data.definition;
-      } else if (data.value) {
-        name = data.value;
-      } else if (data.observable_value) {
-        name = data.value;
-      } else if (data.indicator_pattern) {
-        name = data.indicator_pattern;
-      } else {
-        name = data.name;
+      }
+      if (eventType === 'update_add') {
+        return (
+          <Avatar
+            style={{
+              marginTop: 5,
+              backgroundColor: indigo[500],
+              color: '#ffffff',
+            }}
+          >
+            <EditOutlined />
+          </Avatar>
+        );
+      }
+      if (eventType === 'update_remove') {
+        return (
+          <Avatar
+            style={{
+              marginTop: 5,
+              backgroundColor: deepOrange[500],
+              color: '#ffffff',
+            }}
+          >
+            <EditOutlined />
+          </Avatar>
+        );
       }
     }
-    switch (eventType) {
-      case 'create':
-        return (
-          <div className={classes.description}>
-            {' '}
-            <code>
-              <Link to={`/dashboard/entities/persons/${eventUser.id}`}>
-                {userName}
-              </Link>
-            </code>
-            &nbsp;
-            {t('has created this entity.')}
-          </div>
-        );
-      case 'add_relation':
-        return (
-          <div className={classes.description}>
-            {' '}
-            <code>
-              <Link to={`/dashboard/entities/persons/${eventUser.id}`}>
-                {userName}
-              </Link>
-            </code>
-            &nbsp;
-            {t('has created a relation')}
-            &nbsp;
-            <code>{t(`relation_${relationType}`)}</code>
-            &nbsp;
-            {t('to')}
-            &nbsp;
-            {t(`entity_${data.entity_type}`).toLowerCase()}
-            &nbsp;
-            <code>{name}</code>
-          </div>
-        );
-      case 'remove_relation':
-        return (
-          <div className={classes.description}>
-            {' '}
-            <code>
-              <Link to={`/dashboard/entities/persons/${eventUser.id}`}>
-                {userName}
-              </Link>
-            </code>
-            &nbsp;
-            {t('has removed a relation')}
-            &nbsp;
-            <code>{t(`relation_${relationType}`)}</code>
-            &nbsp;
-            {t('to')}
-            &nbsp;
-            {t(`entity_${data.entity_type}`).toLowerCase()}
-            &nbsp;
-            <code>{name}</code>
-          </div>
-        );
-      default:
-        return (
-          <div className={classes.description}>
-            <code>
-              <Link to={`/dashboard/entities/persons/${eventUser.id}`}>
-                {userName}
-              </Link>
-            </code>
-            &nbsp;
-            {t('has updated the field')}
-            &nbsp;
-            <code>{fieldName}</code>
-            &nbsp;
-            {t('with the value')}
-            &nbsp;
-            <code>{fieldValue}</code>
-          </div>
-        );
-    }
+    return (
+      <Avatar
+        style={{
+          marginTop: 5,
+          backgroundColor: yellow[500],
+          color: '#ffffff',
+        }}
+      >
+        <HelpOutlined />
+      </Avatar>
+    );
   }
 
   render() {
-    const { nsdt, classes, node } = this.props;
+    const {
+      nsdt, classes, node, isRelation,
+    } = this.props;
     return (
       <div className={classes.container}>
-        <div className={classes.avatar}>{this.renderIcon(node.event_type)}</div>
+        <div className={classes.avatar}>
+          {this.renderIcon(node.event_type, isRelation)}
+        </div>
         <div className={classes.content}>
           <Paper classes={{ root: classes.paper }}>
             <div className={classes.date}>{nsdt(node.event_date)}</div>
-            {this.renderDescription(
-              node.event_type,
-              node.event_user,
-              node.event_data,
-            )}
+            <div className={classes.description}>
+              <Markdown className="markdown" source={node.event_message} />
+            </div>
           </Paper>
         </div>
         <div className={classes.line} />
@@ -247,6 +191,7 @@ StixObjectHistoryLineComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   nsdt: PropTypes.func,
+  isRelation: PropTypes.bool,
 };
 
 const StixObjectHistoryLine = createFragmentContainer(
@@ -257,14 +202,8 @@ const StixObjectHistoryLine = createFragmentContainer(
         id
         event_type
         event_date
-        event_entity_id
-        event_user {
-          id
-          name
-          firstname
-          lastname
-          user_email
-        }
+        event_user
+        event_message
         event_data
       }
     `,

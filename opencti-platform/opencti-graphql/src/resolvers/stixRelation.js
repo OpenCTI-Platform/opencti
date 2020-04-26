@@ -17,6 +17,7 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { killChainPhases } from '../domain/stixEntity';
 import { distributionRelations, loadByGraknId, timeSeriesRelations, REL_CONNECTED_SUFFIX } from '../database/grakn';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
+import { convertDataToStix } from '../database/stix';
 
 const stixRelationResolvers = {
   Query: {
@@ -44,6 +45,7 @@ const stixRelationResolvers = {
     killChainPhases: (rel) => killChainPhases(rel.id),
     from: (rel) => loadByGraknId(rel.fromId),
     to: (rel) => loadByGraknId(rel.toId),
+    toStix: (rel) => convertDataToStix(rel).then((stixData) => JSON.stringify(stixData)),
   },
   RelationEmbedded: {
     from: (rel) => loadByGraknId(rel.fromId),

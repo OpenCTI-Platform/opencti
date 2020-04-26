@@ -1,8 +1,6 @@
-import { v4 as uuid } from 'uuid';
-import { head, includes, last, mapObjIndexed, pipe, values } from 'ramda';
+import { head, includes, last, mapObjIndexed, pipe, values, join } from 'ramda';
 import { offsetToCursor } from 'graphql-relay';
 import moment from 'moment';
-import { pushToLogs } from './rabbitmq';
 
 export const INDEX_STIX_OBSERVABLE = 'stix_observables';
 export const INDEX_STIX_ENTITIES = 'stix_domain_entities_v2';
@@ -15,13 +13,6 @@ export const TYPE_STIX_RELATION = 'stix_relation';
 export const TYPE_STIX_OBSERVABLE_RELATION = 'stix_observable_relation';
 export const TYPE_RELATION_EMBEDDED = 'relation_embedded';
 export const TYPE_STIX_RELATION_EMBEDDED = 'stix_relation_embedded';
-
-export const EVENT_TYPE_CREATE = 'create';
-export const EVENT_TYPE_ADD_RELATION = 'add_relation';
-export const EVENT_TYPE_REMOVE_RELATION = 'remove_relation';
-export const EVENT_TYPE_UPDATE = 'update';
-export const EVENT_TYPE_EXPORT = 'export';
-export const EVENT_TYPE_DELETE = 'delete';
 
 export const utcDate = (date = undefined) => (date ? moment(date).utc() : moment().utc());
 
@@ -101,55 +92,56 @@ export const inferIndexFromConceptTypes = (types, parentType = null) => {
   return INDEX_STIX_ENTITIES;
 };
 
-export const OBSERVABLE_TYPES = [
-  'autonomous-system',
-  'directory',
-  'domain',
-  'email-address',
-  'email-subject',
-  'file-name',
-  'file-path',
-  'file-md5',
-  'file-sha1',
-  'file-sha256',
-  'ipv4-addr',
-  'ipv6-addr',
-  'mac-addr',
-  'mutex',
-  'pdb-path',
-  'registry-key',
-  'registry-key-value',
-  'url',
-  'windows-service-name',
-  'windows-service-display-name',
-  'windows-scheduled-task',
-  'x509-certificate-issuer',
-  'x509-certificate-serial-number',
-  'unknown',
-];
+const extractEntityMainValue = (entityData) => {
+  let mainValue;
+  if (entityData.definition) {
+    mainValue = entityData.definition;
+  } else if (entityData.value) {
+    mainValue = entityData.value;
+  } else if (entityData.observable_value) {
+    mainValue = entityData.value;
+  } else if (entityData.indicator_pattern) {
+    mainValue = entityData.indicator_pattern;
+  } else {
+    mainValue = entityData.name;
+  }
+  return mainValue;
+};
 
-export const sendLog = async (eventType, eventUser, eventEntityId, eventData = null) => {
-  const eventDate = utcDate().toISOString();
-  const finalEventUser = {
-    id: eventUser.id,
-    internal_id_key: eventUser.id,
-    name: eventUser.name,
-    description: eventUser.description,
-    firstname: eventUser.firstname,
-    lastname: eventUser.lastname,
-    user_email: eventUser.user_email,
-  };
-  const message = {
-    event_type: eventType,
-    event_user: finalEventUser,
-    event_date: eventDate,
-    event_entity_id: eventEntityId,
-    event_data: eventData,
-    event_redoable: eventType !== EVENT_TYPE_ADD_RELATION && eventType !== EVENT_TYPE_REMOVE_RELATION,
-  };
-  // TODO @Sam
-  // Here we need to parse the data and send to all declared communities that match the data
-  const communityId = uuid();
-  const communities = [communityId];
-  await Promise.all(communities.map((community) => pushToLogs(community, message)));
+export const generateLogMessage = (eventType, eventUser, eventData, eventExtraData) => {
+  let fromValue;
+  let fromType;
+  let toValue;
+  let toType;
+  if (eventExtraData && eventExtraData.from) {
+    fromValue = extractEntityMainValue(eventExtraData.from);
+    fromType = eventExtraData.from.entity_type;
+  }
+  if (eventExtraData && eventExtraData.to) {
+    toValue = extractEntityMainValue(eventExtraData.to);
+    toType = eventExtraData.to.entity_type;
+  }
+  const name = extractEntityMainValue(eventData);
+  let message = `\`${eventUser.name}\` `;
+  if (eventType === 'create') {
+    message += 'created a ';
+  } else if (eventType === 'update') {
+    message += 'updated the field ';
+  } else if (eventType === 'update_add') {
+    message += 'added the ';
+  } else if (eventType === 'update_remove') {
+    message += 'removed the ';
+  } else if (eventType === 'delete') {
+    message += 'deleted the ';
+  }
+  if (eventData.relationship_type && eventData.entity_type !== 'relation_embedded') {
+    message += `relation \`${eventData.relationship_type}\` from ${fromType} \`${fromValue}\` to ${toType} \`${toValue}\`.`;
+  } else if (eventData.entity_type === 'relation_embedded') {
+    message += `\`${toType}\` with value \`${toValue}\`.`;
+  } else if (eventType === 'update') {
+    message += `\`${eventExtraData.key}\` with \`${join(', ', eventExtraData.value)}\`.`;
+  } else {
+    message += `${eventData.entity_type} \`${name}\`.`;
+  }
+  return message;
 };

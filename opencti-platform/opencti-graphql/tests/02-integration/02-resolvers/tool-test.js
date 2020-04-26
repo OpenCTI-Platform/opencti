@@ -44,6 +44,7 @@ const READ_QUERY = gql`
           }
         }
       }
+      toStix
     }
   }
 `;
@@ -85,6 +86,7 @@ describe('Tool resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.tool).not.toBeNull();
     expect(queryResult.data.tool.id).toEqual(toolInternalId);
+    expect(queryResult.data.tool.toStix.length).toBeGreaterThan(5);
     expect(queryResult.data.tool.killChainPhases.edges.length).toEqual(1);
     expect(queryResult.data.tool.killChainPhases.edges[0].node.id).toEqual('2a2202bd-1da6-4668-9fc5-ad1017e974bc');
   });

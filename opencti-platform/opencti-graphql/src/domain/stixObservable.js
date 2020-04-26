@@ -20,13 +20,14 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { elCount } from '../database/elasticSearch';
-import { buildPagination, TYPE_STIX_OBSERVABLE, OBSERVABLE_TYPES } from '../database/utils';
+import { buildPagination, TYPE_STIX_OBSERVABLE} from '../database/utils';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { addIndicator } from './indicator';
 import { askEnrich } from './enrichment';
 import { ForbiddenAccess } from '../config/errors';
 import { createStixPattern } from '../python/pythonBridge';
+import { OBSERVABLE_TYPES } from "../database/stix";
 
 export const findById = (stixObservableId) => {
   return loadEntityById(stixObservableId, 'Stix-Observable');

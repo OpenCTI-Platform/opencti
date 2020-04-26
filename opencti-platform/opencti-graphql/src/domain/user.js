@@ -227,7 +227,7 @@ export const roleDelete = async (user, roleId) => {
   // Clear cache of every user with this deleted role
   const impactedUsers = await findAll({ filters: [{ key: 'rel_user_role.internal_id_key', values: [roleId] }] });
   await Promise.all(map((e) => clearUserTokenCache(e.node.id), impactedUsers.edges));
-  return deleteEntityById(user, roleId, 'Role');
+  return deleteEntityById(user, roleId, 'Role', { noLog: true });
 };
 export const roleCleanContext = (user, roleId) => {
   delEditContext(user, roleId);
@@ -258,7 +258,7 @@ export const assignRoleToUser = (user, userId, roleName) => {
       toRole: 'position',
       through: 'user_role',
     },
-    { indexable: false }
+    { indexable: false, noLog: true }
   );
 };
 export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken()) => {
@@ -278,10 +278,10 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
     assoc('external', newUser.external ? newUser.external : false),
     dissoc('roles')
   )(newUser);
-  const userOptions = { modelType: TYPE_STIX_DOMAIN_ENTITY, stixIdType: 'identity' };
+  const userOptions = { modelType: TYPE_STIX_DOMAIN_ENTITY, stixIdType: 'identity', noLog: newUser.name === 'admin' };
   const userCreated = await createEntity(user, userToCreate, 'User', userOptions);
   // Create token and link it to the user
-  const tokenOptions = { modelType: TYPE_OPENCTI_INTERNAL, indexable: false };
+  const tokenOptions = { modelType: TYPE_OPENCTI_INTERNAL, indexable: false, noLog: true };
   const defaultToken = await createEntity(user, newToken, 'Token', tokenOptions);
   const input = {
     fromType: 'User',
@@ -291,14 +291,14 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
     toRole: 'authorization',
     through: 'authorize',
   };
-  await createRelation(user, userCreated.id, input, { indexable: false });
+  await createRelation(user, userCreated.id, input, { indexable: false, noLog: true });
   // Link to the roles
   await Promise.all(map((role) => assignRoleToUser(user, userCreated.id, role), userRoles));
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, userCreated, user);
 };
 export const roleEditField = (user, roleId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(user, roleId, 'Role', input, wTx);
+    return updateAttribute(user, roleId, 'Role', input, wTx, { noLog: true });
   }).then(async () => {
     const userToEdit = await loadEntityById(roleId, 'Role');
     return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
@@ -306,7 +306,7 @@ export const roleEditField = (user, roleId, input) => {
 };
 export const roleAddRelation = async (user, roleId, input) => {
   const finalInput = pipe(assoc('through', 'role_capability'), assoc('fromType', 'Role'))(input);
-  const data = await createRelation(user, roleId, finalInput, { indexable: false });
+  const data = await createRelation(user, roleId, finalInput, { indexable: false, noLog: true });
   // Clear cache of every user with this modified role
   const impactedUsers = await findAll({ filters: [{ key: 'rel_user_role.internal_id_key', values: [roleId] }] });
   await Promise.all(map((e) => clearUserTokenCache(e.node.id), impactedUsers.edges));
@@ -318,7 +318,7 @@ export const userEditField = (user, userId, input) => {
   const value = key === 'password' ? [bcrypt.hashSync(head(input.value).toString(), 10)] : input.value;
   const finalInput = { key, value };
   return executeWrite((wTx) => {
-    return updateAttribute(user, userId, 'User', finalInput, wTx);
+    return updateAttribute(user, userId, 'User', finalInput, wTx, { noLog: key === 'password' });
   }).then(async () => {
     const userToEdit = await loadEntityById(userId, 'User');
     return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
@@ -342,7 +342,7 @@ export const meEditField = (user, userId, input) => {
 export const userDelete = async (user, userId) => {
   const userToken = await internalGetToken(userId);
   if (userToken) {
-    await deleteEntityById(user, userToken.id, 'Token', { noCache: true });
+    await deleteEntityById(user, userToken.id, 'Token', { noCache: true, noLog: true });
     await clearAccessCache(userToken.uuid);
   }
   await deleteEntityById(user, userId, 'User');
@@ -453,18 +453,19 @@ export const userRenewToken = async (user, userId, newToken = generateOpenCTIWeb
   const currentToken = await internalGetToken(userId);
   // 02. Remove the token
   if (currentToken) {
-    await deleteEntityById(user, currentToken.id, 'Token', { noCache: true });
+    await deleteEntityById(user, currentToken.id, 'Token', { noCache: true, noLog: true });
   } else {
     logger.error(`[GRAKN] ${userId} user have no token to renew, please report this problem in github`);
     const detachedToken = await internalGetTokenByUUID(newToken.uuid);
     if (detachedToken) {
-      await deleteEntityById(user, detachedToken.id, 'Token', { noCache: true });
+      await deleteEntityById(user, detachedToken.id, 'Token', { noCache: true, noLog: true });
     }
   }
   // 03. Create a new one
   const defaultToken = await createEntity(user, newToken, 'Token', {
     modelType: TYPE_OPENCTI_INTERNAL,
     indexable: false,
+    noLog: true,
   });
   // 04. Associate new token to user.
   const input = {
@@ -475,7 +476,7 @@ export const userRenewToken = async (user, userId, newToken = generateOpenCTIWeb
     toRole: 'authorization',
     through: 'authorize',
   };
-  await createRelation(user, userId, input, { indexable: false });
+  await createRelation(user, userId, input, { indexable: false, noLog: true });
   return loadEntityById(userId, 'User');
 };
 export const findByTokenUUID = async (tokenValue) => {
@@ -530,8 +531,10 @@ export const initAdmin = async (email, password, tokenValue) => {
     // Update admin fields
     await executeWrite(async (wTx) => {
       await updateAttribute(admin, admin.id, 'User', { key: 'user_email', value: [email] }, wTx);
-      await updateAttribute(admin, admin.id, 'User', { key: 'password', value: [bcrypt.hashSync(password, 10)] }, wTx);
-      await updateAttribute(admin, admin.id, 'User', { key: 'external', value: [true] }, wTx);
+      await updateAttribute(admin, admin.id, 'User', { key: 'password', value: [bcrypt.hashSync(password, 10)] }, wTx, {
+        noLog: true,
+      });
+      await updateAttribute(admin, admin.id, 'User', { key: 'external', value: [true] }, wTx, { noLog: true });
     });
     // Renew the token
     await userRenewToken(admin, admin.id, tokenAdmin);

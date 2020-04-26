@@ -25,14 +25,8 @@ const LIST_QUERY = gql`
           id
           event_type
           event_date
-          event_entity_id
-          event_user {
-            id
-            name
-            firstname
-            lastname
-            user_email
-          }
+          event_user
+          event_message
           event_data
         }
       }
@@ -46,9 +40,9 @@ describe('Note resolver standard behavior', () => {
       query: LIST_QUERY,
       variables: {
         first: 100,
-        filters: [{ key: 'event_entity_id', values: ['78ef0cb8-4397-4603-86b4-f1d60be7400d'] }],
+        filters: [{ key: 'event_data_x_opencti_id', values: ['78ef0cb8-4397-4603-86b4-f1d60be7400d'] }],
       },
     });
-    expect(queryResult.data.logs.edges.length).toBeGreaterThanOrEqual(4);
+    expect(queryResult.data.logs.edges.length).toEqual(1);
   });
 });

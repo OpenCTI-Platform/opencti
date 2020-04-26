@@ -27,12 +27,15 @@ export const addKillChainPhase = async (user, killChainPhase) => {
     killChainPhase.phase_order ? killChainPhase.phase_order : 0,
     killChainPhase
   );
-  const created = await createEntity(user, killChainPhaseToCreate, 'Kill-Chain-Phase', { modelType: TYPE_STIX_DOMAIN });
+  const created = await createEntity(user, killChainPhaseToCreate, 'Kill-Chain-Phase', {
+    modelType: TYPE_STIX_DOMAIN,
+    noLog: true,
+  });
   return notify(BUS_TOPICS.KillChainPhase.ADDED_TOPIC, created, user);
 };
 
-export const killChainPhaseDelete = (user ,killChainPhaseId) => {
-  return deleteEntityById(user, killChainPhaseId, 'Kill-Chain-Phase');
+export const killChainPhaseDelete = (user, killChainPhaseId) => {
+  return deleteEntityById(user, killChainPhaseId, 'Kill-Chain-Phase', { noLog: true });
 };
 export const killChainPhaseAddRelation = (user, killChainPhaseId, input) => {
   const finalInput = pipe(assoc('through', 'kill_chain_phases'), assoc('toType', 'kill_chain_phases'))(input);
@@ -48,7 +51,7 @@ export const killChainPhaseDeleteRelation = async (user, killChainPhaseId, relat
 };
 export const killChainPhaseEditField = (user, killChainPhaseId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(user, killChainPhaseId, 'Kill-Chain-Phase', input, wTx);
+    return updateAttribute(user, killChainPhaseId, 'Kill-Chain-Phase', input, wTx, { noLog: true });
   }).then(async () => {
     const killChainPhase = await loadEntityById(killChainPhaseId, 'Kill-Chain-Phase');
     return notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase, user);

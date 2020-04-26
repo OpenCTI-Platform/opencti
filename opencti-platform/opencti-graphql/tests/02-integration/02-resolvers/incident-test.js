@@ -72,6 +72,7 @@ const READ_QUERY = gql`
           }
         }
       }
+      toStix
     }
   }
 `;
@@ -114,6 +115,7 @@ describe('Incident resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.incident).not.toBeNull();
     expect(queryResult.data.incident.id).toEqual(incidentInternalId);
+    expect(queryResult.data.incident.toStix.length).toBeGreaterThan(5);
     expect(queryResult.data.incident.observableRefs.edges.length).toEqual(0);
   });
   it('should incident loaded by stix id', async () => {

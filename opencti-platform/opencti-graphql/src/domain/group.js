@@ -42,14 +42,14 @@ export const permissions = async (groupId) => {
 };
 
 export const addGroup = async (user, group) => {
-  const created = await createEntity(user, group, 'Group', { modelType: TYPE_OPENCTI_INTERNAL });
+  const created = await createEntity(user, group, 'Group', { modelType: TYPE_OPENCTI_INTERNAL, noLog: true });
   return notify(BUS_TOPICS.Group.ADDED_TOPIC, created, user);
 };
-export const groupDelete = (user, groupId) => deleteEntityById(user, groupId, 'Group');
+export const groupDelete = (user, groupId) => deleteEntityById(user, groupId, 'Group', { noLog: true });
 
 export const groupEditField = (user, groupId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(user, groupId, 'Group', input, wTx);
+    return updateAttribute(user, groupId, 'Group', input, wTx, { noLog: true });
   }).then(async () => {
     const group = await loadEntityById(groupId, 'Group');
     return notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user);
@@ -58,7 +58,7 @@ export const groupEditField = (user, groupId, input) => {
 
 export const groupAddRelation = async (user, groupId, input) => {
   const finalInput = assoc('fromType', 'Group', input);
-  const data = await createRelation(user, groupId, finalInput);
+  const data = await createRelation(user, groupId, finalInput, { noLog: true });
   return notify(BUS_TOPICS.Group.EDIT_TOPIC, data, user);
 };
 

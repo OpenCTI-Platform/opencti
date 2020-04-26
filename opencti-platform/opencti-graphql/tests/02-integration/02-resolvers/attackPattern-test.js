@@ -51,6 +51,7 @@ const READ_QUERY = gql`
           }
         }
       }
+      toStix
     }
   }
 `;
@@ -92,6 +93,7 @@ describe('AttackPattern resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.attackPattern).not.toBeNull();
     expect(queryResult.data.attackPattern.id).toEqual(attackPatternInternalId);
+    expect(queryResult.data.attackPattern.toStix.length).toBeGreaterThan(5);
     expect(queryResult.data.attackPattern.killChainPhases.edges.length).toEqual(1);
     expect(queryResult.data.attackPattern.killChainPhases.edges[0].node.id).toEqual(
       '2a2202bd-1da6-4668-9fc5-ad1017e974bc'

@@ -70,14 +70,13 @@ const stixDomainEntityResolvers = {
       relationDelete: ({ relationId, toId, relationType }) =>
         stixDomainEntityDeleteRelation(user, id, relationId, toId, relationType),
       importPush: ({ file }) => stixDomainEntityImportPush(user, null, id, file),
-      exportAsk: (args) => stixDomainEntityExportAsk(user, assoc('stixDomainEntityId', id, args)),
+      exportAsk: (args) => stixDomainEntityExportAsk(assoc('stixDomainEntityId', id, args)),
       exportPush: ({ file }) => stixDomainEntityExportPush(user, null, id, file),
-      mergeEntities: ({ stixDomainEntitiesIds, alias }) =>
-        stixDomainEntityMerge(user, id, stixDomainEntitiesIds, alias),
+      mergeEntities: ({ stixDomainEntitiesIds, alias }) => stixDomainEntityMerge(user, stixDomainEntitiesIds, alias),
     }),
     stixDomainEntitiesDelete: (_, { id }, { user }) => stixDomainEntitiesDelete(user, id),
     stixDomainEntityAdd: (_, { input }, { user }) => addStixDomainEntity(user, input),
-    stixDomainEntitiesExportAsk: (_, args, { user }) => stixDomainEntityExportAsk(user, args),
+    stixDomainEntitiesExportAsk: (_, args) => stixDomainEntityExportAsk(args),
     stixDomainEntitiesExportPush: (_, { type, file, context, listArgs }, { user }) =>
       stixDomainEntityExportPush(user, type, null, file, context, listArgs),
   },

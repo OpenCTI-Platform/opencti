@@ -26,7 +26,7 @@ import { pushToConnector } from '../database/rabbitmq';
 import stixDomainEntityResolvers from '../resolvers/stixDomainEntity';
 import { findAll as findAllStixRelations, addStixRelation } from './stixRelation';
 import { ForbiddenAccess } from '../config/errors';
-import { INDEX_STIX_ENTITIES, TYPE_STIX_DOMAIN_ENTITY, EVENT_TYPE_EXPORT, sendLog } from '../database/utils';
+import { INDEX_STIX_ENTITIES, TYPE_STIX_DOMAIN_ENTITY } from '../database/utils';
 import { createdByRef, markingDefinitions, killChainPhases, reports } from './stixEntity';
 
 export const findAll = async (args) => {
@@ -172,7 +172,7 @@ const askJobExports = async (
  * @param args
  * @returns {*}
  */
-export const stixDomainEntityExportAsk = async (user, args) => {
+export const stixDomainEntityExportAsk = async (args) => {
   const {
     format,
     type = null,
@@ -184,9 +184,6 @@ export const stixDomainEntityExportAsk = async (user, args) => {
   const entity = stixDomainEntityId ? await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity') : null;
   const workList = await askJobExports(format, entity, type, exportType, maxMarkingDefinition, context, args);
   // Return the work list to do
-  if (stixDomainEntityId) {
-    await sendLog(EVENT_TYPE_EXPORT, user, stixDomainEntityId, { type, exportType, maxMarkingDefinition, context });
-  }
   return map((w) => workToExportFile(w.work), workList);
 };
 export const stixDomainEntityImportPush = (user, entityType = null, entityId = null, file) => {

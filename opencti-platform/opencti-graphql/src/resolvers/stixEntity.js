@@ -12,6 +12,7 @@ import {
 } from '../domain/stixEntity';
 import { creator } from '../domain/log';
 import { fetchEditContext } from '../database/redis';
+import { convertDataToStix } from '../database/stix';
 
 const stixEntityResolvers = {
   Query: {
@@ -29,6 +30,7 @@ const stixEntityResolvers = {
       /* istanbul ignore next */
       return 'Unknown';
     },
+    toStix: (stixEntity) => convertDataToStix(stixEntity).then((stixData) => JSON.stringify(stixData)),
     creator: (stixEntity) => creator(stixEntity.id),
     createdByRef: (stixEntity) => createdByRef(stixEntity.id),
     editContext: (stixEntity) => fetchEditContext(stixEntity.id),

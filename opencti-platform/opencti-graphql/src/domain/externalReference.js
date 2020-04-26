@@ -21,12 +21,15 @@ export const findAll = (args) => {
 };
 
 export const addExternalReference = async (user, externalReference) => {
-  const created = await createEntity(user, externalReference, 'External-Reference', { modelType: TYPE_STIX_DOMAIN });
+  const created = await createEntity(user, externalReference, 'External-Reference', {
+    modelType: TYPE_STIX_DOMAIN,
+    noLog: true,
+  });
   return notify(BUS_TOPICS.ExternalReference.ADDED_TOPIC, created, user);
 };
 
 export const externalReferenceDelete = async (user, externalReferenceId) => {
-  return deleteEntityById(user, externalReferenceId, 'External-Reference');
+  return deleteEntityById(user, externalReferenceId, 'External-Reference', { noLog: true });
 };
 export const externalReferenceAddRelation = (user, externalReferenceId, input) => {
   const finalInput = pipe(assoc('through', 'external_references'), assoc('toType', 'External-Reference'))(input);
@@ -42,7 +45,7 @@ export const externalReferenceDeleteRelation = async (user, externalReferenceId,
 };
 export const externalReferenceEditField = (user, externalReferenceId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(user, externalReferenceId, 'External-Reference', input, wTx);
+    return updateAttribute(user, externalReferenceId, 'External-Reference', input, wTx, { noLog: true });
   }).then(async () => {
     const externalReference = await loadEntityById(externalReferenceId, 'External-Reference');
     return notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference, user);

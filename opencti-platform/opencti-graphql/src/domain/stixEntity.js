@@ -61,6 +61,15 @@ export const notes = (stixEntityId) => {
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
+export const opinions = (stixEntityId) => {
+  return findWithConnectedRelations(
+    `match $to isa Opinion; $rel(knowledge_aggregation:$to, so:$from) isa object_refs;
+   $from has internal_id_key "${escapeString(stixEntityId)}";
+   get;`,
+    'to',
+    { extraRelKey: 'rel' }
+  ).then((data) => buildPagination(0, 0, data, data.length));
+};
 export const tags = (stixEntityId) => {
   return findWithConnectedRelations(
     `match $to isa Tag; $rel(tagging:$to, so:$from) isa tagged;

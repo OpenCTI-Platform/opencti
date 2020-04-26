@@ -52,12 +52,6 @@ import {
   TYPE_STIX_OBSERVABLE_RELATION,
   TYPE_STIX_RELATION,
   utcDate,
-  EVENT_TYPE_CREATE,
-  EVENT_TYPE_ADD_RELATION,
-  EVENT_TYPE_REMOVE_RELATION,
-  EVENT_TYPE_UPDATE,
-  EVENT_TYPE_DELETE,
-  sendLog,
 } from './utils';
 import { isInversed, resolveNaturalRoles, ROLE_FROM } from './graknRoles';
 import {
@@ -76,6 +70,14 @@ import {
   forceNoCache,
   REL_INDEX_PREFIX,
 } from './elasticSearch';
+import {
+  EVENT_TYPE_CREATE,
+  EVENT_TYPE_UPDATE,
+  EVENT_TYPE_UPDATE_ADD,
+  EVENT_TYPE_UPDATE_REMOVE,
+  EVENT_TYPE_DELETE,
+  sendLog,
+} from './rabbitmq';
 
 // region global variables
 const dateFormat = 'YYYY-MM-DDTHH:mm:ss.SSS';
@@ -598,10 +600,12 @@ export const findWithConnectedRelations = async (query, key, options = {}) => {
           pipe(
             assoc('fromId', data.toId),
             assoc('fromInternalId', data.toInternalId),
+            assoc('fromStixId', data.toStixId),
             assoc('fromRole', data.toRole),
             assoc('fromTypes', data.toTypes),
             assoc('toId', data.fromId),
             assoc('toInternalId', data.fromInternalId),
+            assoc('toStixId', data.fromStixId),
             assoc('toRole', data.fromRole),
             assoc('toTypes', data.fromTypes)
           )(data),
@@ -1235,7 +1239,7 @@ const flatAttributesForObject = (data) => {
 
 // region mutation relation
 const createRelationRaw = async (user, fromInternalId, input, opts = {}) => {
-  const { indexable = true, reversedReturn = false, isStixObservableRelation = false } = opts;
+  const { indexable = true, reversedReturn = false, isStixObservableRelation = false, noLog = false } = opts;
   // 01. First fix the direction of the relation
   const isStixRelation = includes('stix_id_key', Object.keys(input)) || input.relationship_type;
   const relationshipType = input.relationship_type || input.through;
@@ -1357,23 +1361,20 @@ const createRelationRaw = async (user, fromInternalId, input, opts = {}) => {
     await elIndexElements([createdRel]);
   }
   // 06. Send logs
-  await sendLog(EVENT_TYPE_CREATE, user, createdRel.id, createdRel);
-  const from = await elLoadByGraknId(createdRel.fromId);
-  const to = await elLoadByGraknId(createdRel.toId);
-  if (from)
-    await sendLog(
-      EVENT_TYPE_ADD_RELATION,
-      user,
-      from.internal_id_key,
-      assoc('relationship_type', createdRel.relationship_type, to)
-    );
-  if (to)
-    await sendLog(
-      EVENT_TYPE_ADD_RELATION,
-      user,
-      to.internal_id_key,
-      assoc('relationship_type', createdRel.relationship_type, from)
-    );
+  if (!noLog) {
+    const from = await elLoadByGraknId(createdRel.fromId);
+    const to = await elLoadByGraknId(createdRel.toId);
+    if (entityType === TYPE_RELATION_EMBEDDED) {
+      await sendLog(
+        relationshipType === 'created_by_ref' ? EVENT_TYPE_UPDATE : EVENT_TYPE_UPDATE_ADD,
+        user,
+        createdRel,
+        { from, to }
+      );
+    } else {
+      await sendLog(EVENT_TYPE_CREATE, user, createdRel, { from, to });
+    }
+  }
   // 07. Return result
   if (reversedReturn !== true) {
     return createdRel;
@@ -1558,7 +1559,7 @@ export const createRelations = async (user, fromInternalId, inputs, opts = {}) =
 
 // region mutation entity
 export const createEntity = async (user, entity, type, opts = {}) => {
-  const { modelType = TYPE_STIX_DOMAIN_ENTITY, stixIdType, indexable = true } = opts;
+  const { modelType = TYPE_STIX_DOMAIN_ENTITY, stixIdType, indexable = true, noLog = false } = opts;
   const internalId = entity.internal_id_key ? entity.internal_id_key : uuid();
   const stixType = stixIdType || type.toLowerCase();
   const stixId = entity.stix_id_key ? entity.stix_id_key : `${stixType}--${uuid()}`;
@@ -1648,6 +1649,10 @@ export const createEntity = async (user, entity, type, opts = {}) => {
   if (indexable) {
     await elIndexElements([completedData]);
   }
+  // Send creation log
+  if (!noLog) {
+    await sendLog(EVENT_TYPE_CREATE, user, completedData);
+  }
   // Complete with eventual relations (will eventually update the index)
   await addOwner(user, internalId, entity.createdByOwner, opts);
   if (modelType === TYPE_STIX_DOMAIN || modelType === TYPE_STIX_DOMAIN_ENTITY || modelType === TYPE_STIX_OBSERVABLE) {
@@ -1660,7 +1665,6 @@ export const createEntity = async (user, entity, type, opts = {}) => {
     await addRelationRefs(user, internalId, entity.relationRefs, opts);
   }
   // Simply return the data
-  await sendLog(EVENT_TYPE_CREATE, user, completedData.id, completedData);
   return completedData;
 };
 // endregion
@@ -1741,7 +1745,17 @@ export const updateAttribute = async (user, id, type, input, wTx, options = {}) 
     logger.error(`[ELASTIC] ${id} missing, cant update the element, you need to reindex`);
   }
   if (!noLog) {
-    await sendLog(EVENT_TYPE_UPDATE, user, id, input);
+    await sendLog(
+      EVENT_TYPE_UPDATE,
+      user,
+      {
+        id: currentInstanceData.id,
+        stix_id_key: currentInstanceData.stix_id_key,
+        entity_type: currentInstanceData.entity_type,
+        [escapedKey]: includes(input.key, multipleAttributes) ? input.value : head(input.value),
+      },
+      { key: escapedKey, value: input.value }
+    );
   }
   return id;
 };
@@ -1749,11 +1763,13 @@ export const updateAttribute = async (user, id, type, input, wTx, options = {}) 
 
 // region mutation deletion
 export const deleteEntityById = async (user, id, type, options = {}) => {
+  const { noLog = false } = options;
   if (isNil(type)) {
     /* istanbul ignore next */
     throw new Error(`[GRAKN] deleteEntityById > Missing type`);
   }
   const eid = escapeString(id);
+  const currentEntity = await loadEntityById(eid, type);
   // 00. Load everything we need to remove in elastic
   const read = `match $from isa ${type}, has internal_id_key "${eid}"; $rel($from, $to);
    { $rel isa stix_relation; } or { $rel isa stix_relation_embedded; } or { $rel isa relation_embedded; }; get;`;
@@ -1765,18 +1781,22 @@ export const deleteEntityById = async (user, id, type, options = {}) => {
     logger.debug(`[GRAKN - infer: false] deleteTypedEntityById > ${query}`);
     await wTx.tx.query(query, { infer: false });
   }).then(async () => {
+    if (!noLog && currentEntity) {
+      await sendLog(EVENT_TYPE_DELETE, user, currentEntity);
+    }
     // [ELASTIC] Delete entity and relations connected to
     await elDeleteInstanceIds(append(eid, relationsIds));
-    await sendLog(EVENT_TYPE_DELETE, user, id);
     return id;
   });
 };
-export const deleteRelationById = async (user, relationId, type) => {
+export const deleteRelationById = async (user, relationId, type, options = {}) => {
+  const { noLog = false } = options;
   if (isNil(type)) {
     /* istanbul ignore next */
     throw new Error(`[GRAKN] deleteRelationById > Missing type`);
   }
   const eid = escapeString(relationId);
+  const currentRelation = await loadRelationById(eid, type);
   // 00. Load everything we need to remove in elastic
   const read = `match $from isa ${type}, has internal_id_key "${eid}"; $to isa entity; $rel($from, $to) isa relation; get;`;
   const relationsToDeIndex = await find(read, ['rel']);
@@ -1788,27 +1808,20 @@ export const deleteRelationById = async (user, relationId, type) => {
     logger.debug(`[GRAKN - infer: false] deleteRelationById > ${query}`);
     await wTx.tx.query(query, { infer: false });
   }).then(async () => {
-    // [ELASTIC] Update - Delete the inner indexed relations in entities
-    const relation = await elLoadById(eid);
-    const from = await elLoadByGraknId(relation.fromId);
-    const to = await elLoadByGraknId(relation.toId);
-    if (from)
-      await sendLog(
-        EVENT_TYPE_REMOVE_RELATION,
-        user,
-        from.internal_id_key,
-        assoc('relationship_type', relation.relationship_type, to)
-      );
-    if (to)
-      await sendLog(
-        EVENT_TYPE_REMOVE_RELATION,
-        user,
-        to.internal_id_key,
-        assoc('relationship_type', relation.relationship_type, from)
-      );
+    // [ELASTIC] Update - Delete the inner indexed relations in entities;
+    if (!noLog && currentRelation) {
+      const from = await elLoadByGraknId(currentRelation.fromId);
+      const to = await elLoadByGraknId(currentRelation.toId);
+      if (currentRelation.entity_type === TYPE_RELATION_EMBEDDED) {
+        if (currentRelation.relationship_type !== 'created_by_ref') {
+          await sendLog(EVENT_TYPE_UPDATE_REMOVE, user, currentRelation, { from, to });
+        }
+      } else {
+        await sendLog(EVENT_TYPE_DELETE, user, currentRelation, { from, to });
+      }
+    }
     await elRemoveRelationConnection(eid);
     await elDeleteInstanceIds(append(eid, relationsIds));
-    await sendLog(EVENT_TYPE_DELETE, user, relationId);
     return relationId;
   });
 };
@@ -1824,7 +1837,10 @@ export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationTyp
     $rel($from, $to) isa ${relationType}; get;`;
   const relationsToDelete = await find(read, ['rel']);
   const relationsIds = map((r) => r.rel.id, relationsToDelete);
-  await Promise.all(map((id) => deleteRelationById(user, id, scopeType), relationsIds));
+  for (let i = 0; i < relationsIds.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    await deleteRelationById(user, relationsIds[i], scopeType);
+  }
 };
 
 export const deleteAttributeById = async (id) => {

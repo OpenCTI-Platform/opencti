@@ -52,6 +52,7 @@ const READ_QUERY = gql`
         }
       }
       isSubRegion
+      toStix
     }
   }
 `;
@@ -92,6 +93,7 @@ describe('Region resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.region).not.toBeNull();
     expect(queryResult.data.region.id).toEqual(regionInternalId);
+    expect(queryResult.data.region.toStix.length).toBeGreaterThan(5);
   });
   it('should region loaded by stix id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: regionStixId } });

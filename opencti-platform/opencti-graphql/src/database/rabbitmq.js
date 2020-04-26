@@ -1,11 +1,20 @@
 import amqp from 'amqplib';
 import axios from 'axios';
-import { filter, includes, pipe, map, reduce, add, divide } from 'ramda';
+import { add, divide, filter, includes, map, pipe, reduce } from 'ramda';
+import { v4 as uuid } from 'uuid';
 import conf, { logger } from '../config/conf';
+import { utcDate, generateLogMessage } from './utils';
+import { convertDataToStix } from './stix';
 
 export const CONNECTOR_EXCHANGE = 'amqp.connector.exchange';
 export const WORKER_EXCHANGE = 'amqp.worker.exchange';
 export const LOGS_EXCHANGE = 'amqp.logs.exchange';
+
+export const EVENT_TYPE_CREATE = 'create';
+export const EVENT_TYPE_UPDATE = 'update';
+export const EVENT_TYPE_UPDATE_ADD = 'update_add';
+export const EVENT_TYPE_UPDATE_REMOVE = 'update_remove';
+export const EVENT_TYPE_DELETE = 'delete';
 
 export const amqpUri = () => {
   const user = conf.get('rabbitmq:username');
@@ -215,4 +224,20 @@ export const getRabbitMQVersion = () => {
   return metrics()
     .then((data) => data.overview.rabbitmq_version)
     .catch(() => 'Disconnected');
+};
+
+export const sendLog = async (eventType, eventUser, eventData = null, eventExtraData = null) => {
+  const finalEventData = await convertDataToStix(eventData, eventType, eventExtraData);
+  const message = {
+    event_type: eventType,
+    event_user: eventUser.id,
+    event_date: utcDate().toISOString(),
+    event_data: finalEventData,
+    event_message: generateLogMessage(eventType, eventUser, eventData, eventExtraData),
+  };
+  // TODO @Sam
+  // Here we need to parse the data and send to all declared communities that match the data
+  const communityId = uuid();
+  const communities = [communityId];
+  await Promise.all(communities.map((community) => pushToLogs(community, message)));
 };

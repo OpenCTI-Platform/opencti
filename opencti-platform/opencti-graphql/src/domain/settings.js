@@ -46,12 +46,12 @@ export const getSettings = async () => {
 };
 
 export const addSettings = async (user, settings) => {
-  const created = await createEntity(user, settings, 'Settings', { modelType: TYPE_OPENCTI_INTERNAL });
+  const created = await createEntity(user, settings, 'Settings', { modelType: TYPE_OPENCTI_INTERNAL, noLog: true });
   return notify(BUS_TOPICS.Settings.ADDED_TOPIC, created, user);
 };
 
 export const settingsDelete = (user, settingsId) => {
-  return deleteEntityById(user, settingsId, 'Settings');
+  return deleteEntityById(user, settingsId, 'Settings', { noLog: true });
 };
 
 export const settingsCleanContext = (user, settingsId) => {
@@ -70,7 +70,7 @@ export const settingsEditContext = (user, settingsId, input) => {
 
 export const settingsEditField = (user, settingsId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(user, settingsId, 'Settings', input, wTx);
+    return updateAttribute(user, settingsId, 'Settings', input, wTx, { noLog: true });
   }).then(async () => {
     const settings = await loadEntityById(settingsId, 'Settings');
     return notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user);

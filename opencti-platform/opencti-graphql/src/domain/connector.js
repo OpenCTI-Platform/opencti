@@ -101,9 +101,11 @@ export const registerConnector = async (user, { id, name, type, scope }) => {
   const connectorToCreate = { internal_id_key: id, name, connector_type: type, connector_scope: scope.join(',') };
   const createdConnector = await createEntity(user, connectorToCreate, 'Connector', {
     modelType: TYPE_OPENCTI_INTERNAL,
+    noLog: true,
   });
   // Return the connector
   return completeConnector(createdConnector);
 };
-export const connectorDelete = async (user, connectorId) => deleteEntityById(user, connectorId, 'Connector');
+export const connectorDelete = async (user, connectorId) =>
+  deleteEntityById(user, connectorId, 'Connector', { noLog: true });
 // endregion

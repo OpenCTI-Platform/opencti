@@ -186,7 +186,7 @@ class TopMenuCampaign extends Component {
           }
           classes={{ root: classes.button }}
         >
-          {t('Files')}
+          {t('History')}
         </Button>
       </div>
     );

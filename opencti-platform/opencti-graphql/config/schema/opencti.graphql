@@ -218,8 +218,8 @@ enum LogsOrdering {
 }
 enum LogsFilter {
   event_type
-  event_entity_id
-  event_date
+  entity_id
+  connection_id
 }
 type LogConnection {
   pageInfo: PageInfo!
@@ -234,23 +234,13 @@ type LogEdge {
   cursor: String!
   node: Log!
 }
-type LogUser {
-  id: ID!
-  internal_id_key: String!
-  name: String!
-  description: String
-  firstname: String
-  lastname: String
-  user_email: String
-}
 type Log {
   id: ID!
-  entity_type: String!
   event_type: String!
   event_date: DateTime!
-  event_entity_id: String!
-  event_user: LogUser!
+  event_user: String!
   event_data: String!
+  event_message: String!
 }
 
 ### Inferences
@@ -468,7 +458,8 @@ interface StixEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -538,7 +529,8 @@ interface StixDomainEntity {
   notes: NoteConnection
   importFiles(first: Int): FileConnection
   exportFiles(first: Int): FileConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -639,7 +631,8 @@ type StixObservable implements GlobalObject & StixEntity {
   ): StixRelationConnection
   jobs(first: Int): [Work]
   connectors(onlyAlive: Boolean): [Connector]
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -750,7 +743,8 @@ type StixRelation implements GlobalObject & StixEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -846,7 +840,8 @@ type StixObservableRelation implements GlobalObject & StixEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -993,7 +988,8 @@ interface Identity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -1154,7 +1150,8 @@ type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -1285,7 +1282,8 @@ type Organization implements GlobalObject & StixEntity & StixDomainEntity & Iden
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -1388,7 +1386,8 @@ type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -1485,7 +1484,8 @@ type City implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -1582,7 +1582,8 @@ type Country implements GlobalObject & StixEntity & StixDomainEntity & Identity 
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -1682,7 +1683,8 @@ type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -1783,6 +1785,7 @@ type MarkingDefinition implements GlobalObject {
   editContext: [EditUserContext]
   created_at: DateTime!
   updated_at: DateTime!
+  toStix: String
 }
 input MarkingDefinitionAddInput {
   internal_id_key: String
@@ -2001,7 +2004,8 @@ type AttackPattern implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -2103,7 +2107,8 @@ type CourseOfAction implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -2207,7 +2212,8 @@ type ThreatActor implements GlobalObject & StixEntity & StixDomainEntity & Ident
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -2317,7 +2323,8 @@ type IntrusionSet implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -2427,7 +2434,8 @@ type Campaign implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -2533,7 +2541,8 @@ type Incident implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -2634,7 +2643,8 @@ type Malware implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -2734,7 +2744,8 @@ type Tool implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -2838,7 +2849,8 @@ type Vulnerability implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -2973,7 +2985,8 @@ type Report implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -3102,7 +3115,8 @@ type Note implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -3228,7 +3242,8 @@ type Opinion implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -3348,7 +3363,8 @@ type Indicator implements GlobalObject & StixEntity & StixDomainEntity {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixRelationConnection
-  creator: LogUser
+  creator: User
+  toStix: String
   created_at: DateTime!
   updated_at: DateTime!
 }
@@ -3470,7 +3486,7 @@ type Query {
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
   stixDomainEntitiesNumber(types: [String], endDate: DateTime): Number @auth(for: [KNOWLEDGE])
   # StixObservables
-  stixObservable(id: String): StixObservable @auth(for: [KNOWLEDGE])
+  stixObservable(id: String!): StixObservable @auth(for: [KNOWLEDGE])
   stixObservables(
     first: Int
     after: ID
@@ -3480,12 +3496,13 @@ type Query {
     filters: [StixObservablesFiltering]
     filterMode: FilterMode
     search: String
+    stix: Boolean
   ): StixObservableConnection @auth(for: [KNOWLEDGE])
   stixObservablesNumber(types: [String], endDate: DateTime): Number @auth(for: [KNOWLEDGE])
   stixObservablesTimeSeries(type: String): [TimeSeries] @auth(for: [KNOWLEDGE])
   stixObservablesDistribution(type: String): [Distribution] @auth(for: [KNOWLEDGE])
   # StixRelations
-  stixRelation(id: String!): StixRelation @auth(for: [KNOWLEDGE])
+  stixRelation(id: String): StixRelation @auth(for: [KNOWLEDGE])
   stixRelations(
     first: Int
     after: ID
@@ -3506,6 +3523,7 @@ type Query {
     filters: [StixRelationsFiltering]
     filterMode: FilterMode
     forceNatural: Boolean
+    stix: Boolean
   ): StixRelationConnection @auth(for: [KNOWLEDGE])
   stixRelationsTimeSeries(
     fromId: String
@@ -3576,6 +3594,7 @@ type Query {
     search: String
     filters: [IdentitiesFiltering]
     filterMode: FilterMode
+    stix: Boolean
   ): IdentityConnection @auth(for: [KNOWLEDGE])
   # Users
   me: User @auth
@@ -3589,6 +3608,7 @@ type Query {
     filters: [UsersFiltering]
     filterMode: FilterMode
     search: String
+    stix: Boolean
   ): UserConnection @auth(for: [SETTINGS_SETACCESSES])
   persons(
     first: Int
@@ -3598,10 +3618,11 @@ type Query {
     filters: [UsersFiltering]
     filterMode: FilterMode
     search: String
+    stix: Boolean
   ): UserConnection @auth(for: [KNOWLEDGE])
   role(id: String!): Role @auth(for: [SETTINGS_SETACCESSES])
   # Organizations
-  organization(id: String!): Organization @auth(for: [KNOWLEDGE])
+  organization(id: String): Organization @auth(for: [KNOWLEDGE])
   organizations(
     organizationClass: String
     first: Int
@@ -3611,9 +3632,10 @@ type Query {
     filters: [OrganizationsFiltering]
     filterMode: FilterMode
     search: String
+    stix: Boolean
   ): OrganizationConnection @auth(for: [KNOWLEDGE])
   # Sectors
-  sector(id: String!): Sector @auth(for: [KNOWLEDGE])
+  sector(id: String): Sector @auth(for: [KNOWLEDGE])
   sectors(
     first: Int
     after: ID
@@ -3622,9 +3644,10 @@ type Query {
     filters: [SectorsFiltering]
     filterMode: FilterMode
     search: String
+    stix: Boolean
   ): SectorConnection @auth(for: [KNOWLEDGE])
   # Cities
-  city(id: String!): City @auth(for: [KNOWLEDGE])
+  city(id: String): City @auth(for: [KNOWLEDGE])
   cities(
     first: Int
     after: ID
@@ -3633,9 +3656,10 @@ type Query {
     filters: [CitiesFiltering]
     filterMode: FilterMode
     search: String
+    stix: Boolean
   ): CityConnection @auth(for: [KNOWLEDGE])
   # Countries
-  country(id: String!): Country @auth(for: [KNOWLEDGE])
+  country(id: String): Country @auth(for: [KNOWLEDGE])
   countries(
     first: Int
     after: ID
@@ -3644,6 +3668,7 @@ type Query {
     filters: [CountriesFiltering]
     filterMode: FilterMode
     search: String
+    stix: Boolean
   ): CountryConnection @auth(for: [KNOWLEDGE])
   # Regions
   region(id: String!): Region @auth(for: [KNOWLEDGE])
@@ -3655,6 +3680,7 @@ type Query {
     filters: [RegionsFiltering]
     filterMode: FilterMode
     search: String
+    stix: Boolean
   ): RegionConnection @auth(for: [KNOWLEDGE])
   # Groups
   group(id: String!): Group @auth(for: [SETTINGS_SETACCESSES])
@@ -3664,7 +3690,7 @@ type Query {
     @auth(for: [SETTINGS_SETACCESSES])
   capabilities(first: Int): CapabilityConnection @auth(for: [SETTINGS_SETACCESSES])
   # MarkingDefinitions
-  markingDefinition(id: String!): MarkingDefinition @auth(for: [KNOWLEDGE])
+  markingDefinition(id: String): MarkingDefinition @auth(for: [KNOWLEDGE])
   markingDefinitions(
     first: Int
     after: ID
@@ -3673,6 +3699,7 @@ type Query {
     filters: [MarkingDefinitionsFiltering]
     filterMode: FilterMode
     search: String
+    stix: Boolean
   ): MarkingDefinitionConnection @auth(for: [KNOWLEDGE])
   # ExternalReferences
   externalReference(id: String!): ExternalReference @auth(for: [KNOWLEDGE])
@@ -3697,7 +3724,7 @@ type Query {
     search: String
   ): KillChainPhaseConnection @auth(for: [KNOWLEDGE])
   # AttackPatterns
-  attackPattern(id: String!): AttackPattern @auth(for: [KNOWLEDGE])
+  attackPattern(id: String): AttackPattern @auth(for: [KNOWLEDGE])
   attackPatterns(
     first: Int
     after: ID
@@ -3706,9 +3733,10 @@ type Query {
     filters: [AttackPatternsFiltering]
     filterMode: FilterMode
     search: String
+    stix: Boolean
   ): AttackPatternConnection @auth(for: [KNOWLEDGE])
   # CoursesOfAction
-  courseOfAction(id: String!): CourseOfAction @auth(for: [KNOWLEDGE])
+  courseOfAction(id: String): CourseOfAction @auth(for: [KNOWLEDGE])
   coursesOfAction(
     first: Int
     after: ID
@@ -3717,9 +3745,10 @@ type Query {
     filters: [CoursesOfActionFiltering]
     filterMode: FilterMode
     search: String
+    stix: Boolean
   ): CourseOfActionConnection @auth(for: [KNOWLEDGE])
   # ThreatActors
-  threatActor(id: String!): ThreatActor @auth(for: [KNOWLEDGE])
+  threatActor(id: String): ThreatActor @auth(for: [KNOWLEDGE])
   threatActors(
     first: Int
     after: ID
@@ -3728,9 +3757,10 @@ type Query {
     filters: [ThreatActorsFiltering]
     filterMode: FilterMode
     search: String
+    stix: Boolean
   ): ThreatActorConnection @auth(for: [KNOWLEDGE])
   # IntursionSets
-  intrusionSet(id: String!): IntrusionSet @auth(for: [KNOWLEDGE])
+  intrusionSet(id: String): IntrusionSet @auth(for: [KNOWLEDGE])
   intrusionSets(
     first: Int
     after: ID
@@ -3739,9 +3769,10 @@ type Query {
     filters: [IntrusionSetsFiltering]
     filterMode: FilterMode
     search: String
+    stix: Boolean
   ): IntrusionSetConnection @auth(for: [KNOWLEDGE])
   # Campaigns
-  campaign(id: String!): Campaign @auth(for: [KNOWLEDGE])
+  campaign(id: String): Campaign @auth(for: [KNOWLEDGE])
   campaigns(
     first: Int
     after: ID
@@ -3750,6 +3781,7 @@ type Query {
     filters: [CampaignsFiltering]
     filterMode: FilterMode
     search: String
+    stix: Boolean
   ): CampaignConnection @auth(for: [KNOWLEDGE])
   campaignsTimeSeries(
     objectId: String
@@ -3762,7 +3794,7 @@ type Query {
     inferred: Boolean
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
   # Incidents
-  incident(id: String!): Incident @auth(for: [KNOWLEDGE])
+  incident(id: String): Incident @auth(for: [KNOWLEDGE])
   incidents(
     first: Int
     after: ID
@@ -3771,6 +3803,7 @@ type Query {
     filters: [IncidentsFiltering]
     filterMode: FilterMode
     search: String
+    stix: Boolean
   ): IncidentConnection @auth(for: [KNOWLEDGE])
   incidentsTimeSeries(
     objectId: String
@@ -3783,7 +3816,7 @@ type Query {
     inferred: Boolean
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
   # Malwares
-  malware(id: String!): Malware @auth(for: [KNOWLEDGE])
+  malware(id: String): Malware @auth(for: [KNOWLEDGE])
   malwares(
     first: Int
     after: ID
@@ -3792,9 +3825,10 @@ type Query {
     filters: [MalwaresFiltering]
     filterMode: FilterMode
     search: String
+    stix: Boolean
   ): MalwareConnection @auth(for: [KNOWLEDGE])
   # Tools
-  tool(id: String!): Tool @auth(for: [KNOWLEDGE])
+  tool(id: String): Tool @auth(for: [KNOWLEDGE])
   tools(
     first: Int
     after: ID
@@ -3803,9 +3837,10 @@ type Query {
     filters: [ToolsFiltering]
     filterMode: FilterMode
     search: String
+    stix: Boolean
   ): ToolConnection @auth(for: [KNOWLEDGE])
   # Vulnerabilities
-  vulnerability(id: String!): Vulnerability @auth(for: [KNOWLEDGE])
+  vulnerability(id: String): Vulnerability @auth(for: [KNOWLEDGE])
   vulnerabilities(
     first: Int
     after: ID
@@ -3814,9 +3849,10 @@ type Query {
     filters: [VulnerabilitiesFiltering]
     filterMode: FilterMode
     search: String
+    stix: Boolean
   ): VulnerabilityConnection @auth(for: [KNOWLEDGE])
   # Reports
-  report(id: String!): Report @auth(for: [KNOWLEDGE])
+  report(id: String): Report @auth(for: [KNOWLEDGE])
   reports(
     first: Int
     after: ID
@@ -3825,6 +3861,7 @@ type Query {
     filters: [ReportsFiltering]
     filterMode: FilterMode
     search: String
+    stix: Boolean
   ): ReportConnection @auth(for: [KNOWLEDGE])
   reportsTimeSeries(
     objectId: String
@@ -3848,7 +3885,7 @@ type Query {
   reportContainsStixRelation(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
   reportContainsStixObservable(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
   # Notes
-  note(id: String!): Note @auth(for: [KNOWLEDGE])
+  note(id: String): Note @auth(for: [KNOWLEDGE])
   notes(
     first: Int
     after: ID
@@ -3857,6 +3894,7 @@ type Query {
     filters: [NotesFiltering]
     filterMode: FilterMode
     search: String
+    stix: Boolean
   ): NoteConnection @auth(for: [KNOWLEDGE])
   notesTimeSeries(
     objectId: String
@@ -3879,7 +3917,7 @@ type Query {
   noteContainsStixRelation(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
   noteContainsStixObservable(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
   # Opinions
-  opinion(id: String!): Opinion @auth(for: [KNOWLEDGE])
+  opinion(id: String): Opinion @auth(for: [KNOWLEDGE])
   opinions(
     first: Int
     after: ID
@@ -3888,6 +3926,7 @@ type Query {
     filters: [OpinionsFiltering]
     filterMode: FilterMode
     search: String
+    stix: Boolean
   ): OpinionConnection @auth(for: [KNOWLEDGE])
   opinionsTimeSeries(
     objectId: String
@@ -4008,8 +4047,6 @@ type StixObservableRelationEditMutations {
   fieldPatch(input: EditInput): StixObservableRelation
   contextPatch(input: EditContext): StixObservableRelation
   contextClean: StixObservableRelation
-  relationAdd(input: RelationAddInput): RelationEmbedded
-  relationDelete(relationId: ID!): StixObservableRelation
 }
 
 # Workspace

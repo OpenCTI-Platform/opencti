@@ -21,6 +21,7 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { workForEntity } from '../domain/work';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { connectorsForEnrichment } from '../domain/enrichment';
+import { convertDataToStix } from '../database/stix';
 
 const stixObservableResolvers = {
   Query: {
@@ -45,6 +46,7 @@ const stixObservableResolvers = {
     jobs: (stixObservable, args) => workForEntity(stixObservable.id, args),
     connectors: (stixObservable, { onlyAlive = false }) =>
       connectorsForEnrichment(stixObservable.entity_type, onlyAlive),
+    toStix: (stixObservable) => convertDataToStix(stixObservable).then((stixData) => JSON.stringify(stixData)),
   },
   Mutation: {
     stixObservableEdit: (_, { id }, { user }) => ({

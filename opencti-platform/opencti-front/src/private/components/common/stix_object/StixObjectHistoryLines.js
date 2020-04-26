@@ -29,7 +29,7 @@ class StixObjectHistoryLinesComponent extends Component {
         {logs.length > 0 ? (
           logs.map((logEdge) => {
             const log = logEdge.node;
-            return <StixObjectHistoryLine key={log.id} node={log} />;
+            return <StixObjectHistoryLine key={log.id} node={log} isRelation={isRelationLog} />;
           })
         ) : (
           <div style={{ display: 'table', height: '100%', width: '100%' }}>
