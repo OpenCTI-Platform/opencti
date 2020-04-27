@@ -71,6 +71,7 @@ class OpenCTIApiClient:
         logging.basicConfig(level=numeric_level)
 
         # Define API
+        self.api_token = token
         self.api_url = url + "/graphql"
         self.request_headers = {"Authorization": "Bearer " + token}
 
@@ -109,6 +110,12 @@ class OpenCTIApiClient:
             raise ValueError(
                 "OpenCTI API is not reachable. Waiting for OpenCTI API to start or check your configuration..."
             )
+
+    def get_token(self):
+        return self.api_token
+
+    def set_token(self, token):
+        self.request_headers = {"Authorization": "Bearer " + token}
 
     def query(self, query, variables={}):
         query_var = {}
