@@ -1744,7 +1744,7 @@ export const updateAttribute = async (user, id, type, input, wTx, options = {}) 
     /* istanbul ignore next */
     logger.error(`[ELASTIC] ${id} missing, cant update the element, you need to reindex`);
   }
-  if (!noLog) {
+  if (!noLog && escapedKey !== 'graph_data') {
     await sendLog(
       EVENT_TYPE_UPDATE,
       user,
