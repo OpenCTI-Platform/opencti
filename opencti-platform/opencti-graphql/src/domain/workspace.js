@@ -60,16 +60,19 @@ export const workspacesNumber = (args) => {
 // region mutations
 export const addWorkspace = async (user, workspace) => {
   const workspaceToCreate = assoc('createdByOwner', user.id, workspace);
-  const created = await createEntity(user, workspaceToCreate, 'Workspace', { modelType: TYPE_OPENCTI_INTERNAL });
+  const created = await createEntity(user, workspaceToCreate, 'Workspace', {
+    modelType: TYPE_OPENCTI_INTERNAL,
+    noLog: true,
+  });
   return notify(BUS_TOPICS.Workspace.ADDED_TOPIC, created, user);
 };
-export const workspaceDelete = (workspaceId) => deleteEntityById(workspaceId, 'Workspace');
+export const workspaceDelete = (user, workspaceId) => deleteEntityById(user, workspaceId, 'Workspace', { noLog: true });
 export const workspaceAddRelation = (user, workspaceId, input) => {
   if (!input.through) {
     throw new ForbiddenAccess();
   }
   const finalInput = assoc('fromType', 'Workspace', input);
-  return createRelation(workspaceId, finalInput).then((relationData) => {
+  return createRelation(user, workspaceId, finalInput, { noLog: true }).then((relationData) => {
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, relationData, user);
     return relationData;
   });
@@ -88,21 +91,21 @@ export const workspaceAddRelations = async (user, workspaceId, input) => {
     }),
     input.toIds
   );
-  await createRelations(workspaceId, finalInputs);
+  await createRelations(user, workspaceId, finalInputs);
   return loadEntityById(workspaceId, 'Workspace').then((workspace) =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
   );
 };
 export const workspaceEditField = (user, workspaceId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(workspaceId, 'Workspace', input, wTx);
+    return updateAttribute(user, workspaceId, 'Workspace', input, wTx, { noLog: true });
   }).then(async () => {
     const workspace = await loadEntityById(workspaceId, 'Workspace');
     return notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user);
   });
 };
 export const workspaceDeleteRelation = async (user, workspaceId, relationId) => {
-  await deleteRelationById(relationId, 'stix_relation');
+  await deleteRelationById(user, relationId, 'stix_relation');
   const data = await loadEntityById(workspaceId, 'Workspace');
   return notify(BUS_TOPICS.Workspace.EDIT_TOPIC, data, user);
 };

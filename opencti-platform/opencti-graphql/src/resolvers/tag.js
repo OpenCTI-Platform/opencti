@@ -26,7 +26,7 @@ const tagResolvers = {
   },
   Mutation: {
     tagEdit: (_, { id }, { user }) => ({
-      delete: () => tagDelete(id),
+      delete: () => tagDelete(user, id),
       fieldPatch: ({ input }) => tagEditField(user, id, input),
       contextPatch: ({ input }) => tagEditContext(user, id, input),
       contextClean: () => tagCleanContext(user, id),

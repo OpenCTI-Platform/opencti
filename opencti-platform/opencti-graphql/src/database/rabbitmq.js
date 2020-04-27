@@ -1,12 +1,22 @@
 import amqp from 'amqplib';
 import axios from 'axios';
-import { filter, includes, pipe, map, reduce, add, divide } from 'ramda';
-import conf from '../config/conf';
+import { add, divide, filter, includes, map, pipe, reduce } from 'ramda';
+import { v4 as uuid } from 'uuid';
+import conf, { logger } from '../config/conf';
+import { utcDate, generateLogMessage } from './utils';
+import { convertDataToStix } from './stix';
 
 export const CONNECTOR_EXCHANGE = 'amqp.connector.exchange';
 export const WORKER_EXCHANGE = 'amqp.worker.exchange';
+export const LOGS_EXCHANGE = 'amqp.logs.exchange';
 
-const amqpUri = () => {
+export const EVENT_TYPE_CREATE = 'create';
+export const EVENT_TYPE_UPDATE = 'update';
+export const EVENT_TYPE_UPDATE_ADD = 'update_add';
+export const EVENT_TYPE_UPDATE_REMOVE = 'update_remove';
+export const EVENT_TYPE_DELETE = 'delete';
+
+export const amqpUri = () => {
   const user = conf.get('rabbitmq:username');
   const pass = conf.get('rabbitmq:password');
   const host = conf.get('rabbitmq:hostname');
@@ -19,20 +29,27 @@ const amqpExecute = (execute) => {
     amqp
       .connect(amqpUri())
       .then((connection) => {
-        return connection
-          .createConfirmChannel()
-          .then((channel) => {
-            return execute(channel)
-              .then((response) => {
-                channel.close();
-                connection.close();
-                resolve(response);
-                return true;
-              })
-              .catch((e) => reject(e));
-          })
-          .catch((e) => reject(e));
+        return (
+          connection
+            .createConfirmChannel()
+            .then((channel) => {
+              return (
+                execute(channel)
+                  .then((response) => {
+                    channel.close();
+                    connection.close();
+                    resolve(response);
+                    return true;
+                  })
+                  /* istanbul ignore next */
+                  .catch((e) => reject(e))
+              );
+            })
+            /* istanbul ignore next */
+            .catch((e) => reject(e))
+        );
       })
+      /* istanbul ignore next */
       .catch((e) => reject(e));
   });
 };
@@ -139,9 +156,7 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
 
   // 03. bind queue for the each connector scope
   // eslint-disable-next-line prettier/prettier
-  await amqpExecute(c =>
-    c.bindQueue(listenQueue, CONNECTOR_EXCHANGE, listenRouting(id))
-  );
+  await amqpExecute((c) => c.bindQueue(listenQueue, CONNECTOR_EXCHANGE, listenRouting(id)));
 
   // 04. Create stix push queue
   const pushQueue = `push_${id}`;
@@ -163,12 +178,66 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
   return connectorConfig(id);
 };
 
+export const ensureRabbitMQAndLogsQueue = async () => {
+  // 01. Ensure exchange exists
+  await amqpExecute((channel) =>
+    channel.assertExchange(LOGS_EXCHANGE, 'topic', {
+      durable: true,
+    })
+  ).catch(
+    /* istanbul ignore next */ () => {
+      logger.error(`[RABBITMQ] Seems down`);
+      throw new Error('RabbitMQ seems down');
+    }
+  );
+  // 02. Ensure logs queue exists
+  const listenQueue = 'logs_all';
+  await amqpExecute((channel) =>
+    channel.assertQueue(listenQueue, {
+      exclusive: false,
+      durable: true,
+      autoDelete: false,
+      arguments: {
+        name: 'OpenCTI logs queue',
+      },
+    })
+  ).catch(
+    /* istanbul ignore next */ () => {
+      logger.error(`[RABBITMQ] Seems down`);
+      throw new Error('RabbitMQ seems down');
+    }
+  );
+  // 03. bind queue for the each connector scope
+  // eslint-disable-next-line prettier/prettier
+  await amqpExecute((c) => c.bindQueue(listenQueue, LOGS_EXCHANGE, 'community.*'));
+};
+
 export const pushToConnector = (connector, message) => {
   return send(CONNECTOR_EXCHANGE, listenRouting(connector.internal_id_key), JSON.stringify(message));
+};
+
+export const pushToLogs = (communityId, message) => {
+  return send(LOGS_EXCHANGE, `community.${communityId}`, JSON.stringify(message));
 };
 
 export const getRabbitMQVersion = () => {
   return metrics()
     .then((data) => data.overview.rabbitmq_version)
     .catch(() => 'Disconnected');
+};
+
+export const sendLog = async (eventType, eventUser, eventData, eventExtraData = null) => {
+  const finalEventData = await convertDataToStix(eventData, eventType, eventExtraData);
+  const message = {
+    event_type: eventType,
+    event_user: eventUser.id,
+    event_date: utcDate().toISOString(),
+    event_data: finalEventData,
+    event_message: generateLogMessage(eventType, eventUser, eventData, eventExtraData),
+  };
+  // TODO @Sam
+  // Here we need to parse the data and send to all declared communities that match the data
+  const communityId = uuid();
+  const communities = [communityId];
+  await Promise.all(communities.map((community) => pushToLogs(community, message)));
 };

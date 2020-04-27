@@ -1,4 +1,4 @@
-import { head, includes, last, mapObjIndexed, pipe, values } from 'ramda';
+import { head, includes, last, mapObjIndexed, pipe, values, join } from 'ramda';
 import { offsetToCursor } from 'graphql-relay';
 import moment from 'moment';
 
@@ -92,29 +92,56 @@ export const inferIndexFromConceptTypes = (types, parentType = null) => {
   return INDEX_STIX_ENTITIES;
 };
 
-export const OBSERVABLE_TYPES = [
-  'autonomous-system',
-  'directory',
-  'domain',
-  'email-address',
-  'email-subject',
-  'file-name',
-  'file-path',
-  'file-md5',
-  'file-sha1',
-  'file-sha256',
-  'ipv4-addr',
-  'ipv6-addr',
-  'mac-addr',
-  'mutex',
-  'pdb-path',
-  'registry-key',
-  'registry-key-value',
-  'url',
-  'windows-service-name',
-  'windows-service-display-name',
-  'windows-scheduled-task',
-  'x509-certificate-issuer',
-  'x509-certificate-serial-number',
-  'unknown',
-];
+const extractEntityMainValue = (entityData) => {
+  let mainValue;
+  if (entityData.definition) {
+    mainValue = entityData.definition;
+  } else if (entityData.value) {
+    mainValue = entityData.value;
+  } else if (entityData.observable_value) {
+    mainValue = entityData.value;
+  } else if (entityData.indicator_pattern) {
+    mainValue = entityData.indicator_pattern;
+  } else {
+    mainValue = entityData.name;
+  }
+  return mainValue;
+};
+
+export const generateLogMessage = (eventType, eventUser, eventData, eventExtraData) => {
+  let fromValue;
+  let fromType;
+  let toValue;
+  let toType;
+  if (eventExtraData && eventExtraData.from) {
+    fromValue = extractEntityMainValue(eventExtraData.from);
+    fromType = eventExtraData.from.entity_type;
+  }
+  if (eventExtraData && eventExtraData.to) {
+    toValue = extractEntityMainValue(eventExtraData.to);
+    toType = eventExtraData.to.entity_type;
+  }
+  const name = extractEntityMainValue(eventData);
+  let message = `\`${eventUser.name}\` `;
+  if (eventType === 'create') {
+    message += 'created a ';
+  } else if (eventType === 'update') {
+    message += 'updated the field ';
+  } else if (eventType === 'update_add') {
+    message += 'added the ';
+  } else if (eventType === 'update_remove') {
+    message += 'removed the ';
+  } else if (eventType === 'delete') {
+    message += 'deleted the ';
+  }
+  if (eventData.relationship_type && eventData.entity_type !== 'relation_embedded') {
+    message += `relation \`${eventData.relationship_type}\` from ${fromType} \`${fromValue}\` to ${toType} \`${toValue}\`.`;
+  } else if (eventData.entity_type === 'relation_embedded') {
+    message += `\`${toType}\` with value \`${toValue}\`.`;
+  } else if (eventType === 'update') {
+    message += `\`${eventExtraData.key}\` with \`${join(', ', eventExtraData.value)}\`.`;
+  } else {
+    message += `${eventData.entity_type} \`${name}\`.`;
+  }
+  return message;
+};

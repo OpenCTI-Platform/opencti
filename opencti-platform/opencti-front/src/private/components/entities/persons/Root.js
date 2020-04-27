@@ -14,6 +14,7 @@ import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomain
 import FileManager from '../../common/files/FileManager';
 import PersonPopover from './PersonPopover';
 import Loader from '../../../../components/Loader';
+import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
 
 const subscription = graphql`
   subscription RootPersonsSubscription($id: ID!) {
@@ -124,6 +125,22 @@ class RootPerson extends Component {
                           id={personId}
                           connectorsExport={props.connectorsForExport}
                           entity={props.person}
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/entities/persons/:personId/history"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.person}
+                          PopoverComponent={<PersonPopover />}
+                        />
+                        <StixObjectHistory
+                          {...routeProps}
+                          entityId={personId}
                         />
                       </React.Fragment>
                     )}

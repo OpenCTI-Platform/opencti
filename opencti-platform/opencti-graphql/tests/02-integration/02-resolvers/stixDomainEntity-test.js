@@ -37,6 +37,7 @@ const READ_QUERY = gql`
       id
       name
       description
+      toStix
     }
   }
 `;
@@ -87,6 +88,7 @@ describe('StixDomainEntity resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.stixDomainEntity).not.toBeNull();
     expect(queryResult.data.stixDomainEntity.id).toEqual(stixDomainEntityInternalId);
+    expect(queryResult.data.stixDomainEntity.toStix.length).toBeGreaterThan(5);
   });
   it('should stixDomainEntity loaded by stix id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixDomainEntityStixId } });

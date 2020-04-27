@@ -61,7 +61,7 @@ const stixDomainEntityResolvers = {
   },
   Mutation: {
     stixDomainEntityEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainEntityDelete(id),
+      delete: () => stixDomainEntityDelete(user, id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),
@@ -72,10 +72,9 @@ const stixDomainEntityResolvers = {
       importPush: ({ file }) => stixDomainEntityImportPush(user, null, id, file),
       exportAsk: (args) => stixDomainEntityExportAsk(assoc('stixDomainEntityId', id, args)),
       exportPush: ({ file }) => stixDomainEntityExportPush(user, null, id, file),
-      mergeEntities: ({ stixDomainEntitiesIds, alias }) =>
-        stixDomainEntityMerge(user, id, stixDomainEntitiesIds, alias),
+      mergeEntities: ({ stixDomainEntitiesIds, alias }) => stixDomainEntityMerge(user, stixDomainEntitiesIds, alias),
     }),
-    stixDomainEntitiesDelete: (_, { id }) => stixDomainEntitiesDelete(id),
+    stixDomainEntitiesDelete: (_, { id }, { user }) => stixDomainEntitiesDelete(user, id),
     stixDomainEntityAdd: (_, { input }, { user }) => addStixDomainEntity(user, input),
     stixDomainEntitiesExportAsk: (_, args) => stixDomainEntityExportAsk(args),
     stixDomainEntitiesExportPush: (_, { type, file, context, listArgs }, { user }) =>

@@ -7,7 +7,7 @@ import {
   stixDomainEntityEditContext,
   stixDomainEntityEditField,
 } from '../domain/stixDomainEntity';
-import { REL_INDEX_PREFIX } from "../database/elasticSearch";
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const cityResolvers = {
   Query: {
@@ -24,7 +24,7 @@ const cityResolvers = {
   },
   Mutation: {
     cityEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainEntityDelete(id),
+      delete: () => stixDomainEntityDelete(user, id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),

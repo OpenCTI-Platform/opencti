@@ -40,6 +40,7 @@ const READ_QUERY = gql`
       region {
         id
       }
+      toStix
     }
   }
 `;

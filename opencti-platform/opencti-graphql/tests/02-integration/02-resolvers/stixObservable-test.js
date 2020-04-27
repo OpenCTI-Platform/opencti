@@ -37,6 +37,7 @@ const READ_QUERY = gql`
       id
       observable_value
       description
+      toStix
     }
   }
 `;
@@ -78,6 +79,7 @@ describe('StixObservable resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.stixObservable).not.toBeNull();
     expect(queryResult.data.stixObservable.id).toEqual(stixObservableInternalId);
+    expect(queryResult.data.stixObservable.toStix.length).toBeGreaterThan(5);
   });
   it('should list stixObservables', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });

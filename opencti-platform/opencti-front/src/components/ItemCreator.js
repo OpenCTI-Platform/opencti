@@ -1,23 +1,20 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
 import Button from '@material-ui/core/Button';
-import { resolveLink } from '../utils/Entity';
-
+import { Link } from 'react-router-dom';
 class ItemCreator extends Component {
   render() {
-    const { createdByRef } = this.props;
+    const { creator } = this.props;
     return (
       <div>
-        {createdByRef ? (
+        {creator ? (
           <Button
             variant="outlined"
-            color="secondary"
             size="small"
             component={Link}
-            to={`${resolveLink(createdByRef.entity_type)}/${createdByRef.id}`}
+            to={`/dashboard/entities/persons/${creator.id}`}
           >
-            {createdByRef.name}
+            {creator.name}
           </Button>
         ) : (
           '-'
@@ -28,7 +25,7 @@ class ItemCreator extends Component {
 }
 
 ItemCreator.propTypes = {
-  createdByRef: PropTypes.object,
+  creator: PropTypes.object,
 };
 
 export default ItemCreator;

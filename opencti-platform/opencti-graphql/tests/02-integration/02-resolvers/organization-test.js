@@ -44,6 +44,7 @@ const READ_QUERY = gql`
           }
         }
       }
+      toStix
     }
   }
 `;
@@ -84,6 +85,7 @@ describe('Organization resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.organization).not.toBeNull();
     expect(queryResult.data.organization.id).toEqual(organizationInternalId);
+    expect(queryResult.data.organization.toStix.length).toBeGreaterThan(5);
   });
   it('should organization loaded by stix id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: organizationStixId } });

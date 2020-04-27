@@ -52,6 +52,24 @@ export const reports = (stixEntityId) => {
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
+export const notes = (stixEntityId) => {
+  return findWithConnectedRelations(
+    `match $to isa Note; $rel(knowledge_aggregation:$to, so:$from) isa object_refs;
+   $from has internal_id_key "${escapeString(stixEntityId)}";
+   get;`,
+    'to',
+    { extraRelKey: 'rel' }
+  ).then((data) => buildPagination(0, 0, data, data.length));
+};
+export const opinions = (stixEntityId) => {
+  return findWithConnectedRelations(
+    `match $to isa Opinion; $rel(knowledge_aggregation:$to, so:$from) isa object_refs;
+   $from has internal_id_key "${escapeString(stixEntityId)}";
+   get;`,
+    'to',
+    { extraRelKey: 'rel' }
+  ).then((data) => buildPagination(0, 0, data, data.length));
+};
 export const tags = (stixEntityId) => {
   return findWithConnectedRelations(
     `match $to isa Tag; $rel(tagging:$to, so:$from) isa tagged;
@@ -104,7 +122,7 @@ export const stixEntityAddRelation = async (user, stixEntityId, input) => {
   ) {
     throw new ForbiddenAccess();
   }
-  return createRelation(stixEntityId, input);
+  return createRelation(user, stixEntityId, input);
 };
 
 export const stixEntityDeleteRelation = async (user, stixEntityId, relationId) => {
@@ -123,6 +141,6 @@ export const stixEntityDeleteRelation = async (user, stixEntityId, relationId) =
   ) {
     throw new ForbiddenAccess();
   }
-  await deleteRelationById(relationId, 'stix_relation_embedded');
+  await deleteRelationById(user, relationId, 'stix_relation_embedded');
   return notify(BUS_TOPICS.StixEntity.EDIT_TOPIC, stixDomainEntity, user);
 };

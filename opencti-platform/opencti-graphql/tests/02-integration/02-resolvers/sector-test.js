@@ -52,6 +52,7 @@ const READ_QUERY = gql`
         }
       }
       isSubSector
+      toStix
     }
   }
 `;
@@ -92,6 +93,7 @@ describe('Sector resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.sector).not.toBeNull();
     expect(queryResult.data.sector.id).toEqual(sectorInternalId);
+    expect(queryResult.data.sector.toStix.length).toBeGreaterThan(5);
   });
   it('should sector loaded by stix id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: sectorStixId } });

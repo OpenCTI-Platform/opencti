@@ -18,14 +18,14 @@ export const findAll = (args) => {
 };
 
 export const addTag = async (user, tag) => {
-  const created = await createEntity(user, tag, 'Tag', { modelType: TYPE_OPENCTI_INTERNAL });
+  const created = await createEntity(user, tag, 'Tag', { modelType: TYPE_OPENCTI_INTERNAL, noLog: true });
   return notify(BUS_TOPICS.Tag.ADDED_TOPIC, created, user);
 };
-export const tagDelete = (tagId) => deleteEntityById(tagId, 'Tag');
+export const tagDelete = (user, tagId) => deleteEntityById(user, tagId, 'Tag', { noLog: true });
 
 export const tagEditField = (user, tagId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(tagId, 'Tag', input, wTx);
+    return updateAttribute(user, tagId, 'Tag', input, wTx, { noLog: true });
   }).then(async () => {
     const tag = await loadEntityById(tagId, 'Tag');
     return notify(BUS_TOPICS.Tag.EDIT_TOPIC, tag, user);

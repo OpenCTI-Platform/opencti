@@ -60,7 +60,10 @@ class TopMenuCity extends Component {
           <CityVariantOutline className={classes.icon} fontSize="small" />
           {t('Cities')}
         </Button>
-        <ArrowForwardIosOutlined color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
           to={`/dashboard/entities/cities/${cityId}`}
@@ -161,6 +164,24 @@ class TopMenuCity extends Component {
             {t('Files')}
           </Button>
         </Security>
+        <Button
+          component={Link}
+          to={`/dashboard/entities/cities/${cityId}/history`}
+          variant={
+            location.pathname === `/dashboard/entities/cities/${cityId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === `/dashboard/entities/cities/${cityId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
+        </Button>
       </div>
     );
   }

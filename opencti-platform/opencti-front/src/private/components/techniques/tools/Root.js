@@ -15,6 +15,7 @@ import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomain
 import FileManager from '../../common/files/FileManager';
 import ToolPopover from './ToolPopover';
 import Loader from '../../../../components/Loader';
+import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
 
 const subscription = graphql`
   subscription RootToolSubscription($id: ID!) {
@@ -115,10 +116,7 @@ class RootTool extends Component {
                   <Route
                     path="/dashboard/techniques/tools/:toolId/indicators"
                     render={(routeProps) => (
-                      <ToolIndicators
-                        {...routeProps}
-                        tool={props.tool}
-                      />
+                      <ToolIndicators {...routeProps} tool={props.tool} />
                     )}
                   />
                   <Route
@@ -136,6 +134,19 @@ class RootTool extends Component {
                           connectorsExport={props.connectorsForExport}
                           entity={props.tool}
                         />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/techniques/tools/:toolId/history"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.tool}
+                          PopoverComponent={<ToolPopover />}
+                        />
+                        <StixObjectHistory {...routeProps} entityId={toolId} />
                       </React.Fragment>
                     )}
                   />

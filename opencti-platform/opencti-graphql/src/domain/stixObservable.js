@@ -1,29 +1,33 @@
-import { assoc, dissoc, pipe } from 'ramda';
+import { assoc, dissoc, map, pipe } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
   createRelation,
+  createRelations,
   deleteEntityById,
   deleteRelationById,
+  deleteRelationsByFromAndTo,
   escape,
   escapeString,
   executeWrite,
   findWithConnectedRelations,
   listEntities,
   loadEntityById,
+  loadRelationById,
   now,
   timeSeriesEntities,
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { elCount } from '../database/elasticSearch';
-import { buildPagination, TYPE_STIX_OBSERVABLE, OBSERVABLE_TYPES } from '../database/utils';
+import { buildPagination, TYPE_STIX_OBSERVABLE} from '../database/utils';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { addIndicator } from './indicator';
 import { askEnrich } from './enrichment';
 import { ForbiddenAccess } from '../config/errors';
 import { createStixPattern } from '../python/pythonBridge';
+import { OBSERVABLE_TYPES } from "../database/stix";
 
 export const findById = (stixObservableId) => {
   return loadEntityById(stixObservableId, 'Stix-Observable');
@@ -116,31 +120,67 @@ export const addStixObservable = async (user, stixObservable) => {
   }
   return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user);
 };
-export const stixObservableDelete = async (stixObservableId) => {
-  return deleteEntityById(stixObservableId, 'Stix-Observable');
+export const stixObservableDelete = async (user, stixObservableId) => {
+  return deleteEntityById(user, stixObservableId, 'Stix-Observable');
 };
 export const stixObservableAddRelation = (user, stixObservableId, input) => {
   if (!input.through) {
     throw new ForbiddenAccess();
   }
   const finalInput = assoc('fromType', 'Stix-Observable', input);
-  return createRelation(stixObservableId, finalInput).then((relationData) => {
+  return createRelation(user, stixObservableId, finalInput).then((relationData) => {
     notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
+export const stixObservableAddRelations = async (user, stixObservableId, input) => {
+  const finalInput = map(
+    (n) => ({
+      fromType: 'Stix-Observable',
+      fromRole: input.fromRole,
+      toId: n,
+      toRole: input.toRole,
+      through: input.through,
+    }),
+    input.toIds
+  );
+  await createRelations(user, stixObservableId, finalInput);
+  return loadEntityById(stixObservableId, 'Stix-Observable').then((entity) =>
+    notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, entity, user)
+  );
+};
 export const stixObservableEditField = (user, stixObservableId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(stixObservableId, 'Stix-Observable', input, wTx);
+    return updateAttribute(user, stixObservableId, 'Stix-Observable', input, wTx);
   }).then(async () => {
     const stixObservable = await loadEntityById(stixObservableId, 'Stix-Observable');
     return notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, stixObservable, user);
   });
 };
-export const stixObservableDeleteRelation = async (user, stixObservableId, relationId) => {
-  await deleteRelationById(relationId, 'stix_relation_embedded');
+export const stixObservableDeleteRelation = async (
+  user,
+  stixObservableId,
+  relationId = null,
+  toId = null,
+  relationType = 'stix_relation_embedded'
+) => {
+  const stixObservable = await loadEntityById(stixObservableId, 'Stix-Observable');
+  if (!stixObservable) {
+    throw new Error('Cannot delete the relation, Stix-Observable cannot be found.');
+  }
+  if (relationId) {
+    const data = await loadRelationById(relationId, 'relation');
+    if (data.fromId !== stixObservable.grakn_id) {
+      throw new ForbiddenAccess();
+    }
+    await deleteRelationById(user, relationId, 'relation');
+  } else if (toId) {
+    await deleteRelationsByFromAndTo(user, stixObservableId, toId, relationType, 'relation');
+  } else {
+    throw new Error('Cannot delete the relation, missing relationId or toId');
+  }
   const data = await loadEntityById(stixObservableId, 'Stix-Observable');
-  return notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, data, user);
+  return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
 };
 // endregion
 

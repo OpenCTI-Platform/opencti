@@ -27,12 +27,12 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
   return notify(BUS_TOPICS.MarkingDefinition.ADDED_TOPIC, created, user);
 };
 
-export const markingDefinitionDelete = (markingDefinitionId) =>
-  deleteEntityById(markingDefinitionId, 'Marking-Definition');
+export const markingDefinitionDelete = (user, markingDefinitionId) =>
+  deleteEntityById(user, markingDefinitionId, 'Marking-Definition');
 
 export const markingDefinitionEditField = (user, markingDefinitionId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(markingDefinitionId, 'Marking-Definition', input, wTx);
+    return updateAttribute(user, markingDefinitionId, 'Marking-Definition', input, wTx);
   }).then(async () => {
     const markingDefinition = await loadEntityById(markingDefinitionId, 'Marking-Definition');
     return notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user);

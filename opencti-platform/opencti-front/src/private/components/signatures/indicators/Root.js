@@ -11,6 +11,9 @@ import StixRelation from '../../common/stix_relations/StixRelation';
 import Indicator from './Indicator';
 import IndicatorObservables from './IndicatorObservables';
 import Loader from '../../../../components/Loader';
+import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
+import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import IndicatorPopover from './IndicatorPopover';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
@@ -90,12 +93,25 @@ class RootIndicator extends Component {
                   />
                   <Route
                     exact
+                    path="/dashboard/signatures/indicators/:indicatorId/history"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.indicator}
+                          PopoverComponent={<IndicatorPopover />}
+                        />
+                        <StixObjectHistory
+                          {...routeProps}
+                          entityId={indicatorId}
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
                     path="/dashboard/signatures/indicators/:indicatorId/knowledge/relations/:relationId"
                     render={(routeProps) => (
-                      <StixRelation
-                        entityId={indicatorId}
-                        {...routeProps}
-                      />
+                      <StixRelation entityId={indicatorId} {...routeProps} />
                     )}
                   />
                 </div>

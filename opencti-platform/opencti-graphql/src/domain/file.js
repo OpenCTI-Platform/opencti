@@ -38,14 +38,13 @@ const uploadJobImport = async (fileId, fileMime, context = null) => {
   }
 };
 
-export const askJobImport = async (filename, context, user) => {
+export const askJobImport = async (user, filename, context) => {
   logger.debug(`Job > ask import for file ${filename} by ${user.user_email}`);
   const file = await loadFile(filename);
   await uploadJobImport(file.id, file.metaData.mimetype, context);
   return file;
 };
-
-export const uploadImport = async (file, user) => {
+export const uploadImport = async (user, file) => {
   const up = await upload(user, 'import', file);
   await uploadJobImport(up.id, up.metaData.mimetype);
   return up;
