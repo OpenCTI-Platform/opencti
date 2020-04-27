@@ -102,6 +102,10 @@ const extractEntityMainValue = (entityData) => {
     mainValue = entityData.observable_value;
   } else if (entityData.indicator_pattern) {
     mainValue = entityData.indicator_pattern;
+  } else if (entityData.source_name) {
+    mainValue = `${entityData.source_name}${entityData.external_id ? ` (${entityData.external_id})` : ''}`;
+  } else if (entityData.phase_name) {
+    mainValue = entityData.phase_name;
   } else {
     mainValue = entityData.name;
   }
@@ -122,7 +126,7 @@ export const generateLogMessage = (eventType, eventUser, eventData, eventExtraDa
     toType = eventExtraData.to.entity_type;
   }
   const name = extractEntityMainValue(eventData);
-  let message = `\`${eventUser.name}\` `;
+  let message = '`{USER_NAME}` ';
   if (eventType === 'create') {
     message += 'created a ';
   } else if (eventType === 'update') {
