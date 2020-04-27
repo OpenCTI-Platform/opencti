@@ -12,7 +12,7 @@ import Indicator from './Indicator';
 import IndicatorObservables from './IndicatorObservables';
 import Loader from '../../../../components/Loader';
 import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import IndicatorHeader from './IndicatorHeader';
 import IndicatorPopover from './IndicatorPopover';
 
 const subscription = graphql`
@@ -30,6 +30,9 @@ const subscription = graphql`
 const indicatorQuery = graphql`
   query RootIndicatorQuery($id: String!) {
     indicator(id: $id) {
+      id
+      name
+      alias
       ...Indicator_indicator
       ...IndicatorHeader_indicator
       ...IndicatorOverview_indicator
@@ -96,8 +99,8 @@ class RootIndicator extends Component {
                     path="/dashboard/signatures/indicators/:indicatorId/history"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.indicator}
+                        <IndicatorHeader
+                          indicator={props.indicator}
                           PopoverComponent={<IndicatorPopover />}
                         />
                         <StixObjectHistory

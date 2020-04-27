@@ -16,8 +16,13 @@ export const checkObservableSyntax = (observableType, observableValue) => {
       }
       break;
     case 'file-sha1':
-      if (!/^\b[0-9a-f]{5,40}\b$/.test(observableValue)) {
-        return '^\\b[0-9a-f]{5,40}\\b$';
+      if (!/^[0-9a-f]{5,40}$/.test(observableValue)) {
+        return '^[0-9a-f]{5,40}$';
+      }
+      break;
+    case 'file-sha256':
+      if (!/^[A-Fa-f0-9]{64}$/.test(observableValue)) {
+        return '^[A-Fa-f0-9]{64}$';
       }
       break;
     case 'ipv4-addr':
