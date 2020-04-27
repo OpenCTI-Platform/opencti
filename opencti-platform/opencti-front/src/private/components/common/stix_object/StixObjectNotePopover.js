@@ -18,7 +18,6 @@ import inject18n from '../../../../components/i18n';
 import {
   commitMutation,
   QueryRenderer,
-  WS_ACTIVATED,
 } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
 import StixObjectNoteEdition from './StixObjectNoteEdition';
@@ -97,12 +96,10 @@ class StixObjectNotePopover extends Component {
   }
 
   handleCloseUpdate() {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: stixObjectNotePopoverCleanContext,
-        variables: { id: this.props.roleId },
-      });
-    }
+    commitMutation({
+      mutation: stixObjectNotePopoverCleanContext,
+      variables: { id: this.props.roleId },
+    });
     this.setState({ displayUpdate: false });
   }
 

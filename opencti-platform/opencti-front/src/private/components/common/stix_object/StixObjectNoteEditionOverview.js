@@ -18,7 +18,7 @@ import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import MarkingDefinitionsField from '../form/MarkingDefinitionsField';
 
 const styles = (theme) => ({
@@ -110,17 +110,15 @@ const noteValidation = (t) => Yup.object().shape({
 
 class StixObjectNoteEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: stixObjectNoteEditionOverviewFocus,
-        variables: {
-          id: this.props.note.id,
-          input: {
-            focusOn: name,
-          },
+    commitMutation({
+      mutation: stixObjectNoteEditionOverviewFocus,
+      variables: {
+        id: this.props.note.id,
+        input: {
+          focusOn: name,
         },
-      });
-    }
+      },
+    });
   }
 
   handleSubmitField(name, value) {
