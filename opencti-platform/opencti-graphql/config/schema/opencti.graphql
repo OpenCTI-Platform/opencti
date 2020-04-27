@@ -238,7 +238,7 @@ type Log {
   id: ID!
   event_type: String!
   event_date: DateTime!
-  event_user: String!
+  event_user: User
   event_data: String!
   event_message: String!
 }
