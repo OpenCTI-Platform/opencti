@@ -15,6 +15,7 @@ import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomain
 import FileManager from '../../common/files/FileManager';
 import RegionPopover from './RegionPopover';
 import Loader from '../../../../components/Loader';
+import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
 
 const subscription = graphql`
   subscription RootRegionsSubscription($id: ID!) {
@@ -135,6 +136,22 @@ class RootRegion extends Component {
                           id={regionId}
                           connectorsExport={props.connectorsForExport}
                           entity={props.region}
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/entities/regions/:regionId/history"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.region}
+                          PopoverComponent={<RegionPopover />}
+                        />
+                        <StixObjectHistory
+                          {...routeProps}
+                          entityId={regionId}
                         />
                       </React.Fragment>
                     )}

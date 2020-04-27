@@ -37,6 +37,7 @@ const READ_QUERY = gql`
       id
       name
       description
+      toStix
     }
   }
 `;
@@ -77,6 +78,7 @@ describe('Intrusion set resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.intrusionSet).not.toBeNull();
     expect(queryResult.data.intrusionSet.id).toEqual(intrusionSetInternalId);
+    expect(queryResult.data.intrusionSet.toStix.length).toBeGreaterThan(5);
   });
   it('should intrusion set loaded by stix id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: intrusionSetStixId } });

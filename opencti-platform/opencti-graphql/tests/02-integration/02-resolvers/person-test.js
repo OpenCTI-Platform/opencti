@@ -44,6 +44,7 @@ const READ_QUERY = gql`
           }
         }
       }
+      toStix
     }
   }
 `;
@@ -84,6 +85,7 @@ describe('Person resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.person).not.toBeNull();
     expect(queryResult.data.person.id).toEqual(personInternalId);
+    expect(queryResult.data.person.toStix.length).toBeGreaterThan(5);
   });
   it('should person loaded by stix id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: personStixId } });

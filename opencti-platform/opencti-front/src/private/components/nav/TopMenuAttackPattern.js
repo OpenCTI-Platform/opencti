@@ -56,7 +56,10 @@ class TopMenuAttackPattern extends Component {
           <LockPattern className={classes.icon} fontSize="small" />
           {t('Attack patterns')}
         </Button>
-        <ArrowForwardIosOutlined color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
           to={`/dashboard/techniques/attack_patterns/${attackPatternId}`}
@@ -118,6 +121,26 @@ class TopMenuAttackPattern extends Component {
           classes={{ root: classes.button }}
         >
           {t('Reports')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/techniques/attack_patterns/${attackPatternId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/techniques/attack_patterns/${attackPatternId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/techniques/attack_patterns/${attackPatternId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
         </Button>
       </div>
     );

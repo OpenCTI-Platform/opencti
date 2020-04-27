@@ -8,7 +8,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
-import ItemCreator from '../../../../components/ItemCreator';
+import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemPatternType from '../../../../components/ItemPatternType';
 
 const styles = () => ({
@@ -57,9 +57,9 @@ class IndicatorOverviewComponent extends Component {
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t('Creator')}
+            {t('Author')}
           </Typography>
-          <ItemCreator
+          <ItemAuthor
             createdByRef={pathOr(null, ['createdByRef', 'node'], indicator)}
           />
           <Typography

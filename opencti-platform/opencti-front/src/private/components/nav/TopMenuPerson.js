@@ -59,7 +59,10 @@ class TopMenuPerson extends Component {
           <PersonOutlined className={classes.icon} fontSize="small" />
           {t('Persons')}
         </Button>
-        <ArrowForwardIosOutlined color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
           to={`/dashboard/entities/persons/${personId}`}
@@ -142,6 +145,26 @@ class TopMenuPerson extends Component {
             {t('Files')}
           </Button>
         </Security>
+        <Button
+          component={Link}
+          to={`/dashboard/entities/persons/${personId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/entities/persons/${personId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/entities/persons/${personId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
+        </Button>
       </div>
     );
   }

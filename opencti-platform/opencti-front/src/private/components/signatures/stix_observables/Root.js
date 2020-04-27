@@ -2,13 +2,18 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
+import {
+  QueryRenderer,
+  requestSubscription,
+} from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import StixRelation from '../../common/stix_relations/StixRelation';
 import StixObservable from './StixObservable';
 import StixObservableLinks from './StixObservableLinks';
 import StixObservableKnowledge from './StixObservableKnowledge';
 import Loader from '../../../../components/Loader';
+import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
+import StixObservableHeader from './StixObservableHeader';
 
 const subscription = graphql`
   subscription RootStixObservableSubscription($id: ID!) {
@@ -102,12 +107,24 @@ class RootStixObservable extends Component {
                   />
                   <Route
                     exact
+                    path="/dashboard/signatures/observables/:observableId/history"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixObservableHeader
+                          stixObservable={props.stixObservable}
+                        />
+                        <StixObjectHistory
+                          {...routeProps}
+                          entityId={observableId}
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
                     path="/dashboard/signatures/observables/:observableId/knowledge/relations/:relationId"
                     render={(routeProps) => (
-                      <StixRelation
-                        entityId={observableId}
-                        {...routeProps}
-                      />
+                      <StixRelation entityId={observableId} {...routeProps} />
                     )}
                   />
                 </div>

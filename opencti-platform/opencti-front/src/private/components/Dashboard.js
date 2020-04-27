@@ -63,7 +63,7 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 10,
+    paddingRight: 24,
   },
   itemIconSecondary: {
     marginRight: 0,
@@ -95,36 +95,37 @@ const styles = (theme) => ({
 
 const inlineStyles = {
   itemAuthor: {
-    width: 80,
-    minWidth: 80,
-    maxWidth: 80,
-    marginRight: 24,
-    marginLeft: 24,
-    color: '#ffffff',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  itemType: {
     width: 100,
     minWidth: 100,
     maxWidth: 100,
-    marginRight: 24,
-    marginLeft: 24,
+    paddingRight: 24,
     color: '#ffffff',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    textAlign: 'left',
+  },
+  itemType: {
+    width: 120,
+    minWidth: 120,
+    maxWidth: 120,
+    paddingRight: 24,
+    color: '#ffffff',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    textAlign: 'left',
   },
   itemDate: {
-    width: 80,
-    minWidth: 80,
-    maxWidth: 80,
-    marginRight: 24,
+    width: 100,
+    minWidth: 100,
+    maxWidth: 100,
+    paddingRight: 24,
     color: '#ffffff',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    textAlign: 'left',
   },
 };
 
@@ -479,7 +480,14 @@ class Dashboard extends Component {
                                 <div style={inlineStyles.itemDate}>
                                   {nsd(report.published)}
                                 </div>
-                                <div style={{ width: 110, paddingRight: 20 }}>
+                                <div
+                                  style={{
+                                    width: 110,
+                                    maxWidth: 110,
+                                    minWidth: 110,
+                                    paddingRight: 20,
+                                  }}
+                                >
                                   {markingDefinition ? (
                                     <ItemMarking
                                       key={markingDefinition.node.id}
@@ -555,7 +563,14 @@ class Dashboard extends Component {
                                   <div style={inlineStyles.itemDate}>
                                     {nsd(stixObservable.created_at)}
                                   </div>
-                                  <div style={{ width: 110, paddingRight: 20 }}>
+                                  <div
+                                    style={{
+                                      width: 110,
+                                      maxWidth: 110,
+                                      minWidth: 110,
+                                      paddingRight: 20,
+                                    }}
+                                  >
                                     {markingDefinition ? (
                                       <ItemMarking
                                         key={markingDefinition.node.id}

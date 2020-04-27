@@ -60,7 +60,10 @@ class TopMenuTool extends Component {
           <Application className={classes.icon} fontSize="small" />
           {t('Tools')}
         </Button>
-        <ArrowForwardIosOutlined color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
           to={`/dashboard/techniques/tools/${toolId}`}
@@ -165,6 +168,26 @@ class TopMenuTool extends Component {
             {t('Files')}
           </Button>
         </Security>
+        <Button
+          component={Link}
+          to={`/dashboard/techniques/tools/${toolId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/techniques/tools/${toolId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/techniques/tools/${toolId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
+        </Button>
       </div>
     );
   }

@@ -37,6 +37,7 @@ const READ_QUERY = gql`
       id
       definition_type
       definition
+      toStix
     }
   }
 `;
@@ -77,6 +78,7 @@ describe('MarkingDefinition resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.markingDefinition).not.toBeNull();
     expect(queryResult.data.markingDefinition.id).toEqual(markingDefinitionInternalId);
+    expect(queryResult.data.markingDefinition.toStix.length).toBeGreaterThan(5);
   });
   it('should markingDefinition loaded by stix id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: markingDefinitionStixId } });

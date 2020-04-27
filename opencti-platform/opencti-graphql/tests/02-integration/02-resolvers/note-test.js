@@ -88,6 +88,7 @@ const READ_QUERY = gql`
       id
       name
       description
+      toStix
     }
   }
 `;
@@ -132,6 +133,7 @@ describe('Note resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.note).not.toBeNull();
     expect(queryResult.data.note.id).toEqual(noteInternalId);
+    expect(queryResult.data.note.toStix.length).toBeGreaterThan(5);
   });
   it('should note loaded by stix id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: noteStixId } });

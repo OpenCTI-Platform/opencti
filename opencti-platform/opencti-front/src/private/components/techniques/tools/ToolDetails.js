@@ -13,6 +13,7 @@ import Typography from '@material-ui/core/Typography';
 import { Launch } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
+import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
   paper: {
@@ -34,6 +35,14 @@ class ToolDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <StixDomainEntityTags tags={tool.tags} id={tool.id} />
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
+            {t('Creator')}
+          </Typography>
+          <ItemCreator creator={tool.creator} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -75,6 +84,11 @@ const ToolDetails = createFragmentContainer(ToolDetailsComponent, {
   tool: graphql`
     fragment ToolDetails_tool on Tool {
       id
+      creator {
+        id
+        name
+        user_email
+      }
       tags {
         edges {
           node {

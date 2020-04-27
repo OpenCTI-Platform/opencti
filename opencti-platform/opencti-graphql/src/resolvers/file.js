@@ -10,9 +10,9 @@ const fileResolvers = {
     works: (file) => loadFileWorks(file.id),
   },
   Mutation: {
-    uploadImport: (_, { file }, { user }) => uploadImport(file, user),
-    deleteImport: (_, { fileName }, { user }) => deleteFile(fileName, user),
-    askJobImport: (_, { fileName, context }, { user }) => askJobImport(fileName, context, user),
+    uploadImport: (_, { file }, { user }) => uploadImport(user, file),
+    deleteImport: (_, { fileName }, { user }) => deleteFile(user, fileName),
+    askJobImport: (_, { fileName, context }, { user }) => askJobImport(user, fileName, context),
   },
 };
 

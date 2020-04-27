@@ -6,6 +6,7 @@ import { execPython3 } from "../../../src/python/pythonBridge";
 
 describe('Database provision', () => {
   const importOpts = [API_URI, API_TOKEN, '/tests/data/DATA-TEST-STIX2_v2.json'];
+  const workerOpts = [API_URI, API_TOKEN];
 
   it('should dependencies accessible',  () => {
     return expect(checkSystemDependencies()).resolves.toBe(true);
@@ -31,6 +32,14 @@ describe('Database provision', () => {
   it('Should import update succeed', async () => {
     const httpServer = await listenServer();
     const execution = await execPython3(PYTHON_PATH, 'local_importer.py', importOpts);
+    expect(execution).not.toBeNull();
+    expect(execution.status).toEqual('success');
+    await stopServer(httpServer);
+  }, FIVE_MINUTES);
+
+  it('Should worker consume succeed', async () => {
+    const httpServer = await listenServer();
+    const execution = await execPython3(PYTHON_PATH, 'local_worker.py', workerOpts);
     expect(execution).not.toBeNull();
     expect(execution.status).toEqual('success');
     await stopServer(httpServer);

@@ -14,6 +14,7 @@ import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomain
 import FileManager from '../../common/files/FileManager';
 import AttackPatternPopover from './AttackPatternPopover';
 import Loader from '../../../../components/Loader';
+import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
 
 const subscription = graphql`
   subscription RootAttackPatternSubscription($id: ID!) {
@@ -133,6 +134,22 @@ class RootAttackPattern extends Component {
                           id={attackPatternId}
                           connectorsExport={props.connectorsForExport}
                           entity={props.attackPattern}
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/techniques/attack_patterns/:attackPatternId/history"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.attackPattern}
+                          PopoverComponent={<AttackPatternPopover />}
+                        />
+                        <StixObjectHistory
+                          {...routeProps}
+                          entityId={attackPatternId}
                         />
                       </React.Fragment>
                     )}

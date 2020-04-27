@@ -87,6 +87,7 @@ const READ_QUERY = gql`
       id
       name
       description
+      toStix
     }
   }
 `;
@@ -128,6 +129,7 @@ describe('Report resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.report).not.toBeNull();
     expect(queryResult.data.report.id).toEqual(reportInternalId);
+    expect(queryResult.data.report.toStix.length).toBeGreaterThan(5);
   });
   it('should report loaded by stix id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: reportStixId } });

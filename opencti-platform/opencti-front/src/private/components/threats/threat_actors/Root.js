@@ -15,6 +15,7 @@ import Loader from '../../../../components/Loader';
 import FileManager from '../../common/files/FileManager';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import ThreatActorPopover from './ThreatActorPopover';
+import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
 
 const subscription = graphql`
   subscription RootThreatActorSubscription($id: ID!) {
@@ -144,6 +145,22 @@ class RootThreatActor extends Component {
                           id={threatActorId}
                           connectorsExport={props.connectorsForExport}
                           entity={props.threatActor}
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/threats/threat_actors/:threatActorId/history"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.threatActor}
+                          PopoverComponent={<ThreatActorPopover />}
+                        />
+                        <StixObjectHistory
+                          {...routeProps}
+                          entityId={threatActorId}
                         />
                       </React.Fragment>
                     )}

@@ -56,7 +56,10 @@ class TopMenuIndicator extends Component {
           <ShieldSearch className={classes.icon} fontSize="small" />
           {t('Indicators')}
         </Button>
-        <ArrowForwardIosOutlined color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
           to={`/dashboard/signatures/indicators/${indicatorId}`}
@@ -96,6 +99,26 @@ class TopMenuIndicator extends Component {
           classes={{ root: classes.button }}
         >
           {t('Observables')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/signatures/indicators/${indicatorId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/signatures/indicators/${indicatorId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/signatures/indicators/${indicatorId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
         </Button>
       </div>
     );

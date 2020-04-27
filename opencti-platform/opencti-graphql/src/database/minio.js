@@ -71,7 +71,7 @@ export const extractName = (entityType = null, entityId = null, filename = '') =
   return `${entityType.toLowerCase()}/${entityId}/${filename}`;
 };
 
-export const deleteFile = async (id, user) => {
+export const deleteFile = async (user, id) => {
   logger.debug(`FileManager > delete file ${id} by ${user.user_email}`);
   await minioClient.removeObject(bucketName, id);
   await deleteWorkForFile(id);

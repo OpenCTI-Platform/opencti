@@ -26,7 +26,7 @@ const killChainPhaseResolvers = {
   },
   Mutation: {
     killChainPhaseEdit: (_, { id }, { user }) => ({
-      delete: () => killChainPhaseDelete(id),
+      delete: () => killChainPhaseDelete(user, id),
       fieldPatch: ({ input }) => killChainPhaseEditField(user, id, input),
       contextPatch: ({ input }) => killChainPhaseEditContext(user, id, input),
       contextClean: () => killChainPhaseCleanContext(user, id),

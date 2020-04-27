@@ -28,7 +28,7 @@ const externalReferenceResolvers = {
   },
   Mutation: {
     externalReferenceEdit: (_, { id }, { user }) => ({
-      delete: () => externalReferenceDelete(id),
+      delete: () => externalReferenceDelete(user, id),
       fieldPatch: ({ input }) => externalReferenceEditField(user, id, input),
       contextPatch: ({ input }) => externalReferenceEditContext(user, id, input),
       contextClean: () => externalReferenceCleanContext(user, id),

@@ -45,6 +45,7 @@ import { INDEX_STIX_ENTITIES, utcDate } from '../../../src/database/utils';
 import { GATHERING_TARGETS_RULE, inferenceDisable, inferenceEnable } from '../../../src/domain/inference';
 import { resolveNaturalRoles } from '../../../src/database/graknRoles';
 import { REL_INDEX_PREFIX } from '../../../src/database/elasticSearch';
+import { ADMIN_USER } from '../../utils/testQuery';
 
 describe('Grakn basic and utils', () => {
   it('should database accessible', () => {
@@ -230,7 +231,7 @@ describe('Grakn attribute updater', () => {
     const campaignId = 'fab6fa99-b07f-4278-86b4-b674edf60877';
     const input = { key: 'observable_value', value: ['test'] };
     const update = executeWrite((wTx) => {
-      return updateAttribute(campaignId, 'Stix-Domain-Entity', input, wTx);
+      return updateAttribute(ADMIN_USER, campaignId, 'Stix-Domain-Entity', input, wTx);
     });
     expect(update).rejects.toThrow();
   });
@@ -238,7 +239,7 @@ describe('Grakn attribute updater', () => {
     const campaignId = 'fab6fa99-b07f-4278-86b4-b674edf60877';
     const input = { key: 'description', value: ['A test campaign'] };
     const update = await executeWrite((wTx) => {
-      return updateAttribute(campaignId, 'Stix-Domain-Entity', input, wTx);
+      return updateAttribute(ADMIN_USER, campaignId, 'Stix-Domain-Entity', input, wTx);
     });
     expect(update).toEqual(campaignId);
   });
@@ -249,7 +250,7 @@ describe('Grakn attribute updater', () => {
     expect(campaign.first_seen).toEqual('2020-02-27T08:45:43.365Z');
     const type = 'Stix-Domain-Entity';
     let input = { key: 'first_seen', value: ['2020-02-20T08:45:43.366Z'] };
-    let update = await executeWrite((wTx) => updateAttribute(campaignId, type, input, wTx));
+    let update = await executeWrite((wTx) => updateAttribute(ADMIN_USER, campaignId, type, input, wTx));
     expect(update).toEqual(campaignId);
     campaign = await internalLoadEntityByStixId(stixId, null, { noCache });
     expect(campaign.first_seen).toEqual('2020-02-20T08:45:43.366Z');
@@ -258,7 +259,7 @@ describe('Grakn attribute updater', () => {
     expect(campaign.first_seen_year).toEqual('2020');
     // Value back to before
     input = { key: 'first_seen', value: ['2020-02-27T08:45:43.365Z'] };
-    update = await executeWrite((wTx) => updateAttribute(campaignId, type, input, wTx));
+    update = await executeWrite((wTx) => updateAttribute(ADMIN_USER, campaignId, type, input, wTx));
     expect(update).toEqual(campaignId);
     campaign = await internalLoadEntityByStixId(stixId, null, { noCache });
     expect(campaign.first_seen).toEqual('2020-02-27T08:45:43.365Z');
@@ -270,12 +271,12 @@ describe('Grakn attribute updater', () => {
     let relation = await internalLoadEntityByStixId(stixId, null, { noCache });
     expect(relation.weight).toEqual(1);
     let input = { key: 'weight', value: [5] };
-    await executeWrite((wTx) => updateAttribute(relationId, 'mitigates', input, wTx));
+    await executeWrite((wTx) => updateAttribute(ADMIN_USER, relationId, 'mitigates', input, wTx));
     relation = await internalLoadEntityByStixId(stixId, null, { noCache });
     expect(relation.weight).toEqual(5);
     // Value back to before
     input = { key: 'weight', value: [1] };
-    await executeWrite((wTx) => updateAttribute(relationId, 'mitigates', input, wTx));
+    await executeWrite((wTx) => updateAttribute(ADMIN_USER, relationId, 'mitigates', input, wTx));
     relation = await internalLoadEntityByStixId(stixId, null, { noCache });
     expect(relation.weight).toEqual(1);
   });
@@ -286,12 +287,12 @@ describe('Grakn attribute updater', () => {
     let identity = await internalLoadEntityByStixId(stixId, null, { noCache });
     expect(identity.alias).toEqual(['Computer Incident', 'Incident']);
     let input = { key: 'alias', value: ['Computer', 'Test', 'Grakn'] };
-    await executeWrite((wTx) => updateAttribute(identityId, type, input, wTx));
+    await executeWrite((wTx) => updateAttribute(ADMIN_USER, identityId, type, input, wTx));
     identity = await internalLoadEntityByStixId(stixId, null, { noCache });
     expect(identity.alias).toEqual(['Computer', 'Test', 'Grakn']);
     // Value back to before
     input = { key: 'alias', value: ['Computer Incident', 'Incident'] };
-    await executeWrite((wTx) => updateAttribute(identityId, type, input, wTx));
+    await executeWrite((wTx) => updateAttribute(ADMIN_USER, identityId, type, input, wTx));
     identity = await internalLoadEntityByStixId(stixId, null, { noCache });
     expect(identity.alias).toEqual(['Computer Incident', 'Incident']);
   });
@@ -507,7 +508,7 @@ describe('Grakn relations listing', () => {
     expect(stixRelations.edges.length).toEqual(21);
     const embeddedRelations = await listRelations('stix_relation_embedded', { noCache });
     expect(embeddedRelations).not.toBeNull();
-    expect(embeddedRelations.edges.length).toEqual(121);
+    expect(embeddedRelations.edges.length).toEqual(130);
   });
   it.each(noCacheCases)('should list relations with no id (noCache = %s)', (noCache) => {
     expect(listRelations('uses', { noCache, fromTypes: ['Attack-Pattern'] })).rejects.toThrow();

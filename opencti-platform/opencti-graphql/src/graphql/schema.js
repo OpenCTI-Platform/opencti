@@ -3,6 +3,7 @@ import { mergeResolvers } from 'merge-graphql-schemas';
 import { makeExecutableSchema } from 'graphql-tools';
 import ConstraintDirective from 'graphql-constraint-directive';
 import settingsResolvers from '../resolvers/settings';
+import logResolvers from '../resolvers/log';
 import inferenceResolvers from '../resolvers/inference';
 import attributeResolvers from '../resolvers/attribute';
 import tagResolvers from '../resolvers/tag';
@@ -51,6 +52,7 @@ const createSchema = () => {
   const resolvers = mergeResolvers([
     globalResolvers,
     settingsResolvers,
+    logResolvers,
     inferenceResolvers,
     attributeResolvers,
     tagResolvers,

@@ -12,6 +12,7 @@ import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomain
 import FileManager from '../../common/files/FileManager';
 import CourseOfActionPopover from './CourseOfActionPopover';
 import Loader from '../../../../components/Loader';
+import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
 
 const subscription = graphql`
   subscription RootCoursesOfActionSubscription($id: ID!) {
@@ -101,6 +102,22 @@ class RootCourseOfAction extends Component {
                           id={courseOfActionId}
                           connectorsExport={props.connectorsForExport}
                           entity={props.courseOfAction}
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/techniques/courses_of_action/:courseOfActionId/history"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.courseOfAction}
+                          PopoverComponent={<CourseOfActionPopover />}
+                        />
+                        <StixObjectHistory
+                          {...routeProps}
+                          entityId={courseOfActionId}
                         />
                       </React.Fragment>
                     )}

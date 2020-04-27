@@ -4,10 +4,8 @@ import {
   addStixObservableRelation,
   findAll,
   findById,
-  stixObservableRelationAddRelation,
   stixObservableRelationCleanContext,
   stixObservableRelationDelete,
-  stixObservableRelationDeleteRelation,
   stixObservableRelationEditContext,
   stixObservableRelationEditField,
 } from '../domain/stixObservableRelation';
@@ -31,12 +29,10 @@ const stixObservableRelationResolvers = {
   },
   Mutation: {
     stixObservableRelationEdit: (_, { id }, { user }) => ({
-      delete: () => stixObservableRelationDelete(id),
+      delete: () => stixObservableRelationDelete(user, id),
       fieldPatch: ({ input }) => stixObservableRelationEditField(user, id, input),
       contextPatch: ({ input }) => stixObservableRelationEditContext(user, id, input),
       contextClean: () => stixObservableRelationCleanContext(user, id),
-      relationAdd: ({ input }) => stixObservableRelationAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixObservableRelationDeleteRelation(user, id, relationId),
     }),
     stixObservableRelationAdd: (_, { input }, { user }) => addStixObservableRelation(user, input),
   },

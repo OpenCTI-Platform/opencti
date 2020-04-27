@@ -59,7 +59,10 @@ class TopMenuCountry extends Component {
           <FlagOutlined className={classes.icon} fontSize="small" />
           {t('Countries')}
         </Button>
-        <ArrowForwardIosOutlined color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
           to={`/dashboard/entities/countries/${countryId}`}
@@ -164,6 +167,26 @@ class TopMenuCountry extends Component {
             {t('Files')}
           </Button>
         </Security>
+        <Button
+          component={Link}
+          to={`/dashboard/entities/countries/${countryId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/entities/countries/${countryId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/entities/countries/${countryId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
+        </Button>
       </div>
     );
   }

@@ -27,28 +27,31 @@ export const addKillChainPhase = async (user, killChainPhase) => {
     killChainPhase.phase_order ? killChainPhase.phase_order : 0,
     killChainPhase
   );
-  const created = await createEntity(user, killChainPhaseToCreate, 'Kill-Chain-Phase', { modelType: TYPE_STIX_DOMAIN });
+  const created = await createEntity(user, killChainPhaseToCreate, 'Kill-Chain-Phase', {
+    modelType: TYPE_STIX_DOMAIN,
+    noLog: true,
+  });
   return notify(BUS_TOPICS.KillChainPhase.ADDED_TOPIC, created, user);
 };
 
-export const killChainPhaseDelete = (killChainPhaseId) => {
-  return deleteEntityById(killChainPhaseId, 'Kill-Chain-Phase');
+export const killChainPhaseDelete = (user, killChainPhaseId) => {
+  return deleteEntityById(user, killChainPhaseId, 'Kill-Chain-Phase', { noLog: true });
 };
 export const killChainPhaseAddRelation = (user, killChainPhaseId, input) => {
   const finalInput = pipe(assoc('through', 'kill_chain_phases'), assoc('toType', 'kill_chain_phases'))(input);
-  return createRelation(killChainPhaseId, finalInput).then((relationData) => {
+  return createRelation(user, killChainPhaseId, finalInput).then((relationData) => {
     notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
 export const killChainPhaseDeleteRelation = async (user, killChainPhaseId, relationId) => {
-  await deleteRelationById(relationId, 'stix_relation_embedded');
+  await deleteRelationById(user, relationId, 'stix_relation_embedded');
   const data = await loadEntityById(killChainPhaseId, 'Kill-Chain-Phase');
   return notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, data, user);
 };
 export const killChainPhaseEditField = (user, killChainPhaseId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(killChainPhaseId, 'Kill-Chain-Phase', input, wTx);
+    return updateAttribute(user, killChainPhaseId, 'Kill-Chain-Phase', input, wTx, { noLog: true });
   }).then(async () => {
     const killChainPhase = await loadEntityById(killChainPhaseId, 'Kill-Chain-Phase');
     return notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase, user);

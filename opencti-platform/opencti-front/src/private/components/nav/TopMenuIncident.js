@@ -4,7 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIosOutlined} from '@material-ui/icons';
+import { ArrowForwardIosOutlined } from '@material-ui/icons';
 import { Fire } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import Security, {
@@ -60,7 +60,10 @@ class TopMenuIncident extends Component {
           <Fire className={classes.icon} fontSize="small" />
           {t('Incidents')}
         </Button>
-        <ArrowForwardIosOutlined color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
           to={`/dashboard/threats/incidents/${incidentId}`}
@@ -165,6 +168,26 @@ class TopMenuIncident extends Component {
             {t('Files')}
           </Button>
         </Security>
+        <Button
+          component={Link}
+          to={`/dashboard/threats/incidents/${incidentId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/threats/incidents/${incidentId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/threats/incidents/${incidentId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
+        </Button>
       </div>
     );
   }
