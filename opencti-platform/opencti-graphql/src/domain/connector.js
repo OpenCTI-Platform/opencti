@@ -60,7 +60,7 @@ export const pingConnector = async (user, id, state) => {
   if (connector.connector_state_reset === true) {
     await executeWrite(async (wTx) => {
       const stateInput = { key: 'connector_state_reset', value: [false] };
-      await updateAttribute(user, id, 'Connector', stateInput, wTx);
+      await updateAttribute(user, id, 'Connector', stateInput, wTx, { noLog: true });
     });
   } else {
     await executeWrite(async (wTx) => {
@@ -75,9 +75,9 @@ export const pingConnector = async (user, id, state) => {
 export const resetStateConnector = async (user, id) => {
   await executeWrite(async (wTx) => {
     const stateInput = { key: 'connector_state', value: [''] };
-    await updateAttribute(user, id, 'Connector', stateInput, wTx);
+    await updateAttribute(user, id, 'Connector', stateInput, wTx, { noLog: true });
     const stateResetInput = { key: 'connector_state_reset', value: [true] };
-    await updateAttribute(user, id, 'Connector', stateResetInput, wTx);
+    await updateAttribute(user, id, 'Connector', stateResetInput, wTx, { noLog: true });
   });
   return loadEntityById(id, 'Connector').then((data) => completeConnector(data));
 };
@@ -89,11 +89,11 @@ export const registerConnector = async (user, { id, name, type, scope }) => {
     // Simple connector update
     await executeWrite(async (wTx) => {
       const inputName = { key: 'name', value: [name] };
-      await updateAttribute(user, id, 'Connector', inputName, wTx);
+      await updateAttribute(user, id, 'Connector', inputName, wTx, { noLog: true });
       const updatedInput = { key: 'updated_at', value: [now()] };
-      await updateAttribute(user, id, 'Connector', updatedInput, wTx);
+      await updateAttribute(user, id, 'Connector', updatedInput, wTx, { noLog: true });
       const scopeInput = { key: 'connector_scope', value: [scope.join(',')] };
-      await updateAttribute(user, id, 'Connector', scopeInput, wTx);
+      await updateAttribute(user, id, 'Connector', scopeInput, wTx, { noLog: true });
     });
     return loadEntityById(id, 'Connector').then((data) => completeConnector(data));
   }
