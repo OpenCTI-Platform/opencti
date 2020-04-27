@@ -286,6 +286,7 @@ class OpenCTIConnectorHelper:
             "job_id": job_id,
             "entities_types": entities_types,
             "update": update,
+            "token": self.opencti_token,
             "content": base64.b64encode(bundle.encode("utf-8")).decode("utf-8"),
         }
 
