@@ -123,7 +123,7 @@ export const groups = (userId) => {
 };
 export const token = (userId, args, context) => {
   const capabilities = map((n) => n.name, context.user.capabilities);
-  if (!includes('SETACCESSES', capabilities) && !includes('BYPASS', capabilities)) {
+  if (userId !== context.user.id && !includes('SETACCESSES', capabilities) && !includes('BYPASS', capabilities)) {
     throw new ForbiddenAccess();
   }
   return loadWithConnectedRelations(

@@ -507,6 +507,7 @@ export const relationEmbeddedToStix = async (relationEmbedded, eventType, extra)
 
 export const convertDataToStix = async (data, eventType = null, eventExtraData = null) => {
   if (!data) {
+    /* istanbul ignore next */
     throw new Error('[STIX] No eventData provided');
   }
   let entityType = data.entity_type;
@@ -555,6 +556,7 @@ export const convertDataToStix = async (data, eventType = null, eventExtraData =
     case 'relation_embedded':
       return relationEmbeddedToStix(data, eventType, eventExtraData);
     default:
+      /* istanbul ignore next */
       throw new Error('[STIX] Entity type is unknown, cannot convert to STIX');
   }
 };
