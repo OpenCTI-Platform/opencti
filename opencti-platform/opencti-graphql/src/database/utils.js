@@ -28,6 +28,7 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
     case 'month':
       dateFormat = 'YYYY-MM';
       break;
+    /* istanbul ignore next */
     default:
       dateFormat = 'YYYY-MM-DD';
   }

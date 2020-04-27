@@ -19,7 +19,6 @@ import inject18n from '../../../../components/i18n';
 import {
   commitMutation,
   QueryRenderer,
-  WS_ACTIVATED,
 } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
 import RoleEdition from './RoleEdition';
@@ -98,12 +97,10 @@ class RolePopover extends Component {
   }
 
   handleCloseUpdate() {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: rolePopoverCleanContext,
-        variables: { id: this.props.roleId },
-      });
-    }
+    commitMutation({
+      mutation: rolePopoverCleanContext,
+      variables: { id: this.props.roleId },
+    });
     this.setState({ displayUpdate: false });
   }
 

@@ -3,7 +3,7 @@ import axios from 'axios';
 import { add, divide, filter, includes, map, pipe, reduce } from 'ramda';
 import { v4 as uuid } from 'uuid';
 import conf, { logger } from '../config/conf';
-import { utcDate, generateLogMessage } from './utils';
+import { generateLogMessage, utcDate } from './utils';
 import { convertDataToStix } from './stix';
 
 export const CONNECTOR_EXCHANGE = 'amqp.connector.exchange';
@@ -29,28 +29,21 @@ const amqpExecute = (execute) => {
     amqp
       .connect(amqpUri())
       .then((connection) => {
-        return (
-          connection
-            .createConfirmChannel()
-            .then((channel) => {
-              return (
-                execute(channel)
-                  .then((response) => {
-                    channel.close();
-                    connection.close();
-                    resolve(response);
-                    return true;
-                  })
-                  /* istanbul ignore next */
-                  .catch((e) => reject(e))
-              );
-            })
-            /* istanbul ignore next */
-            .catch((e) => reject(e))
-        );
+        return connection
+          .createConfirmChannel()
+          .then((channel) => {
+            const commandExecution = execute(channel);
+            return commandExecution
+              .then((response) => {
+                channel.close();
+                connection.close();
+                resolve(response);
+              })
+              .catch(/* istanbul ignore next */ (e) => reject(e));
+          })
+          .catch(/* istanbul ignore next */ (e) => reject(e));
       })
-      /* istanbul ignore next */
-      .catch((e) => reject(e));
+      .catch(/* istanbul ignore next */ (e) => reject(e));
   });
 };
 
@@ -108,6 +101,7 @@ export const metrics = async () => {
     reduce(add, 0)
   )(pushQueues);
   let finalCount = 0;
+  /* istanbul ignore if */
   if (nbConsumers > 0 && nbPushQueues > 0) {
     // Because worker connect to every queue.
     finalCount = divide(nbConsumers, nbPushQueues);
@@ -129,17 +123,8 @@ export const pushRouting = (connectorId) => `push_routing_${connectorId}`;
 
 export const registerConnectorQueues = async (id, name, type, scope) => {
   // 01. Ensure exchange exists
-  await amqpExecute((channel) =>
-    channel.assertExchange(CONNECTOR_EXCHANGE, 'direct', {
-      durable: true,
-    })
-  );
-  await amqpExecute((channel) =>
-    channel.assertExchange(WORKER_EXCHANGE, 'direct', {
-      durable: true,
-    })
-  );
-
+  await amqpExecute((channel) => channel.assertExchange(CONNECTOR_EXCHANGE, 'direct', { durable: true }));
+  await amqpExecute((channel) => channel.assertExchange(WORKER_EXCHANGE, 'direct', { durable: true }));
   // 02. Ensure listen queue exists
   const listenQueue = `listen_${id}`;
   await amqpExecute((channel) =>
@@ -153,11 +138,9 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
       },
     })
   );
-
   // 03. bind queue for the each connector scope
   // eslint-disable-next-line prettier/prettier
   await amqpExecute((c) => c.bindQueue(listenQueue, CONNECTOR_EXCHANGE, listenRouting(id)));
-
   // 04. Create stix push queue
   const pushQueue = `push_${id}`;
   await amqpExecute((channel) =>
@@ -171,11 +154,15 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
       },
     })
   );
-
   // 05. Bind push queue to direct default exchange
   await amqpExecute((channel) => channel.bindQueue(pushQueue, WORKER_EXCHANGE, pushRouting(id)));
-
   return connectorConfig(id);
+};
+
+export const unregisterConnector = async (id) => {
+  const listen = await amqpExecute((channel) => channel.deleteQueue(`listen_${id}`));
+  const push = await amqpExecute((channel) => channel.deleteQueue(`push_${id}`));
+  return { listen, push };
 };
 
 export const ensureRabbitMQAndLogsQueue = async () => {
@@ -223,7 +210,7 @@ export const pushToLogs = (communityId, message) => {
 export const getRabbitMQVersion = () => {
   return metrics()
     .then((data) => data.overview.rabbitmq_version)
-    .catch(() => 'Disconnected');
+    .catch(/* istanbul ignore next */ () => 'Disconnected');
 };
 
 export const sendLog = async (eventType, eventUser, eventData, eventExtraData = null) => {

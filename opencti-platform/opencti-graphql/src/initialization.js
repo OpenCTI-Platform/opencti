@@ -13,6 +13,7 @@ import { addCapability, addRole } from './domain/grant';
 import { addAttribute } from './domain/attribute';
 import { checkPythonStix2 } from './python/pythonBridge';
 import { INDEX_STIX_ENTITIES } from './database/utils';
+import { redisIsAlive } from './database/redis';
 
 // noinspection NodeJsCodingAssistanceForCoreModules
 const fs = require('fs');
@@ -93,6 +94,9 @@ export const checkSystemDependencies = async () => {
   // Check if RabbitMQ is here and create the logs exchange/queue
   await ensureRabbitMQAndLogsQueue();
   logger.info(`[PRE-CHECK] > RabbitMQ is alive`);
+  // Check if redis is here
+  await redisIsAlive();
+  logger.info(`[PRE-CHECK] > Redis is alive`);
   // Check if Python is available
   await checkPythonStix2();
   logger.info(`[PRE-CHECK] > Python3 is available`);

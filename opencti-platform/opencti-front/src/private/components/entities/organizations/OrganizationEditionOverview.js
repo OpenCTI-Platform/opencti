@@ -20,7 +20,7 @@ import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import CreatedByRefField from '../../common/form/CreatedByRefField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
@@ -115,17 +115,15 @@ const organizationValidation = (t) => Yup.object().shape({
 
 class OrganizationEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: organizationEditionOverviewFocus,
-        variables: {
-          id: this.props.organization.id,
-          input: {
-            focusOn: name,
-          },
+    commitMutation({
+      mutation: organizationEditionOverviewFocus,
+      variables: {
+        id: this.props.organization.id,
+        input: {
+          focusOn: name,
         },
-      });
-    }
+      },
+    });
   }
 
   handleSubmitField(name, value) {

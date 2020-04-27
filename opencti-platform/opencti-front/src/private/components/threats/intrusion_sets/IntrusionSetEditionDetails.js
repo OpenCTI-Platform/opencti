@@ -12,7 +12,7 @@ import inject18n from '../../../../components/i18n';
 import DatePickerField from '../../../../components/DatePickerField';
 import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import { dateFormat } from '../../../../utils/Time';
 
 const intrusionSetMutationFieldPatch = graphql`
@@ -57,17 +57,15 @@ const intrusionSetValidation = (t) => Yup.object().shape({
 
 class IntrusionSetEditionDetailsComponent extends Component {
   handleChangeFocus(name) {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: intrusionSetEditionDetailsFocus,
-        variables: {
-          id: this.props.intrusionSet.id,
-          input: {
-            focusOn: name,
-          },
+    commitMutation({
+      mutation: intrusionSetEditionDetailsFocus,
+      variables: {
+        id: this.props.intrusionSet.id,
+        input: {
+          focusOn: name,
         },
-      });
-    }
+      },
+    });
   }
 
   handleSubmitField(name, value) {
