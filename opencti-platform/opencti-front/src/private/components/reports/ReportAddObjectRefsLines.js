@@ -56,6 +56,12 @@ const styles = (theme) => ({
   icon: {
     color: theme.palette.primary.main,
   },
+  tooltip: {
+    maxWidth: '80%',
+    lineHeight: 2,
+    padding: 10,
+    backgroundColor: '#323232',
+  },
 });
 
 export const reportMutationRelationAdd = graphql`
@@ -252,11 +258,9 @@ class ReportAddObjectRefsLinesContainer extends Component {
                       || reportObjectRefsIds.includes(stixDomainEntity.id);
                     return (
                       <Tooltip
+                        classes={{ tooltip: classes.tooltip }}
                         title={
-                          <Markdown
-                            className="markdown"
-                            source={stixDomainEntity.description}
-                          />
+                          <Markdown source={stixDomainEntity.description} />
                         }
                         key={stixDomainEntity.id}
                       >

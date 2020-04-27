@@ -107,8 +107,10 @@ const extractEntityMainValue = (entityData) => {
     mainValue = `${entityData.source_name}${entityData.external_id ? ` (${entityData.external_id})` : ''}`;
   } else if (entityData.phase_name) {
     mainValue = entityData.phase_name;
-  } else {
+  } else if (entityData.name) {
     mainValue = entityData.name;
+  } else {
+    mainValue = entityData.description;
   }
   return mainValue;
 };
@@ -118,6 +120,7 @@ export const generateLogMessage = (eventType, eventUser, eventData, eventExtraDa
   let fromType;
   let toValue;
   let toType;
+  let toRelationType;
   if (eventExtraData && eventExtraData.from) {
     fromValue = extractEntityMainValue(eventExtraData.from);
     fromType = eventExtraData.from.entity_type;
@@ -125,6 +128,7 @@ export const generateLogMessage = (eventType, eventUser, eventData, eventExtraDa
   if (eventExtraData && eventExtraData.to) {
     toValue = extractEntityMainValue(eventExtraData.to);
     toType = eventExtraData.to.entity_type;
+    toRelationType = eventExtraData.to.relationship_type;
   }
   const name = extractEntityMainValue(eventData);
   let message = '';
@@ -144,6 +148,8 @@ export const generateLogMessage = (eventType, eventUser, eventData, eventExtraDa
   } else if (eventData.entity_type === 'relation_embedded') {
     if (eventType === 'update') {
       message += `\`${eventData.relationship_type}\` with the value \`${toValue}\`.`;
+    } else if (toType === 'stix_relation') {
+      message += `relation \`${toRelationType}\`${toValue ? `with value \`${toValue}\`` : ''}.`;
     } else {
       message += `\`${toType}\` with value \`${toValue}\`.`;
     }

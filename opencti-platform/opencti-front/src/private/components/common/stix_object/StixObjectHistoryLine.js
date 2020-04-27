@@ -52,7 +52,10 @@ const styles = (theme) => ({
     overflow: 'hidden',
   },
   tooltip: {
-    maxWidth: '50%',
+    maxWidth: '80%',
+    lineHeight: 2,
+    padding: 10,
+    backgroundColor: '#323232',
   },
   paper: {
     width: '100%',
