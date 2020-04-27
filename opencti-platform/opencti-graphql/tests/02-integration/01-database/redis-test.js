@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid';
 import { head } from 'ramda';
 import {
   clearAccessCache,
-  delEditContext,
+  delEditContext, delUserContext,
   fetchEditContext,
   getAccessCache,
   getRedisVersion,
@@ -32,6 +32,21 @@ describe('Redis context management', () => {
     const deletedContext = await delEditContext(user, contextInstanceId);
     expect(deletedContext).toEqual(1);
     getContext = await fetchEditContext(contextInstanceId);
+    expect(getContext).toEqual([]);
+  });
+
+  it('should clear context user', async () => {
+    const secondContextId = uuid();
+    await setEditContext(user, contextInstanceId, input);
+    await setEditContext(user, secondContextId, input);
+    let getContext = await fetchEditContext(contextInstanceId);
+    expect(input).toEqual(head(getContext));
+    getContext = await fetchEditContext(secondContextId);
+    expect(input).toEqual(head(getContext));
+    await delUserContext(user);
+    getContext = await fetchEditContext(contextInstanceId);
+    expect(getContext).toEqual([]);
+    getContext = await fetchEditContext(secondContextId);
     expect(getContext).toEqual([]);
   });
 
