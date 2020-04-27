@@ -63,10 +63,9 @@ const PersonDetails = createFragmentContainer(PersonDetailsComponent, {
     fragment PersonDetails_person on User {
       id
       creator {
-        id
-        name
-        user_email
-      }
+          id
+          name
+        }
       tags {
         edges {
           node {

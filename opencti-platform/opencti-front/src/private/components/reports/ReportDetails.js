@@ -85,10 +85,9 @@ const ReportDetails = createFragmentContainer(ReportDetailsComponent, {
       object_status
       source_confidence_level
       creator {
-        id
-        name
-        user_email
-      }
+          id
+          name
+        }
       tags {
         edges {
           node {

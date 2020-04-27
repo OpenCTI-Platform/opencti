@@ -130,7 +130,6 @@ const ThreatActorDetails = createFragmentContainer(
         creator {
           id
           name
-          user_email
         }
         tags {
           edges {

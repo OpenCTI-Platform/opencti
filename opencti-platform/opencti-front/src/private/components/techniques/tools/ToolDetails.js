@@ -85,10 +85,9 @@ const ToolDetails = createFragmentContainer(ToolDetailsComponent, {
     fragment ToolDetails_tool on Tool {
       id
       creator {
-        id
-        name
-        user_email
-      }
+          id
+          name
+        }
       tags {
         edges {
           node {
