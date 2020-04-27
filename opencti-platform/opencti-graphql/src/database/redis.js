@@ -13,17 +13,22 @@ const redisOptions = {
   maxRetriesPerRequest: 2,
 };
 
-let client;
-export const initRedisClient = async () => {
-  client = client || new Redis(redisOptions);
-  if (client.status !== 'ready') {
-    await client.connect();
+let redis = null;
+const initRedisClient = async () => {
+  redis = redis || new Redis(redisOptions);
+  if (redis.status !== 'ready') {
+    await redis.connect();
   }
-  client.on('error', (error) => {
+  redis.on('error', (error) => {
     /* istanbul ignore next */
     logger.error('[REDIS] An error occurred on redis > ', error);
   });
-  return true;
+  return redis;
+};
+
+const getClient = async () => {
+  if (redis) return redis;
+  return initRedisClient();
 };
 
 export const pubsub = new RedisPubSub({
@@ -32,7 +37,7 @@ export const pubsub = new RedisPubSub({
 });
 
 export const redisIsAlive = async () => {
-  await initRedisClient();
+  const client = await getClient();
   if (client.status !== 'ready') {
     /* istanbul ignore next */
     throw new Error('redis seems down');
@@ -41,7 +46,7 @@ export const redisIsAlive = async () => {
 };
 
 export const getRedisVersion = () => {
-  return client.serverInfo.redis_version;
+  return getClient().then((client) => client.serverInfo.redis_version);
 };
 
 /* istanbul ignore next */
@@ -57,6 +62,7 @@ export const notify = (topic, instance, user, context) => {
  * @param input
  */
 export const setEditContext = async (user, instanceId, input) => {
+  const client = await getClient();
   const data = assoc('name', user.user_email, input);
   return client.set(
     `edit:${instanceId}:${user.id}`,
@@ -71,7 +77,8 @@ export const setEditContext = async (user, instanceId, input) => {
  * @param instanceId
  * @returns {Promise<any>}
  */
-export const fetchEditContext = (instanceId) => {
+export const fetchEditContext = async (instanceId) => {
+  const client = await getClient();
   return new Promise((resolve, reject) => {
     const elementsPromise = [];
     const stream = client.scanStream({
@@ -102,7 +109,8 @@ export const fetchEditContext = (instanceId) => {
  * @param instanceId
  * @returns {*}
  */
-export const delEditContext = (user, instanceId) => {
+export const delEditContext = async (user, instanceId) => {
+  const client = await getClient();
   return client.del(`edit:${instanceId}:${user.id}`);
 };
 
@@ -111,7 +119,8 @@ export const delEditContext = (user, instanceId) => {
  * @param user the user
  * @returns {Promise<>}
  */
-export const delUserContext = (user) => {
+export const delUserContext = async (user) => {
+  const client = await getClient();
   return new Promise((resolve, reject) => {
     const stream = client.scanStream({
       match: `*:*:${user.id}`,
@@ -138,15 +147,18 @@ export const delUserContext = (user) => {
 
 // region cache for access token
 export const getAccessCache = async (tokenUUID) => {
+  const client = await getClient();
   const data = await client.get(tokenUUID);
   return data && JSON.parse(data);
 };
 export const storeAccessCache = async (tokenUUID, access, expiration = REDIS_EXPIRE_TIME) => {
+  const client = await getClient();
   const val = JSON.stringify(access);
   await client.set(tokenUUID, val, 'ex', expiration);
   return access;
 };
 export const clearAccessCache = async (tokenUUID) => {
+  const client = await getClient();
   await client.del(tokenUUID);
 };
 // endregion
