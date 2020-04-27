@@ -93,10 +93,9 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
       valid_until
       score
       creator {
-        id
-        name
-        user_email
-      }
+          id
+          name
+        }
       tags {
         edges {
           node {

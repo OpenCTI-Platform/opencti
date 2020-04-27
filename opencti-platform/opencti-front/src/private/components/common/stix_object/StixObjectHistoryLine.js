@@ -23,6 +23,7 @@ import {
   HelpOutlined,
 } from '@material-ui/icons';
 import { LinkVariantPlus, LinkVariantRemove } from 'mdi-material-ui';
+import Tooltip from '@material-ui/core/Tooltip/Tooltip';
 import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
@@ -50,6 +51,9 @@ const styles = (theme) => ({
     width: 'auto',
     overflow: 'hidden',
   },
+  tooltip: {
+    maxWidth: 'none',
+  },
   paper: {
     width: '100%',
     height: '100%',
@@ -57,6 +61,7 @@ const styles = (theme) => ({
     padding: '17px 15px 15px 15px',
   },
   description: {
+    height: '100%',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -176,9 +181,22 @@ class StixObjectHistoryLineComponent extends Component {
         <div className={classes.content}>
           <Paper classes={{ root: classes.paper }}>
             <div className={classes.date}>{nsdt(node.event_date)}</div>
-            <div className={classes.description}>
-              <Markdown className="markdown" source={node.event_message.replace('{USER_NAME}', node.event_user.name)} />
-            </div>
+            <Tooltip
+              classes={{ tooltip: classes.tooltip }}
+              title={
+                <Markdown
+                  className="markdown"
+                  source={`\`${node.event_user.name}\` ${node.event_message}`}
+                />
+              }
+            >
+              <div className={classes.description}>
+                <Markdown
+                  className="markdown"
+                  source={`\`${node.event_user.name}\` ${node.event_message}`}
+                />
+              </div>
+            </Tooltip>
           </Paper>
         </div>
         <div className={classes.line} />

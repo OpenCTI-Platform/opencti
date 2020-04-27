@@ -141,7 +141,6 @@ const AttackPatternDetails = createFragmentContainer(
         creator {
           id
           name
-          user_email
         }
         tags {
           edges {

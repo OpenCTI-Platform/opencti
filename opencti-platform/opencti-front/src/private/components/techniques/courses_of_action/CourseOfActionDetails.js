@@ -72,7 +72,6 @@ const CourseOfActionDetails = createFragmentContainer(
         creator {
           id
           name
-          user_email
         }
         tags {
           edges {

@@ -17,6 +17,7 @@ import Typography from '@material-ui/core/Typography';
 import { ExpandMore, CheckCircle } from '@material-ui/icons';
 import { ConnectionHandler } from 'relay-runtime';
 import Tooltip from '@material-ui/core/Tooltip';
+import Markdown from 'react-markdown';
 import { commitMutation } from '../../../relay/environment';
 import { truncate } from '../../../utils/String';
 import ItemIcon from '../../../components/ItemIcon';
@@ -251,7 +252,12 @@ class ReportAddObjectRefsLinesContainer extends Component {
                       || reportObjectRefsIds.includes(stixDomainEntity.id);
                     return (
                       <Tooltip
-                        title={stixDomainEntity.description}
+                        title={
+                          <Markdown
+                            className="markdown"
+                            source={stixDomainEntity.description}
+                          />
+                        }
                         key={stixDomainEntity.id}
                       >
                         <ListItem
@@ -272,10 +278,15 @@ class ReportAddObjectRefsLinesContainer extends Component {
                           </ListItemIcon>
                           <ListItemText
                             primary={stixDomainEntity.name}
-                            secondary={truncate(
-                              stixDomainEntity.description,
-                              100,
-                            )}
+                            secondary={
+                              <Markdown
+                                className="markdown"
+                                source={truncate(
+                                  stixDomainEntity.description,
+                                  200,
+                                )}
+                              />
+                            }
                           />
                         </ListItem>
                       </Tooltip>
