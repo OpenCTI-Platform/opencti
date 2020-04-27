@@ -25,7 +25,6 @@ const LIST_QUERY = gql`
           id
           event_type
           event_date
-          event_user
           event_message
           event_data
         }
