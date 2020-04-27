@@ -228,11 +228,11 @@ export const stixDomainEntityDelete = async (user, stixDomainEntityId) => {
   }
   return deleteEntityById(user, stixDomainEntityId, 'Stix-Domain-Entity');
 };
-export const stixDomainEntitiesDelete = async (stixDomainEntitiesIds) => {
+export const stixDomainEntitiesDelete = async (user, stixDomainEntitiesIds) => {
   // Relations cannot be created in parallel.
   for (let i = 0; i < stixDomainEntitiesIds.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
-    await stixDomainEntityDelete(stixDomainEntitiesIds[i]);
+    await stixDomainEntityDelete(user, stixDomainEntitiesIds[i]);
   }
   return stixDomainEntitiesIds;
 };
