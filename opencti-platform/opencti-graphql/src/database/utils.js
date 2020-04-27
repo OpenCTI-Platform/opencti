@@ -99,7 +99,7 @@ const extractEntityMainValue = (entityData) => {
   } else if (entityData.value) {
     mainValue = entityData.value;
   } else if (entityData.observable_value) {
-    mainValue = entityData.value;
+    mainValue = entityData.observable_value;
   } else if (entityData.indicator_pattern) {
     mainValue = entityData.indicator_pattern;
   } else {

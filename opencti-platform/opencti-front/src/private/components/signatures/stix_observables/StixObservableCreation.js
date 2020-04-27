@@ -259,6 +259,7 @@ class StixObservableCreation extends Component {
                   />
                   <Field
                     component={SwitchField}
+                    type="checkbox"
                     name="createIndicator"
                     label={t('Create an indicator from this observable')}
                     containerstyle={{ marginTop: 20 }}

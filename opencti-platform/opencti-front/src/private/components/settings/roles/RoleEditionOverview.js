@@ -202,6 +202,7 @@ const RoleEditionOverviewComponent = ({
             />
             <Field
               component={SwitchField}
+              type="checkbox"
               name="default_assignation"
               label={t('Granted by default at user creation')}
               containerstyle={{ marginTop: 20 }}
