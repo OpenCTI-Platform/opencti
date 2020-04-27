@@ -102,6 +102,10 @@ const extractEntityMainValue = (entityData) => {
     mainValue = entityData.observable_value;
   } else if (entityData.indicator_pattern) {
     mainValue = entityData.indicator_pattern;
+  } else if (entityData.source_name) {
+    mainValue = `${entityData.source_name}${entityData.external_id ? ` (${entityData.external_id})` : ''}`;
+  } else if (entityData.phase_name) {
+    mainValue = entityData.phase_name;
   } else {
     mainValue = entityData.name;
   }
