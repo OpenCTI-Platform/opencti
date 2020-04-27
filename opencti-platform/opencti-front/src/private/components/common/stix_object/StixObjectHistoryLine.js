@@ -177,7 +177,7 @@ class StixObjectHistoryLineComponent extends Component {
           <Paper classes={{ root: classes.paper }}>
             <div className={classes.date}>{nsdt(node.event_date)}</div>
             <div className={classes.description}>
-              <Markdown className="markdown" source={node.event_message} />
+              <Markdown className="markdown" source={node.event_message.replace('{USER_NAME}', node.event_user.name)} />
             </div>
           </Paper>
         </div>
@@ -203,7 +203,9 @@ const StixObjectHistoryLine = createFragmentContainer(
         id
         event_type
         event_date
-        event_user
+        event_user {
+          name
+        }
         event_message
         event_data
       }
