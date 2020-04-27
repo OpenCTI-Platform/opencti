@@ -2,7 +2,8 @@ import { v4 as uuid } from 'uuid';
 import { head } from 'ramda';
 import {
   clearAccessCache,
-  delEditContext, delUserContext,
+  delEditContext,
+  delUserContext,
   fetchEditContext,
   getAccessCache,
   getRedisVersion,

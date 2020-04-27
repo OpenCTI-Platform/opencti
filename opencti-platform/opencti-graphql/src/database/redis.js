@@ -9,10 +9,7 @@ const redisOptions = {
   port: conf.get('redis:port'),
   host: conf.get('redis:hostname'),
   password: conf.get('redis:password'),
-  retryStrategy: (times) => {
-    /* istanbul ignore next */
-    return Math.min(times * 50, 2000);
-  },
+  retryStrategy: /* istanbul ignore next */ (times) => Math.min(times * 50, 2000),
   maxRetriesPerRequest: 2,
 };
 
