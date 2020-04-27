@@ -667,8 +667,6 @@ class Opinion:
                 opinion["labels"] = entity["stix_label"]
             else:
                 opinion["labels"] = ["opinion"]
-            if self.opencti.not_empty(entity["description"]):
-                opinion["abstract"] = entity["description"]
             opinion["created"] = self.opencti.stix2.format_date(entity["created"])
             opinion["modified"] = self.opencti.stix2.format_date(entity["modified"])
             if self.opencti.not_empty(entity["alias"]):
