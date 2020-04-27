@@ -12,7 +12,7 @@ import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import DatePickerField from '../../../../components/DatePickerField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import { dateFormat } from '../../../../utils/Time';
 
 const styles = (theme) => ({
@@ -75,17 +75,15 @@ const campaignValidation = (t) => Yup.object().shape({
 
 class CampaignEditionDetailsComponent extends Component {
   handleChangeFocus(name) {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: campaignEditionDetailsFocus,
-        variables: {
-          id: this.props.campaign.id,
-          input: {
-            focusOn: name,
-          },
+    commitMutation({
+      mutation: campaignEditionDetailsFocus,
+      variables: {
+        id: this.props.campaign.id,
+        input: {
+          focusOn: name,
         },
-      });
-    }
+      },
+    });
   }
 
   handleSubmitField(name, value) {

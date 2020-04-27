@@ -52,7 +52,7 @@ const styles = (theme) => ({
     overflow: 'hidden',
   },
   tooltip: {
-    maxWidth: 'none',
+    maxWidth: '50%',
   },
   paper: {
     width: '100%',

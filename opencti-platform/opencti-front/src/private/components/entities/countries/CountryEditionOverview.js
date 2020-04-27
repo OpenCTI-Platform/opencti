@@ -18,7 +18,7 @@ import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import CreatedByRefField from '../../common/form/CreatedByRefField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
@@ -108,17 +108,15 @@ const countryValidation = (t) => Yup.object().shape({
 
 class CountryEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: countryEditionOverviewFocus,
-        variables: {
-          id: this.props.country.id,
-          input: {
-            focusOn: name,
-          },
+    commitMutation({
+      mutation: countryEditionOverviewFocus,
+      variables: {
+        id: this.props.country.id,
+        input: {
+          focusOn: name,
         },
-      });
-    }
+      },
+    });
   }
 
   handleSubmitField(name, value) {

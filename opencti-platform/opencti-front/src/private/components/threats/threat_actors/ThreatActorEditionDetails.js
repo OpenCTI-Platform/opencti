@@ -11,7 +11,7 @@ import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -74,17 +74,15 @@ const threatActorValidation = (t) => Yup.object().shape({
 
 class ThreatActorEditionDetailsComponent extends Component {
   handleChangeFocus(name) {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: threatActorEditionDetailsFocus,
-        variables: {
-          id: this.props.threatActor.id,
-          input: {
-            focusOn: name,
-          },
+    commitMutation({
+      mutation: threatActorEditionDetailsFocus,
+      variables: {
+        id: this.props.threatActor.id,
+        input: {
+          focusOn: name,
         },
-      });
-    }
+      },
+    });
   }
 
   handleSubmitField(name, value) {

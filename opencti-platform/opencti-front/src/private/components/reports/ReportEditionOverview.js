@@ -20,7 +20,6 @@ import { dateFormat } from '../../../utils/Time';
 import {
   QueryRenderer,
   commitMutation,
-  WS_ACTIVATED,
 } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
@@ -121,17 +120,15 @@ const reportValidation = (t) => Yup.object().shape({
 
 class ReportEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: reportEditionOverviewFocus,
-        variables: {
-          id: this.props.report.id,
-          input: {
-            focusOn: name,
-          },
+    commitMutation({
+      mutation: reportEditionOverviewFocus,
+      variables: {
+        id: this.props.report.id,
+        input: {
+          focusOn: name,
         },
-      });
-    }
+      },
+    });
   }
 
   handleSubmitField(name, value) {

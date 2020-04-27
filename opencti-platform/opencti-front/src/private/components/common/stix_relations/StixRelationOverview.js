@@ -23,7 +23,7 @@ import ItemConfidenceLevel from '../../../../components/ItemConfidenceLevel';
 import StixRelationEdition, {
   stixRelationEditionDeleteMutation,
 } from './StixRelationEdition';
-import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import SimpleLabelFactory from '../../../../components/graph_node/SimpleLabelFactory';
 import SimpleLinkFactory from '../../../../components/graph_node/SimpleLinkFactory';
 import EntityNodeFactory from '../../../../components/graph_node/EntityNodeFactory';
@@ -131,15 +131,13 @@ class StixRelationContainer extends Component {
         params: { relationId },
       },
     } = this.props;
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: stixRelationEditionFocus,
-        variables: {
-          id: relationId,
-          input: { focusOn: '' },
-        },
-      });
-    }
+    commitMutation({
+      mutation: stixRelationEditionFocus,
+      variables: {
+        id: relationId,
+        input: { focusOn: '' },
+      },
+    });
     this.setState({ openEdit: false });
   }
 

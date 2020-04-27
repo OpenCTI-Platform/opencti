@@ -9,7 +9,6 @@ import graphql from 'babel-plugin-relay/macro';
 import {
   commitMutation,
   QueryRenderer,
-  WS_ACTIVATED,
 } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import CourseOfActionEditionContainer from './CourseOfActionEditionContainer';
@@ -55,15 +54,13 @@ class CourseOfActionEdition extends Component {
   }
 
   handleClose() {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: courseOfActionEditionOverviewFocus,
-        variables: {
-          id: this.props.courseOfActionId,
-          input: { focusOn: '' },
-        },
-      });
-    }
+    commitMutation({
+      mutation: courseOfActionEditionOverviewFocus,
+      variables: {
+        id: this.props.courseOfActionId,
+        input: { focusOn: '' },
+      },
+    });
     this.setState({ open: false });
   }
 
