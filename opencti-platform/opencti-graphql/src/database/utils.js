@@ -137,7 +137,11 @@ export const generateLogMessage = (eventType, eventUser, eventData, eventExtraDa
   if (eventData.relationship_type && eventData.entity_type !== 'relation_embedded') {
     message += `relation \`${eventData.relationship_type}\` from ${fromType} \`${fromValue}\` to ${toType} \`${toValue}\`.`;
   } else if (eventData.entity_type === 'relation_embedded') {
-    message += `\`${toType}\` with value \`${toValue}\`.`;
+    if (eventType === 'update') {
+      message += `\`${eventData.relationship_type}\` with the value \`${toValue}\`.`;
+    } else {
+      message += `\`${toType}\` with value \`${toValue}\`.`;
+    }
   } else if (eventType === 'update') {
     message += `\`${eventExtraData.key}\` with \`${join(', ', eventExtraData.value)}\`.`;
   } else {

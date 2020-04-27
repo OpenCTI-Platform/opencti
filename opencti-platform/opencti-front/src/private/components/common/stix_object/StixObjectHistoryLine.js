@@ -22,6 +22,7 @@ import {
   LinkOffOutlined,
   HelpOutlined,
 } from '@material-ui/icons';
+import { LinkVariantPlus, LinkVariantRemove } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
@@ -132,7 +133,7 @@ class StixObjectHistoryLineComponent extends Component {
               color: '#ffffff',
             }}
           >
-            <EditOutlined />
+            <LinkVariantPlus />
           </Avatar>
         );
       }
@@ -145,7 +146,7 @@ class StixObjectHistoryLineComponent extends Component {
               color: '#ffffff',
             }}
           >
-            <EditOutlined />
+            <LinkVariantRemove />
           </Avatar>
         );
       }
