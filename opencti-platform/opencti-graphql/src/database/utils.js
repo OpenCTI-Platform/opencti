@@ -126,7 +126,7 @@ export const generateLogMessage = (eventType, eventUser, eventData, eventExtraDa
     toType = eventExtraData.to.entity_type;
   }
   const name = extractEntityMainValue(eventData);
-  let message = `\`${eventUser.name}\` `;
+  let message = '`{USER_NAME}` ';
   if (eventType === 'create') {
     message += 'created a ';
   } else if (eventType === 'update') {
