@@ -101,6 +101,7 @@ export const metrics = async () => {
     reduce(add, 0)
   )(pushQueues);
   let finalCount = 0;
+  /* istanbul ignore if */
   if (nbConsumers > 0 && nbPushQueues > 0) {
     // Because worker connect to every queue.
     finalCount = divide(nbConsumers, nbPushQueues);
