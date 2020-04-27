@@ -19,9 +19,11 @@ from pycti import OpenCTIApiClient
 
 
 class Consumer(threading.Thread):
-    def __init__(self, connector, api):
+    def __init__(self, connector, opencti_url, opencti_token):
         threading.Thread.__init__(self)
-        self.api = api
+        self.opencti_url = opencti_url
+        self.opencti_token = opencti_token
+        self.api = OpenCTIApiClient(self.opencti_url, self.opencti_token)
         self.queue_name = connector['config']['push']
         self.pika_connection = pika.BlockingConnection(pika.URLParameters(connector['config']['uri']))
         self.channel = self.pika_connection.channel()
@@ -68,11 +70,17 @@ class Consumer(threading.Thread):
     # Data handling
     def data_handler(self, connection, channel, delivery_tag, data):
         job_id = data['job_id']
+        token = None
+        if "token" in data:
+            token = data["token"]
         try:
             content = base64.b64decode(data['content']).decode('utf-8')
             types = data['entities_types'] if 'entities_types' in data else []
             update = data['update'] if 'update' in data else False
+            if token:
+                self.api.set_token(token)
             imported_data = self.api.stix2.import_bundle_from_json(content, update, types)
+            self.api.set_token(self.opencti_token)
             if job_id is not None:
                 messages = []
                 by_types = groupby(imported_data, key=lambda x: x['type'])
@@ -195,10 +203,10 @@ class Worker:
                     if queue in self.consumer_threads:
                         if not self.consumer_threads[queue].is_alive():
                             logging.info('Thread for queue ' + queue + ' not alive, creating a new one...')
-                            self.consumer_threads[queue] = Consumer(connector, self.api)
+                            self.consumer_threads[queue] = Consumer(connector, self.api, self.opencti_token)
                             self.consumer_threads[queue].start()
                     else:
-                        self.consumer_threads[queue] = Consumer(connector, self.api)
+                        self.consumer_threads[queue] = Consumer(connector, self.opencti_url, self.opencti_token)
                         self.consumer_threads[queue].start()
                 # Check logs queue is consumed
                 if self.logs_all_queue in self.logger_threads:
