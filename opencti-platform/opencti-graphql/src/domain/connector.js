@@ -9,7 +9,7 @@ import {
   sinceNowInMinutes,
   updateAttribute,
 } from '../database/grakn';
-import { connectorConfig, registerConnectorQueues } from '../database/rabbitmq';
+import { connectorConfig, registerConnectorQueues, unregisterConnector } from '../database/rabbitmq';
 import { TYPE_OPENCTI_INTERNAL } from '../database/utils';
 
 export const CONNECTOR_INTERNAL_IMPORT_FILE = 'INTERNAL_IMPORT_FILE'; // Files mime types to support (application/json, ...) -> import-
@@ -106,6 +106,8 @@ export const registerConnector = async (user, { id, name, type, scope }) => {
   // Return the connector
   return completeConnector(createdConnector);
 };
-export const connectorDelete = async (user, connectorId) =>
-  deleteEntityById(user, connectorId, 'Connector', { noLog: true });
+export const connectorDelete = async (user, connectorId) => {
+  await unregisterConnector(connectorId);
+  return deleteEntityById(user, connectorId, 'Connector', { noLog: true });
+};
 // endregion
