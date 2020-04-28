@@ -50,10 +50,6 @@ export const addSettings = async (user, settings) => {
   return notify(BUS_TOPICS.Settings.ADDED_TOPIC, created, user);
 };
 
-export const settingsDelete = (user, settingsId) => {
-  return deleteEntityById(user, settingsId, 'Settings', { noLog: true });
-};
-
 export const settingsCleanContext = (user, settingsId) => {
   delEditContext(user, settingsId);
   return loadEntityById(settingsId, 'Settings').then((settings) =>
