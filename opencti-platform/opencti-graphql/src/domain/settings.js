@@ -1,7 +1,6 @@
 import { assoc, dissocPath, pipe } from 'ramda';
 import {
   createEntity,
-  deleteEntityById,
   executeWrite,
   getGraknVersion,
   load,
