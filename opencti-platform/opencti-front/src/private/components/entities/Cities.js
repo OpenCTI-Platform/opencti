@@ -79,6 +79,7 @@ class Cities extends Component {
       sortBy,
       orderAsc,
       searchTerm,
+      filters,
       openExports,
       numberOfElements,
     } = this.state;
@@ -112,6 +113,7 @@ class Cities extends Component {
         openExports={openExports}
         exportEntityType="City"
         keyword={searchTerm}
+        filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[

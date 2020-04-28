@@ -21,28 +21,31 @@ export const findAll = (args) => {
 };
 
 export const addExternalReference = async (user, externalReference) => {
-  const created = await createEntity(user, externalReference, 'External-Reference', { modelType: TYPE_STIX_DOMAIN });
+  const created = await createEntity(user, externalReference, 'External-Reference', {
+    modelType: TYPE_STIX_DOMAIN,
+    noLog: true,
+  });
   return notify(BUS_TOPICS.ExternalReference.ADDED_TOPIC, created, user);
 };
 
-export const externalReferenceDelete = async (externalReferenceId) => {
-  return deleteEntityById(externalReferenceId, 'External-Reference');
+export const externalReferenceDelete = async (user, externalReferenceId) => {
+  return deleteEntityById(user, externalReferenceId, 'External-Reference', { noLog: true });
 };
 export const externalReferenceAddRelation = (user, externalReferenceId, input) => {
   const finalInput = pipe(assoc('through', 'external_references'), assoc('toType', 'External-Reference'))(input);
-  return createRelation(externalReferenceId, finalInput).then((relationData) => {
+  return createRelation(user, externalReferenceId, finalInput).then((relationData) => {
     notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
 export const externalReferenceDeleteRelation = async (user, externalReferenceId, relationId) => {
-  await deleteRelationById(relationId, 'stix_relation_embedded');
+  await deleteRelationById(user, relationId, 'stix_relation_embedded');
   const data = await loadEntityById(externalReferenceId, 'External-Reference');
   return notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, data, user);
 };
 export const externalReferenceEditField = (user, externalReferenceId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(externalReferenceId, 'External-Reference', input, wTx);
+    return updateAttribute(user, externalReferenceId, 'External-Reference', input, wTx, { noLog: true });
   }).then(async () => {
     const externalReference = await loadEntityById(externalReferenceId, 'External-Reference');
     return notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference, user);

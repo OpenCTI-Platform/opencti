@@ -9,7 +9,6 @@ import graphql from 'babel-plugin-relay/macro';
 import {
   commitMutation,
   QueryRenderer,
-  WS_ACTIVATED,
 } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import IndicatorEditionContainer from './IndicatorEditionContainer';
@@ -55,15 +54,13 @@ class IndicatorEdition extends Component {
   }
 
   handleClose() {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: indicatorEditionOverviewFocus,
-        variables: {
-          id: this.props.indicatorId,
-          input: { focusOn: '' },
-        },
-      });
-    }
+    commitMutation({
+      mutation: indicatorEditionOverviewFocus,
+      variables: {
+        id: this.props.indicatorId,
+        input: { focusOn: '' },
+      },
+    });
     this.setState({ open: false });
   }
 

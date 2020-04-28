@@ -126,6 +126,5 @@ if (environment === 'test') {
   });
 }
 
-export const isAppRealTime = nconf.get('app:reactive') && JSON.parse(nconf.get('app:reactive'));
 export const logger = loggerInstance;
 export default nconf;

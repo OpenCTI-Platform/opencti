@@ -25,7 +25,7 @@ const groupResolvers = {
   },
   Mutation: {
     groupEdit: (_, { id }, { user }) => ({
-      delete: () => groupDelete(id),
+      delete: () => groupDelete(user, id),
       fieldPatch: ({ input }) => groupEditField(user, id, input),
       contextPatch: ({ input }) => groupEditContext(user, id, input),
       contextClean: () => groupCleanContext(user, id),

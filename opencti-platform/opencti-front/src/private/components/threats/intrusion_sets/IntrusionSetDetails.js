@@ -8,6 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
 import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
+import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
   paper: {
@@ -31,6 +32,14 @@ class IntrusionSetDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <StixDomainEntityTags tags={intrusionSet.tags} id={intrusionSet.id} />
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
+            {t('Creator')}
+          </Typography>
+          <ItemCreator creator={intrusionSet.creator} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -128,6 +137,10 @@ const IntrusionSetDetails = createFragmentContainer(
         resource_level
         primary_motivation
         secondary_motivation
+        creator {
+          id
+          name
+        }
         tags {
           edges {
             node {
@@ -146,7 +159,4 @@ const IntrusionSetDetails = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(IntrusionSetDetails);
+export default compose(inject18n, withStyles(styles))(IntrusionSetDetails);

@@ -6,6 +6,7 @@ import {
   findById,
   indicators,
   stixObservableAddRelation,
+  stixObservableAddRelations,
   stixObservableAskEnrichment,
   stixObservableCleanContext,
   stixObservableDelete,
@@ -20,6 +21,7 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { workForEntity } from '../domain/work';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { connectorsForEnrichment } from '../domain/enrichment';
+import { convertDataToStix } from '../database/stix';
 
 const stixObservableResolvers = {
   Query: {
@@ -44,15 +46,18 @@ const stixObservableResolvers = {
     jobs: (stixObservable, args) => workForEntity(stixObservable.id, args),
     connectors: (stixObservable, { onlyAlive = false }) =>
       connectorsForEnrichment(stixObservable.entity_type, onlyAlive),
+    toStix: (stixObservable) => convertDataToStix(stixObservable).then((stixData) => JSON.stringify(stixData)),
   },
   Mutation: {
     stixObservableEdit: (_, { id }, { user }) => ({
-      delete: () => stixObservableDelete(id),
+      delete: () => stixObservableDelete(user, id),
       fieldPatch: ({ input }) => stixObservableEditField(user, id, input),
       contextPatch: ({ input }) => stixObservableEditContext(user, id, input),
       contextClean: () => stixObservableCleanContext(user, id),
       relationAdd: ({ input }) => stixObservableAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixObservableDeleteRelation(user, id, relationId),
+      relationsAdd: ({ input }) => stixObservableAddRelations(user, id, input),
+      relationDelete: ({ relationId, toId, relationType }) =>
+        stixObservableDeleteRelation(user, id, relationId, toId, relationType),
       askEnrichment: ({ connectorId }) => stixObservableAskEnrichment(id, connectorId),
     }),
     stixObservableAdd: (_, { input }, { user }) => addStixObservable(user, input),

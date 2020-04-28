@@ -167,6 +167,26 @@ class TopMenuIntrusionSet extends Component {
             {t('Files')}
           </Button>
         </Security>
+        <Button
+          component={Link}
+          to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/threats/intrusion_sets/${intrusionSetId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/threats/intrusion_sets/${intrusionSetId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
+        </Button>
       </div>
     );
   }

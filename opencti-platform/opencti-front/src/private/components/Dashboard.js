@@ -35,6 +35,8 @@ import ItemNumberDifference from '../../components/ItemNumberDifference';
 import ItemMarking from '../../components/ItemMarking';
 import Loader from '../../components/Loader';
 import Security, { KNOWLEDGE } from '../../utils/Security';
+import { resolveLink } from '../../utils/Entity';
+import ItemIcon from '../../components/ItemIcon';
 
 const styles = (theme) => ({
   root: {
@@ -47,9 +49,8 @@ const styles = (theme) => ({
     position: 'relative',
   },
   paper: {
-    height: '100%',
-    minHeight: 200,
-    margin: '10px 0 20px 0',
+    height: 420,
+    margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 6,
   },
@@ -63,7 +64,7 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 10,
+    paddingRight: 24,
   },
   itemIconSecondary: {
     marginRight: 0,
@@ -95,36 +96,37 @@ const styles = (theme) => ({
 
 const inlineStyles = {
   itemAuthor: {
-    width: 80,
-    minWidth: 80,
-    maxWidth: 80,
-    marginRight: 24,
-    marginLeft: 24,
-    color: '#ffffff',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  itemType: {
     width: 100,
     minWidth: 100,
     maxWidth: 100,
-    marginRight: 24,
-    marginLeft: 24,
+    paddingRight: 24,
     color: '#ffffff',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    textAlign: 'left',
+  },
+  itemType: {
+    width: 120,
+    minWidth: 120,
+    maxWidth: 120,
+    paddingRight: 24,
+    color: '#ffffff',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    textAlign: 'left',
   },
   itemDate: {
-    width: 80,
-    minWidth: 80,
-    maxWidth: 80,
-    marginRight: 24,
+    width: 100,
+    minWidth: 100,
+    maxWidth: 100,
+    paddingRight: 24,
     color: '#ffffff',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    textAlign: 'left',
   },
 };
 
@@ -171,6 +173,101 @@ const dashboardLastReportsQuery = graphql`
             edges {
               node {
                 definition
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+const dashboardLastStixDomainEntitiesQuery = graphql`
+  query DashboardLastStixDomainEntitiesQuery(
+    $first: Int
+    $orderBy: StixDomainEntitiesOrdering
+    $orderMode: OrderingMode
+    $types: [String]
+  ) {
+    stixDomainEntities(
+      first: $first
+      orderBy: $orderBy
+      orderMode: $orderMode
+      types: $types
+    ) {
+      edges {
+        node {
+          id
+          entity_type
+          name
+          description
+          updated_at
+          createdByRef {
+            node {
+              name
+            }
+          }
+          markingDefinitions {
+            edges {
+              node {
+                definition
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+const dashboardLastNotesQuery = graphql`
+  query DashboardLastNotesQuery(
+    $first: Int
+    $orderBy: NotesOrdering
+    $orderMode: OrderingMode
+  ) {
+    notes(first: $first, orderBy: $orderBy, orderMode: $orderMode) {
+      edges {
+        node {
+          id
+          name
+          created
+          createdByRef {
+            node {
+              name
+            }
+          }
+          markingDefinitions {
+            edges {
+              node {
+                definition
+              }
+            }
+          }
+          objectRefs {
+            edges {
+              node {
+                id
+                entity_type
+              }
+            }
+          }
+          observableRefs {
+            edges {
+              node {
+                id
+                entity_type
+              }
+            }
+          }
+          relationRefs {
+            edges {
+              node {
+                id
+                from {
+                  id
+                  entity_type
+                }
               }
             }
           }
@@ -424,6 +521,209 @@ class Dashboard extends Component {
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>
+            <Grid item={true} lg={6} xs={12}>
+              <Typography variant="h4" gutterBottom={true}>
+                {t('Last modified entities')}
+              </Typography>
+              <Paper classes={{ root: classes.paper }} elevation={2}>
+                <QueryRenderer
+                  query={dashboardLastStixDomainEntitiesQuery}
+                  variables={{
+                    first: 8,
+                    orderBy: 'modified',
+                    orderMode: 'desc',
+                    types: [
+                      'Threat-Actor',
+                      'Intrusion-Set',
+                      'Campaign',
+                      'Incident',
+                      'Malware',
+                      'Attack-Pattern',
+                      'Course-of-Action',
+                      'Tool',
+                      'Vulnerability',
+                    ],
+                  }}
+                  render={({ props }) => {
+                    if (props && props.stixDomainEntities) {
+                      return (
+                        <List>
+                          {props.stixDomainEntities.edges.map(
+                            (stixDomainEntityEdge) => {
+                              const stixDomainEntity = stixDomainEntityEdge.node;
+                              const stixDomainEntityLink = `${resolveLink(
+                                stixDomainEntity.entity_type,
+                              )}/${stixDomainEntity.id}`;
+                              const markingDefinition = head(
+                                pathOr(
+                                  [],
+                                  ['markingDefinitions', 'edges'],
+                                  stixDomainEntity,
+                                ),
+                              );
+                              return (
+                                <ListItem
+                                  key={stixDomainEntity.id}
+                                  dense={true}
+                                  button={true}
+                                  classes={{ root: classes.item }}
+                                  divider={true}
+                                  component={Link}
+                                  to={stixDomainEntityLink}
+                                >
+                                  <ListItemIcon>
+                                    <ItemIcon
+                                      type={stixDomainEntity.entity_type}
+                                      color="#00bcd4"
+                                    />
+                                  </ListItemIcon>
+                                  <ListItemText
+                                    primary={
+                                      <div className={classes.itemText}>
+                                        {stixDomainEntity.name}
+                                      </div>
+                                    }
+                                  />
+                                  <div style={inlineStyles.itemAuthor}>
+                                    {pathOr(
+                                      '',
+                                      ['createdByRef', 'node', 'name'],
+                                      stixDomainEntity,
+                                    )}
+                                  </div>
+                                  <div style={inlineStyles.itemDate}>
+                                    {nsd(stixDomainEntity.modified)}
+                                  </div>
+                                  <div
+                                    style={{
+                                      width: 110,
+                                      maxWidth: 110,
+                                      minWidth: 110,
+                                      paddingRight: 20,
+                                    }}
+                                  >
+                                    {markingDefinition ? (
+                                      <ItemMarking
+                                        key={markingDefinition.node.id}
+                                        label={
+                                          markingDefinition.node.definition
+                                        }
+                                        variant="inList"
+                                      />
+                                    ) : (
+                                      ''
+                                    )}
+                                  </div>
+                                </ListItem>
+                              );
+                            },
+                          )}
+                        </List>
+                      );
+                    }
+                    return <Loader variant="inElement" />;
+                  }}
+                />
+              </Paper>
+            </Grid>
+            <Grid item={true} lg={6} xs={12}>
+              <Typography variant="h4" gutterBottom={true}>
+                {t('Last notes')}
+              </Typography>
+              <Paper classes={{ root: classes.paper }} elevation={2}>
+                <QueryRenderer
+                  query={dashboardLastNotesQuery}
+                  variables={{
+                    first: 8,
+                    orderBy: 'created',
+                    orderMode: 'desc',
+                  }}
+                  render={({ props }) => {
+                    if (props && props.notes) {
+                      return (
+                        <List>
+                          {props.notes.edges.map((noteEdge) => {
+                            const note = noteEdge.node;
+                            let noteLink;
+                            if (note.objectRefs.edges.length > 0) {
+                              noteLink = `${resolveLink(
+                                note.objectRefs.edges[0].node.entity_type,
+                              )}/${note.objectRefs.edges[0].node.id}`;
+                            } else if (note.observableRefs.edges.length > 0) {
+                              noteLink = `${resolveLink(
+                                note.observableRefs.edges[0].node.entity_type,
+                              )}/${note.observableRefs.edges[0].node.id}`;
+                            } else if (note.relationRefs.edges.length > 0) {
+                              noteLink = `${resolveLink(
+                                note.relationRefs.edges[0].node.from.entity_type,
+                              )}/${
+                                note.relationRefs.edges[0].node.from.id
+                              }/knowledge/relations/${
+                                note.relationRefs.edges[0].node.id
+                              }`;
+                            }
+                            const markingDefinition = head(
+                              pathOr([], ['markingDefinitions', 'edges'], note),
+                            );
+                            return (
+                              <ListItem
+                                key={note.id}
+                                dense={true}
+                                button={true}
+                                classes={{ root: classes.item }}
+                                divider={true}
+                                component={Link}
+                                to={noteLink}
+                              >
+                                <ListItemIcon>
+                                  <WorkOutline color="primary" />
+                                </ListItemIcon>
+                                <ListItemText
+                                  primary={
+                                    <div className={classes.itemText}>
+                                      {note.name}
+                                    </div>
+                                  }
+                                />
+                                <div style={inlineStyles.itemAuthor}>
+                                  {pathOr(
+                                    '',
+                                    ['createdByRef', 'node', 'name'],
+                                    note,
+                                  )}
+                                </div>
+                                <div style={inlineStyles.itemDate}>
+                                  {nsd(note.created)}
+                                </div>
+                                <div
+                                  style={{
+                                    width: 110,
+                                    maxWidth: 110,
+                                    minWidth: 110,
+                                    paddingRight: 20,
+                                  }}
+                                >
+                                  {markingDefinition ? (
+                                    <ItemMarking
+                                      key={markingDefinition.node.id}
+                                      label={markingDefinition.node.definition}
+                                      variant="inList"
+                                    />
+                                  ) : (
+                                    ''
+                                  )}
+                                </div>
+                              </ListItem>
+                            );
+                          })}
+                        </List>
+                      );
+                    }
+                    return <Loader variant="inElement" />;
+                  }}
+                />
+              </Paper>
+            </Grid>
             <Grid item={true} lg={6} xs={12} style={{ marginBottom: 30 }}>
               <Typography variant="h4" gutterBottom={true}>
                 {t('Last reports')}
@@ -432,7 +732,7 @@ class Dashboard extends Component {
                 <QueryRenderer
                   query={dashboardLastReportsQuery}
                   variables={{
-                    first: 20,
+                    first: 8,
                     orderBy: 'published',
                     orderMode: 'desc',
                   }}
@@ -479,7 +779,14 @@ class Dashboard extends Component {
                                 <div style={inlineStyles.itemDate}>
                                   {nsd(report.published)}
                                 </div>
-                                <div style={{ width: 110, paddingRight: 20 }}>
+                                <div
+                                  style={{
+                                    width: 110,
+                                    maxWidth: 110,
+                                    minWidth: 110,
+                                    paddingRight: 20,
+                                  }}
+                                >
                                   {markingDefinition ? (
                                     <ItemMarking
                                       key={markingDefinition.node.id}
@@ -509,7 +816,7 @@ class Dashboard extends Component {
                 <QueryRenderer
                   query={dashboardLastObservablesQuery}
                   variables={{
-                    first: 20,
+                    first: 8,
                     orderBy: 'created_at',
                     orderMode: 'desc',
                   }}
@@ -555,7 +862,14 @@ class Dashboard extends Component {
                                   <div style={inlineStyles.itemDate}>
                                     {nsd(stixObservable.created_at)}
                                   </div>
-                                  <div style={{ width: 110, paddingRight: 20 }}>
+                                  <div
+                                    style={{
+                                      width: 110,
+                                      maxWidth: 110,
+                                      minWidth: 110,
+                                      paddingRight: 20,
+                                    }}
+                                  >
                                     {markingDefinition ? (
                                       <ItemMarking
                                         key={markingDefinition.node.id}

@@ -64,6 +64,7 @@ const READ_QUERY = gql`
       id
       name
       description
+      toStix
     }
   }
 `;
@@ -106,6 +107,7 @@ describe('Campaign resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.campaign).not.toBeNull();
     expect(queryResult.data.campaign.id).toEqual(campaignInternalId);
+    expect(queryResult.data.campaign.toStix.length).toBeGreaterThan(5);
   });
   it('should campaign loaded by stix id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: campaignStixId } });

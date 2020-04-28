@@ -15,7 +15,7 @@ import {
   head,
 } from 'ramda';
 import * as Yup from 'yup';
-import { commitMutation, WS_ACTIVATED } from '../../../relay/environment';
+import { commitMutation } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import { SubscriptionFocus } from '../../../components/Subscription';
@@ -111,17 +111,15 @@ const workspaceValidation = (t) => Yup.object().shape({
 
 class WorkspaceEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: workspaceEditionOverviewFocus,
-        variables: {
-          id: this.props.workspace.id,
-          input: {
-            focusOn: name,
-          },
+    commitMutation({
+      mutation: workspaceEditionOverviewFocus,
+      variables: {
+        id: this.props.workspace.id,
+        input: {
+          focusOn: name,
         },
-      });
-    }
+      },
+    });
   }
 
   handleSubmitField(name, value) {

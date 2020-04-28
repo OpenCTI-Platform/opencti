@@ -10,6 +10,7 @@ import inject18n from '../../../components/i18n';
 import ItemStatus from '../../../components/ItemStatus';
 import ItemConfidenceLevel from '../../../components/ItemConfidenceLevel';
 import StixDomainEntityTags from '../common/stix_domain_entities/StixDomainEntityTags';
+import ItemCreator from '../../../components/ItemCreator';
 
 const styles = () => ({
   paper: {
@@ -31,6 +32,14 @@ class ReportDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <StixDomainEntityTags tags={report.tags} id={report.id} />
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
+            {t('Creator')}
+          </Typography>
+          <ItemCreator creator={report.creator} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -75,6 +84,10 @@ const ReportDetails = createFragmentContainer(ReportDetailsComponent, {
       id
       object_status
       source_confidence_level
+      creator {
+          id
+          name
+        }
       tags {
         edges {
           node {

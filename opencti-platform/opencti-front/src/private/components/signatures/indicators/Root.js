@@ -11,6 +11,9 @@ import StixRelation from '../../common/stix_relations/StixRelation';
 import Indicator from './Indicator';
 import IndicatorObservables from './IndicatorObservables';
 import Loader from '../../../../components/Loader';
+import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
+import IndicatorHeader from './IndicatorHeader';
+import IndicatorPopover from './IndicatorPopover';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
@@ -27,6 +30,9 @@ const subscription = graphql`
 const indicatorQuery = graphql`
   query RootIndicatorQuery($id: String!) {
     indicator(id: $id) {
+      id
+      name
+      alias
       ...Indicator_indicator
       ...IndicatorHeader_indicator
       ...IndicatorOverview_indicator
@@ -90,12 +96,25 @@ class RootIndicator extends Component {
                   />
                   <Route
                     exact
+                    path="/dashboard/signatures/indicators/:indicatorId/history"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <IndicatorHeader
+                          indicator={props.indicator}
+                          PopoverComponent={<IndicatorPopover />}
+                        />
+                        <StixObjectHistory
+                          {...routeProps}
+                          entityId={indicatorId}
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
                     path="/dashboard/signatures/indicators/:indicatorId/knowledge/relations/:relationId"
                     render={(routeProps) => (
-                      <StixRelation
-                        entityId={indicatorId}
-                        {...routeProps}
-                      />
+                      <StixRelation entityId={indicatorId} {...routeProps} />
                     )}
                   />
                 </div>

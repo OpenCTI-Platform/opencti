@@ -24,7 +24,7 @@ const purgeDuplicates = async (query, relation = false, reportId = null) => {
         const relationsToDelete = map((n) => n.relation.internal_id_key, dropLast(1, groupedRelation));
         // eslint-disable-next-line no-restricted-syntax
         for (const relationToDelete of relationsToDelete) {
-          await deleteRelationById(relationToDelete, 'relation');
+          await deleteRelationById(null, relationToDelete, 'relation');
         }
       }
     }

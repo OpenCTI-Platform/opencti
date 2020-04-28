@@ -10,6 +10,7 @@ import Chip from '@material-ui/core/Chip';
 import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
 import inject18n from '../../../../components/i18n';
 import ItemReliability from '../../../../components/ItemReliability';
+import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
   paper: {
@@ -44,6 +45,14 @@ class OrganizationDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <StixDomainEntityTags tags={organization.tags} id={organization.id} />
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
+            {t('Creator')}
+          </Typography>
+          <ItemCreator creator={organization.creator} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -91,6 +100,10 @@ const OrganizationDetails = createFragmentContainer(
         id
         reliability
         organization_class
+        creator {
+          id
+          name
+        }
         tags {
           edges {
             node {

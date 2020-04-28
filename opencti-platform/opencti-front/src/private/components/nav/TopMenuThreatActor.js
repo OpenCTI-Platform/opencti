@@ -6,7 +6,10 @@ import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { ArrowForwardIosOutlined, PublicOutlined } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
-import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/Security';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -56,7 +59,10 @@ class TopMenuThreatActor extends Component {
           <PublicOutlined className={classes.icon} fontSize="small" />
           {t('Threat actors')}
         </Button>
-        <ArrowForwardIosOutlined color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
           to={`/dashboard/threats/threat_actors/${threatActorId}`}
@@ -143,23 +149,46 @@ class TopMenuThreatActor extends Component {
         </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
-              component={Link}
-              to={`/dashboard/threats/threat_actors/${threatActorId}/files`}
-              variant={
-                  location.pathname === `/dashboard/threats/threat_actors/${threatActorId}/files`
-                    ? 'contained'
-                    : 'text'
-              }
-              size="small"
-              color={
-                  location.pathname === `/dashboard/threats/threat_actors/${threatActorId}/files`
-                    ? 'primary'
-                    : 'inherit'
-              }
-              classes={{ root: classes.button }}>
-              {t('Files')}
+            component={Link}
+            to={`/dashboard/threats/threat_actors/${threatActorId}/files`}
+            variant={
+              location.pathname
+              === `/dashboard/threats/threat_actors/${threatActorId}/files`
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname
+              === `/dashboard/threats/threat_actors/${threatActorId}/files`
+                ? 'primary'
+                : 'inherit'
+            }
+            classes={{ root: classes.button }}
+          >
+            {t('Files')}
           </Button>
         </Security>
+        <Button
+          component={Link}
+          to={`/dashboard/threats/threat_actors/${threatActorId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/threats/threat_actors/${threatActorId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/threats/threat_actors/${threatActorId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
+        </Button>
       </div>
     );
   }

@@ -27,7 +27,7 @@ const styles = (theme) => ({
     padding: '0 0 20px 0',
   },
   expansionPanel: {
-    backgroundColor: '#444444',
+    backgroundColor: theme.palette.background.paper,
   },
   itemIcon: {
     color: theme.palette.primary.main,

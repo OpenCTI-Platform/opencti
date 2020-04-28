@@ -11,7 +11,7 @@ import * as Yup from 'yup';
 import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import SelectField from '../../../../components/SelectField';
 import TextField from '../../../../components/TextField';
 
@@ -74,17 +74,15 @@ const attackPatternValidation = () => Yup.object().shape({
 
 class AttackPatternEditionDetailsComponent extends Component {
   handleChangeFocus(name) {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: attackPatternEditionDetailsFocus,
-        variables: {
-          id: this.props.attackPattern.id,
-          input: {
-            focusOn: name,
-          },
+    commitMutation({
+      mutation: attackPatternEditionDetailsFocus,
+      variables: {
+        id: this.props.attackPattern.id,
+        input: {
+          focusOn: name,
         },
-      });
-    }
+      },
+    });
   }
 
   handleSubmitField(name, value) {

@@ -37,6 +37,7 @@ const READ_QUERY = gql`
       id
       name
       description
+      toStix
     }
   }
 `;
@@ -77,6 +78,7 @@ describe('Threat actor resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.threatActor).not.toBeNull();
     expect(queryResult.data.threatActor.id).toEqual(threatActorInternalId);
+    expect(queryResult.data.threatActor.toStix.length).toBeGreaterThan(5);
   });
   it('should threat actor loaded by stix id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: threatActorStixId } });

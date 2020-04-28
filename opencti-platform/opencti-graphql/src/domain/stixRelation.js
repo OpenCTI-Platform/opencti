@@ -59,15 +59,15 @@ export const addStixRelation = async (user, stixRelation, reversedReturn = false
   if (!includes('stix_id_key', Object.keys(stixRelation)) && !stixRelation.relationship_type) {
     throw new ForbiddenAccess();
   }
-  const created = await createRelation(stixRelation.fromId, stixRelation, { reversedReturn });
+  const created = await createRelation(user, stixRelation.fromId, stixRelation, { reversedReturn });
   return notify(BUS_TOPICS.StixRelation.ADDED_TOPIC, created, user);
 };
-export const stixRelationDelete = async (stixRelationId) => {
-  return deleteRelationById(stixRelationId, 'stix_relation');
+export const stixRelationDelete = async (user, stixRelationId) => {
+  return deleteRelationById(user, stixRelationId, 'stix_relation');
 };
 export const stixRelationEditField = (user, stixRelationId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(stixRelationId, 'stix_relation', input, wTx);
+    return updateAttribute(user, stixRelationId, 'stix_relation', input, wTx);
   }).then(async () => {
     const stixRelation = await loadRelationById(stixRelationId, 'stix_relation');
     return notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, stixRelation, user);
@@ -78,13 +78,13 @@ export const stixRelationAddRelation = async (user, stixRelationId, input) => {
   if (!data.parent_types.includes('stix_relation') || !input.through) {
     throw new ForbiddenAccess();
   }
-  return createRelation(stixRelationId, input).then((relationData) => {
+  return createRelation(user, stixRelationId, input).then((relationData) => {
     notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
 export const stixRelationDeleteRelation = async (user, stixRelationId, relationId) => {
-  await deleteRelationById(relationId, 'stix_relation_embedded');
+  await deleteRelationById(user, relationId, 'stix_relation_embedded');
   const data = await loadRelationById(stixRelationId, 'stix_relation');
   return notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, data, user);
 };

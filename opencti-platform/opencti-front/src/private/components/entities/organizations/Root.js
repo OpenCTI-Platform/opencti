@@ -15,6 +15,7 @@ import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomain
 import FileManager from '../../common/files/FileManager';
 import OrganizationPopover from './OrganizationPopover';
 import Loader from '../../../../components/Loader';
+import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
@@ -144,6 +145,22 @@ class RootOrganization extends Component {
                           id={organizationId}
                           connectorsExport={props.connectorsForExport}
                           entity={props.organization}
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/entities/organizations/:organizationId/history"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.organization}
+                          PopoverComponent={<OrganizationPopover />}
+                        />
+                        <StixObjectHistory
+                          {...routeProps}
+                          entityId={organizationId}
                         />
                       </React.Fragment>
                     )}

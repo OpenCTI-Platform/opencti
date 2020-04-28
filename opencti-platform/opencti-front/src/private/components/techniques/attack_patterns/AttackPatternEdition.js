@@ -9,7 +9,6 @@ import graphql from 'babel-plugin-relay/macro';
 import {
   commitMutation,
   QueryRenderer,
-  WS_ACTIVATED,
 } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import AttackPatternEditionContainer from './AttackPatternEditionContainer';
@@ -56,15 +55,13 @@ class AttackPatternEdition extends Component {
   }
 
   handleClose() {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: attackPatternEditionOverviewFocus,
-        variables: {
-          id: this.props.attackPatternId,
-          input: { focusOn: '' },
-        },
-      });
-    }
+    commitMutation({
+      mutation: attackPatternEditionOverviewFocus,
+      variables: {
+        id: this.props.attackPatternId,
+        input: { focusOn: '' },
+      },
+    });
     this.setState({ open: false });
   }
 

@@ -65,7 +65,7 @@ export const citiesLinesQuery = graphql`
     $cursor: ID
     $orderBy: CitiesOrdering
     $orderMode: OrderingMode
-    $filters: [OrganizationsFiltering]
+    $filters: [CitiesFiltering]
   ) {
     ...CitiesLines_data
       @arguments(

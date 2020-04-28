@@ -86,12 +86,14 @@ const i18n = {
         'Souhaitez-vous supprimer cet observable de cet indicateur ?',
       'Do you want to delete this role?': 'Souhaitez-vous supprimer ce rôle ?',
       'Do you want to delete this tag?': 'Souhaitez-vous supprimer ce tag ?',
-      'Do you want to delete this note?': 'Souhaitez-vous supprimer cette note ?',
+      'Do you want to delete this note?':
+        'Souhaitez-vous supprimer cette note ?',
       'Do you want to delete these entities?':
         'Souhaitez-vous supprimer ces entités ?',
       'Confirmation required': 'Confirmation requise',
       Information: 'Informations',
       'Last reports': 'Derniers rapports',
+      'Last notes': 'Dernières notes',
       'Last reports wrote by the entity':
         'Derniers rapports écrits par cette entité',
       'Last reports about the entity': "Derniers rapports à propos de l'entité",
@@ -694,11 +696,22 @@ const i18n = {
       Details: 'Détails',
       All: 'Tout',
       Clear: 'Effacer',
+      'has updated the field': 'a modifié le champ',
+      'with the value': 'avec la valeur',
+      'has created the entity': "a créé l'éntité",
+      'has created a relation': 'a créé une relation',
+      History: 'Activité',
+      to: 'vers',
+      'Relations of the entity': 'Relations de cette entité',
       'No entities of this type has been found.':
         "Aucune entité de ce type n'a été trouvée.",
       'No notes about this entity yet.':
         'Aucune note concernant cette entité pour le moment',
       'Notes about this entity': 'Notes à propos de cette entité',
+      'No history about this entity.':
+        'Aucun historique à propos cette entité.',
+      'No relations history about this entity.':
+        'Aucun historique de relations à propos cette entité.',
       // Explore
       'Kill chains': 'Kill chains',
       'Explore the victims and the targets of the dataset through space and time.':
@@ -755,6 +768,8 @@ const i18n = {
       entity_Region: 'régions',
       entity_Indicator: 'indicateurs',
       entity_Note: 'notes',
+      'entity_marking-definition': 'Marquage',
+      entity_tag: 'Tag',
       'entity_Attack-Pattern': 'TTPs',
       'entity_Stix-Observable': 'observables',
       entity_targets: 'cible',
@@ -798,6 +813,10 @@ const i18n = {
       'Part of': 'Fait parti de',
       'Localized in': 'Localisé dans/en',
       'Related to': 'Lié à',
+      relation_tagged: 'taggé avec',
+      relation_object_refs: 'refère',
+      relation_object_marking_refs: 'marqué avec',
+      relation_created_by_ref: 'créé par',
       relation_targets: 'cible',
       relation_uses: 'utilise',
       'relation_attributed-to': 'attribué à',
@@ -898,6 +917,8 @@ const i18n = {
       entity_country: 'Country',
       entity_city: 'City',
       entity_user: 'Person',
+      'entity_marking-definition': 'Marking',
+      entity_tag: 'Tag',
       entity_report: 'Report',
       entity_vulnerability: 'Vulnerability',
       entity_indicator: 'Indicator',
@@ -946,6 +967,10 @@ const i18n = {
       'observable_registry-key-value': 'Registry key value',
       'observable_pdb-path': 'PDB Path',
       // Relations
+      relation_tagged: 'tagged with',
+      relation_object_refs: 'refers',
+      relation_object_marking_refs: 'marked with',
+      relation_created_by_ref: 'created by',
       relation_targets: 'targets',
       relation_uses: 'uses',
       'relation_attributed-to': 'attributed to',

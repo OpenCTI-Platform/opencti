@@ -23,7 +23,7 @@ import ItemConfidenceLevel from '../../../../components/ItemConfidenceLevel';
 import StixRelationEdition, {
   stixRelationEditionDeleteMutation,
 } from './StixRelationEdition';
-import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import SimpleLabelFactory from '../../../../components/graph_node/SimpleLabelFactory';
 import SimpleLinkFactory from '../../../../components/graph_node/SimpleLinkFactory';
 import EntityNodeFactory from '../../../../components/graph_node/EntityNodeFactory';
@@ -33,7 +33,7 @@ import ItemMarking from '../../../../components/ItemMarking';
 import StixRelationInferences from './StixRelationInferences';
 import StixRelationStixRelations from './StixRelationStixRelations';
 import EntityLastReports from '../../reports/EntityLastReports';
-import ItemCreator from '../../../../components/ItemCreator';
+import ItemAuthor from '../../../../components/ItemAuthor';
 import StixObjectNotes from '../stix_object/StixObjectNotes';
 
 const styles = () => ({
@@ -131,15 +131,13 @@ class StixRelationContainer extends Component {
         params: { relationId },
       },
     } = this.props;
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: stixRelationEditionFocus,
-        variables: {
-          id: relationId,
-          input: { focusOn: '' },
-        },
-      });
-    }
+    commitMutation({
+      mutation: stixRelationEditionFocus,
+      variables: {
+        id: relationId,
+        input: { focusOn: '' },
+      },
+    });
     this.setState({ openEdit: false });
   }
 
@@ -359,9 +357,9 @@ class StixRelationContainer extends Component {
                 gutterBottom={true}
                 style={{ marginTop: 20 }}
               >
-                {t('Creator')}
+                {t('Author')}
               </Typography>
-              <ItemCreator
+              <ItemAuthor
                 createdByRef={pathOr(
                   null,
                   ['createdByRef', 'node'],
@@ -441,6 +439,7 @@ class StixRelationContainer extends Component {
                 </Grid>
               </Grid>
               <StixObjectNotes
+                marginTop={55}
                 entityId={stixRelation.id}
                 inputType="relationRefs"
               />

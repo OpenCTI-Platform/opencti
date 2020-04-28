@@ -9,7 +9,6 @@ import graphql from 'babel-plugin-relay/macro';
 import {
   commitMutation,
   QueryRenderer,
-  WS_ACTIVATED,
 } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import StixObservableEditionContainer from './StixObservableEditionContainer';
@@ -55,15 +54,13 @@ class StixObservableEdition extends Component {
   }
 
   handleClose() {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: stixObservableEditionOverviewFocus,
-        variables: {
-          id: this.props.stixObservableId,
-          input: { focusOn: '' },
-        },
-      });
-    }
+    commitMutation({
+      mutation: stixObservableEditionOverviewFocus,
+      variables: {
+        id: this.props.stixObservableId,
+        input: { focusOn: '' },
+      },
+    });
     this.setState({ open: false });
   }
 

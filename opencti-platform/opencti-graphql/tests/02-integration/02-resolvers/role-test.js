@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import uuidv5 from 'uuid/v5';
+import { v5 as uuid5 } from 'uuid';
 import { queryAsAdmin } from '../../utils/testQuery';
 
 const LIST_QUERY = gql`
@@ -154,7 +154,7 @@ describe('Role resolver standard behavior', () => {
         id: roleInternalId,
         input: {
           fromRole: 'position',
-          toId: uuidv5('KNOWLEDGE', uuidv5.DNS),
+          toId: uuid5('KNOWLEDGE', uuid5.DNS),
           toRole: 'capability',
           through: 'role_capability',
         },

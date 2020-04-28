@@ -9,6 +9,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
 import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
+import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
   paper: {
@@ -32,6 +33,14 @@ class CampaignDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <StixDomainEntityTags tags={campaign.tags} id={campaign.id} />
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
+            {t('Creator')}
+          </Typography>
+          <ItemCreator creator={campaign.creator} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -76,6 +85,10 @@ const CampaignDetails = createFragmentContainer(CampaignDetailsComponent, {
       first_seen
       last_seen
       objective
+      creator {
+          id
+          name
+        }
       tags {
         edges {
           node {
@@ -93,7 +106,4 @@ const CampaignDetails = createFragmentContainer(CampaignDetailsComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(CampaignDetails);
+export default compose(inject18n, withStyles(styles))(CampaignDetails);

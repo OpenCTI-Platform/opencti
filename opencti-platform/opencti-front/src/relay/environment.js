@@ -49,26 +49,20 @@ const envBasePath = noBasePath || window.BASE_PATH.startsWith('/')
 export const APP_BASE_PATH = IN_DEV_MODE ? '' : envBasePath;
 
 // Subscription
-let networkSubscriptions = null;
-export const WS_ACTIVATED = IN_DEV_MODE
-  ? process.env.REACT_APP_WS_ACTIVATED === 'true'
-  : window.WS_ACTIVATED === 'true';
+const loc = window.location;
+const isSecure = loc.protocol === 'https:' ? 's' : '';
+const subscriptionClient = new SubscriptionClient(
+  `ws${isSecure}://${loc.host}${APP_BASE_PATH}/graphql`,
+  {
+    reconnect: true,
+  },
+);
+const subscriptionLink = new WebSocketLink(subscriptionClient);
+const networkSubscriptions = (operation, variables) => execute(subscriptionLink, {
+  query: operation.text,
+  variables,
+});
 
-if (WS_ACTIVATED) {
-  const loc = window.location;
-  const isSecure = loc.protocol === 'https:' ? 's' : '';
-  const subscriptionClient = new SubscriptionClient(
-    `ws${isSecure}://${loc.host}${APP_BASE_PATH}/graphql`,
-    {
-      reconnect: true,
-    },
-  );
-  const subscriptionLink = new WebSocketLink(subscriptionClient);
-  networkSubscriptions = (operation, variables) => execute(subscriptionLink, {
-    query: operation.text,
-    variables,
-  });
-}
 
 const network = new RelayNetworkLayer(
   [
@@ -157,8 +151,8 @@ export const commitMutation = ({
   },
 });
 
-const deactivateSubscription = { dispose: () => undefined };
-// eslint-disable-next-line max-len
-export const requestSubscription = (args) => (WS_ACTIVATED ? RS(environment, args) : deactivateSubscription);
+
+
+export const requestSubscription = (args) => RS(environment, args);
 
 export const fetchQuery = (query, args) => FQ(environment, query, args);

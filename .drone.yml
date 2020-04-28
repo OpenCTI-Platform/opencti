@@ -11,6 +11,7 @@ steps:
     REDIS__HOSTNAME: redis
     ELASTICSEARCH__URL: http://elastic:9200
     MINIO__ENDPOINT: minio
+    RABBITMQ__HOSTNAME: rabbitmq
   commands:
   - apk add build-base git
   - cd opencti-platform/opencti-graphql
@@ -66,7 +67,7 @@ services:
 - name: redis
   image: redis:5.0.8
 - name: elastic
-  image: docker.elastic.co/elasticsearch/elasticsearch:7.6.1
+  image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2
   environment:
     discovery.type: single-node
     ES_JAVA_OPTS: -Xms750m -Xmx750m
@@ -76,3 +77,5 @@ services:
     MINIO_ACCESS_KEY: ChangeMe
     MINIO_SECRET_KEY: ChangeMe
   command: [ server, /data ]
+- name: rabbitmq
+  image: rabbitmq:3.7-management 

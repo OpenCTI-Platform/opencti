@@ -5,7 +5,7 @@ import { connectorsForImport } from './connector';
 import { createWork } from './work';
 import { logger } from '../config/conf';
 
-const uploadJobImport = async (fileId, fileMime, context = null) => {
+const uploadJobImport = async (fileId, fileMime, context = null, token = null) => {
   const connectors = await connectorsForImport(fileMime, true);
   if (connectors.length > 0) {
     // Create job and send ask to broker
@@ -28,6 +28,7 @@ const uploadJobImport = async (fileId, fileMime, context = null) => {
           work_id: work.internal_id_key, // work(id)
           work_context: context,
           job_id: job.internal_id_key, // job(id)
+          token,
           file_mime: fileMime, // Ex. application/json
           file_path: `/storage/get/${fileId}`, // Path to get the file
           update: true,
@@ -38,15 +39,14 @@ const uploadJobImport = async (fileId, fileMime, context = null) => {
   }
 };
 
-export const askJobImport = async (filename, context, user) => {
+export const askJobImport = async (user, filename, context) => {
   logger.debug(`Job > ask import for file ${filename} by ${user.user_email}`);
   const file = await loadFile(filename);
-  await uploadJobImport(file.id, file.metaData.mimetype, context);
+  await uploadJobImport(file.id, file.metaData.mimetype, context, user.token.uuid);
   return file;
 };
-
-export const uploadImport = async (file, user) => {
+export const uploadImport = async (user, file) => {
   const up = await upload(user, 'import', file);
-  await uploadJobImport(up.id, up.metaData.mimetype);
+  await uploadJobImport(up.id, up.metaData.mimetype, user.token.uuid);
   return up;
 };

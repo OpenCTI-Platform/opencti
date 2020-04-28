@@ -9,7 +9,7 @@ import {
   sinceNowInMinutes,
   updateAttribute,
 } from '../database/grakn';
-import { connectorConfig, registerConnectorQueues } from '../database/rabbitmq';
+import { connectorConfig, registerConnectorQueues, unregisterConnector } from '../database/rabbitmq';
 import { TYPE_OPENCTI_INTERNAL } from '../database/utils';
 
 export const CONNECTOR_INTERNAL_IMPORT_FILE = 'INTERNAL_IMPORT_FILE'; // Files mime types to support (application/json, ...) -> import-
@@ -54,34 +54,34 @@ export const connectorsForImport = async (scope, onlyAlive = false) =>
 // endregion
 
 // region mutations
-export const pingConnector = async (id, state) => {
+export const pingConnector = async (user, id, state) => {
   const creation = now();
   const connector = await loadEntityById(id, 'Connector');
   if (connector.connector_state_reset === true) {
     await executeWrite(async (wTx) => {
       const stateInput = { key: 'connector_state_reset', value: [false] };
-      await updateAttribute(id, 'Connector', stateInput, wTx);
+      await updateAttribute(user, id, 'Connector', stateInput, wTx, { noLog: true });
     });
   } else {
     await executeWrite(async (wTx) => {
       const updateInput = { key: 'updated_at', value: [creation] };
-      await updateAttribute(id, 'Connector', updateInput, wTx);
+      await updateAttribute(user, id, 'Connector', updateInput, wTx, { noLog: true });
       const stateInput = { key: 'connector_state', value: [state] };
-      await updateAttribute(id, 'Connector', stateInput, wTx);
+      await updateAttribute(user, id, 'Connector', stateInput, wTx, { noLog: true });
     });
   }
   return loadEntityById(id, 'Connector').then((data) => completeConnector(data));
 };
-export const resetStateConnector = async (id) => {
+export const resetStateConnector = async (user, id) => {
   await executeWrite(async (wTx) => {
     const stateInput = { key: 'connector_state', value: [''] };
-    await updateAttribute(id, 'Connector', stateInput, wTx);
+    await updateAttribute(user, id, 'Connector', stateInput, wTx, { noLog: true });
     const stateResetInput = { key: 'connector_state_reset', value: [true] };
-    await updateAttribute(id, 'Connector', stateResetInput, wTx);
+    await updateAttribute(user, id, 'Connector', stateResetInput, wTx, { noLog: true });
   });
   return loadEntityById(id, 'Connector').then((data) => completeConnector(data));
 };
-export const registerConnector = async ({ id, name, type, scope }) => {
+export const registerConnector = async (user, { id, name, type, scope }) => {
   const connector = await loadEntityById(id, 'Connector');
   // Register queues
   await registerConnectorQueues(id, name, type, scope);
@@ -89,21 +89,25 @@ export const registerConnector = async ({ id, name, type, scope }) => {
     // Simple connector update
     await executeWrite(async (wTx) => {
       const inputName = { key: 'name', value: [name] };
-      await updateAttribute(id, 'Connector', inputName, wTx);
+      await updateAttribute(user, id, 'Connector', inputName, wTx, { noLog: true });
       const updatedInput = { key: 'updated_at', value: [now()] };
-      await updateAttribute(id, 'Connector', updatedInput, wTx);
+      await updateAttribute(user, id, 'Connector', updatedInput, wTx, { noLog: true });
       const scopeInput = { key: 'connector_scope', value: [scope.join(',')] };
-      await updateAttribute(id, 'Connector', scopeInput, wTx);
+      await updateAttribute(user, id, 'Connector', scopeInput, wTx, { noLog: true });
     });
     return loadEntityById(id, 'Connector').then((data) => completeConnector(data));
   }
   // Need to create the connector
   const connectorToCreate = { internal_id_key: id, name, connector_type: type, connector_scope: scope.join(',') };
-  const createdConnector = await createEntity(null, connectorToCreate, 'Connector', {
+  const createdConnector = await createEntity(user, connectorToCreate, 'Connector', {
     modelType: TYPE_OPENCTI_INTERNAL,
+    noLog: true,
   });
   // Return the connector
   return completeConnector(createdConnector);
 };
-export const connectorDelete = async (connectorId) => deleteEntityById(connectorId, 'Connector');
+export const connectorDelete = async (user, connectorId) => {
+  await unregisterConnector(connectorId);
+  return deleteEntityById(user, connectorId, 'Connector', { noLog: true });
+};
 // endregion

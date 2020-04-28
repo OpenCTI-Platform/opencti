@@ -13,7 +13,6 @@ import inject18n from '../../../../components/i18n';
 import {
   commitMutation,
   requestSubscription,
-  WS_ACTIVATED,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
@@ -101,17 +100,15 @@ class TagEditionContainer extends Component {
   }
 
   handleChangeFocus(name) {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: tagEditionFocus,
-        variables: {
-          id: this.props.tag.id,
-          input: {
-            focusOn: name,
-          },
+    commitMutation({
+      mutation: tagEditionFocus,
+      variables: {
+        id: this.props.tag.id,
+        input: {
+          focusOn: name,
         },
-      });
-    }
+      },
+    });
   }
 
   handleSubmitField(name, value) {

@@ -37,6 +37,7 @@ const READ_QUERY = gql`
       id
       name
       description
+      toStix
     }
   }
 `;
@@ -77,6 +78,7 @@ describe('City resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.city).not.toBeNull();
     expect(queryResult.data.city.id).toEqual(cityInternalId);
+    expect(queryResult.data.city.toStix.length).toBeGreaterThan(5);
   });
   it('should city loaded by stix id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: cityStixId } });

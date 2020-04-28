@@ -54,6 +54,7 @@ const dateFields = [
   'valid_until_day',
   'valid_until_month',
   'observable_date',
+  'event_date',
   'default_assignation', // TODO @JRI Ask @Sam for this.
 ];
 const numberFields = ['object_status', 'phase_order', 'level', 'weight', 'ordering', 'base_score'];
@@ -61,8 +62,16 @@ const virtualTypes = ['Identity', 'Email', 'File', 'Stix-Domain-Entity', 'Stix-D
 
 export const REL_INDEX_PREFIX = 'rel_';
 export const INDEX_WORK_JOBS = 'work_jobs_index';
+export const INDEX_LOGS = 'opencti_logs';
 const UNIMPACTED_ENTITIES_ROLE = ['tagging', 'marking', 'kill_chain_phase', 'creator'];
-export const PLATFORM_INDICES = [INDEX_STIX_ENTITIES, INDEX_STIX_RELATIONS, INDEX_STIX_OBSERVABLE, INDEX_WORK_JOBS];
+export const PLATFORM_INDICES = [
+  INDEX_STIX_ENTITIES,
+  INDEX_STIX_RELATIONS,
+  INDEX_STIX_OBSERVABLE,
+  INDEX_WORK_JOBS,
+  INDEX_LOGS,
+];
+export const KNOWLEDGE_INDICES = [INDEX_STIX_ENTITIES, INDEX_STIX_RELATIONS, INDEX_STIX_OBSERVABLE, INDEX_WORK_JOBS];
 
 export const forceNoCache = () => conf.get('elasticsearch:noQueryCache') || false;
 export const el = new Client({ node: conf.get('elasticsearch:url') });
@@ -74,14 +83,14 @@ export const elIsAlive = async () => {
       /* istanbul ignore if */
       if (info.meta.connection.status !== 'alive') {
         logger.error(`[ELASTICSEARCH] Seems down`);
-        throw new Error('elastic seems down');
+        throw new Error('ElasticSearch seems down');
       }
       return true;
     })
     .catch(
       /* istanbul ignore next */ () => {
         logger.error(`[ELASTICSEARCH] Seems down`);
-        throw new Error('elastic seems down');
+        throw new Error('ElasticSearch seems down');
       }
     );
 };
@@ -186,7 +195,7 @@ export const elCreateIndexes = async (indexesToCreate = PLATFORM_INDICES) => {
     })
   );
 };
-export const elDeleteIndexes = async (indexesToDelete = PLATFORM_INDICES) => {
+export const elDeleteIndexes = async (indexesToDelete = KNOWLEDGE_INDICES) => {
   return Promise.all(
     indexesToDelete.map((index) => {
       return el.indices.delete({ index }).catch((err) => {
@@ -577,12 +586,20 @@ export const elPaginate = async (indexName, options = {}) => {
           mustnot = append({ exists: { field: key } }, mustnot);
         } else if (values[i] === 'EXISTS') {
           valuesFiltering.push({ exists: { field: key } });
-        } else if (operator === 'eq' || operator === 'match') {
+        } else if (operator === 'eq') {
+          const isDateOrNumber = dateFields.includes(key) || numberFields.includes(key);
           valuesFiltering.push({
-            match_phrase: {
-              [`${
-                dateFields.includes(key) || numberFields.includes(key) || operator === 'match' ? key : `${key}.keyword`
-              }`]: values[i].toString(),
+            match_phrase: { [`${isDateOrNumber ? key : `${key}.keyword`}`]: values[i].toString() },
+          });
+        } else if (operator === 'match') {
+          valuesFiltering.push({
+            match_phrase: { [key]: values[i].toString() },
+          });
+        } else if (operator === 'wildcard') {
+          valuesFiltering.push({
+            query_string: {
+              query: `"${values[i].toString()}"`,
+              fields: [key],
             },
           });
         } else {
@@ -600,7 +617,6 @@ export const elPaginate = async (indexName, options = {}) => {
     ordering = append(order, ordering);
     must = append({ exists: { field: orderKeyword } }, must);
   }
-
   const query = {
     index: indexName,
     _source_excludes: `${REL_INDEX_PREFIX}*`,
@@ -625,6 +641,9 @@ export const elPaginate = async (indexName, options = {}) => {
         const loadedElement = pipe(assoc('id', n._source.internal_id_key), assoc('_index', n._index))(n._source);
         if (loadedElement.relationship_type) {
           return elReconstructRelation(loadedElement, relationsMap, forceNatural);
+        }
+        if (loadedElement.event_data) {
+          return assoc('event_data', JSON.stringify(loadedElement.event_data), loadedElement);
         }
         return loadedElement;
       }, data.body.hits.hits);
@@ -653,7 +672,7 @@ export const elPaginate = async (indexName, options = {}) => {
       }
     );
 };
-export const elLoadByTerms = async (terms, relationsMap, indices = PLATFORM_INDICES) => {
+export const elLoadByTerms = async (terms, relationsMap, indices = KNOWLEDGE_INDICES) => {
   const query = {
     index: indices,
     _source_excludes: `${REL_INDEX_PREFIX}*`,
@@ -682,21 +701,21 @@ export const elLoadByTerms = async (terms, relationsMap, indices = PLATFORM_INDI
 };
 // endregion
 
-export const elLoadById = (id, type = null, relationsMap = null, indices = PLATFORM_INDICES) => {
+export const elLoadById = (id, type = null, relationsMap = null, indices = KNOWLEDGE_INDICES) => {
   const terms = [{ 'internal_id_key.keyword': id }];
   if (type) {
     terms.push({ 'parent_types.keyword': type });
   }
   return elLoadByTerms(terms, relationsMap, indices);
 };
-export const elLoadByStixId = (id, type = null, relationsMap = null, indices = PLATFORM_INDICES) => {
+export const elLoadByStixId = (id, type = null, relationsMap = null, indices = KNOWLEDGE_INDICES) => {
   const terms = [{ 'stix_id_key.keyword': id }];
   if (type) {
     terms.push({ 'parent_types.keyword': type });
   }
   return elLoadByTerms(terms, relationsMap, indices);
 };
-export const elLoadByGraknId = (id, type = null, relationsMap = null, indices = PLATFORM_INDICES) => {
+export const elLoadByGraknId = (id, type = null, relationsMap = null, indices = KNOWLEDGE_INDICES) => {
   const terms = [{ 'grakn_id.keyword': id }];
   if (type) {
     terms.push({ 'parent_types.keyword': type });
@@ -762,7 +781,7 @@ export const elDeleteByField = async (indexName, fieldName, value) => {
   });
   return value;
 };
-export const elDeleteInstanceIds = async (ids, indexesToHandle = PLATFORM_INDICES) => {
+export const elDeleteInstanceIds = async (ids, indexesToHandle = KNOWLEDGE_INDICES) => {
   logger.debug(`[ELASTICSEARCH] elDeleteInstanceIds > ${ids}`);
   const terms = map((id) => ({ term: { 'internal_id_key.keyword': id } }), ids);
   return el.deleteByQuery({
@@ -831,12 +850,14 @@ const prepareIndexing = async (elements) => {
         connections.push({
           grakn_id: thing.fromId,
           internal_id_key: from.internal_id_key,
+          stix_id_key: from.stix_id_key,
           types: thing.fromTypes,
           role: thing.fromRole,
         });
         connections.push({
           grakn_id: thing.toId,
           internal_id_key: to.internal_id_key,
+          stix_id_key: to.stix_id_key,
           types: thing.toTypes,
           role: thing.toRole,
         });

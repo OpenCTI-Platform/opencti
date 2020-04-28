@@ -8,6 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
 import inject18n from '../../../../components/i18n';
+import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
   paper: {
@@ -36,6 +37,14 @@ class PersonDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <StixDomainEntityTags tags={person.tags} id={person.id} />
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
+            {t('Creator')}
+          </Typography>
+          <ItemCreator creator={person.creator} />
         </Paper>
       </div>
     );
@@ -53,6 +62,10 @@ const PersonDetails = createFragmentContainer(PersonDetailsComponent, {
   person: graphql`
     fragment PersonDetails_person on User {
       id
+      creator {
+          id
+          name
+        }
       tags {
         edges {
           node {
@@ -70,7 +83,4 @@ const PersonDetails = createFragmentContainer(PersonDetailsComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(PersonDetails);
+export default compose(inject18n, withStyles(styles))(PersonDetails);

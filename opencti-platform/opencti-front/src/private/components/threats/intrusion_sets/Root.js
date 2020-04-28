@@ -15,6 +15,7 @@ import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomain
 import FileManager from '../../common/files/FileManager';
 import IntrusionSetPopover from './IntrusionSetPopover';
 import Loader from '../../../../components/Loader';
+import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
 
 const subscription = graphql`
   subscription RootIntrusionSetSubscription($id: ID!) {
@@ -144,6 +145,22 @@ class RootIntrusionSet extends Component {
                           id={intrusionSetId}
                           connectorsExport={props.connectorsForExport}
                           entity={props.intrusionSet}
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/threats/intrusion_sets/:intrusionSetId/history"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.intrusionSet}
+                          PopoverComponent={<IntrusionSetPopover />}
+                        />
+                        <StixObjectHistory
+                          {...routeProps}
+                          entityId={intrusionSetId}
                         />
                       </React.Fragment>
                     )}

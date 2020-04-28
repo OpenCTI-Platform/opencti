@@ -11,7 +11,6 @@ import ReportEditionContainer from './ReportEditionContainer';
 import {
   commitMutation,
   QueryRenderer,
-  WS_ACTIVATED,
 } from '../../../relay/environment';
 import { reportEditionOverviewFocus } from './ReportEditionOverview';
 import Loader from '../../../components/Loader';
@@ -55,15 +54,13 @@ class ReportEdition extends Component {
   }
 
   handleClose() {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: reportEditionOverviewFocus,
-        variables: {
-          id: this.props.reportId,
-          input: { focusOn: '' },
-        },
-      });
-    }
+    commitMutation({
+      mutation: reportEditionOverviewFocus,
+      variables: {
+        id: this.props.reportId,
+        input: { focusOn: '' },
+      },
+    });
     this.setState({ open: false });
   }
 

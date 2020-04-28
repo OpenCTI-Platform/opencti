@@ -117,6 +117,26 @@ class TopMenuObservable extends Component {
         >
           {t('Knowledge')}
         </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/signatures/observables/${observableId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/signatures/observables/${observableId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/signatures/observables/${observableId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
+        </Button>
       </div>
     );
   }

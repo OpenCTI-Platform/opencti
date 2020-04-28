@@ -89,6 +89,7 @@ const READ_QUERY = gql`
       name
       description
       explanation
+      toStix
     }
   }
 `;
@@ -131,6 +132,7 @@ describe('Opinion resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.opinion).not.toBeNull();
     expect(queryResult.data.opinion.id).toEqual(opinionInternalId);
+    expect(queryResult.data.opinion.toStix.length).toBeGreaterThan(5);
   });
   it('should opinion loaded by stix id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: opinionStixId } });

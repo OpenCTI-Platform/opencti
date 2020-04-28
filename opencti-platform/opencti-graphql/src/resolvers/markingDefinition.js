@@ -12,6 +12,7 @@ import {
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
+import { convertDataToStix } from '../database/stix';
 
 const markingDefinitionResolvers = {
   Query: {
@@ -22,11 +23,12 @@ const markingDefinitionResolvers = {
     markedBy: `${REL_INDEX_PREFIX}object_marking_refs.internal_id_key`,
   },
   MarkingDefinition: {
+    toStix: (markingDefinition) => convertDataToStix(markingDefinition).then((stixData) => JSON.stringify(stixData)),
     editContext: (markingDefinition) => fetchEditContext(markingDefinition.id),
   },
   Mutation: {
     markingDefinitionEdit: (_, { id }, { user }) => ({
-      delete: () => markingDefinitionDelete(id),
+      delete: () => markingDefinitionDelete(user, id),
       fieldPatch: ({ input }) => markingDefinitionEditField(user, id, input),
       contextPatch: ({ input }) => markingDefinitionEditContext(user, id, input),
       contextClean: () => markingDefinitionCleanContext(user, id),

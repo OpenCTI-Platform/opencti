@@ -44,6 +44,7 @@ const READ_QUERY = gql`
           }
         }
       }
+      toStix
     }
   }
 `;
@@ -84,6 +85,7 @@ describe('CourseOfAction resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.courseOfAction).not.toBeNull();
     expect(queryResult.data.courseOfAction.id).toEqual(courseOfActionInternalId);
+    expect(queryResult.data.courseOfAction.toStix.length).toBeGreaterThan(5);
   });
   it('should courseOfAction loaded by stix id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: courseOfActionStixId } });

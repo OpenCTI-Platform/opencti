@@ -14,6 +14,7 @@ import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomain
 import FileManager from '../../common/files/FileManager';
 import VulnerabilityPopover from './VulnerabilityPopover';
 import Loader from '../../../../components/Loader';
+import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
 
 const subscription = graphql`
   subscription RootVulnerabilitySubscription($id: ID!) {
@@ -133,6 +134,22 @@ class RootVulnerability extends Component {
                           id={vulnerabilityId}
                           connectorsExport={props.connectorsForExport}
                           entity={props.vulnerability}
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/techniques/vulnerabilities/:vulnerabilityId/history"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainEntityHeader
+                          stixDomainEntity={props.vulnerability}
+                          PopoverComponent={<VulnerabilityPopover />}
+                        />
+                        <StixObjectHistory
+                          {...routeProps}
+                          entityId={vulnerabilityId}
                         />
                       </React.Fragment>
                     )}

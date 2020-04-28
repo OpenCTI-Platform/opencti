@@ -28,7 +28,7 @@ const organizationResolvers = {
   },
   Mutation: {
     organizationEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainEntityDelete(id),
+      delete: () => stixDomainEntityDelete(user, id),
       fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
       contextClean: () => stixDomainEntityCleanContext(user, id),

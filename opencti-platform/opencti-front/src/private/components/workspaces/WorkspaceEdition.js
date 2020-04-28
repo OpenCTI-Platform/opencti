@@ -11,7 +11,6 @@ import WorkspaceEditionContainer from './WorkspaceEditionContainer';
 import {
   commitMutation,
   QueryRenderer,
-  WS_ACTIVATED,
 } from '../../../relay/environment';
 import { workspaceEditionOverviewFocus } from './WorkspaceEditionOverview';
 import Loader from '../../../components/Loader';
@@ -55,15 +54,13 @@ class WorkspaceEdition extends Component {
   }
 
   handleClose() {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: workspaceEditionOverviewFocus,
-        variables: {
-          id: this.props.workspaceId,
-          input: { focusOn: '' },
-        },
-      });
-    }
+    commitMutation({
+      mutation: workspaceEditionOverviewFocus,
+      variables: {
+        id: this.props.workspaceId,
+        input: { focusOn: '' },
+      },
+    });
     this.setState({ open: false });
   }
 

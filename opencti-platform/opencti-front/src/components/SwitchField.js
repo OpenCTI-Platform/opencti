@@ -5,7 +5,7 @@ import { fieldToSwitch } from 'formik-material-ui';
 
 const SwitchField = (props) => {
   const {
-    form: { setFieldValue },
+    form: { setFieldValue, setTouched },
     field: { name },
     onChange,
   } = props;
@@ -19,11 +19,18 @@ const SwitchField = (props) => {
     },
     [onChange, setFieldValue, name],
   );
+  const internalOnBlur = React.useCallback(() => {
+    setTouched(true);
+  }, [setTouched]);
   return (
     <div style={props.containerstyle}>
       <FormControlLabel
         control={
-          <MuiSwitch {...fieldToSwitch(props)} onChange={internalOnChange} />
+          <MuiSwitch
+            {...fieldToSwitch(props)}
+            onChange={internalOnChange}
+            onBlur={internalOnBlur}
+          />
         }
         label={props.label}
       />
