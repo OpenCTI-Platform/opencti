@@ -89,16 +89,12 @@ class StixObjectNoteCardComponent extends Component {
           <Typography
             variant="body2"
             noWrap={true}
-            style={{ marginTop: 10, fontWeight: 500 }}
+            style={{ margin: '10px 0 10px 0', fontWeight: 500 }}
           >
             {node.name}
           </Typography>
-          <Typography variant="body2">
-            <Markdown
-              source={node.content}
-              disallowedTypes={['link', 'linkReference']}
-              unwrapDisallowed={true}
-            />
+          <Typography variant="body2" style={{ marginBottom: 20 }}>
+            <Markdown className="markdown" source={node.content} />
           </Typography>
           <div>
             {take(1, pathOr([], ['markingDefinitions', 'edges'], node)).map(
