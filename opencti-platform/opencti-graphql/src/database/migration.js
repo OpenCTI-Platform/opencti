@@ -95,7 +95,6 @@ const graknStateStorage = {
 };
 
 const applyMigration = () => {
-  logger.info('[MIGRATION] > Starting migration process');
   const set = new MigrationSet(graknStateStorage);
   return new Promise((resolve, reject) => {
     graknStateStorage.load((err, state) => {

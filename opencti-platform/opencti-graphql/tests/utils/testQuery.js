@@ -13,7 +13,7 @@ export const FIVE_MINUTES = 5 * ONE_MINUTE;
 export const ADMIN_USER = {
   id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
   name: 'admin',
-  email: 'admin@opencti.io',
+  user_email: 'admin@opencti.io',
   roles: [{ name: ROLE_ADMINISTRATOR }],
   capabilities: [{ name: BYPASS }],
 };

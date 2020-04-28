@@ -1,13 +1,5 @@
 import { assoc, dissocPath, pipe } from 'ramda';
-import {
-  createEntity,
-  deleteEntityById,
-  executeWrite,
-  getGraknVersion,
-  load,
-  loadEntityById,
-  updateAttribute,
-} from '../database/grakn';
+import { createEntity, executeWrite, getGraknVersion, load, loadEntityById, updateAttribute } from '../database/grakn';
 import conf, { BUS_TOPICS } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { elVersion } from '../database/elasticSearch';
@@ -48,10 +40,6 @@ export const getSettings = async () => {
 export const addSettings = async (user, settings) => {
   const created = await createEntity(user, settings, 'Settings', { modelType: TYPE_OPENCTI_INTERNAL, noLog: true });
   return notify(BUS_TOPICS.Settings.ADDED_TOPIC, created, user);
-};
-
-export const settingsDelete = (user, settingsId) => {
-  return deleteEntityById(user, settingsId, 'Settings', { noLog: true });
 };
 
 export const settingsCleanContext = (user, settingsId) => {

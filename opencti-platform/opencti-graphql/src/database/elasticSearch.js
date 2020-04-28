@@ -200,7 +200,9 @@ export const elDeleteIndexes = async (indexesToDelete = KNOWLEDGE_INDICES) => {
     indexesToDelete.map((index) => {
       return el.indices.delete({ index }).catch((err) => {
         /* istanbul ignore next */
-        logger.error(`[ELASTICSEARCH] Delete indices fail > ${err}`);
+        if (err.meta.body.error.type !== 'index_not_found_exception') {
+          logger.error(`[ELASTICSEARCH] Delete indices fail > ${err}`);
+        }
       });
     })
   );

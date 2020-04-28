@@ -3,7 +3,6 @@ import nconf from 'nconf';
 import { BUS_TOPICS } from '../config/conf';
 import {
   getSettings,
-  settingsDelete,
   settingsEditField,
   settingsEditContext,
   settingsCleanContext,
@@ -25,9 +24,9 @@ const settingsResolvers = {
   },
   Mutation: {
     settingsEdit: (_, { id }, { user }) => ({
-      delete: () => settingsDelete(user, id),
       fieldPatch: ({ input }) => settingsEditField(user, id, input),
       contextPatch: ({ input }) => settingsEditContext(user, id, input),
+      contextClean: () => settingsCleanContext(user, id),
     }),
   },
   Subscription: {
