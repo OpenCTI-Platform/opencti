@@ -1,23 +1,15 @@
 /* eslint-disable prettier/prettier */
-import { checkSystemDependencies, initializeData, initializeSchema } from '../../../src/initialization';
+import platformInit from '../../../src/initialization';
 import { listenServer, stopServer } from '../../../src/httpServer';
-import {ONE_MINUTE, FIVE_MINUTES, PYTHON_PATH, API_TOKEN, API_URI} from '../../utils/testQuery';
+import { FIVE_MINUTES, PYTHON_PATH, API_TOKEN, API_URI} from '../../utils/testQuery';
 import { execPython3 } from "../../../src/python/pythonBridge";
 
 describe('Database provision', () => {
   const importOpts = [API_URI, API_TOKEN, '/tests/data/DATA-TEST-STIX2_v2.json'];
   const workerOpts = [API_URI, API_TOKEN];
 
-  it('should dependencies accessible',  () => {
-    return expect(checkSystemDependencies()).resolves.toBe(true);
-  }, ONE_MINUTE);
-
-  it('should schema initialized', () => {
-    return expect(initializeSchema()).resolves.toBe(true);
-  }, FIVE_MINUTES);
-
-  it('should default data initialized', () => {
-    return expect(initializeData()).resolves.toBe(true);
+  it('should platform init',  () => {
+    return expect(platformInit()).resolves.toBe(true);
   }, FIVE_MINUTES);
 
   it('Should import creation succeed', async () => {

@@ -1,10 +1,10 @@
 import { DEV_MODE, logger } from './config/conf';
-import init from './initialization';
+import platformInit from './initialization';
 import { listenServer, restartServer } from './httpServer';
 
 (async () => {
   try {
-    await init();
+    await platformInit();
     let server = await listenServer();
     // Hot reload
     if (DEV_MODE && module.hot) {

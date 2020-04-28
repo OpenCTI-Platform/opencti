@@ -80,7 +80,7 @@ export const CAPABILITIES = [
 ];
 
 // Check every dependencies
-export const checkSystemDependencies = async () => {
+const checkSystemDependencies = async () => {
   // Check if Grakn is available
   await graknIsAlive();
   logger.info(`[PRE-CHECK] > Grakn is alive`);
@@ -103,7 +103,7 @@ export const checkSystemDependencies = async () => {
 };
 
 // Initialize
-export const initializeSchema = async () => {
+const initializeSchema = async () => {
   // Inject grakn schema
   const schema = fs.readFileSync('./src/opencti.gql', 'utf8');
   await internalDirectWrite(schema);
@@ -199,7 +199,7 @@ const initializeDefaultValues = async () => {
   await createBasicRolesAndCapabilities();
 };
 
-export const initializeData = async () => {
+const initializeData = async () => {
   await initializeDefaultValues();
   logger.info(`[INIT] > Platform default initialized`);
   return true;
@@ -214,7 +214,7 @@ const isEmptyPlatform = async () => {
   return entityCount <= 1; // Only type entity is available on an empty platform.
 };
 
-const init = async () => {
+const platformInit = async () => {
   await checkSystemDependencies();
   const needToBeInitialized = await isEmptyPlatform();
   if (needToBeInitialized) {
@@ -228,6 +228,7 @@ const init = async () => {
     await initializeAdminUser();
     await applyMigration();
   }
+  return true;
 };
 
-export default init;
+export default platformInit;
