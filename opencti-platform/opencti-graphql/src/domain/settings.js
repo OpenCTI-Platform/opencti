@@ -1,12 +1,5 @@
 import { assoc, dissocPath, pipe } from 'ramda';
-import {
-  createEntity,
-  executeWrite,
-  getGraknVersion,
-  load,
-  loadEntityById,
-  updateAttribute,
-} from '../database/grakn';
+import { createEntity, executeWrite, getGraknVersion, load, loadEntityById, updateAttribute } from '../database/grakn';
 import conf, { BUS_TOPICS } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { elVersion } from '../database/elasticSearch';
