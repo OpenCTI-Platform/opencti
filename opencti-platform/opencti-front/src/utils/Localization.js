@@ -93,6 +93,7 @@ const i18n = {
       'Confirmation required': 'Confirmation requise',
       Information: 'Informations',
       'Last reports': 'Derniers rapports',
+      'Last notes': 'Dernières notes',
       'Last reports wrote by the entity':
         'Derniers rapports écrits par cette entité',
       'Last reports about the entity': "Derniers rapports à propos de l'entité",

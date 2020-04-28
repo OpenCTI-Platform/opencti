@@ -531,6 +531,8 @@ interface StixDomainEntity {
   exportFiles(first: Int): FileConnection
   creator: User
   toStix: String
+  created: DateTime
+  modified: DateTime
   created_at: DateTime!
   updated_at: DateTime!
 }
