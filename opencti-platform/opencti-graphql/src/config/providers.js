@@ -6,9 +6,8 @@ import LdapStrategy from 'passport-ldapauth';
 import Auth0Strategy from 'passport-auth0';
 import { Strategy as OpenIDStrategy, Issuer as OpenIDIssuer } from 'openid-client';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
-import { head, anyPass, isNil, isEmpty } from 'ramda';
+import { assoc, head, anyPass, isNil, isEmpty } from 'ramda';
 import validator from 'validator';
-import assoc from 'ramda/src/assoc';
 import { initAdmin, login, loginFromProvider } from '../domain/user';
 import conf, { logger } from './conf';
 
