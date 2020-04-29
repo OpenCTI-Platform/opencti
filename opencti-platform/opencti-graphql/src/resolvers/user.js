@@ -83,14 +83,10 @@ const userResolvers = {
         const auth = formProviders[index];
         // eslint-disable-next-line no-await-in-loop
         const loginToken = await new Promise((resolve) => {
-          try {
-            passport.authenticate(auth.provider, (err, tokenObject) => {
-              resolve(tokenObject);
-            })({ body: { username: input.email, password: input.password } });
-          } catch (e) {
-            logger.error(`[Configuration] Cant authenticate with ${auth.provider}`, e);
-            resolve(null);
-          }
+          passport.authenticate(auth.provider, { session: false }, (err, tokenAuth, info) => {
+            if (err || info) logger.error(`[AUTH ERROR] > ${auth.provider} `, err, info);
+            resolve(tokenAuth);
+          })({ body: { username: input.email, password: input.password } });
         });
         // As soon as credential is validated, set the cookie and return.
         if (loginToken) {

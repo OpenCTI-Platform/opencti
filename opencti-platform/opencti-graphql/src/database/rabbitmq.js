@@ -38,6 +38,7 @@ const amqpExecute = (execute) => {
                 channel.close();
                 connection.close();
                 resolve(response);
+                return true;
               })
               .catch(/* istanbul ignore next */ (e) => reject(e));
           })
