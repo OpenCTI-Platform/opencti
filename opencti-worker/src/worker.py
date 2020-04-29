@@ -203,7 +203,7 @@ class Worker:
                     if queue in self.consumer_threads:
                         if not self.consumer_threads[queue].is_alive():
                             logging.info('Thread for queue ' + queue + ' not alive, creating a new one...')
-                            self.consumer_threads[queue] = Consumer(connector, self.api, self.opencti_token)
+                            self.consumer_threads[queue] = Consumer(connector, self.opencti_url, self.opencti_token)
                             self.consumer_threads[queue].start()
                     else:
                         self.consumer_threads[queue] = Consumer(connector, self.opencti_url, self.opencti_token)
