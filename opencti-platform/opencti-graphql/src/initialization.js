@@ -1,6 +1,6 @@
 // Admin user initialization
 import { logger } from './config/conf';
-import { elCreateIndexes, elDeleteIndexes, elIsAlive } from './database/elasticSearch';
+import { elCreateIndexes, elIsAlive } from './database/elasticSearch';
 import { graknIsAlive, internalDirectWrite, executeRead } from './database/grakn';
 import applyMigration from './database/migration';
 import { initializeAdminUser } from './config/providers';
@@ -109,7 +109,8 @@ const initializeSchema = async () => {
   await internalDirectWrite(schema);
   logger.info(`[INIT] > Grakn schema loaded`);
   // Create default indexes
-  await elDeleteIndexes();
+  // TODO To remove with https://github.com/OpenCTI-Platform/opencti/issues/673
+  // await elDeleteIndexes();
   await elCreateIndexes();
   logger.info(`[INIT] > Elasticsearch indexes loaded`);
   return true;
@@ -224,6 +225,8 @@ const platformInit = async () => {
     await initializeAdminUser();
   } else {
     logger.info('[INIT] > Existing platform detected, migration...');
+    // TODO To remove with https://github.com/OpenCTI-Platform/opencti/issues/673
+    await initializeSchema();
     // Always reset the admin user
     await initializeAdminUser();
     await applyMigration();
