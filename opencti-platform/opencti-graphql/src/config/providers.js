@@ -6,7 +6,7 @@ import LdapStrategy from 'passport-ldapauth';
 import Auth0Strategy from 'passport-auth0';
 import { Strategy as OpenIDStrategy, Issuer as OpenIDIssuer } from 'openid-client';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
-import { head, anyPass, isNil, isEmpty } from 'ramda';
+import { assoc, head, anyPass, isNil, isEmpty } from 'ramda';
 import validator from 'validator';
 import { initAdmin, login, loginFromProvider } from '../domain/user';
 import conf, { logger } from './conf';
@@ -50,7 +50,6 @@ const configurationMapping = {
   search_base: 'searchBase',
   search_filter: 'searchFilter',
   search_attributes: 'searchAttributes',
-  tls_options: 'tlsOptions',
   username_field: 'usernameField',
   password_field: 'passwordField',
   credentials_lookup: 'credentialsLookup',
@@ -80,7 +79,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
   const providerIdent = providerKeys[i];
   const provider = confProviders[providerIdent];
   const { strategy, config } = provider;
-  const mappedConfig = configRemapping(config);
+  let mappedConfig = configRemapping(config);
   if (strategy === 'LocalStrategy') {
     const localStrategy = new LocalStrategy((username, password, done) => {
       return login(username, password)
@@ -93,6 +92,9 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     providers.push({ name: providerIdent, type: AUTH_FORM, provider: 'local' });
   }
   if (strategy === 'LdapStrategy') {
+    // eslint-disable-next-line
+    const allowSelfSigned = mappedConfig.allow_self_signed || mappedConfig.allow_self_signed === 'true';
+    mappedConfig = assoc('tlsOptions', { rejectUnauthorized: !allowSelfSigned }, mappedConfig);
     const ldapOptions = { server: mappedConfig };
     const ldapStrategy = new LdapStrategy(ldapOptions, (user, done) => {
       const userMail = mappedConfig.mail_attribute ? user[mappedConfig.mail_attribute] : user.mail;
