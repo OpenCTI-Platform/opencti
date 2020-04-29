@@ -327,7 +327,7 @@ class OpenCTIStix2:
                         title = source_name
 
                     if "external_id" in external_reference:
-                        title = title + " (" + external_reference["external_id"] + ")"
+                        title = title + " (" + str(external_reference["external_id"]) + ")"
 
                     author = self.resolve_author(title)
                     report = self.opencti.report.create(
