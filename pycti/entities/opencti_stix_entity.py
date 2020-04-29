@@ -845,7 +845,10 @@ class StixEntity:
             processed_result = self.opencti.process_multiple_fields(
                 result["data"]["stixEntity"]
             )
-            return processed_result["reports"]
+            if processed_result:
+                return processed_result["reports"]
+            else:
+                return []
         else:
             self.opencti.log("error", "Missing parameters: id")
             return None
@@ -995,7 +998,10 @@ class StixEntity:
             processed_result = self.opencti.process_multiple_fields(
                 result["data"]["stixEntity"]
             )
-            return processed_result["notes"]
+            if processed_result:
+                return processed_result["notes"]
+            else:
+                return []
         else:
             self.opencti.log("error", "Missing parameters: id")
             return None
