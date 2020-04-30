@@ -338,6 +338,7 @@ class Indicator:
         pattern_type = kwargs.get("pattern_type", None)
         valid_from = kwargs.get("valid_from", None)
         valid_until = kwargs.get("valid_until", None)
+        score = kwargs.get("score", None)
         id = kwargs.get("id", None)
         stix_id_key = kwargs.get("stix_id_key", None)
         created = kwargs.get("created", None)
@@ -350,6 +351,7 @@ class Indicator:
                     entity_type
                     name
                     description
+                    score
                     ... on Indicator {
                         observableRefs {
                             edges {
@@ -385,17 +387,26 @@ class Indicator:
         if object_result is not None:
             if update:
                 # name
-                if object_result["name"] != name:
+                if name is not None and object_result["name"] != name:
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"], key="name", value=name
                     )
                     object_result["name"] = name
                 # description
-                if object_result["description"] != description:
+                if (
+                    description is not None
+                    and object_result["description"] != description
+                ):
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"], key="description", value=description
                     )
                     object_result["description"] = description
+                # score
+                if score is not None and object_result["score"] != score:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result["id"], key="score", value=score
+                    )
+                    object_result["score"] = score
             return object_result
         else:
             return self.create_raw(
@@ -406,6 +417,7 @@ class Indicator:
                 pattern_type=pattern_type,
                 valid_from=valid_from,
                 valid_until=valid_until,
+                score=score,
                 id=id,
                 stix_id_key=stix_id_key,
                 created=created,
@@ -518,6 +530,8 @@ class Indicator:
             indicator["modified"] = self.opencti.stix2.format_date(entity["modified"])
             if self.opencti.not_empty(entity["alias"]):
                 indicator[CustomProperties.ALIASES] = entity["alias"]
+            if self.opencti.not_empty(entity["score"]):
+                indicator[CustomProperties.SCORE] = entity["score"]
             indicator[CustomProperties.ID] = entity["id"]
             return self.opencti.stix2.prepare_export(
                 entity, indicator, mode, max_marking_definition_entity
