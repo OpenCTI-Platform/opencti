@@ -87,6 +87,7 @@ class OrganizationKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixRelations
               entityId={organization.id}
+              role='gather'
               relationType="gathering"
               targetEntityTypes={['Organization']}
               entityLink={link}

@@ -510,6 +510,16 @@ describe('Grakn relations listing', () => {
     expect(embeddedRelations).not.toBeNull();
     expect(embeddedRelations.edges.length).toEqual(130);
   });
+  it.each(noCacheCases)('should list relations with roles (noCache = %s)', async (noCache) => {
+    const stixRelations = await listRelations('uses', { noCache, fromRole: 'user', toRole: 'usage' });
+    expect(stixRelations).not.toBeNull();
+    expect(stixRelations.edges.length).toEqual(3);
+    for (let index = 0; index < stixRelations.edges.length; index += 1) {
+      const stixRelation = stixRelations.edges[index].node;
+      expect(stixRelation.fromRole).toEqual('user');
+      expect(stixRelation.toRole).toEqual('usage');
+    }
+  });
   it.each(noCacheCases)('should list relations with no id (noCache = %s)', (noCache) => {
     expect(listRelations('uses', { noCache, fromTypes: ['Attack-Pattern'] })).rejects.toThrow();
     expect(listRelations('uses', { noCache, toTypes: ['Attack-Pattern'] })).rejects.toThrow();
