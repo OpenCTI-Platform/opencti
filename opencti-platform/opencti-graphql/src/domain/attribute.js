@@ -16,7 +16,7 @@ export const findAll = (args) => queryAttributeValues(args.type);
 export const addAttribute = async (attribute) => {
   return executeWrite(async (wTx) => {
     const query = `insert $attribute isa ${attribute.type}; $attribute "${escapeString(attribute.value)}";`;
-    logger.debug(`[GRAKN - infer: false] addAttribute > ${query}`);
+    logger.debug(`[GRAKN - infer: false] addAttribute`, { query });
     const attributeIterator = await wTx.tx.query(query);
     const createdAttribute = await attributeIterator.next();
     const createdAttributeId = await createdAttribute.map().get('attribute').id;
@@ -43,7 +43,7 @@ export const attributeUpdate = async (id, input) => {
     const writeQuery = `match $e isa entity, has ${escape(input.type)} $a; $a "${escapeString(
       input.value
     )}"; insert $e has ${escape(input.type)} $attribute; $attribute "${escapeString(input.newValue)}";`;
-    logger.debug(`[GRAKN - infer: false] attributeUpdate > ${writeQuery}`);
+    logger.debug(`[GRAKN - infer: false] attributeUpdate`, { query: writeQuery });
     await wTx.tx.query(writeQuery);
   });
   // Link new attribute to every relations
@@ -51,7 +51,7 @@ export const attributeUpdate = async (id, input) => {
     const writeQuery = `match $e isa relation, has ${escape(input.type)} $a; $a "${escapeString(
       input.value
     )}"; insert $e has ${escape(input.type)} $attribute; $attribute "${escapeString(input.newValue)}";`;
-    logger.debug(`[GRAKN - infer: false] attributeUpdate > ${writeQuery}`);
+    logger.debug(`[GRAKN - infer: false] attributeUpdate`, { query: writeQuery });
     await wTx.tx.query(writeQuery);
   });
   // Delete old attribute

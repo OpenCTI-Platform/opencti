@@ -29,7 +29,7 @@ const purgeDuplicates = async (query, relation = false, reportId = null) => {
       }
     }
   } catch (err) {
-    logger.info(`[MIGRATION] clean_duplicate_embedded_relations > Error ${err}`);
+    logger.info(`[MIGRATION] clean_duplicate_embedded_relations`, { error: err });
   }
 };
 

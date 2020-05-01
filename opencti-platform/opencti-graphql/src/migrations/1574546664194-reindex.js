@@ -21,7 +21,7 @@ export const up = async (next) => {
       wTx.tx.query(`match $r isa stix_relation_embedded; not {$r ($x, $y) isa stix_relation_embedded;}; delete;`);
     });
   } catch (err) {
-    logger.info(`[MIGRATION] reindex > Error during deleting orphan relations (${err}), try to index...`);
+    logger.info(`[MIGRATION] reindex > Error during deleting orphan relations, try to index...`, { error: err });
   }
   try {
     await internalDirectWrite('undefine UsageIndicatesRule sub rule;');

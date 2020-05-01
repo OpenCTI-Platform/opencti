@@ -50,7 +50,7 @@ export const up = async (next) => {
     }
     logger.info(`[MIGRATION] change_bad_entity_type > Migration complete`);
   } catch (err) {
-    logger.info(`[MIGRATION] change_bad_entity_type > Error ${err}`);
+    logger.info(`[MIGRATION] change_bad_entity_type`, { error: err });
   }
   next();
 };
