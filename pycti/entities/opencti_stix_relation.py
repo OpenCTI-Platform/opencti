@@ -383,6 +383,11 @@ class StixRelation:
             weight
             first_seen
             last_seen
+            createdByRef {
+                node {
+                    id
+                }
+            }            
         """
         stix_relation_result = None
         if id is not None:
@@ -427,7 +432,7 @@ class StixRelation:
                 customAttributes=custom_attributes,
             )
         if stix_relation_result is not None:
-            if update:
+            if update or object_result["createdByRef"] == created_by_ref:
                 if (
                     description is not None
                     and stix_relation_result["description"] != description

@@ -281,6 +281,11 @@ class Identity:
             name
             description 
             alias
+            createdByRef {
+                node {
+                    id
+                }
+            }            
         """
         object_result = self.opencti.stix_domain_entity.get_by_stix_id_or_name(
             types=[type],
@@ -289,7 +294,7 @@ class Identity:
             customAttributes=custom_attributes,
         )
         if object_result is not None:
-            if update:
+            if update or object_result["createdByRef"] == created_by_ref:
                 # name
                 if object_result["name"] != name:
                     self.opencti.stix_domain_entity.update_field(
