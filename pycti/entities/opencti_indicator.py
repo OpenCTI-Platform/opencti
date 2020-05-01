@@ -353,27 +353,32 @@ class Indicator:
         kill_chain_phases = kwargs.get("killChainPhases", None)
         update = kwargs.get("update", False)
         custom_attributes = """
+            id
+            entity_type
+            name
+            description
+            score
+            createdByRef {
+                node {
                     id
-                    entity_type
-                    name
-                    description
-                    score
-                    ... on Indicator {
-                        observableRefs {
-                            edges {
-                                node {
-                                    id
-                                    entity_type
-                                    stix_id_key
-                                    observable_value
-                                }
-                                relation {
-                                    id
-                                }
-                            }
+                }
+            }                    
+            ... on Indicator {
+                observableRefs {
+                    edges {
+                        node {
+                            id
+                            entity_type
+                            stix_id_key
+                            observable_value
+                        }
+                        relation {
+                            id
                         }
                     }
-                """
+                }
+            }
+        """
         object_result = None
         if stix_id_key is not None:
             object_result = self.opencti.indicator.read(
@@ -391,7 +396,7 @@ class Indicator:
                 customAttributes=custom_attributes,
             )
         if object_result is not None:
-            if update:
+            if update or object_result["createdByRef"] == created_by_ref:
                 # name
                 if name is not None and object_result["name"] != name:
                     self.opencti.stix_domain_entity.update_field(

@@ -317,14 +317,19 @@ class StixObservable:
         custom_attributes = """
             id
             entity_type
-            description 
+            description
+            createdByRef {
+                node {
+                    id
+                }
+            }            
         """
         object_result = self.read(
             filters=[{"key": "observable_value", "values": [observable_value]}],
             customAttributes=custom_attributes,
         )
         if object_result is not None:
-            if update:
+            if update or object_result["createdByRef"] == created_by_ref:
                 if (
                     description is not None
                     and object_result["description"] != "description"

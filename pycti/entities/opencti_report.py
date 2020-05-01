@@ -419,19 +419,9 @@ class Report:
             entity_type
             name
             description 
-            ... on Report {
-                observableRefs {
-                    edges {
-                        node {
-                            id
-                            entity_type
-                            stix_id_key
-                            observable_value
-                        }
-                        relation {
-                            id
-                        }
-                    }
+            createdByRef {
+                node {
+                    id
                 }
             }
         """
@@ -452,7 +442,7 @@ class Report:
                 custom_attributes=custom_attributes,
             )
         if object_result is not None:
-            if update:
+            if update or object_result["createdByRef"] == created_by_ref:
                 if object_result["name"] != name:
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"], key="name", value=name
