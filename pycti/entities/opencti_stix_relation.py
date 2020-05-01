@@ -432,7 +432,7 @@ class StixRelation:
                 customAttributes=custom_attributes,
             )
         if stix_relation_result is not None:
-            if update or object_result["createdByRef"] == created_by_ref:
+            if update or stix_relation_result["createdByRef"] == created_by_ref:
                 if (
                     description is not None
                     and stix_relation_result["description"] != description
