@@ -15,7 +15,7 @@ class ItemAuthor extends Component {
             color="secondary"
             size="small"
             component={Link}
-            to={`${resolveLink(createdByRef.entity_type)}/${createdByRef.id}`}
+            to={`${resolveLink(createdByRef.entity_type)}/${createdByRef.id}?viewAs=author`}
           >
             {createdByRef.name}
           </Button>

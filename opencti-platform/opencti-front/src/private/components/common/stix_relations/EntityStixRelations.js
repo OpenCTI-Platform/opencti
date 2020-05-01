@@ -151,6 +151,7 @@ class EntityStixRelations extends Component {
       classes,
       targetEntityTypes,
       entityId,
+      role,
       relationType,
       creationIsFrom,
     } = this.props;
@@ -170,6 +171,7 @@ class EntityStixRelations extends Component {
     // sort only when inferences are disabled or inferences are resolved
     const paginationOptions = {
       fromId: entityId,
+      fromRole: role || null,
       toTypes: toType === 'All' ? targetEntityTypes : [toType],
       inferred: inferred && sortBy === null ? inferred : false,
       relationType,
@@ -337,6 +339,7 @@ class EntityStixRelations extends Component {
 
 EntityStixRelations.propTypes = {
   entityId: PropTypes.string,
+  role: PropTypes.string,
   targetEntityTypes: PropTypes.array,
   entityLink: PropTypes.string,
   relationType: PropTypes.string,

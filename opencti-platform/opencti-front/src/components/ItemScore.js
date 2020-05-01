@@ -10,11 +10,15 @@ const styles = () => ({
     fontSize: 12,
     height: 25,
     marginRight: 7,
+    textTransform: 'uppercase',
+    borderRadius: '0',
   },
   chipInList: {
     fontSize: 12,
     height: 20,
     float: 'right',
+    textTransform: 'uppercase',
+    borderRadius: '0',
   },
 });
 
@@ -24,23 +28,20 @@ const inlineStyles = {
     color: '#2b2b2b',
   },
   green: {
-    backgroundColor: '#2e7d32',
-  },
-  darkGreen: {
-    backgroundColor: '#1b5e20',
+    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+    color: '#4caf50',
   },
   blue: {
-    backgroundColor: '#3f51b5',
+    backgroundColor: 'rgba(92, 123, 245, 0.08)',
+    color: '#5c7bf5',
   },
   red: {
-    backgroundColor: '#f44336',
+    backgroundColor: 'rgba(244, 67, 54, 0.08)',
+    color: '#f44336',
   },
   orange: {
-    backgroundColor: '#ff9800',
-  },
-  blueGrey: {
-    backgroundColor: '#607d8b',
-    fontStyle: 'italic',
+    backgroundColor: 'rgba(255, 152, 0, 0.08)',
+    color: '#ff9800',
   },
 };
 
@@ -52,8 +53,8 @@ class ItemScore extends Component {
       return (
         <Chip
           classes={{ root: style }}
-          style={inlineStyles.darkGreen}
-          label={`${score}/100`}
+          style={inlineStyles.green}
+          label={`${score} / 100`}
         />
       );
     }
@@ -62,7 +63,7 @@ class ItemScore extends Component {
         <Chip
           classes={{ root: style }}
           style={inlineStyles.blue}
-          label={`${score}/100`}
+          label={`${score} / 100`}
         />
       );
     }
@@ -71,7 +72,7 @@ class ItemScore extends Component {
         <Chip
           classes={{ root: style }}
           style={inlineStyles.orange}
-          label={`${score}/100`}
+          label={`${score} / 100`}
         />
       );
     }
@@ -80,15 +81,15 @@ class ItemScore extends Component {
         <Chip
           classes={{ root: style }}
           style={inlineStyles.red}
-          label={`${score}/100`}
+          label={`${score} / 100`}
         />
       );
     }
     return (
       <Chip
         classes={{ root: style }}
-        style={inlineStyles.black}
-        label={`${score}/100`}
+        style={inlineStyles.white}
+        label={`${score} / 100`}
       />
     );
   }

@@ -37,7 +37,7 @@ class OrganizationComponent extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-organization',
+      `view-organization-${props.organization.id}`,
     );
     this.state = {
       viewAs: propOr('knowledge', 'viewAs', params),
@@ -48,7 +48,7 @@ class OrganizationComponent extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-organization',
+      `view-organization-${this.props.organization.id}`,
       dissoc('filters', this.state),
     );
   }

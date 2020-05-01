@@ -397,7 +397,7 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
   );
 
   // 4. Delete entities
-  await stixDomainEntitiesDelete(stixDomainEntitiesIds);
+  await stixDomainEntitiesDelete(user, stixDomainEntitiesIds);
   // 5. Return entity
   return loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity').then((stixDomainEntity) =>
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomainEntity, user)

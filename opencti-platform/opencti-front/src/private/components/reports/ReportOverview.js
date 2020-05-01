@@ -21,9 +21,11 @@ const styles = () => ({
   },
   chip: {
     fontSize: 12,
-    height: 25,
-    margin: '0 7px 7px 0',
-    backgroundColor: '#455a64',
+    lineHeight: '12px',
+    backgroundColor: 'rgba(0, 150, 136, 0.3)',
+    color: '#ffffff',
+    textTransform: 'uppercase',
+    borderRadius: '0',
   },
 });
 

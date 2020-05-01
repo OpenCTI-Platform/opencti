@@ -57,6 +57,7 @@ EntityStixRelationsLines.propTypes = {
 export const entityStixRelationsLinesQuery = graphql`
   query EntityStixRelationsLinesPaginationQuery(
     $fromId: String
+    $fromRole: String
     $toTypes: [String]
     $inferred: Boolean
     $relationType: String
@@ -70,6 +71,7 @@ export const entityStixRelationsLinesQuery = graphql`
     ...EntityStixRelationsLines_data
       @arguments(
         fromId: $fromId
+        fromRole: $fromRole
         toTypes: $toTypes
         inferred: $inferred
         relationType: $relationType
@@ -90,6 +92,7 @@ export default createPaginationContainer(
       fragment EntityStixRelationsLines_data on Query
         @argumentDefinitions(
           fromId: { type: "String" }
+          fromRole: { type: "String" }
           toTypes: { type: "[String]" }
           inferred: { type: "Boolean" }
           relationType: { type: "String" }
@@ -102,6 +105,7 @@ export default createPaginationContainer(
         ) {
         stixRelations(
           fromId: $fromId
+          fromRole: $fromRole
           toTypes: $toTypes
           inferred: $inferred
           relationType: $relationType
@@ -140,6 +144,7 @@ export default createPaginationContainer(
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         fromId: fragmentVariables.fromId,
+        fromRole: fragmentVariables.fromRole,
         toTypes: fragmentVariables.toTypes,
         inferred: fragmentVariables.inferred,
         relationType: fragmentVariables.relationType,

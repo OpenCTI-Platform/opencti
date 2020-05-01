@@ -39,7 +39,7 @@ class PersonComponent extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-person',
+      `view-person-${props.person.id}`,
     );
     this.state = {
       viewAs: propOr('knowledge', 'viewAs', params),
@@ -50,7 +50,7 @@ class PersonComponent extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-person',
+      `view-person-${this.props.person.id}`,
       dissoc('filters', this.state),
     );
   }

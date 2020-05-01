@@ -763,13 +763,14 @@ export const listRelations = async (relationType, args) => {
     noCache = false,
   } = args;
   let useInference = inferred;
-  const { filters = [], search, fromId, toId, fromTypes = [], toTypes = [] } = args;
+  const { filters = [], search, fromId, fromRole, toId, toRole, fromTypes = [], toTypes = [] } = args;
   const { firstSeenStart, firstSeenStop, lastSeenStart, lastSeenStop, weights = [] } = args;
 
   // Use $from, $to only if fromId or toId specified.
   // Else, just ask for the relation only.
   // fromType or toType only allow if fromId or toId available
-  const askForConnections = fromId !== undefined || toId !== undefined;
+  const definedRoles = !isNil(fromRole) || !isNil(toRole);
+  const askForConnections = !isNil(fromId) || !isNil(toId) || definedRoles;
   const haveTargetFilters = filters && filters.length > 0; // For now filters only contains target to filtering
   const fromTypesFilter = fromTypes && fromTypes.length > 0;
   const toTypesFilter = toTypes && toTypes.length > 0;
@@ -784,7 +785,7 @@ export const listRelations = async (relationType, args) => {
   // 0 - Check if we can support the query by Elastic
   const unsupportedOrdering = isRelationOrderBy && last(orderBy.split('.')) !== 'internal_id_key';
   // Search is not supported because its only search on the relation to.
-  const supportedByCache = !search && !unsupportedOrdering && !haveTargetFilters && !inferred;
+  const supportedByCache = !search && !unsupportedOrdering && !haveTargetFilters && !inferred && !definedRoles;
   const useCache = !forceNoCache() && !noCache && supportedByCache;
   if (useCache) {
     const finalFilters = [];
@@ -893,9 +894,9 @@ export const listRelations = async (relationType, args) => {
   const relationRef = relationFilter ? 'relationRef' : null;
   if (relationFilter) {
     // eslint-disable-next-line no-shadow
-    const { relation, fromRole, toRole, id, relationId } = relationFilter;
+    const { relation, fromRole: fromRoleFilter, toRole: toRoleFilter, id, relationId } = relationFilter;
     const pEid = escapeString(id);
-    const relationQueryPart = `$${relationRef}(${fromRole}:$rel, ${toRole}:$pointer) isa ${relation}; $pointer has internal_id_key "${pEid}";`;
+    const relationQueryPart = `$${relationRef}(${fromRoleFilter}:$rel, ${toRoleFilter}:$pointer) isa ${relation}; $pointer has internal_id_key "${pEid}";`;
     relationsFields.push(relationQueryPart);
     if (relationId) {
       attributesFilters.push(`$rel has internal_id_key "${escapeString(relationId)}";`);
@@ -920,7 +921,9 @@ export const listRelations = async (relationType, args) => {
   const queryAttributesFields = join(' ', attributesFields);
   const queryAttributesFilters = join(' ', attributesFilters);
   const queryRelationsFields = join(' ', relationsFields);
-  const querySource = askForConnections ? '$rel($from, $to)' : '$rel';
+  const querySource = askForConnections
+    ? `$rel(${fromRole ? `${fromRole}:` : ''}$from, ${toRole ? `${toRole}:` : ''}$to)`
+    : '$rel';
   const baseQuery = `match ${querySource} isa ${relationToGet};
                       ${queryFromTypes} ${queryToTypes} 
                       ${queryRelationsFields} ${queryAttributesFields} ${queryAttributesFilters} get;`;
@@ -1273,7 +1276,7 @@ const createRelationRaw = async (user, fromInternalId, input, opts = {}) => {
   let relationAttributes = { internal_id_key: relationId };
   if (isStixRelation) {
     const currentDate = now();
-    const toCreate = input.stix_id_key === undefined || input.stix_id_key === null || input.stix_id_key === 'create';
+    const toCreate = isNil(input.stix_id_key) || input.stix_id_key === 'create';
     relationAttributes.stix_id_key = toCreate ? `relationship--${uuid()}` : input.stix_id_key;
     relationAttributes.revoked = false;
     relationAttributes.name = input.name ? input.name : ''; // Force name of the relation
@@ -1624,7 +1627,7 @@ export const createEntity = async (user, entity, type, opts = {}) => {
     const { key, value } = queryElements[index];
     const insert = prepareAttribute(value);
     const separator = index + 1 === nbElements ? ';' : ',';
-    if (insert !== null && insert !== undefined && insert.length !== 0) {
+    if (!isNil(insert) && insert.length !== 0) {
       query += `has ${key} ${insert}${separator} `;
     }
   }
