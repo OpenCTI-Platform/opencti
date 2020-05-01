@@ -1226,9 +1226,10 @@ class OpenCTIStix2:
                         "definition_type"
                     ].lower(),
                     "definition": {
-                        entity_marking_definition[
-                            "definition_type"
-                        ].lower(): entity_marking_definition["definition"].lower().replace('tlp:')
+                        entity_marking_definition["definition_type"]
+                        .lower(): entity_marking_definition["definition"]
+                        .lower()
+                        .replace("tlp:")
                     },
                     "created": entity_marking_definition["created"],
                     CustomProperties.MODIFIED: entity_marking_definition["modified"],
@@ -1472,7 +1473,9 @@ class OpenCTIStix2:
         definition = stix_object["definition"][stix_object["definition_type"]]
         if stix_object["definition_type"] == "tlp":
             definition_type = definition_type.upper()
-            definition = (definition_type + ":" + stix_object["definition"]['tlp'].upper())
+            definition = (
+                definition_type + ":" + stix_object["definition"]["tlp"].upper()
+            )
         return self.opencti.marking_definition.create(
             definition_type=definition_type,
             definition=definition,
@@ -1529,9 +1532,7 @@ class OpenCTIStix2:
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
             else [],
-            tags=extras["tags_ids"]
-            if "tags_ids" in extras
-            else [],
+            tags=extras["tags_ids"] if "tags_ids" in extras else [],
             update=update,
         )
 
@@ -1571,9 +1572,7 @@ class OpenCTIStix2:
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
             else [],
-            tags=extras["tags_ids"]
-            if "tags_ids" in extras
-            else [],
+            tags=extras["tags_ids"] if "tags_ids" in extras else [],
             update=update,
         )
 
@@ -1616,9 +1615,7 @@ class OpenCTIStix2:
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
             else [],
-            tags=extras["tags_ids"]
-            if "tags_ids" in extras
-            else [],
+            tags=extras["tags_ids"] if "tags_ids" in extras else [],
             update=update,
         )
 
@@ -1649,9 +1646,7 @@ class OpenCTIStix2:
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
             else [],
-            tags=extras["tags_ids"]
-            if "tags_ids" in extras
-            else [],
+            tags=extras["tags_ids"] if "tags_ids" in extras else [],
             uodate=update,
         )
 
@@ -1680,9 +1675,7 @@ class OpenCTIStix2:
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
             else [],
-            tags=extras["tags_ids"]
-            if "tags_ids" in extras
-            else [],
+            tags=extras["tags_ids"] if "tags_ids" in extras else [],
             update=update,
         )
 
@@ -1709,9 +1702,7 @@ class OpenCTIStix2:
             killChainPhases=extras["kill_chain_phases_ids"]
             if "kill_chain_phases_ids" in extras
             else [],
-            tags=extras["tags_ids"]
-            if "tags_ids" in extras
-            else [],
+            tags=extras["tags_ids"] if "tags_ids" in extras else [],
             update=update,
         )
 
@@ -1738,9 +1729,7 @@ class OpenCTIStix2:
             killChainPhases=extras["kill_chain_phases_ids"]
             if "kill_chain_phases_ids" in extras
             else [],
-            tags=extras["tags_ids"]
-            if "tags_ids" in extras
-            else [],
+            tags=extras["tags_ids"] if "tags_ids" in extras else [],
             update=update,
         )
 
@@ -1779,9 +1768,7 @@ class OpenCTIStix2:
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
             else [],
-            tags=extras["tags_ids"]
-            if "tags_ids" in extras
-            else [],
+            tags=extras["tags_ids"] if "tags_ids" in extras else [],
             update=update,
         )
 
@@ -1810,9 +1797,7 @@ class OpenCTIStix2:
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
             else [],
-            tags=extras["tags_ids"]
-            if "tags_ids" in extras
-            else [],
+            tags=extras["tags_ids"] if "tags_ids" in extras else [],
             update=update,
         )
 
@@ -1864,9 +1849,7 @@ class OpenCTIStix2:
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
             else None,
-            tags=extras["tags_ids"]
-            if "tags_ids" in extras
-            else [],
+            tags=extras["tags_ids"] if "tags_ids" in extras else [],
             update=update,
         )
 

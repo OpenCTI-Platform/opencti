@@ -431,7 +431,7 @@ class Indicator:
                 createdByRef=created_by_ref,
                 markingDefinitions=marking_definitions,
                 tags=tags,
-                killChainPhases=kill_chain_phases
+                killChainPhases=kill_chain_phases,
             )
 
     """

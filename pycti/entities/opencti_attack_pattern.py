@@ -473,9 +473,7 @@ class AttackPattern:
                 markingDefinitions=extras["marking_definitions_ids"]
                 if "marking_definitions_ids" in extras
                 else [],
-                tags=extras["tags_ids"]
-                if "tags_ids" in extras
-                else [],
+                tags=extras["tags_ids"] if "tags_ids" in extras else [],
                 killChainPhases=extras["kill_chain_phases_ids"]
                 if "kill_chain_phases_ids" in extras
                 else [],
