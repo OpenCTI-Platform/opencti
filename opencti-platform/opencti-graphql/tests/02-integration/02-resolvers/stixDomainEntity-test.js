@@ -137,7 +137,7 @@ describe('StixDomainEntity resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {
-        field: 'created_at',
+        field: 'created',
         operation: 'count',
         startDate: '2020-01-01T00:00:00+00:00',
         endDate: '2021-01-01T00:00:00+00:00',
@@ -145,7 +145,8 @@ describe('StixDomainEntity resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.stixDomainEntitiesTimeSeries.length).toEqual(13);
-    expect(queryResult.data.stixDomainEntitiesTimeSeries[3].value).toEqual(29);
+    expect(queryResult.data.stixDomainEntitiesTimeSeries[1].value).toEqual(12);
+    expect(queryResult.data.stixDomainEntitiesTimeSeries[2].value).toEqual(5);
   });
   it('should update stixDomainEntity', async () => {
     const UPDATE_QUERY = gql`
