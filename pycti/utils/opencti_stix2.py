@@ -1229,7 +1229,7 @@ class OpenCTIStix2:
                         entity_marking_definition["definition_type"]
                         .lower(): entity_marking_definition["definition"]
                         .lower()
-                        .replace("tlp:")
+                        .replace("tlp:", "")
                     },
                     "created": entity_marking_definition["created"],
                     CustomProperties.MODIFIED: entity_marking_definition["modified"],
