@@ -243,7 +243,7 @@ class CourseOfAction:
                         "modified": modified,
                         "createdByRef": created_by_ref,
                         "markingDefinitions": marking_definitions,
-                        "tags": tags
+                        "tags": tags,
                     }
                 },
             )
@@ -326,7 +326,7 @@ class CourseOfAction:
                 modified=modified,
                 createdByRef=created_by_ref,
                 markingDefinitions=marking_definitions,
-                tags=tags
+                tags=tags,
             )
 
     """

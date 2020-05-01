@@ -377,7 +377,7 @@ class Report:
                         "modified": modified,
                         "createdByRef": created_by_ref,
                         "markingDefinitions": marking_definitions,
-                        "tags": tags
+                        "tags": tags,
                     }
                 },
             )
@@ -485,7 +485,7 @@ class Report:
                 modified=modified,
                 createdByRef=created_by_ref,
                 markingDefinitions=marking_definitions,
-                tags=tags
+                tags=tags,
             )
             if external_reference_id is not None:
                 self.opencti.stix_entity.add_external_reference(
@@ -652,9 +652,7 @@ class Report:
                 markingDefinitions=extras["marking_definitions_ids"]
                 if "marking_definitions_ids" in extras
                 else [],
-                tags=extras["tags_ids"]
-                if "tags_ids" in extras
-                else [],
+                tags=extras["tags_ids"] if "tags_ids" in extras else [],
                 update=update,
             )
         else:
