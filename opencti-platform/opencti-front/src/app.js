@@ -4,7 +4,7 @@ import {
 } from 'react-router-dom';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import React from 'react';
-import theme from './components/Theme';
+import theme from './components/ThemeDark';
 import { APP_BASE_PATH } from './relay/environment';
 import Login from './public/components/Login';
 import { BoundaryRoute } from './private/components/Error';

@@ -89,6 +89,7 @@ define
   organization_class sub attribute, datatype string;
   report_class sub attribute, datatype string;
   indicator_pattern sub attribute, datatype string;
+  indicator_type sub attribute, datatype string;
   main_observable_type sub attribute, datatype string;
   valid_from sub attribute, datatype date;
   valid_from_day sub attribute, datatype string;
@@ -101,9 +102,11 @@ define
   platform sub attribute, datatype string;
   required_permission sub attribute, datatype string;
   source_confidence_level sub attribute, datatype long;
+  confidence sub attribute, datatype long;
   reliability sub attribute, datatype string;
   value sub attribute, datatype string;
   pattern_type sub attribute, datatype string;
+  pattern_version sub attribute, datatype string;
   base_score sub attribute, datatype double;
   base_severity sub attribute, datatype string;
   attack_vector sub attribute, datatype string;
@@ -111,11 +114,13 @@ define
   availability_impact sub attribute, datatype string;
   content sub attribute, datatype string;
   explanation sub attribute, datatype string;
+  detection sub attribute, datatype boolean;
 
   # STIX SRO
   relationship_type sub attribute, datatype string;
   role_played sub attribute, datatype string;
   weight sub attribute, datatype long;
+  negative sub attribute, datatype boolean;
 
   # STIX SOO
   observable_value sub attribute, datatype string;
@@ -209,7 +214,6 @@ define
 
   # sighting
   sighted_in sub role;
-  sighting_of sub role;
 
   ## RELATIONSHIPS
 
@@ -304,6 +308,8 @@ define
     has entity_type,
     has relationship_type,
     has weight,
+    has confidence,
+    has negative,
     has first_seen,
     has first_seen_day,
     has first_seen_month,
@@ -312,8 +318,9 @@ define
     has last_seen_day,
     has last_seen_month,
     has last_seen_year,
+    plays so,
     relates sighted_in,
-    relates sighting_of;
+    relates so;
 
   stix_relation sub relation,
     abstract,
@@ -325,6 +332,7 @@ define
     has entity_type,
     has relationship_type,
     has weight,
+    has confidence,
     has first_seen,
     has first_seen_day,
     has first_seen_month,
@@ -585,6 +593,7 @@ define
     has name,
     has description,
     has alias,
+    has confidence,
     has graph_data;
 
   External-Reference sub Stix-Domain,
@@ -818,9 +827,12 @@ define
 
   Indicator sub Stix-Domain-Entity,
     key indicator_pattern,
+    has indicator_type,
     has main_observable_type,
     has pattern_type,
+    has pattern_version,
     has score,
+    has detection,
     has valid_from,
     has valid_from_day,
     has valid_from_month,

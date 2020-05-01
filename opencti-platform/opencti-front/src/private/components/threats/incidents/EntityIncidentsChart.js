@@ -17,7 +17,7 @@ import IconButton from '@material-ui/core/IconButton';
 import { SettingsInputComponent } from '@material-ui/icons';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo, now } from '../../../../utils/Time';
-import Theme from '../../../../components/Theme';
+import Theme from '../../../../components/ThemeDark';
 import inject18n from '../../../../components/i18n';
 import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
 

@@ -3297,6 +3297,7 @@ enum IndicatorsFilter {
   tags
   observablesContains
   indicates
+  detection
 }
 input IndicatorsFiltering {
   key: IndicatorsFilter!
@@ -3323,8 +3324,11 @@ type Indicator implements GlobalObject & StixEntity & StixDomainEntity {
   name: String!
   description: String
   indicator_pattern: String!
+  pattern_version: String
+  indicator_type: [String]
   main_observable_type: String!
   pattern_type: String!
+  detection: Boolean
   valid_from: DateTime
   valid_until: DateTime
   score: Int
@@ -3377,6 +3381,8 @@ input IndicatorAddInput {
   description: String
   indicator_pattern: String!
   pattern_type: String!
+  pattern_version: String
+  detection: Boolean
   main_observable_type: String!
   valid_from: DateTime
   valid_until: DateTime
