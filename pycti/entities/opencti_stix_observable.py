@@ -251,6 +251,7 @@ class StixObservable:
         stix_id_key = kwargs.get("stix_id_key", None)
         created_by_ref = kwargs.get("createdByRef", None)
         marking_definitions = kwargs.get("markingDefinitions", None)
+        tags = kwargs.get("tags", None)
         create_indicator = kwargs.get("createIndicator", False)
 
         if type is not None and observable_value is not None:
@@ -284,6 +285,7 @@ class StixObservable:
                         "stix_id_key": stix_id_key,
                         "createdByRef": created_by_ref,
                         "markingDefinitions": marking_definitions,
+                        "tags": tags,
                         "createIndicator": create_indicator,
                     }
                 },
@@ -309,6 +311,7 @@ class StixObservable:
         stix_id_key = kwargs.get("stix_id_key", None)
         created_by_ref = kwargs.get("createdByRef", None)
         marking_definitions = kwargs.get("markingDefinitions", None)
+        tags = kwargs.get("tags", None)
         create_indicator = kwargs.get("createIndicator", False)
         update = kwargs.get("update", False)
         custom_attributes = """
@@ -340,6 +343,7 @@ class StixObservable:
                 stix_id_key=stix_id_key,
                 createdByRef=created_by_ref,
                 markingDefinitions=marking_definitions,
+                tags=tags,
                 createIndicator=create_indicator,
             )
 

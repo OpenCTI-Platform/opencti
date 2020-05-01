@@ -455,11 +455,6 @@ class OpenCTIStix2:
                 else [],
             }
 
-            # Add tags
-            for tag_id in tags_ids:
-                self.opencti.stix_entity.add_tag(
-                    id=stix_object_result["id"], tag_id=tag_id,
-                )
             # Add external references
             for external_reference_id in external_references_ids:
                 self.opencti.stix_entity.add_external_reference(
@@ -1233,7 +1228,7 @@ class OpenCTIStix2:
                     "definition": {
                         entity_marking_definition[
                             "definition_type"
-                        ]: entity_marking_definition["definition"]
+                        ].lower(): entity_marking_definition["definition"].lower().replace('tlp:')
                     },
                     "created": entity_marking_definition["created"],
                     CustomProperties.MODIFIED: entity_marking_definition["modified"],
@@ -1476,11 +1471,8 @@ class OpenCTIStix2:
         definition_type = stix_object["definition_type"]
         definition = stix_object["definition"][stix_object["definition_type"]]
         if stix_object["definition_type"] == "tlp":
-            definition_type = "TLP"
-            definition = (
-                "TLP:"
-                + stix_object["definition"][stix_object["definition_type"]].upper()
-            )
+            definition_type = definition_type.upper()
+            definition = (definition_type + ":" + stix_object["definition"]['tlp'].upper())
         return self.opencti.marking_definition.create(
             definition_type=definition_type,
             definition=definition,
@@ -1537,6 +1529,9 @@ class OpenCTIStix2:
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
             else [],
+            tags=extras["tags_ids"]
+            if "tags_ids" in extras
+            else [],
             update=update,
         )
 
@@ -1575,6 +1570,9 @@ class OpenCTIStix2:
             else None,
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
+            else [],
+            tags=extras["tags_ids"]
+            if "tags_ids" in extras
             else [],
             update=update,
         )
@@ -1618,6 +1616,9 @@ class OpenCTIStix2:
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
             else [],
+            tags=extras["tags_ids"]
+            if "tags_ids" in extras
+            else [],
             update=update,
         )
 
@@ -1648,6 +1649,9 @@ class OpenCTIStix2:
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
             else [],
+            tags=extras["tags_ids"]
+            if "tags_ids" in extras
+            else [],
             uodate=update,
         )
 
@@ -1676,6 +1680,9 @@ class OpenCTIStix2:
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
             else [],
+            tags=extras["tags_ids"]
+            if "tags_ids" in extras
+            else [],
             update=update,
         )
 
@@ -1702,6 +1709,9 @@ class OpenCTIStix2:
             killChainPhases=extras["kill_chain_phases_ids"]
             if "kill_chain_phases_ids" in extras
             else [],
+            tags=extras["tags_ids"]
+            if "tags_ids" in extras
+            else [],
             update=update,
         )
 
@@ -1727,6 +1737,9 @@ class OpenCTIStix2:
             else [],
             killChainPhases=extras["kill_chain_phases_ids"]
             if "kill_chain_phases_ids" in extras
+            else [],
+            tags=extras["tags_ids"]
+            if "tags_ids" in extras
             else [],
             update=update,
         )
@@ -1766,6 +1779,9 @@ class OpenCTIStix2:
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
             else [],
+            tags=extras["tags_ids"]
+            if "tags_ids" in extras
+            else [],
             update=update,
         )
 
@@ -1794,6 +1810,9 @@ class OpenCTIStix2:
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
             else [],
+            tags=extras["tags_ids"]
+            if "tags_ids" in extras
+            else [],
             update=update,
         )
 
@@ -1811,27 +1830,6 @@ class OpenCTIStix2:
         return self.opencti.opinion.import_from_stix2(
             stixObject=stix_object, extras=extras, update=update
         )
-
-    def export_stix_observables(self, entity):
-        stix_ids = []
-        observed_data = dict()
-        observed_data["id"] = "observed-data--" + str(uuid.uuid4())
-        observed_data["type"] = "observed-data"
-        observed_data["number_observed"] = len(entity["observableRefs"])
-        observed_data["objects"] = []
-        for observable in entity["observableRefs"]:
-            stix_observable = dict()
-            stix_observable[CustomProperties.OBSERVABLE_TYPE] = observable[
-                "entity_type"
-            ]
-            stix_observable[CustomProperties.OBSERVABLE_VALUE] = observable[
-                "observable_value"
-            ]
-            stix_observable["type"] = observable["entity_type"]
-            observed_data["objects"].append(stix_observable)
-            stix_ids.append(observable["stix_id_key"])
-
-        return {"observedData": observed_data, "stixIds": stix_ids}
 
     def create_indicator(self, stix_object, extras, update=False):
         return self.opencti.indicator.create(
@@ -1866,8 +1864,32 @@ class OpenCTIStix2:
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
             else None,
+            tags=extras["tags_ids"]
+            if "tags_ids" in extras
+            else [],
             update=update,
         )
+
+    def export_stix_observables(self, entity):
+        stix_ids = []
+        observed_data = dict()
+        observed_data["id"] = "observed-data--" + str(uuid.uuid4())
+        observed_data["type"] = "observed-data"
+        observed_data["number_observed"] = len(entity["observableRefs"])
+        observed_data["objects"] = []
+        for observable in entity["observableRefs"]:
+            stix_observable = dict()
+            stix_observable[CustomProperties.OBSERVABLE_TYPE] = observable[
+                "entity_type"
+            ]
+            stix_observable[CustomProperties.OBSERVABLE_VALUE] = observable[
+                "observable_value"
+            ]
+            stix_observable["type"] = observable["entity_type"]
+            observed_data["objects"].append(stix_observable)
+            stix_ids.append(observable["stix_id_key"])
+
+        return {"observedData": observed_data, "stixIds": stix_ids}
 
     def resolve_author(self, title):
         if "fireeye" in title.lower() or "mandiant" in title.lower():
