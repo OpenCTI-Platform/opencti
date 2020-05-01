@@ -340,6 +340,7 @@ class Report:
         modified = kwargs.get("modified", None)
         created_by_ref = kwargs.get("createdByRef", None)
         marking_definitions = kwargs.get("markingDefinitions", None)
+        tags = kwargs.get("tags", None)
 
         if (
             name is not None
@@ -376,6 +377,7 @@ class Report:
                         "modified": modified,
                         "createdByRef": created_by_ref,
                         "markingDefinitions": marking_definitions,
+                        "tags": tags
                     }
                 },
             )
@@ -410,6 +412,7 @@ class Report:
         modified = kwargs.get("modified", None)
         created_by_ref = kwargs.get("createdByRef", None)
         marking_definitions = kwargs.get("markingDefinitions", None)
+        tags = kwargs.get("tags", None)
         update = kwargs.get("update", False)
         custom_attributes = """
             id
@@ -482,6 +485,7 @@ class Report:
                 modified=modified,
                 createdByRef=created_by_ref,
                 markingDefinitions=marking_definitions,
+                tags=tags
             )
             if external_reference_id is not None:
                 self.opencti.stix_entity.add_external_reference(
@@ -647,6 +651,9 @@ class Report:
                 else None,
                 markingDefinitions=extras["marking_definitions_ids"]
                 if "marking_definitions_ids" in extras
+                else [],
+                tags=extras["tags_ids"]
+                if "tags_ids" in extras
                 else [],
                 update=update,
             )

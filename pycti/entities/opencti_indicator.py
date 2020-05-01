@@ -275,6 +275,8 @@ class Indicator:
         modified = kwargs.get("modified", None)
         created_by_ref = kwargs.get("createdByRef", None)
         marking_definitions = kwargs.get("markingDefinitions", None)
+        tags = kwargs.get("tags", None)
+        kill_chain_phases = kwargs.get("killChainPhases", None)
 
         if (
             name is not None
@@ -313,6 +315,8 @@ class Indicator:
                         "modified": modified,
                         "createdByRef": created_by_ref,
                         "markingDefinitions": marking_definitions,
+                        "tags": tags,
+                        "killChainPhases": kill_chain_phases,
                     }
                 },
             )
@@ -345,6 +349,8 @@ class Indicator:
         modified = kwargs.get("modified", None)
         created_by_ref = kwargs.get("createdByRef", None)
         marking_definitions = kwargs.get("markingDefinitions", None)
+        tags = kwargs.get("tags", None)
+        kill_chain_phases = kwargs.get("killChainPhases", None)
         update = kwargs.get("update", False)
         custom_attributes = """
                     id
@@ -424,6 +430,8 @@ class Indicator:
                 modified=modified,
                 createdByRef=created_by_ref,
                 markingDefinitions=marking_definitions,
+                tags=tags,
+                killChainPhases=kill_chain_phases
             )
 
     """

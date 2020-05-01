@@ -215,6 +215,7 @@ class CourseOfAction:
         modified = kwargs.get("modified", None)
         created_by_ref = kwargs.get("createdByRef", None)
         marking_definitions = kwargs.get("markingDefinitions", None)
+        tags = kwargs.get("tags", None)
 
         if name is not None and description is not None:
             self.opencti.log("info", "Creating Course Of Action {" + name + "}.")
@@ -242,6 +243,7 @@ class CourseOfAction:
                         "modified": modified,
                         "createdByRef": created_by_ref,
                         "markingDefinitions": marking_definitions,
+                        "tags": tags
                     }
                 },
             )
@@ -271,6 +273,7 @@ class CourseOfAction:
         modified = kwargs.get("modified", None)
         created_by_ref = kwargs.get("createdByRef", None)
         marking_definitions = kwargs.get("markingDefinitions", None)
+        tags = kwargs.get("tags", None)
         update = kwargs.get("update", False)
         custom_attributes = """
             id
@@ -323,6 +326,7 @@ class CourseOfAction:
                 modified=modified,
                 createdByRef=created_by_ref,
                 markingDefinitions=marking_definitions,
+                tags=tags
             )
 
     """

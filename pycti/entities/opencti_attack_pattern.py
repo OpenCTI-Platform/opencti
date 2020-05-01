@@ -257,6 +257,7 @@ class AttackPattern:
         modified = kwargs.get("modified", None)
         created_by_ref = kwargs.get("createdByRef", None)
         marking_definitions = kwargs.get("markingDefinitions", None)
+        tags = kwargs.get("tags", None)
         kill_chain_phases = kwargs.get("killChainPhases", None)
 
         if name is not None and description is not None:
@@ -288,6 +289,7 @@ class AttackPattern:
                         "modified": modified,
                         "createdByRef": created_by_ref,
                         "markingDefinitions": marking_definitions,
+                        "tags": tags,
                         "killChainPhases": kill_chain_phases,
                     }
                 },
@@ -321,6 +323,7 @@ class AttackPattern:
         modified = kwargs.get("modified", None)
         created_by_ref = kwargs.get("createdByRef", None)
         marking_definitions = kwargs.get("markingDefinitions", None)
+        tags = kwargs.get("tags", None)
         kill_chain_phases = kwargs.get("killChainPhases", None)
         update = kwargs.get("update", False)
         custom_attributes = """
@@ -413,6 +416,7 @@ class AttackPattern:
                 modified=modified,
                 createdByRef=created_by_ref,
                 markingDefinitions=marking_definitions,
+                tags=tags,
                 killChainPhases=kill_chain_phases,
             )
 
@@ -468,6 +472,9 @@ class AttackPattern:
                 else None,
                 markingDefinitions=extras["marking_definitions_ids"]
                 if "marking_definitions_ids" in extras
+                else [],
+                tags=extras["tags_ids"]
+                if "tags_ids" in extras
                 else [],
                 killChainPhases=extras["kill_chain_phases_ids"]
                 if "kill_chain_phases_ids" in extras
