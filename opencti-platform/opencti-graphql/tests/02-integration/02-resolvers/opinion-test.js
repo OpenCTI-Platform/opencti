@@ -248,7 +248,7 @@ describe('Opinion resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {
-        field: 'created_at',
+        field: 'created',
         operation: 'count',
         startDate: '2020-01-01T00:00:00+00:00',
         endDate: '2021-01-01T00:00:00+00:00',
@@ -256,15 +256,15 @@ describe('Opinion resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.opinionsTimeSeries.length).toEqual(13);
-    expect(queryResult.data.opinionsTimeSeries[2].value).toEqual(0);
-    expect(queryResult.data.opinionsTimeSeries[3].value).toEqual(2);
+    expect(queryResult.data.opinionsTimeSeries[2].value).toEqual(1);
+    expect(queryResult.data.opinionsTimeSeries[3].value).toEqual(0);
   });
   it('should timeseries opinions for entity to be accurate', async () => {
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {
         objectId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330',
-        field: 'created_at',
+        field: 'created',
         operation: 'count',
         startDate: '2020-01-01T00:00:00+00:00',
         endDate: '2021-01-01T00:00:00+00:00',
@@ -272,15 +272,15 @@ describe('Opinion resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.opinionsTimeSeries.length).toEqual(13);
-    expect(queryResult.data.opinionsTimeSeries[2].value).toEqual(0);
-    expect(queryResult.data.opinionsTimeSeries[3].value).toEqual(1);
+    expect(queryResult.data.opinionsTimeSeries[2].value).toEqual(1);
+    expect(queryResult.data.opinionsTimeSeries[3].value).toEqual(0);
   });
   it('should timeseries opinions for author to be accurate', async () => {
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {
         authorId: 'c79e5d9f-4321-4174-b120-7cd9342ec88a',
-        field: 'created_at',
+        field: 'created',
         operation: 'count',
         startDate: '2020-01-01T00:00:00+00:00',
         endDate: '2021-01-01T00:00:00+00:00',
@@ -288,8 +288,8 @@ describe('Opinion resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.opinionsTimeSeries.length).toEqual(13);
-    expect(queryResult.data.opinionsTimeSeries[2].value).toEqual(0);
-    expect(queryResult.data.opinionsTimeSeries[3].value).toEqual(1);
+    expect(queryResult.data.opinionsTimeSeries[2].value).toEqual(1);
+    expect(queryResult.data.opinionsTimeSeries[3].value).toEqual(0);
   });
   it('should opinions number to be accurate', async () => {
     const queryResult = await queryAsAdmin({
