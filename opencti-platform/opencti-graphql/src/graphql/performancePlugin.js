@@ -1,14 +1,14 @@
 import { logger } from '../config/conf';
 
 export default {
-  requestDidStart() {
+  requestDidStart: /* istanbul ignore next */ () => {
     const start = Date.now();
     let op;
     return {
-      didResolveOperation(context) {
+      didResolveOperation: (context) => {
         op = context.operationName;
       },
-      willSendResponse(context, errors = [], operation) {
+      willSendResponse: (context, errors = [], operation) => {
         const stop = Date.now();
         const elapsed = stop - start;
         const size = JSON.stringify(context.response).length * 2;
