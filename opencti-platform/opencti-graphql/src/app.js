@@ -103,7 +103,7 @@ const createApp = (apolloServer) => {
 
   // Error handling
   app.use((err, req, res, next) => {
-    logger.error(`[EXPRESS] Error calling  ${err.stack}`);
+    logger.error(`[EXPRESS] Error http call`, { error: err });
     res.redirect('/');
     next();
   });

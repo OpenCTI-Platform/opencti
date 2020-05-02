@@ -166,7 +166,7 @@ export const getMinIOVersion = () => {
     minioClient.makeRequest({ method: 'HEAD', bucketName }, '', 200, '', true, (err, response) => {
       /* istanbul ignore if */
       if (err) {
-        logger.error('[MINIO] Error requesting server version: ', err);
+        logger.error('[MINIO] Error requesting server version: ', { error: err });
         resolve('Disconnected');
         return;
       }

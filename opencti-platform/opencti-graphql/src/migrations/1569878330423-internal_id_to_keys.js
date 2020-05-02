@@ -42,7 +42,7 @@ export const up = async (next) => {
           logger.info(`[MIGRATION] internal_id_to_keys > Processing ${entity}...`);
           await executeWrite(async (wTx) => {
             const q = `match $x isa ${entity}, has internal_id $s; not { $x has internal_id_key $sn; }; get;`;
-            logger.info(`[MIGRATION] internal_id_to_keys > ${q}`);
+            logger.info(`[MIGRATION] internal_id_to_keys`, { query: q });
             const iterator2 = await wTx.tx.query(q);
             const answers2 = await iterator2.collect();
             const internalIds = [];

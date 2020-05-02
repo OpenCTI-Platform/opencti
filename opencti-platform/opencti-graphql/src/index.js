@@ -18,15 +18,16 @@ import { listenServer, restartServer } from './httpServer';
             server = await restartServer(server);
             logger.info('Application has been successfully hot swapped');
           } catch (e) {
-            logger.info('Error occurred during hot swap. Node is still serving the last valid application!');
-            logger.error(`${e.stack ? e.stack : e}`);
+            logger.info('Error occurred during hot swap. Node is still serving the last valid application!', {
+              error: e,
+            });
           }
         }
       });
       /* eslint-enable */
     }
   } catch (e) {
-    logger.error(`[OPENCTI] GraphQL initialization fail > ${e.stack ? e.stack : e}`);
+    logger.error(`[OPENCTI] GraphQL initialization fail`, { error: e });
     process.exit(1);
   }
 })();

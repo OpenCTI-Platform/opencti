@@ -6,6 +6,7 @@
     "cookie_secure": false,
     "base_path" : "",
     "platform_demo": false,
+    "performance_logger": false,
     "admin": {
       "email": "admin@opencti.io",
       "password": "ChangeMe",

@@ -10,7 +10,7 @@ export const up = async (next) => {
       tail(result).map((migrationStatusEntity) => {
         const migrationStatus = migrationStatusEntity.x;
         const deleteQuery = `match $x id ${migrationStatus.grakn_id}; $z($x, $y); delete $z, $x;`;
-        logger.info(`[MIGRATION] delete_extra_migration_status > ${deleteQuery}`);
+        logger.info(`[MIGRATION] delete_extra_migration_status`, { query: deleteQuery });
         return internalDirectWrite(deleteQuery);
       })
     );

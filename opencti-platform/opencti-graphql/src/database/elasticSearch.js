@@ -201,7 +201,7 @@ export const elDeleteIndexes = async (indexesToDelete = KNOWLEDGE_INDICES) => {
       return el.indices.delete({ index }).catch((err) => {
         /* istanbul ignore next */
         if (err.meta.body.error.type !== 'index_not_found_exception') {
-          logger.error(`[ELASTICSEARCH] Delete indices fail > ${err}`);
+          logger.error(`[ELASTICSEARCH] Delete indices fail`, { error: err });
         }
       });
     })
@@ -252,7 +252,7 @@ export const elCount = (indexName, options = {}) => {
       },
     },
   };
-  logger.debug(`[ELASTICSEARCH] countEntities > ${JSON.stringify(query)}`);
+  logger.debug(`[ELASTICSEARCH] countEntities`, { query });
   return el.count(query).then((data) => {
     return data.body.count;
   });
@@ -304,7 +304,7 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
       },
     },
   };
-  logger.debug(`[ELASTICSEARCH] aggregationCount > ${JSON.stringify(query)}`);
+  logger.debug(`[ELASTICSEARCH] aggregationCount`, { query });
   return el.search(query).then((data) => {
     const { buckets } = data.body.aggregations.genres;
     return map((b) => ({ label: b.key, value: b.doc_count }), buckets);
@@ -352,7 +352,7 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) =
       },
     },
   };
-  logger.debug(`[ELASTICSEARCH] aggregationRelationsCount > ${JSON.stringify(query)}`);
+  logger.debug(`[ELASTICSEARCH] aggregationRelationsCount`, { query });
   return el.search(query).then((data) => {
     // First need to find all types relations to the fromId
     const types = pipe(
@@ -442,7 +442,7 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
       },
     },
   };
-  logger.debug(`[ELASTICSEARCH] histogramCount > ${JSON.stringify(query)}`);
+  logger.debug(`[ELASTICSEARCH] histogramCount`, { query });
   return el.search(query).then((data) => {
     const { buckets } = data.body.aggregations.count_over_time;
     const dataToPairs = toPairs(buckets);
@@ -633,7 +633,7 @@ export const elPaginate = async (indexName, options = {}) => {
       },
     },
   };
-  logger.debug(`[ELASTICSEARCH] paginate > ${JSON.stringify(query)}`);
+  logger.debug(`[ELASTICSEARCH] paginate`, { query });
   return el
     .search(query)
     .then((data) => {
@@ -664,7 +664,7 @@ export const elPaginate = async (indexName, options = {}) => {
         )(err.meta.body.error.root_cause);
         // If uncontrolled error, log and propagate
         if (numberOfCauses > invalidMappingCauses.length) {
-          logger.error(`[ELASTICSEARCH] Paginate fail > ${err}`);
+          logger.error(`[ELASTICSEARCH] Paginate fail`, { error: err });
           throw err;
         } else {
           return connectionFormat ? buildPagination(0, 0, [], 0) : [];
@@ -684,7 +684,7 @@ export const elLoadByTerms = async (terms, relationsMap, indices = KNOWLEDGE_IND
       },
     },
   };
-  logger.debug(`[ELASTICSEARCH] loadByTerms > ${JSON.stringify(query)}`);
+  logger.debug(`[ELASTICSEARCH] loadByTerms`, { query });
   const data = await el.search(query);
   const total = data.body.hits.total.value;
   /* istanbul ignore if */
@@ -748,7 +748,7 @@ export const elReindex = async (indices) => {
 export const elIndex = async (indexName, documentBody, refresh = true) => {
   const internalId = documentBody.internal_id_key;
   const entityType = documentBody.entity_type ? documentBody.entity_type : '';
-  logger.debug(`[ELASTICSEARCH] index > ${entityType} ${internalId} in ${indexName}`);
+  logger.debug(`[ELASTICSEARCH] index > ${entityType} ${internalId} in ${indexName}`, documentBody);
   await el.index({
     index: indexName,
     id: documentBody.grakn_id,
@@ -782,7 +782,7 @@ export const elDeleteByField = async (indexName, fieldName, value) => {
   return value;
 };
 export const elDeleteInstanceIds = async (ids, indexesToHandle = KNOWLEDGE_INDICES) => {
-  logger.debug(`[ELASTICSEARCH] elDeleteInstanceIds > ${ids}`);
+  logger.debug(`[ELASTICSEARCH] elDeleteInstanceIds`, { ids });
   const terms = map((id) => ({ term: { 'internal_id_key.keyword': id } }), ids);
   return el.deleteByQuery({
     index: indexesToHandle,

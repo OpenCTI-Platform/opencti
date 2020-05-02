@@ -124,7 +124,7 @@ export const addStixObservable = async (user, stixObservable) => {
         await addIndicator(user, indicatorToCreate, false);
       }
     } catch (err) {
-      logger.info(`Cannot create indicator > Error ${err}`);
+      logger.info(`Cannot create indicator`, { error: err });
     }
   }
   return notify(BUS_TOPICS.StixObservable.ADDED_TOPIC, created, user);

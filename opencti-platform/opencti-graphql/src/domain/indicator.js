@@ -170,7 +170,7 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
         );
       }
     } catch (err) {
-      logger.info(`Cannot create observable > Error ${err}`);
+      logger.info(`Cannot create observable`, { error: err });
     }
   }
   let observableRefs = [];
