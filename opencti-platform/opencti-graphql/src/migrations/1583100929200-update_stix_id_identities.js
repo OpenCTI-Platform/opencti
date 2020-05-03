@@ -49,7 +49,7 @@ export const up = async (next) => {
     );
     logger.info(`[MIGRATION] update_stix_id_identities > Migration complete`);
   } catch (err) {
-    logger.info(`[MIGRATION] update_stix_id_identities > Error ${err}`);
+    logger.info(`[MIGRATION] update_stix_id_identities`, { error: err });
   }
   next();
 };

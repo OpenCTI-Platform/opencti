@@ -21,7 +21,7 @@ const initRedisClient = async () => {
   }
   redis.on('error', (error) => {
     /* istanbul ignore next */
-    logger.error('[REDIS] An error occurred on redis > ', error);
+    logger.error('[REDIS] An error occurred on redis', { error });
   });
   return redis;
 };
