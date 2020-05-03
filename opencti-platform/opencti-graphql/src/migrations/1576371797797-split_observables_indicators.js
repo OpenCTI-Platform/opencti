@@ -161,7 +161,7 @@ export const up = async (next) => {
               await stixRelationDelete(stixRelation.id);
             }
           } catch (err) {
-            logger.info(`[MIGRATION] split_observables_indicators > Error ${err}`);
+            logger.info(`[MIGRATION] split_observables_indicators`, { error: err });
           }
         }
         return Promise.resolve(true);

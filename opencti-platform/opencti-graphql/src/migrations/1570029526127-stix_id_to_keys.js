@@ -21,7 +21,7 @@ export const up = async (next) => {
           logger.info(`[MIGRATION] stix_id_to_keys > Processing ${entity}...`);
           await executeWrite(async (wTx) => {
             const q = `match $x isa ${entity}, has stix_id $s; not { $x has stix_id_key $sn; }; get;`;
-            logger.info(`[MIGRATION] stix_id_to_keys > ${q}`);
+            logger.info(`[MIGRATION] stix_id_to_keys`, { query: q });
             const iterator2 = await wTx.tx.query(q);
             const answers2 = await iterator2.collect();
             const stixIds = [];

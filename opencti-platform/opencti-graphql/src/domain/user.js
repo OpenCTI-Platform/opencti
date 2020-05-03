@@ -511,7 +511,7 @@ export const authentication = async (tokenUUID) => {
   try {
     return await findByTokenUUID(tokenUUID);
   } catch (err) {
-    logger.error(`[OPENCTI] Authentication error ${tokenUUID} > `, err);
+    logger.error(`[OPENCTI] Authentication error ${tokenUUID}`, { error: err });
     return undefined;
   }
 };
