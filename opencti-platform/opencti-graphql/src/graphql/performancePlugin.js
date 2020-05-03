@@ -8,18 +8,18 @@ export default {
       didResolveOperation: (context) => {
         op = context.operationName;
       },
-      willSendResponse: (context, errors = [], operation) => {
+      willSendResponse: (context) => {
         const stop = Date.now();
         const elapsed = stop - start;
         const size = JSON.stringify(context.response).length * 2;
-        const isWrite = operation && operation.operation === 'mutation';
+        const isWrite = context.operation && context.operation.operation === 'mutation';
         const operationType = `${isWrite ? 'WRITE' : 'READ'}`;
         logger.info(`[PERF] API Call`, {
           type: operationType,
           operation: op,
           time: elapsed,
           size,
-          errors,
+          errors: context.errors,
         });
       },
     };
