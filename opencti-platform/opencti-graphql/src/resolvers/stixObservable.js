@@ -22,6 +22,7 @@ import { workForEntity } from '../domain/work';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { connectorsForEnrichment } from '../domain/enrichment';
 import { convertDataToStix } from '../database/stix';
+import { stixRelations } from '../domain/stixEntity';
 
 const stixObservableResolvers = {
   Query: {
@@ -46,6 +47,7 @@ const stixObservableResolvers = {
     jobs: (stixObservable, args) => workForEntity(stixObservable.id, args),
     connectors: (stixObservable, { onlyAlive = false }) =>
       connectorsForEnrichment(stixObservable.entity_type, onlyAlive),
+    stixRelations: (rel, args) => stixRelations(rel.id, args),
     toStix: (stixObservable) => convertDataToStix(stixObservable).then((stixData) => JSON.stringify(stixData)),
   },
   Mutation: {

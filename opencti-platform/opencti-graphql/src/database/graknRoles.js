@@ -120,8 +120,8 @@ const rolesMap = {
     gather: ROLE_TO,
   },
   stix_sighting: {
-    sighted_in: ROLE_FROM,
-    so: ROLE_TO,
+    so: ROLE_FROM,
+    sighted_in: ROLE_TO,
   },
   // endregion
   // region stix_observable_relation

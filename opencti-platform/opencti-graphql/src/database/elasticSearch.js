@@ -57,7 +57,16 @@ const dateFields = [
   'event_date',
   'default_assignation', // TODO @JRI Ask @Sam for this.
 ];
-const numberFields = ['object_status', 'phase_order', 'level', 'weight', 'ordering', 'base_score'];
+const numericOrBooleanFields = [
+  'object_status',
+  'phase_order',
+  'level',
+  'weight',
+  'ordering',
+  'base_score',
+  'confidence',
+  'is_family',
+];
 const virtualTypes = ['Identity', 'Email', 'File', 'Stix-Domain-Entity', 'Stix-Domain', 'Stix-Observable'];
 
 export const REL_INDEX_PREFIX = 'rel_';
@@ -182,6 +191,9 @@ export const elCreateIndexes = async (indexesToCreate = PLATFORM_INDICES) => {
                     ignore_malformed: true,
                   },
                   object_status: {
+                    type: 'integer',
+                  },
+                  confidence: {
                     type: 'integer',
                   },
                 },
@@ -587,7 +599,7 @@ export const elPaginate = async (indexName, options = {}) => {
         } else if (values[i] === 'EXISTS') {
           valuesFiltering.push({ exists: { field: key } });
         } else if (operator === 'eq') {
-          const isDateOrNumber = dateFields.includes(key) || numberFields.includes(key);
+          const isDateOrNumber = dateFields.includes(key) || numericOrBooleanFields.includes(key);
           valuesFiltering.push({
             match_phrase: { [`${isDateOrNumber ? key : `${key}.keyword`}`]: values[i].toString() },
           });
@@ -612,7 +624,7 @@ export const elPaginate = async (indexName, options = {}) => {
   if (orderBy !== null && orderBy.length > 0) {
     const order = {};
     const orderKeyword =
-      dateFields.includes(orderBy) || numberFields.includes(orderBy) ? orderBy : `${orderBy}.keyword`;
+      dateFields.includes(orderBy) || numericOrBooleanFields.includes(orderBy) ? orderBy : `${orderBy}.keyword`;
     order[orderKeyword] = orderMode;
     ordering = append(order, ordering);
     must = append({ exists: { field: orderKeyword } }, must);

@@ -115,6 +115,9 @@ define
   content sub attribute, datatype string;
   explanation sub attribute, datatype string;
   detection sub attribute, datatype boolean;
+  threat_actor_type sub attribute, datatype string;
+  is_family sub attribute, datatype boolean;
+  number sub attribute, datatype long;
 
   # STIX SRO
   relationship_type sub attribute, datatype string;
@@ -310,6 +313,7 @@ define
     has weight,
     has confidence,
     has negative,
+    has number,
     has first_seen,
     has first_seen_day,
     has first_seen_month,
@@ -662,7 +666,8 @@ define
     plays dummy,
     plays user,
     plays genuine,
-    plays localized;
+    plays localized,
+    plays sighted_in;
 
   Region sub Identity,
     plays location;
@@ -683,6 +688,15 @@ define
     plays characterize;
 
   Threat-Actor sub Identity,
+    has threat_actor_type,
+    has first_seen,
+    has first_seen_day,
+    has first_seen_month,
+    has first_seen_year,
+    has last_seen,
+    has last_seen_day,
+    has last_seen_month,
+    has last_seen_year,
     has stix_role,
     has goal,
     has sophistication,
@@ -772,6 +786,7 @@ define
     plays characterize;
 
   Malware sub Stix-Domain-Entity,
+    has is_family,
     plays phase_belonging,
     plays source,
     plays user,

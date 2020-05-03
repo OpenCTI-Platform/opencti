@@ -109,7 +109,15 @@ export const escape = (chars) => {
 export const escapeString = (s) => (s ? s.replace(/\\/g, '\\\\').replace(/"/g, '\\"') : '');
 
 // Attributes key that can contains multiple values.
-export const multipleAttributes = ['stix_label', 'alias', 'grant', 'platform', 'required_permission', 'indicator_type'];
+export const multipleAttributes = [
+  'stix_label',
+  'alias',
+  'grant',
+  'platform',
+  'required_permission',
+  'indicator_type',
+  'threat_actor_type',
+];
 export const statsDateAttributes = ['created_at', 'first_seen', 'last_seen', 'published', 'valid_from', 'valid_until'];
 export const readOnlyAttributes = ['observable_value'];
 // endregion

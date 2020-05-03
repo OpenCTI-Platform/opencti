@@ -39,7 +39,6 @@ const stixEntityResolvers = {
     reports: (stixEntity) => reports(stixEntity.id),
     notes: (stixEntity) => notes(stixEntity.id),
     markingDefinitions: (stixEntity) => markingDefinitions(stixEntity.id),
-    stixRelations: (stixEntity, args) => stixRelations(stixEntity.id, args),
   },
   Mutation: {
     stixEntityEdit: (_, { id }, { user }) => ({

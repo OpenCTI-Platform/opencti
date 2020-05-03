@@ -1,86 +1,83 @@
 import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
-  addStixRelation,
+  addstixSighting,
   findAll,
   findById,
-  stixRelationAddRelation,
-  stixRelationCleanContext,
-  stixRelationDelete,
-  stixRelationDeleteRelation,
-  stixRelationEditContext,
-  stixRelationEditField,
-  stixRelationsNumber,
-} from '../domain/stixRelation';
+  stixSightingAddRelation,
+  stixSightingCleanContext,
+  stixSightingDelete,
+  stixSightingDeleteRelation,
+  stixSightingEditContext,
+  stixSightingEditField,
+  stixSightingsNumber,
+} from '../domain/stixSighting';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { killChainPhases, stixRelations } from '../domain/stixEntity';
 import { distributionRelations, loadByGraknId, timeSeriesRelations, REL_CONNECTED_SUFFIX } from '../database/grakn';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { convertDataToStix } from '../database/stix';
 
-const stixRelationResolvers = {
+const stixSightingResolvers = {
   Query: {
-    stixRelation: (_, { id }) => findById(id),
-    stixRelations: (_, args) => findAll(args),
-    stixRelationsTimeSeries: (_, args) => timeSeriesRelations(args),
-    stixRelationsDistribution: async (_, args) => distributionRelations(args),
-    stixRelationsNumber: (_, args) => stixRelationsNumber(args),
+    stixSighting: (_, { id }) => findById(id),
+    stixSightings: (_, args) => findAll(args),
+    stixSightingsTimeSeries: (_, args) => timeSeriesRelations(args),
+    stixSightingsDistribution: async (_, args) => distributionRelations(args),
+    stixSightingsNumber: (_, args) => stixSightingsNumber(args),
   },
-  StixRelationsFilter: {
+  stixSightingsFilter: {
     createdBy: `${REL_INDEX_PREFIX}created_by_ref.internal_id_key`,
     markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.internal_id_key`,
     tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
     toPatternType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.pattern_type`,
     toMainObservableType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.main_observable_type`,
   },
-  StixRelationsOrdering: {
+  stixSightingsOrdering: {
     toName: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.name`,
     toValidFrom: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.valid_from`,
     toValidUntil: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.valid_until`,
     toPatternType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.pattern_type`,
     toCreatedAt: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.created_at`,
   },
-  StixRelation: {
-    killChainPhases: (rel) => killChainPhases(rel.id),
+  stixSighting: {
     from: (rel) => loadByGraknId(rel.fromId),
     to: (rel) => loadByGraknId(rel.toId),
     toStix: (rel) => convertDataToStix(rel).then((stixData) => JSON.stringify(stixData)),
-    stixRelations: (rel, args) => stixRelations(rel.id, args),
   },
   RelationEmbedded: {
     from: (rel) => loadByGraknId(rel.fromId),
     to: (rel) => loadByGraknId(rel.toId),
   },
   Mutation: {
-    stixRelationEdit: (_, { id }, { user }) => ({
-      delete: () => stixRelationDelete(user, id),
-      fieldPatch: ({ input }) => stixRelationEditField(user, id, input),
-      contextPatch: ({ input }) => stixRelationEditContext(user, id, input),
-      contextClean: () => stixRelationCleanContext(user, id),
-      relationAdd: ({ input }) => stixRelationAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixRelationDeleteRelation(user, id, relationId),
+    stixSightingEdit: (_, { id }, { user }) => ({
+      delete: () => stixSightingDelete(user, id),
+      fieldPatch: ({ input }) => stixSightingEditField(user, id, input),
+      contextPatch: ({ input }) => stixSightingEditContext(user, id, input),
+      contextClean: () => stixSightingCleanContext(user, id),
+      relationAdd: ({ input }) => stixSightingAddRelation(user, id, input),
+      relationDelete: ({ relationId }) => stixSightingDeleteRelation(user, id, relationId),
     }),
-    stixRelationAdd: (_, { input, reversedReturn }, { user }) => addStixRelation(user, input, reversedReturn),
+    stixSightingAdd: (_, { input, reversedReturn }, { user }) => addstixSighting(user, input, reversedReturn),
   },
   Subscription: {
-    stixRelation: {
+    stixSighting: {
       resolve: /* istanbul ignore next */ (payload) => payload.instance,
       subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
-        stixRelationEditContext(user, id);
+        stixSightingEditContext(user, id);
         const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.StixRelation.EDIT_TOPIC),
+          () => pubsub.asyncIterator(BUS_TOPICS.stixSighting.EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== user.id && payload.instance.id === id;
           }
         )(_, { id }, { user });
         return withCancel(filtering, () => {
-          stixRelationCleanContext(user, id);
+          stixSightingCleanContext(user, id);
         });
       },
     },
   },
 };
 
-export default stixRelationResolvers;
+export default stixSightingResolvers;
