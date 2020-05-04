@@ -38,6 +38,10 @@ const READ_QUERY = gql`
       name
       description
       toStix
+      editContext {
+        focusOn
+        name
+      }
     }
   }
 `;
@@ -180,6 +184,13 @@ describe('StixDomainEntity resolver standard behavior', () => {
       variables: { id: stixDomainEntityInternalId, input: { focusOn: 'description' } },
     });
     expect(queryResult.data.stixDomainEntityEdit.contextPatch.id).toEqual(stixDomainEntityInternalId);
+  });
+  it('should stixDomainEntity editContext to be accurate', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixDomainEntityInternalId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.stixDomainEntity).not.toBeNull();
+    expect(queryResult.data.stixDomainEntity.id).toEqual(stixDomainEntityInternalId);
+    expect(queryResult.data.stixDomainEntity.editContext[0].focusOn).toEqual('description');
   });
   it('should context clean stixDomainEntity', async () => {
     const CONTEXT_PATCH_QUERY = gql`

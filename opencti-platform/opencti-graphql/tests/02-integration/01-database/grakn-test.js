@@ -726,6 +726,22 @@ describe('Grakn relations listing', () => {
     stixRelations = await listRelations('uses', options);
     expect(stixRelations.edges.length).toEqual(0);
   });
+  it.each(noCacheCases)('should list sightings (noCache = %s)', async (noCache) => {
+    const stixSightings = await listRelations('stix_sighting', { noCache });
+    expect(stixSightings).not.toBeNull();
+    expect(stixSightings.edges.length).toEqual(2);
+  });
+  it.each(noCacheCases)('should list sightings with id option (noCache = %s)', async (noCache) => {
+    // Just id specified,
+    // "name": "Paradise Ransomware"
+    const options = { noCache, fromId: '86b58bd5-505e-428e-8564-e4352d6b1bc6' };
+    const thing = await internalLoadEntityById('86b58bd5-505e-428e-8564-e4352d6b1bc6');
+    const stixSightings = await listRelations('stix_sighting', options);
+    for (let index = 0; index < stixSightings.edges.length; index += 1) {
+      const stixSighting = stixSightings.edges[index].node;
+      expect(stixSighting.fromId).toEqual(thing.grakn_id);
+    }
+  });
 });
 
 describe('Grakn relations with inferences', () => {

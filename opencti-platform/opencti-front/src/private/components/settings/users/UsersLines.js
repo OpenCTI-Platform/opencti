@@ -6,7 +6,7 @@ import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { UserLine, UserLineDummy } from './UserLine';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class UsersLines extends Component {
   render() {

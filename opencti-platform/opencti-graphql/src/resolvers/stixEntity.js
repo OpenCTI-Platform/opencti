@@ -4,7 +4,6 @@ import {
   markingDefinitions,
   reports,
   notes,
-  stixRelations,
   tags,
   externalReferences,
   stixEntityAddRelation,

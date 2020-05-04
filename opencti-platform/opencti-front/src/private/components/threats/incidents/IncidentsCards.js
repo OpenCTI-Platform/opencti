@@ -7,7 +7,7 @@ import ListCardsContent from '../../../../components/list_cards/ListCardsContent
 import { IncidentCard, IncidentCardDummy } from './IncidentCard';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfCardsToLoad = 25;
+const nbOfCardsToLoad = 50;
 
 class IncidentsCards extends Component {
   componentDidUpdate(prevProps) {

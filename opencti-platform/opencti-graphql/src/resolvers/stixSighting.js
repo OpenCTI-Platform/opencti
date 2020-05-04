@@ -26,21 +26,21 @@ const stixSightingResolvers = {
     stixSightingsDistribution: async (_, args) => distributionRelations(args),
     stixSightingsNumber: (_, args) => stixSightingsNumber(args),
   },
-  stixSightingsFilter: {
+  StixSightingsFilter: {
     createdBy: `${REL_INDEX_PREFIX}created_by_ref.internal_id_key`,
     markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.internal_id_key`,
     tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
     toPatternType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.pattern_type`,
     toMainObservableType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.main_observable_type`,
   },
-  stixSightingsOrdering: {
+  StixSightingsOrdering: {
     toName: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.name`,
     toValidFrom: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.valid_from`,
     toValidUntil: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.valid_until`,
     toPatternType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.pattern_type`,
     toCreatedAt: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.created_at`,
   },
-  stixSighting: {
+  StixSighting: {
     from: (rel) => loadByGraknId(rel.fromId),
     to: (rel) => loadByGraknId(rel.toId),
     toStix: (rel) => convertDataToStix(rel).then((stixData) => JSON.stringify(stixData)),

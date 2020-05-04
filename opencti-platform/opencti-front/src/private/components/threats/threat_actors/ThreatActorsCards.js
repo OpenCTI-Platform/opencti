@@ -7,7 +7,7 @@ import ListCardsContent from '../../../../components/list_cards/ListCardsContent
 import { ThreatActorCard, ThreatActorCardDummy } from './ThreatActorCard';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfCardsToLoad = 25;
+const nbOfCardsToLoad = 50;
 
 class ThreatActorsCards extends Component {
   componentDidUpdate(prevProps) {

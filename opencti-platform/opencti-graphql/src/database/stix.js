@@ -474,6 +474,36 @@ export const stixRelationToStix = async (stixRelation, extra = null, onlyBase = 
   });
 };
 
+export const stixSightingToStix = async (stixRelation, extra = null, onlyBase = true) => {
+  let baseData = {
+    id: stixRelation.stix_id_key,
+    x_opencti_id: stixRelation.id,
+    type: 'sighting',
+    spec_version: STIX_SPEC_VERSION,
+  };
+  if (extra && extra.from && extra.to) {
+    baseData = pipe(
+      assoc('sighting_of_ref', extra.from.stix_id_key),
+      assoc('where_sighted_refs', [extra.to.stix_id_key]),
+    )(baseData);
+  }
+  if (onlyBase) {
+    return baseData;
+  }
+  return buildStixData(baseData, stixRelation, {
+    confidence: 'confidence',
+    description: 'description',
+    sighting_of_ref: 'sighting_of_ref',
+    where_sighted_refs: 'where_sighted_refs',
+    revoked: 'revoked',
+    created: 'created',
+    modified: 'modified',
+    first_seen: 'x_opencti_first_seen',
+    last_seen: 'x_opencti_last_seen',
+    negative: 'x_opencti_false_positive',
+  });
+};
+
 export const relationEmbeddedToStix = async (relationEmbedded, eventType, extra) => {
   let entityType = extra.from.entity_type;
   if (includes(entityType, IDENTITY_TYPES)) {
@@ -553,6 +583,8 @@ export const convertDataToStix = async (data, eventType = null, eventExtraData =
       return stixObservableToStix(data, onlyBase);
     case 'stix_relation':
       return stixRelationToStix(data, eventExtraData, onlyBase);
+    case 'stix_sighting':
+      return stixSightingToStix(data, eventExtraData, onlyBase);
     case 'relation_embedded':
       return relationEmbeddedToStix(data, eventType, eventExtraData);
     default:

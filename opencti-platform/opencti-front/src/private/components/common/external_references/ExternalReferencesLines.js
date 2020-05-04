@@ -9,7 +9,7 @@ import {
   ExternalReferenceLineDummy,
 } from './ExternalReferenceLine';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class ExternalReferencesLines extends Component {
   render() {

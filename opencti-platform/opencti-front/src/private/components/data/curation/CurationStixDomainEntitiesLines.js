@@ -10,7 +10,7 @@ import {
 } from './CurationStixDomainEntityLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class CurationStixDomainEntitiesLines extends Component {
   componentDidUpdate(prevProps) {

@@ -66,6 +66,8 @@ const numericOrBooleanFields = [
   'base_score',
   'confidence',
   'is_family',
+  'number',
+  'negative',
 ];
 const virtualTypes = ['Identity', 'Email', 'File', 'Stix-Domain-Entity', 'Stix-Domain', 'Stix-Observable'];
 

@@ -36,13 +36,13 @@ class StixObservableComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={3}>
+          <Grid item={true} xs={2}>
             <StixObservableOverview stixObservable={stixObservable} />
           </Grid>
-          <Grid item={true} xs={3}>
+          <Grid item={true} xs={5}>
             <StixObservableDetails stixObservable={stixObservable} />
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={5}>
             <EntityLastReports stixObservableId={stixObservable.id} />
           </Grid>
         </Grid>
@@ -52,10 +52,10 @@ class StixObservableComponent extends Component {
           classes={{ container: classes.gridContainer }}
           style={{ marginTop: 30 }}
         >
-          <Grid item={true} xs={8}>
+          <Grid item={true} xs={7}>
             <StixObservableIndicators stixObservable={stixObservable} />
           </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item={true} xs={5}>
             <EntityExternalReferences entityId={stixObservable.id} />
           </Grid>
         </Grid>

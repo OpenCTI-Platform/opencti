@@ -43,7 +43,7 @@ class IndicatorOverviewComponent extends Component {
           >
             {t('Creation date')}
           </Typography>
-          {fld(indicator.created_at)}
+          {fld(indicator.created)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -51,7 +51,7 @@ class IndicatorOverviewComponent extends Component {
           >
             {t('Modification date')}
           </Typography>
-          {fld(indicator.updated_at)}
+          {fld(indicator.modified)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -89,8 +89,8 @@ const IndicatorOverview = createFragmentContainer(IndicatorOverviewComponent, {
       id
       entity_type
       description
-      created_at
-      updated_at
+      created
+      modified
       pattern_type
       createdByRef {
         node {

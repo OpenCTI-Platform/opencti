@@ -49,7 +49,7 @@ describe('Settings resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     const { about } = queryResult.data;
     expect(about).not.toBeNull();
-    expect(about.version).toEqual('3.2.0');
+    expect(about.version).toEqual('3.2.2');
     expect(about.dependencies.length).toEqual(5);
     const aggregationMap = new Map(about.dependencies.map((q) => [q.name, q]));
     const grakn = aggregationMap.get('Grakn');

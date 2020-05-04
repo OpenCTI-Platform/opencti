@@ -9,7 +9,7 @@ import {
   KillChainPhaseLineDummy,
 } from './KillChainPhaseLine';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class KillChainPhasesLines extends Component {
   render() {

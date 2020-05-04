@@ -6,7 +6,7 @@ import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { TagLine, TagLineDummy } from './TagLine';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class TagsLines extends Component {
   render() {

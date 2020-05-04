@@ -7,7 +7,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { CampaignLine, CampaignLineDummy } from './CampaignLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class CampaignsLines extends Component {
   componentDidUpdate(prevProps) {

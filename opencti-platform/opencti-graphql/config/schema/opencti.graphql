@@ -781,23 +781,32 @@ input StixRelationAddInput {
 ### STIX sightinhs
 enum StixSightingsOrdering {
   stix_id_key
-  relationship_type
   confidence
-  weight
+  number
+  negative
   first_seen
   last_seen
   created
   modified
   created_at
   updated_at
+  toName
+  toValidFrom
+  toValidUntil
+  toPatternType
+  toCreatedAt
 }
 enum StixSightingsFilter {
+  negative
   created
   modified
   created_at
   confidence
   createdBy
   markingDefinitions
+  tags
+  toPatternType
+  toMainObservableType
 }
 input StixSightingsFiltering {
   key: StixSightingsFilter!
@@ -827,6 +836,7 @@ type StixSighting implements GlobalObject & StixEntity {
   first_seen: DateTime
   last_seen: DateTime
   number: Int
+  negative: Boolean
   created: DateTime!
   modified: DateTime!
   graph_data: String
@@ -852,9 +862,10 @@ input StixSightingAddInput {
   internal_id_key: String
   stix_id_key: String
   fromId: String!
-  toId: String!
-  confidence: Int
-  number: Int
+  toId: String
+  confidence: Int!
+  number: Int!
+  negative: Boolean
   description: String
   first_seen: DateTime
   last_seen: DateTime
@@ -3727,11 +3738,11 @@ type Query {
     lastSeenStart: DateTime
     lastSeenStop: DateTime
     search: String
-    filters: [StixRelationsFiltering]
+    filters: [StixSightingsFiltering]
     filterMode: FilterMode
     forceNatural: Boolean
     toStix: Boolean
-  ): StixRelationConnection @auth(for: [KNOWLEDGE])
+  ): StixSightingConnection @auth(for: [KNOWLEDGE])
   stixSightingsTimeSeries(
     fromId: String
     inferred: Boolean
@@ -4174,6 +4185,7 @@ type Subscription {
   stixDomainEntity(id: ID!): StixDomainEntity @auth(for: [KNOWLEDGE])
   stixObservable(id: ID!): StixObservable @auth(for: [KNOWLEDGE])
   stixRelation(id: ID!): StixRelation @auth(for: [KNOWLEDGE])
+  stixSighting(id: ID!): StixSighting @auth(for: [KNOWLEDGE])
   stixObservableRelation(id: ID!): StixObservableRelation @auth(for: [KNOWLEDGE])
   externalReference(id: ID!): ExternalReference @auth(for: [KNOWLEDGE])
   workspace(id: ID!): Workspace @auth(for: [EXPLORE])

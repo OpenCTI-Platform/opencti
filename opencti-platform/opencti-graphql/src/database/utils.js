@@ -10,6 +10,7 @@ export const TYPE_OPENCTI_INTERNAL = 'Internal';
 export const TYPE_STIX_DOMAIN_ENTITY = 'Stix-Domain-Entity';
 export const TYPE_STIX_OBSERVABLE = 'Stix-Observable';
 export const TYPE_STIX_RELATION = 'stix_relation';
+export const TYPE_STIX_SIGHTING = 'stix_sighting';
 export const TYPE_STIX_OBSERVABLE_RELATION = 'stix_observable_relation';
 export const TYPE_RELATION_EMBEDDED = 'relation_embedded';
 export const TYPE_STIX_RELATION_EMBEDDED = 'stix_relation_embedded';
@@ -84,6 +85,7 @@ export const inferIndexFromConceptTypes = (types, parentType = null) => {
   if (includes(TYPE_STIX_OBSERVABLE, types) || parentType === TYPE_STIX_OBSERVABLE) return INDEX_STIX_OBSERVABLE;
   // Relation index
   if (includes(TYPE_STIX_RELATION, types) || parentType === TYPE_STIX_RELATION) return INDEX_STIX_RELATIONS;
+  if (includes(TYPE_STIX_SIGHTING, types) || parentType === TYPE_STIX_SIGHTING) return INDEX_STIX_RELATIONS;
   if (includes(TYPE_STIX_OBSERVABLE_RELATION, types) || parentType === TYPE_STIX_OBSERVABLE_RELATION)
     return INDEX_STIX_RELATIONS;
   if (includes(TYPE_STIX_RELATION_EMBEDDED, types) || parentType === TYPE_STIX_RELATION_EMBEDDED)

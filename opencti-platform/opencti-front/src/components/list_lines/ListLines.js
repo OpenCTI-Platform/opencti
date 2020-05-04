@@ -31,6 +31,13 @@ const styles = (theme) => ({
     }),
     padding: '0 0 50px 0',
   },
+  containerNoPadding: {
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+    padding: '0 0 0 0',
+  },
   containerOpenExports: {
     flexGrow: 1,
     transition: theme.transitions.create('padding', {
@@ -131,6 +138,7 @@ class ListLines extends Component {
       handleToggleExports,
       openExports,
       noPadding,
+      noBottomPadding,
       dataColumns,
       secondaryAction,
       paginationOptions,
@@ -143,14 +151,14 @@ class ListLines extends Component {
       numberOfElements,
       availableFilterKeys,
     } = this.props;
+    let className = classes.container;
+    if (noBottomPadding) {
+      className = classes.containerWithoutPadding;
+    } else if (openExports && !noPadding) {
+      className = classes.containerOpenExports;
+    }
     return (
-      <div
-        className={
-          openExports && !noPadding
-            ? classes.containerOpenExports
-            : classes.container
-        }
-      >
+      <div className={className}>
         <div className={classes.parameters}>
           {typeof handleSearch === 'function' ? (
             <div style={{ float: 'left', marginRight: 20 }}>
@@ -329,6 +337,7 @@ ListLines.propTypes = {
   handleToggleExports: PropTypes.func,
   openExports: PropTypes.bool,
   noPadding: PropTypes.bool,
+  noBottomPadding: PropTypes.bool,
   views: PropTypes.array,
   exportEntityType: PropTypes.string,
   exportContext: PropTypes.string,

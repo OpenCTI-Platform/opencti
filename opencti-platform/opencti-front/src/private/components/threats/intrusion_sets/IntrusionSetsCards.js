@@ -7,7 +7,7 @@ import ListCardsContent from '../../../../components/list_cards/ListCardsContent
 import { IntrusionSetCard, IntrusionSetCardDummy } from './IntrusionSetCard';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfCardsToLoad = 25;
+const nbOfCardsToLoad = 50;
 
 class IntrusionSetsCards extends Component {
   componentDidUpdate(prevProps) {

@@ -13,7 +13,7 @@ import { TEN_SECONDS } from '../../../../utils/Time';
 
 const interval$ = interval(TEN_SECONDS);
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class StixObservableEntitiesLines extends Component {
   componentDidMount() {

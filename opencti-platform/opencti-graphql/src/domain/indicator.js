@@ -146,6 +146,7 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
                 dissoc('internal_id_key'),
                 dissoc('stix_id_key'),
                 dissoc('main_observable_type'),
+                dissoc('confidence'),
                 dissoc('score'),
                 dissoc('valid_from'),
                 dissoc('valid_until'),

@@ -7,7 +7,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { AttackPatternLine, AttackPatternLineDummy } from './AttackPatternLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class AttackPatternsLines extends Component {
   componentDidUpdate(prevProps) {

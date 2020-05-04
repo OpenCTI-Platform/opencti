@@ -10,7 +10,7 @@ import {
 } from './StixObservableLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class StixObservablesLines extends Component {
   componentDidUpdate(prevProps) {

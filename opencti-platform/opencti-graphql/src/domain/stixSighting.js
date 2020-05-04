@@ -1,4 +1,4 @@
-import { includes, propOr } from 'ramda';
+import { pipe, assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createRelation,
@@ -18,7 +18,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
 
 export const findAll = async (args) => {
-  return listRelations(propOr('stix_sighting', 'relationType', args), args);
+  return listRelations('stix_sighting', args);
 };
 export const findById = (stixSightingId) => {
   if (stixSightingId.match(/[a-z-]+--[\w-]{36}/g)) {
@@ -47,11 +47,17 @@ export const stixSightingsNumber = (args) => ({
 
 // region mutations
 export const addstixSighting = async (user, stixSighting, reversedReturn = false) => {
-  if (!includes('stix_id_key', Object.keys(stixSighting)) && !stixSighting.relationship_type) {
-    throw new ForbiddenAccess();
-  }
-  const created = await createRelation(user, stixSighting.fromId, stixSighting, { reversedReturn });
-  return notify(BUS_TOPICS.stixSighting.ADDED_TOPIC, created, user);
+  const finalStixSighting = pipe(
+    assoc('relationship_type', 'stix_sighting'),
+    assoc('fromRole', 'so'),
+    assoc('toRole', 'sighted_in'),
+    assoc('toId', stixSighting.toId ? stixSighting.toId : user.id)
+  )(stixSighting);
+  const created = await createRelation(user, stixSighting.fromId, finalStixSighting, {
+    reversedReturn,
+    isStixSighting: true,
+  });
+  return notify(BUS_TOPICS.StixSighting.ADDED_TOPIC, created, user);
 };
 export const stixSightingDelete = async (user, stixSightingId) => {
   return deleteRelationById(user, stixSightingId, 'stix_sighting');
@@ -61,7 +67,7 @@ export const stixSightingEditField = (user, stixSightingId, input) => {
     return updateAttribute(user, stixSightingId, 'stix_sighting', input, wTx);
   }).then(async () => {
     const stixSighting = await loadRelationById(stixSightingId, 'stix_sighting');
-    return notify(BUS_TOPICS.stixSighting.EDIT_TOPIC, stixSighting, user);
+    return notify(BUS_TOPICS.StixSighting.EDIT_TOPIC, stixSighting, user);
   });
 };
 export const stixSightingAddRelation = async (user, stixSightingId, input) => {
@@ -70,14 +76,14 @@ export const stixSightingAddRelation = async (user, stixSightingId, input) => {
     throw new ForbiddenAccess();
   }
   return createRelation(user, stixSightingId, input).then((relationData) => {
-    notify(BUS_TOPICS.stixSighting.EDIT_TOPIC, relationData, user);
+    notify(BUS_TOPICS.StixSighting.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
 export const stixSightingDeleteRelation = async (user, stixSightingId, relationId) => {
   await deleteRelationById(user, relationId, 'stix_relation_embedded');
   const data = await loadRelationById(stixSightingId, 'stix_sighting');
-  return notify(BUS_TOPICS.stixSighting.EDIT_TOPIC, data, user);
+  return notify(BUS_TOPICS.StixSighting.EDIT_TOPIC, data, user);
 };
 // endregion
 
@@ -85,13 +91,13 @@ export const stixSightingDeleteRelation = async (user, stixSightingId, relationI
 export const stixSightingCleanContext = (user, stixSightingId) => {
   delEditContext(user, stixSightingId);
   return loadRelationById(stixSightingId, 'stix_sighting').then((stixSighting) =>
-    notify(BUS_TOPICS.stixSighting.EDIT_TOPIC, stixSighting, user)
+    notify(BUS_TOPICS.StixSighting.EDIT_TOPIC, stixSighting, user)
   );
 };
 export const stixSightingEditContext = (user, stixSightingId, input) => {
   setEditContext(user, stixSightingId, input);
   return loadRelationById(stixSightingId, 'stix_sighting').then((stixSighting) =>
-    notify(BUS_TOPICS.stixSighting.EDIT_TOPIC, stixSighting, user)
+    notify(BUS_TOPICS.StixSighting.EDIT_TOPIC, stixSighting, user)
   );
 };
 // endregion

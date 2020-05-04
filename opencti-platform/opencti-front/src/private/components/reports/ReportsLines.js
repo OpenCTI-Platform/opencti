@@ -7,7 +7,7 @@ import ListLinesContent from '../../../components/list_lines/ListLinesContent';
 import { ReportLine, ReportLineDummy } from './ReportLine';
 import { setNumberOfElements } from '../../../utils/Number';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class ReportsLines extends Component {
   componentDidUpdate(prevProps) {

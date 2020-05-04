@@ -7,7 +7,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { VulnerabilityLine, VulnerabilityLineDummy } from './VulnerabilityLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class VulnerabilitiesLines extends Component {
   componentDidUpdate(prevProps) {

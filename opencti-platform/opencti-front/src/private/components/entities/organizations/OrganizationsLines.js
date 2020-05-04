@@ -7,7 +7,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { OrganizationLine, OrganizationLineDummy } from './OrganizationLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class OrganizationsLines extends Component {
   componentDidUpdate(prevProps) {

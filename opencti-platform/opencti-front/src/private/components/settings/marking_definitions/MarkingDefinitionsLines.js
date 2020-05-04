@@ -9,7 +9,7 @@ import {
   MarkingDefinitionLineDummy,
 } from './MarkingDefinitionLine';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 export const markingDefinitionsLinesSearchQuery = graphql`
   query MarkingDefinitionsLinesSearchQuery($search: String) {

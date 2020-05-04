@@ -49,9 +49,7 @@
       "spec_version": "2.1",
       "name": "Consulting",
       "identity_class": "class",
-      "labels": [
-        "identity"
-      ],
+      "labels": ["identity"],
       "description": "Private entities providing expert advice in a specific field to external entities.",
       "created": "2020-02-23T23:40:53.582Z",
       "modified": "2020-03-07T10:48:51.034Z",
@@ -64,9 +62,7 @@
       "spec_version": "2.1",
       "name": "Information Technologies Consulting",
       "identity_class": "class",
-      "labels": [
-        "identity"
-      ],
+      "labels": ["identity"],
       "description": "Includes Managed Services Providers (MSPs).",
       "created": "2020-02-23T23:40:53.582Z",
       "modified": "2020-03-24T07:26:32.754Z",
@@ -349,6 +345,21 @@
       "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"]
     },
     {
+      "type": "sighting",
+      "spec_version": "2.1",
+      "id": "sighting--ee20065d-2555-424f-ad9e-0f8428623c75",
+      "created": "2016-08-06T20:08:31.000Z",
+      "modified": "2016-09-06T20:08:31.000Z",
+      "sighting_of_ref": "indicator--51640662-9c78-4402-932f-1d4531624723",
+      "observed_data_refs": ["observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be"],
+      "where_sighted_refs": ["identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132"],
+      "first_seen": "2016-08-06T20:08:31.000Z",
+      "last_seen": "2016-08-07T20:08:31.000Z",
+      "count": 12,
+      "x_opencti_false_positive": true,
+      "x_opencti_id": "ac487af9-f53a-4b7b-bfa4-b40d60ec33c7"
+    },
+    {
       "id": "indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf",
       "type": "indicator",
       "spec_version": "2.1",
@@ -364,6 +375,19 @@
       "x_opencti_id": "1c47970a-a23b-4b6c-85cd-ab73ddb506c6",
       "created_by_ref": "identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132",
       "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"]
+    },
+    {
+      "type": "sighting",
+      "spec_version": "2.1",
+      "id": "579a46af-a339-400d-809e-b92101fe7de8",
+      "created": "2016-08-06T20:08:31.000Z",
+      "modified": "2016-09-06T20:08:31.000Z",
+      "sighting_of_ref": "indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf",
+      "first_seen": "2016-08-06T20:08:31.000Z",
+      "last_seen": "2016-08-07T20:08:31.000Z",
+      "count": 8,
+      "x_opencti_false_positive": false,
+      "x_opencti_id": "1688891c-6595-42bc-a876-5abacede92e0"
     },
     {
       "id": "identity--c017f212-546b-4f21-999d-97d3dc558f7b",
@@ -687,9 +711,7 @@
       "type": "course-of-action",
       "spec_version": "2.1",
       "name": "Compile After Delivery Mitigation",
-      "labels": [
-        "course-of-action"
-      ],
+      "labels": ["course-of-action"],
       "description": "This type of technique cannot be easily mitigated with preventive controls or patched since it is based on the abuse of operating system design features. For example, blocking all file compilation may have unintended side effects, such as preventing legitimate OS frameworks and code development mechanisms from operating properly. Consider removing compilers if not needed, otherwise efforts should be focused on preventing adversary tools from running earlier in the chain of activity and on identifying subsequent malicious behavior.\n\nIdentify unnecessary system utilities or potentially malicious software that may be used to decrypt, deobfuscate, decode, and compile files or information, and audit and/or block them by using whitelisting (Citation: Beechey 2010) tools, like AppLocker, (Citation: Windows Commands JPCERT) (Citation: NSA MS AppLocker) or Software Restriction Policies (Citation: Corio 2008) where appropriate. (Citation: TechNet Applocker vs SRP)",
       "created": "2019-04-25T20:53:07.814Z",
       "modified": "2019-07-24T14:18:49.192Z",

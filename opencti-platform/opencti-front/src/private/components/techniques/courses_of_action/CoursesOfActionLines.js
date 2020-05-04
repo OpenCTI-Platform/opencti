@@ -10,7 +10,7 @@ import {
 } from './CourseOfActionLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class CoursesOfActionLines extends Component {
   componentDidUpdate(prevProps) {

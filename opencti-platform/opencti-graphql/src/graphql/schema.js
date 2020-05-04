@@ -13,6 +13,7 @@ import stixEntityResolvers from '../resolvers/stixEntity';
 import stixDomainEntityResolvers from '../resolvers/stixDomainEntity';
 import stixObservableResolvers from '../resolvers/stixObservable';
 import stixRelationResolvers from '../resolvers/stixRelation';
+import stixSightingResolvers from '../resolvers/stixSighting';
 import stixObservableRelationResolvers from '../resolvers/stixObservableRelation';
 import workspaceResolvers from '../resolvers/workspace';
 import identityResolvers from '../resolvers/identity';
@@ -64,6 +65,7 @@ const createSchema = () => {
     stixDomainEntityResolvers,
     stixObservableResolvers,
     stixRelationResolvers,
+    stixSightingResolvers,
     stixObservableRelationResolvers,
     workspaceResolvers,
     identityResolvers,
