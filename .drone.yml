@@ -78,4 +78,4 @@ services:
     MINIO_SECRET_KEY: ChangeMe
   command: [ server, /data ]
 - name: rabbitmq
-  image: rabbitmq:3.7-management 
+  image: rabbitmq:3.8-management 
