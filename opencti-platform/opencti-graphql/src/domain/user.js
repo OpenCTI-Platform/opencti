@@ -240,7 +240,8 @@ export const roleEditContext = (user, roleId, input) => {
 // endregion
 
 export const addPerson = async (user, newUser) => {
-  const created = await createEntity(user, newUser, 'User', {
+  const creatingUser = assoc('user_email', `${uuid()}@mail.com`, newUser);
+  const created = await createEntity(user, creatingUser, 'User', {
     modelType: TYPE_STIX_DOMAIN_ENTITY,
     stixIdType: 'identity',
   });

@@ -1103,6 +1103,16 @@ interface Identity {
   created_at: DateTime!
   updated_at: DateTime!
 }
+
+enum IdentityType {
+  sector
+  organization
+  user
+  region
+  country
+  city
+}
+
 input IdentityAddInput {
   internal_id_key: String
   stix_id_key: String
@@ -1110,7 +1120,7 @@ input IdentityAddInput {
   description: String
   confidence: Int
   alias: [String]
-  type: String!
+  type: IdentityType!
   createdByRef: String
   markingDefinitions: [String]
   tags: [String]
