@@ -429,17 +429,23 @@ class Opinion:
             )
         if object_result is not None:
             if update or object_result["createdByRef"] == created_by_ref:
-                if object_result["name"] != name:
+                if name is not None and object_result["name"] != name:
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"], key="name", value=name
                     )
                     object_result["name"] = name
-                if object_result["description"] != description:
+                if (
+                    description is not None
+                    and object_result["description"] != description
+                ):
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"], key="description", value=description
                     )
                     object_result["description"] = description
-                if object_result["explanation"] != explanation:
+                if (
+                    explanation is not None
+                    and object_result["explanation"] != explanation
+                ):
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"], key="explanation", value=explanation
                     )

@@ -17,6 +17,7 @@ class CourseOfAction:
             name
             alias
             description
+            confidence
             graph_data
             created
             modified            
@@ -302,7 +303,10 @@ class CourseOfAction:
                     )
                     object_result["name"] = name
                 # description
-                if object_result["description"] != description:
+                if (
+                    description is not None
+                    and object_result["description"] != description
+                ):
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"], key="description", value=description
                     )

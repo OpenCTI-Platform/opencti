@@ -17,6 +17,7 @@ class Campaign:
             name
             alias
             description
+            confidence
             graph_data
             objective
             first_seen
@@ -287,6 +288,7 @@ class Campaign:
             name
             description 
             alias
+            confidence
             createdByRef {
                 node {
                     id
@@ -313,7 +315,10 @@ class Campaign:
                     )
                     object_result["name"] = name
                 # description
-                if object_result["description"] != description:
+                if (
+                    description is not None
+                    and object_result["description"] != description
+                ):
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"], key="description", value=description
                     )
@@ -399,11 +404,11 @@ class Campaign:
             if self.opencti.not_empty(entity["objective"]):
                 campaign["objective"] = entity["objective"]
             if self.opencti.not_empty(entity["first_seen"]):
-                campaign[CustomProperties.FIRST_SEEN] = self.opencti.stix2.format_date(
+                campaign["first_seen"] = self.opencti.stix2.format_date(
                     entity["first_seen"]
                 )
             if self.opencti.not_empty(entity["last_seen"]):
-                campaign[CustomProperties.LAST_SEEN] = self.opencti.stix2.format_date(
+                campaign["last_seen"] = self.opencti.stix2.format_date(
                     entity["last_seen"]
                 )
             campaign["created"] = self.opencti.stix2.format_date(entity["created"])

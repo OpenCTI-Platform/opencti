@@ -17,6 +17,7 @@ class AttackPattern:
             name
             alias
             description
+            confidence
             graph_data
             platform
             required_permission
@@ -251,6 +252,7 @@ class AttackPattern:
         platform = kwargs.get("platform", None)
         required_permission = kwargs.get("required_permission", None)
         external_id = kwargs.get("external_id", None)
+        confidence = kwargs.get("confidence", 50)
         id = kwargs.get("id", None)
         stix_id_key = kwargs.get("stix_id_key", None)
         created = kwargs.get("created", None)
@@ -283,6 +285,7 @@ class AttackPattern:
                         "platform": platform,
                         "required_permission": required_permission,
                         "external_id": external_id,
+                        "confidence": confidence,
                         "internal_id_key": id,
                         "stix_id_key": stix_id_key,
                         "created": created,
@@ -317,6 +320,7 @@ class AttackPattern:
         platform = kwargs.get("platform", None)
         required_permission = kwargs.get("required_permission", None)
         external_id = kwargs.get("external_id", None)
+        confidence = kwargs.get("confidence", 50)
         id = kwargs.get("id", None)
         stix_id_key = kwargs.get("stix_id_key", None)
         created = kwargs.get("created", None)
@@ -332,6 +336,7 @@ class AttackPattern:
             name
             description 
             alias
+            confidence
             createdByRef {
                 node {
                     id
@@ -362,7 +367,10 @@ class AttackPattern:
                     )
                     object_result["name"] = name
                 # description
-                if object_result["description"] != description:
+                if (
+                    description is not None
+                    and object_result["description"] != description
+                ):
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"], key="description", value=description
                     )
@@ -405,6 +413,12 @@ class AttackPattern:
                         id=object_result["id"], key="external_id", value=external_id
                     )
                     object_result["external_id"] = external_id
+                # confidence
+                if confidence is not None and object_result["confidence"] != confidence:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result["id"], key="confidence", value=confidence
+                    )
+                    object_result["confidence"] = confidence
             return object_result
         else:
             return self.create_raw(
@@ -414,6 +428,7 @@ class AttackPattern:
                 platform=platform,
                 required_permission=required_permission,
                 external_id=external_id,
+                confidence=confidence,
                 id=id,
                 stix_id_key=stix_id_key,
                 created=created,
@@ -465,6 +480,9 @@ class AttackPattern:
                 if "x_mitre_permissions_required" in stix_object
                 else None,
                 external_id=external_id,
+                confidence=stix_object["confidence"]
+                if "confidence" in stix_object
+                else None,
                 id=stix_object[CustomProperties.ID]
                 if CustomProperties.ID in stix_object
                 else None,

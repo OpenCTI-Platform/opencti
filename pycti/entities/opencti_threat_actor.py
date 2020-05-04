@@ -2,6 +2,7 @@
 
 import json
 from pycti.utils.constants import CustomProperties
+from pycti.utils.opencti_stix2 import SPEC_VERSION
 
 
 class ThreatActor:
@@ -23,6 +24,8 @@ class ThreatActor:
             primary_motivation
             secondary_motivation
             personal_motivation
+            first_seen
+            last_seen
             created
             modified            
             created_at
@@ -211,6 +214,8 @@ class ThreatActor:
         name = kwargs.get("name", None)
         description = kwargs.get("description", None)
         alias = kwargs.get("alias", None)
+        first_seen = kwargs.get("first_seen", None)
+        last_seen = kwargs.get("last_seen", None)
         goal = kwargs.get("goal", None)
         sophistication = kwargs.get("sophistication", None)
         resource_level = kwargs.get("resource_level", None)
@@ -245,6 +250,8 @@ class ThreatActor:
                         "name": name,
                         "description": description,
                         "alias": alias,
+                        "first_seen": first_seen,
+                        "last_seen": last_seen,
                         "goal": goal,
                         "sophistication": sophistication,
                         "resource_level": resource_level,
@@ -281,6 +288,8 @@ class ThreatActor:
         name = kwargs.get("name", None)
         description = kwargs.get("description", None)
         alias = kwargs.get("alias", None)
+        first_seen = kwargs.get("first_seen", None)
+        last_seen = kwargs.get("last_seen", None)
         goal = kwargs.get("goal", None)
         sophistication = kwargs.get("sophistication", None)
         resource_level = kwargs.get("resource_level", None)
@@ -307,6 +316,8 @@ class ThreatActor:
                 }
             }            
             ... on ThreatActor {
+                first_seen
+                last_seen
                 goal
                 sophistication
                 resource_level
@@ -330,7 +341,10 @@ class ThreatActor:
                     )
                     object_result["name"] = name
                 # description
-                if object_result["description"] != description:
+                if (
+                    description is not None
+                    and object_result["description"] != description
+                ):
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"], key="description", value=description
                     )
@@ -347,6 +361,18 @@ class ThreatActor:
                         id=object_result["id"], key="alias", value=new_aliases
                     )
                     object_result["alias"] = new_aliases
+                # first_seen
+                if first_seen is not None and object_result["first_seen"] != first_seen:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result["id"], key="first_seen", value=first_seen
+                    )
+                    object_result["first_seen"] = first_seen
+                # last_seen
+                if last_seen is not None and object_result["last_seen"] != last_seen:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result["id"], key="last_seen", value=last_seen
+                    )
+                    object_result["last_seen"] = last_seen
                 # goal
                 if goal is not None and object_result["goal"] != goal:
                     self.opencti.stix_domain_entity.update_field(
@@ -414,6 +440,8 @@ class ThreatActor:
                 name=name,
                 description=description,
                 alias=alias,
+                first_seen=first_seen,
+                last_seen=last_seen,
                 goal=goal,
                 sophistication=sophistication,
                 resource_level=resource_level,
@@ -449,6 +477,7 @@ class ThreatActor:
             threat_actor = dict()
             threat_actor["id"] = entity["stix_id_key"]
             threat_actor["type"] = "threat-actor"
+            threat_actor["spec_version"] = SPEC_VERSION
             threat_actor["name"] = entity["name"]
             if self.opencti.not_empty(entity["stix_label"]):
                 threat_actor["labels"] = entity["stix_label"]
@@ -468,6 +497,14 @@ class ThreatActor:
                 threat_actor["primary_motivation"] = entity["primary_motivation"]
             if self.opencti.not_empty(entity["secondary_motivation"]):
                 threat_actor["secondary_motivations"] = entity["secondary_motivation"]
+            if self.opencti.not_empty(entity["first_seen"]):
+                threat_actor["first_seen"] = self.opencti.stix2.format_date(
+                    entity["first_seen"]
+                )
+            if self.opencti.not_empty(entity["last_seen"]):
+                threat_actor["last_seen"] = self.opencti.stix2.format_date(
+                    entity["last_seen"]
+                )
             threat_actor["created"] = self.opencti.stix2.format_date(entity["created"])
             threat_actor["modified"] = self.opencti.stix2.format_date(
                 entity["modified"]

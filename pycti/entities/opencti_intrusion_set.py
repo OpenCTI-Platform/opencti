@@ -337,7 +337,10 @@ class IntrusionSet:
                     )
                     object_result["name"] = name
                 # description
-                if object_result["description"] != description:
+                if (
+                    description is not None
+                    and object_result["description"] != description
+                ):
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"], key="description", value=description
                     )
@@ -479,13 +482,13 @@ class IntrusionSet:
             if self.opencti.not_empty(entity["secondary_motivation"]):
                 intrusion_set["secondary_motivations"] = entity["secondary_motivation"]
             if self.opencti.not_empty(entity["first_seen"]):
-                intrusion_set[
-                    CustomProperties.FIRST_SEEN
-                ] = self.opencti.stix2.format_date(entity["first_seen"])
+                intrusion_set["first_seen"] = self.opencti.stix2.format_date(
+                    entity["first_seen"]
+                )
             if self.opencti.not_empty(entity["last_seen"]):
-                intrusion_set[
-                    CustomProperties.LAST_SEEN
-                ] = self.opencti.stix2.format_date(entity["last_seen"])
+                intrusion_set["last_seen"] = self.opencti.stix2.format_date(
+                    entity["last_seen"]
+                )
             intrusion_set["created"] = self.opencti.stix2.format_date(entity["created"])
             intrusion_set["modified"] = self.opencti.stix2.format_date(
                 entity["modified"]

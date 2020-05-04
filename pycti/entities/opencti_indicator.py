@@ -269,6 +269,8 @@ class Indicator:
         valid_from = kwargs.get("valid_from", None)
         valid_until = kwargs.get("valid_until", None)
         score = kwargs.get("score", None)
+        confidence = kwargs.get("confidence", 50)
+        detection = kwargs.get("detection", False)
         id = kwargs.get("id", None)
         stix_id_key = kwargs.get("stix_id_key", None)
         created = kwargs.get("created", None)
@@ -309,6 +311,8 @@ class Indicator:
                         "valid_from": valid_from,
                         "valid_until": valid_until,
                         "score": score,
+                        "detection": detection,
+                        "confidence": confidence,
                         "internal_id_key": id,
                         "stix_id_key": stix_id_key,
                         "created": created,
@@ -343,6 +347,8 @@ class Indicator:
         valid_from = kwargs.get("valid_from", None)
         valid_until = kwargs.get("valid_until", None)
         score = kwargs.get("score", None)
+        confidence = kwargs.get("confidence", 50)
+        detection = kwargs.get("detection", False)
         id = kwargs.get("id", None)
         stix_id_key = kwargs.get("stix_id_key", None)
         created = kwargs.get("created", None)
@@ -358,11 +364,13 @@ class Indicator:
             name
             description
             score
+            confidence
+            detection
             createdByRef {
                 node {
                     id
                 }
-            }                    
+            }
             ... on Indicator {
                 observableRefs {
                     edges {
@@ -418,6 +426,18 @@ class Indicator:
                         id=object_result["id"], key="score", value=score
                     )
                     object_result["score"] = score
+                # confidence
+                if confidence is not None and object_result["confidence"] != confidence:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result["id"], key="confidence", value=confidence
+                    )
+                    object_result["confidence"] = confidence
+                # detection
+                if detection is not None and object_result["detection"] != detection:
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result["id"], key="detection", value=detection
+                    )
+                    object_result["detection"] = detection
             return object_result
         else:
             return self.create_raw(
@@ -429,6 +449,8 @@ class Indicator:
                 valid_from=valid_from,
                 valid_until=valid_until,
                 score=score,
+                detection=detection,
+                confidence=confidence,
                 id=id,
                 stix_id_key=stix_id_key,
                 created=created,
@@ -501,6 +523,75 @@ class Indicator:
             return False
 
     """
+        Import an Indicator object from a STIX2 object
+
+        :param stixObject: the Stix-Object Indicator
+        :return Indicator object
+    """
+
+    def import_from_stix2(self, **kwargs):
+        stix_object = kwargs.get("stixObject", None)
+        extras = kwargs.get("extras", {})
+        update = kwargs.get("update", False)
+        if stix_object is not None:
+            pattern_type = "stix"
+            if CustomProperties.PATTERN_TYPE in stix_object:
+                pattern_type = stix_object[CustomProperties.PATTERN_TYPE]
+            elif "pattern_type" in stix_object:
+                pattern_type = stix_object["pattern_type"]
+            return self.create(
+                name=stix_object["name"] if "name" in stix_object else "",
+                description=self.opencti.stix2.convert_markdown(
+                    stix_object["description"]
+                )
+                if "description" in stix_object
+                else "",
+                indicator_pattern=stix_object[CustomProperties.INDICATOR_PATTERN]
+                if CustomProperties.INDICATOR_PATTERN in stix_object
+                else stix_object["pattern"],
+                main_observable_type=stix_object[CustomProperties.OBSERVABLE_TYPE]
+                if CustomProperties.OBSERVABLE_TYPE in stix_object
+                else "Unknown",
+                pattern_type=pattern_type,
+                valid_from=stix_object["valid_from"]
+                if "valid_from" in stix_object
+                else None,
+                valid_until=stix_object["valid_until"]
+                if "valid_until" in stix_object
+                else None,
+                score=stix_object[CustomProperties.SCORE]
+                if CustomProperties.SCORE in stix_object
+                else None,
+                confidence=stix_object["confidence"]
+                if "confidence" in stix_object
+                else 50,
+                detection=stix_object[CustomProperties.DETECTION]
+                if CustomProperties.DETECTION in stix_object
+                else None,
+                id=stix_object[CustomProperties.ID]
+                if CustomProperties.ID in stix_object
+                else None,
+                stix_id_key=stix_object["id"] if "id" in stix_object else None,
+                created=stix_object["created"] if "created" in stix_object else None,
+                modified=stix_object["modified"] if "modified" in stix_object else None,
+                createdByRef=extras["created_by_ref_id"]
+                if "created_by_ref_id" in extras
+                else None,
+                markingDefinitions=extras["marking_definitions_ids"]
+                if "marking_definitions_ids" in extras
+                else None,
+                tags=extras["tags_ids"] if "tags_ids" in extras else [],
+                killChainPhases=extras["kill_chain_phases_ids"]
+                if "kill_chain_phases_ids" in extras
+                else [],
+                update=update,
+            )
+        else:
+            self.opencti.log(
+                "error", "[opencti_attack_pattern] Missing parameters: stixObject"
+            )
+
+    """
         Export an Indicator object in STIX2
     
         :param id: the id of the Indicator
@@ -536,9 +627,9 @@ class Indicator:
                 entity["valid_until"]
             )
             if self.opencti.not_empty(entity["pattern_type"]):
-                indicator[CustomProperties.PATTERN_TYPE] = entity["pattern_type"]
+                indicator["pattern_type"] = entity["pattern_type"]
             else:
-                indicator[CustomProperties.PATTERN_TYPE] = "stix"
+                indicator["pattern_type"] = "stix"
             indicator["created"] = self.opencti.stix2.format_date(entity["created"])
             indicator["modified"] = self.opencti.stix2.format_date(entity["modified"])
             if self.opencti.not_empty(entity["alias"]):
