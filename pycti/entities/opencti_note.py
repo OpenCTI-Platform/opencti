@@ -587,6 +587,12 @@ class Note:
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
         if stix_object is not None:
+            if CustomProperties.NAME in stix_object:
+                name = stix_object[CustomProperties.NAME]
+            elif "abstract" in stix_object:
+                name = stix_object["abstract"]
+            else:
+                name = ""
             return self.create(
                 description=self.opencti.stix2.convert_markdown(stix_object["abstract"])
                 if "abstract" in stix_object
@@ -594,9 +600,7 @@ class Note:
                 content=self.opencti.stix2.convert_markdown(stix_object["content"])
                 if "content" in stix_object
                 else "",
-                name=stix_object[CustomProperties.NAME]
-                if CustomProperties.NAME in stix_object
-                else "",
+                name=name,
                 graph_data=stix_object[CustomProperties.GRAPH_DATA]
                 if CustomProperties.GRAPH_DATA in stix_object
                 else "",
@@ -647,6 +651,8 @@ class Note:
                 note["labels"] = ["note"]
             if self.opencti.not_empty(entity["description"]):
                 note["abstract"] = entity["description"]
+            elif self.opencti.not_empty(entity["name"]):
+                note["abstract"] = entity["name"]
             note["created"] = self.opencti.stix2.format_date(entity["created"])
             note["modified"] = self.opencti.stix2.format_date(entity["modified"])
             if self.opencti.not_empty(entity["alias"]):

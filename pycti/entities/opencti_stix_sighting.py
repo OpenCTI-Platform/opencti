@@ -357,7 +357,7 @@ class StixSighting:
             stix_sighting_result = self.read(
                 id=stix_id_key, customAttributes=custom_attributes
             )
-        if stix_sighting_result is None:
+        if stix_sighting_result is None and to_id is not None:
             if (
                 ignore_dates is False
                 and first_seen is not None
