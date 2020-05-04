@@ -18,6 +18,7 @@ from .entities.opencti_stix_entity import StixEntity
 from .entities.opencti_stix_domain_entity import StixDomainEntity
 from .entities.opencti_stix_observable import StixObservable
 from .entities.opencti_stix_relation import StixRelation
+from .entities.opencti_stix_sighting import StixSighting
 from .entities.opencti_stix_observable_relation import StixObservableRelation
 from .entities.opencti_identity import Identity
 from .entities.opencti_threat_actor import ThreatActor
@@ -54,6 +55,7 @@ __all__ = [
     "StixDomainEntity",
     "StixObservable",
     "StixRelation",
+    "StixSighting",
     "StixObservableRelation",
     "Identity",
     "ThreatActor",

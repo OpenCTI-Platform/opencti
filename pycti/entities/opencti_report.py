@@ -448,7 +448,10 @@ class Report:
                         id=object_result["id"], key="name", value=name
                     )
                     object_result["name"] = name
-                if object_result["description"] != description:
+                if (
+                    description is not None
+                    and object_result["description"] != description
+                ):
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"], key="description", value=description
                     )

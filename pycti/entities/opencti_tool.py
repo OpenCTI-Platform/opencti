@@ -2,6 +2,7 @@
 
 import json
 from pycti.utils.constants import CustomProperties
+from pycti.utils.opencti_stix2 import SPEC_VERSION
 
 
 class Tool:
@@ -296,7 +297,10 @@ class Tool:
                     )
                     object_result["name"] = name
                 # description
-                if object_result["description"] != description:
+                if (
+                    description is not None
+                    and object_result["description"] != description
+                ):
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"], key="description", value=description
                     )
@@ -349,6 +353,7 @@ class Tool:
             tool = dict()
             tool["id"] = entity["stix_id_key"]
             tool["type"] = "tool"
+            tool["spec_version"] = SPEC_VERSION
             tool["name"] = entity["name"]
             if self.opencti.not_empty(entity["stix_label"]):
                 tool["labels"] = entity["stix_label"]

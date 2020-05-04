@@ -89,6 +89,7 @@ class CustomProperties:
     PATTERN_TYPE = "x_opencti_pattern_type"
     OBSERVABLE_TYPE = "x_opencti_observable_type"
     OBSERVABLE_VALUE = "x_opencti_observable_value"
+    DETECTION = "x_opencti_detection"
     CREATE_OBSERVABLES = "x_opencti_observables_create"
     CREATE_INDICATOR = "x_opencti_indicator_create"
 
@@ -126,6 +127,7 @@ class CustomProperties:
     SOURCE_REF = "x_opencti_source_ref"
     TARGET_REF = "x_opencti_target_ref"
     IGNORE_DATES = "x_opencti_ignore_dates"
+    NEGATIVE = "x_opencti_false_positive"
 
     # generic property - applies to most SDOs
     ALIASES = "x_opencti_aliases"
