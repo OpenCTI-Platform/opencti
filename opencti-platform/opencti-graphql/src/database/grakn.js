@@ -1296,9 +1296,9 @@ const createRelationRaw = async (user, fromInternalId, input, opts = {}) => {
   let relationAttributes = { internal_id_key: relationId };
   if (isStixRelation) {
     const currentDate = now();
-    const toCreate = isNil(input.stix_id_key) || input.stix_id_key === 'create';
+    const createStixId = isNil(input.stix_id_key) || input.stix_id_key === 'create';
     let stixIdKey = input.stix_id_key;
-    if (toCreate) {
+    if (createStixId) {
       if (isStixSighting) {
         stixIdKey = `sighting--${uuid()}`;
       } else {
