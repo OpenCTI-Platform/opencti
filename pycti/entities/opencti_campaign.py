@@ -114,6 +114,7 @@ class Campaign:
         after = kwargs.get("after", None)
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
+        custom_attributes = kwargs.get("customAttributes", None)
         get_all = kwargs.get("getAll", False)
         if get_all:
             first = 500
@@ -128,7 +129,7 @@ class Campaign:
                     edges {
                         node {
                             """
-            + self.properties
+            + (custom_attributes if custom_attributes is not None else self.properties)
             + """
                         }
                     }
