@@ -269,6 +269,7 @@ class StixSightingCreationFromEntity extends Component {
     const fromEntityId = isFrom ? entityId : targetEntity.id;
     const toEntityId = isFrom ? targetEntity.id : entityId;
     const finalValues = pipe(
+      assoc('number', parseInt(values.number, 10)),
       assoc('fromId', fromEntityId),
       assoc('toId', toEntityId),
       assoc('first_seen', parse(values.first_seen).format()),
@@ -586,6 +587,7 @@ class StixSightingCreationFromEntity extends Component {
                 name="number"
                 label={t('Count')}
                 fullWidth={true}
+                type="number"
                 style={{ marginTop: 20 }}
               />
               <ConfidenceField

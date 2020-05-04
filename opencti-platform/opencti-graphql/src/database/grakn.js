@@ -1220,6 +1220,7 @@ const prepareAttribute = (value) => {
   if (value instanceof Date) return prepareDate(value);
   if (Date.parse(value) > 0 && new Date(value).toISOString() === value) return prepareDate(value);
   if (/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/.test(value)) return prepareDate(value);
+  if (/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\dZ/.test(value)) return prepareDate(value);
   if (typeof value === 'string') return `"${escapeString(value)}"`;
   return escape(value);
 };
