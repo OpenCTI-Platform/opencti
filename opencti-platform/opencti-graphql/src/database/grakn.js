@@ -51,6 +51,7 @@ import {
   TYPE_STIX_OBSERVABLE,
   TYPE_STIX_OBSERVABLE_RELATION,
   TYPE_STIX_RELATION,
+  TYPE_STIX_SIGHTING,
   utcDate,
 } from './utils';
 import { isInversed, resolveNaturalRoles, ROLE_FROM } from './graknRoles';
@@ -109,7 +110,15 @@ export const escape = (chars) => {
 export const escapeString = (s) => (s ? s.replace(/\\/g, '\\\\').replace(/"/g, '\\"') : '');
 
 // Attributes key that can contains multiple values.
-export const multipleAttributes = ['stix_label', 'alias', 'grant', 'platform', 'required_permission'];
+export const multipleAttributes = [
+  'stix_label',
+  'alias',
+  'grant',
+  'platform',
+  'required_permission',
+  'indicator_type',
+  'threat_actor_type',
+];
 export const statsDateAttributes = ['created_at', 'first_seen', 'last_seen', 'published', 'valid_from', 'valid_until'];
 export const readOnlyAttributes = ['observable_value'];
 // endregion
@@ -1242,7 +1251,13 @@ const flatAttributesForObject = (data) => {
 
 // region mutation relation
 const createRelationRaw = async (user, fromInternalId, input, opts = {}) => {
-  const { indexable = true, reversedReturn = false, isStixObservableRelation = false, noLog = false } = opts;
+  const {
+    indexable = true,
+    reversedReturn = false,
+    isStixObservableRelation = false,
+    isStixSighting = false,
+    noLog = false,
+  } = opts;
   // 01. First fix the direction of the relation
   const isStixRelation = includes('stix_id_key', Object.keys(input)) || input.relationship_type;
   const relationshipType = input.relationship_type || input.through;
@@ -1253,11 +1268,16 @@ const createRelationRaw = async (user, fromInternalId, input, opts = {}) => {
     );
   }
   // eslint-disable-next-line no-nested-ternary
-  const entityType = isStixRelation
-    ? isStixObservableRelation
-      ? TYPE_STIX_OBSERVABLE_RELATION
-      : TYPE_STIX_RELATION
-    : TYPE_RELATION_EMBEDDED;
+  let entityType = TYPE_RELATION_EMBEDDED;
+  if (isStixRelation) {
+    if (isStixObservableRelation) {
+      entityType = TYPE_STIX_OBSERVABLE_RELATION;
+    } else if (isStixSighting) {
+      entityType = TYPE_STIX_SIGHTING;
+    } else {
+      entityType = TYPE_STIX_RELATION;
+    }
+  }
   const isInv = isInversed(relationshipType, input.fromRole);
   /* istanbul ignore if */
   if (isInv) {
@@ -1276,13 +1296,32 @@ const createRelationRaw = async (user, fromInternalId, input, opts = {}) => {
   let relationAttributes = { internal_id_key: relationId };
   if (isStixRelation) {
     const currentDate = now();
-    const toCreate = isNil(input.stix_id_key) || input.stix_id_key === 'create';
-    relationAttributes.stix_id_key = toCreate ? `relationship--${uuid()}` : input.stix_id_key;
-    relationAttributes.revoked = false;
+    const createStixId = isNil(input.stix_id_key) || input.stix_id_key === 'create';
+    let stixIdKey = input.stix_id_key;
+    if (createStixId) {
+      if (isStixSighting) {
+        stixIdKey = `sighting--${uuid()}`;
+      } else {
+        stixIdKey = `relationship--${uuid()}`;
+      }
+    }
+    // TODO: Remove this in STIX 2.1
+    // Adapt the frontend
+    // Do the migration weight => confidence
+    // Remove completely the role_played
+    if (!isStixSighting && !isStixObservableRelation) {
+      relationAttributes.role_played = input.role_played ? input.role_played : 'Unknown';
+      relationAttributes.weight = input.weight ? input.weight : 1;
+    }
+    if (isStixSighting) {
+      relationAttributes.number = !isNil(input.number) ? input.number : 1;
+      relationAttributes.negative = !isNil(input.negative) ? input.negative : false;
+    }
     relationAttributes.name = input.name ? input.name : ''; // Force name of the relation
+    relationAttributes.stix_id_key = stixIdKey;
+    relationAttributes.revoked = false;
     relationAttributes.description = input.description ? input.description : '';
-    relationAttributes.role_played = input.role_played ? input.role_played : 'Unknown';
-    relationAttributes.weight = input.weight ? input.weight : 1;
+    relationAttributes.confidence = !isNil(input.confidence) ? input.confidence : 15;
     relationAttributes.entity_type = entityType;
     relationAttributes.relationship_type = relationshipType;
     relationAttributes.updated_at = currentDate;

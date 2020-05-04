@@ -1,7 +1,7 @@
 import { invertObj } from 'ramda';
 
 export const ROLE_FROM = 'from';
-const ROLE_TO = 'to';
+export const ROLE_TO = 'to';
 
 const rolesMap = {
   // region relation
@@ -118,6 +118,10 @@ const rolesMap = {
   gathering: {
     part_of: ROLE_FROM,
     gather: ROLE_TO,
+  },
+  stix_sighting: {
+    so: ROLE_FROM,
+    sighted_in: ROLE_TO,
   },
   // endregion
   // region stix_observable_relation

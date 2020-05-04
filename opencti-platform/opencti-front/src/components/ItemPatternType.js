@@ -6,11 +6,13 @@ import Chip from '@material-ui/core/Chip';
 const styles = () => ({
   chip: {
     fontSize: 12,
+    lineHeight: '12px',
     height: 25,
     margin: '0 7px 7px 0',
   },
   chipInList: {
     fontSize: 12,
+    lineHeight: '12px',
     height: 20,
     float: 'left',
     marginRight: 7,

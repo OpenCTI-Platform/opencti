@@ -14,6 +14,7 @@ import StixObservableKnowledge from './StixObservableKnowledge';
 import Loader from '../../../../components/Loader';
 import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
 import StixObservableHeader from './StixObservableHeader';
+import EntityStixSightings from '../../common/stix_sightings/EntityStixSightings';
 
 const subscription = graphql`
   subscription RootStixObservableSubscription($id: ID!) {
@@ -103,6 +104,28 @@ class RootStixObservable extends Component {
                         {...routeProps}
                         stixObservable={props.stixObservable}
                       />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/signatures/observables/:observableId/sightings"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixObservableHeader
+                          stixObservable={props.stixObservable}
+                        />
+                        <EntityStixSightings
+                          {...routeProps}
+                          entityId={observableId}
+                          targetEntityTypes={[
+                            'Region',
+                            'Country',
+                            'City',
+                            'Organization',
+                            'User',
+                          ]}
+                        />
+                      </React.Fragment>
                     )}
                   />
                   <Route

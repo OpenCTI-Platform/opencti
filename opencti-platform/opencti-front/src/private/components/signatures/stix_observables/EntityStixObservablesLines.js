@@ -9,7 +9,7 @@ import {
   EntityStixObservableLineDummy,
 } from './EntityStixObservableLine';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class EntityStixObservablesLines extends Component {
   render() {

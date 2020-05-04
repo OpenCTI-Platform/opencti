@@ -25,6 +25,7 @@ import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { filesListing } from '../database/minio';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
+import { stixRelations } from '../domain/stixEntity';
 
 const stixDomainEntityResolvers = {
   Query: {
@@ -56,6 +57,7 @@ const stixDomainEntityResolvers = {
       }
       return 'Unknown';
     },
+    stixRelations: (rel, args) => stixRelations(rel.id, args),
     importFiles: (entity, { first }) => filesListing(first, 'import', entity.entity_type, entity),
     exportFiles: (entity, { first }) => filesListing(first, 'export', entity.entity_type, entity),
   },
@@ -72,7 +74,8 @@ const stixDomainEntityResolvers = {
       importPush: ({ file }) => stixDomainEntityImportPush(user, null, id, file),
       exportAsk: (args) => stixDomainEntityExportAsk(assoc('stixDomainEntityId', id, args)),
       exportPush: ({ file }) => stixDomainEntityExportPush(user, null, id, file),
-      mergeEntities: ({ stixDomainEntitiesIds, alias }) => stixDomainEntityMerge(user, id, stixDomainEntitiesIds, alias),
+      mergeEntities: ({ stixDomainEntitiesIds, alias }) =>
+        stixDomainEntityMerge(user, id, stixDomainEntitiesIds, alias),
     }),
     stixDomainEntitiesDelete: (_, { id }, { user }) => stixDomainEntitiesDelete(user, id),
     stixDomainEntityAdd: (_, { input }, { user }) => addStixDomainEntity(user, input),

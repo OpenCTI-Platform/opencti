@@ -89,6 +89,7 @@ define
   organization_class sub attribute, datatype string;
   report_class sub attribute, datatype string;
   indicator_pattern sub attribute, datatype string;
+  indicator_type sub attribute, datatype string;
   main_observable_type sub attribute, datatype string;
   valid_from sub attribute, datatype date;
   valid_from_day sub attribute, datatype string;
@@ -101,9 +102,11 @@ define
   platform sub attribute, datatype string;
   required_permission sub attribute, datatype string;
   source_confidence_level sub attribute, datatype long;
+  confidence sub attribute, datatype long;
   reliability sub attribute, datatype string;
   value sub attribute, datatype string;
   pattern_type sub attribute, datatype string;
+  pattern_version sub attribute, datatype string;
   base_score sub attribute, datatype double;
   base_severity sub attribute, datatype string;
   attack_vector sub attribute, datatype string;
@@ -111,11 +114,16 @@ define
   availability_impact sub attribute, datatype string;
   content sub attribute, datatype string;
   explanation sub attribute, datatype string;
+  detection sub attribute, datatype boolean;
+  threat_actor_type sub attribute, datatype string;
+  is_family sub attribute, datatype boolean;
+  number sub attribute, datatype long;
 
   # STIX SRO
   relationship_type sub attribute, datatype string;
   role_played sub attribute, datatype string;
   weight sub attribute, datatype long;
+  negative sub attribute, datatype boolean;
 
   # STIX SOO
   observable_value sub attribute, datatype string;
@@ -209,7 +217,6 @@ define
 
   # sighting
   sighted_in sub role;
-  sighting_of sub role;
 
   ## RELATIONSHIPS
 
@@ -298,12 +305,17 @@ define
   stix_sighting sub relation,
     key internal_id_key,
     key stix_id_key,
+    has name,
+    has description,
     has created,
     has modified,
     has revoked,
     has entity_type,
     has relationship_type,
     has weight,
+    has confidence,
+    has negative,
+    has number,
     has first_seen,
     has first_seen_day,
     has first_seen_month,
@@ -312,8 +324,14 @@ define
     has last_seen_day,
     has last_seen_month,
     has last_seen_year,
+    has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
+    has updated_at,
+    plays so,
     relates sighted_in,
-    relates sighting_of;
+    relates so;
 
   stix_relation sub relation,
     abstract,
@@ -325,6 +343,7 @@ define
     has entity_type,
     has relationship_type,
     has weight,
+    has confidence,
     has first_seen,
     has first_seen_day,
     has first_seen_month,
@@ -434,6 +453,7 @@ define
     has description,
     has role_played,
     has weight,
+    has confidence,
     has created_at,
     has created_at_day,
     has created_at_month,
@@ -585,6 +605,7 @@ define
     has name,
     has description,
     has alias,
+    has confidence,
     has graph_data;
 
   External-Reference sub Stix-Domain,
@@ -653,7 +674,8 @@ define
     plays dummy,
     plays user,
     plays genuine,
-    plays localized;
+    plays localized,
+    plays sighted_in;
 
   Region sub Identity,
     plays location;
@@ -674,6 +696,15 @@ define
     plays characterize;
 
   Threat-Actor sub Identity,
+    has threat_actor_type,
+    has first_seen,
+    has first_seen_day,
+    has first_seen_month,
+    has first_seen_year,
+    has last_seen,
+    has last_seen_day,
+    has last_seen_month,
+    has last_seen_year,
     has stix_role,
     has goal,
     has sophistication,
@@ -763,6 +794,7 @@ define
     plays characterize;
 
   Malware sub Stix-Domain-Entity,
+    has is_family,
     plays phase_belonging,
     plays source,
     plays user,
@@ -818,9 +850,12 @@ define
 
   Indicator sub Stix-Domain-Entity,
     key indicator_pattern,
+    has indicator_type,
     has main_observable_type,
     has pattern_type,
+    has pattern_version,
     has score,
+    has detection,
     has valid_from,
     has valid_from_day,
     has valid_from_month,

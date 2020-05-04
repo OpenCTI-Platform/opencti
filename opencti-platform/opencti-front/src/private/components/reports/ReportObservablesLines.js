@@ -10,7 +10,7 @@ import {
 } from './ReportObservableLine';
 import { setNumberOfElements } from '../../../utils/Number';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class ReportObservablesLines extends Component {
   componentDidUpdate(prevProps) {

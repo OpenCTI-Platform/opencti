@@ -215,7 +215,7 @@ const isEmptyPlatform = async () => {
   return entityCount <= 1; // Only type entity is available on an empty platform.
 };
 
-const platformInit = async () => {
+const platformInit = async (noMigration = false) => {
   await checkSystemDependencies();
   const needToBeInitialized = await isEmptyPlatform();
   if (needToBeInitialized) {
@@ -229,7 +229,9 @@ const platformInit = async () => {
     await initializeSchema();
     // Always reset the admin user
     await initializeAdminUser();
-    await applyMigration();
+    if (!noMigration) {
+      await applyMigration();
+    }
   }
   return true;
 };

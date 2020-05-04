@@ -16,8 +16,8 @@ const styles = () => ({
   paper: {
     height: '100%',
     minHeight: '100%',
-    margin: '0 0 0 0',
-    padding: '25px 15px 15px 15px',
+    margin: '-4px 0 0 0',
+    padding: '25px 15px 0 15px',
     borderRadius: 6,
   },
 });
@@ -85,6 +85,7 @@ class IndicatorEntities extends Component {
         handleSearch={this.handleSearch.bind(this)}
         displayImport={true}
         secondaryAction={true}
+        noBottomPadding={true}
       >
         <QueryRenderer
           query={indicatorEntitiesLinesQuery}
@@ -118,7 +119,7 @@ class IndicatorEntities extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div style={{ marginTop: 40 }}>
+      <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Relations to threats')}
         </Typography>

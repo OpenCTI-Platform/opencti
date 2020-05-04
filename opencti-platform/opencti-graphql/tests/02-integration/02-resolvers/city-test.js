@@ -38,6 +38,10 @@ const READ_QUERY = gql`
       name
       description
       toStix
+      country {
+        id
+        name
+      }
     }
   }
 `;
@@ -85,6 +89,16 @@ describe('City resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.city).not.toBeNull();
     expect(queryResult.data.city.id).toEqual(cityInternalId);
+  });
+  it('should city country to be accurate', async () => {
+    const queryResult = await queryAsAdmin({
+      query: READ_QUERY,
+      variables: { id: 'd1881166-f431-4335-bfed-b1c647e59f89' },
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.city).not.toBeNull();
+    expect(queryResult.data.city.id).toEqual('d1881166-f431-4335-bfed-b1c647e59f89');
+    expect(queryResult.data.city.country.id).toEqual('f2ea7d37-996d-4313-8f73-42a8782d39a0');
   });
   it('should list cities', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });

@@ -9,14 +9,14 @@ import { itemColor } from '../../utils/Colors';
 import { resolveLink } from '../../utils/Entity';
 import ItemIcon from '../ItemIcon';
 
-const styles = () => ({
+const styles = (theme) => ({
   node: {
     position: 'relative',
     width: 60,
     height: 60,
     zIndex: 20,
     borderRadius: '50%',
-    backgroundColor: '#303030',
+    backgroundColor: theme.palette.background.default,
   },
   icon: {
     margin: '0 auto',

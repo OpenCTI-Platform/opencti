@@ -7,7 +7,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { ThreatActorLine, ThreatActorLineDummy } from './ThreatActorLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class ThreatActorsLines extends Component {
   componentDidUpdate(prevProps) {

@@ -9,7 +9,7 @@ describe('Database provision', () => {
   const workerOpts = [API_URI, API_TOKEN];
 
   it('should platform init',  () => {
-    return expect(platformInit()).resolves.toBe(true);
+    return expect(platformInit(true)).resolves.toBe(true);
   }, FIVE_MINUTES);
 
   it('Should import creation succeed', async () => {

@@ -62,6 +62,8 @@ const i18n = {
         'Souhaitez-vous supprimer cette personne ?',
       'Do you want to delete this relation?':
         'Souhaitez-vous supprimer cette relation ?',
+      'Do you want to delete this sighting?':
+        'Souhaitez-vous supprimer cette observation ?',
       'Do you want to delete this workspace?':
         'Souhaitez-vous supprimer cet espace de travail ?',
       'Do you want to delete this attack pattern?':
@@ -229,6 +231,8 @@ const i18n = {
       'Create a relationship': 'Créer une relation',
       'Update a relationship': 'Modifier une relation',
       'Select a relationship': 'Sélectionner une relation',
+      'Create a sighting': 'Créer une observation',
+      'Update a sighting': 'Modifier une observation',
       'Create an attribute': 'Créer un attribut',
       'Update an attribute': 'Modifier un attribut',
       'Create a role': 'Créer un rôle',
@@ -267,6 +271,8 @@ const i18n = {
       'Registered connectors': 'Connecteurs enregistrés',
       'The relations attached to selected entities will be copied to the merged entity.':
         "Les relations attachées aux entités sélectionnées seront copiées sur l'entité fusionnée.",
+      'Sighed a false positive (negative feedback)?':
+        'Faux positif observé (feedback négatif) ?',
       Scope: 'Périmètre',
       Modified: 'Modifié',
       'No import connectors on this platform':
@@ -348,6 +354,7 @@ const i18n = {
       Entities: 'Entités',
       'entitie(s)': 'entité(s)',
       Observables: 'Observables',
+      Sightings: 'Observations',
       Category: 'Catégorie',
       Constituent: 'Bénéficiaire',
       Enabled: 'Activé',
@@ -376,6 +383,7 @@ const i18n = {
       'TTPs of threats': 'TTPs de menaces',
       'Number of': 'Nombre de',
       Number: 'Nombre',
+      Count: 'Nombre',
       'Top 10:': 'Top 10 :',
       Close: 'Fermer',
       Parameters: 'Paramètres',
@@ -567,6 +575,8 @@ const i18n = {
       Country: 'Pays',
       Region: 'Région',
       City: 'Ville',
+      'False positive': 'Faux positif',
+      Malicious: 'Malveillant',
       Locations: 'Localisations',
       Location: 'Localisation',
       Signatures: 'Signatures',

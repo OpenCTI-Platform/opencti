@@ -29,7 +29,7 @@ import CartesianGrid from 'recharts/lib/cartesian/CartesianGrid';
 import Tooltip from 'recharts/lib/component/Tooltip';
 import { QueryRenderer } from '../../relay/environment';
 import { yearsAgo, dayAgo, now } from '../../utils/Time';
-import Theme from '../../components/Theme';
+import Theme from '../../components/ThemeDark';
 import inject18n from '../../components/i18n';
 import ItemNumberDifference from '../../components/ItemNumberDifference';
 import ItemMarking from '../../components/ItemMarking';

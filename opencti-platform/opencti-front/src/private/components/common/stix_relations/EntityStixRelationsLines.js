@@ -9,7 +9,7 @@ import {
   EntityStixRelationLineDummy,
 } from './EntityStixRelationLine';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class EntityStixRelationsLines extends Component {
   render() {

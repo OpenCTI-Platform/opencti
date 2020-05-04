@@ -7,7 +7,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { IncidentLine, IncidentLineDummy } from './IncidentLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class IncidentsLines extends Component {
   componentDidUpdate(prevProps) {

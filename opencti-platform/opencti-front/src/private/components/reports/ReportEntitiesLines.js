@@ -9,7 +9,7 @@ import { setNumberOfElements } from '../../../utils/Number';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import ReportAddObjectRefs from './ReportAddObjectRefs';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class ReportEntitiesLines extends Component {
   componentDidUpdate(prevProps) {

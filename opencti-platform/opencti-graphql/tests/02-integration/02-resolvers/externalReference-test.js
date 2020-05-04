@@ -43,6 +43,10 @@ const READ_QUERY = gql`
       url
       hash
       external_id
+      editContext {
+        focusOn
+        name
+      }
     }
   }
 `;
@@ -127,6 +131,13 @@ describe('ExternalReference resolver standard behavior', () => {
       variables: { id: externalReferenceInternalId, input: { focusOn: 'description' } },
     });
     expect(queryResult.data.externalReferenceEdit.contextPatch.id).toEqual(externalReferenceInternalId);
+  });
+  it('should externalReference editContext to be accurate', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: externalReferenceInternalId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.externalReference).not.toBeNull();
+    expect(queryResult.data.externalReference.id).toEqual(externalReferenceInternalId);
+    expect(queryResult.data.externalReference.editContext[0].focusOn).toEqual('description');
   });
   it('should context clean externalReference', async () => {
     const CONTEXT_PATCH_QUERY = gql`

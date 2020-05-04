@@ -6,7 +6,7 @@ import { pathOr } from 'ramda';
 import ListLinesContent from '../../../components/list_lines/ListLinesContent';
 import { WorkspaceLine, WorkspaceLineDummy } from './WorkspaceLine';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class WorkspacesLines extends Component {
   render() {

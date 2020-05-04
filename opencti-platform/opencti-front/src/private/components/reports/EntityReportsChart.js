@@ -16,7 +16,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../relay/environment';
 import { now, monthsAgo } from '../../../utils/Time';
-import Theme from '../../../components/Theme';
+import Theme from '../../../components/ThemeDark';
 import inject18n from '../../../components/i18n';
 
 const styles = () => ({

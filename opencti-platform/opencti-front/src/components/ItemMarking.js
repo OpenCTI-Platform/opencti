@@ -7,6 +7,7 @@ import { truncate } from '../utils/String';
 const styles = () => ({
   chip: {
     fontSize: 12,
+    lineHeight: '12px',
     height: 25,
     margin: '0 7px 7px 0',
     borderRadius: 5,
@@ -14,6 +15,7 @@ const styles = () => ({
   },
   chipInList: {
     fontSize: 12,
+    lineHeight: '12px',
     height: 20,
     float: 'left',
     marginRight: 7,

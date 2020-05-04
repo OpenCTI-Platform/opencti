@@ -7,7 +7,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { IndicatorLine, IndicatorLineDummy } from './IndicatorLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class IndicatorsLines extends Component {
   componentDidUpdate(prevProps) {

@@ -7,7 +7,7 @@ import ListCardsContent from '../../../../components/list_cards/ListCardsContent
 import { CampaignCard, CampaignCardDummy } from './CampaignCard';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfCardsToLoad = 25;
+const nbOfCardsToLoad = 50;
 
 class CampaignsCards extends Component {
   componentDidUpdate(prevProps) {
