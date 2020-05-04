@@ -149,6 +149,19 @@ const EntityStixRelationLineFragment = createFragmentContainer(
             description
             created_at
             updated_at
+            tags {
+              edges {
+                node {
+                  id
+                  tag_type
+                  value
+                  color
+                }
+                relation {
+                  id
+                }
+              }
+            }
           }
           ... on AttackPattern {
             external_id
@@ -161,22 +174,86 @@ const EntityStixRelationLineFragment = createFragmentContainer(
                 }
               }
             }
+            markingDefinitions {
+              edges {
+                node {
+                  id
+                  definition
+                }
+              }
+            }
+            tags {
+              edges {
+                node {
+                  id
+                  tag_type
+                  value
+                  color
+                }
+                relation {
+                  id
+                }
+              }
+            }
           }
           ... on StixObservable {
             id
             entity_type
             parent_types
             observable_value
+            markingDefinitions {
+              edges {
+                node {
+                  id
+                  definition
+                }
+              }
+            }
+            tags {
+              edges {
+                node {
+                  id
+                  tag_type
+                  value
+                  color
+                }
+                relation {
+                  id
+                }
+              }
+            }
           }
           ... on Indicator {
             id
             name
             main_observable_type
+            pattern_type
             description
             valid_from
             valid_until
             score
             created
+            markingDefinitions {
+              edges {
+                node {
+                  id
+                  definition
+                }
+              }
+            }
+            tags {
+              edges {
+                node {
+                  id
+                  tag_type
+                  value
+                  color
+                }
+                relation {
+                  id
+                }
+              }
+            }
           }
         }
         killChainPhases {
