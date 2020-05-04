@@ -56,37 +56,7 @@ class ItemConfidence extends Component {
       t, level, classes, variant,
     } = this.props;
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
-    if (level >= 85) {
-      return (
-        <Chip
-          classes={{ root: style }}
-          style={inlineStyles.green}
-          label={t('Strong')}
-        />
-      );
-    }
-    if (level >= 75) {
-      return (
-        <Chip
-          classes={{ root: style }}
-          style={inlineStyles.blue}
-          label={t('Good')}
-        />
-      );
-    }
-    if (level >= 50) {
-      return <Chip
-        classes={{ root: style }}
-        style={inlineStyles.orange}
-        label={t('Moderate')}
-      />;
-    } if (level >= 15) {
-      return <Chip
-        classes={{ root: style }}
-        style={inlineStyles.red}
-        label={t('Low')}
-      />;
-    } if (level === 1000) {
+    if (level === 1000) {
       return (
         <Chip
           classes={{ root: style }}
@@ -95,12 +65,45 @@ class ItemConfidence extends Component {
         />
       );
     }
-    return (
+    if (level >= 85) {
+      return (
+        <Chip
+          classes={{ root: style }}
+          style={inlineStyles.green}
+          label={t('Strong')}
+        />
+      );
+    } if (level >= 75) {
+      return (
         <Chip
           classes={{ root: style }}
           style={inlineStyles.blue}
+          label={t('Good')}
+        />
+      );
+    } if (level >= 50) {
+      return (
+        <Chip
+          classes={{ root: style }}
+          style={inlineStyles.orange}
           label={t('Moderate')}
         />
+      );
+    } if (level >= 15) {
+      return (
+        <Chip
+          classes={{ root: style }}
+          style={inlineStyles.red}
+          label={t('Low')}
+        />
+      );
+    }
+    return (
+      <Chip
+        classes={{ root: style }}
+        style={inlineStyles.blue}
+        label={t('Moderate')}
+      />
     );
   }
 }
