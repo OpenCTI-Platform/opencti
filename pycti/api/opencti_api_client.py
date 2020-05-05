@@ -278,8 +278,11 @@ class OpenCTIApiClient:
         else:
             return False
 
-    def process_multiple(self, data):
-        result = []
+    def process_multiple(self, data, with_pagination=False):
+        if with_pagination:
+            result = {"entities": [], "pagination": {}}
+        else:
+            result = []
         if data is None:
             return result
         for edge in (
@@ -293,7 +296,13 @@ class OpenCTIApiClient:
                 and "id" in edge["relation"]
             ):
                 row["remote_relation_id"] = edge["relation"]["id"]
-            result.append(self.process_multiple_fields(row))
+            if with_pagination:
+                result["entities"].append(self.process_multiple_fields(row))
+            else:
+                result.append(self.process_multiple_fields(row))
+
+        if with_pagination and "pageInfo" in data:
+            result["pagination"] = data["pageInfo"]
         return result
 
     def process_multiple_ids(self, data):

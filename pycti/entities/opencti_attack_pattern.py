@@ -133,6 +133,7 @@ class AttackPattern:
         order_mode = kwargs.get("orderMode", None)
         custom_attributes = kwargs.get("customAttributes", None)
         get_all = kwargs.get("getAll", False)
+        with_pagination = kwargs.get("withPagination", False)
         if get_all:
             first = 500
 
@@ -194,7 +195,9 @@ class AttackPattern:
                 final_data = final_data + data
             return final_data
         else:
-            return self.opencti.process_multiple(result["data"]["attackPatterns"])
+            return self.opencti.process_multiple(
+                result["data"]["attackPatterns"], with_pagination
+            )
 
     """
         Read a Attack-Pattern object
