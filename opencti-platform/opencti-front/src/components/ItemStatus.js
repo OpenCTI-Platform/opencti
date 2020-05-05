@@ -20,7 +20,7 @@ const styles = () => ({
     float: 'left',
     textTransform: 'uppercase',
     borderRadius: '0',
-    width: 90,cd
+    width: 90,
   },
 });
 
