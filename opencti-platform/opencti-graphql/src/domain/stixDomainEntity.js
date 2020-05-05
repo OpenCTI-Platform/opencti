@@ -1,4 +1,4 @@
-import { assoc, dissoc, map, propOr, pipe, invertObj, isNil, pathOr } from 'ramda';
+import { assoc, includes, dissoc, invertObj, isNil, map, pathOr, pipe, propOr } from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
@@ -7,15 +7,15 @@ import {
   createRelations,
   deleteEntityById,
   deleteRelationById,
+  deleteRelationsByFromAndTo,
   escape,
   executeWrite,
   listEntities,
   loadEntityById,
   loadEntityByStixId,
+  loadRelationById,
   timeSeriesEntities,
   updateAttribute,
-  deleteRelationsByFromAndTo,
-  loadRelationById,
 } from '../database/grakn';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { elCount } from '../database/elasticSearch';
@@ -24,10 +24,11 @@ import { connectorsForExport } from './connector';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import stixDomainEntityResolvers from '../resolvers/stixDomainEntity';
-import { findAll as findAllStixRelations, addStixRelation } from './stixRelation';
+import { addStixRelation, findAll as findAllStixRelations } from './stixRelation';
 import { ForbiddenAccess } from '../config/errors';
-import { INDEX_STIX_ENTITIES, TYPE_STIX_DOMAIN_ENTITY } from '../database/utils';
-import { createdByRef, markingDefinitions, killChainPhases, reports } from './stixEntity';
+import { INDEX_STIX_ENTITIES } from '../database/utils';
+import { createdByRef, killChainPhases, markingDefinitions, reports } from './stixEntity';
+import { addPerson } from './user';
 
 export const findAll = async (args) => {
   const noTypes = !args.types || args.types.length === 0;
@@ -202,18 +203,15 @@ export const stixDomainEntityExportPush = async (
   return true;
 };
 export const addStixDomainEntity = async (user, stixDomainEntity) => {
+  let args = {};
   const innerType = stixDomainEntity.type;
   const domainToCreate = dissoc('type', stixDomainEntity);
-  let args = {};
-  if (
-    innerType.toLowerCase() === 'sector' ||
-    innerType.toLowerCase() === 'organization' ||
-    innerType.toLowerCase() === 'user' ||
-    innerType.toLowerCase() === 'region' ||
-    innerType.toLowerCase() === 'country' ||
-    innerType.toLowerCase() === 'city'
-  ) {
-    args = { modelType: TYPE_STIX_DOMAIN_ENTITY, stixIdType: 'identity' };
+  const entityType = innerType.toLowerCase();
+  if (entityType === 'user') {
+    return addPerson(user, domainToCreate);
+  }
+  if (includes(entityType, ['sector', 'organization', 'user', 'region', 'country', 'city'])) {
+    args = { stixIdType: 'identity' };
   }
   const created = await createEntity(user, domainToCreate, innerType, args);
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);

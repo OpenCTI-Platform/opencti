@@ -82,11 +82,15 @@ for (let i = 0; i < providerKeys.length; i += 1) {
   let mappedConfig = configRemapping(config);
   if (strategy === 'LocalStrategy') {
     const localStrategy = new LocalStrategy((username, password, done) => {
+      logger.debug(`[LOCAL] Successfully logged`, { username });
       return login(username, password)
         .then((token) => {
           return done(null, token);
         })
-        .catch(() => done(null, false));
+        .catch((err) => {
+          logger.error(`[LOCAL] Login error`, { error: err });
+          done(null, false);
+        });
     });
     passport.use('local', localStrategy);
     providers.push({ name: providerIdent, type: AUTH_FORM, provider: 'local' });
@@ -97,16 +101,23 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     mappedConfig = assoc('tlsOptions', { rejectUnauthorized: !allowSelfSigned }, mappedConfig);
     const ldapOptions = { server: mappedConfig };
     const ldapStrategy = new LdapStrategy(ldapOptions, (user, done) => {
+      logger.debug(`[LDAP] Successfully logged`, { user });
       const userMail = mappedConfig.mail_attribute ? user[mappedConfig.mail_attribute] : user.mail;
       const userName = mappedConfig.account_attribute ? user[mappedConfig.account_attribute] : user.givenName;
-      logger.debug(`[LDAP_AUTH] Successfully logged with ${userMail} and ${userName}`);
-      loginFromProvider(userMail, userName || userMail)
-        .then((token) => {
-          done(null, token);
-        })
-        .catch((err) => {
-          done(err);
-        });
+      if (!userMail) {
+        logger.error(`[LDAP] Configuration error, cant map mail and username`, { user, userMail, userName });
+        done(null);
+      } else {
+        logger.debug(`[LDAP] Connecting/creating account with ${userMail} [name=${userName}]`);
+        loginFromProvider(userMail, userName || userMail)
+          .then((token) => {
+            done(null, token);
+          })
+          .catch((err) => {
+            logger.error(`[LDAP] Login error`, { error: err });
+            done(err);
+          });
+      }
     });
     passport.use('ldapauth', ldapStrategy);
     providers.push({ name: providerIdent, type: AUTH_FORM, provider: 'ldapauth' });
@@ -119,12 +130,14 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const client = new Client(config);
       const options = { client, params: { scope: 'openid email profile' } };
       const openIDStrategy = new OpenIDStrategy(options, (tokenset, userinfo, done) => {
+        logger.debug(`[OpenID] Successfully logged`, { userinfo });
         const { email, name } = userinfo;
         loginFromProvider(email, name || email)
           .then((token) => {
             done(null, token);
           })
           .catch((err) => {
+            logger.error(`[OpenID] Login error`, { error: err });
             done(err);
           });
       });
@@ -138,6 +151,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     const facebookStrategy = new FacebookStrategy(facebookOptions, (accessToken, refreshToken, profile, done) => {
       // eslint-disable-next-line no-underscore-dangle
       const data = profile._json;
+      logger.debug(`[Facebook] Successfully logged`, { profile: data });
       const name = `${data.last_name} ${data.first_name}`;
       const { email } = data;
       loginFromProvider(email, data.first_name && data.last_name ? name : email)
@@ -145,6 +159,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           done(null, token);
         })
         .catch((err) => {
+          logger.error(`[Facebook] Login error`, { error: err });
           done(err);
         });
     });
@@ -155,6 +170,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     const specificConfig = { scope: 'email' };
     const googleOptions = { ...mappedConfig, ...specificConfig };
     const googleStrategy = new GoogleStrategy(googleOptions, (token, tokenSecret, profile, done) => {
+      logger.debug(`[Google] Successfully logged`, { profile });
       const email = head(profile.emails).value;
       const name = profile.displayNamel;
       // let picture = head(profile.photos).value;
@@ -163,6 +179,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           done(null, loggedToken);
         })
         .catch((err) => {
+          logger.error(`[Google] Login error`, { error: err });
           done(err);
         });
     });
@@ -173,6 +190,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     const specificConfig = { scope: 'user:email' };
     const githubOptions = { ...mappedConfig, ...specificConfig };
     const githubStrategy = new GithubStrategy(githubOptions, (token, tokenSecret, profile, done) => {
+      logger.debug(`[Github] Successfully logged`, { profile });
       const { displayName } = profile;
       const email = head(profile.emails).value;
       // let picture = profile.avatar_url;
@@ -181,6 +199,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           done(null, loggedToken);
         })
         .catch((err) => {
+          logger.error(`[Github] Login error`, { error: err });
           done(err);
         });
     });
@@ -189,6 +208,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
   }
   if (strategy === 'Auth0Strategy') {
     const auth0Strategy = new Auth0Strategy(mappedConfig, (accessToken, refreshToken, extraParams, profile, done) => {
+      logger.debug(`[Auth0] Successfully logged`, { profile });
       const userName = profile.displayName;
       const email = head(profile.emails).value;
       loginFromProvider(email, userName || email)
@@ -196,6 +216,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           done(null, token);
         })
         .catch((err) => {
+          logger.error(`[Auth0] Login error`, { error: err });
           done(err);
         });
     });

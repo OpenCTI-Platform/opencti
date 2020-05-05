@@ -2,6 +2,7 @@ import { assoc, dissoc, map, pipe } from 'ramda';
 import { createEntity, listEntities, loadEntityById, loadEntityByStixId } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
+import { addPerson } from './user';
 
 export const findById = async (identityId) => {
   let data;
@@ -38,8 +39,9 @@ export const findAll = async (args) => {
 
 export const addIdentity = async (user, identity) => {
   const identityToCreate = dissoc('type', identity);
-  const created = await createEntity(user, identityToCreate, identity.type, {
-    stixIdType: identity.type !== 'Threat-Actor' ? 'identity' : 'threat-actor',
-  });
+  if (identity.type.toLowerCase() === 'user') {
+    return addPerson(user, identityToCreate);
+  }
+  const created = await createEntity(user, identityToCreate, identity.type, { stixIdType: 'identity' });
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };

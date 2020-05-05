@@ -1622,9 +1622,6 @@ export const createEntity = async (user, entity, type, opts = {}) => {
     dissoc('relationRefs'),
     dissoc('observableRefs')
   )(entity);
-  if (type === 'User' && !entity.user_email) {
-    data = assoc('user_email', `${uuid()}@mail.com`, data);
-  }
   // For stix domain entity, force the initialization of the alias list.
   if (modelType === TYPE_STIX_DOMAIN_ENTITY) {
     const alias = data.alias ? data.alias : [''];
