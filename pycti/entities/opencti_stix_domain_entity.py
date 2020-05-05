@@ -144,6 +144,7 @@ class StixDomainEntity:
                 }
             }
             ... on Malware {
+                is_family
                 killChainPhases {
                     edges {
                         node {
@@ -280,6 +281,7 @@ class StixDomainEntity:
         after = kwargs.get("after", None)
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
+        custom_attributes = kwargs.get("customAttributes", None)
         get_all = kwargs.get("getAll", False)
         if get_all:
             first = 500
@@ -295,7 +297,7 @@ class StixDomainEntity:
                         edges {
                             node {
                                 """
-            + self.properties
+            + (custom_attributes if custom_attributes is not None else self.properties)
             + """
                         }
                     }
@@ -386,7 +388,9 @@ class StixDomainEntity:
                 result["data"]["stixDomainEntity"]
             )
         elif filters is not None:
-            result = self.list(types=types, filters=filters)
+            result = self.list(
+                types=types, filters=filters, customAttribute=custom_attributes
+            )
             if len(result) > 0:
                 return result[0]
             else:

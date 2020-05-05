@@ -360,7 +360,7 @@ class AttackPattern:
                 filters=[{"key": "external_id", "values": [external_id]}]
             )
         if object_result is not None:
-            if update or object_result["createdByRef"] == created_by_ref:
+            if update or object_result["createdByRefId"] == created_by_ref:
                 # name
                 if object_result["name"] != name:
                     self.opencti.stix_domain_entity.update_field(
@@ -411,13 +411,15 @@ class AttackPattern:
                     and object_result["external_id"] != external_id
                 ):
                     self.opencti.stix_domain_entity.update_field(
-                        id=object_result["id"], key="external_id", value=external_id
+                        id=object_result["id"],
+                        key="external_id",
+                        value=str(external_id),
                     )
                     object_result["external_id"] = external_id
                 # confidence
                 if confidence is not None and object_result["confidence"] != confidence:
                     self.opencti.stix_domain_entity.update_field(
-                        id=object_result["id"], key="confidence", value=confidence
+                        id=object_result["id"], key="confidence", value=str(confidence)
                     )
                     object_result["confidence"] = confidence
             return object_result

@@ -124,6 +124,7 @@ class StixObservable:
         after = kwargs.get("after", None)
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
+        custom_attributes = kwargs.get("customAttributes", None)
         get_all = kwargs.get("getAll", False)
         if get_all:
             first = 500
@@ -138,7 +139,7 @@ class StixObservable:
                     edges {
                         node {
                             """
-            + self.properties
+            + (custom_attributes if custom_attributes is not None else self.properties)
             + """
                         }
                     }
@@ -225,7 +226,7 @@ class StixObservable:
                 result["data"]["stixObservable"]
             )
         elif filters is not None:
-            result = self.list(filters=filters)
+            result = self.list(filters=filters, customAttributes=custom_attributes)
             if len(result) > 0:
                 return result[0]
             else:
@@ -329,7 +330,7 @@ class StixObservable:
             customAttributes=custom_attributes,
         )
         if object_result is not None:
-            if update or object_result["createdByRef"] == created_by_ref:
+            if update or object_result["createdByRefId"] == created_by_ref:
                 if (
                     description is not None
                     and object_result["description"] != "description"

@@ -429,7 +429,7 @@ class Opinion:
                 custom_attributes=custom_attributes,
             )
         if object_result is not None:
-            if update or object_result["createdByRef"] == created_by_ref:
+            if update or object_result["createdByRefId"] == created_by_ref:
                 if name is not None and object_result["name"] != name:
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"], key="name", value=name
