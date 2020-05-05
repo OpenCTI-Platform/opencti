@@ -550,51 +550,28 @@ class StixSighting:
         if id is not None and entity is None:
             entity = self.read(id=id)
         if entity is not None:
-            roles = self.opencti.resolve_role(
-                entity["relationship_type"],
-                entity["from"]["entity_type"],
-                entity["to"]["entity_type"],
-            )
-            if roles is not None:
-                final_from_id = entity["from"]["stix_id_key"]
-                final_to_id = entity["to"]["stix_id_key"]
-            else:
-                roles = self.opencti.resolve_role(
-                    entity["relationship_type"],
-                    entity["to"]["entity_type"],
-                    entity["from"]["entity_type"],
-                )
-                if roles is not None:
-                    final_from_id = entity["to"]["stix_id_key"]
-                    final_to_id = entity["from"]["stix_id_key"]
-
             stix_sighting = dict()
             stix_sighting["id"] = entity["stix_id_key"]
-            stix_sighting["type"] = "relationship"
+            stix_sighting["type"] = "sighting"
             stix_sighting["spec_version"] = SPEC_VERSION
-            stix_sighting["relationship_type"] = entity["relationship_type"]
+            stix_sighting["sighting_of_ref"] = entity["from"]["stix_id_key"]
+            stix_sighting["where_sighted_refs"] = entity["to"]["stix_id_key"]
             if self.opencti.not_empty(entity["description"]):
                 stix_sighting["description"] = entity["description"]
-            stix_sighting["source_ref"] = final_from_id
-            stix_sighting["target_ref"] = final_to_id
-            stix_sighting[CustomProperties.SOURCE_REF] = final_from_id
-            stix_sighting[CustomProperties.TARGET_REF] = final_to_id
             stix_sighting["created"] = self.opencti.stix2.format_date(entity["created"])
             stix_sighting["modified"] = self.opencti.stix2.format_date(
                 entity["modified"]
             )
             if self.opencti.not_empty(entity["first_seen"]):
-                stix_sighting[
-                    CustomProperties.FIRST_SEEN
-                ] = self.opencti.stix2.format_date(entity["first_seen"])
+                stix_sighting["first_seen"] = self.opencti.stix2.format_date(
+                    entity["first_seen"]
+                )
             if self.opencti.not_empty(entity["last_seen"]):
-                stix_sighting[
-                    CustomProperties.LAST_SEEN
-                ] = self.opencti.stix2.format_date(entity["last_seen"])
-            if self.opencti.not_empty(entity["weight"]):
-                stix_sighting[CustomProperties.WEIGHT] = entity["weight"]
-            if self.opencti.not_empty(entity["role_played"]):
-                stix_sighting[CustomProperties.ROLE_PLAYED] = entity["role_played"]
+                stix_sighting["last_seen"] = self.opencti.stix2.format_date(
+                    entity["last_seen"]
+                )
+            if self.opencti.not_empty(entity["confidence"]):
+                stix_sighting["confidence"] = entity["confidence"]
             stix_sighting[CustomProperties.ID] = entity["id"]
             return self.opencti.stix2.prepare_export(
                 entity, stix_sighting, mode, max_marking_definition_entity

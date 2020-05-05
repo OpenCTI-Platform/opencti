@@ -319,8 +319,10 @@ class OpenCTIApiClient:
             if "relation" in data["createdByRef"]:
                 row["remote_relation_id"] = data["createdByRef"]["relation"]["id"]
             data["createdByRef"] = row
+            data["createdByRefId"] = row["id"]
         else:
             data["createdByRef"] = None
+            data["createdByRefId"] = None
         if "markingDefinitions" in data:
             data["markingDefinitions"] = self.process_multiple(
                 data["markingDefinitions"]

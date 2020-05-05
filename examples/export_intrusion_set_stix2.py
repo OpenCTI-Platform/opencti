@@ -17,7 +17,7 @@ intrusion_set = opencti_api_client.intrusion_set.read(
 
 # Create the bundle
 bundle = opencti_api_client.stix2.export_entity(
-    "intrusion-set", intrusion_set["id"], "full"
+    "indicator", "356fea34-f7f5-4110-937c-47c9a5abb8fa", "full"
 )
 json_bundle = json.dumps(bundle, indent=4)
 

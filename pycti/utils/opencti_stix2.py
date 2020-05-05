@@ -2168,7 +2168,7 @@ class OpenCTIStix2:
                 imported_elements.append({"id": item["id"], "type": item["type"]})
         end_time = time.time()
         self.opencti.log(
-            "info", "Relationships imported in: %ssecs" % round(end_time - start_time)
+            "info", "Sightings imported in: %ssecs" % round(end_time - start_time)
         )
 
         # Reports

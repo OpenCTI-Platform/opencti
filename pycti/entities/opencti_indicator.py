@@ -20,6 +20,8 @@ class Indicator:
             graph_data
             indicator_pattern
             pattern_type
+            detection
+            confidence
             valid_from
             valid_until
             score
@@ -243,7 +245,7 @@ class Indicator:
             result = self.opencti.query(query, {"id": id})
             return self.opencti.process_multiple_fields(result["data"]["indicator"])
         elif filters is not None:
-            result = self.list(filters=filters)
+            result = self.list(filters=filters, customAttributes=custom_attributes)
             if len(result) > 0:
                 return result[0]
             else:
@@ -390,7 +392,7 @@ class Indicator:
         """
         object_result = None
         if stix_id_key is not None:
-            object_result = self.opencti.indicator.read(
+            object_result = self.read(
                 id=stix_id_key, customAttributes=custom_attributes
             )
         if object_result is None:
@@ -405,7 +407,7 @@ class Indicator:
                 customAttributes=custom_attributes,
             )
         if object_result is not None:
-            if update or object_result["createdByRef"] == created_by_ref:
+            if update or object_result["createdByRefId"] == created_by_ref:
                 # name
                 if name is not None and object_result["name"] != name:
                     self.opencti.stix_domain_entity.update_field(
@@ -424,19 +426,21 @@ class Indicator:
                 # score
                 if score is not None and object_result["score"] != score:
                     self.opencti.stix_domain_entity.update_field(
-                        id=object_result["id"], key="score", value=score
+                        id=object_result["id"], key="score", value=str(score)
                     )
                     object_result["score"] = score
                 # confidence
                 if confidence is not None and object_result["confidence"] != confidence:
                     self.opencti.stix_domain_entity.update_field(
-                        id=object_result["id"], key="confidence", value=confidence
+                        id=object_result["id"], key="confidence", value=str(confidence)
                     )
                     object_result["confidence"] = confidence
                 # detection
                 if detection is not None and object_result["detection"] != detection:
                     self.opencti.stix_domain_entity.update_field(
-                        id=object_result["id"], key="detection", value=detection
+                        id=object_result["id"],
+                        key="detection",
+                        value=str(detection).lower(),
                     )
                     object_result["detection"] = detection
             return object_result
