@@ -179,6 +179,7 @@ class StixRelationContainer extends Component {
         to.from.id
       }/knowledge/relations`
       : resolveLink(to.entity_type);
+    console.log(paddingRight);
     return (
       <div className={classes.container}>
         <Link to={`${linkFrom}/${from.id}`}>

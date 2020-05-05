@@ -15,6 +15,7 @@ import FileManager from '../../common/files/FileManager';
 import VulnerabilityPopover from './VulnerabilityPopover';
 import Loader from '../../../../components/Loader';
 import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
+import VulnerabilityIndicators from './VulnerabilityIndicators';
 
 const subscription = graphql`
   subscription RootVulnerabilitySubscription($id: ID!) {
@@ -115,6 +116,15 @@ class RootVulnerability extends Component {
                     path="/dashboard/techniques/vulnerabilities/:vulnerabilityId/knowledge"
                     render={(routeProps) => (
                       <VulnerabilityKnowledge
+                        {...routeProps}
+                        vulnerability={props.vulnerability}
+                      />
+                    )}
+                  />
+                  <Route
+                    path="/dashboard/techniques/vulnerabilities/:vulnerabilityId/indicators"
+                    render={(routeProps) => (
+                      <VulnerabilityIndicators
                         {...routeProps}
                         vulnerability={props.vulnerability}
                       />
