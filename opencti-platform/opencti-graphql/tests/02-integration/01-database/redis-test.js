@@ -16,7 +16,7 @@ describe('Redis basic and utils', () => {
   it('should redis in correct version', async () => {
     // Just wait one second to let redis client initialize
     const redisVersion = await getRedisVersion();
-    expect(redisVersion).toEqual(expect.stringMatching(/^5\./g));
+    expect(redisVersion).toEqual(expect.stringMatching(/^6\./g));
   });
 });
 

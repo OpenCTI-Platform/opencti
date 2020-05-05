@@ -65,7 +65,7 @@ services:
 - name: grakn
   image: graknlabs/grakn:1.6.2
 - name: redis
-  image: redis:5.0.8
+  image: redis:6.0.1
 - name: elastic
   image: docker.elastic.co/elasticsearch/elasticsearch:7.6.2
   environment:
