@@ -120,8 +120,8 @@ class StixObservableRelation:
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
         get_all = kwargs.get("getAll", False)
+        with_pagination = kwargs.get("withPagination", False)
         force_natural = kwargs.get("forceNatural", False)
-
         if get_all:
             first = 500
 
@@ -178,7 +178,9 @@ class StixObservableRelation:
                 "forceNatural": force_natural,
             },
         )
-        return self.opencti.process_multiple(result["data"]["stixObservableRelations"])
+        return self.opencti.process_multiple(
+            result["data"]["stixObservableRelations"], with_pagination
+        )
 
     """
         Read a stix_observable_relation object

@@ -112,6 +112,7 @@ class Tool:
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
         get_all = kwargs.get("getAll", False)
+        with_pagination = kwargs.get("withPagination", False)
         if get_all:
             first = 500
 
@@ -151,7 +152,7 @@ class Tool:
                 "orderMode": order_mode,
             },
         )
-        return self.opencti.process_multiple(result["data"]["tools"])
+        return self.opencti.process_multiple(result["data"]["tools"], with_pagination)
 
     """
         Read a Tool object

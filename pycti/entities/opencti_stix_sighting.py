@@ -133,6 +133,7 @@ class StixSighting:
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
         get_all = kwargs.get("getAll", False)
+        with_pagination = kwargs.get("withPagination", False)
         force_natural = kwargs.get("forceNatural", False)
         if get_all:
             first = 500
@@ -187,7 +188,9 @@ class StixSighting:
                 "forceNatural": force_natural,
             },
         )
-        return self.opencti.process_multiple(result["data"]["stixSightings"])
+        return self.opencti.process_multiple(
+            result["data"]["stixSightings"], with_pagination
+        )
 
     """
         Read a stix_sighting object

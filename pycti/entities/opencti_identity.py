@@ -116,6 +116,7 @@ class Identity:
         order_mode = kwargs.get("orderMode", None)
         custom_attributes = kwargs.get("customAttributes", None)
         get_all = kwargs.get("getAll", False)
+        with_pagination = kwargs.get("withPagination", False)
         if get_all:
             first = 500
 
@@ -156,7 +157,9 @@ class Identity:
                 "orderMode": order_mode,
             },
         )
-        return self.opencti.process_multiple(result["data"]["identities"])
+        return self.opencti.process_multiple(
+            result["data"]["identities"], with_pagination
+        )
 
     """
         Read a Identity object

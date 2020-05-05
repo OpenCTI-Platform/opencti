@@ -31,6 +31,7 @@ class Tag:
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
         get_all = kwargs.get("getAll", False)
+        with_pagination = kwargs.get("withPagination", False)
         if get_all:
             first = 500
 
@@ -69,7 +70,7 @@ class Tag:
                 "orderMode": order_mode,
             },
         )
-        return self.opencti.process_multiple(result["data"]["tags"])
+        return self.opencti.process_multiple(result["data"]["tags"], with_pagination)
 
     """
         Read a Tag object

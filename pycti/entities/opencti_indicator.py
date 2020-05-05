@@ -149,6 +149,7 @@ class Indicator:
         order_mode = kwargs.get("orderMode", None)
         custom_attributes = kwargs.get("customAttributes", None)
         get_all = kwargs.get("getAll", False)
+        with_pagination = kwargs.get("withPagination", False)
         if get_all:
             first = 500
 
@@ -211,7 +212,9 @@ class Indicator:
                 final_data = final_data + data
             return final_data
         else:
-            return self.opencti.process_multiple(result["data"]["indicators"])
+            return self.opencti.process_multiple(
+                result["data"]["indicators"], with_pagination
+            )
 
     """
         Read a Indicator object
