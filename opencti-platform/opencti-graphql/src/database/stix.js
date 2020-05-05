@@ -484,7 +484,7 @@ export const stixSightingToStix = async (stixRelation, extra = null, onlyBase = 
   if (extra && extra.from && extra.to) {
     baseData = pipe(
       assoc('sighting_of_ref', extra.from.stix_id_key),
-      assoc('where_sighted_refs', [extra.to.stix_id_key]),
+      assoc('where_sighted_refs', [extra.to.stix_id_key])
     )(baseData);
   }
   if (onlyBase) {
@@ -526,8 +526,6 @@ export const relationEmbeddedToStix = async (relationEmbedded, eventType, extra)
   } else if (relationEmbedded.relationship_type === 'object_refs') {
     data = assoc('object_refs', objectRefsToStix([{ node: extra.to }]), data);
   } else if (relationEmbedded.relationship_type === 'observable_refs') {
-    data = assoc('object_refs', objectRefsToStix([{ node: extra.to }]), data);
-  } else if (relationEmbedded.relationship_type === 'relation_refs') {
     data = assoc('object_refs', objectRefsToStix([{ node: extra.to }]), data);
   } else if (relationEmbedded.relationship_type === 'tagged') {
     data = assoc('x_opencti_tags', tagsToStix([{ node: extra.to }]), data);
@@ -587,6 +585,7 @@ export const convertDataToStix = async (data, eventType = null, eventExtraData =
       return stixSightingToStix(data, eventExtraData, onlyBase);
     case 'relation_embedded':
       return relationEmbeddedToStix(data, eventType, eventExtraData);
+    /* istanbul ignore next */
     default:
       /* istanbul ignore next */
       throw new Error('[STIX] Entity type is unknown, cannot convert to STIX');

@@ -386,7 +386,9 @@ describe('Grakn entities listing', () => {
       const options = { orderBy: 'rel_localization.internal_id_key', orderMode: 'desc', noCache };
       const identities = await listEntities(['Identity'], ['name'], options);
       expect(identities.edges.length).toEqual(4);
-      expect(head(identities.edges).node.name).toEqual('Hietzing');
+      // result here could be Western Europe or Hietzing, because rel_localization.internal_key contain 2 values
+      const firstResults = ['Hietzing', 'Western Europe'];
+      expect(includes(head(identities.edges).node.name, firstResults)).toBeTruthy();
       expect(last(identities.edges).node.name).toEqual('Europe');
     }
   });
