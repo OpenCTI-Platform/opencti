@@ -1,14 +1,6 @@
 import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
-import {
-  addTag,
-  findAll,
-  findById,
-  tagCleanContext,
-  tagDelete,
-  tagEditContext,
-  tagEditField,
-} from '../domain/tag';
+import { addTag, findAll, findById, tagCleanContext, tagDelete, tagEditContext, tagEditField } from '../domain/tag';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';

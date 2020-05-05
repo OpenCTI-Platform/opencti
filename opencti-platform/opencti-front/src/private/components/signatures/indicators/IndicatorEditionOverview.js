@@ -22,6 +22,7 @@ import { commitMutation } from '../../../../relay/environment';
 import DatePickerField from '../../../../components/DatePickerField';
 import CreatedByRefField from '../../common/form/CreatedByRefField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import SwitchField from '../../../../components/SwitchField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -113,6 +114,7 @@ const indicatorValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
   score: Yup.number(),
   description: Yup.string(),
+  detection: Yup.boolean(),
 });
 
 class IndicatorEditionOverviewComponent extends Component {
@@ -260,6 +262,7 @@ class IndicatorEditionOverviewComponent extends Component {
         'valid_from',
         'valid_until',
         'score',
+        'detection',
         'createdByRef',
         'killChainPhases',
         'markingDefinitions',
@@ -374,6 +377,20 @@ class IndicatorEditionOverviewComponent extends Component {
               }
               onChange={this.handleChangeMarkingDefinitions.bind(this)}
             />
+            <Field
+                component={SwitchField}
+                type="checkbox"
+                name="detection"
+                label={t('Detection')}
+                containerstyle={{ marginTop: 20 }}
+                onChange={this.handleSubmitField.bind(this)}
+                helperText={
+                  <SubscriptionFocus
+                      context={context}
+                      fieldName="negative"
+                  />
+                }
+            />
           </Form>
         )}
       </Formik>
@@ -401,6 +418,7 @@ const IndicatorEditionOverview = createFragmentContainer(
         valid_until
         score
         description
+        detection
         createdByRef {
           node {
             id

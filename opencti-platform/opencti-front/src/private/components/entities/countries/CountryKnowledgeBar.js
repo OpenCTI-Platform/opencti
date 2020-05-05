@@ -12,7 +12,7 @@ import { AccountBalance } from '@material-ui/icons';
 import { Gauge, TargetVariant, CityVariant } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawer: {
     minHeight: '100vh',
     width: 260,

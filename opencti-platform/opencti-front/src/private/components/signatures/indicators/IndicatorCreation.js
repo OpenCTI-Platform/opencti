@@ -24,6 +24,7 @@ import CreatedByRefField from '../../common/form/CreatedByRefField';
 import TagsField from '../../common/form/TagsField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 import TypesField from '../TypesField';
+import SwitchField from "../../../../components/SwitchField";
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -95,6 +96,7 @@ const indicatorValidation = (t) => Yup.object().shape({
   pattern_type: Yup.string().required(t('This field is required')),
   main_observable_type: Yup.string().required(t('This field is required')),
   description: Yup.string(),
+  detection: Yup.boolean(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -202,6 +204,7 @@ class IndicatorCreation extends Component {
                 createdByRef: '',
                 markingDefinitions: [],
                 tags: [],
+                detection: false,
               }}
               validationSchema={indicatorValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -292,6 +295,13 @@ class IndicatorCreation extends Component {
                   <MarkingDefinitionsField
                     name="markingDefinitions"
                     style={{ marginTop: 20, width: '100%' }}
+                  />
+                  <Field
+                      component={SwitchField}
+                      type="checkbox"
+                      name="detection"
+                      label={t('Detection')}
+                      containerstyle={{ marginTop: 20 }}
                   />
                   <div className={classes.buttons}>
                     <Button

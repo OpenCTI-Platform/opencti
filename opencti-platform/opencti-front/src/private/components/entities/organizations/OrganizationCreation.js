@@ -195,7 +195,7 @@ class OrganizationCreation extends Component {
               }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
-                    component={TextField}  name="name" label={t('Name')} fullWidth={true} />
+                    component={TextField} name="name" label={t('Name')} fullWidth={true} />
                   <Field
                     component={TextField}
                     name="description"

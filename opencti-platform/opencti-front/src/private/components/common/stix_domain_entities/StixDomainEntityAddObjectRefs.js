@@ -20,7 +20,7 @@ import StixDomainEntityAddObjectRefsLines, {
 import StixDomainEntityCreation from './StixDomainEntityCreation';
 import { QueryRenderer } from '../../../../relay/environment';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',

@@ -21,8 +21,8 @@ const detectedLocale = R.pipe(
   R.values(), // Get values of the properties
   R.flatten(), // flatten all arrays
   R.reject(R.isNil), // Remove undefined values
-  R.map(x => x.substr(0, 2)),
-  R.find(x => R.contains(x, availableLanguages)), // Returns first language matched in languages
+  R.map((x) => x.substr(0, 2)),
+  R.find((x) => R.contains(x, availableLanguages)), // Returns first language matched in languages
 );
 
 export default detectedLocale(window.navigator) || 'en'; // If no locale is detected, fallback to 'en'

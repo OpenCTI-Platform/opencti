@@ -11,7 +11,7 @@ import Drawer from '@material-ui/core/Drawer';
 import { Clear } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   bottomNav: {
     zIndex: 1000,
     padding: '10px 274px 10px 84px',

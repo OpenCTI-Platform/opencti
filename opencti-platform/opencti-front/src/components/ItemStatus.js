@@ -11,6 +11,7 @@ const styles = () => ({
     marginRight: 7,
     textTransform: 'uppercase',
     borderRadius: '0',
+    width: 90,
   },
   chipInList: {
     fontSize: 12,
@@ -19,6 +20,7 @@ const styles = () => ({
     float: 'left',
     textTransform: 'uppercase',
     borderRadius: '0',
+    width: 90,cd
   },
 });
 
@@ -50,7 +52,7 @@ class ItemMarking extends Component {
     const {
       classes, label, status, variant,
     } = this.props;
-    const style = (variant === 'inList') ? classes.chipInList : classes.chip;
+    const style = variant === 'inList' ? classes.chipInList : classes.chip;
     switch (status) {
       case 0:
         return (

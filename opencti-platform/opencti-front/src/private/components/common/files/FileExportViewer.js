@@ -28,7 +28,7 @@ const styles = () => ({
 });
 
 const FileExportViewerBase = ({
-  entity, relay, t, classes, handleOpenExport, isExportPossible
+  entity, relay, t, classes, handleOpenExport, isExportPossible,
 }) => {
   const { id, exportFiles } = entity;
   const { edges } = exportFiles;

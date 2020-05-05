@@ -19,7 +19,7 @@ import {
 } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawer: {
     minHeight: '100vh',
     width: 260,

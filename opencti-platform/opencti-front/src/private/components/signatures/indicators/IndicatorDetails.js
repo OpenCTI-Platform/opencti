@@ -36,6 +36,9 @@ class IndicatorDetailsComponent extends Component {
             {t('Indicator pattern')}
           </Typography>
           <pre>{indicator.indicator_pattern}</pre>
+          <div style={{ marginTop: 20 }}>
+            <StixDomainEntityTags tags={indicator.tags} id={indicator.id} />
+          </div>
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -68,9 +71,6 @@ class IndicatorDetailsComponent extends Component {
             {t('Score')}
           </Typography>
           <ItemScore score={indicator.score} />
-          <div style={{ marginTop: 20 }}>
-            <StixDomainEntityTags tags={indicator.tags} id={indicator.id} />
-          </div>
         </Paper>
       </div>
     );
@@ -92,6 +92,7 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
       valid_from
       valid_until
       score
+      detection
       creator {
           id
           name

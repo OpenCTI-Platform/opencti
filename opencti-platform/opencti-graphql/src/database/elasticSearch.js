@@ -55,7 +55,6 @@ const dateFields = [
   'valid_until_month',
   'observable_date',
   'event_date',
-  'default_assignation', // TODO @JRI Ask @Sam for this.
 ];
 const numericOrBooleanFields = [
   'object_status',
@@ -68,6 +67,8 @@ const numericOrBooleanFields = [
   'is_family',
   'number',
   'negative',
+  'detection',
+  'default_assignation',
 ];
 const virtualTypes = ['Identity', 'Email', 'File', 'Stix-Domain-Entity', 'Stix-Domain', 'Stix-Observable'];
 

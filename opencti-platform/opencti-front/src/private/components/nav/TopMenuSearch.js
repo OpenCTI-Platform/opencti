@@ -6,7 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import inject18n from '../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   button: {
     marginRight: theme.spacing(1),
     padding: '2px 5px 2px 5px',

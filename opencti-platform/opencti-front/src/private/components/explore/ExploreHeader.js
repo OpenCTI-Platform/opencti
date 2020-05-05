@@ -36,7 +36,7 @@ class ExploreHeaderComponent extends Component {
           {stixDomainEntity.name}
         </Typography>
         <div className={classes.aliases}>
-          {propOr([], 'alias', stixDomainEntity).map(label => (label.length > 0 ? (
+          {propOr([], 'alias', stixDomainEntity).map((label) => (label.length > 0 ? (
               <Chip
                 key={label}
                 classes={{ root: classes.alias }}

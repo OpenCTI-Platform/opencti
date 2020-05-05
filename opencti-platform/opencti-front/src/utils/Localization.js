@@ -271,8 +271,6 @@ const i18n = {
       'Registered connectors': 'Connecteurs enregistrés',
       'The relations attached to selected entities will be copied to the merged entity.':
         "Les relations attachées aux entités sélectionnées seront copiées sur l'entité fusionnée.",
-      'Sighed a false positive (negative feedback)?':
-        'Faux positif observé (feedback négatif) ?',
       Scope: 'Périmètre',
       Modified: 'Modifié',
       'No import connectors on this platform':

@@ -9,10 +9,10 @@ import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { AccountBalance, Map } from '@material-ui/icons';
-import { Gauge, SourcePull, TargetVariant } from "mdi-material-ui";
+import { Gauge, SourcePull, TargetVariant } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawer: {
     minHeight: '100vh',
     width: 260,

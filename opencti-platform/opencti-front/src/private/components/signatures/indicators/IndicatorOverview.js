@@ -10,6 +10,7 @@ import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemPatternType from '../../../../components/ItemPatternType';
+import ItemStatus from '../../../../components/ItemStatus';
 
 const styles = () => ({
   paper: {
@@ -36,6 +37,17 @@ class IndicatorOverviewComponent extends Component {
             {t('Pattern type')}
           </Typography>
           <ItemPatternType label={indicator.pattern_type} />
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
+            {t('Detection')}
+          </Typography>
+          <ItemStatus
+            label={indicator.detection ? t('YES') : t('NO')}
+            status={indicator.detection ? 2 : 0}
+          />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -92,6 +104,7 @@ const IndicatorOverview = createFragmentContainer(IndicatorOverviewComponent, {
       created
       modified
       pattern_type
+      detection
       createdByRef {
         node {
           id

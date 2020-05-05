@@ -152,7 +152,6 @@ export const commitMutation = ({
 });
 
 
-
 export const requestSubscription = (args) => RS(environment, args);
 
 export const fetchQuery = (query, args) => FQ(environment, query, args);

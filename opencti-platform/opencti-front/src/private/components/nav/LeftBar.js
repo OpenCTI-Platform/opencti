@@ -25,7 +25,7 @@ import {
   Database,
   Binoculars,
   FlaskOutline,
-  FolderTableOutline
+  FolderTableOutline,
 } from 'mdi-material-ui';
 import { compose } from 'ramda';
 import logo from '../../../resources/images/logo_text.png';

@@ -47,6 +47,9 @@ export const isSubSector = async (sectorId, args) => {
   return numberOfParents > 0;
 };
 export const addSector = async (user, sector) => {
-  const created = await createEntity(user, sector, 'Sector', { modelType: TYPE_STIX_DOMAIN_ENTITY, stixIdType: 'identity' });
+  const created = await createEntity(user, sector, 'Sector', {
+    modelType: TYPE_STIX_DOMAIN_ENTITY,
+    stixIdType: 'identity',
+  });
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };

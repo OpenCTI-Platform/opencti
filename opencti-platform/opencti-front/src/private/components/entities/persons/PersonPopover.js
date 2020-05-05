@@ -106,7 +106,9 @@ class PersonPopover extends Component {
   }
 
   render() {
-    const { classes, t, id, disabled } = this.props;
+    const {
+      classes, t, id, disabled,
+    } = this.props;
     return (
       <div className={classes.container}>
         <IconButton disabled={disabled} onClick={this.handleOpen.bind(this)} aria-haspopup="true">

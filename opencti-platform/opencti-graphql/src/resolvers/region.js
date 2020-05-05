@@ -7,7 +7,7 @@ import {
   stixDomainEntityDeleteRelation,
   stixDomainEntityDelete,
 } from '../domain/stixDomainEntity';
-import { REL_INDEX_PREFIX } from "../database/elasticSearch";
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 const regionResolvers = {
   Query: {

@@ -201,7 +201,7 @@ class UserEditionOverviewComponent extends Component {
         'lastname',
         'language',
         'roles',
-        'token'
+        'token',
       ]),
     )(user);
     return (

@@ -634,7 +634,7 @@ class StixSightingCreationFromEntity extends Component {
                 component={SwitchField}
                 type="checkbox"
                 name="negative"
-                label={t('Sighed a false positive (negative feedback)?')}
+                label={t('False positive')}
                 containerstyle={{ marginTop: 20 }}
               />
               <div className={classes.buttonBack}>

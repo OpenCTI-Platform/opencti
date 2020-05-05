@@ -73,7 +73,7 @@ class ItemConfidence extends Component {
           label={t('Strong')}
         />
       );
-    } else if (level >= 75) {
+    } if (level >= 75) {
       return (
         <Chip
           classes={{ root: style }}
@@ -81,7 +81,7 @@ class ItemConfidence extends Component {
           label={t('Good')}
         />
       );
-    } else if (level >= 50) {
+    } if (level >= 50) {
       return (
         <Chip
           classes={{ root: style }}
@@ -89,7 +89,7 @@ class ItemConfidence extends Component {
           label={t('Moderate')}
         />
       );
-    } else if (level >= 15) {
+    } if (level >= 15) {
       return (
         <Chip
           classes={{ root: style }}

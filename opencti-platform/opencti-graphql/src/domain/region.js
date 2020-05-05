@@ -1,7 +1,15 @@
-import { createEntity, escapeString, findWithConnectedRelations, getSingleValueNumber, listEntities, loadEntityById, loadEntityByStixId } from "../database/grakn";
+import {
+  createEntity,
+  escapeString,
+  findWithConnectedRelations,
+  getSingleValueNumber,
+  listEntities,
+  loadEntityById,
+  loadEntityByStixId,
+} from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { buildPagination, TYPE_STIX_DOMAIN_ENTITY } from "../database/utils";
+import { buildPagination, TYPE_STIX_DOMAIN_ENTITY } from '../database/utils';
 
 export const findById = (regionId) => {
   if (regionId.match(/[a-z-]+--[\w-]{36}/g)) {

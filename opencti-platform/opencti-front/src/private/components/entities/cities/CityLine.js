@@ -8,7 +8,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRightOutlined } from '@material-ui/icons';
-import { CityVariantOutline} from 'mdi-material-ui';
+import { CityVariantOutline } from 'mdi-material-ui';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 

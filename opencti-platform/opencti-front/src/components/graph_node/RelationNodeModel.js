@@ -25,7 +25,7 @@ export default class RelationNodeModel extends NodeModel {
   setExtras(data) {
     this.extras = data;
   }
-  
+
   getPosition() {
     return { x: this.x, y: this.y };
   }

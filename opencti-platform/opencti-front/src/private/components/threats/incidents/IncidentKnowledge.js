@@ -13,7 +13,7 @@ import IncidentPopover from './IncidentPopover';
 import IncidentKnowledgeBar from './IncidentKnowledgeBar';
 import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
 import StixDomainEntityKillChain from '../../common/stix_domain_entities/StixDomainEntityKillChain';
-import StixDomainEntityVictimology from "../../common/stix_domain_entities/StixDomainEntityVictimology";
+import StixDomainEntityVictimology from '../../common/stix_domain_entities/StixDomainEntityVictimology';
 
 const styles = () => ({
   container: {
