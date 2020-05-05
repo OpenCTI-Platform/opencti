@@ -46,10 +46,10 @@ class ConfidenceField extends Component {
         fullWidth={true}
         containerstyle={containerstyle}
       >
-        <MenuItem value="15">{t('Low')}</MenuItem>
-        <MenuItem value="50">{t('Moderate')}</MenuItem>
-        <MenuItem value="75">{t('Good')}</MenuItem>
-        <MenuItem value="85">{t('Strong')}</MenuItem>
+        <MenuItem value={15}>{t('Low')}</MenuItem>
+        <MenuItem value={50}>{t('Moderate')}</MenuItem>
+        <MenuItem value={75}>{t('Good')}</MenuItem>
+        <MenuItem value={85}>{t('Strong')}</MenuItem>
       </Field>
     );
   }
