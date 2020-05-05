@@ -60,7 +60,7 @@ class ItemScore extends Component {
         />
       );
     }
-    if (score <= 40) {
+    if (score <= 50) {
       return (
         <Chip
           classes={{ root: style }}
@@ -69,7 +69,7 @@ class ItemScore extends Component {
         />
       );
     }
-    if (score <= 60) {
+    if (score <= 75) {
       return (
         <Chip
           classes={{ root: style }}
@@ -78,7 +78,7 @@ class ItemScore extends Component {
         />
       );
     }
-    if (score <= 80) {
+    if (score <= 100) {
       return (
         <Chip
           classes={{ root: style }}
