@@ -1105,12 +1105,12 @@ interface Identity {
 }
 
 enum IdentityType {
-  sector
-  organization
-  user
-  region
-  country
-  city
+  Sector
+  Organization
+  User
+  Region
+  Country
+  City
 }
 
 input IdentityAddInput {
