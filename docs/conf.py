@@ -25,6 +25,7 @@ author = "OpenCTI Project"
 # The full version, including alpha/beta/rc tags
 release = "3.2.4"
 
+master_doc = "index"
 
 # -- General configuration ---------------------------------------------------
 
