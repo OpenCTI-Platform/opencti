@@ -6,8 +6,11 @@ from enum import Enum
 
 class ObservableTypes(Enum):
     """These are the possible values for OpenCTI's observable types.
-    Use in conjuction with the STIX custom property 'x_opencti_observable_type'.
+
+    Use in conjunction with the STIX custom property `x_opencti_observable_type`.
+
     ref: https://github.com/OpenCTI-Platform/opencti/blob/8854c2576dc17da9da54e54b116779bd2131617c/opencti-front/src/private/components/report/ReportAddObservable.js
+
     NOTE: should this be a mapping between the stix2 SDO objects (i.e. stix2/v20/sdo.py)?
     """
 
@@ -69,8 +72,7 @@ class StixObservableRelationTypes(Enum):
 
 
 class CustomProperties:
-    """These are the custom properies used by OpenCTI.
-
+    """These are the custom properties used by OpenCTI.
     """
 
     # internal id used by OpenCTI - this will be auto generated
