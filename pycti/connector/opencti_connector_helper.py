@@ -469,7 +469,15 @@ class OpenCTIConnectorHelper:
             "created_by_ref": created_by_ref,
         }
 
-    def stix2_get_entity_objects(self, entity):
+    def stix2_get_entity_objects(self, entity) -> list:
+        """process a stix2 entity
+
+        :param entity: valid stix2 entity
+        :type entity:
+        :return: entity objects as list
+        :rtype: list
+        """
+
         items = [entity]
         # Get embedded objects
         embedded_objects = self.stix2_get_embedded_objects(entity)
@@ -482,7 +490,15 @@ class OpenCTIConnectorHelper:
 
         return items
 
-    def stix2_get_relationship_objects(self, relationship):
+    def stix2_get_relationship_objects(self, relationship) -> list:
+        """get a list of relations for a stix2 relationship object
+
+        :param relationship: valid stix2 relationship
+        :type relationship:
+        :return: list of relations objects
+        :rtype: list
+        """
+
         items = [relationship]
         # Get source ref
         if relationship["source_ref"] in self.cache_index:
@@ -503,7 +519,15 @@ class OpenCTIConnectorHelper:
 
         return items
 
-    def stix2_get_report_objects(self, report):
+    def stix2_get_report_objects(self, report) -> list:
+        """get a list of items for a stix2 report object
+
+        :param report: valid stix2 report object
+        :type report:
+        :return: list of items for a stix2 report object
+        :rtype: list
+        """
+
         items = [report]
         # Add all object refs
         for object_ref in report["object_refs"]:
@@ -516,7 +540,15 @@ class OpenCTIConnectorHelper:
         return items
 
     @staticmethod
-    def stix2_deduplicate_objects(items):
+    def stix2_deduplicate_objects(items) -> list:
+        """deduplicate stix2 items
+
+        :param items: valid stix2 items
+        :type items:
+        :return: de-duplicated list of items
+        :rtype: list
+        """
+
         ids = []
         final_items = []
         for item in items:
@@ -527,6 +559,14 @@ class OpenCTIConnectorHelper:
 
     @staticmethod
     def stix2_create_bundle(items):
+        """create a stix2 bundle with items
+
+        :param items: valid stix2 items
+        :type items:
+        :return: JSON of the stix2 bundle
+        :rtype:
+        """
+
         bundle = {
             "type": "bundle",
             "id": "bundle--" + str(uuid.uuid4()),
@@ -536,7 +576,17 @@ class OpenCTIConnectorHelper:
         return json.dumps(bundle)
 
     @staticmethod
-    def check_max_tlp(tlp, max_tlp):
+    def check_max_tlp(tlp, max_tlp) -> list:
+        """check the allowed TLP levels for a TLP string
+
+        :param tlp: string for TLP level to check
+        :type tlp: str
+        :param max_tlp: the highest allowed TLP level
+        :type max_tlp: str
+        :return: list of allowed TLP levels
+        :rtype: list
+        """
+
         allowed_tlps = ["TLP:WHITE"]
         if max_tlp == "TLP:RED":
             allowed_tlps = ["TLP:WHITE", "TLP:GREEN", "TLP:AMBER", "TLP:RED"]

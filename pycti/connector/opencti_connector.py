@@ -19,6 +19,19 @@ class ConnectorType(Enum):
 
 
 class OpenCTIConnector:
+    """Main class for OpenCTI connector
+
+    :param connector_id: id for the connector (valid uuid4)
+    :type connector_id: str
+    :param connector_name: name for the connector
+    :type connector_name: str
+    :param connector_type: valid OpenCTI connector type (see `ConnectorType`)
+    :type connector_type: str
+    :param scope: connector scope
+    :type scope: str
+    :raises ValueError: if the connector type is not valid
+    """
+
     def __init__(
         self, connector_id: str, connector_name: str, connector_type: str, scope: str
     ):
@@ -29,7 +42,12 @@ class OpenCTIConnector:
             raise ValueError("Invalid connector type: " + connector_type)
         self.scope = scope.split(",")
 
-    def to_input(self):
+    def to_input(self) -> dict:
+        """connector input to use in API query
+
+        :return: dict with connector data
+        :rtype: dict
+        """
         return {
             "input": {
                 "id": self.id,

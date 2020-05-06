@@ -45,10 +45,26 @@ class OpenCTIStix2:
             'Unknown object type "' + stix_object["type"] + '", doing nothing...',
         )
 
-    def convert_markdown(self, text):
+    def convert_markdown(self, text) -> str:
+        """converts input text to markdown style code annotation
+
+        :param text: input text
+        :type text: str
+        :return: sanitized text with markdown style code annotation
+        :rtype: str
+        """
+
         return text.replace("<code>", "`").replace("</code>", "`")
 
     def format_date(self, date):
+        """converts multiple input date formats to OpenCTI style dates
+
+        :param date: input date
+        :type date:
+        :return: OpenCTI style date
+        :rtype: datetime
+        """
+
         if isinstance(date, datetime.date):
             return date.isoformat(timespec="milliseconds").replace("+00:00", "Z")
         if date is not None:
@@ -64,15 +80,33 @@ class OpenCTIStix2:
                 .replace("+00:00", "Z")
             )
 
-    def filter_objects(self, uuids, objects):
+    def filter_objects(self, uuids: list, objects: list) -> list:
+        """filters objects based on UUIDs
+
+        :param uuids: list of UUIDs
+        :type uuids: list
+        :param objects: list of objects to filter
+        :type objects: list
+        :return: list of filtered objects
+        :rtype: list
+        """
+
         result = []
         if objects is not None:
-            for object in objects:
-                if "id" in object and object["id"] not in uuids:
-                    result.append(object)
+            for item in objects:
+                if "id" in item and item["id"] not in uuids:
+                    result.append(item)
         return result
 
-    def pick_aliases(self, stix_object):
+    def pick_aliases(self, stix_object) -> list:
+        """check stix2 object for multiple aliases and return a list
+
+        :param stix_object: valid stix2 object
+        :type stix_object:
+        :return: list of aliases
+        :rtype: list
+        """
+
         # Add aliases
         if CustomProperties.ALIASES in stix_object:
             return stix_object[CustomProperties.ALIASES]
@@ -85,8 +119,18 @@ class OpenCTIStix2:
         return None
 
     def check_max_marking_definition(
-        self, max_marking_definition_entity, entity_marking_definitions
-    ):
+        self, max_marking_definition_entity: str, entity_marking_definitions: list
+    ) -> bool:
+        """checks if a list of marking definitions conforms with a given max level
+
+        :param max_marking_definition_entity: the maximum allowed marking definition level
+        :type max_marking_definition_entity: str, optional
+        :param entity_marking_definitions: list of entities to check
+        :type entity_marking_definitions: list
+        :return: `True` if the list conforms with max marking definition
+        :rtype: bool
+        """
+
         # Max is not set, return True
         if max_marking_definition_entity is None:
             return True
@@ -111,7 +155,19 @@ class OpenCTIStix2:
                 return True
         return False
 
-    def import_bundle_from_file(self, file_path, update=False, types=None):
+    def import_bundle_from_file(self, file_path: str, update=False, types=None) -> List:
+        """import a stix2 bundle from a file
+
+        :param file_path: valid path to the file
+        :type file_path: str
+        :param update: whether to updated data in the database, defaults to False
+        :type update: bool, optional
+        :param types: list of stix2 types, defaults to None
+        :type types: list, optional
+        :return: list of imported stix2 objects
+        :rtype: List
+        """
+
         if types is None:
             types = []
         if not os.path.isfile(file_path):
@@ -124,12 +180,34 @@ class OpenCTIStix2:
         return self.import_bundle(data, update, types)
 
     def import_bundle_from_json(self, json_data, update=False, types=None) -> List:
+        """import a stix2 bundle from JSON data
+
+        :param json_data: JSON data
+        :type json_data:
+        :param update: whether to updated data in the database, defaults to False
+        :type update: bool, optional
+        :param types: list of stix2 types, defaults to None
+        :type types: list, optional
+        :return: list of imported stix2 objects
+        :rtype: List
+        """
+
         if types is None:
             types = []
         data = json.loads(json_data)
         return self.import_bundle(data, update, types)
 
-    def extract_embedded_relationships(self, stix_object, types=None):
+    def extract_embedded_relationships(self, stix_object, types=None) -> dict:
+        """extracts embedded relationship objects from a stix2 entity
+
+        :param stix_object: valid stix2 object
+        :type stix_object:
+        :param types: list of stix2 types, defaults to None
+        :type types: list, optional
+        :return: embedded relationships as dict
+        :rtype: dict
+        """
+
         # Created By Ref
         created_by_ref_id = None
         if "created_by_ref" in stix_object:
@@ -381,7 +459,19 @@ class OpenCTIStix2:
             "reports": reports,
         }
 
-    def import_object(self, stix_object, update=False, types=None):
+    def import_object(self, stix_object, update=False, types=None) -> list:
+        """import a stix2 object
+
+        :param stix_object: valid stix2 object
+        :type stix_object:
+        :param update: whether to updated data in the database, defaults to False
+        :type update: bool, optional
+        :param types: list of stix2 types, defaults to None
+        :type types: list, optional
+        :return: list of imported stix2 objects
+        :rtype: list
+        """
+
         self.opencti.log(
             "info",
             "Importing a " + stix_object["type"] + " (id: " + stix_object["id"] + ")",
