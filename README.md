@@ -5,12 +5,14 @@
 [![GitHub release](https://img.shields.io/github/release/OpenCTI-Platform/client-python.svg)](https://github.com/OpenCTI-Platform/client-python/releases/latest)
 [![Number of PyPI downloads](https://img.shields.io/pypi/dm/pycti.svg)](https://pypi.python.org/pypi/pycti/)
 [![Slack Status](https://slack.luatix.org/badge.svg)](https://slack.luatix.org)
+[![readthedocs](https://readthedocs.org/projects/opencti-client-for-python/badge/?style=flat)](https://opencti-client-for-python.readthedocs.io/en/latest/)
 
-The official OpenCTI Python client helps developers to use the OpenCTI API by providing easy to use methods and utils. This client is also used by some OpenCTI components.
+The official OpenCTI Python client helps developers to use the OpenCTI API by providing easy to use methods and utils.
+This client is also used by some OpenCTI components.
 
-## Python client
+## Install
 
-To install the Python client library, please use `pip`:
+To install the latest Python client library, please use `pip`:
 
 ```bash
 $ pip3 install pycti
@@ -20,11 +22,11 @@ $ pip3 install pycti
 
 ### Client usage
 
-To learn about how to use the OpenCTI Python client and read some examples and cases, refer to [the client documentation](https://www.notion.so/luatix/Python-8adaac485c88475a8f465f99a73892b3).
+To learn about how to use the OpenCTI Python client and read some examples and cases, refer to [the client documentation](https://opencti-client-for-python.readthedocs.io/en/latest/client_usage/getting_started.html).
 
 ### API reference
 
-To learn about the methods available for executing queries and retrieving their answers, refer to [the client API Reference](https://www.notion.so/luatix/Client-API-Reference-efeeb6deed74452fbf4d328017959d62).
+To learn about the methods available for executing queries and retrieving their answers, refer to [the client API Reference](https://opencti-client-for-python.readthedocs.io/en/latest/modules/modules.html).
 
 ## About
 
