@@ -30,9 +30,9 @@ SPEC_VERSION = "2.1"
 
 
 class OpenCTIStix2:
-    """
-        Python API for Stix2 in OpenCTI
-        :param opencti: OpenCTI instance
+    """Python API for Stix2 in OpenCTI
+
+    :param opencti: OpenCTI instance
     """
 
     def __init__(self, opencti):

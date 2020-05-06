@@ -48,13 +48,22 @@ class File:
 
 
 class OpenCTIApiClient:
-    """
-        Python API for OpenCTI
-        :param url: OpenCTI URL
-        :param token: The API key
+    """Main API client for OpenCTI
+
+    :param url: OpenCTI API url
+    :type url: str
+    :param token: OpenCTI API token
+    :type token: str
+    :param log_level: log level for the client
+    :type log_level: str, optional
+    :param ssl_verify:
+    :type ssl_verify: bool, optional
     """
 
     def __init__(self, url, token, log_level="info", ssl_verify=False):
+        """Constructor method
+        """
+
         # Check configuration
         self.ssl_verify = ssl_verify
         if url is None or len(token) == 0:
@@ -114,12 +123,34 @@ class OpenCTIApiClient:
             )
 
     def get_token(self):
+        """Get the API token
+
+        :return: returns the configured API token
+        :rtype: str
+        """
+
         return self.api_token
 
     def set_token(self, token):
+        """set the request header with the specified token
+
+        :param token: OpenCTI API token
+        :type token: str
+        """
+
         self.request_headers = {"Authorization": "Bearer " + token}
 
     def query(self, query, variables={}):
+        """submit a query to the OpenCTI GraphQL API
+
+        :param query: GraphQL query string
+        :type query: str
+        :param variables: GraphQL query variables, defaults to {}
+        :type variables: dict, optional
+        :return: returns the response json content
+        :rtype: Any
+        """
+
         query_var = {}
         files_vars = []
         # Implementation of spec https://github.com/jaydenseric/graphql-multipart-request-spec
@@ -210,7 +241,7 @@ class OpenCTIApiClient:
                 verify=self.ssl_verify,
             )
         # Build response
-        if r.status_code == requests.codes.ok:
+        if r.status_code == 200:
             result = r.json()
             if "errors" in result:
                 logging.error(result["errors"][0]["message"])
@@ -220,12 +251,30 @@ class OpenCTIApiClient:
             logging.info(r.text)
 
     def fetch_opencti_file(self, fetch_uri, binary=False):
+        """get file from the OpenCTI API
+
+        :param fetch_uri: download URI to use
+        :type fetch_uri: str
+        :param binary: [description], defaults to False
+        :type binary: bool, optional
+        :return: returns either the file content as text or bytes based on `binary`
+        :rtype: str or bytes
+        """
+
         r = requests.get(fetch_uri, headers=self.request_headers)
         if binary:
             return r.content
         return r.text
 
     def log(self, level, message):
+        """log a message with defined log level
+
+        :param level: must be a valid logging log level (debug, info, warning, error)
+        :type level: str
+        :param message: the message to log
+        :type message: str
+        """
+
         if level == "debug":
             logging.debug(message)
         elif level == "info":
@@ -236,6 +285,11 @@ class OpenCTIApiClient:
             logging.error(message)
 
     def health_check(self):
+        """submit an example request to the OpenCTI API.
+
+        :return: returns `True` if the health check has been successful
+        :rtype: bool
+        """
         try:
             test = self.threat_actor.list(first=1)
             if test is not None:
@@ -245,6 +299,12 @@ class OpenCTIApiClient:
         return False
 
     def get_logs_worker_config(self):
+        """get the logsWorkerConfig
+
+        return: the logsWorkerConfig
+        rtype: dict
+        """
+
         logging.info("Getting logs worker config...")
         query = """
             query LogsWorkerConfig {
@@ -259,6 +319,14 @@ class OpenCTIApiClient:
         return result["data"]["logsWorkerConfig"]
 
     def not_empty(self, value):
+        """check if a value is empty for str, list and int
+
+        :param value: value to check
+        :type value: str or list or int
+        :return: returns `True` if the value is one of the supported types and not empty
+        :rtype: bool
+        """
+
         if value is not None:
             if isinstance(value, str):
                 if len(value) > 0:
@@ -279,6 +347,16 @@ class OpenCTIApiClient:
             return False
 
     def process_multiple(self, data, with_pagination=False):
+        """processes data returned by the OpenCTI API with multiple entities
+
+        :param data: data to process
+        :type data:
+        :param with_pagination: whether to use pagination with the API, defaults to False
+        :type with_pagination: bool, optional
+        :return: returns either a dict or list with the processes entities
+        :rtype: list or dict
+        """
+
         if with_pagination:
             result = {"entities": [], "pagination": {}}
         else:
@@ -306,6 +384,14 @@ class OpenCTIApiClient:
         return result
 
     def process_multiple_ids(self, data):
+        """processes data returned by the OpenCTI API with multiple ids
+
+        :param data: data to process
+        :type data:
+        :return: returns a list of ids
+        :rtype: list
+        """
+
         result = []
         if data is None:
             return result
@@ -316,6 +402,14 @@ class OpenCTIApiClient:
         return result
 
     def process_multiple_fields(self, data):
+        """processes data returned by the OpenCTI API with multiple fields
+
+        :param data: data to process
+        :type data: dict
+        :return: returns the data dict with all fields processed
+        :rtype: dict
+        """
+
         if data is None:
             return data
         if (
@@ -386,6 +480,13 @@ class OpenCTIApiClient:
         return data
 
     def upload_file(self, **kwargs):
+        """upload a file to OpenCTI API
+
+        :param `**kwargs`: arguments for file upload (required: `file_name` and `data`)
+        :return: returns the query respons for the file upload
+        :rtype: dict
+        """
+
         file_name = kwargs.get("file_name", None)
         data = kwargs.get("data", None)
         mime_type = kwargs.get("mime_type", "text/plain")
@@ -462,6 +563,18 @@ class OpenCTIApiClient:
         )
 
     def resolve_role(self, relation_type, from_type, to_type):
+        """resolves the role for a specified entity
+
+        :param relation_type: input relation type
+        :type relation_type: str
+        :param from_type: entity type
+        :type from_type: str
+        :param to_type: entity type
+        :type to_type: str
+        :return: returns the role mapping
+        :rtype: dict
+        """
+
         if from_type == "stix-relation":
             from_type = "stix_relation"
         if to_type == "stix-relation":

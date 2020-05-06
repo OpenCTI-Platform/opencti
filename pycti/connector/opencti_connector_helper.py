@@ -8,15 +8,31 @@ import base64
 import uuid
 import os
 
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Union
 from pika.exceptions import UnroutableError, NackError
 from pycti.api.opencti_api_client import OpenCTIApiClient
 from pycti.connector.opencti_connector import OpenCTIConnector
 
 
-def get_config_variable(envvar, yaml_path, config={}, isNumber=False):
-    if os.getenv(envvar) is not None:
-        result = os.getenv(envvar)
+def get_config_variable(
+    env_var: str, yaml_path: str, config={}, isNumber=False
+) -> Union[str, int]:
+    """[summary]
+
+    :param env_var: environnement variable name
+    :type env_var: str
+    :param yaml_path: path to yaml config
+    :type yaml_path: str
+    :param config: client config dict, defaults to {}
+    :type config: dict, optional
+    :param isNumber: specify if the variable is a number, defaults to False
+    :type isNumber: bool, optional
+    :return: either a str or a int variable value
+    :rtype: str or int
+    """
+
+    if os.getenv(env_var) is not None:
+        result = os.getenv(env_var)
     elif yaml_path is not None:
         if yaml_path[0] in config and yaml_path[1] in config[yaml_path[0]]:
             result = config[yaml_path[0]][yaml_path[1]]
@@ -36,7 +52,17 @@ def get_config_variable(envvar, yaml_path, config={}, isNumber=False):
 
 
 class ListenQueue(threading.Thread):
-    def __init__(self, helper, config, callback):
+    """Main class for the ListenQueue used in OpenCTIConnectorHelper
+
+    :param helper: instance of a `OpenCTIConnectorHelper` class
+    :type helper: OpenCTIConnectorHelper
+    :param config: dict containing client config
+    :type config: dict
+    :param callback: callback function to process queue
+    :type callback: callable
+    """
+
+    def __init__(self, helper, config: dict, callback):
         threading.Thread.__init__(self)
         self.pika_connection = None
         self.channel = None
@@ -47,6 +73,18 @@ class ListenQueue(threading.Thread):
 
     # noinspection PyUnusedLocal
     def _process_message(self, channel, method, properties, body):
+        """process a message from the rabbit queue
+
+        :param channel: channel instance
+        :type channel: callable
+        :param method: message methods
+        :type method: callable
+        :param properties: unused
+        :type properties: str
+        :param body: message body (data)
+        :type body: str or bytes or bytearray
+        """
+
         json_data = json.loads(body)
         thread = threading.Thread(target=self._data_handler, args=[json_data])
         thread.start()
@@ -134,9 +172,10 @@ class PingAlive(threading.Thread):
 
 
 class OpenCTIConnectorHelper:
-    """
-        Python API for OpenCTI connector
-        :param config: Dict standard config
+    """Python API for OpenCTI connector
+
+    :param config: Dict standard config
+    :type config: dict
     """
 
     def __init__(self, config: dict):
@@ -202,9 +241,21 @@ class OpenCTIConnectorHelper:
         self.cache_added = []
 
     def set_state(self, state) -> None:
+        """sets the connector state
+
+        :param state: state object
+        :type state: dict
+        """
+
         self.connector_state = json.dumps(state)
 
     def get_state(self):
+        """get the connector state
+
+        :return: returns the current state of the connector if there is any
+        :rtype:
+        """
+
         try:
             return (
                 None
@@ -215,6 +266,12 @@ class OpenCTIConnectorHelper:
             return None
 
     def listen(self, message_callback: Callable[[Dict], List[str]]) -> None:
+        """listen for messages and register callback function
+
+        :param message_callback: callback function to process messages
+        :type message_callback: Callable[[Dict], List[str]]
+        """
+
         listen_queue = ListenQueue(self, self.config, message_callback)
         listen_queue.start()
 
@@ -227,7 +284,12 @@ class OpenCTIConnectorHelper:
     def log_info(self, msg):
         logging.info(msg)
 
-    def date_now(self):
+    def date_now(self) -> datetime:
+        """get the current date (UTC)
+
+        :return: current datetime for utc
+        :rtype: datetime
+        """
         return (
             datetime.datetime.utcnow()
             .replace(microsecond=0, tzinfo=datetime.timezone.utc)
@@ -235,7 +297,24 @@ class OpenCTIConnectorHelper:
         )
 
     # Push Stix2 helper
-    def send_stix2_bundle(self, bundle, entities_types=None, update=False, split=True):
+    def send_stix2_bundle(
+        self, bundle, entities_types=None, update=False, split=True
+    ) -> list:
+        """send a stix2 bundle to the API
+
+        :param bundle: valid stix2 bundle
+        :type bundle:
+        :param entities_types: list of entities, defaults to None
+        :type entities_types: list, optional
+        :param update: whether to updated data in the database, defaults to False
+        :type update: bool, optional
+        :param split: whether to split the stix bundle before processing, defaults to True
+        :type split: bool, optional
+        :raises ValueError: if the bundle is empty
+        :return: list of bundles
+        :rtype: list
+        """
+
         if entities_types is None:
             entities_types = []
         if split:
@@ -259,12 +338,19 @@ class OpenCTIConnectorHelper:
             channel.close()
             return [bundle]
 
-    def _send_bundle(self, channel, bundle, entities_types=None, update=False):
+    def _send_bundle(self, channel, bundle, entities_types=None, update=False) -> None:
+        """send a STIX2 bundle to RabbitMQ to be consumed by workers
+
+        :param channel: RabbitMQ channel
+        :type channel: callable
+        :param bundle: valid stix2 bundle
+        :type bundle:
+        :param entities_types: list of entity types, defaults to None
+        :type entities_types: list, optional
+        :param update: whether to update data in the database, defaults to False
+        :type update: bool, optional
         """
-            This method send a STIX2 bundle to RabbitMQ to be consumed by workers
-            :param bundle: A valid STIX2 bundle
-            :param entities_types: Entities types to ingest
-        """
+
         if entities_types is None:
             entities_types = []
 
@@ -298,10 +384,19 @@ class OpenCTIConnectorHelper:
             )
             logging.info("Bundle has been sent")
         except (UnroutableError, NackError) as e:
-            logging.error("Unable to send bundle, retry...", e)
+            logging.error(f"Unable to send bundle, retry...{e}")
             self._send_bundle(bundle, entities_types)
 
-    def split_stix2_bundle(self, bundle):
+    def split_stix2_bundle(self, bundle) -> list:
+        """splits a valid stix2 bundle into a list of bundles
+
+        :param bundle: valid stix2 bundle
+        :type bundle:
+        :raises Exception: if data is not valid JSON
+        :return: returns a list of bundles
+        :rtype: list
+        """
+
         self.cache_index = {}
         self.cache_added = []
         try:
@@ -350,7 +445,14 @@ class OpenCTIConnectorHelper:
 
         return bundles
 
-    def stix2_get_embedded_objects(self, item):
+    def stix2_get_embedded_objects(self, item) -> dict:
+        """gets created and marking refs for a stix2 item
+
+        :param item: valid stix2 item
+        :type item:
+        :return: returns a dict of created_by_ref of object_marking_refs
+        :rtype: dict
+        """
         # Marking definitions
         object_marking_refs = []
         if "object_marking_refs" in item:
