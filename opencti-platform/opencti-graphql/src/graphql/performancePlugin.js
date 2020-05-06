@@ -8,7 +8,11 @@ const innerCompute = (inners) => {
 export default {
   requestDidStart: /* istanbul ignore next */ () => {
     const start = Date.now();
+    let op;
     return {
+      didResolveOperation: (context) => {
+        op = context.operationName;
+      },
       willSendResponse: (context) => {
         const stop = Date.now();
         const elapsed = stop - start;
@@ -31,7 +35,7 @@ export default {
         const operationType = `${isWrite ? 'WRITE' : 'READ'}`;
         logger.info(`[PERF] API Call`, {
           type: operationType,
-          operation: context.operation.name.value,
+          operation: op,
           time: elapsed,
           inner_relation_creation: innerRelationCount,
           size,
