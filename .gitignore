@@ -11,3 +11,4 @@ test.py
 *.iml
 examples/*.json
 examples/*.pdf
+docs/_build
