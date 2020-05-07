@@ -9,13 +9,13 @@ export const up = async (next) => {
   try {
     // Remove user_permission and platform settings
     await executeWrite(async (wTx) => {
-      await wTx.tx.query('undefine user_permission sub relation;');
-      await wTx.tx.query('match $x isa platform_external_auth; delete $x;');
-      await wTx.tx.query('undefine platform_external_auth sub attribute;');
-      await wTx.tx.query('match $x isa platform_registration; delete $x;');
-      await wTx.tx.query('undefine platform_registration sub attribute;');
-      await wTx.tx.query('match $x isa platform_demo; delete $x;');
-      await wTx.tx.query('undefine platform_demo sub attribute;');
+      await wTx.query('undefine user_permission sub relation;');
+      await wTx.query('match $x isa platform_external_auth; delete $x;');
+      await wTx.query('undefine platform_external_auth sub attribute;');
+      await wTx.query('match $x isa platform_registration; delete $x;');
+      await wTx.query('undefine platform_registration sub attribute;');
+      await wTx.query('match $x isa platform_demo; delete $x;');
+      await wTx.query('undefine platform_demo sub attribute;');
     });
     // Migrate all users to assign roles user and admin
     await createBasicRolesAndCapabilities();
@@ -36,8 +36,8 @@ export const up = async (next) => {
     );
     // Remove old field email
     await executeWrite(async (wTx) => {
-      await wTx.tx.query('match $x isa email; delete $x;');
-      await wTx.tx.query('undefine email sub attribute;');
+      await wTx.query('match $x isa email; delete $x;');
+      await wTx.query('undefine email sub attribute;');
     });
   } catch (err) {
     logger.info(`[MIGRATION] roles_capabilities > Error ${err}`);

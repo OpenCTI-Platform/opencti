@@ -4,7 +4,7 @@ import { executeRead } from '../database/grakn';
 export const up = async (next) => {
   logger.info('[MIGRATION] reindex_users > Nothing to reindex');
   await executeRead((rTx) => {
-    rTx.tx.query(`match $x isa Settings;`);
+    rTx.query(`match $x isa Settings;`);
   });
   next();
 };

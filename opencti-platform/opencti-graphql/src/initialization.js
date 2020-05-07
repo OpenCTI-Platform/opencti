@@ -208,7 +208,7 @@ const initializeData = async () => {
 
 const isEmptyPlatform = async () => {
   const entityCount = await executeRead(async (rTx) => {
-    const iterator = await rTx.tx.query('match $x sub entity; get;');
+    const iterator = await rTx.query('match $x sub entity; get;');
     const answers = await iterator.collect();
     return answers.length;
   });

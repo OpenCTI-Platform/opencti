@@ -22,7 +22,7 @@ export const up = async (next) => {
           await executeWrite(async (wTx) => {
             const q = `match $x isa ${entity}, has stix_id $s; not { $x has stix_id_key $sn; }; get;`;
             logger.info(`[MIGRATION] stix_id_to_keys`, { query: q });
-            const iterator2 = await wTx.tx.query(q);
+            const iterator2 = await wTx.query(q);
             const answers2 = await iterator2.collect();
             const stixIds = [];
             const actionsToDo = await Promise.all(
@@ -57,7 +57,7 @@ export const up = async (next) => {
                     logger.info(`[MIGRATION] stix_id_to_keys > Reindex ${action.id}`);
                     await elIndex(action.elasticQuery.index, action.elasticQuery.data);
                   }
-                  return wTx.tx.query(action.graknQuery);
+                  return wTx.query(action.graknQuery);
                 })
               );
             }
