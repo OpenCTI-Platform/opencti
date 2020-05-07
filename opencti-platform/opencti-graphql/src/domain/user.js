@@ -205,7 +205,7 @@ export const removeRole = async (userId, roleName) => {
             $from has internal_id_key "${escapeString(userId)}"; 
             $to has name "${escapeString(roleName)}"; 
             delete $rel;`;
-    await wTx.tx.query(query, { infer: false });
+    await wTx.query(query, { infer: false });
   });
   await clearUserTokenCache(userId);
   return findById(userId, { isUser: true });
@@ -216,7 +216,7 @@ export const roleRemoveCapability = async (user, roleId, capabilityName) => {
             $from isa Role, has internal_id_key "${escapeString(roleId)}"; 
             $to isa Capability, has name $name; { $name contains "${escapeString(capabilityName)}";}; 
             delete $rel;`;
-    await wTx.tx.query(query, { infer: false });
+    await wTx.query(query, { infer: false });
   });
   // Clear cache of every user with this modified role
   const impactedUsers = await findAll({ filters: [{ key: 'rel_user_role.internal_id_key', values: [roleId] }] });

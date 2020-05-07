@@ -130,8 +130,8 @@ let session = null;
 
 // region basic commands
 const closeTx = async (gTx) => {
-  if (gTx.tx.isOpen()) {
-    return gTx.tx.close().catch(
+  if (gTx.isOpen()) {
+    return gTx.close().catch(
       /* istanbul ignore next */ (err) => {
         logger.error('[GRAKN] CloseReadTx error', { error: err });
       }
@@ -144,7 +144,6 @@ const takeReadTx = async (retry = false) => {
   return session
     .transaction()
     .read()
-    .then((tx) => ({ session, tx }))
     .catch(
       /* istanbul ignore next */ (err) => {
         logger.error('[GRAKN] TakeReadTx error', { error: err });
@@ -175,7 +174,6 @@ const takeWriteTx = async (retry = false) => {
   return session
     .transaction()
     .write()
-    .then((tx) => ({ session, tx }))
     .catch(
       /* istanbul ignore next */ (err) => {
         logger.error('[GRAKN] TakeWriteTx error', { error: err });
@@ -188,7 +186,7 @@ const takeWriteTx = async (retry = false) => {
     );
 };
 const commitWriteTx = async (wTx) => {
-  return wTx.tx.commit().catch(
+  return wTx.commit().catch(
     /* istanbul ignore next */ (err) => {
       logger.error('[GRAKN] CommitWriteTx error', { error: err });
       if (err.code === 3) {
@@ -215,7 +213,7 @@ export const executeWrite = async (executeFunction) => {
 };
 export const internalDirectWrite = async (query) => {
   const wTx = await takeWriteTx();
-  return wTx.tx
+  return wTx
     .query(query)
     .then(() => commitWriteTx(wTx))
     .catch(
@@ -240,29 +238,31 @@ export const graknIsAlive = async () => {
 export const getGraknVersion = () => {
   // It seems that Grakn server does not expose its version yet:
   // https://github.com/graknlabs/client-nodejs/issues/47
-  return '1.6.2';
+  return '1.7.1';
 };
 
 /**
  * Recursive fetch of every types of a concept
+ * @param tx the transaction
  * @param concept the element
  * @param currentType the current type
  * @param acc the recursive accuStixDomainEntitiesExportComponentmulator
  * @returns {Promise<Array>}
  */
-export const conceptTypes = async (concept, currentType = null, acc = []) => {
+export const conceptTypes = async (tx, concept, currentType = null, acc = []) => {
   if (currentType === null) {
     const conceptType = await concept.type();
     const conceptLabel = await conceptType.label();
     acc.push(conceptLabel);
-    return conceptTypes(concept, conceptType, acc);
+    return conceptTypes(tx, concept, conceptType, acc);
   }
-  const parentType = await currentType.sup();
+  const remoteType = currentType.txService ? currentType : currentType.asRemote(tx);
+  const parentType = await remoteType.sup();
   if (parentType === null) return acc;
   const conceptLabel = await parentType.label();
   if (conceptLabel === 'entity' || conceptLabel === 'relation') return acc;
   acc.push(conceptLabel);
-  return conceptTypes(concept, parentType, acc);
+  return conceptTypes(tx, concept, parentType, acc);
 };
 
 const getAliasInternalIdFilter = (query, alias) => {
@@ -335,7 +335,7 @@ export const queryAttributeValues = async (type) => {
   return executeRead(async (rTx) => {
     const query = `match $x isa ${escape(type)}; get;`;
     logger.debug(`[GRAKN - infer: false] queryAttributeValues`, { query });
-    const iterator = await rTx.tx.query(query);
+    const iterator = await rTx.query(query);
     const answers = await iterator.collect();
     const result = await Promise.all(
       answers.map(async (answer) => {
@@ -360,7 +360,7 @@ export const attributeExists = async (attributeLabel) => {
   return executeRead(async (rTx) => {
     const checkQuery = `match $x sub ${attributeLabel}; get;`;
     logger.debug(`[GRAKN - infer: false] attributeExists`, { query: checkQuery });
-    await rTx.tx.query(checkQuery);
+    await rTx.query(checkQuery);
     return true;
   }).catch(() => false);
 };
@@ -368,7 +368,7 @@ export const queryAttributeValueByGraknId = async (id) => {
   return executeRead(async (rTx) => {
     const query = `match $x id ${escape(id)}; get;`;
     logger.debug(`[GRAKN - infer: false] queryAttributeValueById`, { query });
-    const iterator = await rTx.tx.query(query);
+    const iterator = await rTx.query(query);
     const answer = await iterator.next();
     const attribute = answer.map().get('x');
     const attributeType = await attribute.type();
@@ -384,15 +384,16 @@ export const queryAttributeValueByGraknId = async (id) => {
 };
 /**
  * Load any grakn instance with internal grakn ID.
+ * @param tx the transaction
  * @param concept the concept to get attributes from
  * @param args
  * @returns {Promise}
  */
-const loadConcept = async (concept, args = {}) => {
+const loadConcept = async (tx, concept, args = {}) => {
   const { id } = concept;
   const { relationsMap = new Map(), noCache = false, infer = false, explanationAlias = new Map() } = args;
   const conceptType = concept.baseType;
-  const types = await conceptTypes(concept);
+  const types = await conceptTypes(tx, concept);
   const index = inferIndexFromConceptTypes(types);
   // 01. Return the data in elastic if not explicitly asked in grakn
   // Very useful for getting every entities through relation query.
@@ -407,7 +408,7 @@ const loadConcept = async (concept, args = {}) => {
   }
   // 02. If not found continue the process.
   logger.debug(`[GRAKN - infer: false] getAttributes ${head(types)} ${id}`);
-  const attributesIterator = await concept.attributes();
+  const attributesIterator = await concept.asRemote(tx).attributes();
   const attributes = await attributesIterator.collect();
   const attributesPromises = attributes.map(async (attribute) => {
     const attributeType = await attribute.type();
@@ -455,7 +456,7 @@ const loadConcept = async (concept, args = {}) => {
     .then(async (entityData) => {
       if (entityData.base_type !== 'relation') return entityData;
       const isInferredPromise = concept.isInferred();
-      const rolePlayers = await concept.rolePlayersMap();
+      const rolePlayers = await concept.asRemote(tx).rolePlayersMap();
       const roleEntries = Array.from(rolePlayers.entries());
       const rolesPromises = Promise.all(
         map(async (roleItem) => {
@@ -528,7 +529,7 @@ const loadConcept = async (concept, args = {}) => {
 const getSingleValue = (query, infer = false) => {
   return executeRead(async (rTx) => {
     logger.debug(`[GRAKN - infer: ${infer}] getSingleValue`, { query });
-    const iterator = await rTx.tx.query(query, { infer });
+    const iterator = await rTx.query(query, { infer });
     return iterator.next();
   });
 };
@@ -536,7 +537,7 @@ export const getSingleValueNumber = (query, infer = false) => {
   return getSingleValue(query, infer).then((data) => data.number());
 };
 
-const getConcepts = async (answers, conceptQueryVars, entities, conceptOpts = {}) => {
+const getConcepts = async (tx, answers, conceptQueryVars, entities, conceptOpts = {}) => {
   const { infer = false, noCache = false, explanationAlias = new Map() } = conceptOpts;
   const plainEntities = filter((e) => !isEmpty(e) && !isNil(e), entities);
   if (answers.length === 0) return [];
@@ -548,7 +549,7 @@ const getConcepts = async (answers, conceptQueryVars, entities, conceptOpts = {}
         conceptQueryVars.map(async ({ alias, role, internalIdKey }) => {
           const concept = answer.map().get(alias);
           if (!concept || concept.baseType === 'ATTRIBUTE') return undefined; // If specific attributes are used for filtering, ordering, ...
-          const types = await conceptTypes(concept);
+          const types = await conceptTypes(tx, concept);
           return { id: concept.id, data: { concept, alias, role, internalIdKey, types } };
         })
       );
@@ -567,7 +568,7 @@ const getConcepts = async (answers, conceptQueryVars, entities, conceptOpts = {}
   const uniqConceptsLoading = pipe(
     flatten,
     uniqBy((e) => e.id),
-    map((l) => loadConcept(l.concept, { relationsMap: l.relationsMap, noCache, infer, explanationAlias }))
+    map((l) => loadConcept(tx, l.concept, { relationsMap: l.relationsMap, noCache, infer, explanationAlias }))
   )(queryConcepts);
   const resolvedConcepts = await Promise.all(uniqConceptsLoading);
   // 04. Create map from concepts
@@ -588,10 +589,10 @@ export const find = async (query, entities, findOpts = {}) => {
   return executeRead(async (rTx) => {
     const conceptQueryVars = extractQueryVars(query);
     logger.debug(`[GRAKN - infer: ${infer}] Find`, { query });
-    const iterator = await rTx.tx.query(query, { infer });
+    const iterator = await rTx.query(query, { infer });
     // 01. Get every concepts to fetch (unique)
     const answers = await iterator.collect();
-    return getConcepts(answers, conceptQueryVars, entities, findOpts);
+    return getConcepts(rTx, answers, conceptQueryVars, entities, findOpts);
   });
 };
 
@@ -1062,7 +1063,7 @@ const reindexAttributeValue = async (queryType, type, value) => {
   const readQuery = `match $x isa ${queryType}, has ${escape(type)} $a; $a "${escapeString(value)}"; get;`;
   logger.debug(`[GRAKN - infer: false] attributeUpdate`, { query: readQuery });
   const elementIds = await executeRead(async (rTx) => {
-    const iterator = await rTx.tx.query(readQuery, { infer: false });
+    const iterator = await rTx.query(readQuery, { infer: false });
     const answer = await iterator.collect();
     return answer.map((n) => n.get('x').id);
   });
@@ -1106,7 +1107,7 @@ const buildAggregationQuery = (entityType, filters, options) => {
 const graknTimeSeries = (query, keyRef, valueRef, inferred) => {
   return executeRead(async (rTx) => {
     logger.debug(`[GRAKN - infer: ${inferred}] timeSeries`, { query });
-    const iterator = await rTx.tx.query(query, { infer: inferred });
+    const iterator = await rTx.query(query, { infer: inferred });
     const answer = await iterator.collect();
     return Promise.all(
       answer.map(async (n) => {
@@ -1367,17 +1368,17 @@ const createRelationRaw = async (user, fromInternalId, input, opts = {}) => {
       query += `has ${key} ${insert}${separator} `;
     }
     logger.debug(`[GRAKN - infer: false] createRelation`, { query });
-    const iterator = await wTx.tx.query(query);
+    const iterator = await wTx.query(query);
     const txRelation = await iterator.next();
     const conceptRelation = txRelation.map().get('rel');
-    const relationTypes = await conceptTypes(conceptRelation);
+    const relationTypes = await conceptTypes(wTx, conceptRelation);
     const graknRelationId = conceptRelation.id;
     const conceptFrom = txRelation.map().get('from');
     const graknFromId = conceptFrom.id;
-    const fromTypes = await conceptTypes(conceptFrom);
+    const fromTypes = await conceptTypes(wTx, conceptFrom);
     const conceptTo = txRelation.map().get('to');
     const graknToId = conceptTo.id;
-    const toTypes = await conceptTypes(conceptTo);
+    const toTypes = await conceptTypes(wTx, conceptTo);
     return { graknRelationId, graknFromId, graknToId, relationTypes, fromTypes, toTypes };
   });
   // 03. Prepare the final data with grakn IDS
@@ -1670,10 +1671,10 @@ export const createEntity = async (user, entity, type, opts = {}) => {
   }
   const entityCreated = await executeWrite(async (wTx) => {
     logger.debug(`[GRAKN - infer: false] createEntity`, { query });
-    const iterator = await wTx.tx.query(query);
+    const iterator = await wTx.query(query);
     const txEntity = await iterator.next();
     const concept = txEntity.map().get('entity');
-    const types = await conceptTypes(concept);
+    const types = await conceptTypes(wTx, concept);
     return { id: concept.id, types };
   });
   // Transaction succeed, complete the result to send it back
@@ -1725,10 +1726,11 @@ export const updateAttribute = async (user, id, type, input, wTx, options = {}) 
   // --- 01 Get the current attribute types
   const escapedKey = escape(key);
   const labelTypeQuery = `match $x type ${escapedKey}; get;`;
-  const labelIterator = await wTx.tx.query(labelTypeQuery);
+  const labelIterator = await wTx.query(labelTypeQuery);
   const labelAnswer = await labelIterator.next();
   // eslint-disable-next-line prettier/prettier
-  const attrType = await labelAnswer.map().get('x').dataType();
+  const ansConcept = labelAnswer.map().get('x');
+  const attrType = await ansConcept.asRemote(wTx).dataType();
   const typedValues = map((v) => {
     if (attrType === GraknString) return `"${escapeString(v)}"`;
     if (attrType === GraknDate) return prepareDate(v);
@@ -1739,7 +1741,7 @@ export const updateAttribute = async (user, id, type, input, wTx, options = {}) 
   const deleteQuery = `match $x isa ${type}, has internal_id_key "${entityId}", has ${escapedKey} $del via $d; delete $d;`;
   // eslint-disable-next-line prettier/prettier
   logger.debug(`[GRAKN - infer: false] updateAttribute - delete`, { query: deleteQuery });
-  await wTx.tx.query(deleteQuery);
+  await wTx.query(deleteQuery);
   if (typedValues.length > 0) {
     let graknValues;
     if (typedValues.length === 1) {
@@ -1752,7 +1754,7 @@ export const updateAttribute = async (user, id, type, input, wTx, options = {}) 
     }
     const createQuery = `match $x isa ${type}, has internal_id_key "${entityId}"; insert $x ${graknValues};`;
     logger.debug(`[GRAKN - infer: false] updateAttribute - insert`, { query: createQuery });
-    await wTx.tx.query(createQuery);
+    await wTx.query(createQuery);
   }
   // Adding dates elements
   if (includes(key, statsDateAttributes)) {
@@ -1819,7 +1821,7 @@ export const deleteEntityById = async (user, id, type, options = {}) => {
   return executeWrite(async (wTx) => {
     const query = `match $x isa ${type}, has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
     logger.debug(`[GRAKN - infer: false] deleteTypedEntityById`, { query });
-    await wTx.tx.query(query, { infer: false });
+    await wTx.query(query, { infer: false });
   }).then(async () => {
     if (!noLog && currentEntity) {
       await sendLog(EVENT_TYPE_DELETE, user, currentEntity);
@@ -1846,7 +1848,7 @@ export const deleteRelationById = async (user, relationId, type, options = {}) =
   return executeWrite(async (wTx) => {
     const query = `match $x isa ${type}, has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
     logger.debug(`[GRAKN - infer: false] deleteRelationById`, { query });
-    await wTx.tx.query(query, { infer: false });
+    await wTx.query(query, { infer: false });
   }).then(async () => {
     // [ELASTIC] Update - Delete the inner indexed relations in entities;
     if (!noLog && currentRelation) {
@@ -1887,7 +1889,7 @@ export const deleteAttributeById = async (id) => {
   return executeWrite(async (wTx) => {
     const query = `match $x id ${escape(id)}; delete $x;`;
     logger.debug(`[GRAKN - infer: false] deleteAttributeById`, { query });
-    await wTx.tx.query(query, { infer: false });
+    await wTx.query(query, { infer: false });
     return id;
   });
 };
@@ -1905,9 +1907,10 @@ export const getRelationInferredById = async (id, options = { noCache: true }) =
     const decodedQuery = Buffer.from(id, 'base64').toString('ascii');
     const query = `match ${decodedQuery} get;`;
     logger.debug(`[GRAKN - infer: true] getRelationInferredById`, { query });
-    const answerIterator = await rTx.tx.query(query);
+    const answerIterator = await rTx.query(query);
     const answerConceptMap = await answerIterator.next();
     const concepts = await getConcepts(
+      rTx,
       [answerConceptMap],
       extractQueryVars(query), //
       [INFERRED_RELATION_KEY],
@@ -1931,7 +1934,13 @@ export const getRelationInferredById = async (id, options = { noCache: true }) =
       const explanationAlias = new Map([fromEntry, toEntry]);
       const testOpts = assoc('explanationAlias', explanationAlias, options);
       // eslint-disable-next-line no-await-in-loop
-      const explanationConcepts = await getConcepts([explanationAnswer], queryVars, [explanationRelationKey], testOpts);
+      const explanationConcepts = await getConcepts(
+        rTx,
+        [explanationAnswer],
+        queryVars,
+        [explanationRelationKey],
+        testOpts
+      );
       inferences.push({ node: head(explanationConcepts)[explanationRelationKey] });
     }
     return pipe(assoc('inferences', { edges: inferences }))(relation);

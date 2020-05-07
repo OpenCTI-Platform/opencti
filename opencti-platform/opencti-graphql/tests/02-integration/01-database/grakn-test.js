@@ -50,7 +50,7 @@ import { ADMIN_USER } from '../../utils/testQuery';
 describe('Grakn basic and utils', () => {
   it('should database accessible', () => {
     expect(graknIsAlive()).toBeTruthy();
-    expect(getGraknVersion()).toEqual('1.6.2');
+    expect(getGraknVersion()).toEqual('1.7.1');
   });
   it('should escape according to grakn needs', () => {
     expect(escape({ key: 'json' })).toEqual({ key: 'json' });
@@ -80,7 +80,7 @@ describe('Grakn basic and utils', () => {
 describe('Grakn low level commands', () => {
   it('should read transaction handle correctly', async () => {
     const data = await executeRead((rTx) => {
-      return rTx.tx.query(`match $x sub report_class; get;`).then((it) => it.collect());
+      return rTx.query(`match $x sub report_class; get;`).then((it) => it.collect());
     });
     expect(data).not.toBeNull();
     expect(data.length).toEqual(1);
@@ -90,7 +90,7 @@ describe('Grakn low level commands', () => {
   });
   it('should read transaction fail with bad query', async () => {
     const queryPromise = executeRead((rTx) => {
-      return rTx.tx.query(`match $x isa BAD_TYPE; get;`);
+      return rTx.query(`match $x isa BAD_TYPE; get;`);
     });
     // noinspection ES6MissingAwait
     expect(queryPromise).rejects.toThrow();
@@ -99,7 +99,7 @@ describe('Grakn low level commands', () => {
     const connectorId = 'test-instance-connector';
     // Create a connector
     const creationData = await executeWrite((wTx) => {
-      return wTx.tx
+      return wTx
         .query(`insert $c isa Connector, has internal_id_key "${connectorId}";`) //
         .then((it) => it.collect());
     });
@@ -111,7 +111,7 @@ describe('Grakn low level commands', () => {
     expect(value.baseType).toEqual('ENTITY');
     // Delete it
     const deleteData = await executeWrite((wTx) => {
-      return wTx.tx
+      return wTx
         .query(`match $c isa Connector, has internal_id_key "${connectorId}"; delete $c;`) //
         .then((it) => it.collect());
     });
@@ -121,7 +121,7 @@ describe('Grakn low level commands', () => {
   });
   it('should write transaction fail with bad query', async () => {
     const queryPromise = executeWrite((rTx) => {
-      return rTx.tx.query(`insert $c isa Connector, has invalid_attr "invalid";`);
+      return rTx.query(`insert $c isa Connector, has invalid_attr "invalid";`);
     });
     // noinspection ES6MissingAwait
     expect(queryPromise).rejects.toThrow();

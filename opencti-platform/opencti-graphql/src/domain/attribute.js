@@ -17,7 +17,7 @@ export const addAttribute = async (attribute) => {
   return executeWrite(async (wTx) => {
     const query = `insert $attribute isa ${attribute.type}; $attribute "${escapeString(attribute.value)}";`;
     logger.debug(`[GRAKN - infer: false] addAttribute`, { query });
-    const attributeIterator = await wTx.tx.query(query);
+    const attributeIterator = await wTx.query(query);
     const createdAttribute = await attributeIterator.next();
     const createdAttributeId = await createdAttribute.map().get('attribute').id;
     return {
@@ -44,7 +44,7 @@ export const attributeUpdate = async (id, input) => {
       input.value
     )}"; insert $e has ${escape(input.type)} $attribute; $attribute "${escapeString(input.newValue)}";`;
     logger.debug(`[GRAKN - infer: false] attributeUpdate`, { query: writeQuery });
-    await wTx.tx.query(writeQuery);
+    await wTx.query(writeQuery);
   });
   // Link new attribute to every relations
   await executeWrite(async (wTx) => {
@@ -52,7 +52,7 @@ export const attributeUpdate = async (id, input) => {
       input.value
     )}"; insert $e has ${escape(input.type)} $attribute; $attribute "${escapeString(input.newValue)}";`;
     logger.debug(`[GRAKN - infer: false] attributeUpdate`, { query: writeQuery });
-    await wTx.tx.query(writeQuery);
+    await wTx.query(writeQuery);
   });
   // Delete old attribute
   await deleteAttributeById(id);
