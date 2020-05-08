@@ -10,8 +10,9 @@ The Python library requires Python >= 3.
    :maxdepth: 2
    :caption: Contents:
 
-   modules/modules.rst
    client_usage/getting_started.rst
+   pycti/pycti
+
 
 Indices and tables
 ==================
