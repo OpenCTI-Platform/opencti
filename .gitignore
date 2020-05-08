@@ -12,3 +12,4 @@ test.py
 examples/*.json
 examples/*.pdf
 docs/_build
+Pipfile*

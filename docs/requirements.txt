@@ -1,1 +1,1 @@
-sphinx_rtd_theme>=0.4.3
+autoapi>=2.0.1
