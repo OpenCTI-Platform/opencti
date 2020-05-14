@@ -347,21 +347,50 @@ class AttackPattern:
                 }
             }
             ... on AttackPattern {
+                 killChainPhases {
+                    edges {
+                        node {
+                            id
+                            kill_chain_name
+                            phase_name
+                        }
+                    }
+                }
                 platform
                 required_permission
-                external_id                
+                external_id       
             }
         """
-        object_result = self.opencti.stix_domain_entity.get_by_stix_id_or_name(
-            types=["Attack-Pattern"],
-            stix_id_key=stix_id_key,
-            name=name,
-            customAttributes=custom_attributes,
-        )
+        object_result = None
+        if stix_id_key is not None:
+            object_result = self.read(
+                id=stix_id_key, customAttributes=custom_attributes
+            )
         if object_result is None and external_id is not None:
             object_result = self.read(
                 filters=[{"key": "external_id", "values": [external_id]}]
             )
+        if object_result is None and name is not None:
+            object_result = self.read(
+                filters=[{"key": "name", "values": [name]}],
+                customAttributes=custom_attributes,
+            )
+            if object_result is None:
+                object_result = self.read(
+                    filters=[{"key": "alias", "values": [name]}],
+                    customAttributes=custom_attributes,
+                )
+            if object_result is not None:
+                # Check kill chain phase
+                if kill_chain_phases is not None and len(object_result["killChainPhasesIds"]) > 0:
+                    is_kill_chain_phase_match = False
+                    for kill_chain_phase in kill_chain_phases:
+                        for kill_chain_phase_id in object_result["killChainPhasesIds"]:
+                            if kill_chain_phase_id == kill_chain_phase:
+                                is_kill_chain_phase_match = True
+                    if not is_kill_chain_phase_match:
+                        object_result = None
+
         if object_result is not None:
             if update or object_result["createdByRefId"] == created_by_ref:
                 # name
