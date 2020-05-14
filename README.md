@@ -2,10 +2,10 @@
 
 [![Website](https://img.shields.io/badge/website-opencti.io-blue.svg)](https://www.opencti.io)
 [![CircleCI](https://circleci.com/gh/OpenCTI-Platform/client-python.svg?style=shield)](https://circleci.com/gh/OpenCTI-Platform/client-python/tree/master)
+[![readthedocs](https://readthedocs.org/projects/opencti-client-for-python/badge/?style=flat)](https://opencti-client-for-python.readthedocs.io/en/latest/)
 [![GitHub release](https://img.shields.io/github/release/OpenCTI-Platform/client-python.svg)](https://github.com/OpenCTI-Platform/client-python/releases/latest)
 [![Number of PyPI downloads](https://img.shields.io/pypi/dm/pycti.svg)](https://pypi.python.org/pypi/pycti/)
 [![Slack Status](https://slack.luatix.org/badge.svg)](https://slack.luatix.org)
-[![readthedocs](https://readthedocs.org/projects/opencti-client-for-python/badge/?style=flat)](https://opencti-client-for-python.readthedocs.io/en/latest/)
 
 The official OpenCTI Python client helps developers to use the OpenCTI API by providing easy to use methods and utils.
 This client is also used by some OpenCTI components.
