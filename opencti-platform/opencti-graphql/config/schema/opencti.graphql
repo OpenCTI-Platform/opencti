@@ -2073,6 +2073,7 @@ enum AttackPatternsOrdering {
 enum AttackPatternsFilter {
   external_id
   name
+  alias
   created
   modified
   created_at
@@ -2182,6 +2183,8 @@ enum CoursesOfActionOrdering {
   markingDefinitions
 }
 enum CoursesOfActionFilter {
+  name
+  alias
   created
   modified
   created_at
