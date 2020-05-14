@@ -62,5 +62,8 @@ setup(
         "python-magic-bin==0.4.14;sys.platform=='win32'",
     ],
     cmdclass={"verify": VerifyVersionCommand},
-    extras_require={"dev": ["black", "wheel"]},  # Optional
+    extras_require={
+        "dev": ["black", "wheel",],
+        "doc": ["autoapi", "sphinx_rtd_theme", "sphinx-autodoc-typehints"],
+    },  # Optional
 )

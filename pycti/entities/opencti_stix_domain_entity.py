@@ -392,7 +392,7 @@ class StixDomainEntity:
             )
         elif filters is not None:
             result = self.list(
-                types=types, filters=filters, customAttribute=custom_attributes
+                types=types, filters=filters, customAttributes=custom_attributes
             )
             if len(result) > 0:
                 return result[0]
