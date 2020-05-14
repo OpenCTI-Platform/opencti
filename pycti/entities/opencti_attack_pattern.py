@@ -382,7 +382,10 @@ class AttackPattern:
                 )
             if object_result is not None:
                 # Check kill chain phase
-                if kill_chain_phases is not None and len(object_result["killChainPhasesIds"]) > 0:
+                if (
+                    kill_chain_phases is not None
+                    and len(object_result["killChainPhasesIds"]) > 0
+                ):
                     is_kill_chain_phase_match = False
                     for kill_chain_phase in kill_chain_phases:
                         for kill_chain_phase_id in object_result["killChainPhasesIds"]:
