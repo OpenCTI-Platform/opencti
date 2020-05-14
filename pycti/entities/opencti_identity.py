@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import json
-from pycti.utils.constants import CustomProperties
+from pycti.utils.constants import CustomProperties, IdentityTypes
 from pycti.utils.opencti_stix2 import SPEC_VERSION
 
 
@@ -223,39 +223,53 @@ class Identity:
         created_by_ref = kwargs.get("createdByRef", None)
         marking_definitions = kwargs.get("markingDefinitions", None)
         tags = kwargs.get("tags", None)
+        organization_class = kwargs.get("organization_class", None)
 
         if name is not None and description is not None:
             self.opencti.log("info", "Creating Identity {" + name + "}.")
-            query = (
+
+            input_variables = {
+                "name": name,
+                "description": description,
+                "alias": alias,
+                "internal_id_key": id,
+                "stix_id_key": stix_id_key,
+                "created": created,
+                "modified": modified,
+                "createdByRef": created_by_ref,
+                "markingDefinitions": marking_definitions,
+                "tags": tags,
+            }
+
+            if type == IdentityTypes.ORGANIZATION.value:
+                query = f"""
+                    mutation OrganizationAdd($input: OrganizationAddInput) {{
+                        organizationAdd(input: $input) {{
+                            {self.properties}
+                        }}
+                    }}
                 """
-                mutation IdentityAdd($input: IdentityAddInput) {
-                    identityAdd(input: $input) {
-                         """
-                + self.properties
-                + """
-                    }
-                }
-            """
+
+                input_variables["organization_class"] = organization_class
+
+                result_data_field = "organizationAdd"
+            else:
+                query = f"""
+                    mutation IdentityAdd($input: IdentityAddInput) {{
+                        identityAdd(input: $input) {{
+                            {self.properties}
+                        }}
+                    }}
+                """
+
+                input_variables["type"] = type
+
+                result_data_field = "identityAdd"
+
+            result = self.opencti.query(query, {"input": input_variables,},)
+            return self.opencti.process_multiple_fields(
+                result["data"][result_data_field]
             )
-            result = self.opencti.query(
-                query,
-                {
-                    "input": {
-                        "name": name,
-                        "description": description,
-                        "alias": alias,
-                        "type": type,
-                        "internal_id_key": id,
-                        "stix_id_key": stix_id_key,
-                        "created": created,
-                        "modified": modified,
-                        "createdByRef": created_by_ref,
-                        "markingDefinitions": marking_definitions,
-                        "tags": tags,
-                    }
-                },
-            )
-            return self.opencti.process_multiple_fields(result["data"]["identityAdd"])
         else:
             self.opencti.log("error", "Missing parameters: name and description")
 
@@ -278,6 +292,7 @@ class Identity:
         created_by_ref = kwargs.get("createdByRef", None)
         marking_definitions = kwargs.get("markingDefinitions", None)
         tags = kwargs.get("tags", None)
+        organization_class = kwargs.get("organization_class", None)
         update = kwargs.get("update", False)
         custom_attributes = """
             id
@@ -285,6 +300,9 @@ class Identity:
             name
             description 
             alias
+            ... on Organization {
+                organization_class
+            }
             createdByRef {
                 node {
                     id
@@ -326,6 +344,18 @@ class Identity:
                         id=object_result["id"], key="alias", value=new_aliases
                     )
                     object_result["alias"] = new_aliases
+                # organization_class
+                if (
+                    organization_class is not None
+                    and "organization_class" in object_result
+                    and object_result["organization_class"] != organization_class
+                ):
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result["id"],
+                        key="organization_class",
+                        value=organization_class,
+                    )
+                    object_result["organization_class"] = organization_class
             return object_result
         else:
             return self.create_raw(
@@ -340,6 +370,7 @@ class Identity:
                 createdByRef=created_by_ref,
                 markingDefinitions=marking_definitions,
                 tags=tags,
+                organization_class=organization_class,
             )
 
     """

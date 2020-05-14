@@ -1730,6 +1730,9 @@ class OpenCTIStix2:
             if "marking_definitions_ids" in extras
             else [],
             tags=extras["tags_ids"] if "tags_ids" in extras else [],
+            organization_class=stix_object[CustomProperties.ORG_CLASS]
+            if CustomProperties.ORG_CLASS in stix_object
+            else None,
             update=update,
         )
 
