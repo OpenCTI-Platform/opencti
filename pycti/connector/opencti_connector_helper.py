@@ -8,27 +8,21 @@ import base64
 import uuid
 import os
 
-from typing import Callable, Dict, List, Union
+from typing import Callable, Dict, List, Optional, Union
 from pika.exceptions import UnroutableError, NackError
 from pycti.api.opencti_api_client import OpenCTIApiClient
 from pycti.connector.opencti_connector import OpenCTIConnector
 
 
 def get_config_variable(
-    env_var: str, yaml_path: str, config={}, isNumber=False
-) -> Union[str, int]:
+    env_var: str, yaml_path: str, config: Dict = {}, isNumber: Optional[bool] = False
+) -> Union[bool, int, None, str]:
     """[summary]
 
     :param env_var: environnement variable name
-    :type env_var: str
     :param yaml_path: path to yaml config
-    :type yaml_path: str
     :param config: client config dict, defaults to {}
-    :type config: dict, optional
     :param isNumber: specify if the variable is a number, defaults to False
-    :type isNumber: bool, optional
-    :return: either a str or a int variable value
-    :rtype: str or int
     """
 
     if os.getenv(env_var) is not None:
