@@ -384,6 +384,7 @@ class AttackPattern:
                 # Check kill chain phase
                 if (
                     kill_chain_phases is not None
+                    and "killChainPhasesIds" in object_result
                     and len(object_result["killChainPhasesIds"]) > 0
                 ):
                     is_kill_chain_phase_match = False
