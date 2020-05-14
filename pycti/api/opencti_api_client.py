@@ -7,6 +7,8 @@ import urllib3
 import json
 import logging
 
+from typing import Union
+
 from pycti.api.opencti_api_connector import OpenCTIApiConnector
 from pycti.api.opencti_api_job import OpenCTIApiJob
 from pycti.utils.constants import ObservableTypes
@@ -346,15 +348,12 @@ class OpenCTIApiClient:
         else:
             return False
 
-    def process_multiple(self, data, with_pagination=False):
+    def process_multiple(self, data: dict, with_pagination=False) -> Union[dict, list]:
         """processes data returned by the OpenCTI API with multiple entities
 
         :param data: data to process
-        :type data:
-        :param with_pagination: whether to use pagination with the API, defaults to False
-        :type with_pagination: bool, optional
-        :return: returns either a dict or list with the processes entities
-        :rtype: list or dict
+        :param with_pagination: whether to use pagination with the API
+        :returns: returns either a dict or list with the processes entities
         """
 
         if with_pagination:
@@ -383,13 +382,11 @@ class OpenCTIApiClient:
             result["pagination"] = data["pageInfo"]
         return result
 
-    def process_multiple_ids(self, data):
+    def process_multiple_ids(self, data) -> list:
         """processes data returned by the OpenCTI API with multiple ids
 
         :param data: data to process
-        :type data:
         :return: returns a list of ids
-        :rtype: list
         """
 
         result = []

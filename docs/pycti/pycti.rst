@@ -75,7 +75,7 @@ Classes
   Undocumented.
 
 - :py:class:`ThreatActor`:
-  Undocumented.
+  Main ThreatActor class for OpenCTI
 
 - :py:class:`IntrusionSet`:
   Undocumented.
