@@ -387,9 +387,12 @@ class OpenCTIStix2:
                     published = None
                     today = datetime.datetime.today()
                     if matches is not None:
-                        for match in matches:
-                            if match < today:
-                                published = match.strftime("%Y-%m-%dT%H:%M:%SZ")
+                        try:
+                            for match in matches:
+                                if match < today:
+                                    published = match.strftime("%Y-%m-%dT%H:%M:%SZ")
+                        except:
+                            published = None
                     if published is None:
                         published = today.strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -733,9 +736,12 @@ class OpenCTIStix2:
                 date = None
                 today = datetime.datetime.today()
                 if matches is not None:
-                    for match in matches:
-                        if match < today:
-                            date = match.strftime("%Y-%m-%dT%H:%M:%SZ")
+                    try:
+                        for match in matches:
+                            if match < today:
+                                date = match.strftime("%Y-%m-%dT%H:%M:%SZ")
+                    except:
+                        date = None
         if date is None:
             date = datetime.datetime.today().strftime("%Y-%m-%dT%H:%M:%SZ")
 
