@@ -24,7 +24,7 @@ final_indicators = final_indicators + data["entities"]
 
 while data["pagination"]["hasNextPage"]:
     after = data["pagination"]["endCursor"]
-    print("Listing reports after " + after)
+    print("Listing indicators after " + after)
     data = opencti_api_client.indicator.list(
         first=50, after=after, customAttributes=custom_attributes, withPagination=True
     )
