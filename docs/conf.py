@@ -29,6 +29,8 @@ master_doc = "index"
 
 autoapi_modules = {"pycti": {"prune": True}}
 
+pygments_style = "sphinx"
+
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
