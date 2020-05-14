@@ -21,7 +21,6 @@ import {
   elPaginate,
   elReconstructRelation,
   elVersion,
-  forceNoCache,
   specialElasticCharsEscape,
 } from '../../../src/database/elasticSearch';
 import { INDEX_STIX_ENTITIES, INDEX_STIX_RELATIONS, utcDate } from '../../../src/database/utils';
@@ -30,7 +29,6 @@ describe('Elasticsearch configuration test', () => {
   it('should configuration correct', () => {
     expect(elIsAlive()).resolves.toBeTruthy();
     expect(elVersion()).resolves.toContain('7.6');
-    expect(forceNoCache()).toBeFalsy();
     expect(elIndexExists(INDEX_STIX_ENTITIES)).toBeTruthy();
   });
   it('should manage index', async () => {

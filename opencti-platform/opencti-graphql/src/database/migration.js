@@ -4,6 +4,7 @@ import { MigrationSet } from 'migrate';
 import Migration from 'migrate/lib/migration';
 import { executeWrite, find, load, internalDirectWrite } from './grakn';
 import { logger } from '../config/conf';
+import {DatabaseError} from "../config/errors";
 
 const normalizeMigrationName = (rawName) => {
   if (rawName.startsWith('./')) {
@@ -98,7 +99,7 @@ const applyMigration = () => {
   const set = new MigrationSet(graknStateStorage);
   return new Promise((resolve, reject) => {
     graknStateStorage.load((err, state) => {
-      if (err) throw new Error(err);
+      if (err) throw DatabaseError('[OPENCT Error applying migration', err);
       // Set last run date on the set
       set.lastRun = state.lastRun;
       // Read migrations from webpack

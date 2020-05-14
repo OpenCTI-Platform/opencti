@@ -34,11 +34,12 @@ import {
   toPairs,
   uniq,
   uniqBy,
+  type as Rtype,
 } from 'ramda';
 import moment from 'moment';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import Grakn from 'grakn-client';
-import { DatabaseError } from '../config/errors';
+import { DatabaseError, FunctionalError } from '../config/errors';
 import conf, { logger } from '../config/conf';
 import {
   buildPagination,
@@ -73,10 +74,10 @@ import {
 } from './elasticSearch';
 import {
   EVENT_TYPE_CREATE,
+  EVENT_TYPE_DELETE,
   EVENT_TYPE_UPDATE,
   EVENT_TYPE_UPDATE_ADD,
   EVENT_TYPE_UPDATE_REMOVE,
-  EVENT_TYPE_DELETE,
   sendLog,
 } from './rabbitmq';
 
@@ -133,7 +134,7 @@ const closeTx = async (gTx) => {
   if (gTx.isOpen()) {
     return gTx.close().catch(
       /* istanbul ignore next */ (err) => {
-        logger.error('[GRAKN] CloseReadTx error', { error: err });
+        throw DatabaseError('[GRAKN] CloseReadTx error', { grakn: err.details });
       }
     );
   }
@@ -146,10 +147,8 @@ const takeReadTx = async (retry = false) => {
     .read()
     .catch(
       /* istanbul ignore next */ (err) => {
-        logger.error('[GRAKN] TakeReadTx error', { error: err });
         if (retry === true) {
-          logger.error('[GRAKN] TakeReadTx, retry failed, Grakn seems down, stopping...');
-          process.exit(1);
+          throw DatabaseError('[GRAKN] TakeReadTx error', { grakn: err.details });
         }
         return takeReadTx(true);
       }
@@ -163,7 +162,6 @@ export const executeRead = async (executeFunction) => {
     return result;
   } catch (err) {
     await closeTx(rTx);
-    logger.error('[GRAKN] executeRead error', { error: err });
     /* istanbul ignore next */
     throw err;
   }
@@ -176,10 +174,8 @@ const takeWriteTx = async (retry = false) => {
     .write()
     .catch(
       /* istanbul ignore next */ (err) => {
-        logger.error('[GRAKN] TakeWriteTx error', { error: err });
         if (retry === true) {
-          logger.error('[GRAKN] TakeWriteTx, retry failed, Grakn seems down, stopping...');
-          process.exit(1);
+          throw DatabaseError('[GRAKN] TakeWriteTx error', { grakn: err.details });
         }
         return takeWriteTx(true);
       }
@@ -188,13 +184,10 @@ const takeWriteTx = async (retry = false) => {
 const commitWriteTx = async (wTx) => {
   return wTx.commit().catch(
     /* istanbul ignore next */ (err) => {
-      logger.error('[GRAKN] CommitWriteTx error', { error: err });
       if (err.code === 3) {
-        throw new DatabaseError({
-          data: { details: split('\n', err.details)[1] },
-        });
+        throw FunctionalError('Duplicate entry', { rule: split('\n', err.details)[1] });
       }
-      throw new DatabaseError({ data: { details: err.details } });
+      throw DatabaseError('[GRAKN] CommitWriteTx error', { grakn: err.details });
     }
   );
 };
@@ -206,7 +199,6 @@ export const executeWrite = async (executeFunction) => {
     return result;
   } catch (err) {
     await closeTx(wTx);
-    logger.error('[GRAKN] executeWrite error', { error: err });
     /* istanbul ignore next */
     throw err;
   }
@@ -229,9 +221,8 @@ export const graknIsAlive = async () => {
   return executeRead(() => {})
     .then(() => true)
     .catch(
-      /* istanbul ignore next */ (err) => {
-        logger.error(`[GRAKN] Seems down`, { error: err });
-        throw new Error('Grakn seems down');
+      /* istanbul ignore next */ () => {
+        throw DatabaseError('Grakn seems down');
       }
     );
 };
@@ -323,8 +314,9 @@ export const extractQueryVars = (query) => {
   return map((v) => {
     const associatedRole = Rfind((r) => r.alias === v.alias, roles);
     return pipe(
+      assoc('internalIdKey', associatedRole ? associatedRole.internalIdKey : undefined),
       assoc('role', associatedRole ? associatedRole.role : undefined),
-      assoc('internalIdKey', associatedRole ? associatedRole.internalIdKey : undefined)
+      assoc('forceNatural', associatedRole ? associatedRole.forceNatural : undefined)
     )(v);
   }, vars);
 };
@@ -460,8 +452,8 @@ const loadConcept = async (tx, concept, args = {}) => {
       const roleEntries = Array.from(rolePlayers.entries());
       const rolesPromises = Promise.all(
         map(async (roleItem) => {
-          // eslint-disable-next-line prettier/prettier
-          const roleTargetId = last(roleItem).values().next().value.id;
+          const targetRole = last(roleItem).values().next();
+          const roleTargetId = targetRole.value.id;
           const conceptFromMap = relationsMap.get(roleTargetId);
           if (conceptFromMap && conceptFromMap.forceNatural !== true) {
             const { alias } = conceptFromMap;
@@ -476,19 +468,22 @@ const loadConcept = async (tx, concept, args = {}) => {
                   [useAlias]: null, // With be use lazily
                   [`${useAlias}Id`]: roleTargetId,
                   [`${useAlias}Role`]: roleLabel,
+                  [`${useAlias}Types`]: conceptFromMap.types,
                 };
               });
           }
           // Target was not resolved but we can just infer from natural
+          const relationType = head(types);
+          const roleTypes = await conceptTypes(tx, targetRole.value);
           // eslint-disable-next-line prettier/prettier
-          return head(roleItem)
-            .label()
-            .then(async (roleLabel) => {
-              const useAlias = resolveNaturalRoles(head(types))[roleLabel];
+          return head(roleItem).label().then(async (roleLabel) => {
+              const naturalRoles = resolveNaturalRoles(relationType);
+              const useAlias = naturalRoles[roleLabel];
               return {
                 [useAlias]: null, // With be use lazily
                 [`${useAlias}Id`]: roleTargetId,
                 [`${useAlias}Role`]: roleLabel,
+                [`${useAlias}Types`]: roleTypes,
               };
             });
         }, roleEntries)
@@ -546,11 +541,11 @@ const getConcepts = async (tx, answers, conceptQueryVars, entities, conceptOpts 
     map(async (answer) => {
       // Create a map useful for relation roles binding
       const queryVarsToConcepts = await Promise.all(
-        conceptQueryVars.map(async ({ alias, role, internalIdKey }) => {
+        conceptQueryVars.map(async ({ alias, role, internalIdKey, forceNatural }) => {
           const concept = answer.map().get(alias);
           if (!concept || concept.baseType === 'ATTRIBUTE') return undefined; // If specific attributes are used for filtering, ordering, ...
           const types = await conceptTypes(tx, concept);
-          return { id: concept.id, data: { concept, alias, role, internalIdKey, types } };
+          return { id: concept.id, data: { concept, alias, role, internalIdKey, forceNatural, types } };
         })
       );
       const conceptsIndex = filter((e) => e, queryVarsToConcepts);
@@ -717,15 +712,21 @@ export const listEntities = async (entityTypes, searchFields, args = {}) => {
         const relId = `rel_${curatedRelation}`;
         relationsFields.push(`$${relId} (${sourceRole}$elem, ${toRole}$${curatedRelation}) isa ${curatedRelation};`);
         for (let valueIndex = 0; valueIndex < filterValues.length; valueIndex += 1) {
-          const val = filterValues[valueIndex];
           // Apply filter on target.
-          // TODO @Julien Support more than only string filters
-          attributesFields.push(`$${curatedRelation} has ${field} "${val}";`);
+          const val = filterValues[valueIndex];
+          const preparedValue = Rtype(val) === 'Boolean' ? val : `"${escapeString(val)}"`;
+          // TODO @Julien Support more than only boolean and string filters
+          attributesFields.push(`$${curatedRelation} has ${field} ${preparedValue};`);
         }
       } else {
         for (let valueIndex = 0; valueIndex < filterValues.length; valueIndex += 1) {
           const val = filterValues[valueIndex];
-          attributesFields.push(`$elem has ${filterKey} "${escapeString(val)}";`);
+          if (val === 'EXISTS') {
+            attributesFields.push(`$elem has ${filterKey} $${filterKey}_exist;`);
+          } else {
+            const preparedValue = Rtype(val) === 'Boolean' ? val : `"${escapeString(val)}"`;
+            attributesFields.push(`$elem has ${filterKey} ${preparedValue};`);
+          }
         }
       }
     }
@@ -785,7 +786,7 @@ export const listRelations = async (relationType, args) => {
   const fromTypesFilter = fromTypes && fromTypes.length > 0;
   const toTypesFilter = toTypes && toTypes.length > 0;
   if (askForConnections === false && (haveTargetFilters || fromTypesFilter || toTypesFilter || search)) {
-    throw new Error('Cant list relation with types filtering or search if from or to id are not specified');
+    throw DatabaseError('Cant list relation with types filtering or search if from or to id are not specified');
   }
 
   const offset = after ? cursorToOffset(after) : 0;
@@ -915,7 +916,9 @@ export const listRelations = async (relationType, args) => {
   if (filters.length > 0) {
     // eslint-disable-next-line
     for (const f of filters) {
-      if (!includes(REL_CONNECTED_SUFFIX, f.key)) throw new Error('Filters only support connected target filtering');
+      if (!includes(REL_CONNECTED_SUFFIX, f.key)) {
+        throw FunctionalError('Filters only support connected target filtering');
+      }
       // eslint-disable-next-line prettier/prettier
       const filterKey = f.key.replace(REL_INDEX_PREFIX, '').replace(REL_CONNECTED_SUFFIX, '').split('.');
       const [key, val] = filterKey;
@@ -969,7 +972,7 @@ export const internalLoadEntityById = async (id, type = null, args = {}) => {
 };
 export const loadEntityById = async (id, type, args = {}) => {
   if (isNil(type)) {
-    throw new Error(`[GRAKN] loadEntityById > Missing type`);
+    throw FunctionalError(`You need to specify a type when loading an entity (id)`);
   }
   return internalLoadEntityById(id, type, args);
 };
@@ -984,7 +987,7 @@ export const internalLoadEntityByStixId = async (id, type = null, args = {}) => 
 };
 export const loadEntityByStixId = async (id, type, args = {}) => {
   if (isNil(type)) {
-    throw new Error(`[GRAKN] loadEntityByStixId > Missing type`);
+    throw FunctionalError(`You need to specify a type when loading an entity (stix)`);
   }
   return internalLoadEntityByStixId(id, type, args);
 };
@@ -1001,7 +1004,7 @@ export const loadEntityByGraknId = async (graknId, args = {}) => {
 };
 export const loadRelationById = async (id, type, args = {}) => {
   if (isNil(type)) {
-    throw new Error(`[GRAKN] loadRelationById > Missing type`);
+    throw FunctionalError(`You need to specify a type when loading a relation (id)`);
   }
   const { noCache = false } = args;
   if (!noCache && !forceNoCache()) {
@@ -1016,7 +1019,7 @@ export const loadRelationById = async (id, type, args = {}) => {
 };
 export const loadRelationByStixId = async (id, type, args = {}) => {
   if (isNil(type)) {
-    throw new Error(`[GRAKN] loadRelationByStixId > Missing type`);
+    throw FunctionalError(`You need to specify a type when loading a relation (stix)`);
   }
   const { noCache = false } = args;
   if (!noCache && !forceNoCache()) {
@@ -1160,7 +1163,9 @@ export const distributionEntities = async (entityType, filters = [], options) =>
   const { startDate, endDate, field, operation } = options;
   let distributionData;
   // Unsupported in cache: const { isRelation, value, from, to, start, end, type };
-  if (field.includes('.')) throw new Error('Distribution entities doesnt support relation aggregation field');
+  if (field.includes('.')) {
+    throw FunctionalError('Distribution entities doesnt support relation aggregation field');
+  }
   const supportedFilters = filter((f) => f.start || f.end || f.from || f.to, filters).length === 0;
   if (!noCache && operation === 'count' && supportedFilters && inferred === false) {
     distributionData = await elAggregationCount(entityType, field, startDate, endDate, filters);
@@ -1265,9 +1270,10 @@ const createRelationRaw = async (user, fromInternalId, input, opts = {}) => {
   const relationshipType = input.relationship_type || input.through;
   if (fromInternalId === input.toId) {
     /* istanbul ignore next */
-    throw new Error(
-      `[GRAKN] You cant create a relation with the same source and target (${fromInternalId} - ${relationshipType})`
-    );
+    throw FunctionalError(`You cant create a relation with the same source and target`, {
+      fromInternalId,
+      relationshipType,
+    });
   }
   // eslint-disable-next-line no-nested-ternary
   let entityType = TYPE_RELATION_EMBEDDED;
@@ -1283,8 +1289,8 @@ const createRelationRaw = async (user, fromInternalId, input, opts = {}) => {
   const isInv = isInversed(relationshipType, input.fromRole);
   /* istanbul ignore if */
   if (isInv) {
-    const message = `{ from '${input.fromRole}' to '${input.toRole}' through ${relationshipType} }`;
-    throw new Error(`[GRAKN] You cant create a relation in incorrect order ${message}`);
+    const definition = `{ from '${input.fromRole}' to '${input.toRole}' through ${relationshipType} }`;
+    throw FunctionalError(`You cant create a relation in incorrect order`, definition);
   }
   // 02. Prepare the data to create or index
   const today = now();
@@ -1334,8 +1340,9 @@ const createRelationRaw = async (user, fromInternalId, input, opts = {}) => {
     relationAttributes.last_seen = input.last_seen ? input.last_seen : today;
     /* istanbul ignore if */
     if (relationAttributes.first_seen > relationAttributes.last_seen) {
-      throw new DatabaseError({
-        data: { details: `You cant create a relation with a first seen less than the last_seen` },
+      throw DatabaseError('You cant create a relation with a first seen less than the last_seen', {
+        fromInternalId,
+        input,
       });
     }
   }
@@ -1580,10 +1587,12 @@ export const createRelation = async (user, fromInternalId, input, opts = {}) => 
   const created = await createRelationRaw(user, fromInternalId, input, opts);
   if (created) {
     // 05. Complete with eventual relations (will eventually update the index)
-    await addOwner(user, created.id, input.createdByOwner, opts);
-    await addCreatedByRef(user, created.id, input.createdByRef, opts);
-    await addMarkingDefs(user, created.id, input.markingDefinitions, opts);
-    await addKillChains(user, created.id, input.killChainPhases, opts);
+    await Promise.all([
+      addOwner(user, created.id, input.createdByOwner, opts),
+      addCreatedByRef(user, created.id, input.createdByRef, opts),
+      addMarkingDefs(user, created.id, input.markingDefinitions, opts),
+      addKillChains(user, created.id, input.killChainPhases, opts),
+    ]);
   }
   return created;
 };
@@ -1687,24 +1696,28 @@ export const createEntity = async (user, entity, type, opts = {}) => {
     assoc('parent_types', entityCreated.types)
   )(data);
   // Transaction succeed, index the result
+  const postOperations = [];
   if (indexable) {
-    await elIndexElements([completedData]);
+    postOperations.push(elIndexElements([completedData]));
   }
   // Send creation log
   if (!noLog) {
-    await sendLog(EVENT_TYPE_CREATE, user, completedData);
+    postOperations.push(sendLog(EVENT_TYPE_CREATE, user, completedData));
   }
   // Complete with eventual relations (will eventually update the index)
-  await addOwner(user, internalId, entity.createdByOwner, opts);
+  postOperations.push(addOwner(user, internalId, entity.createdByOwner, opts));
   if (modelType === TYPE_STIX_DOMAIN || modelType === TYPE_STIX_DOMAIN_ENTITY || modelType === TYPE_STIX_OBSERVABLE) {
-    await addCreatedByRef(user, internalId, entity.createdByRef || user.id, opts);
-    await addMarkingDefs(user, internalId, entity.markingDefinitions, opts);
-    await addTags(user, internalId, entity.tags, opts);
-    await addKillChains(user, internalId, entity.killChainPhases, opts);
-    await addObjectRefs(user, internalId, entity.objectRefs, opts);
-    await addObservableRefs(user, internalId, entity.observableRefs, opts);
-    await addRelationRefs(user, internalId, entity.relationRefs, opts);
+    postOperations.push(
+      addCreatedByRef(user, internalId, entity.createdByRef || user.id, opts),
+      addMarkingDefs(user, internalId, entity.markingDefinitions, opts),
+      addTags(user, internalId, entity.tags, opts),
+      addKillChains(user, internalId, entity.killChainPhases, opts),
+      addObjectRefs(user, internalId, entity.objectRefs, opts),
+      addObservableRefs(user, internalId, entity.observableRefs, opts),
+      addRelationRefs(user, internalId, entity.relationRefs, opts)
+    );
   }
+  await Promise.all(postOperations);
   // Simply return the data
   return completedData;
 };
@@ -1715,7 +1728,7 @@ export const updateAttribute = async (user, id, type, input, wTx, options = {}) 
   const { forceUpdate = false, noLog = false } = options;
   const { key, value } = input; // value can be multi valued
   if (includes(key, readOnlyAttributes)) {
-    throw new DatabaseError({ data: { details: `The field ${key} cannot be modified` } });
+    throw DatabaseError(`The field ${key} cannot be modified`);
   }
   const currentInstanceData = await loadEntityById(id, type);
   const val = includes(key, multipleAttributes) ? value : head(value);
@@ -1757,48 +1770,58 @@ export const updateAttribute = async (user, id, type, input, wTx, options = {}) 
     await wTx.query(createQuery);
   }
   // Adding dates elements
+  const updateOperations = [];
   if (includes(key, statsDateAttributes)) {
     const dayValue = dayFormat(head(value));
     const monthValue = monthFormat(head(value));
     const yearValue = yearFormat(head(value));
     const dayInput = { key: `${key}_day`, value: [dayValue] };
-    await updateAttribute(user, id, type, dayInput, wTx, options);
+    updateOperations.push(updateAttribute(user, id, type, dayInput, wTx, options));
     const monthInput = { key: `${key}_month`, value: [monthValue] };
-    await updateAttribute(user, id, type, monthInput, wTx, options);
+    updateOperations.push(updateAttribute(user, id, type, monthInput, wTx, options));
     const yearInput = { key: `${key}_year`, value: [yearValue] };
-    await updateAttribute(user, id, type, yearInput, wTx, options);
+    updateOperations.push(updateAttribute(user, id, type, yearInput, wTx, options));
   }
   // Update modified / updated_at
   if (currentInstanceData.parent_types.includes(TYPE_STIX_DOMAIN) && key !== 'modified' && key !== 'updated_at') {
     const today = now();
-    await updateAttribute(user, id, type, { key: 'updated_at', value: [today] }, wTx, assoc('noLog', true, options));
-    await updateAttribute(user, id, type, { key: 'modified', value: [today] }, wTx, assoc('noLog', true, options));
+    updateOperations.push(
+      updateAttribute(user, id, type, { key: 'updated_at', value: [today] }, wTx, assoc('noLog', true, options))
+    );
+    updateOperations.push(
+      updateAttribute(user, id, type, { key: 'modified', value: [today] }, wTx, assoc('noLog', true, options))
+    );
   }
+  await Promise.all(updateOperations);
 
   // Update elasticsearch
+  const esOperations = [];
   const currentIndex = inferIndexFromConceptTypes(currentInstanceData.parent_types);
   // eslint-disable-next-line no-nested-ternary
   const typedVal = val === 'true' ? true : val === 'false' ? false : val;
   const updateValueField = { [key]: typedVal };
-  try {
-    await elUpdate(currentIndex, currentInstanceData.grakn_id, { doc: updateValueField });
-  } catch (e) {
-    /* istanbul ignore next */
-    logger.error(`[ELASTIC] ${id} missing, cant update the element, you need to reindex`);
-  }
+  esOperations.push(
+    elUpdate(currentIndex, currentInstanceData.grakn_id, { doc: updateValueField }).catch(
+      /* istanbul ignore next */ () =>
+        logger.error(`[ELASTIC] ${id} missing, cant update the element, you need to reindex`)
+    )
+  );
   if (!noLog && escapedKey !== 'graph_data') {
-    await sendLog(
-      EVENT_TYPE_UPDATE,
-      user,
-      {
-        id: currentInstanceData.id,
-        stix_id_key: currentInstanceData.stix_id_key,
-        entity_type: currentInstanceData.entity_type,
-        [escapedKey]: includes(input.key, multipleAttributes) ? input.value : head(input.value),
-      },
-      { key: escapedKey, value: input.value }
+    esOperations.push(
+      sendLog(
+        EVENT_TYPE_UPDATE,
+        user,
+        {
+          id: currentInstanceData.id,
+          stix_id_key: currentInstanceData.stix_id_key,
+          entity_type: currentInstanceData.entity_type,
+          [escapedKey]: includes(input.key, multipleAttributes) ? input.value : head(input.value),
+        },
+        { key: escapedKey, value: input.value }
+      )
     );
   }
+  await Promise.all(esOperations);
   return id;
 };
 // endregion
@@ -1808,10 +1831,9 @@ export const deleteEntityById = async (user, id, type, options = {}) => {
   const { noLog = false } = options;
   if (isNil(type)) {
     /* istanbul ignore next */
-    throw new Error(`[GRAKN] deleteEntityById > Missing type`);
+    throw FunctionalError(`You need to specify a type when deleting an entity`);
   }
   const eid = escapeString(id);
-  const currentEntity = await loadEntityById(eid, type);
   // 00. Load everything we need to remove in elastic
   const read = `match $from isa ${type}, has internal_id_key "${eid}"; $rel($from, $to);
    { $rel isa stix_relation; } or { $rel isa stix_observable_relation; } or { $rel isa stix_relation_embedded; } or { $rel isa relation_embedded; } or { $rel isa stix_sighting; }; get;`;
@@ -1823,11 +1845,17 @@ export const deleteEntityById = async (user, id, type, options = {}) => {
     logger.debug(`[GRAKN - infer: false] deleteTypedEntityById`, { query });
     await wTx.query(query, { infer: false });
   }).then(async () => {
-    if (!noLog && currentEntity) {
-      await sendLog(EVENT_TYPE_DELETE, user, currentEntity);
+    const esOperations = [];
+    if (!noLog) {
+      esOperations.push(
+        loadEntityById(eid, type).then((currentEntity) => {
+          if (currentEntity) sendLog(EVENT_TYPE_DELETE, user, currentEntity);
+        })
+      );
     }
     // [ELASTIC] Delete entity and relations connected to
-    await elDeleteInstanceIds(append(eid, relationsIds));
+    esOperations.push(elDeleteInstanceIds(append(eid, relationsIds)));
+    await Promise.all(esOperations);
     return id;
   });
 };
@@ -1835,10 +1863,9 @@ export const deleteRelationById = async (user, relationId, type, options = {}) =
   const { noLog = false } = options;
   if (isNil(type)) {
     /* istanbul ignore next */
-    throw new Error(`[GRAKN] deleteRelationById > Missing type`);
+    throw FunctionalError(`You need to specify a type when deleting a relation`);
   }
   const eid = escapeString(relationId);
-  const currentRelation = await loadRelationById(eid, type);
   // 00. Load everything we need to remove in elastic
   const read = `match $from isa ${type}, has internal_id_key "${eid}"; $to isa entity; $rel($from, $to) isa relation; get;`;
   const relationsToDeIndex = await find(read, ['rel']);
@@ -1851,26 +1878,31 @@ export const deleteRelationById = async (user, relationId, type, options = {}) =
     await wTx.query(query, { infer: false });
   }).then(async () => {
     // [ELASTIC] Update - Delete the inner indexed relations in entities;
+    const esOperations = [];
+    const currentRelation = await loadRelationById(eid, type);
     if (!noLog && currentRelation) {
-      const from = await elLoadByGraknId(currentRelation.fromId);
-      const to = await elLoadByGraknId(currentRelation.toId);
+      const [from, to] = await Promise.all([
+        elLoadByGraknId(currentRelation.fromId),
+        elLoadByGraknId(currentRelation.toId),
+      ]);
       if (currentRelation.entity_type === TYPE_RELATION_EMBEDDED) {
         if (currentRelation.relationship_type !== 'created_by_ref') {
-          await sendLog(EVENT_TYPE_UPDATE_REMOVE, user, currentRelation, { from, to });
+          esOperations.push(sendLog(EVENT_TYPE_UPDATE_REMOVE, user, currentRelation, { from, to }));
         }
       } else {
-        await sendLog(EVENT_TYPE_DELETE, user, currentRelation, { from, to });
+        esOperations.push(sendLog(EVENT_TYPE_DELETE, user, currentRelation, { from, to }));
       }
     }
-    await elRemoveRelationConnection(eid);
-    await elDeleteInstanceIds(append(eid, relationsIds));
+    esOperations.push(elRemoveRelationConnection(eid));
+    esOperations.push(elDeleteInstanceIds(append(eid, relationsIds)));
+    await Promise.all(esOperations);
     return relationId;
   });
 };
 export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationType, scopeType) => {
   /* istanbul ignore if */
   if (isNil(scopeType)) {
-    throw new Error(`[GRAKN] deleteRelationsByFromAndTo > Missing scopeType`);
+    throw FunctionalError(`You need to specify a scope type when deleting a relation with from and to`);
   }
   const efromId = escapeString(fromId);
   const etoId = escapeString(toId);
@@ -1884,7 +1916,6 @@ export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationTyp
     await deleteRelationById(user, relationsIds[i], scopeType);
   }
 };
-
 export const deleteAttributeById = async (id) => {
   return executeWrite(async (wTx) => {
     const query = `match $x id ${escape(id)}; delete $x;`;

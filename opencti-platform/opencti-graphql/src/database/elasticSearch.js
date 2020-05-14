@@ -30,6 +30,7 @@ import {
 } from './utils';
 import conf, { logger } from '../config/conf';
 import { resolveNaturalRoles } from './graknRoles';
+import { ConfigurationError, DatabaseError, FunctionalError } from '../config/errors';
 
 const dateFields = [
   'created',
@@ -94,15 +95,13 @@ export const elIsAlive = async () => {
     .then((info) => {
       /* istanbul ignore if */
       if (info.meta.connection.status !== 'alive') {
-        logger.error(`[ELASTICSEARCH] Seems down`);
-        throw new Error('ElasticSearch seems down');
+        throw ConfigurationError('ElasticSearch seems down');
       }
       return true;
     })
     .catch(
       /* istanbul ignore next */ () => {
-        logger.error(`[ELASTICSEARCH] Seems down`);
-        throw new Error('ElasticSearch seems down');
+        throw ConfigurationError('ElasticSearch seems down');
       }
     );
 };
@@ -215,7 +214,7 @@ export const elDeleteIndexes = async (indexesToDelete = KNOWLEDGE_INDICES) => {
     indexesToDelete.map((index) => {
       return el.indices.delete({ index }).catch((err) => {
         /* istanbul ignore next */
-        if (err.meta.body.error.type !== 'index_not_found_exception') {
+        if (err.meta.body && err.meta.body.error.type !== 'index_not_found_exception') {
           logger.error(`[ELASTICSEARCH] Delete indices fail`, { error: err });
         }
       });
@@ -415,7 +414,7 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
       dateFormat = 'yyyy-MM-dd';
       break;
     default:
-      throw new Error('Unsupported interval, please choose between year, month or day');
+      throw FunctionalError('Unsupported interval, please choose between year, month or day', interval);
   }
   const query = {
     index: PLATFORM_INDICES,
@@ -478,7 +477,7 @@ const elBuildRelation = (type, connection) => {
 };
 const elMergeRelation = (concept, fromConnection, toConnection) => {
   if (!fromConnection || !toConnection) {
-    throw new Error(`[ELASTIC] Something fail in reconstruction of the relation ${concept.grakn_id}`);
+    throw DatabaseError(`[ELASTIC] Something fail in reconstruction of the relation`, concept.grakn_id);
   }
   const from = elBuildRelation('from', fromConnection);
   const to = elBuildRelation('to', toConnection);
@@ -704,7 +703,7 @@ export const elLoadByTerms = async (terms, relationsMap, indices = KNOWLEDGE_IND
   const total = data.body.hits.total.value;
   /* istanbul ignore if */
   if (total > 1) {
-    throw new Error(`[ELASTIC] Expect only one response expected for ${terms}`);
+    throw DatabaseError('Expect only one response', { terms, hits: data.body.hits.hits });
   }
   const response = total === 1 ? head(data.body.hits.hits) : null;
   if (!response) return response;
@@ -853,15 +852,10 @@ const prepareIndexing = async (elements) => {
       // For relation, index a list of connections.
       if (thing.relationship_type) {
         if (thing.fromRole === undefined || thing.toRole === undefined) {
-          throw new Error(
-            `[ELASTIC] Cant index relation ${thing.grakn_id} connections without from (${thing.fromId}) or to (${thing.toId})`
-          );
+          throw DatabaseError(`[ELASTIC] Cant index relation ${thing.grakn_id} connections without from or to`, thing);
         }
         const connections = [];
-        const [from, to] = await Promise.all([
-          elLoadByGraknId(thing.fromId), //
-          elLoadByGraknId(thing.toId),
-        ]);
+        const [from, to] = await Promise.all([elLoadByGraknId(thing.fromId), elLoadByGraknId(thing.toId)]);
         connections.push({
           grakn_id: thing.fromId,
           internal_id_key: from.internal_id_key,

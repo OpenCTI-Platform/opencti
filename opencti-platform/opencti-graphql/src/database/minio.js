@@ -101,7 +101,7 @@ const rawFilesListing = (directory) => {
     stream.on('data', async (obj) => files.push(assoc('id', obj.name, obj)));
     /* istanbul ignore next */
     stream.on('error', (e) => {
-      logger.error('MINIO > Error listing files', e);
+      logger.error('MINIO > Error listing files', { error: e });
       reject(e);
     });
     stream.on('end', () => resolve(files));
@@ -176,7 +176,7 @@ export const getMinIOVersion = () => {
         const version = serverHeader.substring(serverHeaderPrefix.length);
         resolve(version);
       } else {
-        logger.error(`[MINIO] Unexpected Server header: '${serverHeader}'`);
+        logger.error(`[MINIO] Unexpected Server header`, { headers: serverHeader });
         resolve('Unknown');
       }
     });

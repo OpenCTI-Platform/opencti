@@ -4,6 +4,7 @@ import { listenServer, restartServer } from './httpServer';
 
 (async () => {
   try {
+    logger.info(`[INIT] > Starting OPENCTI...`);
     await platformInit();
     let server = await listenServer();
     // Hot reload
@@ -27,7 +28,7 @@ import { listenServer, restartServer } from './httpServer';
       /* eslint-enable */
     }
   } catch (e) {
-    logger.error(`[OPENCTI] GraphQL initialization fail`, { error: e.stack });
+    logger.error(`[OPENCTI] GraphQL initialization fail`, { error: e });
     process.exit(1);
   }
 })();

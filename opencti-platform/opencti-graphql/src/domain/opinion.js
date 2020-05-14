@@ -38,7 +38,7 @@ export const opinionContainsStixDomainEntity = async (opinionId, objectId) => {
   const args = {
     filters: [
       { key: `${REL_INDEX_PREFIX}object_refs.internal_id_key`, values: [opinionId] },
-      { key: 'id', values: [objectId] },
+      { key: 'internal_id_key', values: [objectId] },
     ],
   };
   const stixDomainEntities = await findAllStixDomainEntities(args);
@@ -71,7 +71,7 @@ export const opinionContainsStixObservable = async (opinionId, objectId) => {
   const args = {
     filters: [
       { key: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`, values: [opinionId] },
-      { key: 'id', values: [objectId] },
+      { key: 'internal_id_key', values: [objectId] },
     ],
   };
   const stixObservables = await findAllStixObservables(args);

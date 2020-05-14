@@ -73,7 +73,7 @@ export const stixSightingEditField = (user, stixSightingId, input) => {
 export const stixSightingAddRelation = async (user, stixSightingId, input) => {
   const data = await loadEntityById(stixSightingId, 'stix_sighting');
   if (!data.parent_types.includes('stix_sighting') || !input.through) {
-    throw new ForbiddenAccess();
+    throw ForbiddenAccess();
   }
   return createRelation(user, stixSightingId, input).then((relationData) => {
     notify(BUS_TOPICS.StixSighting.EDIT_TOPIC, relationData, user);

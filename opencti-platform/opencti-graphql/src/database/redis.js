@@ -2,6 +2,7 @@ import Redis from 'ioredis';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { assoc, isEmpty, map } from 'ramda';
 import conf, { logger } from '../config/conf';
+import { DatabaseError } from '../config/errors';
 
 const REDIS_EXPIRE_TIME = 90;
 const redisOptions = {
@@ -40,7 +41,7 @@ export const redisIsAlive = async () => {
   const client = await getClient();
   if (client.status !== 'ready') {
     /* istanbul ignore next */
-    throw new Error('redis seems down');
+    throw DatabaseError('redis seems down');
   }
   return true;
 };

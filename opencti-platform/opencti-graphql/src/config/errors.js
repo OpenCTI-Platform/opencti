@@ -6,42 +6,62 @@ export const TYPE_AUTH = 'authentication';
 export const TYPE_TECHNICAL = 'technical';
 const TYPE_BUSINESS = 'business';
 
-// TYPE_BUSINESS
-export const AuthenticationFailure = createError('AuthenticationFailure', {
-  message: 'Wrong name or password',
-  data: { type: TYPE_BUSINESS, level: LEVEL_WARNING },
-});
-export const buildValidationError = (field) => {
-  const ErrorType = createError('Functional', {
-    message: `Validation error for ${field}`,
-    data: { type: TYPE_BUSINESS, level: LEVEL_ERROR },
-  });
-  return new ErrorType();
+const error = (type, message, data) => {
+  const Exception = createError(type, { data, message });
+  return new Exception();
 };
 
-// TYPE_AUTH
-export const AuthRequired = createError('AuthRequired', {
-  message: 'You must be logged in to do this.',
-  data: { type: TYPE_AUTH, level: LEVEL_WARNING },
-});
+export const AuthenticationFailure = (reason, data) =>
+  error(TYPE_TECHNICAL, 'Wrong name or password', {
+    reason: 'AuthenticationFailure',
+    type: TYPE_BUSINESS,
+    ...data,
+  });
 
-export const ForbiddenAccess = createError('ForbiddenAccess', {
-  message: 'You are not allowed to do this.',
-  data: { type: TYPE_AUTH, level: LEVEL_WARNING },
-});
+// TYPE_AUTH
+export const AuthRequired = (reason, data) =>
+  error(TYPE_TECHNICAL, 'You must be logged in to do this.', {
+    reason: 'Authenticated user is required',
+    type: TYPE_AUTH,
+    ...data,
+  });
+
+export const ForbiddenAccess = (reason, data) =>
+  error(TYPE_TECHNICAL, 'You are not allowed to do this.', {
+    reason: 'ForbiddenAccess',
+    type: TYPE_AUTH,
+    ...data,
+  });
 
 // TYPE_TECHNICAL
-export const DatabaseError = createError('DatabaseError', {
-  message: 'A database error has occured!',
-  data: { type: TYPE_TECHNICAL },
-});
+export const DatabaseError = (reason, data) =>
+  error(TYPE_TECHNICAL, 'A database error has occurred', {
+    reason: reason || 'No reason specify',
+    type: 'DatabaseError',
+    ...data,
+  });
 
-export const Unknown = createError('Unknown', {
-  message: 'An unknown error has occurred!  Please try again later.',
-  data: { type: TYPE_TECHNICAL, level: LEVEL_ERROR },
-});
+export const ConfigurationError = (reason, data) =>
+  error(TYPE_TECHNICAL, 'A configuration error has occurred', {
+    reason: reason || 'No reason specify',
+    ...data,
+  });
 
-export const FunctionalError = createError('DatabaseError', {
-  message: 'A database error has occured!',
-  data: { type: TYPE_TECHNICAL },
-});
+export const UnknownError = (reason, data) =>
+  error(TYPE_TECHNICAL, 'An unknown error has occurred', {
+    reason: reason || 'No reason specify',
+    type: 'UnknownError',
+    ...data,
+  });
+
+export const FunctionalError = (reason, data) =>
+  error(TYPE_BUSINESS, 'Business validation', {
+    reason: reason || 'No reason specify',
+    ...data,
+  });
+
+export const ValidationError = (field, data) =>
+  error(TYPE_BUSINESS, 'Validation error', {
+    reason: `Invalid field ${field}`,
+    ...data,
+  });

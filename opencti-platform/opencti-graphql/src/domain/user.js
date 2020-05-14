@@ -11,7 +11,7 @@ import {
   setEditContext,
   storeAccessCache,
 } from '../database/redis';
-import { AuthenticationFailure, ForbiddenAccess } from '../config/errors';
+import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
 import conf, {
   BUS_TOPICS,
   logger,
@@ -124,7 +124,7 @@ export const groups = (userId) => {
 export const token = (userId, args, context) => {
   const capabilities = map((n) => n.name, context.user.capabilities);
   if (userId !== context.user.id && !includes('SETACCESSES', capabilities) && !includes('BYPASS', capabilities)) {
-    throw new ForbiddenAccess();
+    throw ForbiddenAccess();
   }
   return loadWithConnectedRelations(
     `match $x isa Token;
@@ -327,7 +327,7 @@ export const userEditField = (user, userId, input) => {
 export const personEditField = async (user, userId, input) => {
   const data = await loadEntityById(userId, 'User');
   if (!isNil(data.external)) {
-    throw new ForbiddenAccess();
+    throw ForbiddenAccess();
   }
   return executeWrite((wTx) => {
     return updateAttribute(user, userId, 'User', input, wTx);
@@ -350,7 +350,7 @@ export const userDelete = async (user, userId) => {
 };
 export const personDelete = async (user, personId) => {
   const data = await loadEntityById(personId, 'User');
-  if (!isNil(data.external)) throw new ForbiddenAccess();
+  if (!isNil(data.external)) throw ForbiddenAccess();
   await deleteEntityById(user, personId, 'User');
   return personId;
 };
@@ -366,7 +366,7 @@ export const userDeleteRelation = async (user, userId, relationId = null, toId =
   } else if (toId) {
     await deleteRelationsByFromAndTo(user, userId, toId, relationType, 'relation');
   } else {
-    throw new Error('Cannot delete the relation, missing relationId or toId');
+    throw FunctionalError('Cannot delete the relation, missing relationId or toId');
   }
   await clearUserTokenCache(userId);
   const data = await loadEntityById(userId, 'Stix-Domain-Entity');
@@ -374,7 +374,7 @@ export const userDeleteRelation = async (user, userId, relationId = null, toId =
 };
 export const personAddRelation = async (user, userId, input) => {
   if (!['tagged', 'created_by_ref', 'object_marking_refs'].includes(input.through)) {
-    throw new ForbiddenAccess();
+    throw ForbiddenAccess();
   }
   const finalInput = assoc('fromType', 'User', input);
   const data = await createRelation(user, userId, finalInput);
@@ -392,7 +392,7 @@ export const personDeleteRelation = async (
   } else if (toId) {
     await deleteRelationsByFromAndTo(user, userId, toId, relationType, 'stix_relation_embedded');
   } else {
-    throw new Error('Cannot delete the relation, missing relationId or toId');
+    throw FunctionalError('Cannot delete the relation, missing relationId or toId');
   }
   const data = await loadEntityById(userId, 'User');
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
@@ -400,7 +400,7 @@ export const personDeleteRelation = async (
 export const stixDomainEntityEditField = async (user, stixDomainEntityId, input) => {
   const stixDomainEntity = await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
   if (stixDomainEntity.entity_type === 'user' && !isNil(stixDomainEntity.external)) {
-    throw new ForbiddenAccess();
+    throw ForbiddenAccess();
   }
   return executeWrite((wTx) => {
     return updateAttribute(user, stixDomainEntityId, 'Stix-Domain-Entity', input, wTx);
@@ -433,10 +433,10 @@ export const login = async (email, password) => {
     ['client', 'token'],
     { noCache: true } // Because of the fetching of the token that not in cache
   );
-  if (isNil(result)) throw new AuthenticationFailure();
+  if (isNil(result)) throw AuthenticationFailure();
   const dbPassword = result.client.password;
   const match = bcrypt.compareSync(password, dbPassword);
-  if (!match) throw new AuthenticationFailure();
+  if (!match) throw AuthenticationFailure();
   await clearAccessCache(result.token.uuid);
   return result.token;
 };

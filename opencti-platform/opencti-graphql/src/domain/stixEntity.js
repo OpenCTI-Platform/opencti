@@ -29,7 +29,7 @@ export const findById = async (stixEntityId) => {
     !data.parent_types.includes('Stix-Observable') &&
     !data.parent_types.includes('stix_relation')
   ) {
-    throw new ForbiddenAccess();
+    throw ForbiddenAccess();
   }
   data = pipe(dissoc('user_email'), dissoc('password'))(data);
   return data;
@@ -120,7 +120,7 @@ export const stixEntityAddRelation = async (user, stixEntityId, input) => {
       !data.parent_types.includes('stix_relation')) ||
     !input.through
   ) {
-    throw new ForbiddenAccess();
+    throw ForbiddenAccess();
   }
   return createRelation(user, stixEntityId, input);
 };
@@ -130,7 +130,7 @@ export const stixEntityDeleteRelation = async (user, stixEntityId, relationId) =
   const parentTypes = stixDomainEntity.parent_types;
   // Check if entity is a real stix domain
   if (!parentTypes.includes('Stix-Domain-Entity') && !parentTypes.includes('stix_relation')) {
-    throw new ForbiddenAccess();
+    throw ForbiddenAccess();
   }
   const data = await internalLoadEntityById(relationId);
   if (
@@ -139,7 +139,7 @@ export const stixEntityDeleteRelation = async (user, stixEntityId, relationId) =
       !isNil(stixDomainEntity.external) &&
       !['tagged', 'created_by_ref', 'object_marking_refs'].includes(data.relationship_type))
   ) {
-    throw new ForbiddenAccess();
+    throw ForbiddenAccess();
   }
   await deleteRelationById(user, relationId, 'stix_relation_embedded');
   return notify(BUS_TOPICS.StixEntity.EDIT_TOPIC, stixDomainEntity, user);

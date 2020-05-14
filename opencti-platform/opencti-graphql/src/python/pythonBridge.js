@@ -1,5 +1,6 @@
 import { PythonShell } from 'python-shell';
 import { DEV_MODE, logger } from '../config/conf';
+import { ConfigurationError } from '../config/errors';
 
 export const execPython3 = async (scriptPath, scriptName, args) => {
   try {
@@ -37,7 +38,7 @@ export const execPython3 = async (scriptPath, scriptName, args) => {
     });
   } catch (err) {
     /* istanbul ignore next */
-    throw new Error(`Python3 is missing or script not found: ${err.message}`);
+    throw ConfigurationError(`Python3 is missing or script not found`, { detail: err.message });
   }
 };
 

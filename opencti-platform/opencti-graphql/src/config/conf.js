@@ -1,5 +1,5 @@
 import nconf from 'nconf';
-import winston from 'winston';
+import winston, { format } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
 
@@ -104,7 +104,7 @@ nconf.file('default', resolveEnvFile('default'));
 // Setup logger
 const loggerInstance = winston.createLogger({
   level: nconf.get('app:logs_level'),
-  format: winston.format.json(),
+  format: format.combine(format.errors({ stack: true }), format.json()),
   transports: [
     new DailyRotateFile({
       filename: 'error.log',
@@ -117,9 +117,7 @@ const loggerInstance = winston.createLogger({
       dirname: nconf.get('app:logs'),
       maxFiles: '30',
     }),
-    new winston.transports.Console({
-      format: winston.format.json(),
-    }),
+    new winston.transports.Console(),
   ],
 });
 
@@ -130,5 +128,10 @@ if (environment === 'test') {
   });
 }
 
-export const logger = loggerInstance;
+export const logger = {
+  debug: (message, meta) => loggerInstance.debug(message, meta),
+  info: (message, meta) => loggerInstance.info(message, meta),
+  warn: (message, meta) => loggerInstance.warn(message, meta),
+  error: (message, meta) => loggerInstance.error(message, meta),
+};
 export default nconf;

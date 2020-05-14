@@ -10,6 +10,7 @@ import { assoc, head, anyPass, isNil, isEmpty } from 'ramda';
 import validator from 'validator';
 import { initAdmin, login, loginFromProvider } from '../domain/user';
 import conf, { logger } from './conf';
+import { ConfigurationError } from './errors';
 
 // Admin user initialization
 export const initializeAdminUser = async () => {
@@ -25,11 +26,15 @@ export const initializeAdminUser = async () => {
     adminPassword === DEFAULT_CONF_VALUE ||
     adminToken === DEFAULT_CONF_VALUE
   ) {
-    throw new Error('[ADMIN_SETUP] You need to configure the environment vars');
+    throw ConfigurationError('You need to configure the environment vars');
   } else {
     // Check fields
-    if (!validator.isEmail(adminEmail)) throw new Error('[ADMIN_SETUP] > email must be a valid email address');
-    if (!validator.isUUID(adminToken)) throw new Error('[ADMIN_SETUP] > Token must be a valid UUID');
+    if (!validator.isEmail(adminEmail)) {
+      throw ConfigurationError('Email must be a valid email address');
+    }
+    if (!validator.isUUID(adminToken)) {
+      throw ConfigurationError('Token must be a valid UUID');
+    }
     // Initialize the admin account
     // noinspection JSIgnoredPromiseFromCall
     await initAdmin(adminEmail, adminPassword, adminToken);

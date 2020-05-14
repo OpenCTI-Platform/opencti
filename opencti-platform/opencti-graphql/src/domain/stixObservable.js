@@ -83,15 +83,14 @@ export const indicators = (stixObservableId) => {
 export const addStixObservable = async (user, stixObservable) => {
   const innerType = stixObservable.type;
   if (!OBSERVABLE_TYPES.includes(innerType.toLowerCase())) {
-    throw new Error(`[SCHEMA] Observable type ${innerType} is not supported.`);
+    throw FunctionalError(`Observable type ${innerType} is not supported.`);
   }
   const observableSyntaxResult = checkObservableSyntax(innerType.toLowerCase(), stixObservable.observable_value);
   if (observableSyntaxResult !== true) {
-    throw new FunctionalError({
-      data: {
-        details: `[SCHEMA] Observable ${stixObservable.observable_value} of type ${innerType} is not correctly formatted (${observableSyntaxResult}).`,
-      },
-    });
+    throw FunctionalError(
+      `Observable ${stixObservable.observable_value} of type ${innerType} is not correctly formatted.`,
+      { observableSyntaxResult }
+    );
   }
   const observableToCreate = pipe(dissoc('type'), dissoc('createIndicator'))(stixObservable);
   const created = await createEntity(user, observableToCreate, innerType, {
@@ -134,7 +133,7 @@ export const stixObservableDelete = async (user, stixObservableId) => {
 };
 export const stixObservableAddRelation = (user, stixObservableId, input) => {
   if (!input.through) {
-    throw new ForbiddenAccess();
+    throw ForbiddenAccess();
   }
   const finalInput = assoc('fromType', 'Stix-Observable', input);
   return createRelation(user, stixObservableId, finalInput).then((relationData) => {
@@ -175,18 +174,18 @@ export const stixObservableDeleteRelation = async (
 ) => {
   const stixObservable = await loadEntityById(stixObservableId, 'Stix-Observable');
   if (!stixObservable) {
-    throw new Error('Cannot delete the relation, Stix-Observable cannot be found.');
+    throw FunctionalError('Cannot delete the relation, Stix-Observable cannot be found.');
   }
   if (relationId) {
     const data = await loadRelationById(relationId, 'relation');
     if (data.fromId !== stixObservable.grakn_id) {
-      throw new ForbiddenAccess();
+      throw ForbiddenAccess();
     }
     await deleteRelationById(user, relationId, 'relation');
   } else if (toId) {
     await deleteRelationsByFromAndTo(user, stixObservableId, toId, relationType, 'relation');
   } else {
-    throw new Error('Cannot delete the relation, missing relationId or toId');
+    throw FunctionalError('Cannot delete the relation, missing relationId or toId');
   }
   const data = await loadEntityById(stixObservableId, 'Stix-Observable');
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);

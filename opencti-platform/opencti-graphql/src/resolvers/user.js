@@ -84,7 +84,7 @@ const userResolvers = {
         // eslint-disable-next-line no-await-in-loop
         const loginToken = await new Promise((resolve) => {
           passport.authenticate(auth.provider, { session: false }, (err, tokenAuth, info) => {
-            if (err || info) logger.error(`[AUTH ERROR] > ${auth.provider} `, err, info);
+            if (err || info) logger.error(`[AUTH ERROR] > ${auth.provider}`, { error: err, info });
             resolve(tokenAuth);
           })({ body: { username: input.email, password: input.password } });
         });
@@ -95,7 +95,7 @@ const userResolvers = {
         }
       }
       // User cannot be authenticated in any providers
-      throw new AuthenticationFailure();
+      throw AuthenticationFailure();
     },
     logout: (_, args, context) => logout(context.user, context.res),
     roleEdit: (_, { id }, { user }) => ({

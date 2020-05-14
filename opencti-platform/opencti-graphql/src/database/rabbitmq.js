@@ -2,9 +2,10 @@ import amqp from 'amqplib';
 import axios from 'axios';
 import { add, divide, filter, includes, map, pipe, reduce } from 'ramda';
 import { v4 as uuid } from 'uuid';
-import conf, { logger } from '../config/conf';
+import conf from '../config/conf';
 import { generateLogMessage, utcDate } from './utils';
 import { convertDataToStix } from './stix';
+import { DatabaseError } from '../config/errors';
 
 export const CONNECTOR_EXCHANGE = 'amqp.connector.exchange';
 export const WORKER_EXCHANGE = 'amqp.worker.exchange';
@@ -174,8 +175,7 @@ export const ensureRabbitMQAndLogsQueue = async () => {
     })
   ).catch(
     /* istanbul ignore next */ () => {
-      logger.error(`[RABBITMQ] Seems down`);
-      throw new Error('RabbitMQ seems down');
+      throw DatabaseError('RabbitMQ seems down');
     }
   );
   // 02. Ensure logs queue exists
@@ -191,8 +191,7 @@ export const ensureRabbitMQAndLogsQueue = async () => {
     })
   ).catch(
     /* istanbul ignore next */ () => {
-      logger.error(`[RABBITMQ] Seems down`);
-      throw new Error('RabbitMQ seems down');
+      throw DatabaseError('RabbitMQ seems down');
     }
   );
   // 03. bind queue for the each connector scope

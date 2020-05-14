@@ -1,4 +1,5 @@
-import { pipe, includes, isEmpty, head, assoc, map } from 'ramda';
+import { assoc, head, includes, isEmpty, map, pipe } from 'ramda';
+import { FunctionalError } from '../config/errors';
 
 export const STIX_SPEC_VERSION = '2.1';
 export const OBSERVABLE_TYPES = [
@@ -38,6 +39,7 @@ const isNotEmpty = (value) => {
 
 export const buildStixData = (baseData, entityData, associationMap) => {
   const finalData = baseData;
+  // eslint-disable-next-line no-restricted-syntax
   for (const [key, value] of Object.entries(associationMap)) {
     if (entityData[key] && isNotEmpty(entityData[key])) {
       finalData[value] = entityData[key];
@@ -536,7 +538,7 @@ export const relationEmbeddedToStix = async (relationEmbedded, eventType, extra)
 export const convertDataToStix = async (data, eventType = null, eventExtraData = null) => {
   if (!data) {
     /* istanbul ignore next */
-    throw new Error('[STIX] No eventData provided');
+    throw FunctionalError('No data provided to STIX converter');
   }
   let entityType = data.entity_type;
   if (includes(entityType, IDENTITY_TYPES)) {
@@ -588,6 +590,6 @@ export const convertDataToStix = async (data, eventType = null, eventExtraData =
     /* istanbul ignore next */
     default:
       /* istanbul ignore next */
-      throw new Error('[STIX] Entity type is unknown, cannot convert to STIX');
+      throw FunctionalError('Entity type is unknown, cannot convert to STIX');
   }
 };

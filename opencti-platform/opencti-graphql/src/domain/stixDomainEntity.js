@@ -25,7 +25,7 @@ import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import stixDomainEntityResolvers from '../resolvers/stixDomainEntity';
 import { addStixRelation, findAll as findAllStixRelations } from './stixRelation';
-import { ForbiddenAccess } from '../config/errors';
+import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import { INDEX_STIX_ENTITIES } from '../database/utils';
 import { createdByRef, killChainPhases, markingDefinitions, reports } from './stixEntity';
 import { addPerson } from './user';
@@ -222,7 +222,7 @@ export const stixDomainEntityDelete = async (user, stixDomainEntityId) => {
     return stixDomainEntityId;
   }
   if (stixDomainEntity.entity_type === 'user' && !isNil(stixDomainEntity.external)) {
-    throw new ForbiddenAccess();
+    throw ForbiddenAccess();
   }
   return deleteEntityById(user, stixDomainEntityId, 'Stix-Domain-Entity');
 };
@@ -243,7 +243,7 @@ export const stixDomainEntityAddRelation = async (user, stixDomainEntityId, inpu
       !['tagged', 'created_by_ref', 'object_marking_refs'].includes(input.through)) ||
     !input.through
   ) {
-    throw new ForbiddenAccess();
+    throw ForbiddenAccess();
   }
   const finalInput = assoc('fromType', 'Stix-Domain-Entity', input);
   const data = await createRelation(user, stixDomainEntityId, finalInput);
@@ -257,7 +257,7 @@ export const stixDomainEntityAddRelations = async (user, stixDomainEntityId, inp
       !['tagged', 'created_by_ref', 'object_marking_refs'].includes(input.through)) ||
     !input.through
   ) {
-    throw new ForbiddenAccess();
+    throw ForbiddenAccess();
   }
   const finalInput = map(
     (n) => ({
@@ -283,7 +283,7 @@ export const stixDomainEntityDeleteRelation = async (
 ) => {
   const stixDomainEntity = await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
   if (!stixDomainEntity) {
-    throw new Error('Cannot delete the relation, Stix-Domain-Entity cannot be found.');
+    throw FunctionalError('Cannot delete the relation, Stix-Domain-Entity cannot be found.');
   }
   if (relationId) {
     const data = await loadRelationById(relationId, 'relation');
@@ -293,7 +293,7 @@ export const stixDomainEntityDeleteRelation = async (
         !isNil(stixDomainEntity.external) &&
         !['tagged', 'created_by_ref', 'object_marking_refs'].includes(data.relationship_type))
     ) {
-      throw new ForbiddenAccess();
+      throw ForbiddenAccess();
     }
     await deleteRelationById(user, relationId, 'relation');
   } else if (toId) {
@@ -302,11 +302,11 @@ export const stixDomainEntityDeleteRelation = async (
       !isNil(stixDomainEntity.external) &&
       !['tagged', 'created_by_ref', 'object_marking_refs'].includes(relationType)
     ) {
-      throw new ForbiddenAccess();
+      throw ForbiddenAccess();
     }
     await deleteRelationsByFromAndTo(user, stixDomainEntityId, toId, relationType, 'relation');
   } else {
-    throw new Error('Cannot delete the relation, missing relationId or toId');
+    throw FunctionalError('Cannot delete the relation, missing relationId or toId');
   }
   const data = await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
@@ -314,10 +314,10 @@ export const stixDomainEntityDeleteRelation = async (
 export const stixDomainEntityEditField = async (user, stixDomainEntityId, input) => {
   const stixDomainEntity = await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
   if (!stixDomainEntity) {
-    throw new Error('Cannot edit field, Stix-Domain-Entity cannot be found.');
+    throw FunctionalError('Cannot edit field, Stix-Domain-Entity cannot be found.');
   }
   if (stixDomainEntity.entity_type === 'user' && !isNil(stixDomainEntity.external)) {
-    throw new ForbiddenAccess();
+    throw ForbiddenAccess();
   }
   return executeWrite((wTx) => {
     return updateAttribute(user, stixDomainEntityId, 'Stix-Domain-Entity', input, wTx);

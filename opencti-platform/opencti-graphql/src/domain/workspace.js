@@ -69,7 +69,7 @@ export const addWorkspace = async (user, workspace) => {
 export const workspaceDelete = (user, workspaceId) => deleteEntityById(user, workspaceId, 'Workspace', { noLog: true });
 export const workspaceAddRelation = (user, workspaceId, input) => {
   if (!input.through) {
-    throw new ForbiddenAccess();
+    throw ForbiddenAccess();
   }
   const finalInput = assoc('fromType', 'Workspace', input);
   return createRelation(user, workspaceId, finalInput, { noLog: true }).then((relationData) => {
@@ -79,7 +79,7 @@ export const workspaceAddRelation = (user, workspaceId, input) => {
 };
 export const workspaceAddRelations = async (user, workspaceId, input) => {
   if (!input.through) {
-    throw new ForbiddenAccess();
+    throw ForbiddenAccess();
   }
   const finalInputs = map(
     (n) => ({

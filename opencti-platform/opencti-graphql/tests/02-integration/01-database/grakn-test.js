@@ -44,7 +44,7 @@ import { attributeUpdate, findAll as findAllAttributes } from '../../../src/doma
 import { INDEX_STIX_ENTITIES, utcDate } from '../../../src/database/utils';
 import { GATHERING_TARGETS_RULE, inferenceDisable, inferenceEnable } from '../../../src/domain/inference';
 import { resolveNaturalRoles } from '../../../src/database/graknRoles';
-import { REL_INDEX_PREFIX } from '../../../src/database/elasticSearch';
+import { forceNoCache, REL_INDEX_PREFIX } from '../../../src/database/elasticSearch';
 import { ADMIN_USER } from '../../utils/testQuery';
 
 describe('Grakn basic and utils', () => {
@@ -285,16 +285,16 @@ describe('Grakn attribute updater', () => {
     const identityId = '78ef0cb8-4397-4603-86b4-f1d60be7400d';
     const type = 'Stix-Domain-Entity';
     let identity = await internalLoadEntityByStixId(stixId, null, { noCache });
-    expect(identity.alias).toEqual(['Computer Incident', 'Incident']);
+    expect(identity.alias.sort()).toEqual(['Computer Incident', 'Incident'].sort());
     let input = { key: 'alias', value: ['Computer', 'Test', 'Grakn'] };
     await executeWrite((wTx) => updateAttribute(ADMIN_USER, identityId, type, input, wTx));
     identity = await internalLoadEntityByStixId(stixId, null, { noCache });
-    expect(identity.alias).toEqual(['Computer', 'Test', 'Grakn']);
+    expect(identity.alias.sort()).toEqual(['Computer', 'Test', 'Grakn'].sort());
     // Value back to before
     input = { key: 'alias', value: ['Computer Incident', 'Incident'] };
     await executeWrite((wTx) => updateAttribute(ADMIN_USER, identityId, type, input, wTx));
     identity = await internalLoadEntityByStixId(stixId, null, { noCache });
-    expect(identity.alias).toEqual(['Computer Incident', 'Incident']);
+    expect(identity.alias.sort()).toEqual(['Computer Incident', 'Incident'].sort());
   });
 });
 
@@ -350,7 +350,8 @@ describe('Grakn entities listing', () => {
     expect(indicators.edges.length).toEqual(2);
     options = { search: 'i want a location', noCache };
     indicators = await listEntities(['Indicator'], ['description'], options);
-    expect(indicators.edges.length).toEqual(noCache ? 0 : 3); // Grakn is not a full text search engine :)
+    const forceToNoCache = forceNoCache();
+    expect(indicators.edges.length).toEqual(noCache || forceToNoCache ? 0 : 3); // Grakn is not a full text search engine :)
   });
   it.each(noCacheCases)('should list entities order by relation (noCache = %s)', async (noCache) => {
     // France (f2ea7d37-996d-4313-8f73-42a8782d39a0) < localization > Hietzing (d1881166-f431-4335-bfed-b1c647e59f89)
@@ -373,8 +374,9 @@ describe('Grakn entities listing', () => {
   it.each(noCacheCases)('should list entities order by relation id (noCache = %s)', async (noCache) => {
     // France (f2ea7d37-996d-4313-8f73-42a8782d39a0) < localization > Hietzing (d1881166-f431-4335-bfed-b1c647e59f89)
     // Hietzing (d1881166-f431-4335-bfed-b1c647e59f89) < localization > France (f2ea7d37-996d-4313-8f73-42a8782d39a0)
-    // We accept that ElasticSearch is not able to have both direction of the relattions
-    if (noCache) {
+    // We accept that ElasticSearch is not able to have both direction of the relations
+    const forceToNoCache = forceNoCache();
+    if (forceToNoCache || noCache) {
       const options = { orderBy: 'rel_localization.internal_id_key', orderMode: 'desc', noCache };
       const identities = await listEntities(['Identity'], ['name'], options);
       expect(identities.edges.length).toEqual(6);

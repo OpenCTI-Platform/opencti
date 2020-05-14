@@ -1,4 +1,5 @@
 import { invertObj } from 'ramda';
+import {FunctionalError} from "../config/errors";
 
 export const ROLE_FROM = 'from';
 export const ROLE_TO = 'to';
@@ -156,11 +157,11 @@ const rolesMap = {
 export const resolveNaturalRoles = (relationship) => {
   const definition = rolesMap[relationship];
   if (!definition) {
-    throw new Error(`Undefined directed roles for ${relationship}`);
+    throw FunctionalError(`Undefined directed roles for ${relationship}`);
   }
   const inverseDefinition = invertObj(definition);
   if (!inverseDefinition[ROLE_FROM] || !inverseDefinition[ROLE_TO]) {
-    throw new Error(`Cannot find from or to definition in ${relationship}`);
+    throw FunctionalError(`Cannot find from or to definition in ${relationship}`);
   }
   return definition;
 };

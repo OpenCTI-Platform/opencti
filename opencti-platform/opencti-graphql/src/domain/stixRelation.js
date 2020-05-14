@@ -57,7 +57,7 @@ export const stixRelationsNumber = (args) => ({
 // region mutations
 export const addStixRelation = async (user, stixRelation, reversedReturn = false) => {
   if (!includes('stix_id_key', Object.keys(stixRelation)) && !stixRelation.relationship_type) {
-    throw new ForbiddenAccess();
+    throw ForbiddenAccess();
   }
   const created = await createRelation(user, stixRelation.fromId, stixRelation, { reversedReturn });
   return notify(BUS_TOPICS.StixRelation.ADDED_TOPIC, created, user);
@@ -76,7 +76,7 @@ export const stixRelationEditField = (user, stixRelationId, input) => {
 export const stixRelationAddRelation = async (user, stixRelationId, input) => {
   const data = await loadEntityById(stixRelationId, 'stix_relation');
   if (!data.parent_types.includes('stix_relation') || !input.through) {
-    throw new ForbiddenAccess();
+    throw ForbiddenAccess();
   }
   return createRelation(user, stixRelationId, input).then((relationData) => {
     notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, relationData, user);

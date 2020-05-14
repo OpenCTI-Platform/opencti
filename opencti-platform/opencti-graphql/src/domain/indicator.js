@@ -18,6 +18,7 @@ import { findById as findKillChainPhaseById } from './killChainPhase';
 import { askEnrich } from './enrichment';
 import { extractObservables } from '../python/pythonBridge';
 import { OBSERVABLE_TYPES } from '../database/stix';
+import {FunctionalError} from "../config/errors";
 
 const OpenCTITimeToLive = {
   // Formatted as "[Marking-Definition]-[KillChainPhaseIsDelivery]"
@@ -116,7 +117,7 @@ export const findAll = (args) => {
 
 export const addIndicator = async (user, indicator, createObservables = true) => {
   if (!OBSERVABLE_TYPES.includes(indicator.main_observable_type.toLowerCase())) {
-    throw new Error(`[SCHEMA] Observable type ${indicator.main_observable_type} is not supported.`);
+    throw FunctionalError(`Observable type ${indicator.main_observable_type} is not supported.`);
   }
   const indicatorToCreate = pipe(
     assoc('main_observable_type', indicator.main_observable_type.toLowerCase()),
