@@ -1,4 +1,5 @@
 stix2==1.4.0
 stix2-validator==1.1.2
 pycti==3.2.6
+pika==1.1.0
 elasticsearch>=7.0.0,<8.0.0
