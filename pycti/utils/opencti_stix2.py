@@ -391,6 +391,7 @@ class OpenCTIStix2:
                             for match in matches:
                                 if match < today:
                                     published = match.strftime("%Y-%m-%dT%H:%M:%SZ")
+                                    break
                         except:
                             published = None
                     if published is None:
@@ -740,6 +741,7 @@ class OpenCTIStix2:
                         for match in matches:
                             if match < today:
                                 date = match.strftime("%Y-%m-%dT%H:%M:%SZ")
+                                break
                     except:
                         date = None
         if date is None:
