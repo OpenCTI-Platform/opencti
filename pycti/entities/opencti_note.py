@@ -402,6 +402,17 @@ class Note:
                     id
                 }
             }
+            externalReferences {
+                edges {
+                    node {
+                        id
+                        stix_id_key
+                        source_name
+                        description
+                        url
+                    }
+                }
+            }
         """
         object_result = None
         if external_reference_id is not None:
