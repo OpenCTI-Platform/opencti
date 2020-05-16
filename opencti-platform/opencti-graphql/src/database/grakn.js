@@ -1407,25 +1407,24 @@ const createRelationRaw = async (user, fromInternalId, input, opts = {}) => {
     assoc('relationship_type', relationshipType),
     assoc('parent_types', graknRelation.relationTypes)
   )(relationAttributes);
+  const postOperations = [];
   if (indexable) {
     // 04. Index the relation and the modification in the base entity
-    await elIndexElements([createdRel]);
+    postOperations.push(elIndexElements([createdRel]));
   }
   // 06. Send logs
   if (!noLog) {
-    const from = await elLoadByGraknId(createdRel.fromId);
-    const to = await elLoadByGraknId(createdRel.toId);
-    if (entityType === TYPE_RELATION_EMBEDDED) {
-      await sendLog(
-        relationshipType === 'created_by_ref' ? EVENT_TYPE_UPDATE : EVENT_TYPE_UPDATE_ADD,
-        user,
-        createdRel,
-        { from, to }
-      );
-    } else {
-      await sendLog(EVENT_TYPE_CREATE, user, createdRel, { from, to });
-    }
+    postOperations.push(
+      Promise.all([loadByGraknId(createdRel.fromId), loadByGraknId(createdRel.toId)]).then(([from, to]) => {
+        if (entityType === TYPE_RELATION_EMBEDDED) {
+          const eventType = relationshipType === 'created_by_ref' ? EVENT_TYPE_UPDATE : EVENT_TYPE_UPDATE_ADD;
+          return sendLog(eventType, user, createdRel, { from, to });
+        }
+        return sendLog(EVENT_TYPE_CREATE, user, createdRel, { from, to });
+      })
+    );
   }
+  await Promise.all(postOperations);
   // 07. Return result
   if (reversedReturn !== true) {
     return createdRel;
