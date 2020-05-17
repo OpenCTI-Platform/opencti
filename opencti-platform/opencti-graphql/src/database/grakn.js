@@ -1407,11 +1407,11 @@ const createRelationRaw = async (user, fromInternalId, input, opts = {}) => {
     assoc('relationship_type', relationshipType),
     assoc('parent_types', graknRelation.relationTypes)
   )(relationAttributes);
-  const postOperations = [];
   if (indexable) {
     // 04. Index the relation and the modification in the base entity
-    postOperations.push(elIndexElements([createdRel]));
+    await elIndexElements([createdRel]);
   }
+  const postOperations = [];
   // 06. Send logs
   if (!noLog) {
     postOperations.push(
@@ -1695,10 +1695,10 @@ export const createEntity = async (user, entity, type, opts = {}) => {
     assoc('parent_types', entityCreated.types)
   )(data);
   // Transaction succeed, index the result
-  const postOperations = [];
   if (indexable) {
-    postOperations.push(elIndexElements([completedData]));
+    await elIndexElements([completedData]);
   }
+  const postOperations = [];
   // Send creation log
   if (!noLog) {
     postOperations.push(sendLog(EVENT_TYPE_CREATE, user, completedData));

@@ -18,7 +18,7 @@ import { findById as findKillChainPhaseById } from './killChainPhase';
 import { askEnrich } from './enrichment';
 import { extractObservables } from '../python/pythonBridge';
 import { OBSERVABLE_TYPES } from '../database/stix';
-import {FunctionalError} from "../config/errors";
+import { FunctionalError } from '../config/errors';
 
 const OpenCTITimeToLive = {
   // Formatted as "[Marking-Definition]-[KillChainPhaseIsDelivery]"
@@ -176,18 +176,13 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
       logger.info(`Cannot create observable`, { error: err });
     }
   }
-  let observableRefs = [];
+  let observableRefs;
   if (indicatorToCreate.observableRefs) {
     observableRefs = concat(indicatorToCreate.observableRefs, observablesToLink);
   } else {
     observableRefs = observablesToLink;
   }
-  const created = await createEntity(
-    user,
-    assoc('observableRefs', observableRefs, indicatorToCreate),
-    'Indicator',
-    TYPE_STIX_DOMAIN_ENTITY
-  );
+  const created = await createEntity(user, assoc('observableRefs', observableRefs, indicatorToCreate), 'Indicator');
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 
