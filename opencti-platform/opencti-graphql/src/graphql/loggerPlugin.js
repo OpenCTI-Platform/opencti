@@ -60,7 +60,7 @@ export default {
           type: operationType + (isCallError ? '_ERROR' : ''),
           operation_query: stripIgnoredCharacters(context.request.query),
           inner_relation_creation: innerRelationCount,
-          operation: op,
+          operation: op || 'unspecified',
           time: elapsed,
           variables,
           size,
@@ -70,9 +70,9 @@ export default {
           const callError = currentError.originalError ? currentError.originalError : currentError;
           const { data, path, stack } = callError;
           const error = { data, path, stacktrace: stack.split('\n').map((line) => line.trim()) };
-          logger.error('[API Call - ERROR]', Object.assign(callMetaData, { error }));
+          logger.error('API Call - ERROR', Object.assign(callMetaData, { error }));
         } else if (perfLog) {
-          logger.info('[API Call - SUCCESS]', callMetaData);
+          logger.info('API Call - SUCCESS', callMetaData);
         }
       },
     };
