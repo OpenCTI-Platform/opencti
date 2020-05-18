@@ -227,7 +227,6 @@ class Identity:
 
         if name is not None and description is not None:
             self.opencti.log("info", "Creating Identity {" + name + "}.")
-
             input_variables = {
                 "name": name,
                 "description": description,
@@ -240,38 +239,32 @@ class Identity:
                 "markingDefinitions": marking_definitions,
                 "tags": tags,
             }
-
             if type == IdentityTypes.ORGANIZATION.value:
-                query = f"""
-                    mutation OrganizationAdd($input: OrganizationAddInput) {{
-                        organizationAdd(input: $input) {{
+                query = """
+                    mutation OrganizationAdd($input: OrganizationAddInput) {
+                        organizationAdd(input: $input) {
                             id
                             stix_id_key
                             entity_type
                             parent_types
-                        }}
-                    }}
+                        }
+                    }
                 """
-
                 input_variables["organization_class"] = organization_class
-
                 result_data_field = "organizationAdd"
             else:
-                query = f"""
-                    mutation IdentityAdd($input: IdentityAddInput) {{
-                        identityAdd(input: $input) {{
+                query = """
+                    mutation IdentityAdd($input: IdentityAddInput) {
+                        identityAdd(input: $input) {
                             id
                             stix_id_key
                             entity_type
                             parent_types
-                        }}
-                    }}
+                        }
+                    }
                 """
-
                 input_variables["type"] = type
-
                 result_data_field = "identityAdd"
-
             result = self.opencti.query(query, {"input": input_variables,},)
             return self.opencti.process_multiple_fields(
                 result["data"][result_data_field]
