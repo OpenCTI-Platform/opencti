@@ -12,7 +12,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { notify } from '../database/redis';
-import { buildPagination, TYPE_STIX_DOMAIN_ENTITY, TYPE_STIX_OBSERVABLE } from '../database/utils';
+import { buildPagination, TYPE_STIX_OBSERVABLE } from '../database/utils';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { findById as findKillChainPhaseById } from './killChainPhase';
 import { askEnrich } from './enrichment';
