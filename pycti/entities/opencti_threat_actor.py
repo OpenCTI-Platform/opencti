@@ -252,17 +252,16 @@ class ThreatActor:
 
         if name is not None and description is not None:
             self.opencti.log("info", "Creating Threat-Actor {" + name + "}.")
-            query = (
-                """
+            query = """
                 mutation ThreatActorAdd($input: ThreatActorAddInput) {
                     threatActorAdd(input: $input) {
-                        """
-                + self.properties
-                + """
+                        id
+                        stix_id_key
+                        entity_type
+                        parent_types
                     }
                 }
             """
-            )
             result = self.opencti.query(
                 query,
                 {

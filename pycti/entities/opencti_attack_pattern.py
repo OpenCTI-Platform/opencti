@@ -268,17 +268,16 @@ class AttackPattern:
 
         if name is not None and description is not None:
             self.opencti.log("info", "Creating Attack-Pattern {" + name + "}.")
-            query = (
-                """
+            query = """
                 mutation AttackPatternAdd($input: AttackPatternAddInput) {
                     attackPatternAdd(input: $input) {
-                        """
-                + self.properties
-                + """
+                        id
+                        stix_id_key
+                        entity_type
+                        parent_types
                     }
                 }
             """
-            )
             result = self.opencti.query(
                 query,
                 {

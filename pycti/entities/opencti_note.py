@@ -335,17 +335,26 @@ class Note:
 
         if name is not None and description is not None and content is not None:
             self.opencti.log("info", "Creating Note {" + description + "}.")
-            query = (
-                """
+            query = """
                 mutation NoteAdd($input: NoteAddInput) {
                     noteAdd(input: $input) {
-                        """
-                + self.properties
-                + """
+                        id
+                        stix_id_key
+                        entity_type
+                        parent_types
+                        observableRefs {
+                            edges {
+                                node {
+                                    id
+                                    stix_id_key
+                                    entity_type
+                                    observable_value
+                                }
+                            }
+                        }                        
                     }
                 }
             """
-            )
             result = self.opencti.query(
                 query,
                 {

@@ -292,17 +292,29 @@ class Indicator:
             and main_observable_type is not None
         ):
             self.opencti.log("info", "Creating Indicator {" + name + "}.")
-            query = (
-                """
+            query = """
                 mutation IndicatorAdd($input: IndicatorAddInput) {
                     indicatorAdd(input: $input) {
-                        """
-                + self.properties
-                + """
+                        id
+                        stix_id_key
+                        entity_type
+                        parent_types
+                        observableRefs {
+                            edges {
+                                node {
+                                    id
+                                    entity_type
+                                    stix_id_key
+                                    observable_value
+                                }
+                                relation {
+                                    id
+                                }
+                            }
+                        }                        
                     }
                 }
             """
-            )
             if pattern_type is None:
                 pattern_type = "stix2"
             result = self.opencti.query(

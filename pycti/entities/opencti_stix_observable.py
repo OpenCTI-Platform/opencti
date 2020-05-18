@@ -267,17 +267,16 @@ class StixObservable:
                 + str(create_indicator)
                 + ".",
             )
-            query = (
-                """
-               mutation StixObservableAdd($input: StixObservableAddInput) {
-                   stixObservableAdd(input: $input) {
-                       """
-                + self.properties
-                + """
-                   }
-               }
+            query = """
+                mutation StixObservableAdd($input: StixObservableAddInput) {
+                    stixObservableAdd(input: $input) {
+                        id
+                        stix_id_key
+                        entity_type
+                        parent_types
+                    }
+                }
             """
-            )
             result = self.opencti.query(
                 query,
                 {

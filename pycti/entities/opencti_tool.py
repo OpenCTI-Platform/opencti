@@ -218,17 +218,16 @@ class Tool:
 
         if name is not None and description is not None:
             self.opencti.log("info", "Creating Tool {" + name + "}.")
-            query = (
-                """
+            query = """
                 mutation ToolAdd($input: ToolAddInput) {
                     toolAdd(input: $input) {
-                        """
-                + self.properties
-                + """
+                        id
+                        stix_id_key
+                        entity_type
+                        parent_types
                     }
                 }
             """
-            )
             result = self.opencti.query(
                 query,
                 {
