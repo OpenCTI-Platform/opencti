@@ -343,17 +343,26 @@ class Opinion:
 
         if name is not None and description is not None and explanation is not None:
             self.opencti.log("info", "Creating Opinion {" + name + "}.")
-            query = (
-                """
+            query = """
                 mutation OpinionAdd($input: OpinionAddInput) {
                     opinionAdd(input: $input) {
-                        """
-                + self.properties
-                + """
+                        id
+                        stix_id_key
+                        entity_type
+                        parent_types
+                        observableRefs {
+                            edges {
+                                node {
+                                    id
+                                    stix_id_key
+                                    entity_type
+                                    observable_value
+                                }
+                            }
+                        }                        
                     }
                 }
             """
-            )
             result = self.opencti.query(
                 query,
                 {

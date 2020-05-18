@@ -245,7 +245,10 @@ class Identity:
                 query = f"""
                     mutation OrganizationAdd($input: OrganizationAddInput) {{
                         organizationAdd(input: $input) {{
-                            {self.properties}
+                            id
+                            stix_id_key
+                            entity_type
+                            parent_types
                         }}
                     }}
                 """
@@ -257,7 +260,10 @@ class Identity:
                 query = f"""
                     mutation IdentityAdd($input: IdentityAddInput) {{
                         identityAdd(input: $input) {{
-                            {self.properties}
+                            id
+                            stix_id_key
+                            entity_type
+                            parent_types
                         }}
                     }}
                 """

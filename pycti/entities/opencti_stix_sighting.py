@@ -279,17 +279,16 @@ class StixSighting:
         self.opencti.log(
             "info", "Creating stix_sighting {" + from_id + ", " + str(to_id) + "}.",
         )
-        query = (
-            """
+        query = """
                 mutation StixSightingAdd($input: StixSightingAddInput!) {
                     stixSightingAdd(input: $input) {
-            """
-            + self.properties
-            + """
-                        }
+                        id
+                        stix_id_key
+                        entity_type
+                        parent_types
                     }
-                """
-        )
+                }
+            """
         result = self.opencti.query(
             query,
             {

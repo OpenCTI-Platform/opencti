@@ -235,17 +235,16 @@ class IntrusionSet:
 
         if name is not None and description is not None:
             self.opencti.log("info", "Creating Intrusion-Set {" + name + "}.")
-            query = (
-                """
+            query = """
                 mutation IntrusionSetAdd($input: IntrusionSetAddInput) {
                     intrusionSetAdd(input: $input) {
-                        """
-                + self.properties
-                + """
+                        id
+                        stix_id_key
+                        entity_type
+                        parent_types
                     }
                 }
             """
-            )
             result = self.opencti.query(
                 query,
                 {

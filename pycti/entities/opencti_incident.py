@@ -236,17 +236,29 @@ class Incident:
 
         if name is not None and description is not None:
             self.opencti.log("info", "Creating Incident {" + name + "}.")
-            query = (
-                """
+            query = """
                 mutation IncidentAdd($input: IncidentAddInput) {
                     incidentAdd(input: $input) {
-                        """
-                + self.properties
-                + """
+                        id
+                        stix_id_key
+                        entity_type
+                        parent_types
+                        observableRefs {
+                            edges {
+                                node {
+                                    id
+                                    entity_type
+                                    stix_id_key
+                                    observable_value
+                                }
+                                relation {
+                                    id
+                                }
+                            }
+                        }                 
                     }
                }
             """
-            )
             result = self.opencti.query(
                 query,
                 {

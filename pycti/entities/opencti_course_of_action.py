@@ -224,17 +224,16 @@ class CourseOfAction:
 
         if name is not None and description is not None:
             self.opencti.log("info", "Creating Course Of Action {" + name + "}.")
-            query = (
-                """
+            query = """
                 mutation CourseOfActionAdd($input: CourseOfActionAddInput) {
                     courseOfActionAdd(input: $input) {
-                        """
-                + self.properties
-                + """
+                        id
+                        stix_id_key
+                        entity_type
+                        parent_types
                     }
                 }
             """
-            )
             result = self.opencti.query(
                 query,
                 {

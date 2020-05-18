@@ -351,17 +351,26 @@ class Report:
             and report_class is not None
         ):
             self.opencti.log("info", "Creating Report {" + name + "}.")
-            query = (
-                """
+            query = """
                 mutation ReportAdd($input: ReportAddInput) {
                     reportAdd(input: $input) {
-                        """
-                + self.properties
-                + """
+                        id
+                        stix_id_key
+                        entity_type
+                        parent_types
+                        observableRefs {
+                            edges {
+                                node {
+                                    id
+                                    stix_id_key
+                                    entity_type
+                                    observable_value
+                                }
+                            }
+                        }               
                     }
                 }
             """
-            )
             result = self.opencti.query(
                 query,
                 {

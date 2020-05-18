@@ -227,17 +227,16 @@ class Campaign:
 
         if name is not None and description is not None:
             self.opencti.log("info", "Creating Campaign {" + name + "}.")
-            query = (
-                """
+            query = """
                 mutation CampaignAdd($input: CampaignAddInput) {
                     campaignAdd(input: $input) {
-                        """
-                + self.properties
-                + """
+                        id
+                        stix_id_key
+                        entity_type
+                        parent_types
                     }
                 }
             """
-            )
             result = self.opencti.query(
                 query,
                 {

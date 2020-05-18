@@ -315,17 +315,16 @@ class StixRelation:
             + to_id
             + "}.",
         )
-        query = (
-            """
-                        mutation StixRelationAdd($input: StixRelationAddInput!) {
-                            stixRelationAdd(input: $input) {
-                               """
-            + self.properties
-            + """
-                        }
+        query = """
+                mutation StixRelationAdd($input: StixRelationAddInput!) {
+                    stixRelationAdd(input: $input) {
+                        id
+                        stix_id_key
+                        entity_type
+                        parent_types
                     }
-                """
-        )
+                }
+            """
         result = self.opencti.query(
             query,
             {
