@@ -1407,11 +1407,11 @@ const createRelationRaw = async (user, fromInternalId, input, opts = {}) => {
     assoc('relationship_type', relationshipType),
     assoc('parent_types', graknRelation.relationTypes)
   )(relationAttributes);
+  const postOperations = [];
   if (indexable) {
     // 04. Index the relation and the modification in the base entity
-    await elIndexElements([createdRel]);
+    postOperations.push(elIndexElements([createdRel]));
   }
-  const postOperations = [];
   // 06. Send logs
   if (!noLog) {
     postOperations.push(
@@ -1588,7 +1588,7 @@ export const createRelation = async (user, fromInternalId, input, opts = {}) => 
     // 05. Complete with eventual relations (will eventually update the index)
     await Promise.all([
       addOwner(user, created.id, input.createdByOwner, opts),
-      addCreatedByRef(user, created.id, input.createdByRef, opts),
+      addCreatedByRef(user, created.id, input.createdByRef || user.id, opts),
       addMarkingDefs(user, created.id, input.markingDefinitions, opts),
       addKillChains(user, created.id, input.killChainPhases, opts),
     ]);
@@ -1700,9 +1700,7 @@ export const createEntity = async (user, entity, type, opts = {}) => {
   }
   const postOperations = [];
   // Send creation log
-  if (!noLog) {
-    postOperations.push(sendLog(EVENT_TYPE_CREATE, user, completedData));
-  }
+  if (!noLog) postOperations.push(sendLog(EVENT_TYPE_CREATE, user, completedData));
   // Complete with eventual relations (will eventually update the index)
   postOperations.push(addOwner(user, internalId, entity.createdByOwner, opts));
   if (modelType === TYPE_STIX_DOMAIN || modelType === TYPE_STIX_DOMAIN_ENTITY || modelType === TYPE_STIX_OBSERVABLE) {
