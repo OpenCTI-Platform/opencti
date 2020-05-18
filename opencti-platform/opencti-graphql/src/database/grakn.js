@@ -1588,7 +1588,7 @@ export const createRelation = async (user, fromInternalId, input, opts = {}) => 
     // 05. Complete with eventual relations (will eventually update the index)
     await Promise.all([
       addOwner(user, created.id, input.createdByOwner, opts),
-      addCreatedByRef(user, created.id, input.createdByRef || user.id, opts),
+      addCreatedByRef(user, created.id, input.createdByRef, opts),
       addMarkingDefs(user, created.id, input.markingDefinitions, opts),
       addKillChains(user, created.id, input.killChainPhases, opts),
     ]);
