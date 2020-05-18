@@ -1,4 +1,4 @@
-import { includes, propOr } from 'ramda';
+import { assoc, includes, propOr } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createRelation,
@@ -59,7 +59,12 @@ export const addStixRelation = async (user, stixRelation, reversedReturn = false
   if (!includes('stix_id_key', Object.keys(stixRelation)) && !stixRelation.relationship_type) {
     throw ForbiddenAccess();
   }
-  const created = await createRelation(user, stixRelation.fromId, stixRelation, { reversedReturn });
+  // We force the created by ref if not specified
+  let input = stixRelation;
+  if (!stixRelation.createdByRef) {
+    input = assoc('createdByRef', user.id, stixRelation);
+  }
+  const created = await createRelation(user, stixRelation.fromId, input, { reversedReturn });
   return notify(BUS_TOPICS.StixRelation.ADDED_TOPIC, created, user);
 };
 export const stixRelationDelete = async (user, stixRelationId) => {

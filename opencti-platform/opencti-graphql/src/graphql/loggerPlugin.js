@@ -60,7 +60,7 @@ export default {
           type: operationType + (isCallError ? '_ERROR' : ''),
           operation_query: stripIgnoredCharacters(context.request.query),
           inner_relation_creation: innerRelationCount,
-          operation: op || 'unspecified',
+          operation: op || 'Unspecified',
           time: elapsed,
           variables,
           size,

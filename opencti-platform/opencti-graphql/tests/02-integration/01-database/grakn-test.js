@@ -512,7 +512,7 @@ describe('Grakn relations listing', () => {
     expect(stixRelations.edges.length).toEqual(21);
     const embeddedRelations = await listRelations('stix_relation_embedded', { noCache });
     expect(embeddedRelations).not.toBeNull();
-    expect(embeddedRelations.edges.length).toEqual(130);
+    expect(embeddedRelations.edges.length).toEqual(145);
   });
   it.each(noCacheCases)('should list relations with roles (noCache = %s)', async (noCache) => {
     const stixRelations = await listRelations('uses', { noCache, fromRole: 'user', toRole: 'usage' });
