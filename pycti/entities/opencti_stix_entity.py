@@ -325,33 +325,31 @@ class StixEntity:
 
     def update_created_by_ref(self, **kwargs):
         id = kwargs.get("id", None)
-        stix_entity = kwargs.get("entity", None)
         identity_id = kwargs.get("identity_id", None)
         if id is not None and identity_id is not None:
-            if stix_entity is None:
-                custom_attributes = """
-                    id
-                    createdByRef {
-                        node {
-                            id
-                            entity_type
-                            stix_id_key
-                            stix_label
-                            name
-                            alias
-                            description
-                            created
-                            modified
-                            ... on Organization {
-                                organization_class
-                            }
+            custom_attributes = """
+                id
+                createdByRef {
+                    node {
+                        id
+                        entity_type
+                        stix_id_key
+                        stix_label
+                        name
+                        alias
+                        description
+                        created
+                        modified
+                        ... on Organization {
+                            organization_class
                         }
-                        relation {
-                            id
-                        }
-                    }    
-                """
-                stix_entity = self.read(id=id, customAttributes=custom_attributes)
+                    }
+                    relation {
+                        id
+                    }
+                }    
+            """
+            stix_entity = self.read(id=id, customAttributes=custom_attributes)
             if stix_entity is None:
                 self.opencti.log(
                     "error", "Cannot update created_by_ref, entity not found"
@@ -423,32 +421,30 @@ class StixEntity:
 
     def add_marking_definition(self, **kwargs):
         id = kwargs.get("id", None)
-        stix_entity = kwargs.get("entity", None)
         marking_definition_id = kwargs.get("marking_definition_id", None)
         if id is not None and marking_definition_id is not None:
-            if stix_entity is None:
-                custom_attributes = """
-                    id
-                    markingDefinitions {
-                        edges {
-                            node {
-                                id
-                                entity_type
-                                stix_id_key
-                                definition_type
-                                definition
-                                level
-                                color
-                                created
-                                modified
-                            }
-                            relation {
-                                id
-                            }
+            custom_attributes = """
+                id
+                markingDefinitions {
+                    edges {
+                        node {
+                            id
+                            entity_type
+                            stix_id_key
+                            definition_type
+                            definition
+                            level
+                            color
+                            created
+                            modified
+                        }
+                        relation {
+                            id
                         }
                     }
-                """
-                stix_entity = self.read(id=id, customAttributes=custom_attributes)
+                }
+            """
+            stix_entity = self.read(id=id, customAttributes=custom_attributes)
             if stix_entity is None:
                 self.opencti.log(
                     "error", "Cannot add Marking-Definition, entity not found"
@@ -503,27 +499,25 @@ class StixEntity:
 
     def add_tag(self, **kwargs):
         id = kwargs.get("id", None)
-        stix_entity = kwargs.get("entity", None)
         tag_id = kwargs.get("tag_id", None)
         if id is not None and tag_id is not None:
-            if stix_entity is None:
-                custom_attributes = """
-                    id
-                    tags {
-                        edges {
-                            node {
-                                id
-                                tag_type
-                                value
-                                color
-                            }
-                            relation {
-                                id
-                            }
+            custom_attributes = """
+                id
+                tags {
+                    edges {
+                        node {
+                            id
+                            tag_type
+                            value
+                            color
+                        }
+                        relation {
+                            id
                         }
                     }
-                """
-                stix_entity = self.read(id=id, customAttributes=custom_attributes)
+                }
+            """
+            stix_entity = self.read(id=id, customAttributes=custom_attributes)
             if stix_entity is None:
                 self.opencti.log("error", "Cannot add Tag, entity not found")
                 return False
@@ -569,33 +563,31 @@ class StixEntity:
 
     def add_external_reference(self, **kwargs):
         id = kwargs.get("id", None)
-        stix_entity = kwargs.get("entity", None)
         external_reference_id = kwargs.get("external_reference_id", None)
         if id is not None and external_reference_id is not None:
-            if stix_entity is None:
-                custom_attributes = """
-                    id
-                    externalReferences {
-                        edges {
-                            node {
-                                id
-                                entity_type
-                                stix_id_key
-                                source_name
-                                description
-                                url
-                                hash
-                                external_id
-                                created
-                                modified
-                            }
-                            relation {
-                                id
-                            }
+            custom_attributes = """
+                id
+                externalReferences {
+                    edges {
+                        node {
+                            id
+                            entity_type
+                            stix_id_key
+                            source_name
+                            description
+                            url
+                            hash
+                            external_id
+                            created
+                            modified
+                        }
+                        relation {
+                            id
                         }
                     }
-                """
-                stix_entity = self.read(id=id, customAttributes=custom_attributes)
+                }
+            """
+            stix_entity = self.read(id=id, customAttributes=custom_attributes)
             if stix_entity is None:
                 self.opencti.log(
                     "error", "Cannot add External-Reference, entity not found"

@@ -477,7 +477,6 @@ class Opinion:
             if external_reference_id is not None:
                 self.opencti.stix_entity.add_external_reference(
                     id=object_result["id"],
-                    entity=object_result,
                     external_reference_id=external_reference_id,
                 )
             return object_result
@@ -497,7 +496,6 @@ class Opinion:
             if external_reference_id is not None:
                 self.opencti.stix_entity.add_external_reference(
                     id=opinion["id"],
-                    entity=opinion,
                     external_reference_id=external_reference_id,
                 )
             return opinion
