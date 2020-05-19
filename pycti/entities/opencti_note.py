@@ -461,8 +461,7 @@ class Note:
                     object_result["content"] = content
             if external_reference_id is not None:
                 self.opencti.stix_entity.add_external_reference(
-                    id=object_result["id"],
-                    external_reference_id=external_reference_id,
+                    id=object_result["id"], external_reference_id=external_reference_id,
                 )
             return object_result
         else:
@@ -480,8 +479,7 @@ class Note:
             )
             if external_reference_id is not None:
                 self.opencti.stix_entity.add_external_reference(
-                    id=note["id"],
-                    external_reference_id=external_reference_id,
+                    id=note["id"], external_reference_id=external_reference_id,
                 )
             return note
 
