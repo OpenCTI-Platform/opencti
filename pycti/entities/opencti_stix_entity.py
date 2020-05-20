@@ -605,7 +605,7 @@ class StixEntity:
                     + "}",
                 )
                 query = """
-                   mutation StixEntityAddRelation($id: ID!, $input: RelationAddInput) {
+                   mutation StixEntityEditRelationAdd($id: ID!, $input: RelationAddInput) {
                        stixEntityEdit(id: $id) {
                             relationAdd(input: $input) {
                                 id
