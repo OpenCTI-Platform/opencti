@@ -532,7 +532,7 @@ class Report:
                 "info", "Adding Stix-Entity {" + entity_id + "} to Report {" + id + "}",
             )
             query = """
-               mutation ReportEdit($id: ID!, $input: RelationAddInput) {
+               mutation ReportEditRelationAdd($id: ID!, $input: RelationAddInput) {
                    reportEdit(id: $id) {
                         relationAdd(input: $input) {
                             id
@@ -589,7 +589,7 @@ class Report:
                 + "}",
             )
             query = """
-               mutation ReportEdit($id: ID!, $input: RelationAddInput) {
+               mutation ReportEditRelationAdd($id: ID!, $input: RelationAddInput) {
                    reportEdit(id: $id) {
                         relationAdd(input: $input) {
                             id
