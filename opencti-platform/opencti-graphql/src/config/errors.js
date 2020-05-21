@@ -12,56 +12,56 @@ const error = (type, message, data) => {
 };
 
 export const AuthenticationFailure = (reason, data) =>
-  error(TYPE_TECHNICAL, 'Wrong name or password', {
-    reason: 'AuthenticationFailure',
-    type: TYPE_BUSINESS,
+  error('AuthFailure', 'Wrong name or password', {
+    category: TYPE_TECHNICAL,
     ...data,
   });
 
 // TYPE_AUTH
 export const AuthRequired = (reason, data) =>
-  error(TYPE_TECHNICAL, 'You must be logged in to do this.', {
-    reason: 'Authenticated user is required',
-    type: TYPE_AUTH,
+  error('AuthRequired', 'You must be logged in to do this.', {
+    category: TYPE_TECHNICAL,
     ...data,
   });
 
 export const ForbiddenAccess = (reason, data) =>
-  error(TYPE_TECHNICAL, 'You are not allowed to do this.', {
-    reason: 'ForbiddenAccess',
-    type: TYPE_AUTH,
+  error('ForbiddenAccess', 'You are not allowed to do this.', {
+    category: TYPE_TECHNICAL,
     ...data,
   });
 
 // TYPE_TECHNICAL
 export const DatabaseError = (reason, data) =>
-  error(TYPE_TECHNICAL, 'A database error has occurred', {
+  error('DatabaseError', 'A database error has occurred', {
     reason: reason || 'No reason specify',
-    type: 'DatabaseError',
+    category: TYPE_TECHNICAL,
     ...data,
   });
 
 export const ConfigurationError = (reason, data) =>
-  error(TYPE_TECHNICAL, 'A configuration error has occurred', {
+  error('ConfigurationError', 'A configuration error has occurred', {
     reason: reason || 'No reason specify',
+    category: TYPE_TECHNICAL,
     ...data,
   });
 
 export const UnknownError = (reason, data) =>
-  error(TYPE_TECHNICAL, 'An unknown error has occurred', {
+  error('UnknownError', 'An unknown error has occurred', {
     reason: reason || 'No reason specify',
-    type: 'UnknownError',
+    category: TYPE_TECHNICAL,
     ...data,
   });
 
 export const FunctionalError = (reason, data) =>
-  error(TYPE_BUSINESS, 'Business validation', {
+  error('FunctionalError', 'Business validation', {
     reason: reason || 'No reason specify',
+    category: TYPE_BUSINESS,
     ...data,
   });
 
 export const ValidationError = (field, data) =>
-  error(TYPE_BUSINESS, 'Validation error', {
+  error('ValidationError', 'Validation error', {
     reason: `Invalid field ${field}`,
+    category: TYPE_BUSINESS,
     ...data,
   });
