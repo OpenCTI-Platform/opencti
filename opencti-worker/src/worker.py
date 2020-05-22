@@ -80,7 +80,7 @@ class Consumer(threading.Thread):
         thread.start()
 
         while thread.is_alive():  # Loop while the thread is processing
-            self.pika_connection.sleep(0.1)
+            self.pika_connection.sleep(0.05)
         logging.info("Message processed, thread terminated")
 
     # Data handling
