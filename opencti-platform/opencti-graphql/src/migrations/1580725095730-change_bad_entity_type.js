@@ -8,13 +8,15 @@ const updateRelation = async (stixObservableRelation) => {
   if (stixObservableRelation.entity_type === 'stix_relation') {
     return executeWrite((wTx) => {
       return updateAttribute(
+        null,
         stixObservableRelation.id,
         'stix_relation',
         {
           key: 'entity_type',
           value: ['stix_observable_relation'],
         },
-        wTx
+        wTx,
+        { noLog: true }
       );
     });
   }

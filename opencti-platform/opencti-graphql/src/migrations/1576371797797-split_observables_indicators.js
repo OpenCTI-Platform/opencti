@@ -53,13 +53,15 @@ export const up = async (next) => {
         if (stixObservable.stix_id_key.includes('indicator')) {
           await executeWrite((wTx) => {
             return updateAttribute(
+              null,
               stixObservable.id,
               'Stix-Observable',
               {
                 key: 'stix_id_key',
                 value: [stixObservable.stix_id_key.replace('indicator', 'observable')],
               },
-              wTx
+              wTx,
+              { noLog: true }
             );
           });
         }

@@ -11,13 +11,15 @@ export const up = async (next) => {
         entities.map((entity) => {
           return executeWrite((wTx) => {
             return updateAttribute(
+              null,
               entity.x.id,
               'Identity',
               {
                 key: 'stix_id_key',
                 value: [entity.x.stix_id_key.replace(entityType, 'identity')],
               },
-              wTx
+              wTx,
+              { noLog: true }
             );
           });
         })
