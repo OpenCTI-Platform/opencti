@@ -49,8 +49,7 @@ const styles = (theme) => ({
   },
   goIcon: {
     position: 'absolute',
-    right: 10,
-    marginRight: 0,
+    right: -10,
   },
   inputLabel: {
     float: 'left',
@@ -70,7 +69,7 @@ const inlineStylesHeaders = {
   },
   pattern_type: {
     float: 'left',
-    width: '10%',
+    width: '15%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -102,7 +101,7 @@ const inlineStylesHeaders = {
 const inlineStyles = {
   pattern_type: {
     float: 'left',
-    width: '10%',
+    width: '15%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',

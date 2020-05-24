@@ -10,7 +10,7 @@ import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemPatternType from '../../../../components/ItemPatternType';
-import ItemStatus from '../../../../components/ItemStatus';
+import ItemDetection from '../../../../components/ItemDetection';
 
 const styles = () => ({
   paper: {
@@ -44,9 +44,9 @@ class IndicatorOverviewComponent extends Component {
           >
             {t('Detection')}
           </Typography>
-          <ItemStatus
+          <ItemDetection
             label={indicator.detection ? t('YES') : t('NO')}
-            status={indicator.detection ? 2 : 0}
+            status={indicator.detection}
           />
           <Typography
             variant="h3"

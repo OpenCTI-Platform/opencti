@@ -286,8 +286,7 @@ const i18n = {
       'The connector has been cleared': 'Le connecteur a été supprimé',
       'Refresh the knowledge using this connector':
         'Actualiser la connaissance en utilisant ce connecteur',
-      'Sectors, organizations and persons':
-        'Secteurs, organisations et personnes',
+      'Sectors and organizations': 'Secteurs et organisations',
       'Regions, countries and cities': 'Régions, pays et villes',
       'Direct targeting of this sector': 'Ciblage direct de ce secteur',
       'Direct targeting of this region': 'Ciblage direct de cette région',
