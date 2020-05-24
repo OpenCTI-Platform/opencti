@@ -231,16 +231,13 @@ class ConnectorsStatusComponent extends Component {
     );
     const sortedConnectors = sort(data.connectors);
     return (
-      <Card
-        classes={{ root: classes.card }}
-        style={{ maxHeight: '100vh', height: '100%' }}
-      >
+      <Card>
         <CardHeader
           avatar={<Extension className={classes.icon} />}
           title={t('Registered connectors')}
           style={{ paddingBottom: 0 }}
         />
-        <CardContent style={{ paddingTop: 0, height: '100%' }}>
+        <CardContent style={{ paddingTop: 0 }}>
           <List classes={{ root: classes.linesContainer }}>
             <ListItem
               classes={{ root: classes.itemHead }}
