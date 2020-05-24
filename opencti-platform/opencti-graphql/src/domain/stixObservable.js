@@ -85,14 +85,19 @@ export const addStixObservable = async (user, stixObservable) => {
   if (!OBSERVABLE_TYPES.includes(innerType.toLowerCase())) {
     throw FunctionalError(`Observable type ${innerType} is not supported.`);
   }
-  const observableSyntaxResult = checkObservableSyntax(innerType.toLowerCase(), stixObservable.observable_value);
+  const observableValue = stixObservable.observable_value.trim();
+  const observableSyntaxResult = checkObservableSyntax(innerType.toLowerCase(), observableValue);
   if (observableSyntaxResult !== true) {
     throw FunctionalError(
       `Observable ${stixObservable.observable_value} of type ${innerType} is not correctly formatted.`,
       { observableSyntaxResult }
     );
   }
-  const observableToCreate = pipe(dissoc('type'), dissoc('createIndicator'))(stixObservable);
+  const observableToCreate = pipe(
+    assoc('observable_value', observableValue),
+    dissoc('type'),
+    dissoc('createIndicator')
+  )(stixObservable);
   const created = await createEntity(user, observableToCreate, innerType, {
     modelType: TYPE_STIX_OBSERVABLE,
     stixIdType: 'observable',
