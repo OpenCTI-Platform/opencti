@@ -26,13 +26,15 @@ export const up = async (next) => {
               const entity = entityEdge.node;
               return executeWrite((wTx) => {
                 return updateAttribute(
+                  null,
                   entity.id,
                   'Identity',
                   {
                     key: 'stix_id_key',
                     value: [entity.stix_id_key.replace(entityType, 'identity')],
                   },
-                  wTx
+                  wTx,
+                  { noLog: true }
                 );
               });
             })

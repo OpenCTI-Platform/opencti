@@ -20,6 +20,7 @@ export const up = async (next) => {
       (report) => {
         return executeWrite((wTx) => {
           return updateAttribute(
+            null,
             report.id,
             'Report',
             {
@@ -27,7 +28,7 @@ export const up = async (next) => {
               value: [report.published],
             },
             wTx,
-            { forceUpdate: true } // Need to force update because the impact is on sub dates of published
+            { forceUpdate: true, noLog: true } // Need to force update because the impact is on sub dates of published
           );
         });
       },

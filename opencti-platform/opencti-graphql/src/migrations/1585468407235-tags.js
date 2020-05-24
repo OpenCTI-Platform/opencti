@@ -11,6 +11,7 @@ export const up = async (next) => {
         const tag = tagEdge.node;
         return executeWrite((wTx) => {
           return updateAttribute(
+            null,
             tag.id,
             'Tag',
             {
@@ -18,7 +19,7 @@ export const up = async (next) => {
               value: ['#489044'],
             },
             wTx,
-            { forceUpdate: true }
+            { forceUpdate: true, noLog: true }
           );
         });
       },
@@ -33,6 +34,7 @@ export const up = async (next) => {
         const tag = tagEdge.node;
         return executeWrite((wTx) => {
           return updateAttribute(
+            null,
             tag.id,
             'Tag',
             {
@@ -40,7 +42,7 @@ export const up = async (next) => {
               value: ['#0059f7'],
             },
             wTx,
-            { forceUpdate: true }
+            { forceUpdate: true, noLog: true }
           );
         });
       },
