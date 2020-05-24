@@ -154,6 +154,8 @@ class EntityStixRelations extends Component {
       role,
       relationType,
       creationIsFrom,
+      noBottomBar,
+      inference,
     } = this.props;
     const {
       view,
@@ -173,7 +175,7 @@ class EntityStixRelations extends Component {
       fromId: entityId,
       fromRole: role || null,
       toTypes: toType === 'All' ? targetEntityTypes : [toType],
-      inferred: inferred && sortBy === null ? inferred : false,
+      inferred: !!((inferred || inference)),
       relationType,
       search: searchTerm,
       orderBy: sortBy,
@@ -182,145 +184,149 @@ class EntityStixRelations extends Component {
 
     return (
       <div className={classes.container}>
-        <Drawer
-          anchor="bottom"
-          variant="permanent"
-          classes={{ paper: classes.bottomNav }}
-        >
-          <Grid container={true} spacing={1}>
-            {displayTypes ? (
+        {!noBottomBar ? (
+          <Drawer
+            anchor="bottom"
+            variant="permanent"
+            classes={{ paper: classes.bottomNav }}
+          >
+            <Grid container={true} spacing={1}>
+              {displayTypes ? (
+                <Grid item={true} xs="auto">
+                  <Select
+                    style={{ height: 50, marginRight: 15 }}
+                    value={toType}
+                    open={openToType}
+                    onClose={this.handleCloseToType.bind(this)}
+                    onOpen={this.handleOpenToType.bind(this)}
+                    onChange={this.handleChangeEntities.bind(this)}
+                    input={<Input id="entities" />}
+                    renderValue={(selected) => (
+                      <div className={classes.chips}>
+                        <Chip
+                          key={selected}
+                          label={t(`entity_${selected.toLowerCase()}`)}
+                          className={classes.chip}
+                        />
+                      </div>
+                    )}
+                  >
+                    <MenuItem value="All">{t('All entities')}</MenuItem>
+                    {includes('Region', targetEntityTypes)
+                    || includes('Identity', targetEntityTypes) ? (
+                      <MenuItem value="Region">{t('Region')}</MenuItem>
+                      ) : (
+                        ''
+                      )}
+                    {includes('Country', targetEntityTypes)
+                    || includes('Identity', targetEntityTypes) ? (
+                      <MenuItem value="Country">{t('Country')}</MenuItem>
+                      ) : (
+                        ''
+                      )}
+                    {includes('City', targetEntityTypes)
+                    || includes('Identity', targetEntityTypes) ? (
+                      <MenuItem value="City">{t('City')}</MenuItem>
+                      ) : (
+                        ''
+                      )}
+                    {includes('Sector', targetEntityTypes)
+                    || includes('Identity', targetEntityTypes) ? (
+                      <MenuItem value="Sector">{t('Sector')}</MenuItem>
+                      ) : (
+                        ''
+                      )}
+                    {includes('Organization', targetEntityTypes)
+                    || includes('Identity', targetEntityTypes) ? (
+                      <MenuItem value="Organization">
+                        {t('Organization')}
+                      </MenuItem>
+                      ) : (
+                        ''
+                      )}
+                    {includes('User', targetEntityTypes)
+                    || includes('Identity', targetEntityTypes) ? (
+                      <MenuItem value="User">{t('Person')}</MenuItem>
+                      ) : (
+                        ''
+                      )}
+                    {includes('Threat-Actor', targetEntityTypes)
+                    || includes('Identity', targetEntityTypes) ? (
+                      <MenuItem value="Threat-Actor">
+                        {t('Threat actor')}
+                      </MenuItem>
+                      ) : (
+                        ''
+                      )}
+                    {includes('Intrusion-Set', targetEntityTypes) ? (
+                      <MenuItem value="Intrusion-Set">
+                        {t('Intrusion set')}
+                      </MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {includes('Campaign', targetEntityTypes) ? (
+                      <MenuItem value="Campaign">{t('Campaign')}</MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {includes('Incident', targetEntityTypes) ? (
+                      <MenuItem value="Incident">{t('Incident')}</MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {includes('Malware', targetEntityTypes) ? (
+                      <MenuItem value="Malware">{t('Malware')}</MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {includes('Tool', targetEntityTypes) ? (
+                      <MenuItem value="Tool">{t('Tool')}</MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {includes('Vulnerability', targetEntityTypes) ? (
+                      <MenuItem value="Vulnerability">
+                        {t('Vulnerability')}
+                      </MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {includes('Attack-Pattern', targetEntityTypes) ? (
+                      <MenuItem value="Attack-Pattern">
+                        {t('Attack pattern')}
+                      </MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {includes('Indicator', targetEntityTypes) ? (
+                      <MenuItem value="Indicator">{t('Indicator')}</MenuItem>
+                    ) : (
+                      ''
+                    )}
+                  </Select>
+                </Grid>
+              ) : (
+                ''
+              )}
               <Grid item={true} xs="auto">
-                <Select
-                  style={{ height: 50, marginRight: 15 }}
-                  value={toType}
-                  open={openToType}
-                  onClose={this.handleCloseToType.bind(this)}
-                  onOpen={this.handleOpenToType.bind(this)}
-                  onChange={this.handleChangeEntities.bind(this)}
-                  input={<Input id="entities" />}
-                  renderValue={(selected) => (
-                    <div className={classes.chips}>
-                      <Chip
-                        key={selected}
-                        label={t(`entity_${selected.toLowerCase()}`)}
-                        className={classes.chip}
-                      />
-                    </div>
-                  )}
-                >
-                  <MenuItem value="All">{t('All entities')}</MenuItem>
-                  {includes('Region', targetEntityTypes)
-                  || includes('Identity', targetEntityTypes) ? (
-                    <MenuItem value="Region">{t('Region')}</MenuItem>
-                    ) : (
-                      ''
-                    )}
-                  {includes('Country', targetEntityTypes)
-                  || includes('Identity', targetEntityTypes) ? (
-                    <MenuItem value="Country">{t('Country')}</MenuItem>
-                    ) : (
-                      ''
-                    )}
-                  {includes('City', targetEntityTypes)
-                  || includes('Identity', targetEntityTypes) ? (
-                    <MenuItem value="City">{t('City')}</MenuItem>
-                    ) : (
-                      ''
-                    )}
-                  {includes('Sector', targetEntityTypes)
-                  || includes('Identity', targetEntityTypes) ? (
-                    <MenuItem value="Sector">{t('Sector')}</MenuItem>
-                    ) : (
-                      ''
-                    )}
-                  {includes('Organization', targetEntityTypes)
-                  || includes('Identity', targetEntityTypes) ? (
-                    <MenuItem value="Organization">
-                      {t('Organization')}
-                    </MenuItem>
-                    ) : (
-                      ''
-                    )}
-                  {includes('User', targetEntityTypes)
-                  || includes('Identity', targetEntityTypes) ? (
-                    <MenuItem value="User">{t('Person')}</MenuItem>
-                    ) : (
-                      ''
-                    )}
-                  {includes('Threat-Actor', targetEntityTypes)
-                  || includes('Identity', targetEntityTypes) ? (
-                    <MenuItem value="Threat-Actor">
-                      {t('Threat actor')}
-                    </MenuItem>
-                    ) : (
-                      ''
-                    )}
-                  {includes('Intrusion-Set', targetEntityTypes) ? (
-                    <MenuItem value="Intrusion-Set">
-                      {t('Intrusion set')}
-                    </MenuItem>
-                  ) : (
-                    ''
-                  )}
-                  {includes('Campaign', targetEntityTypes) ? (
-                    <MenuItem value="Campaign">{t('Campaign')}</MenuItem>
-                  ) : (
-                    ''
-                  )}
-                  {includes('Incident', targetEntityTypes) ? (
-                    <MenuItem value="Incident">{t('Incident')}</MenuItem>
-                  ) : (
-                    ''
-                  )}
-                  {includes('Malware', targetEntityTypes) ? (
-                    <MenuItem value="Malware">{t('Malware')}</MenuItem>
-                  ) : (
-                    ''
-                  )}
-                  {includes('Tool', targetEntityTypes) ? (
-                    <MenuItem value="Tool">{t('Tool')}</MenuItem>
-                  ) : (
-                    ''
-                  )}
-                  {includes('Vulnerability', targetEntityTypes) ? (
-                    <MenuItem value="Vulnerability">
-                      {t('Vulnerability')}
-                    </MenuItem>
-                  ) : (
-                    ''
-                  )}
-                  {includes('Attack-Pattern', targetEntityTypes) ? (
-                    <MenuItem value="Attack-Pattern">
-                      {t('Attack pattern')}
-                    </MenuItem>
-                  ) : (
-                    ''
-                  )}
-                  {includes('Indicator', targetEntityTypes) ? (
-                    <MenuItem value="Indicator">{t('Indicator')}</MenuItem>
-                  ) : (
-                    ''
-                  )}
-                </Select>
+                <FormControlLabel
+                  style={{ paddingTop: 5, marginRight: 15 }}
+                  control={
+                    <Switch
+                      checked={inferred}
+                      onChange={this.handleChangeInferred.bind(this)}
+                      color="primary"
+                    />
+                  }
+                  label={t('Inferences')}
+                />
               </Grid>
-            ) : (
-              ''
-            )}
-            <Grid item={true} xs="auto">
-              <FormControlLabel
-                style={{ paddingTop: 5, marginRight: 15 }}
-                control={
-                  <Switch
-                    checked={inferred}
-                    onChange={this.handleChangeInferred.bind(this)}
-                    color="primary"
-                  />
-                }
-                label={t('Inferences')}
-              />
             </Grid>
-          </Grid>
-        </Drawer>
+          </Drawer>
+        ) : (
+          ''
+        )}
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixRelationCreationFromEntity
@@ -349,6 +355,8 @@ EntityStixRelations.propTypes = {
   history: PropTypes.object,
   exploreLink: PropTypes.string,
   creationIsFrom: PropTypes.bool,
+  noBottomBar: PropTypes.bool,
+  inference: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(EntityStixRelations);

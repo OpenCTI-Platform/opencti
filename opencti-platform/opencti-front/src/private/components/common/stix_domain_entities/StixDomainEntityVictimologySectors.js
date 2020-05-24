@@ -565,7 +565,7 @@ class StixDomainEntityVictimologySectorsComponent extends Component {
             isFrom={true}
             paddingRight={true}
             onCreate={this.props.relay.refetch.bind(this)}
-            targetEntityTypes={['Identity']}
+            targetEntityTypes={['Sector', 'Organization']}
             paginationOptions={paginationOptions}
           />
         </Security>

@@ -296,7 +296,7 @@ class StixDomainEntityVictimologyRegionsComponent extends Component {
               };
             }
             finalRegions[unknownRegionId].countries[
-              stixRelation.country.id
+              stixRelation.to.country.id
             ].relations.push(stixRelation);
           }
         } else {
@@ -328,14 +328,14 @@ class StixDomainEntityVictimologyRegionsComponent extends Component {
       sortWith([ascend(prop('name'))]),
     )(finalRegions);
     return (
-      <div>
+      <div style={{ marginTop: -10 }}>
         <div style={{ float: 'left' }}>
           <SearchInput
             variant="small"
             onSubmit={this.handleSearch.bind(this)}
           />
         </div>
-        <div style={{ float: 'right', paddingRight: 18 }}>
+        <div style={{ float: 'right', marginTop: -1 }}>
           <Tooltip title={t('Export as image')}>
             <IconButton color="primary" onClick={this.exportImage.bind(this)}>
               <FileImageOutline />
@@ -728,7 +728,7 @@ class StixDomainEntityVictimologyRegionsComponent extends Component {
             isFrom={true}
             paddingRight={true}
             onCreate={this.props.relay.refetch.bind(this)}
-            targetEntityTypes={['Identity']}
+            targetEntityTypes={['Region', 'Country', 'City']}
             paginationOptions={paginationOptions}
           />
         </Security>

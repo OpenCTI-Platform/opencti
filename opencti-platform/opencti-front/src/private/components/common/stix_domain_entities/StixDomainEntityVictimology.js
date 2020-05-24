@@ -8,7 +8,7 @@ import Switch from '@material-ui/core/Switch';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
 import Drawer from '@material-ui/core/Drawer';
-import { Domain, Map } from '@material-ui/icons';
+import { DomainOutlined, MapOutlined, GroupOutlined } from '@material-ui/icons';
 import Loader from '../../../../components/Loader';
 import StixDomainEntityVictimologySectors, {
   stixDomainEntityVictimologySectorsStixRelationsQuery,
@@ -22,6 +22,7 @@ import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
 } from '../../../../utils/ListParameters';
+import EntityStixRelations from '../stix_relations/EntityStixRelations';
 
 const styles = (theme) => ({
   container: {
@@ -81,12 +82,15 @@ class StixDomainEntityVictimology extends Component {
     const {
       classes, stixDomainEntityId, entityLink, t,
     } = this.props;
+    let types = ['Sector', 'Organization'];
+    if (type === 'regions') {
+      types = ['Region', 'Country', 'City'];
+    } else if (type === 'persons') {
+      types = ['User'];
+    }
     const paginationOptions = {
       fromId: stixDomainEntityId,
-      toTypes:
-        type === 'sectors'
-          ? ['Sector', 'Organization', 'User']
-          : ['Region', 'Country', 'City'],
+      toTypes: types,
       relationType: 'targets',
       inferred,
       search: searchTerm,
@@ -100,12 +104,12 @@ class StixDomainEntityVictimology extends Component {
         >
           <Grid container={true} spacing={1}>
             <Grid item={true} xs="auto">
-              <Tooltip title={t('Sectors, organizations and persons')}>
+              <Tooltip title={t('Sectors and organizations')}>
                 <IconButton
                   color={type === 'sectors' ? 'secondary' : 'primary'}
                   onClick={this.handleChangeType.bind(this, 'sectors')}
                 >
-                  <Domain />
+                  <DomainOutlined />
                 </IconButton>
               </Tooltip>
             </Grid>
@@ -115,7 +119,17 @@ class StixDomainEntityVictimology extends Component {
                   color={type === 'regions' ? 'secondary' : 'primary'}
                   onClick={this.handleChangeType.bind(this, 'regions')}
                 >
-                  <Map />
+                  <MapOutlined />
+                </IconButton>
+              </Tooltip>
+            </Grid>
+            <Grid item={true} xs="auto">
+              <Tooltip title={t('Persons')}>
+                <IconButton
+                  color={type === 'persons' ? 'secondary' : 'primary'}
+                  onClick={this.handleChangeType.bind(this, 'persons')}
+                >
+                  <GroupOutlined />
                 </IconButton>
               </Tooltip>
             </Grid>
@@ -154,6 +168,9 @@ class StixDomainEntityVictimology extends Component {
             }}
           />
         ) : (
+          ''
+        )}
+        {type === 'regions' ? (
           <QueryRenderer
             query={stixDomainEntityVictimologyRegionsStixRelationsQuery}
             variables={{ first: 500, ...paginationOptions }}
@@ -172,6 +189,20 @@ class StixDomainEntityVictimology extends Component {
               return <Loader withRightPadding={true} />;
             }}
           />
+        ) : (
+          ''
+        )}
+        {type === 'persons' ? (
+          <EntityStixRelations
+            entityId={stixDomainEntityId}
+            targetEntityTypes={types}
+            relationType="targets"
+            noBottomBar={true}
+            creationIsFrom={true}
+            inference={inferred}
+          />
+        ) : (
+          ''
         )}
       </div>
     );
