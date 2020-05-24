@@ -1,10 +1,7 @@
 import { createError } from 'apollo-errors';
 
-export const LEVEL_WARNING = 'warning';
-export const LEVEL_ERROR = 'error';
-export const TYPE_AUTH = 'authentication';
-export const TYPE_TECHNICAL = 'technical';
-const TYPE_BUSINESS = 'business';
+const CATEGORY_TECHNICAL = 'technical';
+const CATEGORY_BUSINESS = 'business';
 
 const error = (type, message, data) => {
   const Exception = createError(type, { data, message });
@@ -12,56 +9,56 @@ const error = (type, message, data) => {
 };
 
 export const AuthenticationFailure = (reason, data) =>
-  error(TYPE_TECHNICAL, 'Wrong name or password', {
-    reason: 'AuthenticationFailure',
-    type: TYPE_BUSINESS,
+  error('AuthFailure', 'Wrong name or password', {
+    category: CATEGORY_TECHNICAL,
     ...data,
   });
 
 // TYPE_AUTH
 export const AuthRequired = (reason, data) =>
-  error(TYPE_TECHNICAL, 'You must be logged in to do this.', {
-    reason: 'Authenticated user is required',
-    type: TYPE_AUTH,
+  error('AuthRequired', 'You must be logged in to do this.', {
+    category: CATEGORY_TECHNICAL,
     ...data,
   });
 
 export const ForbiddenAccess = (reason, data) =>
-  error(TYPE_TECHNICAL, 'You are not allowed to do this.', {
-    reason: 'ForbiddenAccess',
-    type: TYPE_AUTH,
+  error('ForbiddenAccess', 'You are not allowed to do this.', {
+    category: CATEGORY_TECHNICAL,
     ...data,
   });
 
-// TYPE_TECHNICAL
+// CATEGORY_TECHNICAL
 export const DatabaseError = (reason, data) =>
-  error(TYPE_TECHNICAL, 'A database error has occurred', {
+  error('DatabaseError', 'A database error has occurred', {
     reason: reason || 'No reason specify',
-    type: 'DatabaseError',
+    category: CATEGORY_TECHNICAL,
     ...data,
   });
 
 export const ConfigurationError = (reason, data) =>
-  error(TYPE_TECHNICAL, 'A configuration error has occurred', {
+  error('ConfigurationError', 'A configuration error has occurred', {
     reason: reason || 'No reason specify',
+    category: CATEGORY_TECHNICAL,
     ...data,
   });
 
 export const UnknownError = (reason, data) =>
-  error(TYPE_TECHNICAL, 'An unknown error has occurred', {
+  error('UnknownError', 'An unknown error has occurred', {
     reason: reason || 'No reason specify',
-    type: 'UnknownError',
+    category: CATEGORY_TECHNICAL,
     ...data,
   });
 
 export const FunctionalError = (reason, data) =>
-  error(TYPE_BUSINESS, 'Business validation', {
+  error('FunctionalError', 'Business validation', {
     reason: reason || 'No reason specify',
+    category: CATEGORY_BUSINESS,
     ...data,
   });
 
 export const ValidationError = (field, data) =>
-  error(TYPE_BUSINESS, 'Validation error', {
+  error('ValidationError', 'Validation error', {
     reason: `Invalid field ${field}`,
+    category: CATEGORY_BUSINESS,
     ...data,
   });
