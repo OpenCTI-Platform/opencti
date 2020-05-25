@@ -104,6 +104,7 @@ const personValidation = (t) => Yup.object().shape({
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
+  contact_information: Yup.string(),
 });
 
 class PersonEditionOverviewComponent extends Component {
@@ -238,7 +239,13 @@ class PersonEditionOverviewComponent extends Component {
     const initialValues = pipe(
       assoc('createdByRef', createdByRef),
       assoc('markingDefinitions', markingDefinitions),
-      pick(['name', 'description', 'createdByRef', 'markingDefinitions']),
+      pick([
+        'name',
+        'description',
+        'contact_information',
+        'createdByRef',
+        'markingDefinitions',
+      ]),
     )(person);
     return (
       <Formik
@@ -273,6 +280,23 @@ class PersonEditionOverviewComponent extends Component {
               onSubmit={this.handleSubmitField.bind(this)}
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
+              }
+            />
+            <Field
+              component={TextField}
+              name="contact_information"
+              label={t('Contact information')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={{ marginTop: 20 }}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="contact_information"
+                />
               }
             />
             <CreatedByRefField
@@ -318,6 +342,7 @@ const PersonEditionOverview = createFragmentContainer(
         id
         name
         description
+        contact_information
         external
         createdByRef {
           node {

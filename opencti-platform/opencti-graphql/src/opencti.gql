@@ -118,6 +118,7 @@ define
   threat_actor_type sub attribute, datatype string;
   is_family sub attribute, datatype boolean;
   number sub attribute, datatype long;
+  contact_information sub attribute, datatype string;
 
   # STIX SRO
   relationship_type sub attribute, datatype string;
@@ -665,6 +666,7 @@ define
 
   Identity sub Stix-Domain-Entity,
     abstract,
+    has contact_information,
     plays gather,
     plays part_of,
     plays creator,

@@ -465,6 +465,7 @@ const i18n = {
       'Attributed to this region': 'Attribué à cette région',
       'Related to this region': 'Lié à cette région',
       Reliability: 'Fiabilité',
+      'Contact information': 'Informations de contact',
       Inferences: 'Inférences',
       'Inference rules': "Règles d'inférence",
       Inferred: 'Inféré',

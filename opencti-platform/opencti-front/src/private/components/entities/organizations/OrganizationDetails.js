@@ -7,6 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Chip from '@material-ui/core/Chip';
+import Markdown from 'react-markdown';
 import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
 import inject18n from '../../../../components/i18n';
 import ItemReliability from '../../../../components/ItemReliability';
@@ -79,6 +80,17 @@ class OrganizationDetailsComponent extends Component {
             reliability={organization.reliability}
             label={t(`reliability_${organization.reliability}`)}
           />
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ marginTop: 20 }}
+          >
+            {t('Contact information')}
+          </Typography>
+          <Markdown
+            className="markdown"
+            source={organization.contact_information}
+          />
         </Paper>
       </div>
     );
@@ -100,6 +112,7 @@ const OrganizationDetails = createFragmentContainer(
         id
         reliability
         organization_class
+        contact_information
         creator {
           id
           name
