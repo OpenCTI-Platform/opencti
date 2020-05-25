@@ -1,6 +1,8 @@
 # coding: utf-8
 
 import json
+from pycti.utils.constants import CustomProperties
+from pycti.utils.opencti_stix2 import SPEC_VERSION
 
 
 class StixObservable:
@@ -516,3 +518,42 @@ class StixObservable:
         else:
             self.opencti.log("error", "Missing parameters: id and identity_id")
             return False
+
+    """
+        Export an Stix Observable object in STIX2
+
+        :param id: the id of the Stix Observable
+        :return Stix Observable object
+    """
+
+    def to_stix2(self, **kwargs):
+        id = kwargs.get("id", None)
+        mode = kwargs.get("mode", "simple")
+        max_marking_definition_entity = kwargs.get(
+            "max_marking_definition_entity", None
+        )
+        entity = kwargs.get("entity", None)
+        if id is not None and entity is None:
+            entity = self.read(id=id)
+        if entity is not None:
+            stix_observable = dict()
+            stix_observable["id"] = entity["stix_id_key"]
+            stix_observable["type"] = entity["entity_type"]
+            stix_observable["spec_version"] = SPEC_VERSION
+            stix_observable["value"] = entity["observable_value"]
+            stix_observable[CustomProperties.OBSERVABLE_TYPE] = entity["entity_type"]
+            stix_observable[CustomProperties.OBSERVABLE_VALUE] = entity[
+                "observable_value"
+            ]
+            stix_observable["created"] = self.opencti.stix2.format_date(
+                entity["created_at"]
+            )
+            stix_observable["modified"] = self.opencti.stix2.format_date(
+                entity["updated_at"]
+            )
+            stix_observable[CustomProperties.ID] = entity["id"]
+            return self.opencti.stix2.prepare_export(
+                entity, stix_observable, mode, max_marking_definition_entity
+            )
+        else:
+            self.opencti.log("error", "Missing parameters: id or entity")

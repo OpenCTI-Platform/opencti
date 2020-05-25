@@ -1270,6 +1270,7 @@ class OpenCTIStix2:
         order_by=None,
         order_mode=None,
         max_marking_definition=None,
+        types=None,
     ):
         max_marking_definition_entity = (
             self.opencti.marking_definition.read(id=max_marking_definition)
@@ -1305,6 +1306,7 @@ class OpenCTIStix2:
             "note": self.opencti.note.list,
             "opinion": self.opencti.opinion.list,
             "indicator": self.opencti.indicator.list,
+            "stix-observable": self.opencti.stix_observable.list,
         }
         do_list = lister.get(
             entity_type, lambda **kwargs: self.unknown_type({"type": entity_type})
@@ -1314,6 +1316,7 @@ class OpenCTIStix2:
             filters=filters,
             orderBy=order_by,
             orderMode=order_mode,
+            types=types,
             getAll=True,
         )
 
@@ -1334,6 +1337,7 @@ class OpenCTIStix2:
                 "note": self.opencti.note.to_stix2,
                 "opinion": self.opencti.opinion.to_stix2,
                 "indicator": self.opencti.indicator.to_stix2,
+                "stix-observable": self.opencti.stix_observable.to_stix2,
             }
             do_export = exporter.get(
                 entity_type, lambda **kwargs: self.unknown_type({"type": entity_type})
