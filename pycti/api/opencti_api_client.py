@@ -755,6 +755,7 @@ class OpenCTIApiClient:
                     "campaign": {"from_role": "indicator", "to_role": "characterize"},
                     "malware": {"from_role": "indicator", "to_role": "characterize"},
                     "tool": {"from_role": "indicator", "to_role": "characterize"},
+                    "attack-pattern": {"from_role": "indicator", "to_role": "characterize"},
                     "stix_relation": {
                         "from_role": "indicator",
                         "to_role": "characterize",
