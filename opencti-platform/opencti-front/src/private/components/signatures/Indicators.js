@@ -35,7 +35,7 @@ class Indicators extends Component {
       'view-indicators',
     );
     this.state = {
-      sortBy: propOr('valid_from', 'sortBy', params),
+      sortBy: propOr('created', 'sortBy', params),
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
@@ -150,14 +150,14 @@ class Indicators extends Component {
         width: '20%',
         isSortable: false,
       },
-      valid_from: {
-        label: 'Valid from',
-        width: '15%',
+      created: {
+        label: 'Creation date',
+        width: '18%',
         isSortable: true,
       },
       valid_until: {
         label: 'Valid until',
-        width: '15%',
+        width: '13%',
         isSortable: true,
       },
       markingDefinitions: {

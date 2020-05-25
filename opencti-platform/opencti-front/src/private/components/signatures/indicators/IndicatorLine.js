@@ -48,7 +48,7 @@ const styles = (theme) => ({
 class IndicatorLineComponent extends Component {
   render() {
     const {
-      fd, classes, dataColumns, node, onTagClick,
+      fd, nsdt, classes, dataColumns, node, onTagClick,
     } = this.props;
     return (
       <ListItem
@@ -88,9 +88,9 @@ class IndicatorLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.valid_from.width }}
+                style={{ width: dataColumns.created.width }}
               >
-                {fd(node.valid_from)}
+                {nsdt(node.created)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -128,6 +128,7 @@ IndicatorLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
+  nsdt: PropTypes.func,
   onTagClick: PropTypes.func,
 };
 
@@ -202,7 +203,7 @@ class IndicatorLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.valid_from.width }}
+                style={{ width: dataColumns.created.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>

@@ -23,7 +23,7 @@ const styles = () => ({
 class CityOverviewComponent extends Component {
   render() {
     const {
-      t, fld, classes, city,
+      t, fldt, classes, city,
     } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
@@ -34,7 +34,7 @@ class CityOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Creation date')}
           </Typography>
-          {fld(city.created)}
+          {fldt(city.created)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -42,7 +42,7 @@ class CityOverviewComponent extends Component {
           >
             {t('Modification date')}
           </Typography>
-          {fld(city.modified)}
+          {fldt(city.modified)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -71,7 +71,7 @@ CityOverviewComponent.propTypes = {
   city: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const CityOverview = createFragmentContainer(CityOverviewComponent, {

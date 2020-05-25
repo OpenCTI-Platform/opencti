@@ -24,7 +24,7 @@ const styles = () => ({
 class PersonOverviewComponent extends Component {
   render() {
     const {
-      t, fld, classes, person,
+      t, fldt, classes, person,
     } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
@@ -55,7 +55,7 @@ class PersonOverviewComponent extends Component {
           >
             {t('Creation date')}
           </Typography>
-          {fld(person.created)}
+          {fldt(person.created)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -63,7 +63,7 @@ class PersonOverviewComponent extends Component {
           >
             {t('Modification date')}
           </Typography>
-          {fld(person.modified)}
+          {fldt(person.modified)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -92,7 +92,7 @@ PersonOverviewComponent.propTypes = {
   person: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const PersonOverview = createFragmentContainer(PersonOverviewComponent, {

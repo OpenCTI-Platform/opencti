@@ -47,7 +47,7 @@ const styles = (theme) => ({
 class StixObservableLineComponent extends Component {
   render() {
     const {
-      t, fd, classes, dataColumns, node, onTagClick,
+      t, nsdt, classes, dataColumns, node, onTagClick,
     } = this.props;
     return (
       <ListItem
@@ -89,7 +89,7 @@ class StixObservableLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created_at.width }}
               >
-                {fd(node.created_at)}
+                {nsdt(node.created_at)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -120,7 +120,7 @@ StixObservableLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
-  fd: PropTypes.func,
+  nsdt: PropTypes.func,
   t: PropTypes.func,
   onTagClick: PropTypes.func,
 };

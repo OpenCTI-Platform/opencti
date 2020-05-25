@@ -32,7 +32,7 @@ const styles = () => ({
 class ReportOverviewComponent extends Component {
   render() {
     const {
-      t, fld, classes, report,
+      t, fldt, classes, report,
     } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
@@ -54,7 +54,7 @@ class ReportOverviewComponent extends Component {
           >
             {t('Publication date')}
           </Typography>
-          {fld(report.published)}
+          {fldt(report.published)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -62,7 +62,7 @@ class ReportOverviewComponent extends Component {
           >
             {t('Modification date')}
           </Typography>
-          {fld(report.modified)}
+          {fldt(report.modified)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -95,7 +95,7 @@ ReportOverviewComponent.propTypes = {
   report: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const ReportOverview = createFragmentContainer(ReportOverviewComponent, {

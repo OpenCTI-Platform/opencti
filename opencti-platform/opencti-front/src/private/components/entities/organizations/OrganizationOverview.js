@@ -24,7 +24,7 @@ const styles = () => ({
 class OrganizationOverviewComponent extends Component {
   render() {
     const {
-      t, fld, classes, organization,
+      t, fldt, classes, organization,
     } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
@@ -55,7 +55,7 @@ class OrganizationOverviewComponent extends Component {
           >
             {t('Creation date')}
           </Typography>
-          {fld(organization.created)}
+          {fldt(organization.created)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -63,7 +63,7 @@ class OrganizationOverviewComponent extends Component {
           >
             {t('Modification date')}
           </Typography>
-          {fld(organization.modified)}
+          {fldt(organization.modified)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -92,7 +92,7 @@ OrganizationOverviewComponent.propTypes = {
   organization: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const OrganizationOverview = createFragmentContainer(
