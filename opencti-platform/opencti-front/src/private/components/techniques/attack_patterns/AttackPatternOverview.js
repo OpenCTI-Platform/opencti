@@ -24,7 +24,7 @@ const styles = () => ({
 class AttackPatternOverviewComponent extends Component {
   render() {
     const {
-      t, fld, classes, attackPattern,
+      t, fldt, classes, attackPattern,
     } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
@@ -55,7 +55,7 @@ class AttackPatternOverviewComponent extends Component {
           >
             {t('Creation date')}
           </Typography>
-          {fld(attackPattern.created)}
+          {fldt(attackPattern.created)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -63,7 +63,7 @@ class AttackPatternOverviewComponent extends Component {
           >
             {t('Modification date')}
           </Typography>
-          {fld(attackPattern.modified)}
+          {fldt(attackPattern.modified)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -96,7 +96,7 @@ AttackPatternOverviewComponent.propTypes = {
   attackPattern: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const AttackPatternOverview = createFragmentContainer(

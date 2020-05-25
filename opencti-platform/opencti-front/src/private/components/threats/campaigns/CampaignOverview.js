@@ -24,7 +24,7 @@ const styles = () => ({
 class CampaignOverviewComponent extends Component {
   render() {
     const {
-      t, fld, classes, campaign,
+      t, fldt, classes, campaign,
     } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
@@ -55,7 +55,7 @@ class CampaignOverviewComponent extends Component {
           >
             {t('Creation date')}
           </Typography>
-          {fld(campaign.created)}
+          {fldt(campaign.created)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -63,7 +63,7 @@ class CampaignOverviewComponent extends Component {
           >
             {t('Modification date')}
           </Typography>
-          {fld(campaign.modified)}
+          {fldt(campaign.modified)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -96,7 +96,7 @@ CampaignOverviewComponent.propTypes = {
   campaign: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const CampaignOverview = createFragmentContainer(CampaignOverviewComponent, {

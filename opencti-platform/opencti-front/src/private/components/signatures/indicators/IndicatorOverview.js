@@ -25,7 +25,7 @@ const styles = () => ({
 class IndicatorOverviewComponent extends Component {
   render() {
     const {
-      t, fld, classes, indicator,
+      t, fldt, classes, indicator,
     } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
@@ -55,7 +55,7 @@ class IndicatorOverviewComponent extends Component {
           >
             {t('Creation date')}
           </Typography>
-          {fld(indicator.created)}
+          {fldt(indicator.created)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -63,7 +63,7 @@ class IndicatorOverviewComponent extends Component {
           >
             {t('Modification date')}
           </Typography>
-          {fld(indicator.modified)}
+          {fldt(indicator.modified)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -92,7 +92,7 @@ IndicatorOverviewComponent.propTypes = {
   indicator: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const IndicatorOverview = createFragmentContainer(IndicatorOverviewComponent, {

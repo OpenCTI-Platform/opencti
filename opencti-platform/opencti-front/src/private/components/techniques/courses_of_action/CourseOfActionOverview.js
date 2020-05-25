@@ -24,7 +24,7 @@ const styles = () => ({
 class CourseOfActionOverviewComponent extends Component {
   render() {
     const {
-      t, fld, classes, courseOfAction,
+      t, fldt, classes, courseOfAction,
     } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
@@ -55,7 +55,7 @@ class CourseOfActionOverviewComponent extends Component {
           >
             {t('Creation date')}
           </Typography>
-          {fld(courseOfAction.created)}
+          {fldt(courseOfAction.created)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -63,7 +63,7 @@ class CourseOfActionOverviewComponent extends Component {
           >
             {t('Modification date')}
           </Typography>
-          {fld(courseOfAction.modified)}
+          {fldt(courseOfAction.modified)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -100,7 +100,7 @@ CourseOfActionOverviewComponent.propTypes = {
   courseOfAction: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const CourseOfActionOverview = createFragmentContainer(

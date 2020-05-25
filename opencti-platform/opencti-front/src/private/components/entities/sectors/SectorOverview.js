@@ -23,7 +23,7 @@ const styles = () => ({
 class SectorOverviewComponent extends Component {
   render() {
     const {
-      t, fld, classes, sector,
+      t, fldt, classes, sector,
     } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
@@ -34,7 +34,7 @@ class SectorOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Creation date')}
           </Typography>
-          {fld(sector.created)}
+          {fldt(sector.created)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -42,7 +42,7 @@ class SectorOverviewComponent extends Component {
           >
             {t('Modification date')}
           </Typography>
-          {fld(sector.modified)}
+          {fldt(sector.modified)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -71,7 +71,7 @@ SectorOverviewComponent.propTypes = {
   sector: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const SectorOverview = createFragmentContainer(SectorOverviewComponent, {

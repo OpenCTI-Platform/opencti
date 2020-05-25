@@ -24,7 +24,7 @@ const styles = () => ({
 class IntrusionSetOverviewComponent extends Component {
   render() {
     const {
-      t, fld, classes, intrusionSet,
+      t, fldt, classes, intrusionSet,
     } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
@@ -55,7 +55,7 @@ class IntrusionSetOverviewComponent extends Component {
           >
             {t('Creation date')}
           </Typography>
-          {fld(intrusionSet.created)}
+          {fldt(intrusionSet.created)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -63,7 +63,7 @@ class IntrusionSetOverviewComponent extends Component {
           >
             {t('Modification date')}
           </Typography>
-          {fld(intrusionSet.modified)}
+          {fldt(intrusionSet.modified)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -96,7 +96,7 @@ IntrusionSetOverviewComponent.propTypes = {
   intrusionSet: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const IntrusionSetOverview = createFragmentContainer(

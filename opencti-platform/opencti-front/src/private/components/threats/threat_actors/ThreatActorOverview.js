@@ -24,7 +24,7 @@ const styles = () => ({
 class ThreatActorOverviewComponent extends Component {
   render() {
     const {
-      t, fld, classes, threatActor,
+      t, fldt, classes, threatActor,
     } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
@@ -55,7 +55,7 @@ class ThreatActorOverviewComponent extends Component {
           >
             {t('Creation date')}
           </Typography>
-          {fld(threatActor.created)}
+          {fldt(threatActor.created)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -63,7 +63,7 @@ class ThreatActorOverviewComponent extends Component {
           >
             {t('Modification date')}
           </Typography>
-          {fld(threatActor.modified)}
+          {fldt(threatActor.modified)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -96,7 +96,7 @@ ThreatActorOverviewComponent.propTypes = {
   threatActor: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const ThreatActorOverview = createFragmentContainer(

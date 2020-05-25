@@ -23,7 +23,7 @@ const styles = () => ({
 class RegionOverviewComponent extends Component {
   render() {
     const {
-      t, fld, classes, region,
+      t, fldt, classes, region,
     } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
@@ -34,7 +34,7 @@ class RegionOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Creation date')}
           </Typography>
-          {fld(region.created)}
+          {fldt(region.created)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -42,7 +42,7 @@ class RegionOverviewComponent extends Component {
           >
             {t('Modification date')}
           </Typography>
-          {fld(region.modified)}
+          {fldt(region.modified)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -71,7 +71,7 @@ RegionOverviewComponent.propTypes = {
   region: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const RegionOverview = createFragmentContainer(RegionOverviewComponent, {

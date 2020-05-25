@@ -23,7 +23,7 @@ const styles = () => ({
 class StixObservableOverviewComponent extends Component {
   render() {
     const {
-      t, fld, classes, stixObservable,
+      t, fldt, classes, stixObservable,
     } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
@@ -42,7 +42,7 @@ class StixObservableOverviewComponent extends Component {
           >
             {t('Creation date')}
           </Typography>
-          {fld(stixObservable.created_at)}
+          {fldt(stixObservable.created_at)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -50,7 +50,7 @@ class StixObservableOverviewComponent extends Component {
           >
             {t('Modification date')}
           </Typography>
-          {fld(stixObservable.updated_at)}
+          {fldt(stixObservable.updated_at)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -83,7 +83,7 @@ StixObservableOverviewComponent.propTypes = {
   stixObservable: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const StixObservableOverview = createFragmentContainer(
@@ -109,7 +109,4 @@ const StixObservableOverview = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixObservableOverview);
+export default compose(inject18n, withStyles(styles))(StixObservableOverview);

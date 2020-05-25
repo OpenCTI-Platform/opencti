@@ -24,7 +24,7 @@ const styles = () => ({
 class ToolOverviewComponent extends Component {
   render() {
     const {
-      t, fld, classes, tool,
+      t, fldt, classes, tool,
     } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
@@ -55,7 +55,7 @@ class ToolOverviewComponent extends Component {
           >
             {t('Creation date')}
           </Typography>
-          {fld(tool.created)}
+          {fldt(tool.created)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -63,7 +63,7 @@ class ToolOverviewComponent extends Component {
           >
             {t('Modification date')}
           </Typography>
-          {fld(tool.modified)}
+          {fldt(tool.modified)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -96,7 +96,7 @@ ToolOverviewComponent.propTypes = {
   tool: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const ToolOverview = createFragmentContainer(ToolOverviewComponent, {

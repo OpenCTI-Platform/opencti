@@ -131,7 +131,7 @@ class StixObservables extends Component {
       },
       created_at: {
         label: 'Creation date',
-        width: '15%',
+        width: '18%',
         isSortable: true,
       },
       markingDefinitions: {
