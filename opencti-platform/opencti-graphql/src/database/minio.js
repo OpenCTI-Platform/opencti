@@ -112,6 +112,7 @@ const rawFilesListing = (directory) => {
 
 export const filesListing = async (first, category, entityType, entity = null, context = null) => {
   const name = extractName(entityType, entity ? entity.id : null);
+  console.log(name);
   const files = await rawFilesListing(`${category}${context ? `/${context}` : ''}/${name}`);
   let allFiles = files;
   if (category === 'export') {

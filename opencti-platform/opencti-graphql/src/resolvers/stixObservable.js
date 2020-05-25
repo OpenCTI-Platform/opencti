@@ -15,6 +15,8 @@ import {
   stixObservableEditField,
   stixObservablesNumber,
   stixObservablesTimeSeries,
+  stixObservableExportAsk,
+  stixObservableExportPush,
 } from '../domain/stixObservable';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -23,6 +25,7 @@ import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { connectorsForEnrichment } from '../domain/enrichment';
 import { convertDataToStix } from '../database/stix';
 import { stixRelations } from '../domain/stixEntity';
+import { filesListing } from '../database/minio';
 
 const stixObservableResolvers = {
   Query: {
@@ -30,6 +33,8 @@ const stixObservableResolvers = {
     stixObservables: (_, args) => findAll(args),
     stixObservablesTimeSeries: (_, args) => stixObservablesTimeSeries(args),
     stixObservablesNumber: (_, args) => stixObservablesNumber(args),
+    stixObservablesExportFiles: (_, { first, context }) =>
+      filesListing(first, 'export', 'stix-observable', null, context),
   },
   StixObservablesOrdering: {
     markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
@@ -63,6 +68,9 @@ const stixObservableResolvers = {
       askEnrichment: ({ connectorId }) => stixObservableAskEnrichment(id, connectorId),
     }),
     stixObservableAdd: (_, { input }, { user }) => addStixObservable(user, input),
+    stixObservablesExportAsk: (_, args) => stixObservableExportAsk(args),
+    stixObservablesExportPush: (_, { file, context, listArgs }, { user }) =>
+      stixObservableExportPush(user, null, file, context, listArgs),
   },
   Subscription: {
     stixObservable: {
