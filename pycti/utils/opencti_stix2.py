@@ -1703,45 +1703,9 @@ class OpenCTIStix2:
             else None,
         )
 
-    # TODO move in Identity
     def create_identity(self, stix_object, extras, update=False):
-        if CustomProperties.IDENTITY_TYPE in stix_object:
-            type = stix_object[CustomProperties.IDENTITY_TYPE].capitalize()
-        else:
-            if stix_object["identity_class"] == "individual":
-                type = "User"
-            elif stix_object["identity_class"] == "organization":
-                type = "Organization"
-            elif stix_object["identity_class"] == "group":
-                type = "Organization"
-            elif stix_object["identity_class"] == "class":
-                type = "Sector"
-            else:
-                return None
-        return self.opencti.identity.create(
-            type=type,
-            name=stix_object["name"],
-            description=self.convert_markdown(stix_object["description"])
-            if "description" in stix_object
-            else "",
-            alias=self.pick_aliases(stix_object),
-            id=stix_object[CustomProperties.ID]
-            if CustomProperties.ID in stix_object
-            else None,
-            stix_id_key=stix_object["id"] if "id" in stix_object else None,
-            created=stix_object["created"] if "created" in stix_object else None,
-            modified=stix_object["modified"] if "modified" in stix_object else None,
-            createdByRef=extras["created_by_ref_id"]
-            if "created_by_ref_id" in extras
-            else None,
-            markingDefinitions=extras["marking_definitions_ids"]
-            if "marking_definitions_ids" in extras
-            else [],
-            tags=extras["tags_ids"] if "tags_ids" in extras else [],
-            organization_class=stix_object[CustomProperties.ORG_CLASS]
-            if CustomProperties.ORG_CLASS in stix_object
-            else None,
-            update=update,
+        return self.opencti.identity.import_from_stix2(
+            stixObject=stix_object, extras=extras, update=update
         )
 
     # TODO move in ThreatActor

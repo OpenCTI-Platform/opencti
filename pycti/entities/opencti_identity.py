@@ -17,6 +17,7 @@ class Identity:
             name
             alias
             description
+            contact_information
             created
             modified            
             created_at
@@ -215,6 +216,7 @@ class Identity:
         type = kwargs.get("type", None)
         name = kwargs.get("name", None)
         description = kwargs.get("description", None)
+        contact_information = kwargs.get("contact_information", None)
         alias = kwargs.get("alias", None)
         id = kwargs.get("id", None)
         stix_id_key = kwargs.get("stix_id_key", None)
@@ -230,6 +232,7 @@ class Identity:
             input_variables = {
                 "name": name,
                 "description": description,
+                "contact_information": contact_information,
                 "alias": alias,
                 "internal_id_key": id,
                 "stix_id_key": stix_id_key,
@@ -283,6 +286,7 @@ class Identity:
         type = kwargs.get("type", None)
         name = kwargs.get("name", None)
         description = kwargs.get("description", None)
+        contact_information = kwargs.get("contact_information", None)
         alias = kwargs.get("alias", None)
         id = kwargs.get("id", None)
         stix_id_key = kwargs.get("stix_id_key", None)
@@ -298,6 +302,7 @@ class Identity:
             entity_type
             name
             description 
+            contact_information
             alias
             ... on Organization {
                 organization_class
@@ -331,6 +336,17 @@ class Identity:
                         id=object_result["id"], key="description", value=description
                     )
                     object_result["description"] = description
+                # contact_information
+                if (
+                    contact_information is not None
+                    and object_result["contact_information"] != contact_information
+                ):
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result["id"],
+                        key="contact_information",
+                        value=contact_information,
+                    )
+                    object_result["contact_information"] = contact_information
                 # alias
                 if alias is not None and object_result["alias"] != alias:
                     if "alias" in object_result:
@@ -361,6 +377,7 @@ class Identity:
                 type=type,
                 name=name,
                 description=description,
+                contact_information=contact_information,
                 alias=alias,
                 id=id,
                 stix_id_key=stix_id_key,
@@ -370,6 +387,68 @@ class Identity:
                 markingDefinitions=marking_definitions,
                 tags=tags,
                 organization_class=organization_class,
+            )
+
+    """
+        Import an Identity object from a STIX2 object
+
+        :param stixObject: the Stix-Object Identity
+        :return Identity object
+    """
+
+    def import_from_stix2(self, **kwargs):
+        stix_object = kwargs.get("stixObject", None)
+        extras = kwargs.get("extras", {})
+        update = kwargs.get("update", False)
+        if stix_object is not None:
+            if CustomProperties.IDENTITY_TYPE in stix_object:
+                type = stix_object[CustomProperties.IDENTITY_TYPE].capitalize()
+            else:
+                if stix_object["identity_class"] == "individual":
+                    type = "User"
+                elif stix_object["identity_class"] == "organization":
+                    type = "Organization"
+                elif stix_object["identity_class"] == "group":
+                    type = "Organization"
+                elif stix_object["identity_class"] == "class":
+                    type = "Sector"
+                else:
+                    return None
+            return self.create(
+                type=type,
+                name=stix_object["name"],
+                description=self.opencti.stix2.convert_markdown(
+                    stix_object["description"]
+                )
+                if "description" in stix_object
+                else "",
+                contact_information=self.opencti.stix2.convert_markdown(
+                    stix_object["contact_information"]
+                )
+                if "contact_information" in stix_object
+                else "",
+                alias=self.opencti.stix2.pick_aliases(stix_object),
+                id=stix_object[CustomProperties.ID]
+                if CustomProperties.ID in stix_object
+                else None,
+                stix_id_key=stix_object["id"] if "id" in stix_object else None,
+                created=stix_object["created"] if "created" in stix_object else None,
+                modified=stix_object["modified"] if "modified" in stix_object else None,
+                createdByRef=extras["created_by_ref_id"]
+                if "created_by_ref_id" in extras
+                else None,
+                markingDefinitions=extras["marking_definitions_ids"]
+                if "marking_definitions_ids" in extras
+                else [],
+                tags=extras["tags_ids"] if "tags_ids" in extras else [],
+                organization_class=stix_object[CustomProperties.ORG_CLASS]
+                if CustomProperties.ORG_CLASS in stix_object
+                else None,
+                update=update,
+            )
+        else:
+            self.opencti.log(
+                "error", "[opencti_identity] Missing parameters: stixObject"
             )
 
     """
@@ -407,6 +486,8 @@ class Identity:
                 identity["labels"] = ["identity"]
             if self.opencti.not_empty(entity["description"]):
                 identity["description"] = entity["description"]
+            if self.opencti.not_empty(entity["contact_information"]):
+                identity["contact_information"] = entity["contact_information"]
             identity["created"] = self.opencti.stix2.format_date(entity["created"])
             identity["modified"] = self.opencti.stix2.format_date(entity["modified"])
             if self.opencti.not_empty(entity["alias"]):
