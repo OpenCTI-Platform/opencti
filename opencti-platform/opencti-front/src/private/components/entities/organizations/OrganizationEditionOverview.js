@@ -109,6 +109,7 @@ const organizationValidation = (t) => Yup.object().shape({
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
+  contact_information: Yup.string(),
   organization_class: Yup.string().required(t('This field is required')),
   reliability: Yup.string().required(t('This field is required')),
 });
@@ -254,6 +255,7 @@ class OrganizationEditionOverviewComponent extends Component {
       pick([
         'name',
         'description',
+        'contact_information',
         'organization_class',
         'reliability',
         'createdByRef',
@@ -292,6 +294,23 @@ class OrganizationEditionOverviewComponent extends Component {
               onSubmit={this.handleSubmitField.bind(this)}
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
+              }
+            />
+            <Field
+              component={TextField}
+              name="contact_information"
+              label={t('Contact information')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={{ marginTop: 20 }}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="contact_information"
+                />
               }
             />
             <Field
@@ -385,6 +404,7 @@ const OrganizationEditionOverview = createFragmentContainer(
         id
         name
         description
+        contact_information
         organization_class
         reliability
         createdByRef {

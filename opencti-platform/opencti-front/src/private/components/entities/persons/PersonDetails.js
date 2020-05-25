@@ -9,6 +9,7 @@ import Typography from '@material-ui/core/Typography';
 import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
 import inject18n from '../../../../components/i18n';
 import ItemCreator from '../../../../components/ItemCreator';
+import Markdown from "react-markdown";
 
 const styles = () => ({
   paper: {
@@ -45,6 +46,14 @@ class PersonDetailsComponent extends Component {
             {t('Creator')}
           </Typography>
           <ItemCreator creator={person.creator} />
+          <Typography
+              variant="h3"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
+          >
+            {t('Contact information')}
+          </Typography>
+          <Markdown className="markdown" source={person.contact_information} />
         </Paper>
       </div>
     );
@@ -62,6 +71,7 @@ const PersonDetails = createFragmentContainer(PersonDetailsComponent, {
   person: graphql`
     fragment PersonDetails_person on User {
       id
+      contact_information
       creator {
           id
           name

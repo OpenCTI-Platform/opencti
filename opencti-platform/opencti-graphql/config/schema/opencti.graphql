@@ -1067,6 +1067,7 @@ interface Identity {
   stix_label: [String]
   alias: [String]
   description: String
+  contact_information: String
   confidence: Int
   created: DateTime
   modified: DateTime
@@ -1118,6 +1119,7 @@ input IdentityAddInput {
   stix_id_key: String
   name: String!
   description: String
+  contact_information: String
   confidence: Int
   alias: [String]
   type: IdentityType!
@@ -1229,6 +1231,7 @@ type User implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   stix_label: [String]
   alias: [String]
   description: String
+  contact_information: String
   confidence: Int
   firstname: String
   lastname: String
@@ -1285,6 +1288,7 @@ input UserAddInput {
   user_email: String @constraint(minLength: 5, format: "email")
   name: String! @constraint(minLength: 3)
   description: String
+  contact_information: String
   confidence: Int
   password: String
   firstname: String
@@ -1303,6 +1307,7 @@ input PersonAddInput {
   stix_id_key: String
   name: String! @constraint(minLength: 3)
   description: String
+  contact_information: String
   confidence: Int
   firstname: String
   lastname: String
@@ -1372,6 +1377,7 @@ type Organization implements GlobalObject & StixEntity & StixDomainEntity & Iden
   stix_label: [String]
   alias: [String]
   description: String
+  contact_information: String
   confidence: Int
   organization_class: String
   reliability: OrganizationReliability
@@ -1421,6 +1427,7 @@ input OrganizationAddInput {
   stix_id_key: String
   name: String!
   description: String
+  contact_information: String
   confidence: Int
   organization_class: String
   reliability: OrganizationReliability
@@ -1481,6 +1488,7 @@ type Sector implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   stix_label: [String]
   alias: [String]
   description: String
+  contact_information: String
   confidence: Int
   created: DateTime
   modified: DateTime
@@ -1530,6 +1538,7 @@ input SectorAddInput {
   stix_id_key: String
   name: String!
   description: String
+  contact_information: String
   confidence: Int
   alias: [String]
   createdByRef: String
@@ -1583,6 +1592,7 @@ type City implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   stix_label: [String]
   alias: [String]
   description: String
+  contact_information: String
   confidence: Int
   created: DateTime
   modified: DateTime
@@ -1630,6 +1640,7 @@ input CityAddInput {
   stix_id_key: String
   name: String!
   description: String
+  contact_information: String
   confidence: Int
   alias: [String]
   createdByRef: String
@@ -1683,6 +1694,7 @@ type Country implements GlobalObject & StixEntity & StixDomainEntity & Identity 
   stix_label: [String]
   alias: [String]
   description: String
+  contact_information: String
   confidence: Int
   created: DateTime
   modified: DateTime
@@ -1730,6 +1742,7 @@ input CountryAddInput {
   stix_id_key: String
   name: String!
   description: String
+  contact_information: String
   confidence: Int
   alias: [String]
   createdByRef: String
@@ -1784,6 +1797,7 @@ type Region implements GlobalObject & StixEntity & StixDomainEntity & Identity {
   stix_label: [String]
   alias: [String]
   description: String
+  contact_information: String
   confidence: Int
   created: DateTime
   modified: DateTime
@@ -1833,6 +1847,7 @@ input RegionAddInput {
   stix_id_key: String
   name: String!
   description: String
+  contact_information: String
   confidence: Int
   alias: [String]
   createdByRef: String
@@ -2316,6 +2331,7 @@ type ThreatActor implements GlobalObject & StixEntity & StixDomainEntity & Ident
   parent_types: [String]!
   name: String!
   description: String
+  contact_information: String
   confidence: Int
   first_seen: DateTime
   last_seen: DateTime
