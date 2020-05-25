@@ -302,8 +302,10 @@ class Identity:
             entity_type
             name
             description 
-            contact_information
             alias
+            ... on Identity {
+                contact_information
+            }
             ... on Organization {
                 organization_class
             }
