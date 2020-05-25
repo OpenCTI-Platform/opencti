@@ -197,7 +197,7 @@ export const stixObservableDeleteRelation = async (
     throw FunctionalError('Cannot delete the relation, missing relationId or toId');
   }
   const data = await loadEntityById(stixObservableId, 'Stix-Observable');
-  return notify(BUS_TOPICS.stixObservable.EDIT_TOPIC, data, user);
+  return notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, data, user);
 };
 // endregion
 

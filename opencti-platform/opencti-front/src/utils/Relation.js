@@ -83,6 +83,7 @@ const relationsTypesMapping = {
   indicator_malware: ['indicates'],
   indicator_tool: ['indicates'],
   indicator_vulnerability: ['indicates'],
+  'indicator_attack-pattern': ['indicates'],
   observable_organization: ['gathering'],
   observable_person: ['gathering'],
   observable_city: ['localization'],

@@ -136,6 +136,7 @@ class IndicatorEntities extends Component {
             'Malware',
             'Tool',
             'Vulnerability',
+            'Attack-Pattern',
           ]}
         />
         <div className="clearfix" />

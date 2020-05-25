@@ -124,6 +124,28 @@ class TopMenuAttackPattern extends Component {
         </Button>
         <Button
           component={Link}
+          to={`/dashboard/techniques/attack_patterns/${attackPatternId}/indicators`}
+          variant={
+            location.pathname.includes(
+              `/dashboard/techniques/attack_patterns/${attackPatternId}/indicators`,
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              `/dashboard/techniques/attack_patterns/${attackPatternId}/indicators`,
+            )
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Indicators')}
+        </Button>
+        <Button
+          component={Link}
           to={`/dashboard/techniques/attack_patterns/${attackPatternId}/history`}
           variant={
             location.pathname

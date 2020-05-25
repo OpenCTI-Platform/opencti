@@ -15,6 +15,7 @@ import FileManager from '../../common/files/FileManager';
 import AttackPatternPopover from './AttackPatternPopover';
 import Loader from '../../../../components/Loader';
 import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
+import AttackPatternIndicators from './AttackPatternIndicators';
 
 const subscription = graphql`
   subscription RootAttackPatternSubscription($id: ID!) {
@@ -115,6 +116,15 @@ class RootAttackPattern extends Component {
                     path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge"
                     render={(routeProps) => (
                       <AttackPatternKnowledge
+                        {...routeProps}
+                        attackPattern={props.attackPattern}
+                      />
+                    )}
+                  />
+                  <Route
+                    path="/dashboard/techniques/attack_patterns/:attackPatternId/indicators"
+                    render={(routeProps) => (
+                      <AttackPatternIndicators
                         {...routeProps}
                         attackPattern={props.attackPattern}
                       />
