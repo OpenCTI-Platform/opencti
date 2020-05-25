@@ -23,6 +23,15 @@ class TestLocalExporter:
         # Upload it like a simple file to import
         opencti_api_client.upload_file(file_name=self.file_name, data=json_bundle)
 
+    def upload_list(self):
+        opencti_api_client = OpenCTIApiClient(self.api_url, self.api_token)
+        # Generate a json bundle from openCTI
+        bundle = opencti_api_client.stix2.export_list("malware")
+        json_bundle = json.dumps(bundle, indent=4)
+        # Upload the export inside the entity to ack like an import
+        opencti_api_client.stix_domain_entity.push_list_export("malware", self.file_name, json_bundle)
+        # Upload it like a simple file to import
+        opencti_api_client.upload_file(file_name=self.file_name, data=json_bundle)
 
 if __name__ == '__main__':
     try:

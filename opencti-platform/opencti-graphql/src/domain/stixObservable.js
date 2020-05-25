@@ -1,4 +1,4 @@
-import { assoc, dissoc, map, pipe } from 'ramda';
+import { assoc, dissoc, invertObj, map, pipe, propOr } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
@@ -21,7 +21,7 @@ import {
 import { BUS_TOPICS, logger } from '../config/conf';
 import { elCount } from '../database/elasticSearch';
 import { buildPagination, TYPE_STIX_OBSERVABLE } from '../database/utils';
-import { createWork } from './work';
+import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { addIndicator } from './indicator';
 import { askEnrich } from './enrichment';
@@ -29,6 +29,10 @@ import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import { createStixPattern } from '../python/pythonBridge';
 import { OBSERVABLE_TYPES } from '../database/stix';
 import { checkObservableSyntax } from '../utils/syntax';
+import { connectorsForExport } from './connector';
+import { findById as findMarkingDefinitionById } from './markingDefinition';
+import { generateFileExportName, upload } from '../database/minio';
+import stixObservableResolvers from '../resolvers/stixObservable';
 
 export const findById = (stixObservableId) => {
   return loadEntityById(stixObservableId, 'Stix-Observable');
@@ -193,7 +197,7 @@ export const stixObservableDeleteRelation = async (
     throw FunctionalError('Cannot delete the relation, missing relationId or toId');
   }
   const data = await loadEntityById(stixObservableId, 'Stix-Observable');
-  return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
+  return notify(BUS_TOPICS.stixObservable.EDIT_TOPIC, data, user);
 };
 // endregion
 
@@ -211,3 +215,102 @@ export const stixObservableEditContext = (user, stixObservableId, input) => {
   );
 };
 // endregion
+
+// region export
+const askJobExports = async (
+  format,
+  entity = null,
+  exportType = null,
+  maxMarkingDefinition = null,
+  context = null,
+  listArgs = null
+) => {
+  const connectors = await connectorsForExport(format, true);
+  // Create job for every connectors
+  const haveMarking = maxMarkingDefinition && maxMarkingDefinition.length > 0;
+  const maxMarkingDefinitionEntity = haveMarking ? await findMarkingDefinitionById(maxMarkingDefinition) : null;
+  const workList = await Promise.all(
+    map((connector) => {
+      const fileName = generateFileExportName(
+        format,
+        connector,
+        entity,
+        'stix-observable',
+        exportType,
+        maxMarkingDefinitionEntity
+      );
+      return createWork(connector, 'stix-observable', entity ? entity.id : null, context, fileName).then(
+        ({ work, job }) => ({
+          connector,
+          job,
+          work,
+        })
+      );
+    }, connectors)
+  );
+  let finalListArgs = listArgs;
+  if (listArgs !== null) {
+    const stixObservablesFiltersInversed = invertObj(stixObservableResolvers.StixObservablesFilter);
+    const stixObservablesOrderingInversed = invertObj(stixObservableResolvers.StixObservablesOrdering);
+    finalListArgs = pipe(
+      assoc(
+        'filters',
+        map(
+          (n) => ({
+            key: n.key in stixObservablesFiltersInversed ? stixObservablesFiltersInversed[n.key] : n.key,
+            values: n.values,
+          }),
+          propOr([], 'filters', listArgs)
+        )
+      ),
+      assoc(
+        'orderBy',
+        listArgs.orderBy in stixObservablesOrderingInversed
+          ? stixObservablesOrderingInversed[listArgs.orderBy]
+          : listArgs.orderBy
+      )
+    )(listArgs);
+  }
+  // Send message to all correct connectors queues
+  await Promise.all(
+    map((data) => {
+      const { connector, job, work } = data;
+      const message = {
+        work_id: work.internal_id_key, // work(id)
+        job_id: job.internal_id_key, // job(id)
+        max_marking_definition: maxMarkingDefinition && maxMarkingDefinition.length > 0 ? maxMarkingDefinition : null, // markingDefinition(id)
+        export_type: exportType, // for entity, simple or full / for list, withArgs / withoutArgs
+        entity_type: 'stix-observable',
+        entity_id: entity ? entity.id : null, // report(id), thread(id), ...
+        list_args: finalListArgs,
+        file_context: work.work_context,
+        file_name: work.work_file, // Base path for the upload
+      };
+      return pushToConnector(connector, message);
+    }, workList)
+  );
+  return workList;
+};
+// endregion
+
+// region mutation
+/**
+ * Create export element waiting for completion
+ * @param args
+ * @returns {*}
+ */
+export const stixObservableExportAsk = async (args) => {
+  const { format, stixObservableId = null, exportType = null, maxMarkingDefinition = null, context = null } = args;
+  const entity = stixObservableId ? await loadEntityById(stixObservableId, 'Stix-Observable') : null;
+  const workList = await askJobExports(format, entity, exportType, maxMarkingDefinition, context, args);
+  // Return the work list to do
+  return map((w) => workToExportFile(w.work), workList);
+};
+export const stixObservableImportPush = (user, entityType = null, entityId = null, file) => {
+  return upload(user, 'import', file, entityType, entityId);
+};
+export const stixObservableExportPush = async (user, entityId = null, file, context = null, listArgs = null) => {
+  // Upload the document in minio
+  await upload(user, 'export', file, 'stix-observable', entityId, context, listArgs);
+  return true;
+};

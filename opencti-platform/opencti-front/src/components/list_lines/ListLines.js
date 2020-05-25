@@ -22,6 +22,7 @@ import inject18n from '../i18n';
 import StixDomainEntitiesExports from '../../private/components/common/stix_domain_entities/StixDomainEntitiesExports';
 import Security, { KNOWLEDGE_KNGETEXPORT } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
+import StixObservablesExports from '../../private/components/common/stix_observables/StixObservablesExports';
 
 const styles = (theme) => ({
   container: {
@@ -305,7 +306,8 @@ class ListLines extends Component {
           </ListItem>
           {children}
         </List>
-        {typeof handleToggleExports === 'function' ? (
+        {typeof handleToggleExports === 'function'
+        && exportEntityType !== 'Stix-Observable' ? (
           <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
             <StixDomainEntitiesExports
               open={openExports}
@@ -315,9 +317,22 @@ class ListLines extends Component {
               context={exportContext}
             />
           </Security>
-        ) : (
-          ''
-        )}
+          ) : (
+            ''
+          )}
+        {typeof handleToggleExports === 'function'
+        && exportEntityType === 'Stix-Observable' ? (
+          <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+            <StixObservablesExports
+              open={openExports}
+              handleToggle={handleToggleExports.bind(this)}
+              paginationOptions={paginationOptions}
+              context={exportContext}
+            />
+          </Security>
+          ) : (
+            ''
+          )}
       </div>
     );
   }

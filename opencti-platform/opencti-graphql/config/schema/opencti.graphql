@@ -459,6 +459,7 @@ enum StixDomainEntitiesOrdering {
 }
 enum StixDomainEntitiesFilter {
   main_observable_type
+  pattern_type
   entity_type
   name
   alias
@@ -3697,6 +3698,7 @@ type Query {
     search: String
     stix: Boolean
   ): StixObservableConnection @auth(for: [KNOWLEDGE])
+  stixObservablesExportFiles(first: Int, context: String): FileConnection
   stixObservablesNumber(types: [String], endDate: DateTime): Number @auth(for: [KNOWLEDGE])
   stixObservablesTimeSeries(type: String): [TimeSeries] @auth(for: [KNOWLEDGE])
   stixObservablesDistribution(type: String): [Distribution] @auth(for: [KNOWLEDGE])
@@ -4629,15 +4631,19 @@ type Mutation {
   stixObservableAdd(input: StixObservableAddInput): StixObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   stixObservableEdit(id: ID!): StixObservableEditMutations
   stixObservablesExportAsk(
-    types: [String]!
     format: String!
     exportType: String!
     maxMarkingDefinition: String
+    context: String
+    types: [String]
+    search: String
     orderBy: StixObservablesOrdering
     orderMode: OrderingMode
     filters: [StixObservablesFiltering]
     filterMode: FilterMode
   ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  stixObservablesExportPush(file: Upload!, context: String, listArgs: String): Boolean
+  @auth(for: [CONNECTORAPI])
   # StixRelation
   stixRelationAdd(input: StixRelationAddInput, reversedReturn: Boolean): StixRelation @auth(for: [KNOWLEDGE_KNUPDATE])
   stixRelationEdit(id: ID!): StixRelationEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])

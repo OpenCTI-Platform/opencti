@@ -110,6 +110,7 @@ class StixObservables extends Component {
       orderAsc,
       searchTerm,
       filters,
+      openExports,
       numberOfElements,
     } = this.state;
     const dataColumns = {
@@ -147,6 +148,8 @@ class StixObservables extends Component {
         handleSearch={this.handleSearch.bind(this)}
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+        handleToggleExports={this.handleToggleExports.bind(this)}
+        openExports={openExports}
         exportEntityType="Stix-Observable"
         exportContext={null}
         keyword={searchTerm}
