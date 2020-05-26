@@ -5,6 +5,7 @@ import {
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Chip from '@material-ui/core/Chip';
+import Close from '@material-ui/icons/Close';
 import Slide from '@material-ui/core/Slide';
 import inject18n from '../../../../components/i18n';
 
@@ -41,11 +42,11 @@ const styles = () => ({
 });
 
 class StixObjectTags extends Component {
-  hexToRGB(hex) {
+  hexToRGB(hex, transp = 0.1) {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
-    return `rgb(${r}, ${g}, ${b}, 0.08)`;
+    return `rgb(${r}, ${g}, ${b}, ${transp})`;
   }
 
   render() {
