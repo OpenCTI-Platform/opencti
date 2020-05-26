@@ -5,7 +5,6 @@ import {
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Chip from '@material-ui/core/Chip';
-import Close from '@material-ui/icons/Close';
 import Slide from '@material-ui/core/Slide';
 import inject18n from '../../../../components/i18n';
 
