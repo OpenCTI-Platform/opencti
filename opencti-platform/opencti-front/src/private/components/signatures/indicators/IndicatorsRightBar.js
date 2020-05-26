@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import {
+  assoc, compose, map, pipe, prop, sortBy, toLower,
+} from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListSubheader from '@material-ui/core/ListSubheader';
@@ -9,6 +11,8 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Checkbox from '@material-ui/core/Checkbox';
 import Drawer from '@material-ui/core/Drawer';
 import inject18n from '../../../../components/i18n';
+import { QueryRenderer } from '../../../../relay/environment';
+import { stixObservablesLinesSubTypesQuery } from '../stix_observables/StixObservablesLines';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -149,212 +153,51 @@ class IndicatorsRightBar extends Component {
             <ListItemText primary="YARA" />
           </ListItem>
         </List>
-        <List
-          subheader={
-            <ListSubheader component="div">
-              {t('Main observable type')}
-            </ListSubheader>
-          }
-        >
-          <ListItem
-            dense={true}
-            button={true}
-            onClick={handleToggleObservableType.bind(this, 'Autonomous-System')}
-            classes={{ root: classes.item }}
-          >
-            <Checkbox
-              checked={observableTypes.includes('Autonomous-System')}
-              disableRipple={true}
-              size="small"
-            />
-            <ListItemText primary={t('Autonomous systems')} />
-          </ListItem>
-          <ListItem
-            dense={true}
-            button={true}
-            onClick={handleToggleObservableType.bind(this, 'Domain')}
-            classes={{ root: classes.item }}
-          >
-            <Checkbox
-              checked={observableTypes.includes('Domain')}
-              disableRipple={true}
-              size="small"
-            />
-            <ListItemText primary={t('Domain names')} />
-          </ListItem>
-          <ListItem
-            dense={true}
-            button={true}
-            onClick={handleToggleObservableType.bind(this, 'Mac-Addr')}
-            classes={{ root: classes.item }}
-          >
-            <Checkbox
-              checked={observableTypes.includes('Mac-Addr')}
-              disableRipple={true}
-              size="small"
-            />
-            <ListItemText primary={t('MAC addresses')} />
-          </ListItem>
-          <ListItem
-            dense={true}
-            button={true}
-            onClick={handleToggleObservableType.bind(this, 'IPv4-Addr')}
-            classes={{ root: classes.item }}
-          >
-            <Checkbox
-              checked={observableTypes.includes('IPv4-Addr')}
-              disableRipple={true}
-              size="small"
-            />
-            <ListItemText primary={t('IPv4 addresses')} />
-          </ListItem>
-          <ListItem
-            dense={true}
-            button={true}
-            onClick={handleToggleObservableType.bind(this, 'IPv6-Addr')}
-            classes={{ root: classes.item }}
-          >
-            <Checkbox
-              checked={observableTypes.includes('IPv6-Addr')}
-              disableRipple={true}
-              size="small"
-            />
-            <ListItemText primary={t('IPv6 addresses')} />
-          </ListItem>
-          <ListItem
-            dense={true}
-            button={true}
-            onClick={handleToggleObservableType.bind(this, 'URL')}
-            classes={{ root: classes.item }}
-          >
-            <Checkbox
-              checked={observableTypes.includes('URL')}
-              disableRipple={true}
-              size="small"
-            />
-            <ListItemText primary={t('URL')} />
-          </ListItem>
-          <ListItem
-            dense={true}
-            button={true}
-            onClick={handleToggleObservableType.bind(this, 'Email*')}
-            classes={{ root: classes.item }}
-          >
-            <Checkbox
-              checked={observableTypes.includes('Email*')}
-              disableRipple={true}
-              size="small"
-            />
-            <ListItemText primary={t('Emails')} />
-          </ListItem>
-          <ListItem
-            dense={true}
-            button={true}
-            onClick={handleToggleObservableType.bind(this, 'Mutex')}
-            classes={{ root: classes.item }}
-          >
-            <Checkbox
-              checked={observableTypes.includes('Mutex')}
-              disableRipple={true}
-              size="small"
-            />
-            <ListItemText primary={t('Mutex')} />
-          </ListItem>
-          <ListItem
-            dense={true}
-            button={true}
-            onClick={handleToggleObservableType.bind(this, 'Directory')}
-            classes={{ root: classes.item }}
-          >
-            <Checkbox
-              checked={observableTypes.includes('Directory')}
-              disableRipple={true}
-              size="small"
-            />
-            <ListItemText primary={t('Directories')} />
-          </ListItem>
-          <ListItem
-            dense={true}
-            button={true}
-            onClick={handleToggleObservableType.bind(this, 'File*')}
-            classes={{ root: classes.item }}
-          >
-            <Checkbox
-              checked={observableTypes.includes('File*')}
-              disableRipple={true}
-              size="small"
-            />
-            <ListItemText primary={t('Files')} />
-          </ListItem>
-          <ListItem
-            dense={true}
-            button={true}
-            onClick={handleToggleObservableType.bind(this, 'Registry-Key*')}
-            classes={{ root: classes.item }}
-          >
-            <Checkbox
-              checked={observableTypes.includes('Registry-Key*')}
-              disableRipple={true}
-              size="small"
-            />
-            <ListItemText primary={t('Registry')} />
-          </ListItem>
-          <ListItem
-            dense={true}
-            button={true}
-            onClick={handleToggleObservableType.bind(this, 'PDB-Path')}
-            classes={{ root: classes.item }}
-          >
-            <Checkbox
-              checked={observableTypes.includes('PDB-Path')}
-              disableRipple={true}
-              size="small"
-            />
-            <ListItemText primary={t('PDB Path')} />
-          </ListItem>
-          <ListItem
-            dense={true}
-            button={true}
-            onClick={handleToggleObservableType.bind(this, 'Windows-Service')}
-            classes={{ root: classes.item }}
-          >
-            <Checkbox
-              checked={observableTypes.includes('Windows-Service')}
-              disableRipple={true}
-              size="small"
-            />
-            <ListItemText primary={t('Windows services')} />
-          </ListItem>
-          <ListItem
-            dense={true}
-            button={true}
-            onClick={handleToggleObservableType.bind(
-              this,
-              'Windows-Scheduled-Task',
-            )}
-            classes={{ root: classes.item }}
-          >
-            <Checkbox
-              checked={observableTypes.includes('Windows-Scheduled-Task')}
-              disableRipple={true}
-              size="small"
-            />
-            <ListItemText primary={t('Windows scheduled tasks')} />
-          </ListItem>
-          <ListItem
-            dense={true}
-            button={true}
-            onClick={handleToggleObservableType.bind(this, 'X509-Certificate')}
-            classes={{ root: classes.item }}
-          >
-            <Checkbox
-              checked={observableTypes.includes('X509-Certificate')}
-              disableRipple={true}
-              size="small"
-            />
-            <ListItemText primary={t('X509 Certificates')} />
-          </ListItem>
-        </List>
+        <QueryRenderer
+          query={stixObservablesLinesSubTypesQuery}
+          variables={{ type: 'Stix-Observable' }}
+          render={({ props }) => {
+            if (props && props.subTypes) {
+              const subTypesEdges = props.subTypes.edges;
+              const sortByLabel = sortBy(compose(toLower, prop('tlabel')));
+              const translatedOrderedList = pipe(
+                map((n) => n.node),
+                map((n) => assoc('tlabel', t(`observable_${n.label.toLowerCase()}`), n)),
+                sortByLabel,
+              )(subTypesEdges);
+              return (
+                <List
+                  subheader={
+                    <ListSubheader component="div">
+                      {t('Main observable type')}
+                    </ListSubheader>
+                  }
+                >
+                  {translatedOrderedList.map((subType) => (
+                    <ListItem
+                      key={subType.id}
+                      dense={true}
+                      button={true}
+                      onClick={handleToggleObservableType.bind(
+                        this,
+                        subType.label,
+                      )}
+                      classes={{ root: classes.item }}
+                    >
+                      <Checkbox
+                        checked={observableTypes.includes(subType.label)}
+                        disableRipple={true}
+                        size="small"
+                      />
+                      <ListItemText primary={subType.tlabel} />
+                    </ListItem>
+                  ))}
+                </List>
+              );
+            }
+            return <div />;
+          }}
+        />
       </Drawer>
     );
   }

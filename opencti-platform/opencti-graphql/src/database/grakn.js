@@ -28,6 +28,9 @@ import {
   pluck,
   prop,
   sortWith,
+  sortBy,
+  compose,
+  toLower,
   split,
   tail,
   take,
@@ -71,6 +74,7 @@ import {
   elUpdate,
   forceNoCache,
   REL_INDEX_PREFIX,
+  virtualTypes,
 } from './elasticSearch';
 import {
   EVENT_TYPE_CREATE,
@@ -323,6 +327,31 @@ export const extractQueryVars = (query) => {
 // endregion
 
 // region Loader common
+export const querySubTypes = async (type, includeParents = false) => {
+  return executeRead(async (rTx) => {
+    const query = `match $x sub ${escape(type)}; get;`;
+    logger.debug(`[GRAKN - infer: false] querySubTypes`, { query });
+    const iterator = await rTx.query(query);
+    const answers = await iterator.collect();
+    const result = await Promise.all(
+      answers.map(async (answer) => {
+        const subType = answer.map().get('x');
+        const subTypeLabel = await subType.label();
+        return {
+          id: subType.id,
+          label: subTypeLabel,
+        };
+      })
+    );
+    const sortByLabel = sortBy(compose(toLower, prop('label')));
+    const finalResult = pipe(
+      filter((n) => n.label !== type && (includeParents || !includes(n.label, virtualTypes))),
+      sortByLabel,
+      map((n) => ({ node: n }))
+    )(result);
+    return buildPagination(5000, 0, finalResult, 5000);
+  });
+};
 export const queryAttributeValues = async (type) => {
   return executeRead(async (rTx) => {
     const query = `match $x isa ${escape(type)}; get;`;
@@ -476,7 +505,9 @@ const loadConcept = async (tx, concept, args = {}) => {
           const relationType = head(types);
           const roleTypes = await conceptTypes(tx, targetRole.value);
           // eslint-disable-next-line prettier/prettier
-          return head(roleItem).label().then(async (roleLabel) => {
+          return head(roleItem)
+            .label()
+            .then(async (roleLabel) => {
               const naturalRoles = resolveNaturalRoles(relationType);
               const useAlias = naturalRoles[roleLabel];
               return {
