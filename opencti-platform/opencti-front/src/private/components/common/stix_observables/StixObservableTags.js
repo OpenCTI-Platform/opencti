@@ -24,7 +24,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import Slide from '@material-ui/core/Slide';
-import { Add } from '@material-ui/icons';
+import { Add, CancelOutlined } from '@material-ui/icons';
 import { Tag } from 'mdi-material-ui';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -243,6 +243,14 @@ class StixObservableTags extends Component {
                   backgroundColor: this.hexToRGB(tag.color),
                 }}
                 onDelete={this.handleRemoveTag.bind(this, tag.id)}
+                deleteIcon={
+                  <CancelOutlined
+                    className={classes.deleteIcon}
+                    style={{
+                      color: tag.color,
+                    }}
+                  />
+                }
               />
             ),
             tagsNodes,
