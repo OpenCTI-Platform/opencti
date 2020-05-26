@@ -934,7 +934,21 @@ define
   Registry-Key sub Stix-Observable;
   Registry-Key-Value sub Registry-Key;
 
+  Hostname sub Stix-Observable;
+
   PDB-Path sub Stix-Observable;
+
+  Text sub Stix-Observable;
+
+  Process sub Stix-Observable;
+
+  User-Account sub Stix-Observable;
+
+  Cryptographic-Key sub Stix-Observable;
+
+  Cryptocurrency-Wallet sub Stix-Observable;
+
+  User-Agent sub Stix-Observable;
 
   Windows-Service sub Stix-Observable;
   Windows-Service-Name sub Windows-Service;

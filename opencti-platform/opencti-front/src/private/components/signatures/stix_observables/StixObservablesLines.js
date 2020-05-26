@@ -60,6 +60,19 @@ StixObservablesLines.propTypes = {
   setNumberOfElements: PropTypes.func,
 };
 
+export const stixObservablesLinesSubTypesQuery = graphql`
+  query StixObservablesLinesSubTypesQuery($type: String!, $includeParents: Boolean) {
+    subTypes(type: $type, includeParents: $includeParents) {
+      edges {
+        node {
+          id
+          label
+        }
+      }
+    }
+  }
+`;
+
 export const stixObservablesLinesQuery = graphql`
   query StixObservablesLinesPaginationQuery(
     $types: [String]

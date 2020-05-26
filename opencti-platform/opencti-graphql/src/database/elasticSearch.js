@@ -71,7 +71,16 @@ const numericOrBooleanFields = [
   'detection',
   'default_assignation',
 ];
-const virtualTypes = ['Identity', 'Email', 'File', 'Stix-Domain-Entity', 'Stix-Domain', 'Stix-Observable'];
+export const virtualTypes = [
+  'Identity',
+  'Email',
+  'File',
+  'Windows-Service',
+  'X509-Certificate',
+  'Stix-Domain-Entity',
+  'Stix-Domain',
+  'Stix-Observable',
+];
 
 export const REL_INDEX_PREFIX = 'rel_';
 export const INDEX_WORK_JOBS = 'work_jobs_index';

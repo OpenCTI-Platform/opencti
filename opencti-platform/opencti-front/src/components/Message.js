@@ -56,11 +56,11 @@ class Message extends Component {
         ]}
       >
         {this.state.error ? (
-          <Alert severity="error" color="error">
+          <Alert severity="error">
             {this.state.text}
           </Alert>
         ) : (
-          <Alert severity="success" color="success">
+          <Alert severity="success">
             {this.state.text}
           </Alert>
         )}

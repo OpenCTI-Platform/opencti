@@ -140,7 +140,7 @@ export const commitMutation = ({
         const messages = map(
           (e) => ({
             type: 'error',
-            text: pathOr(e.message, ['data', 'details'], e),
+            text: pathOr(e.message, ['data', 'reason'], e),
           }),
           error.res.errors,
         );

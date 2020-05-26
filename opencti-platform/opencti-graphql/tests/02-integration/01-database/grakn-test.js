@@ -33,6 +33,7 @@ import {
   prepareDate,
   queryAttributeValueByGraknId,
   queryAttributeValues,
+  querySubTypes,
   REL_CONNECTED_SUFFIX,
   sinceNowInMinutes,
   timeSeriesEntities,
@@ -182,6 +183,14 @@ describe('Grakn loaders', () => {
     const malware = await load(query, ['m'], { noCache });
     expect(malware.m).not.toBeNull();
     expect(malware.m.stix_id_key).toEqual('malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
+  });
+  it('should load subTypes values', async () => {
+    const stixObservableSubTypes = await querySubTypes('Stix-Observable');
+    expect(stixObservableSubTypes).not.toBeNull();
+    expect(stixObservableSubTypes.edges.length).toEqual(30);
+    const subTypeLabels = map((e) => e.node.label, stixObservableSubTypes.edges);
+    expect(includes('IPv4-Addr', subTypeLabels)).toBeTruthy();
+    expect(includes('IPv6-Addr', subTypeLabels)).toBeTruthy();
   });
   it('should load attributes values', async () => {
     const attrValues = await queryAttributeValues('report_class');

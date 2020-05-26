@@ -6,6 +6,7 @@ import settingsResolvers from '../resolvers/settings';
 import logResolvers from '../resolvers/log';
 import inferenceResolvers from '../resolvers/inference';
 import attributeResolvers from '../resolvers/attribute';
+import subTypeResolvers from '../resolvers/subType';
 import tagResolvers from '../resolvers/tag';
 import rabbitmqMetricsResolvers from '../resolvers/rabbitmqMetrics';
 import globalObjectResolvers from '../resolvers/globalObject';
@@ -56,6 +57,7 @@ const createSchema = () => {
     logResolvers,
     inferenceResolvers,
     attributeResolvers,
+    subTypeResolvers,
     tagResolvers,
     rabbitmqMetricsResolvers,
     connectorResolvers,
