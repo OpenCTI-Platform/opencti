@@ -2979,6 +2979,9 @@ enum VulnerabilitiesOrdering {
 }
 enum VulnerabilitiesFilter {
   name
+  base_score
+  base_severity
+  attack_vector
   alias
   created
   modified
