@@ -6,6 +6,7 @@ import requests
 import urllib3
 import json
 import logging
+import datetime
 
 from typing import Union
 
@@ -324,12 +325,16 @@ class OpenCTIApiClient:
         """check if a value is empty for str, list and int
 
         :param value: value to check
-        :type value: str or list or int
+        :type value: str or list or int or bool or datetime.date
         :return: returns `True` if the value is one of the supported types and not empty
         :rtype: bool
         """
 
         if value is not None:
+            if isinstance(value, bool):
+                return True
+            if isinstance(value, datetime.date):
+                return True
             if isinstance(value, str):
                 if len(value) > 0:
                     return True
@@ -508,22 +513,6 @@ class OpenCTIApiClient:
             )
             return None
 
-    # TODO Move to StixObservable
-    def update_stix_observable_field(self, id, key, value):
-        logging.info("Updating field " + key + " of " + id + "...")
-        query = """
-            mutation StixObservableEdit($id: ID!, $input: EditInput!) {
-                stixObservableEdit(id: $id) {
-                    fieldPatch(input: $input) {
-                        id
-                        observable_value
-                        entity_type
-                    }
-                }
-            }
-        """
-        self.query(query, {"id": id, "input": {"key": key, "value": value}})
-
     # TODO Move to ExternalReference
     def delete_external_reference(self, id):
         logging.info("Deleting + " + id + "...")
@@ -535,29 +524,6 @@ class OpenCTIApiClient:
              }
          """
         self.query(query, {"id": id})
-
-    # TODO Move to Vulnerability
-    def create_vulnerability_if_not_exists(
-        self,
-        name,
-        description,
-        alias=None,
-        id=None,
-        stix_id_key=None,
-        created=None,
-        modified=None,
-        update=False,
-    ):
-        return self.vulnerability.create(
-            name=name,
-            description=description,
-            alias=alias,
-            id=id,
-            stix_id_key=stix_id_key,
-            created=created,
-            modified=modified,
-            update=update,
-        )
 
     def resolve_role(self, relation_type, from_type, to_type):
         """resolves the role for a specified entity
