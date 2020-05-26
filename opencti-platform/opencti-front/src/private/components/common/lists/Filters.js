@@ -121,6 +121,63 @@ class Filters extends Component {
           });
         });
         break;
+      case 'base_score':
+        fetchQuery(attributesSearchQuery, {
+          type: 'base_score',
+          search: event && event.target.value !== 0 ? event.target.value : '',
+          first: 10,
+        }).then((data) => {
+          const entities = pipe(
+            pathOr([], ['attributes', 'edges']),
+            map((n) => ({
+              label: n.node.value,
+              value: n.node.value,
+              type: 'attribute',
+            })),
+          )(data);
+          this.setState({
+            entities: { object_status: union(this.state.entities, entities) },
+          });
+        });
+        break;
+      case 'base_severity':
+        fetchQuery(attributesSearchQuery, {
+          type: 'base_severity',
+          search: event && event.target.value !== 0 ? event.target.value : '',
+          first: 10,
+        }).then((data) => {
+          const entities = pipe(
+            pathOr([], ['attributes', 'edges']),
+            map((n) => ({
+              label: n.node.value,
+              value: n.node.value,
+              type: 'attribute',
+            })),
+          )(data);
+          this.setState({
+            entities: { object_status: union(this.state.entities, entities) },
+          });
+        });
+        break;
+      case 'attack_vector':
+        fetchQuery(attributesSearchQuery, {
+          type: 'attack_vector',
+          search: event && event.target.value !== 0 ? event.target.value : '',
+          first: 10,
+        }).then((data) => {
+          const entities = pipe(
+            pathOr([], ['attributes', 'edges']),
+            map((n) => ({
+              label: n.node.value,
+              value: n.node.value,
+              type: 'attribute',
+            })),
+          )(data);
+          this.setState({
+            entities: { object_status: union(this.state.entities, entities) },
+          });
+        });
+        break;
       case 'object_status':
         fetchQuery(attributesSearchQuery, {
           type: 'object_status',

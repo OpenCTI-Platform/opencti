@@ -128,6 +128,9 @@ class Vulnerabilities extends Component {
           'markingDefinitions',
           'created_start_date',
           'created_end_date',
+          'base_score',
+          'base_severity',
+          'attack_vector',
           'createdBy',
         ]}
       >
