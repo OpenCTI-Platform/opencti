@@ -83,6 +83,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { id: attributeInternalId, input: { type: 'role_played', value: 'Test', newValue: 'Test2' } },
     });
     expect(queryResult.data.attributeEdit.update.value).toEqual('Test2');
+    attributeInternalId = queryResult.data.attributeEdit.update.id;
   });
   it('should list attributes', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { type: 'role_played' } });
