@@ -9,7 +9,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import {
-  Gauge, ChessKnight, Fire, DiamondOutline, Biohazard,
+  Gauge, ChessKnight, Fire, DiamondOutline, Biohazard, Application,
 } from 'mdi-material-ui';
 import { BugReport } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
@@ -143,7 +143,7 @@ class AttackPatternKnowledgeBar extends Component {
             classes={{ root: classes.item }}
           >
             <ListItemIcon>
-              <Biohazard />
+              <Application />
             </ListItemIcon>
             <ListItemText
               primary={t('Tools')}
