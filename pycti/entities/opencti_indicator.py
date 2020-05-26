@@ -6,6 +6,11 @@ from pycti.utils.opencti_stix2 import SPEC_VERSION
 
 
 class Indicator:
+    """Main Indicator class for OpenCTI
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    """
+
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """
@@ -130,17 +135,23 @@ class Indicator:
             }
         """
 
-    """
-        List Indicator objects
-
-        :param filters: the filters to apply
-        :param search: the search keyword
-        :param first: return the first n rows from the after ID (or the beginning if not set)
-        :param after: ID of the first row for pagination
-        :return List of Indicator objects
-    """
-
     def list(self, **kwargs):
+        """List Indicator objects
+
+        The list method accepts the following \**kwargs:
+
+        :param list filters: (optional) the filters to apply
+        :param str search: (optional) a search keyword to apply for the listing
+        :param int first: (optional) return the first n rows from the `after` ID
+                            or the beginning if not set
+        :param str after: (optional) OpenCTI object ID of the first row for pagination
+        :param str orderBy: (optional) the field to order the response on
+        :param bool orderMode: (optional) either "`asc`" or "`desc`"
+        :param list customAttributes: (optional) list of attributes keys to return
+        :param bool getAll: (optional) switch to return all entries (be careful to use this without any other filters)
+        :param bool withPagination: (optional) switch to use pagination
+        """
+
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 500)
@@ -216,15 +227,20 @@ class Indicator:
                 result["data"]["indicators"], with_pagination
             )
 
-    """
-        Read a Indicator object
-        
-        :param id: the id of the Indicator
-        :param filters: the filters to apply if no id provided
-        :return Indicator object
-    """
-
     def read(self, **kwargs):
+        """Read an Indicator object
+
+        read can be either used with a known OpenCTI entity `id` or by using a
+        valid filter to search and return a single Indicator entity or None.
+
+        The list method accepts the following \**kwargs.
+
+        Note: either `id` or `filters` is required.
+
+        :param str id: the id of the Threat-Actor
+        :param list filters: the filters to apply if no id provided
+        """
+
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -431,7 +447,7 @@ class Indicator:
                     object_result["name"] = name
                 # description
                 if (
-                    description is not None
+                    self.opencti.not_empty(description)
                     and object_result["description"] != description
                 ):
                     self.opencti.stix_domain_entity.update_field(
@@ -439,19 +455,25 @@ class Indicator:
                     )
                     object_result["description"] = description
                 # score
-                if score is not None and object_result["score"] != score:
+                if self.opencti.not_empty(score) and object_result["score"] != score:
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"], key="score", value=str(score)
                     )
                     object_result["score"] = score
                 # confidence
-                if confidence is not None and object_result["confidence"] != confidence:
+                if (
+                    self.opencti.not_empty(confidence)
+                    and object_result["confidence"] != confidence
+                ):
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"], key="confidence", value=str(confidence)
                     )
                     object_result["confidence"] = confidence
                 # detection
-                if detection is not None and object_result["detection"] != detection:
+                if (
+                    self.opencti.not_empty(detection)
+                    and object_result["detection"] != detection
+                ):
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"],
                         key="detection",

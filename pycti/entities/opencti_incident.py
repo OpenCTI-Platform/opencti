@@ -338,7 +338,7 @@ class Incident:
                     object_result["name"] = name
                 # description
                 if (
-                    description is not None
+                    self.opencti.not_empty(description)
                     and object_result["description"] != description
                 ):
                     self.opencti.stix_domain_entity.update_field(
@@ -346,7 +346,7 @@ class Incident:
                     )
                     object_result["description"] = description
                 # alias
-                if alias is not None and object_result["alias"] != alias:
+                if self.opencti.not_empty(alias) and object_result["alias"] != alias:
                     if "alias" in object_result:
                         new_aliases = object_result["alias"] + list(
                             set(alias) - set(object_result["alias"])
@@ -370,7 +370,10 @@ class Incident:
                     )
                     object_result["last_seen"] = last_seen
                 # objective
-                if objective is not None and object_result["objective"] != objective:
+                if (
+                    self.opencti.not_empty(objective)
+                    and object_result["objective"] != objective
+                ):
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"], key="objective", value=objective
                     )

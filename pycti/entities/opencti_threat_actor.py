@@ -117,14 +117,14 @@ class ThreatActor:
 
         The list method accepts the following \**kwargs:
 
-        :param dict filters: (optional) the filters to apply
+        :param list filters: (optional) the filters to apply
         :param str search: (optional) a search keyword to apply for the listing
         :param int first: (optional) return the first n rows from the `after` ID
                             or the beginning if not set
         :param str after: (optional) OpenCTI object ID of the first row for pagination
         :param str orderBy: (optional) the field to order the response on
         :param bool orderMode: (optional) either "`asc`" or "`desc`"
-        :param bool getAll: (optional) switch to return the first 500 entries
+        :param bool getAll: (optional) switch to return all entries (be careful to use this without any other filters)
         :param bool withPagination: (optional) switch to use pagination
         """
 
@@ -190,7 +190,7 @@ class ThreatActor:
         Note: either `id` or `filters` is required.
 
         :param str id: the id of the Threat-Actor
-        :param dict filters: the filters to apply if no id provided
+        :param list filters: the filters to apply if no id provided
         """
 
         id = kwargs.get("id", None)
@@ -393,7 +393,7 @@ class ThreatActor:
                     object_result["name"] = name
                 # description
                 if (
-                    description is not None
+                    self.opencti.not_empty(description)
                     and object_result["description"] != description
                 ):
                     self.opencti.stix_domain_entity.update_field(
@@ -401,7 +401,7 @@ class ThreatActor:
                     )
                     object_result["description"] = description
                 # alias
-                if alias is not None and object_result["alias"] != alias:
+                if self.opencti.not_empty(alias) and object_result["alias"] != alias:
                     if "alias" in object_result:
                         new_aliases = object_result["alias"] + list(
                             set(alias) - set(object_result["alias"])
@@ -425,14 +425,14 @@ class ThreatActor:
                     )
                     object_result["last_seen"] = last_seen
                 # goal
-                if goal is not None and object_result["goal"] != goal:
+                if self.opencti.not_empty(goal) and object_result["goal"] != goal:
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"], key="goal", value=goal
                     )
                     object_result["goal"] = goal
                 # sophistication
                 if (
-                    sophistication is not None
+                    self.opencti.not_empty(sophistication)
                     and object_result["sophistication"] != sophistication
                 ):
                     self.opencti.stix_domain_entity.update_field(
@@ -443,7 +443,7 @@ class ThreatActor:
                     object_result["sophistication"] = sophistication
                 # resource_level
                 if (
-                    resource_level is not None
+                    self.opencti.not_empty(resource_level)
                     and object_result["resource_level"] != resource_level
                 ):
                     self.opencti.stix_domain_entity.update_field(
@@ -454,7 +454,7 @@ class ThreatActor:
                     object_result["resource_level"] = resource_level
                 # primary_motivation
                 if (
-                    primary_motivation is not None
+                    self.opencti.not_empty(primary_motivation)
                     and object_result["primary_motivation"] != primary_motivation
                 ):
                     self.opencti.stix_domain_entity.update_field(
@@ -465,7 +465,7 @@ class ThreatActor:
                     object_result["primary_motivation"] = primary_motivation
                 # secondary_motivation
                 if (
-                    secondary_motivation is not None
+                    self.opencti.not_empty(secondary_motivation)
                     and object_result["secondary_motivation"] != secondary_motivation
                 ):
                     self.opencti.stix_domain_entity.update_field(
@@ -476,7 +476,7 @@ class ThreatActor:
                     object_result["secondary_motivation"] = secondary_motivation
                 # personal_motivation
                 if (
-                    personal_motivation is not None
+                    self.opencti.not_empty(personal_motivation)
                     and object_result["personal_motivation"] != personal_motivation
                 ):
                     self.opencti.stix_domain_entity.update_field(

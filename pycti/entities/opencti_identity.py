@@ -331,7 +331,7 @@ class Identity:
                     object_result["name"] = name
                 # description
                 if (
-                    description is not None
+                    self.opencti.not_empty(description)
                     and object_result["description"] != description
                 ):
                     self.opencti.stix_domain_entity.update_field(
@@ -340,7 +340,7 @@ class Identity:
                     object_result["description"] = description
                 # contact_information
                 if (
-                    contact_information is not None
+                    self.opencti.not_empty(contact_information)
                     and object_result["contact_information"] != contact_information
                 ):
                     self.opencti.stix_domain_entity.update_field(
@@ -350,7 +350,7 @@ class Identity:
                     )
                     object_result["contact_information"] = contact_information
                 # alias
-                if alias is not None and object_result["alias"] != alias:
+                if self.opencti.not_empty(alias) and object_result["alias"] != alias:
                     if "alias" in object_result:
                         new_aliases = object_result["alias"] + list(
                             set(alias) - set(object_result["alias"])
@@ -363,7 +363,7 @@ class Identity:
                     object_result["alias"] = new_aliases
                 # organization_class
                 if (
-                    organization_class is not None
+                    self.opencti.not_empty(organization_class)
                     and "organization_class" in object_result
                     and object_result["organization_class"] != organization_class
                 ):

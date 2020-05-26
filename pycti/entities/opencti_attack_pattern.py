@@ -404,7 +404,7 @@ class AttackPattern:
                     object_result["name"] = name
                 # description
                 if (
-                    description is not None
+                    self.opencti.not_empty(description)
                     and object_result["description"] != description
                 ):
                     self.opencti.stix_domain_entity.update_field(
@@ -412,7 +412,7 @@ class AttackPattern:
                     )
                     object_result["description"] = description
                 # alias
-                if alias is not None and object_result["alias"] != alias:
+                if self.opencti.not_empty(alias) and object_result["alias"] != alias:
                     if "alias" in object_result:
                         new_aliases = object_result["alias"] + list(
                             set(alias) - set(object_result["alias"])
@@ -424,14 +424,17 @@ class AttackPattern:
                     )
                     object_result["alias"] = new_aliases
                 # platform
-                if platform is not None and object_result["platform"] != platform:
+                if (
+                    self.opencti.not_empty(platform)
+                    and object_result["platform"] != platform
+                ):
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"], key="platform", value=platform
                     )
                     object_result["platform"] = platform
                 # required_permission
                 if (
-                    required_permission is not None
+                    self.opencti.not_empty(required_permission)
                     and object_result["required_permission"] != required_permission
                 ):
                     self.opencti.stix_domain_entity.update_field(
@@ -442,7 +445,7 @@ class AttackPattern:
                     object_result["required_permission"] = required_permission
                 # external_id
                 if (
-                    external_id is not None
+                    self.opencti.not_empty(external_id)
                     and object_result["external_id"] != external_id
                 ):
                     self.opencti.stix_domain_entity.update_field(
@@ -452,7 +455,10 @@ class AttackPattern:
                     )
                     object_result["external_id"] = external_id
                 # confidence
-                if confidence is not None and object_result["confidence"] != confidence:
+                if (
+                    self.opencti.not_empty(confidence)
+                    and object_result["confidence"] != confidence
+                ):
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"], key="confidence", value=str(confidence)
                     )
