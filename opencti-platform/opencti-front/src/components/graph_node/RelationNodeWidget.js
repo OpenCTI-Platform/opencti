@@ -15,7 +15,7 @@ const styles = () => ({
     height: 25,
     zIndex: 20,
     borderRadius: 10,
-    backgroundColor: '#303030',
+    backgroundColor: '#222c30',
   },
   label: {
     wdith: '100%',
