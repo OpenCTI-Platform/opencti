@@ -24,11 +24,13 @@ import { connectorsForExport } from './connector';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import stixDomainEntityResolvers from '../resolvers/stixDomainEntity';
+import { reportContainsStixDomainEntity } from './report';
 import { addStixRelation, findAll as findAllStixRelations } from './stixRelation';
 import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import { INDEX_STIX_ENTITIES } from '../database/utils';
-import { createdByRef, killChainPhases, markingDefinitions, reports } from './stixEntity';
+import { createdByRef, killChainPhases, markingDefinitions, reports, notes } from './stixEntity';
 import { addPerson } from './user';
+import { noteContainsStixDomainEntity } from './note';
 
 export const findAll = async (args) => {
   const noTypes = !args.types || args.types.length === 0;
@@ -340,6 +342,7 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
           const relationMarkingDefinitions = await markingDefinitions(relation.id);
           const relationkillChainPhases = await killChainPhases(relation.id);
           const relationReports = await reports(relation.id);
+          const relationNotes = await notes(relation.id);
           const relationToCreate = {
             fromId: id === relation.fromInternalId ? stixDomainEntityId : relation.fromInternalId,
             fromRole: relation.fromRole,
@@ -360,8 +363,18 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
           if (relationToCreate.fromId !== relationToCreate.toId) {
             const newRelation = await addStixRelation(user, relationToCreate);
             await Promise.all(
-              relationReports.edges.map((report) => {
+              relationReports.edges.map(async (report) => {
                 return stixDomainEntityAddRelation(user, report.node.id, {
+                  fromRole: 'knowledge_aggregation',
+                  toId: newRelation.internal_id_key,
+                  toRole: 'so',
+                  through: 'object_refs',
+                });
+              })
+            );
+            await Promise.all(
+              relationNotes.edges.map(async (note) => {
+                return stixDomainEntityAddRelation(user, note.node.id, {
                   fromRole: 'knowledge_aggregation',
                   toId: newRelation.internal_id_key,
                   toRole: 'so',
@@ -381,22 +394,48 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
     stixDomainEntitiesIds.map(async (id) => {
       const stixDomainEntityReports = await reports(id);
       return Promise.all(
-        stixDomainEntityReports.edges.map((reportEdge) => {
+        stixDomainEntityReports.edges.map(async (reportEdge) => {
           const report = reportEdge.node;
-          return stixDomainEntityAddRelation(user, report.id, {
-            fromRole: 'knowledge_aggregation',
-            toId: stixDomainEntityId,
-            toRole: 'so',
-            through: 'object_refs',
-          });
+          const alreadyInReport = await reportContainsStixDomainEntity(report.id, stixDomainEntityId);
+          if (!alreadyInReport) {
+            return stixDomainEntityAddRelation(user, report.id, {
+              fromRole: 'knowledge_aggregation',
+              toId: stixDomainEntityId,
+              toRole: 'so',
+              through: 'object_refs',
+            });
+          }
+          return true;
         })
       );
     })
   );
 
-  // 4. Delete entities
+  // 4. Copy notes refs
+  await Promise.all(
+    stixDomainEntitiesIds.map(async (id) => {
+      const stixDomainEntityNotes = await notes(id);
+      return Promise.all(
+        stixDomainEntityNotes.edges.map(async (noteEdge) => {
+          const note = noteEdge.node;
+          const alreadyInNote = await noteContainsStixDomainEntity(note.id, stixDomainEntityId);
+          if (!alreadyInNote) {
+            return stixDomainEntityAddRelation(user, note.id, {
+              fromRole: 'knowledge_aggregation',
+              toId: stixDomainEntityId,
+              toRole: 'so',
+              through: 'object_refs',
+            });
+          }
+          return true;
+        })
+      );
+    })
+  );
+
+  // 5. Delete entities
   await stixDomainEntitiesDelete(user, stixDomainEntitiesIds);
-  // 5. Return entity
+  // 6. Return entity
   return loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity').then((stixDomainEntity) =>
     notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomainEntity, user)
   );
