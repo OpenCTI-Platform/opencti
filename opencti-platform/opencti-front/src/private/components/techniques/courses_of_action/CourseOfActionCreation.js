@@ -207,6 +207,7 @@ class CourseOfActionCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
+                    detectDuplicate={['Course-Of-Action']}
                   />
                   <Field
                     component={TextField}

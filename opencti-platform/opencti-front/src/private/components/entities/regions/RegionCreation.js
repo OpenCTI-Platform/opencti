@@ -198,6 +198,7 @@ class RegionCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
+                    detectDuplicate={['Region']}
                   />
                   <Field
                     component={TextField}

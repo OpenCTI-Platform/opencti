@@ -186,6 +186,7 @@ class CountryCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
+                    detectDuplicate={['Country']}
                   />
                   <Field
                     component={TextField}

@@ -182,6 +182,7 @@ class IncidentCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
+                    detectDuplicate={['Incident']}
                   />
                   <Field
                     component={TextField}

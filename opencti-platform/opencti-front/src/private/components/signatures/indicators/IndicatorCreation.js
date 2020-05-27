@@ -24,7 +24,7 @@ import CreatedByRefField from '../../common/form/CreatedByRefField';
 import TagsField from '../../common/form/TagsField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 import TypesField from '../TypesField';
-import SwitchField from "../../../../components/SwitchField";
+import SwitchField from '../../../../components/SwitchField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -246,6 +246,7 @@ class IndicatorCreation extends Component {
                     multiline={true}
                     rows="4"
                     style={{ marginTop: 20 }}
+                    detectDuplicate={['Indicator']}
                   />
                   <TypesField
                     name="main_observable_type"
@@ -297,11 +298,11 @@ class IndicatorCreation extends Component {
                     style={{ marginTop: 20, width: '100%' }}
                   />
                   <Field
-                      component={SwitchField}
-                      type="checkbox"
-                      name="detection"
-                      label={t('Detection')}
-                      containerstyle={{ marginTop: 20 }}
+                    component={SwitchField}
+                    type="checkbox"
+                    name="detection"
+                    label={t('Detection')}
+                    containerstyle={{ marginTop: 20 }}
                   />
                   <div className={classes.buttons}>
                     <Button

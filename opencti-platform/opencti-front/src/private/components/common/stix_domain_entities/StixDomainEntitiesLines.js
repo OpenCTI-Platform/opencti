@@ -236,7 +236,21 @@ export const stixDomainEntitiesLinesSearchQuery = graphql`
         node {
           id
           name
+          description
           entity_type
+          createdByRef {
+            node {
+              id
+              name
+            }
+          }
+          markingDefinitions {
+            edges {
+              node {
+                definition
+              }
+            }
+          }
         }
       }
     }

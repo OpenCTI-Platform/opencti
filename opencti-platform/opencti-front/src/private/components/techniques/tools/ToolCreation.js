@@ -196,6 +196,7 @@ class ToolCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
+                    detectDuplicate={['Tool', 'Malware']}
                   />
                   <Field
                     component={TextField}

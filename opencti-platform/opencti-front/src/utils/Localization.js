@@ -293,6 +293,12 @@ const i18n = {
       'Direct targeting of this country': 'Ciblage direct de ce pays',
       'Groups permissions on data marking is not fully implemented yet.':
         "Les permissions des groupes sur le marquage des données n'est pas encore implémenté.",
+      'No potential duplicate entities has been found.': "Aucun potentiel duplicat d'entité n'a été trouvé.",
+      'potential duplicate entity': "duplicat potentiel d'entité",
+      'has been found.': 'a été trouvé.',
+      'potential duplicate entities': "duplicats potentiels d'entité",
+      'have been found.': 'ont été trouvés.',
+      'Potential duplicate entities': "Duplicats potentiels d'entités",
       // Menu
       Dashboard: 'Tableau de bord',
       Visualization: 'Visualisation',

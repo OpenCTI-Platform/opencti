@@ -2970,6 +2970,9 @@ input ToolAddInput {
 enum VulnerabilitiesOrdering {
   stix_id_key
   name
+  base_score
+  base_severity
+  attack_vector
   created
   modified
   created_at
