@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { assoc, concat, descend, dissoc, head, includes, map, pipe, prop, sortWith, isNil } from 'ramda';
+import { assoc, concat, descend, dissoc, head, includes, map, pipe, prop, sortWith } from 'ramda';
 import { Promise } from 'bluebird';
 import {
   createEntity,
