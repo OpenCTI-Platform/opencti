@@ -88,7 +88,12 @@ class Vulnerabilities extends Component {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '35%',
+        width: '20%',
+        isSortable: true,
+      },
+      base_severity: {
+        label: 'CVSS3 - Severity',
+        width: '15%',
         isSortable: true,
       },
       tags: {

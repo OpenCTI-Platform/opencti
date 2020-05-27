@@ -1,6 +1,9 @@
 import React from 'react';
 import MuiTextField from '@material-ui/core/TextField';
 import { fieldToTextField } from 'formik-material-ui';
+import { useField } from 'formik';
+import { isNil } from 'ramda';
+import StixDomainEntityDetectDuplicate from '../private/components/common/stix_domain_entities/StixDomainEntityDetectDuplicate';
 
 const TextField = (props) => {
   const {
@@ -9,6 +12,7 @@ const TextField = (props) => {
     onChange,
     onFocus,
     onSubmit,
+      detectDuplicate,
   } = props;
   const internalOnChange = React.useCallback(
     (event) => {
@@ -35,12 +39,25 @@ const TextField = (props) => {
     },
     [onSubmit, setTouched, name],
   );
+  const [, meta] = useField(name);
   return (
     <MuiTextField
       {...fieldToTextField(props)}
       onChange={internalOnChange}
       onFocus={internalOnFocus}
       onBlur={internalOnBlur}
+      helperText={
+          detectDuplicate && (isNil(meta.error) || !meta.touched) ? (
+          <StixDomainEntityDetectDuplicate
+            types={detectDuplicate}
+            value={meta.value}
+          />
+        ) : meta.touched ? (
+          meta.error
+        ) : (
+          ''
+        )
+      }
     />
   );
 };

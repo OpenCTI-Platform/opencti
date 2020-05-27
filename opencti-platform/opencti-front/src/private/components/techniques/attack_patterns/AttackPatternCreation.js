@@ -198,6 +198,7 @@ class AttackPatternCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
+                    detectDuplicate={['Attack-Pattern']}
                   />
                   <Field
                     component={TextField}

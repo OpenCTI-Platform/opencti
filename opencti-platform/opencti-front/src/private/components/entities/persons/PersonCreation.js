@@ -195,6 +195,7 @@ class PersonCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
+                    detectDuplicate={['User']}
                   />
                   <Field
                     component={TextField}

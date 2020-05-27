@@ -196,6 +196,7 @@ class SectorCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
+                    detectDuplicate={['Sector']}
                   />
                   <Field
                     component={TextField}

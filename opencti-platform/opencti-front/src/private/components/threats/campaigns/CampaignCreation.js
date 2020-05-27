@@ -193,6 +193,12 @@ class CampaignCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
+                    detectDuplicate={[
+                      'Threat-Actor',
+                      'Intrusion-Set',
+                      'Campaign',
+                      'Malware',
+                    ]}
                   />
                   <Field
                     component={TextField}

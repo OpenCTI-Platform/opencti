@@ -183,6 +183,7 @@ class CityCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
+                    detectDuplicate={['City']}
                   />
                   <Field
                     component={TextField}
