@@ -325,7 +325,7 @@ class OpenCTIApiClient:
         """check if a value is empty for str, list and int
 
         :param value: value to check
-        :type value: str or list or int or bool or datetime.date
+        :type value: str or list or int or float or bool or datetime.date
         :return: returns `True` if the value is one of the supported types and not empty
         :rtype: bool
         """
@@ -346,6 +346,8 @@ class OpenCTIApiClient:
                     if len(v) > 0:
                         is_not_empty = True
                 return is_not_empty
+            if isinstance(value, float):
+                return True
             if isinstance(value, int):
                 return True
             else:
