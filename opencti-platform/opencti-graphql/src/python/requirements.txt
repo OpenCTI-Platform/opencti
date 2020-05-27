@@ -1,6 +1,6 @@
 stix2==1.4.0
 stix2-patterns==1.3.0
-pycti==3.2.7
+pycti==3.3.0
 pika==1.1.0
 elasticsearch>=7.0.0,<8.0.0
 plyara==2.0.3
