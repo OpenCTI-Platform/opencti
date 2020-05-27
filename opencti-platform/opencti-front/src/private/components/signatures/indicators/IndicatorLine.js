@@ -142,6 +142,7 @@ const IndicatorLineFragment = createFragmentContainer(IndicatorLineComponent, {
       valid_from
       valid_until
       score
+      created
       markingDefinitions {
         edges {
           node {
