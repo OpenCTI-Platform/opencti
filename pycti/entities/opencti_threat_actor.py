@@ -331,7 +331,7 @@ class ThreatActor:
                                  created the knowledge
         :param list markingDefinitions: (optional) list of OpenCTI marking
                                         definition ids
-        :param tags: TODO (optional)
+        :param list tags: (optional) list of OpenCTI tag ids
         :param bool update: (optional) choose to updated an existing
                             Threat-Actor entity, default `False`
         """

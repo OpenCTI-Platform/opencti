@@ -15,7 +15,7 @@ from pycti.connector.opencti_connector import OpenCTIConnector
 
 
 def get_config_variable(
-    env_var: str, yaml_path: str, config: Dict = {}, isNumber: Optional[bool] = False
+    env_var: str, yaml_path: list, config: Dict = {}, isNumber: Optional[bool] = False
 ) -> Union[bool, int, None, str]:
     """[summary]
 
@@ -278,11 +278,11 @@ class OpenCTIConnectorHelper:
     def log_info(self, msg):
         logging.info(msg)
 
-    def date_now(self) -> datetime:
+    def date_now(self) -> str:
         """get the current date (UTC)
 
         :return: current datetime for utc
-        :rtype: datetime
+        :rtype: str
         """
         return (
             datetime.datetime.utcnow()
@@ -570,7 +570,7 @@ class OpenCTIConnectorHelper:
         return json.dumps(bundle)
 
     @staticmethod
-    def check_max_tlp(tlp, max_tlp) -> list:
+    def check_max_tlp(tlp, max_tlp) -> bool:
         """check the allowed TLP levels for a TLP string
 
         :param tlp: string for TLP level to check
@@ -578,7 +578,7 @@ class OpenCTIConnectorHelper:
         :param max_tlp: the highest allowed TLP level
         :type max_tlp: str
         :return: list of allowed TLP levels
-        :rtype: list
+        :rtype: bool
         """
 
         allowed_tlps = ["TLP:WHITE"]
