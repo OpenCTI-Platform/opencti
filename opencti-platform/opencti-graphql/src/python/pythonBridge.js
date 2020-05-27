@@ -65,3 +65,13 @@ export const extractObservables = async (pattern) => {
     return null;
   }
 };
+
+export const checkIndicatorSyntax = async (patternType, indicatorValue) => {
+  try {
+    const result = await execPython3('./src/python', 'check_indicator.py', [patternType, indicatorValue]);
+    return result.data;
+  } catch (err) {
+    logger.warn(`[Python3] extractObservables error > ${err.message}`);
+    return null;
+  }
+};
