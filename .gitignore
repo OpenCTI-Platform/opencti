@@ -14,3 +14,4 @@ examples/*.pdf
 docs/_build
 Pipfile*
 .mypy_cache/
+.DS_Store
