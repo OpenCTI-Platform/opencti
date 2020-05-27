@@ -235,22 +235,23 @@ class Worker:
                 # Check if all queues are consumed
                 for connector in self.connectors:
                     queue = connector["config"]["push"]
-                    if queue in self.consumer_threads:
-                        if not self.consumer_threads[queue].is_alive():
-                            logging.info(
-                                "Thread for queue "
-                                + queue
-                                + " not alive, creating a new one..."
-                            )
+                    if queue == "push_88aef8f8-b948-4e15-8649-03cb7f639548":
+                        if queue in self.consumer_threads:
+                            if not self.consumer_threads[queue].is_alive():
+                                logging.info(
+                                    "Thread for queue "
+                                    + queue
+                                    + " not alive, creating a new one..."
+                                )
+                                self.consumer_threads[queue] = Consumer(
+                                    connector, self.opencti_url, self.opencti_token
+                                )
+                                self.consumer_threads[queue].start()
+                        else:
                             self.consumer_threads[queue] = Consumer(
                                 connector, self.opencti_url, self.opencti_token
                             )
                             self.consumer_threads[queue].start()
-                    else:
-                        self.consumer_threads[queue] = Consumer(
-                            connector, self.opencti_url, self.opencti_token
-                        )
-                        self.consumer_threads[queue].start()
                 # Check logs queue is consumed
                 if self.logs_all_queue in self.logger_threads:
                     if not self.logger_threads[self.logs_all_queue].is_alive():

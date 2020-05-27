@@ -19,6 +19,15 @@ export const checkObservableSyntax = (observableType, observableValue) => {
         return 'Valid domain name';
       }
       break;
+    case 'hostname':
+      if (
+        !/^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/.test(
+          observableValue
+        )
+      ) {
+        return 'Valid hostname';
+      }
+      break;
     case 'email-address':
       if (
         !/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(
@@ -67,11 +76,4 @@ export const checkObservableSyntax = (observableType, observableValue) => {
       return true;
   }
   return true;
-};
-
-export const checkIndicatorSyntax = (indicatorPatternType, indicatorPattern) => {
-  if (indicatorPatternType && indicatorPattern) {
-    return true;
-  }
-  return false;
 };

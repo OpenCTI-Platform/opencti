@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { assoc, concat, descend, dissoc, head, includes, map, pipe, prop, sortWith } from 'ramda';
+import { assoc, concat, descend, dissoc, head, includes, map, pipe, prop, sortWith, isNil } from 'ramda';
 import { Promise } from 'bluebird';
 import {
   createEntity,
@@ -16,7 +16,7 @@ import { buildPagination, TYPE_STIX_OBSERVABLE } from '../database/utils';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { findById as findKillChainPhaseById } from './killChainPhase';
 import { askEnrich } from './enrichment';
-import { extractObservables } from '../python/pythonBridge';
+import { checkIndicatorSyntax, extractObservables } from '../python/pythonBridge';
 import { OBSERVABLE_TYPES } from '../database/stix';
 import { FunctionalError } from '../config/errors';
 
@@ -118,6 +118,11 @@ export const findAll = (args) => {
 export const addIndicator = async (user, indicator, createObservables = true) => {
   if (!OBSERVABLE_TYPES.includes(indicator.main_observable_type.toLowerCase())) {
     throw FunctionalError(`Observable type ${indicator.main_observable_type} is not supported.`);
+  }
+  // check indicator syntax
+  const check = await checkIndicatorSyntax(indicator.pattern_type.toLowerCase(), indicator.indicator_pattern);
+  if (check === false) {
+    throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`);
   }
   const indicatorToCreate = pipe(
     assoc('main_observable_type', indicator.main_observable_type.toLowerCase()),
