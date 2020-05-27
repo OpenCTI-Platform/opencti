@@ -264,7 +264,7 @@ class StixDomainEntityCreation extends Component {
   }
 
   renderClassic() {
-    const { t, classes } = this.props;
+    const { t, classes, targetEntityTypes } = this.props;
     return (
       <div>
         <Fab
@@ -321,6 +321,7 @@ class StixDomainEntityCreation extends Component {
                     label={t('Name')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
+                    detectDuplicate={targetEntityTypes || []}
                   />
                   <Field
                     component={TextField}
@@ -389,6 +390,7 @@ class StixDomainEntityCreation extends Component {
       display,
       defaultCreatedByRef,
       defaultMarkingDefinition,
+      targetEntityTypes,
     } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
@@ -451,6 +453,7 @@ class StixDomainEntityCreation extends Component {
                     label={t('Name')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
+                    detectDuplicate={targetEntityTypes || []}
                   />
                   <Field
                     component={TextField}

@@ -185,6 +185,7 @@ class IdentityCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
+                    detectDuplicate={['Organization', 'User']}
                   />
                   <Field
                     component={TextField}
@@ -274,6 +275,7 @@ class IdentityCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
+                    detectDuplicate={['Organization', 'User']}
                   />
                   <Field
                     component={TextField}
