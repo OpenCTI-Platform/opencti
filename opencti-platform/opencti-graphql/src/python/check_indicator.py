@@ -3,6 +3,8 @@ import json
 import plyara
 
 from stix2patterns.validator import run_validator
+from sigma.parser.collection import SigmaCollectionParser
+from parsuricata import parse_rules
 from lib.snortparser import *
 
 def return_data(data):
@@ -41,10 +43,28 @@ def main():
             result = False
         return_data({'status': 'success', 'data': result})
 
+    if pattern_type == 'sigma':
+        result = False
+        try:
+            parser = SigmaCollectionParser(indicator_value)
+            result = True
+        except:
+            result = False
+        return_data({'status': 'success', 'data': result})
+
     if pattern_type == 'snort':
         result = False
         try:
             parsed = Parser(indicator_value).all
+            result = True
+        except:
+            result = False
+        return_data({'status': 'success', 'data': result})
+
+    if pattern_type == 'suricata':
+        result = False
+        try:
+            parsed = parse_rules(indicator_value)
             result = True
         except:
             result = False
