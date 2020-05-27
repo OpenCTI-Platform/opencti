@@ -121,23 +121,20 @@ class Filters extends Component {
           });
         });
         break;
-      case 'base_score':
-        fetchQuery(attributesSearchQuery, {
-          type: 'base_score',
-          search: event && event.target.value !== 0 ? event.target.value : '',
-          first: 10,
-        }).then((data) => {
-          const entities = pipe(
-            pathOr([], ['attributes', 'edges']),
-            map((n) => ({
-              label: n.node.value,
-              value: n.node.value,
-              type: 'attribute',
-            })),
-          )(data);
-          this.setState({
-            entities: { object_status: union(this.state.entities, entities) },
-          });
+      case 'base_score_gt':
+        this.setState({
+          entities: {
+            base_score_gt: union(
+              this.state.entities,
+              pipe(
+                map((n) => ({
+                  label: n,
+                  value: n,
+                  type: 'attribute',
+                })),
+              )(['2', '4', '6', '8']),
+            ),
+          },
         });
         break;
       case 'base_severity':
@@ -155,7 +152,7 @@ class Filters extends Component {
             })),
           )(data);
           this.setState({
-            entities: { object_status: union(this.state.entities, entities) },
+            entities: { base_severity: union(this.state.entities, entities) },
           });
         });
         break;
@@ -174,7 +171,7 @@ class Filters extends Component {
             })),
           )(data);
           this.setState({
-            entities: { object_status: union(this.state.entities, entities) },
+            entities: { attack_vector: union(this.state.entities, entities) },
           });
         });
         break;
@@ -267,6 +264,7 @@ class Filters extends Component {
                   <Autocomplete
                     className={classes.autocomplete}
                     selectOnFocus={true}
+                    autoSelect={true}
                     autoHighlight={true}
                     getOptionLabel={(option) => (option.label ? option.label : '')
                     }
@@ -274,7 +272,8 @@ class Filters extends Component {
                     options={entities[filterKey] ? entities[filterKey] : []}
                     onInputChange={this.searchEntities.bind(this, filterKey)}
                     onChange={this.handleChange.bind(this, filterKey)}
-                    value={currentValue}
+                    value={currentValue ? currentValue.value : null}
+                    getOptionSelected={(option, value) => option.value === value}
                     renderInput={(params) => (
                       <TextField
                         {...params}

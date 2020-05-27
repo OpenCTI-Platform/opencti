@@ -75,11 +75,11 @@ export const convertFilters = (filters) => pipe(
   map((pair) => {
     let key = head(pair);
     let operator = 'eq';
-    if (key.endsWith('start_date')) {
-      key = key.replace('_start_date', '');
+    if (key.endsWith('start_date') || key.endsWith('_gt')) {
+      key = key.replace('_start_date', '').replace('_gt', '');
       operator = 'gt';
-    } else if (key.endsWith('end_date')) {
-      key = key.replace('_end_date', '');
+    } else if (key.endsWith('end_date') || key.endsWith('_lt')) {
+      key = key.replace('_end_date', '').replace('_lt', '');
       operator = 'lt';
     }
     const values = last(pair);
