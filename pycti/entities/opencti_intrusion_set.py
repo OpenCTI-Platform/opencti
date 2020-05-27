@@ -341,7 +341,7 @@ class IntrusionSet:
                     object_result["name"] = name
                 # description
                 if (
-                    description is not None
+                    self.opencti.not_empty(description)
                     and object_result["description"] != description
                 ):
                     self.opencti.stix_domain_entity.update_field(
@@ -349,7 +349,7 @@ class IntrusionSet:
                     )
                     object_result["description"] = description
                 # alias
-                if alias is not None and object_result["alias"] != alias:
+                if self.opencti.not_empty(alias) and object_result["alias"] != alias:
                     if "alias" in object_result:
                         new_aliases = object_result["alias"] + list(
                             set(alias) - set(object_result["alias"])
@@ -373,14 +373,14 @@ class IntrusionSet:
                     )
                     object_result["last_seen"] = last_seen
                 # goal
-                if goal is not None and object_result["goal"] != goal:
+                if self.opencti.not_empty(goal) and object_result["goal"] != goal:
                     self.opencti.stix_domain_entity.update_field(
                         id=object_result["id"], key="goal", value=goal
                     )
                     object_result["goal"] = goal
                 # sophistication
                 if (
-                    sophistication is not None
+                    self.opencti.not_empty(sophistication)
                     and object_result["sophistication"] != sophistication
                 ):
                     self.opencti.stix_domain_entity.update_field(
@@ -391,7 +391,7 @@ class IntrusionSet:
                     object_result["sophistication"] = sophistication
                 # resource_level
                 if (
-                    resource_level is not None
+                    self.opencti.not_empty(resource_level)
                     and object_result["resource_level"] != resource_level
                 ):
                     self.opencti.stix_domain_entity.update_field(
@@ -402,7 +402,7 @@ class IntrusionSet:
                     object_result["resource_level"] = resource_level
                 # primary_motivation
                 if (
-                    primary_motivation is not None
+                    self.opencti.not_empty(primary_motivation)
                     and object_result["primary_motivation"] != primary_motivation
                 ):
                     self.opencti.stix_domain_entity.update_field(
@@ -413,7 +413,7 @@ class IntrusionSet:
                     object_result["primary_motivation"] = primary_motivation
                 # secondary_motivation
                 if (
-                    secondary_motivation is not None
+                    self.opencti.not_empty(secondary_motivation)
                     and object_result["secondary_motivation"] != secondary_motivation
                 ):
                     self.opencti.stix_domain_entity.update_field(
