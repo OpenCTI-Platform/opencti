@@ -64,14 +64,16 @@ describe('StixRelation resolver standard behavior', () => {
   });
   it('should stixRelation number to be accurate', async () => {
     const NUMBER_QUERY = gql`
-      query StixRelationsNumber($type: String) {
-        stixRelationsNumber(type: $type) {
+      query StixRelationsNumber($type: String, $fromId: String) {
+        stixRelationsNumber(type: $type, fromId: $fromId) {
           total
         }
       }
     `;
-    const queryResult = await queryAsAdmin({ query: NUMBER_QUERY, variables: { type: 'stix_relation' } });
-    expect(queryResult.data.stixRelationsNumber.total).toEqual(22);
+    const queryResult = await queryAsAdmin({ query: NUMBER_QUERY, variables: { type: 'uses', fromId: 'fab6fa99-b07f-4278-86b4-b674edf60877' } });
+    expect(queryResult.data.stixRelationsNumber.total).toEqual(1);
+    const queryResult2 = await queryAsAdmin({ query: NUMBER_QUERY, variables: { type: 'stix_relation' } });
+    expect(queryResult2.data.stixRelationsNumber.total).toEqual(22);
   });
   it('should update stixRelation', async () => {
     const UPDATE_QUERY = gql`

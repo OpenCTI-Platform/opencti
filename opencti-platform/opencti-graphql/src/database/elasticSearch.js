@@ -232,7 +232,7 @@ export const elDeleteIndexes = async (indexesToDelete = KNOWLEDGE_INDICES) => {
 };
 
 export const elCount = (indexName, options = {}) => {
-  const { endDate = null, types = null } = options;
+  const { endDate = null, types = null, relationshipType = null, fromId = null } = options;
   let must = [];
   if (endDate !== null) {
     must = append(
@@ -263,6 +263,31 @@ export const elCount = (indexName, options = {}) => {
       {
         bool: {
           should,
+          minimum_should_match: 1,
+        },
+      },
+      must
+    );
+  }
+  if (relationshipType !== null) {
+    must = append(
+      {
+        bool: {
+          should: {
+            match_phrase: { 'relationship_type.keyword': relationshipType },
+          },
+        },
+      },
+      must
+    );
+  }
+  if (fromId !== null) {
+    must = append(
+      {
+        bool: {
+          should: {
+            match_phrase: { 'connections.internal_id_key': fromId },
+          },
           minimum_should_match: 1,
         },
       },

@@ -1,4 +1,4 @@
-import { assoc, dissoc, includes, propOr } from 'ramda';
+import { pipe, assoc, dissoc, includes, propOr } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createRelation,
@@ -30,7 +30,12 @@ export const findById = (stixRelationId) => {
 };
 
 export const stixRelationsNumber = (args) => {
-  const finalArgs = args.type ? assoc('types', [args.type], args) : args;
+  let finalArgs;
+  if (args.type && args.type !== 'stix_relation' && args.type !== 'stix_embedded_relation') {
+    finalArgs = assoc('relationshipType', args.type, args);
+  } else {
+    finalArgs = args.type ? assoc('types', [args.type], args) : assoc('types', ['stix_relation'], args);
+  }
   return {
     count: elCount(INDEX_STIX_RELATIONS, finalArgs),
     total: elCount(INDEX_STIX_RELATIONS, dissoc('endDate', finalArgs)),
