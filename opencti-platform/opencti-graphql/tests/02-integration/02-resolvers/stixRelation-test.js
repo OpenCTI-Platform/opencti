@@ -70,8 +70,8 @@ describe('StixRelation resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await queryAsAdmin({ query: NUMBER_QUERY, variables: { type: 'uses' } });
-    expect(queryResult.data.stixRelationsNumber.total).toEqual(8);
+    const queryResult = await queryAsAdmin({ query: NUMBER_QUERY, variables: { type: 'stix_relation' } });
+    expect(queryResult.data.stixRelationsNumber.total).toEqual(22);
   });
   it('should update stixRelation', async () => {
     const UPDATE_QUERY = gql`
