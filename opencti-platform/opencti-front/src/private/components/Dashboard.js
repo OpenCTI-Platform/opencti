@@ -316,6 +316,15 @@ const dashboardStixDomainEntitiesNumberQuery = graphql`
   }
 `;
 
+const dashboardStixRelationsNumberQuery = graphql`
+  query DashboardStixRelationsNumberQuery($type: String, $endDate: DateTime) {
+    stixRelationsNumber(type: $type, endDate: $endDate) {
+      total
+      count
+    }
+  }
+`;
+
 const dashboardStixObservablesNumberQuery = graphql`
   query DashboardStixObservablesNumberQuery(
     $types: [String]
@@ -377,36 +386,6 @@ class Dashboard extends Component {
               </Card>
               <Card classes={{ root: classes.card }} style={{ height: 110 }}>
                 <QueryRenderer
-                  query={dashboardStixDomainEntitiesNumberQuery}
-                  variables={{ types: ['report'], endDate: dayAgo() }}
-                  render={({ props }) => {
-                    if (props && props.stixDomainEntitiesNumber) {
-                      const { total } = props.stixDomainEntitiesNumber;
-                      const difference = total - props.stixDomainEntitiesNumber.count;
-                      return (
-                        <CardContent>
-                          <div className={classes.title}>
-                            {t('Total reports')}
-                          </div>
-                          <div className={classes.number}>{n(total)}</div>
-                          <ItemNumberDifference difference={difference} />
-                          <div className={classes.icon}>
-                            <AssignmentOutlined
-                              color="inherit"
-                              fontSize="large"
-                            />
-                          </div>
-                        </CardContent>
-                      );
-                    }
-                    return <Loader variant="inElement" />;
-                  }}
-                />
-              </Card>
-            </Grid>
-            <Grid item={true} lg={3} xs={6}>
-              <Card classes={{ root: classes.card }} style={{ height: 110 }}>
-                <QueryRenderer
                   query={dashboardStixObservablesNumberQuery}
                   variables={{ endDate: dayAgo() }}
                   render={({ props }) => {
@@ -430,10 +409,37 @@ class Dashboard extends Component {
                   }}
                 />
               </Card>
+            </Grid>
+            <Grid item={true} lg={3} xs={6}>
+              <Card classes={{ root: classes.card }} style={{ height: 110 }}>
+                <QueryRenderer
+                  query={dashboardStixRelationsNumberQuery}
+                  variables={{ type: 'stix_relation', endDate: dayAgo() }}
+                  render={({ props }) => {
+                    if (props && props.stixRelationsNumber) {
+                      const { total } = props.stixRelationsNumber;
+                      const difference = total - props.stixRelationsNumber.count;
+                      return (
+                        <CardContent>
+                          <div className={classes.title}>
+                            {t('Total relationships')}
+                          </div>
+                          <div className={classes.number}>{n(total)}</div>
+                          <ItemNumberDifference difference={difference} />
+                          <div className={classes.icon}>
+                            <LayersOutlined color="inherit" fontSize="large" />
+                          </div>
+                        </CardContent>
+                      );
+                    }
+                    return <Loader variant="inElement" />;
+                  }}
+                />
+              </Card>
               <Card classes={{ root: classes.card }} style={{ height: 110 }}>
                 <QueryRenderer
                   query={dashboardStixDomainEntitiesNumberQuery}
-                  variables={{ types: ['note'], endDate: dayAgo() }}
+                  variables={{ types: ['report'], endDate: dayAgo() }}
                   render={({ props }) => {
                     if (props && props.stixDomainEntitiesNumber) {
                       const { total } = props.stixDomainEntitiesNumber;
@@ -441,12 +447,15 @@ class Dashboard extends Component {
                       return (
                         <CardContent>
                           <div className={classes.title}>
-                            {t('Total notes')}
+                            {t('Total reports')}
                           </div>
                           <div className={classes.number}>{n(total)}</div>
                           <ItemNumberDifference difference={difference} />
                           <div className={classes.icon}>
-                            <WorkOutline color="inherit" fontSize="large" />
+                            <AssignmentOutlined
+                              color="inherit"
+                              fontSize="large"
+                            />
                           </div>
                         </CardContent>
                       );

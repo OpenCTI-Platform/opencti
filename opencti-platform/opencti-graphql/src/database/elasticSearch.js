@@ -250,8 +250,12 @@ export const elCount = (indexName, options = {}) => {
   if (types !== null && types.length > 0) {
     const should = types.map((typeValue) => {
       return {
-        match_phrase: {
-          entity_type: typeValue,
+        bool: {
+          should: [
+            { match_phrase: { 'entity_type.keyword': typeValue } },
+            { match_phrase: { 'parent_types.keyword': typeValue } },
+          ],
+          minimum_should_match: 1,
         },
       };
     });

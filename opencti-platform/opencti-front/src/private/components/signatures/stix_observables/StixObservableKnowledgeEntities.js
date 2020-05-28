@@ -172,7 +172,7 @@ class StixObservableKnowledgeEntities extends Component {
             'Country',
             'City',
             'Organization',
-            'Person',
+            'User',
           ]}
         />
         <div className="clearfix" />

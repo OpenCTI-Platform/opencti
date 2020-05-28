@@ -688,6 +688,7 @@ const i18n = {
       'Direct relations creations': 'Créations de relations directes',
       'Number of target relations': 'Nombre de relations de ciblage',
       'Total entities': "Nombre d'entités",
+      'Total relationships': 'Nombre de relations',
       'Total observables': "Nombre d'observables",
       'Total reports': 'Nombre de rapports',
       'Total workspaces': "Nombre d'espaces de travail",

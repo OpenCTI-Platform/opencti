@@ -344,9 +344,9 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
           const relationReports = await reports(relation.id);
           const relationNotes = await notes(relation.id);
           const relationToCreate = {
-            fromId: id === relation.fromInternalId ? stixDomainEntityId : relation.fromInternalId,
+            fromId: relation.fromInternalId,
             fromRole: relation.fromRole,
-            toId: id === relation.toInternalId ? stixDomainEntityId : relation.toInternalId,
+            toId: relation.toInternalId,
             toRole: relation.toRole,
             relationship_type: relation.relationship_type,
             weight: relation.weight,
@@ -363,7 +363,7 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
           if (relationToCreate.fromId !== relationToCreate.toId) {
             const newRelation = await addStixRelation(user, relationToCreate);
             await Promise.all(
-              relationReports.edges.map(async (report) => {
+              relationReports.edges.map((report) => {
                 return stixDomainEntityAddRelation(user, report.node.id, {
                   fromRole: 'knowledge_aggregation',
                   toId: newRelation.internal_id_key,
@@ -373,7 +373,7 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
               })
             );
             await Promise.all(
-              relationNotes.edges.map(async (note) => {
+              relationNotes.edges.map((note) => {
                 return stixDomainEntityAddRelation(user, note.node.id, {
                   fromRole: 'knowledge_aggregation',
                   toId: newRelation.internal_id_key,

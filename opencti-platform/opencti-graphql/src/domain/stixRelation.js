@@ -1,22 +1,20 @@
-import { assoc, includes, propOr } from 'ramda';
+import { assoc, dissoc, includes, propOr } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteRelationById,
-  escape,
-  escapeString,
   executeWrite,
   getRelationInferredById,
-  getSingleValueNumber,
   listRelations,
   loadEntityById,
   loadRelationById,
   loadRelationByStixId,
-  prepareDate,
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
+import { elCount } from '../database/elasticSearch';
+import { INDEX_STIX_RELATIONS } from '../database/utils';
 
 export const findAll = async (args) => {
   return listRelations(propOr('stix_relation', 'relationType', args), args);
@@ -31,28 +29,13 @@ export const findById = (stixRelationId) => {
   return loadRelationById(stixRelationId, 'stix_relation');
 };
 
-export const stixRelationsNumber = (args) => ({
-  count: getSingleValueNumber(
-    `match $x($y, $z) isa ${args.type ? escape(args.type) : 'stix_relation'};
-    ${
-      args.endDate
-        ? `$x has created_at $date;
-    $date < ${prepareDate(args.endDate)};`
-        : ''
-    }
-    ${args.fromId ? `$y has internal_id_key "${escapeString(args.fromId)}";` : ''}
-    get;
-    count;`,
-    args.inferred ? args.inferred : false
-  ),
-  total: getSingleValueNumber(
-    `match $x($y, $z) isa ${args.type ? escape(args.type) : 'stix_relation'};
-    ${args.fromId ? `$y has internal_id_key "${escapeString(args.fromId)}";` : ''}
-    get;
-    count;`,
-    args.inferred ? args.inferred : false
-  ),
-});
+export const stixRelationsNumber = (args) => {
+  const finalArgs = args.type ? assoc('types', [args.type], args) : args;
+  return {
+    count: elCount(INDEX_STIX_RELATIONS, finalArgs),
+    total: elCount(INDEX_STIX_RELATIONS, dissoc('endDate', finalArgs)),
+  };
+};
 
 // region mutations
 export const addStixRelation = async (user, stixRelation, reversedReturn = false) => {

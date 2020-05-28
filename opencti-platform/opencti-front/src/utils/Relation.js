@@ -85,7 +85,7 @@ const relationsTypesMapping = {
   indicator_vulnerability: ['indicates'],
   'indicator_attack-pattern': ['indicates'],
   observable_organization: ['gathering'],
-  observable_person: ['gathering'],
+  observable_user: ['gathering'],
   observable_city: ['localization'],
   observable_country: ['localization'],
   observable_region: ['localization'],
