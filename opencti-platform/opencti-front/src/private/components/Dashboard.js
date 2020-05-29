@@ -19,7 +19,7 @@ import {
   WorkOutline,
   DescriptionOutlined,
 } from '@material-ui/icons';
-import { Database, HexagonOutline } from 'mdi-material-ui';
+import { Database, HexagonOutline, GraphOutline } from 'mdi-material-ui';
 import BarChart from 'recharts/lib/chart/BarChart';
 import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
 import Bar from 'recharts/lib/cartesian/Bar';
@@ -427,7 +427,7 @@ class Dashboard extends Component {
                           <div className={classes.number}>{n(total)}</div>
                           <ItemNumberDifference difference={difference} />
                           <div className={classes.icon}>
-                            <LayersOutlined color="inherit" fontSize="large" />
+                            <GraphOutline color="inherit" fontSize="large" />
                           </div>
                         </CardContent>
                       );

@@ -59,7 +59,7 @@ class ExternalReferenceLineComponent extends Component {
       fd, classes, dataColumns, node, paginationOptions,
     } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true} button={true}>
+      <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Avatar classes={{ root: classes.avatar }}>
             {node.source_name.substring(0, 1)}
