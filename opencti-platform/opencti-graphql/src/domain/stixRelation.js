@@ -31,7 +31,7 @@ export const findById = (stixRelationId) => {
 
 export const stixRelationsNumber = (args) => {
   let finalArgs;
-  if (args.type && args.type !== 'stix_relation' && args.type !== 'stix_embedded_relation') {
+  if (args.type && args.type !== 'stix_relation' && args.type !== 'stix_relation_embedded') {
     finalArgs = assoc('relationshipType', args.type, args);
   } else {
     finalArgs = args.type ? assoc('types', [args.type], args) : assoc('types', ['stix_relation'], args);
