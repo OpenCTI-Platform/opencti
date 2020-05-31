@@ -1440,7 +1440,11 @@ const createRelationRaw = async (user, fromInternalId, input, opts = {}) => {
   )(relationAttributes);
   if (indexable) {
     // 04. Index the relation and the modification in the base entity
-    await elIndexElements([createdRel]);
+    try {
+      await elIndexElements([createdRel]);
+    } catch (err) {
+      throw DatabaseError('Cannot index relation', { error: err, data: createdRel });
+    }
   }
   const postOperations = [];
   // 06. Send logs
@@ -1727,7 +1731,11 @@ export const createEntity = async (user, entity, type, opts = {}) => {
   )(data);
   // Transaction succeed, index the result
   if (indexable) {
-    await elIndexElements([completedData]);
+    try {
+      await elIndexElements([completedData]);
+    } catch (err) {
+      throw DatabaseError('Cannot index entity', { error: err, data: completedData });
+    }
   }
   const postOperations = [];
   // Send creation log
