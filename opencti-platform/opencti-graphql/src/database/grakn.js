@@ -422,7 +422,7 @@ const loadConcept = async (tx, concept, args = {}) => {
     const conceptFromCache = await elLoadByGraknId(id, null, relationsMap, [index]);
     if (!conceptFromCache) {
       /* istanbul ignore next */
-      logger.error(`[ELASTIC] ${id} missing, cant load the element, you need to reindex`);
+      logger.warn(`[ELASTIC] ${id} missing, cant load the element`);
     } else {
       return conceptFromCache;
     }
@@ -1438,11 +1438,11 @@ const createRelationRaw = async (user, fromInternalId, input, opts = {}) => {
     assoc('relationship_type', relationshipType),
     assoc('parent_types', graknRelation.relationTypes)
   )(relationAttributes);
-  const postOperations = [];
   if (indexable) {
     // 04. Index the relation and the modification in the base entity
-    postOperations.push(elIndexElements([createdRel]));
+    await elIndexElements([createdRel]);
   }
+  const postOperations = [];
   // 06. Send logs
   if (!noLog) {
     postOperations.push(
@@ -1831,7 +1831,7 @@ export const updateAttribute = async (user, id, type, input, wTx, options = {}) 
   esOperations.push(
     elUpdate(currentIndex, currentInstanceData.grakn_id, { doc: updateValueField }).catch(
       /* istanbul ignore next */ () =>
-        logger.error(`[ELASTIC] ${id} missing, cant update the element, you need to reindex`)
+        logger.warn(`[ELASTIC] ${id} missing, cant update the element`)
     )
   );
   if (!noLog && escapedKey !== 'graph_data') {
