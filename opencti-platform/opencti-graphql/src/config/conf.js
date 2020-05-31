@@ -85,6 +85,7 @@ nconf.add('argv', {
   },
 });
 
+const { timestamp } = format;
 const currentPath = process.env.INIT_CWD || process.cwd();
 const resolvePath = (relativePath) => path.join(currentPath, relativePath);
 const environment = nconf.get('env') || nconf.get('node_env') || DEFAULT_ENV;
@@ -104,7 +105,7 @@ nconf.file('default', resolveEnvFile('default'));
 // Setup logger
 const loggerInstance = winston.createLogger({
   level: nconf.get('app:logs_level'),
-  format: format.combine(format.errors({ stack: true }), format.json()),
+  format: format.combine(timestamp(), format.errors({ stack: true }), format.json()),
   transports: [
     new DailyRotateFile({
       filename: 'error.log',

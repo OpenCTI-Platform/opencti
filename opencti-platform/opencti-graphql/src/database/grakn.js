@@ -422,7 +422,7 @@ const loadConcept = async (tx, concept, args = {}) => {
     const conceptFromCache = await elLoadByGraknId(id, null, relationsMap, [index]);
     if (!conceptFromCache) {
       /* istanbul ignore next */
-      logger.warn(`[ELASTIC] ${id} missing, cant load the element`);
+      logger.error(`[ELASTIC] ${id} missing, cant load the element`);
     } else {
       return conceptFromCache;
     }
@@ -1830,8 +1830,8 @@ export const updateAttribute = async (user, id, type, input, wTx, options = {}) 
   const updateValueField = { [key]: typedVal };
   esOperations.push(
     elUpdate(currentIndex, currentInstanceData.grakn_id, { doc: updateValueField }).catch(
-      /* istanbul ignore next */ () =>
-        logger.warn(`[ELASTIC] ${id} missing, cant update the element`)
+      /* istanbul ignore next */ (err) =>
+        logger.error(`[ELASTIC] An error occured during the update of the element ${id}`, { error: err })
     )
   );
   if (!noLog && escapedKey !== 'graph_data') {

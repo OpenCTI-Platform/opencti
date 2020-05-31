@@ -84,7 +84,7 @@ const userResolvers = {
         // eslint-disable-next-line no-await-in-loop
         const loginToken = await new Promise((resolve) => {
           passport.authenticate(auth.provider, { session: false }, (err, tokenAuth, info) => {
-            if (err || info) logger.error(`[AUTH ERROR] > ${auth.provider}`, { error: err, info });
+            if (err || info) logger.warn(`[AUTH ERROR] > ${auth.provider}`, { error: err, info });
             resolve(tokenAuth);
           })({ body: { username: input.email, password: input.password } });
         });

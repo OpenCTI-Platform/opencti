@@ -93,7 +93,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           return done(null, token);
         })
         .catch((err) => {
-          logger.error(`[LOCAL] Login error`, { error: err });
+          logger.warn(`[LOCAL] Login error`, { error: err });
           done(null, false);
         });
     });
@@ -110,7 +110,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const userMail = mappedConfig.mail_attribute ? user[mappedConfig.mail_attribute] : user.mail;
       const userName = mappedConfig.account_attribute ? user[mappedConfig.account_attribute] : user.givenName;
       if (!userMail) {
-        logger.error(`[LDAP] Configuration error, cant map mail and username`, { user, userMail, userName });
+        logger.warn(`[LDAP] Configuration error, cant map mail and username`, { user, userMail, userName });
         done(null);
       } else {
         logger.debug(`[LDAP] Connecting/creating account with ${userMail} [name=${userName}]`);
@@ -119,7 +119,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             done(null, token);
           })
           .catch((err) => {
-            logger.error(`[LDAP] Login error`, { error: err });
+            logger.warn(`[LDAP] Login error`, { error: err });
             done(err);
           });
       }
@@ -142,7 +142,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             done(null, token);
           })
           .catch((err) => {
-            logger.error(`[OpenID] Login error`, { error: err });
+            logger.warn(`[OpenID] Login error`, { error: err });
             done(err);
           });
       });
@@ -164,7 +164,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           done(null, token);
         })
         .catch((err) => {
-          logger.error(`[Facebook] Login error`, { error: err });
+          logger.warn(`[Facebook] Login error`, { error: err });
           done(err);
         });
     });
@@ -184,7 +184,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           done(null, loggedToken);
         })
         .catch((err) => {
-          logger.error(`[Google] Login error`, { error: err });
+          logger.warn(`[Google] Login error`, { error: err });
           done(err);
         });
     });
@@ -204,7 +204,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           done(null, loggedToken);
         })
         .catch((err) => {
-          logger.error(`[Github] Login error`, { error: err });
+          logger.warn(`[Github] Login error`, { error: err });
           done(err);
         });
     });
@@ -221,7 +221,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           done(null, token);
         })
         .catch((err) => {
-          logger.error(`[Auth0] Login error`, { error: err });
+          logger.warn(`[Auth0] Login error`, { error: err });
           done(err);
         });
     });

@@ -811,7 +811,7 @@ export const elIndex = async (indexName, documentBody, refresh = true) => {
   return documentBody;
 };
 /* istanbul ignore next */
-export const elUpdate = (indexName, documentId, documentBody, retry = 2) => {
+export const elUpdate = (indexName, documentId, documentBody, retry = 5) => {
   return el.update({
     id: documentId,
     index: indexName,
@@ -924,7 +924,7 @@ const prepareIndexing = async (elements) => {
     }, elements)
   );
 };
-export const elIndexElements = async (elements, retry = 2) => {
+export const elIndexElements = async (elements, retry = 5) => {
   // 00. Relations must be transformed before indexing.
   const transformedElements = await prepareIndexing(elements);
   // 01. Bulk the indexing of row elements
