@@ -374,7 +374,12 @@ class OpenCTIConnectorHelper:
         try:
             routing_key = "push_routing_" + self.connector_id
             channel.basic_publish(
-                self.config["push_exchange"], routing_key, json.dumps(message)
+                exchange=self.config["push_exchange"],
+                routing_key=routing_key,
+                body=json.dumps(message),
+                properties=pika.BasicProperties(
+                    delivery_mode=2,  # make message persistent
+                ),
             )
             logging.info("Bundle has been sent")
         except (UnroutableError, NackError) as e:
