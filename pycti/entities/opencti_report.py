@@ -516,18 +516,10 @@ class Report:
 
     def add_stix_entity(self, **kwargs):
         id = kwargs.get("id", None)
-        report = kwargs.get("report", None)
         entity_id = kwargs.get("entity_id", None)
         if id is not None and entity_id is not None:
-            if report is not None:
-                if (
-                    entity_id in report["objectRefsIds"]
-                    or entity_id in report["relationRefsIds"]
-                ):
-                    return True
-            else:
-                if self.contains_stix_entity(id=id, entity_id=entity_id):
-                    return True
+            if self.contains_stix_entity(id=id, entity_id=entity_id):
+                return True
             self.opencti.log(
                 "info", "Adding Stix-Entity {" + entity_id + "} to Report {" + id + "}",
             )
@@ -569,17 +561,12 @@ class Report:
 
     def add_stix_observable(self, **kwargs):
         id = kwargs.get("id", None)
-        report = kwargs.get("report", None)
         stix_observable_id = kwargs.get("stix_observable_id", None)
         if id is not None and stix_observable_id is not None:
-            if report is not None:
-                if stix_observable_id in report["observableRefsIds"]:
-                    return True
-            else:
-                if self.contains_stix_observable(
-                    id=id, stix_observable_id=stix_observable_id
-                ):
-                    return True
+            if self.contains_stix_observable(
+                id=id, stix_observable_id=stix_observable_id
+            ):
+                return True
             self.opencti.log(
                 "info",
                 "Adding Stix-Observable {"
