@@ -1,10 +1,10 @@
 import { v4 as uuid, v5 as uuid5 } from 'uuid';
 import {
   __,
-  append,
   ascend,
   assoc,
   chain,
+  compose,
   concat,
   descend,
   dissoc,
@@ -27,17 +27,16 @@ import {
   pipe,
   pluck,
   prop,
-  sortWith,
   sortBy,
-  compose,
-  toLower,
+  sortWith,
   split,
   tail,
   take,
+  toLower,
   toPairs,
+  type as Rtype,
   uniq,
   uniqBy,
-  type as Rtype,
 } from 'ramda';
 import moment from 'moment';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
@@ -988,7 +987,14 @@ export const listRelations = async (relationType, args) => {
 
 // region Loader element
 export const load = async (query, entities, options) => {
+  const { mustExists = true } = options;
   const data = await find(query, entities, options);
+  if (mustExists && data.length === 0) {
+    throw DatabaseError(`Cant find entity in database`, { query });
+  }
+  if (data.length > 1) {
+    logger.debug('[GRAKN] Maybe you should use list instead for multiple results', { query });
+  }
   return head(data);
 };
 export const internalLoadEntityById = async (id, type = null, args = {}) => {
@@ -998,7 +1004,7 @@ export const internalLoadEntityById = async (id, type = null, args = {}) => {
     return elLoadById(id, type);
   }
   const query = `match $x ${type ? `isa ${type},` : ''} has internal_id_key "${escapeString(id)}"; get;`;
-  const element = await load(query, ['x'], { noCache });
+  const element = await load(query, ['x'], args);
   return element ? element.x : null;
 };
 export const loadEntityById = async (id, type, args = {}) => {
@@ -1013,7 +1019,7 @@ export const internalLoadEntityByStixId = async (id, type = null, args = {}) => 
     return elLoadByStixId(id, type);
   }
   const query = `match $x ${type ? `isa ${type},` : ''} has stix_id_key "${escapeString(id)}"; get;`;
-  const element = await load(query, ['x']);
+  const element = await load(query, ['x'], args);
   return element ? element.x : null;
 };
 export const loadEntityByStixId = async (id, type, args = {}) => {
@@ -1030,7 +1036,7 @@ export const loadEntityByGraknId = async (graknId, args = {}) => {
     if (fromCache) return fromCache;
   }
   const query = `match $x id ${escapeString(graknId)}; get;`;
-  const element = await load(query, ['x']);
+  const element = await load(query, ['x'], args);
   return element.x;
 };
 export const loadRelationById = async (id, type, args = {}) => {
@@ -1045,7 +1051,7 @@ export const loadRelationById = async (id, type, args = {}) => {
   }
   const eid = escapeString(id);
   const query = `match $rel($from, $to) isa ${type}, has internal_id_key "${eid}"; get;`;
-  const element = await load(query, ['rel']);
+  const element = await load(query, ['rel'], args);
   return element ? element.rel : null;
 };
 export const loadRelationByStixId = async (id, type, args = {}) => {
@@ -1060,7 +1066,7 @@ export const loadRelationByStixId = async (id, type, args = {}) => {
   }
   const eid = escapeString(id);
   const query = `match $rel($from, $to) isa ${type}, has stix_id_key "${eid}"; get;`;
-  const element = await load(query, ['rel']);
+  const element = await load(query, ['rel'], args);
   return element ? element.rel : null;
 };
 export const loadRelationByGraknId = async (graknId, args = {}) => {
@@ -1072,7 +1078,7 @@ export const loadRelationByGraknId = async (graknId, args = {}) => {
   }
   const eid = escapeString(graknId);
   const query = `match $rel($from, $to) isa relation; $rel id ${eid}; get;`;
-  const element = await load(query, ['rel']);
+  const element = await load(query, ['rel'], args);
   return element ? element.rel : null;
 };
 export const loadByGraknId = async (graknId, args = {}) => {
@@ -1866,38 +1872,59 @@ export const updateAttribute = async (user, id, type, input, wTx, options = {}) 
 };
 // endregion
 
+const getElementsRelated = async (targetId, elements = [], options = {}) => {
+  const eid = escapeString(targetId);
+  const read = `match $from has internal_id_key "${eid}"; $rel($from, $to);
+   { $rel isa stix_relation; } or { $rel isa stix_observable_relation; } or { $rel isa stix_relation_embedded; } 
+   or { $rel isa relation_embedded; } or { $rel isa stix_sighting; }; get;`;
+  const connectedRelations = await find(read, ['rel'], options);
+  const connectedRelationsIds = map((r) => ({ id: r.rel.id, relDependency: true }), connectedRelations);
+  elements.push(...connectedRelationsIds);
+  await Promise.all(connectedRelationsIds.map(({ id }) => getElementsRelated(id, elements, options)));
+  return elements;
+};
+
+const deleteElementById = async (elementId, isRelation, options = {}) => {
+  // 00. Load everything we need to remove
+  const dependencies = [{ id: elementId, relDependency: isRelation }];
+  await getElementsRelated(elementId, dependencies, options);
+  // 01. Delete dependencies.
+  // Remove all dep in reverse order to handle correctly relations
+  for (let i = dependencies.length - 1; i >= 0; i -= 1) {
+    const { id, relDependency } = dependencies[i];
+    // eslint-disable-next-line no-await-in-loop
+    await executeWrite(async (wTx) => {
+      const query = `match $x has internal_id_key "${id}"; delete $x;`;
+      logger.debug(`[GRAKN - infer: false] delete element ${id}`, { query });
+      await wTx.query(query, { infer: false });
+    }).then(async () => {
+      // If element is a relation, modify the impacted from and to.
+      if (relDependency) {
+        await elRemoveRelationConnection(id);
+      }
+      // Remove the element itself from the index
+      await elDeleteInstanceIds([id]);
+    });
+  }
+};
+
 // region mutation deletion
-export const deleteEntityById = async (user, id, type, options = {}) => {
+export const deleteEntityById = async (user, entityId, type, options = {}) => {
   const { noLog = false } = options;
   if (isNil(type)) {
     /* istanbul ignore next */
     throw FunctionalError(`You need to specify a type when deleting an entity`);
   }
-  const eid = escapeString(id);
-  // 00. Load everything we need to remove in elastic
-  const read = `match $from isa ${type}, has internal_id_key "${eid}"; $rel($from, $to);
-   { $rel isa stix_relation; } or { $rel isa stix_observable_relation; } or { $rel isa stix_relation_embedded; } or { $rel isa relation_embedded; } or { $rel isa stix_sighting; }; get;`;
-  const relationsToDeIndex = await find(read, ['rel'], options);
-  const relationsIds = map((r) => r.rel.id, relationsToDeIndex);
-  // 01. Execute the delete in grakn and elastic
-  return executeWrite(async (wTx) => {
-    const query = `match $x isa ${type}, has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
-    logger.debug(`[GRAKN - infer: false] deleteTypedEntityById`, { query });
-    await wTx.query(query, { infer: false });
-  }).then(async () => {
-    const esOperations = [];
-    if (!noLog) {
-      esOperations.push(
-        loadEntityById(eid, type).then((currentEntity) => {
-          if (currentEntity) sendLog(EVENT_TYPE_DELETE, user, currentEntity);
-        })
-      );
-    }
-    // [ELASTIC] Delete entity and relations connected to
-    esOperations.push(elDeleteInstanceIds(append(eid, relationsIds)));
-    await Promise.all(esOperations);
-    return id;
-  });
+  // Check consistency
+  const entity = await loadEntityById(entityId, type, options);
+  if (entity === null) throw DatabaseError(`Cant find entity to delete ${entityId}`);
+  // Delete entity and all dependencies
+  await deleteElementById(entityId, false, options);
+  // Send the log if everything fine
+  if (!noLog) {
+    await sendLog(EVENT_TYPE_DELETE, user, entity);
+  }
+  return entityId;
 };
 export const deleteRelationById = async (user, relationId, type, options = {}) => {
   const { noLog = false } = options;
@@ -1905,39 +1932,23 @@ export const deleteRelationById = async (user, relationId, type, options = {}) =
     /* istanbul ignore next */
     throw FunctionalError(`You need to specify a type when deleting a relation`);
   }
-  const eid = escapeString(relationId);
-  // 00. Load everything we need to remove in elastic
-  const read = `match $from isa ${type}, has internal_id_key "${eid}"; $to isa entity; $rel($from, $to) isa relation; get;`;
-  const relationsToDeIndex = await find(read, ['rel']);
-  const answers = map((r) => r.rel.id, relationsToDeIndex);
-  const relationsIds = filter((r) => r, answers); // Because of relation to attributes
-  // 01. Execute the delete in grakn and elastic
-  return executeWrite(async (wTx) => {
-    const query = `match $x isa ${type}, has internal_id_key "${eid}"; $z($x, $y); delete $z, $x;`;
-    logger.debug(`[GRAKN - infer: false] deleteRelationById`, { query });
-    await wTx.query(query, { infer: false });
-  }).then(async () => {
-    // [ELASTIC] Update - Delete the inner indexed relations in entities;
-    const esOperations = [];
-    const currentRelation = await loadRelationById(eid, type);
-    if (!noLog && currentRelation) {
-      const [from, to] = await Promise.all([
-        elLoadByGraknId(currentRelation.fromId),
-        elLoadByGraknId(currentRelation.toId),
-      ]);
-      if (currentRelation.entity_type === TYPE_RELATION_EMBEDDED) {
-        if (currentRelation.relationship_type !== 'created_by_ref') {
-          esOperations.push(sendLog(EVENT_TYPE_UPDATE_REMOVE, user, currentRelation, { from, to }));
-        }
+  const relation = await loadRelationById(relationId, type, options);
+  if (relation === null) throw DatabaseError(`Cant find relation to delete ${relationId}`);
+  await deleteElementById(relationId, true, options);
+  // Send the log if everything fine
+  if (!noLog) {
+    const [from, to] = await Promise.all([loadByGraknId(relation.fromId), loadByGraknId(relation.toId)]);
+    if (relation.entity_type === TYPE_RELATION_EMBEDDED) {
+      if (relation.relationship_type === 'created_by_ref') {
+        await sendLog(EVENT_TYPE_UPDATE, user, relation, { from });
       } else {
-        esOperations.push(sendLog(EVENT_TYPE_DELETE, user, currentRelation, { from, to }));
+        await sendLog(EVENT_TYPE_UPDATE_REMOVE, user, relation, { from, to });
       }
+    } else {
+      await sendLog(EVENT_TYPE_DELETE, user, relation, { from, to });
     }
-    esOperations.push(elRemoveRelationConnection(eid));
-    esOperations.push(elDeleteInstanceIds(append(eid, relationsIds)));
-    await Promise.all(esOperations);
-    return relationId;
-  });
+  }
+  return relationId;
 };
 export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationType, scopeType) => {
   /* istanbul ignore if */

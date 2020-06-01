@@ -146,8 +146,10 @@ const internalGetToken = async (userId) => {
 };
 
 const internalGetTokenByUUID = async (tokenUUID) => {
-  return load(`match $token isa Token; $x has uuid "${escapeString(tokenUUID)}"; get;`, ['token'], {
+  const query = `match $token isa Token; $x has uuid "${escapeString(tokenUUID)}"; get;`;
+  return load(query, ['token'], {
     noCache: true,
+    mustExists: false,
   }).then((result) => result && result.token);
 };
 
@@ -412,7 +414,8 @@ export const stixDomainEntityEditField = async (user, stixDomainEntityId, input)
 export const loginFromProvider = async (email, name) => {
   const result = await load(
     `match $client isa User, has user_email "${escapeString(email)}"; (authorization:$token, client:$client); get;`,
-    ['client', 'token']
+    ['client', 'token'],
+    { mustExists: false }
   );
   if (isNil(result)) {
     const newUser = { name, user_email: email, external: true };
@@ -431,7 +434,7 @@ export const login = async (email, password) => {
     `match $client isa User, has user_email "${escapeString(email)}";
      (authorization:$token, client:$client) isa authorize; get;`,
     ['client', 'token'],
-    { noCache: true } // Because of the fetching of the token that not in cache
+    { noCache: true, mustExists: false } // Because of the fetching of the token that not in cache
   );
   if (isNil(result)) throw AuthenticationFailure();
   const dbPassword = result.client.password;
@@ -487,7 +490,7 @@ export const findByTokenUUID = async (tokenValue) => {
       `match $token isa Token, has uuid "${escapeString(tokenValue)}", has revoked false;
             (authorization:$token, client:$client) isa authorize; get;`,
       ['token', 'client'],
-      { noCache: true }
+      { noCache: true, mustExists: false }
     );
     if (!data) return undefined;
     // eslint-disable-next-line no-shadow
@@ -530,11 +533,12 @@ export const initAdmin = async (email, password, tokenValue) => {
   if (admin) {
     // Update admin fields
     await executeWrite(async (wTx) => {
-      await updateAttribute(admin, admin.id, 'User', { key: 'user_email', value: [email] }, wTx);
-      await updateAttribute(admin, admin.id, 'User', { key: 'password', value: [bcrypt.hashSync(password, 10)] }, wTx, {
-        noLog: true,
-      });
-      await updateAttribute(admin, admin.id, 'User', { key: 'external', value: [true] }, wTx, { noLog: true });
+      const inputEmail = { key: 'user_email', value: [email] };
+      await updateAttribute(admin, admin.id, 'User', inputEmail, wTx);
+      const inputPassword = { key: 'password', value: [bcrypt.hashSync(password, 10)] };
+      await updateAttribute(admin, admin.id, 'User', inputPassword, wTx, { noLog: true });
+      const inputExternal = { key: 'external', value: [true] };
+      await updateAttribute(admin, admin.id, 'User', inputExternal, wTx, { noLog: true });
     });
     // Renew the token
     await userRenewToken(admin, admin.id, tokenAdmin);

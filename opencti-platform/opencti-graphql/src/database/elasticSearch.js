@@ -801,25 +801,33 @@ export const elIndex = async (indexName, documentBody, refresh = true) => {
   const internalId = documentBody.internal_id_key;
   const entityType = documentBody.entity_type ? documentBody.entity_type : '';
   logger.debug(`[ELASTICSEARCH] index > ${entityType} ${internalId} in ${indexName}`, documentBody);
-  await el.index({
-    index: indexName,
-    id: documentBody.grakn_id,
-    refresh,
-    timeout: '60m',
-    body: dissoc('_index', documentBody),
-  });
+  await el
+    .index({
+      index: indexName,
+      id: documentBody.grakn_id,
+      refresh,
+      timeout: '60m',
+      body: dissoc('_index', documentBody),
+    })
+    .catch((err) => {
+      throw DatabaseError('Error indexing elastic', { error: err, body: documentBody });
+    });
   return documentBody;
 };
 /* istanbul ignore next */
 export const elUpdate = (indexName, documentId, documentBody, retry = 5) => {
-  return el.update({
-    id: documentId,
-    index: indexName,
-    retry_on_conflict: retry,
-    timeout: '60m',
-    refresh: true,
-    body: dissoc('_index', documentBody),
-  });
+  return el
+    .update({
+      id: documentId,
+      index: indexName,
+      retry_on_conflict: retry,
+      timeout: '60m',
+      refresh: true,
+      body: dissoc('_index', documentBody),
+    })
+    .catch((err) => {
+      throw DatabaseError('Error updating elastic', { error: err, documentId, body: documentBody });
+    });
 };
 
 export const elDeleteByField = async (indexName, fieldName, value) => {
