@@ -637,7 +637,7 @@ class Report:
                 else 1,
                 graph_data=stix_object[CustomProperties.GRAPH_DATA]
                 if CustomProperties.GRAPH_DATA in stix_object
-                else "",
+                else None,
                 id=stix_object[CustomProperties.ID]
                 if CustomProperties.ID in stix_object
                 else None,
@@ -649,7 +649,7 @@ class Report:
                 else None,
                 markingDefinitions=extras["marking_definitions_ids"]
                 if "marking_definitions_ids" in extras
-                else [],
+                else None,
                 tags=extras["tags_ids"] if "tags_ids" in extras else [],
                 update=update,
             )

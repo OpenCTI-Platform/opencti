@@ -187,7 +187,7 @@ class KillChainPhase:
         modified = kwargs.get("modified", None)
 
         kill_chain_phase_result = self.read(
-            filters=[{"key": "phase_name", "values": [phase_name]}]
+            filters=[{"key": "kill_chain_name", "values": [kill_chain_name]}, {"key": "phase_name", "values": [phase_name]}]
         )
         if kill_chain_phase_result is not None:
             return kill_chain_phase_result
