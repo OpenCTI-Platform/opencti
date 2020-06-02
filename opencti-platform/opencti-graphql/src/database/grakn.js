@@ -987,11 +987,7 @@ export const listRelations = async (relationType, args) => {
 
 // region Loader element
 export const load = async (query, entities, options) => {
-  const { mustExists = true } = options;
   const data = await find(query, entities, options);
-  if (mustExists && data.length === 0) {
-    throw DatabaseError(`Cant find entity in database`, { query });
-  }
   if (data.length > 1) {
     logger.debug('[GRAKN] Maybe you should use list instead for multiple results', { query });
   }
@@ -1037,6 +1033,9 @@ export const loadEntityByGraknId = async (graknId, args = {}) => {
   }
   const query = `match $x id ${escapeString(graknId)}; get;`;
   const element = await load(query, ['x'], args);
+  if (!element) {
+    throw DatabaseError(`Cant find entity ${graknId} in database`, { query });
+  }
   return element.x;
 };
 export const loadRelationById = async (id, type, args = {}) => {
@@ -1079,7 +1078,10 @@ export const loadRelationByGraknId = async (graknId, args = {}) => {
   const eid = escapeString(graknId);
   const query = `match $rel($from, $to) isa relation; $rel id ${eid}; get;`;
   const element = await load(query, ['rel'], args);
-  return element ? element.rel : null;
+  if (!element) {
+    throw DatabaseError(`Cant find relation ${graknId} in database`, { query });
+  }
+  return element.rel;
 };
 export const loadByGraknId = async (graknId, args = {}) => {
   // Could be entity or relation.

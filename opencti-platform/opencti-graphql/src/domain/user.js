@@ -149,7 +149,6 @@ const internalGetTokenByUUID = async (tokenUUID) => {
   const query = `match $token isa Token; $x has uuid "${escapeString(tokenUUID)}"; get;`;
   return load(query, ['token'], {
     noCache: true,
-    mustExists: false,
   }).then((result) => result && result.token);
 };
 
@@ -414,8 +413,7 @@ export const stixDomainEntityEditField = async (user, stixDomainEntityId, input)
 export const loginFromProvider = async (email, name) => {
   const result = await load(
     `match $client isa User, has user_email "${escapeString(email)}"; (authorization:$token, client:$client); get;`,
-    ['client', 'token'],
-    { mustExists: false }
+    ['client', 'token']
   );
   if (isNil(result)) {
     const newUser = { name, user_email: email, external: true };
@@ -434,7 +432,7 @@ export const login = async (email, password) => {
     `match $client isa User, has user_email "${escapeString(email)}";
      (authorization:$token, client:$client) isa authorize; get;`,
     ['client', 'token'],
-    { noCache: true, mustExists: false } // Because of the fetching of the token that not in cache
+    { noCache: true } // Because of the fetching of the token that not in cache
   );
   if (isNil(result)) throw AuthenticationFailure();
   const dbPassword = result.client.password;
@@ -490,7 +488,7 @@ export const findByTokenUUID = async (tokenValue) => {
       `match $token isa Token, has uuid "${escapeString(tokenValue)}", has revoked false;
             (authorization:$token, client:$client) isa authorize; get;`,
       ['token', 'client'],
-      { noCache: true, mustExists: false }
+      { noCache: true }
     );
     if (!data) return undefined;
     // eslint-disable-next-line no-shadow

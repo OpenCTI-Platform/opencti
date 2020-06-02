@@ -30,7 +30,6 @@ const graknStateStorage = {
     // Get current status of migrations in Grakn
     const migration = await load(`match $status isa MigrationStatus; get;`, ['status'], {
       noCache: true,
-      mustExists: false,
     });
     if (!migration) {
       // If no migration found, initialize
