@@ -22,7 +22,7 @@ The structuration of the data is performed using a knowledge schema based on the
 
 ## Objective
 
-The goal is to create a comprehensive tool allowing users to capitalize technical (such as TTPs and observables) and non-technical information (such as suggested attribution, victimlogy etc.) while linking each piece of information to its primary source (a report, a MISP event, etc.), with features such as links between each information, first and last seen dates, levels of confidence etc. The tool is able to use the [MITRE ATT&CK framework](https://attack.mitre.org) (through a [dedicated connector]()) to help structure the data. The user can also chose to implement its own datasets.
+The goal is to create a comprehensive tool allowing users to capitalize technical (such as TTPs and observables) and non-technical information (such as suggested attribution, victimlogy etc.) while linking each piece of information to its primary source (a report, a MISP event, etc.), with features such as links between each information, first and last seen dates, levels of confidence etc. The tool is able to use the [MITRE ATT&CK framework](https://attack.mitre.org) (through a [dedicated connector](https://github.com/OpenCTI-Platform/connectors)) to help structure the data. The user can also chose to implement its own datasets.
 
 Once data has been capitalized and processed by the analysts within OpenCTI, new relations [may be inferred](https://www.notion.so/luatix/Relations-8313e7bbec8b4c9397099f84d5e78b27#def25059b54740a789bc848dcfb8d526) from existing ones to facilitate the understanding and the representation of this information. This allow the user to extract and leverage meaningful knowledge from the raw data.
 
