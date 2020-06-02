@@ -625,7 +625,7 @@ class Indicator:
                 tags=extras["tags_ids"] if "tags_ids" in extras else [],
                 killChainPhases=extras["kill_chain_phases_ids"]
                 if "kill_chain_phases_ids" in extras
-                else [],
+                else None,
                 update=update,
             )
         else:

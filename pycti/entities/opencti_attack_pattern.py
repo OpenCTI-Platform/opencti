@@ -504,6 +504,7 @@ class AttackPattern:
                     if (
                         external_reference["source_name"] == "mitre-attack"
                         or external_reference["source_name"] == "mitre-pre-attack"
+                        or external_reference["source_name"] == "mitre-mobile-attack"
                         or external_reference["source_name"] == "amitt-attack"
                     ):
                         external_id = external_reference["external_id"]
@@ -538,11 +539,11 @@ class AttackPattern:
                 else None,
                 markingDefinitions=extras["marking_definitions_ids"]
                 if "marking_definitions_ids" in extras
-                else [],
+                else None,
                 tags=extras["tags_ids"] if "tags_ids" in extras else [],
                 killChainPhases=extras["kill_chain_phases_ids"]
                 if "kill_chain_phases_ids" in extras
-                else [],
+                else None,
                 update=update,
             )
         else:

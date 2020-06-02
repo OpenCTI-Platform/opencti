@@ -1790,7 +1790,7 @@ class OpenCTIStix2:
             else None,
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
-            else [],
+            else None,
             tags=extras["tags_ids"] if "tags_ids" in extras else [],
             update=update,
         )
@@ -1821,7 +1821,7 @@ class OpenCTIStix2:
             else None,
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
-            else [],
+            else None,
             tags=extras["tags_ids"] if "tags_ids" in extras else [],
             uodate=update,
         )
@@ -1850,7 +1850,7 @@ class OpenCTIStix2:
             else None,
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
-            else [],
+            else None,
             tags=extras["tags_ids"] if "tags_ids" in extras else [],
             update=update,
         )
@@ -1875,10 +1875,10 @@ class OpenCTIStix2:
             else None,
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
-            else [],
+            else None,
             killChainPhases=extras["kill_chain_phases_ids"]
             if "kill_chain_phases_ids" in extras
-            else [],
+            else None,
             tags=extras["tags_ids"] if "tags_ids" in extras else [],
             update=update,
         )
@@ -1902,10 +1902,10 @@ class OpenCTIStix2:
             else None,
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
-            else [],
+            else None,
             killChainPhases=extras["kill_chain_phases_ids"]
             if "kill_chain_phases_ids" in extras
-            else [],
+            else None,
             tags=extras["tags_ids"] if "tags_ids" in extras else [],
             update=update,
         )
@@ -1944,7 +1944,7 @@ class OpenCTIStix2:
             else None,
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
-            else [],
+            else None,
             tags=extras["tags_ids"] if "tags_ids" in extras else [],
             update=update,
         )
@@ -1973,7 +1973,7 @@ class OpenCTIStix2:
             else None,
             markingDefinitions=extras["marking_definitions_ids"]
             if "marking_definitions_ids" in extras
-            else [],
+            else None,
             tags=extras["tags_ids"] if "tags_ids" in extras else [],
             update=update,
         )
