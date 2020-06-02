@@ -20,7 +20,9 @@ export const getApplicationInfo = () => ({
 });
 
 export const getSettings = async () => {
-  const data = await load('match $settings isa Settings; get;', ['settings'], { noCache: true });
+  const data = await load('match $settings isa Settings; get;', ['settings'], {
+    noCache: true,
+  });
   const settings = data && data.settings;
   if (settings == null) return null;
   const config = pipe(

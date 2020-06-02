@@ -146,7 +146,8 @@ const internalGetToken = async (userId) => {
 };
 
 const internalGetTokenByUUID = async (tokenUUID) => {
-  return load(`match $token isa Token; $x has uuid "${escapeString(tokenUUID)}"; get;`, ['token'], {
+  const query = `match $token isa Token; $x has uuid "${escapeString(tokenUUID)}"; get;`;
+  return load(query, ['token'], {
     noCache: true,
   }).then((result) => result && result.token);
 };
@@ -530,11 +531,12 @@ export const initAdmin = async (email, password, tokenValue) => {
   if (admin) {
     // Update admin fields
     await executeWrite(async (wTx) => {
-      await updateAttribute(admin, admin.id, 'User', { key: 'user_email', value: [email] }, wTx);
-      await updateAttribute(admin, admin.id, 'User', { key: 'password', value: [bcrypt.hashSync(password, 10)] }, wTx, {
-        noLog: true,
-      });
-      await updateAttribute(admin, admin.id, 'User', { key: 'external', value: [true] }, wTx, { noLog: true });
+      const inputEmail = { key: 'user_email', value: [email] };
+      await updateAttribute(admin, admin.id, 'User', inputEmail, wTx);
+      const inputPassword = { key: 'password', value: [bcrypt.hashSync(password, 10)] };
+      await updateAttribute(admin, admin.id, 'User', inputPassword, wTx, { noLog: true });
+      const inputExternal = { key: 'external', value: [true] };
+      await updateAttribute(admin, admin.id, 'User', inputExternal, wTx, { noLog: true });
     });
     // Renew the token
     await userRenewToken(admin, admin.id, tokenAdmin);

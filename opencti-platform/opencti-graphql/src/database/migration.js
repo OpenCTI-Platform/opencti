@@ -4,7 +4,7 @@ import { MigrationSet } from 'migrate';
 import Migration from 'migrate/lib/migration';
 import { executeWrite, find, load, internalDirectWrite } from './grakn';
 import { logger } from '../config/conf';
-import {DatabaseError} from "../config/errors";
+import { DatabaseError } from '../config/errors';
 
 const normalizeMigrationName = (rawName) => {
   if (rawName.startsWith('./')) {
@@ -28,7 +28,9 @@ const retrieveMigrations = () => {
 const graknStateStorage = {
   async load(fn) {
     // Get current status of migrations in Grakn
-    const migration = await load(`match $status isa MigrationStatus; get;`, ['status'], { noCache: true });
+    const migration = await load(`match $status isa MigrationStatus; get;`, ['status'], {
+      noCache: true,
+    });
     if (!migration) {
       // If no migration found, initialize
       logger.info('[MIGRATION] > Fresh platform detected, creating migration structure');

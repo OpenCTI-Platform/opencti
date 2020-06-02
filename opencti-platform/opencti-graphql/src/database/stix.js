@@ -525,7 +525,7 @@ export const relationEmbeddedToStix = async (relationEmbedded, eventType, extra)
     spec_version: STIX_SPEC_VERSION,
   };
   if (relationEmbedded.relationship_type === 'created_by_ref') {
-    data = assoc('created_by_ref', extra.to.stix_id_key, data);
+    data = assoc('created_by_ref', extra.to ? extra.to.stix_id_key : null, data);
   } else if (relationEmbedded.relationship_type === 'object_marking_refs') {
     data = assoc('object_marking_refs', markingDefinitionsToStix([{ node: extra.to }]), data);
   } else if (relationEmbedded.relationship_type === 'external_references') {
