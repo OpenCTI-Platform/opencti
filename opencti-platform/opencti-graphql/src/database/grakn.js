@@ -143,17 +143,19 @@ const closeTx = async (gTx) => {
   }
   return true;
 };
-const takeReadTx = async (retry = false) => {
+
+const takeReadTx = async () => {
   if (session === null) session = await client.session('grakn');
   return session
     .transaction()
     .read()
     .catch(
       /* istanbul ignore next */ (err) => {
-        if (retry === true) {
-          throw DatabaseError('[GRAKN] TakeReadTx error', { grakn: err.details });
+        if (err.code === 2 && session) {
+          session = null;
+          return takeReadTx();
         }
-        return takeReadTx(true);
+        throw DatabaseError('[GRAKN] TakeReadTx error', { grakn: err.details });
       }
     );
 };
@@ -170,17 +172,18 @@ export const executeRead = async (executeFunction) => {
   }
 };
 
-const takeWriteTx = async (retry = false) => {
+const takeWriteTx = async () => {
   if (session === null) session = await client.session('grakn');
   return session
     .transaction()
     .write()
     .catch(
       /* istanbul ignore next */ (err) => {
-        if (retry === true) {
-          throw DatabaseError('[GRAKN] TakeWriteTx error', { grakn: err.details });
+        if (err.code === 2 && session) {
+          session = null;
+          return takeWriteTx();
         }
-        return takeWriteTx(true);
+        throw DatabaseError('[GRAKN] TakeWriteTx error', { grakn: err.details });
       }
     );
 };
@@ -194,6 +197,7 @@ const commitWriteTx = async (wTx) => {
     }
   );
 };
+
 export const executeWrite = async (executeFunction) => {
   const wTx = await takeWriteTx();
   try {
