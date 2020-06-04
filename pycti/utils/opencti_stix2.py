@@ -270,9 +270,13 @@ class OpenCTIStix2:
         kill_chain_phases_ids = []
         if "kill_chain_phases" in stix_object:
             for kill_chain_phase in stix_object["kill_chain_phases"]:
-                if kill_chain_phase["phase_name"] in self.mapping_cache:
+                if (
+                    kill_chain_phase["kill_chain_name"] + kill_chain_phase["phase_name"]
+                    in self.mapping_cache
+                ):
                     kill_chain_phase = self.mapping_cache[
-                        kill_chain_phase["phase_name"]
+                        kill_chain_phase["kill_chain_name"]
+                        + kill_chain_phase["phase_name"]
                     ]
                 else:
                     kill_chain_phase = self.opencti.kill_chain_phase.create(
@@ -294,7 +298,10 @@ class OpenCTIStix2:
                         if CustomProperties.MODIFIED in kill_chain_phase
                         else None,
                     )
-                    self.mapping_cache[kill_chain_phase["phase_name"]] = {
+                    self.mapping_cache[
+                        kill_chain_phase["kill_chain_name"]
+                        + kill_chain_phase["phase_name"]
+                    ] = {
                         "id": kill_chain_phase["id"],
                         "type": kill_chain_phase["entity_type"],
                     }
@@ -1883,31 +1890,9 @@ class OpenCTIStix2:
             update=update,
         )
 
-    # TODO move in Tool
     def create_tool(self, stix_object, extras, update=False):
-        return self.opencti.tool.create(
-            name=stix_object["name"],
-            description=self.convert_markdown(stix_object["description"])
-            if "description" in stix_object
-            else "",
-            alias=self.pick_aliases(stix_object),
-            id=stix_object[CustomProperties.ID]
-            if CustomProperties.ID in stix_object
-            else None,
-            stix_id_key=stix_object["id"] if "id" in stix_object else None,
-            created=stix_object["created"] if "created" in stix_object else None,
-            modified=stix_object["modified"] if "modified" in stix_object else None,
-            createdByRef=extras["created_by_ref_id"]
-            if "created_by_ref_id" in extras
-            else None,
-            markingDefinitions=extras["marking_definitions_ids"]
-            if "marking_definitions_ids" in extras
-            else None,
-            killChainPhases=extras["kill_chain_phases_ids"]
-            if "kill_chain_phases_ids" in extras
-            else None,
-            tags=extras["tags_ids"] if "tags_ids" in extras else [],
-            update=update,
+        return self.opencti.tool.import_from_stix2(
+            stixObject=stix_object, extras=extras, update=update
         )
 
     # TODO move in Vulnerability
