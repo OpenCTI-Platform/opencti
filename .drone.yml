@@ -63,7 +63,7 @@ steps:
 
 services:
 - name: grakn
-  image: graknlabs/grakn:1.7.2
+  image: graknlabs/grakn:1.7.1
 - name: redis
   image: redis:6.0.3
 - name: elastic
