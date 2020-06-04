@@ -346,7 +346,9 @@ class Tool:
         if stix_object is not None:
             return self.opencti.tool.create(
                 name=stix_object["name"],
-                description=self.opencti.stix2.convert_markdown(stix_object["description"])
+                description=self.opencti.stix2.convert_markdown(
+                    stix_object["description"]
+                )
                 if "description" in stix_object
                 else "",
                 alias=self.opencti.stix2.pick_aliases(stix_object),
@@ -369,9 +371,7 @@ class Tool:
                 update=update,
             )
         else:
-            self.opencti.log(
-                "error", "[opencti_tool] Missing parameters: stixObject"
-            )
+            self.opencti.log("error", "[opencti_tool] Missing parameters: stixObject")
 
     """
         Export an Tool object in STIX2
