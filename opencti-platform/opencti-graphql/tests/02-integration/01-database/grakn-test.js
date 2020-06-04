@@ -51,7 +51,7 @@ import { ADMIN_USER } from '../../utils/testQuery';
 describe('Grakn basic and utils', () => {
   it('should database accessible', () => {
     expect(graknIsAlive()).toBeTruthy();
-    expect(getGraknVersion()).toEqual('1.7.1');
+    expect(getGraknVersion()).toEqual('1.7.2');
   });
   it('should escape according to grakn needs', () => {
     expect(escape({ key: 'json' })).toEqual({ key: 'json' });
