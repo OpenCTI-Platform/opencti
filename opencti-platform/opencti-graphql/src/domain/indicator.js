@@ -132,6 +132,7 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
   )(indicator);
   // create the linked observables
   let observablesToLink = [];
+  const observablesToEnrich = [];
   if (createObservables && indicator.pattern_type === 'stix') {
     try {
       const observables = await extractObservables(indicator.indicator_pattern);
@@ -170,7 +171,7 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
                 modelType: TYPE_STIX_OBSERVABLE,
                 stixIdType: 'observable',
               });
-              await askEnrich(createdStixObservable.id, innerType);
+              observablesToEnrich.push({ id: createdStixObservable.id, type: innerType });
               return createdStixObservable.id;
             }
             return existingObservables.edges[0].node.id;
@@ -188,6 +189,11 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
     observableRefs = observablesToLink;
   }
   const created = await createEntity(user, assoc('observableRefs', observableRefs, indicatorToCreate), 'Indicator');
+  await Promise.all(
+    observablesToEnrich.map((observableToEnrich) => {
+      return askEnrich(observableToEnrich.id, observableToEnrich.type);
+    })
+  );
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 

@@ -425,7 +425,7 @@ const loadConcept = async (tx, concept, args = {}) => {
     const conceptFromCache = await elLoadByGraknId(id, null, relationsMap, [index]);
     if (!conceptFromCache) {
       /* istanbul ignore next */
-      logger.error(`[ELASTIC] ${id} missing, cant load the element`);
+      logger.info(`[ELASTIC] ${id} not indexed yet, loading with Grakn`);
     } else {
       return conceptFromCache;
     }
