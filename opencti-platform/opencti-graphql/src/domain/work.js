@@ -22,7 +22,7 @@ export const workToExportFile = (work) => {
 // endregion
 
 export const connectorForWork = async (id) => {
-  const work = await elLoadById(id, null, null, INDEX_WORK_JOBS);
+  const work = await elLoadById(id, null, INDEX_WORK_JOBS);
   if (work) return loadConnectorById(work.connector_id);
   return null;
 };
@@ -109,7 +109,6 @@ export const initiateJob = (workId) => {
   return elIndex(INDEX_WORK_JOBS, {
     id: jobInternalId,
     internal_id_key: jobInternalId,
-    grakn_id: jobInternalId,
     messages: ['Initiate work'],
     work_id: workId,
     created_at: now(),
@@ -125,7 +124,6 @@ export const createWork = async (connector, entityType = null, entityId = null, 
   const createdWork = await elIndex(INDEX_WORK_JOBS, {
     id: workInternalId,
     internal_id_key: workInternalId,
-    grakn_id: workInternalId,
     work_id: workInternalId,
     entity_type: 'Work',
     connector_id: connector.id,
@@ -142,7 +140,7 @@ export const createWork = async (connector, entityType = null, entityId = null, 
 };
 
 export const updateJob = async (jobId, status, messages) => {
-  const job = await elLoadById(jobId, null, null, INDEX_WORK_JOBS);
+  const job = await elLoadById(jobId, null, INDEX_WORK_JOBS);
   const updatedJob = pipe(assoc('job_status', status), assoc('messages', messages), assoc('updated_at', now()))(job);
   await elIndex(INDEX_WORK_JOBS, updatedJob);
   return updatedJob;

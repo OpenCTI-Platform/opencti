@@ -5,18 +5,15 @@ import {
   findWithConnectedRelations,
   listEntities,
   loadEntityById,
-  loadEntityByStixId,
   now,
   timeSeriesEntities,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { buildPagination, TYPE_STIX_DOMAIN_ENTITY } from '../database/utils';
+import { buildPagination } from '../database/utils';
+import { ENTITY_TYPE_INCIDENT } from '../utils/idGenerator';
 
 export const findById = (incidentId) => {
-  if (incidentId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(incidentId, 'Incident');
-  }
   return loadEntityById(incidentId, 'Incident');
 };
 export const findAll = (args) => {
@@ -50,9 +47,6 @@ export const addIncident = async (user, incident) => {
     assoc('first_seen', incident.first_seen ? incident.first_seen : currentDate),
     assoc('last_seen', incident.first_seen ? incident.first_seen : currentDate)
   )(incident);
-  const created = await createEntity(user, incidentToCreate, 'Incident', {
-    modelType: TYPE_STIX_DOMAIN_ENTITY,
-    stixIdType: 'x-opencti-incident',
-  });
+  const created = await createEntity(user, incidentToCreate, ENTITY_TYPE_INCIDENT);
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };

@@ -1,5 +1,20 @@
 import { assoc, head, includes, isEmpty, map, pipe } from 'ramda';
 import { FunctionalError } from '../config/errors';
+import {
+  ENTITY_TYPE_ATTACK_PATTERN,
+  ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_CITY, ENTITY_TYPE_COUNTRY,
+  ENTITY_TYPE_COURSE,
+  ENTITY_TYPE_INCIDENT,
+  ENTITY_TYPE_INDICATOR,
+  ENTITY_TYPE_INTRUSION,
+  ENTITY_TYPE_MALWARE,
+  ENTITY_TYPE_MARKING,
+  ENTITY_TYPE_NOTE,
+  ENTITY_TYPE_OPINION, ENTITY_TYPE_ORGANIZATION, ENTITY_TYPE_REGION,
+  ENTITY_TYPE_REPORT, ENTITY_TYPE_SECTOR,
+  ENTITY_TYPE_THREAT_ACTOR,
+  ENTITY_TYPE_TOOL, ENTITY_TYPE_USER, ENTITY_TYPE_VULN
+} from "../utils/idGenerator";
 
 export const STIX_SPEC_VERSION = '2.1';
 export const OBSERVABLE_TYPES = [
@@ -469,7 +484,7 @@ export const stixRelationToStix = async (stixRelation, extra = null, onlyBase = 
     return baseData;
   }
   return buildStixData(baseData, stixRelation, {
-    relationship_type: 'relationship_type',
+    entity_type: 'entity_type',
     description: 'description',
     source_ref: 'source_ref',
     target_ref: 'target_ref',
@@ -524,19 +539,19 @@ export const relationEmbeddedToStix = async (relationEmbedded, eventType, extra)
     type: entityType,
     spec_version: STIX_SPEC_VERSION,
   };
-  if (relationEmbedded.relationship_type === 'created_by_ref') {
+  if (relationEmbedded.entity_type === 'created_by_ref') {
     data = assoc('created_by_ref', extra.to ? extra.to.stix_id_key : null, data);
-  } else if (relationEmbedded.relationship_type === 'object_marking_refs') {
+  } else if (relationEmbedded.entity_type === 'object_marking_refs') {
     data = assoc('object_marking_refs', markingDefinitionsToStix([{ node: extra.to }]), data);
-  } else if (relationEmbedded.relationship_type === 'external_references') {
+  } else if (relationEmbedded.entity_type === 'external_references') {
     data = assoc('external_references', externalReferencesToStix([{ node: extra.to }]), data);
-  } else if (relationEmbedded.relationship_type === 'kill_chain_phases') {
+  } else if (relationEmbedded.entity_type === 'kill_chain_phases') {
     data = assoc('kill_chain_phases', killChainPhasesToStix([{ node: extra.to }]), data);
-  } else if (relationEmbedded.relationship_type === 'object_refs') {
+  } else if (relationEmbedded.entity_type === 'object_refs') {
     data = assoc('object_refs', objectRefsToStix([{ node: extra.to }]), data);
-  } else if (relationEmbedded.relationship_type === 'observable_refs') {
+  } else if (relationEmbedded.entity_type === 'observable_refs') {
     data = assoc('object_refs', objectRefsToStix([{ node: extra.to }]), data);
-  } else if (relationEmbedded.relationship_type === 'tagged') {
+  } else if (relationEmbedded.entity_type === 'tagged') {
     data = assoc('x_opencti_tags', tagsToStix([{ node: extra.to }]), data);
   }
   return data;
@@ -556,35 +571,40 @@ export const convertDataToStix = async (data, eventType = null, eventExtraData =
   }
   const onlyBase = eventType === 'delete';
   switch (entityType) {
-    case 'marking-definition':
+    case ENTITY_TYPE_MARKING:
       return markingDefinitionToStix(data, onlyBase);
-    case 'attack-pattern':
+    case ENTITY_TYPE_ATTACK_PATTERN:
       return attackPatternToStix(data, onlyBase);
-    case 'campaign':
+    case ENTITY_TYPE_CAMPAIGN:
       return campaignToStix(data, onlyBase);
-    case 'course-of-action':
+    case ENTITY_TYPE_COURSE:
       return courseOfActionToStix(data, onlyBase);
-    case 'identity':
+    case ENTITY_TYPE_CITY:
+    case ENTITY_TYPE_COUNTRY:
+    case ENTITY_TYPE_USER:
+    case ENTITY_TYPE_ORGANIZATION:
+    case ENTITY_TYPE_REGION:
+    case ENTITY_TYPE_SECTOR:
       return identityToStix(data, onlyBase);
-    case 'incident':
+    case ENTITY_TYPE_INCIDENT:
       return incidentToStix(data, onlyBase);
-    case 'indicator':
+    case ENTITY_TYPE_INDICATOR:
       return indicatorToStix(data, onlyBase);
-    case 'intrusion-set':
+    case ENTITY_TYPE_INTRUSION:
       return intrusionSetToStix(data, onlyBase);
-    case 'malware':
+    case ENTITY_TYPE_MALWARE:
       return malwareToStix(data, onlyBase);
-    case 'note':
+    case ENTITY_TYPE_NOTE:
       return noteToStix(data, onlyBase);
-    case 'opinion':
+    case ENTITY_TYPE_OPINION:
       return opinionToStix(data, onlyBase);
-    case 'report':
+    case ENTITY_TYPE_REPORT:
       return reportToStix(data, onlyBase);
-    case 'threat-actor':
+    case ENTITY_TYPE_THREAT_ACTOR:
       return threatActorToStix(data, onlyBase);
-    case 'tool':
+    case ENTITY_TYPE_TOOL:
       return toolToStix(data, onlyBase);
-    case 'vulnerability':
+    case ENTITY_TYPE_VULN:
       return vulnerabilityToStix(data, onlyBase);
     case 'stix_observable':
       return stixObservableToStix(data, onlyBase);
@@ -597,6 +617,6 @@ export const convertDataToStix = async (data, eventType = null, eventExtraData =
     /* istanbul ignore next */
     default:
       /* istanbul ignore next */
-      throw FunctionalError('Entity type is unknown, cannot convert to STIX');
+      throw FunctionalError(`Entity type ${entityType} is unknown, cannot convert to STIX`);
   }
 };

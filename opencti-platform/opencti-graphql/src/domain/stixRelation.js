@@ -1,29 +1,26 @@
-import { pipe, assoc, dissoc, includes, propOr } from 'ramda';
+import { assoc, dissoc, propOr } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteRelationById,
   executeWrite,
   getRelationInferredById,
+  internalLoadEntityById,
   listRelations,
-  loadEntityById,
   loadRelationById,
-  loadRelationByStixId,
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
 import { elCount } from '../database/elasticSearch';
 import { INDEX_STIX_RELATIONS } from '../database/utils';
+import { isStixId, isStandardId, isStixRelation } from '../utils/idGenerator';
 
 export const findAll = async (args) => {
   return listRelations(propOr('stix_relation', 'relationType', args), args);
 };
 export const findById = (stixRelationId) => {
-  if (stixRelationId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadRelationByStixId(stixRelationId, 'stix_relation');
-  }
-  if (stixRelationId.length !== 36) {
+  if (!isStixId(stixRelationId) && !isStandardId(stixRelationId)) {
     return getRelationInferredById(stixRelationId);
   }
   return loadRelationById(stixRelationId, 'stix_relation');
@@ -44,15 +41,12 @@ export const stixRelationsNumber = (args) => {
 
 // region mutations
 export const addStixRelation = async (user, stixRelation, reversedReturn = false) => {
-  if (!includes('stix_id_key', Object.keys(stixRelation)) && !stixRelation.relationship_type) {
-    throw ForbiddenAccess();
-  }
   // We force the created by ref if not specified
   let input = stixRelation;
   if (!stixRelation.createdByRef) {
     input = assoc('createdByRef', user.id, stixRelation);
   }
-  const created = await createRelation(user, stixRelation.fromId, input, { reversedReturn });
+  const created = await createRelation(user, input, { reversedReturn });
   return notify(BUS_TOPICS.StixRelation.ADDED_TOPIC, created, user);
 };
 export const stixRelationDelete = async (user, stixRelationId) => {
@@ -67,11 +61,12 @@ export const stixRelationEditField = (user, stixRelationId, input) => {
   });
 };
 export const stixRelationAddRelation = async (user, stixRelationId, input) => {
-  const data = await loadEntityById(stixRelationId, 'stix_relation');
-  if (!data.parent_types.includes('stix_relation') || !input.through) {
+  const data = await internalLoadEntityById(stixRelationId);
+  if (!isStixRelation(data.type) || !input.through) {
     throw ForbiddenAccess();
   }
-  return createRelation(user, stixRelationId, input).then((relationData) => {
+  const finalInput = assoc('fromId', stixRelationId, input);
+  return createRelation(user, finalInput).then((relationData) => {
     notify(BUS_TOPICS.StixRelation.EDIT_TOPIC, relationData, user);
     return relationData;
   });

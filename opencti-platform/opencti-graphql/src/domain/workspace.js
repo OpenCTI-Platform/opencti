@@ -18,14 +18,14 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { findAll as findAllStixDomains } from './stixDomainEntity';
 import { ForbiddenAccess } from '../config/errors';
-import { TYPE_OPENCTI_INTERNAL } from '../database/utils';
+import { ENTITY_TYPE_WORKSPACE } from '../utils/idGenerator';
 
 // region grakn fetch
 export const findById = (workspaceId) => {
-  return loadEntityById(workspaceId, 'Workspace');
+  return loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE);
 };
 export const findAll = (args) => {
-  return listEntities(['Workspace'], ['name', 'description'], args);
+  return listEntities([ENTITY_TYPE_WORKSPACE], ['name', 'description'], args);
 };
 export const ownedBy = (workspaceId) => {
   return loadWithConnectedRelations(
@@ -48,11 +48,11 @@ export const objectRefs = (workspaceId, args) => {
 export const workspacesNumber = (args) => {
   return {
     count: getSingleValueNumber(
-      `match $x isa Workspace; ${
+      `match $x isa ${ENTITY_TYPE_WORKSPACE}; ${
         args.endDate ? `$x has created_at $date; $date < ${prepareDate(args.endDate)};` : ''
       } get; count;`
     ),
-    total: getSingleValueNumber(`match $x isa Workspace; get; count;`),
+    total: getSingleValueNumber(`match $x isa ${ENTITY_TYPE_WORKSPACE}; get; count;`),
   };
 };
 // endregion
@@ -60,19 +60,17 @@ export const workspacesNumber = (args) => {
 // region mutations
 export const addWorkspace = async (user, workspace) => {
   const workspaceToCreate = assoc('createdByOwner', user.id, workspace);
-  const created = await createEntity(user, workspaceToCreate, 'Workspace', {
-    modelType: TYPE_OPENCTI_INTERNAL,
+  const created = await createEntity(user, workspaceToCreate, ENTITY_TYPE_WORKSPACE, {
     noLog: true,
   });
   return notify(BUS_TOPICS.Workspace.ADDED_TOPIC, created, user);
 };
-export const workspaceDelete = (user, workspaceId) => deleteEntityById(user, workspaceId, 'Workspace', { noLog: true });
+export const workspaceDelete = (user, workspaceId) =>
+  deleteEntityById(user, workspaceId, ENTITY_TYPE_WORKSPACE, { noLog: true });
 export const workspaceAddRelation = (user, workspaceId, input) => {
-  if (!input.through) {
-    throw ForbiddenAccess();
-  }
-  const finalInput = assoc('fromType', 'Workspace', input);
-  return createRelation(user, workspaceId, finalInput, { noLog: true }).then((relationData) => {
+  if (!input.through) throw ForbiddenAccess();
+  const finalInput = pipe(assoc('fromId', workspaceId), assoc('fromType', ENTITY_TYPE_WORKSPACE))(input);
+  return createRelation(user, finalInput, { noLog: true }).then((relationData) => {
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, relationData, user);
     return relationData;
   });
@@ -83,7 +81,7 @@ export const workspaceAddRelations = async (user, workspaceId, input) => {
   }
   const finalInputs = map(
     (n) => ({
-      fromType: 'Workspace',
+      fromType: ENTITY_TYPE_WORKSPACE,
       fromRole: input.fromRole,
       toId: n,
       toRole: input.toRole,
@@ -92,21 +90,21 @@ export const workspaceAddRelations = async (user, workspaceId, input) => {
     input.toIds
   );
   await createRelations(user, workspaceId, finalInputs);
-  return loadEntityById(workspaceId, 'Workspace').then((workspace) =>
+  return loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE).then((workspace) =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
   );
 };
 export const workspaceEditField = (user, workspaceId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(user, workspaceId, 'Workspace', input, wTx, { noLog: true });
+    return updateAttribute(user, workspaceId, ENTITY_TYPE_WORKSPACE, input, wTx, { noLog: true });
   }).then(async () => {
-    const workspace = await loadEntityById(workspaceId, 'Workspace');
+    const workspace = await loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE);
     return notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user);
   });
 };
 export const workspaceDeleteRelation = async (user, workspaceId, relationId) => {
   await deleteRelationById(user, relationId, 'stix_relation');
-  const data = await loadEntityById(workspaceId, 'Workspace');
+  const data = await loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE);
   return notify(BUS_TOPICS.Workspace.EDIT_TOPIC, data, user);
 };
 // endregion
@@ -114,13 +112,13 @@ export const workspaceDeleteRelation = async (user, workspaceId, relationId) => 
 // region context
 export const workspaceCleanContext = (user, workspaceId) => {
   delEditContext(user, workspaceId);
-  return loadEntityById(workspaceId, 'Workspace').then((workspace) =>
+  return loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE).then((workspace) =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
   );
 };
 export const workspaceEditContext = (user, workspaceId, input) => {
   setEditContext(user, workspaceId, input);
-  return loadEntityById(workspaceId, 'Workspace').then((workspace) =>
+  return loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE).then((workspace) =>
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
   );
 };

@@ -1,6 +1,6 @@
 // Admin user initialization
 import { logger } from './config/conf';
-import { elCreateIndexes, elIsAlive } from './database/elasticSearch';
+import { elCreateIndexes, elDeleteIndexes, elIsAlive } from './database/elasticSearch';
 import { graknIsAlive, internalDirectWrite, executeRead } from './database/grakn';
 import applyMigration from './database/migration';
 import { initializeAdminUser } from './config/providers';
@@ -13,6 +13,7 @@ import { addCapability, addRole } from './domain/grant';
 import { addAttribute } from './domain/attribute';
 import { checkPythonStix2 } from './python/pythonBridge';
 import { redisIsAlive } from './database/redis';
+import { OPENCTI_PLATFORM_UUID } from './utils/idGenerator';
 
 // noinspection NodeJsCodingAssistanceForCoreModules
 const fs = require('fs');
@@ -103,14 +104,16 @@ const checkSystemDependencies = async () => {
 };
 
 // Initialize
-const initializeSchema = async () => {
+const initializeSchema = async (purgeIndex = false) => {
   // Inject grakn schema
   const schema = fs.readFileSync('./src/opencti.gql', 'utf8');
   await internalDirectWrite(schema);
   logger.info(`[INIT] > Grakn schema loaded`);
   // Create default indexes
   // TODO To remove with https://github.com/OpenCTI-Platform/opencti/issues/673
-  // await elDeleteIndexes();
+  if (purgeIndex) {
+    await elDeleteIndexes();
+  }
   await elCreateIndexes();
   logger.info(`[INIT] > Elasticsearch indexes loaded`);
   return true;
@@ -190,6 +193,7 @@ const initializeDefaultValues = async () => {
   logger.info(`[INIT] > Initialization of settings and basic elements`);
   // Create default elements
   await addSettings(SYSTEM_USER, {
+    internal_id_key: OPENCTI_PLATFORM_UUID,
     platform_title: 'Cyber threat intelligence platform',
     platform_email: 'admin@opencti.io',
     platform_url: '',
@@ -220,13 +224,13 @@ const platformInit = async (noMigration = false) => {
   const needToBeInitialized = await isEmptyPlatform();
   if (needToBeInitialized) {
     logger.info(`[INIT] > New platform detected, initialization...`);
-    await initializeSchema();
+    await initializeSchema(true);
     await initializeData();
     await initializeAdminUser();
   } else {
     logger.info('[INIT] > Existing platform detected, migration...');
     // TODO To remove with https://github.com/OpenCTI-Platform/opencti/issues/673
-    await initializeSchema();
+    await initializeSchema(false);
     // Always reset the admin user
     await initializeAdminUser();
     if (!noMigration) {

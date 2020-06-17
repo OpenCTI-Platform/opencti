@@ -9,7 +9,7 @@ export const up = async (next) => {
     await Promise.all(
       tail(result).map((migrationStatusEntity) => {
         const migrationStatus = migrationStatusEntity.x;
-        const deleteQuery = `match $x id ${migrationStatus.grakn_id}; $z($x, $y); delete $z, $x;`;
+        const deleteQuery = `match $x isa thing; $x has internal_id_key "${migrationStatus.internal_id_key}"; $z($x, $y); delete $z, $x;`;
         logger.info(`[MIGRATION] delete_extra_migration_status`, { query: deleteQuery });
         return internalDirectWrite(deleteQuery);
       })

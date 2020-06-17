@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
 import { v5 as uuid5 } from 'uuid';
 import { queryAsAdmin } from '../../utils/testQuery';
+import { OPENCTI_NAMESPACE } from '../../../src/utils/idGenerator';
 
 const LIST_QUERY = gql`
   query roles($first: Int, $after: ID, $orderBy: RolesOrdering, $orderMode: OrderingMode, $search: String) {
@@ -154,7 +155,7 @@ describe('Role resolver standard behavior', () => {
         id: roleInternalId,
         input: {
           fromRole: 'position',
-          toId: uuid5('KNOWLEDGE', uuid5.DNS),
+          toId: uuid5('KNOWLEDGE', OPENCTI_NAMESPACE),
           toRole: 'capability',
           through: 'role_capability',
         },

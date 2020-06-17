@@ -6,25 +6,22 @@ import {
   escapeString,
   executeWrite,
   getRelationInferredById,
-  getSingleValueNumber,
+  getSingleValueNumber, internalLoadEntityById,
   listRelations,
   loadEntityById,
   loadRelationById,
-  loadRelationByStixId,
   prepareDate,
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
+import {isStandardId, isStixId, RELATION_SIGHTING} from '../utils/idGenerator';
 
 export const findAll = async (args) => {
   return listRelations('stix_sighting', args);
 };
 export const findById = (stixSightingId) => {
-  if (stixSightingId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadRelationByStixId(stixSightingId, 'stix_sighting');
-  }
-  if (stixSightingId.length !== 36) {
+  if (!isStixId(stixSightingId) && !isStandardId(stixSightingId)) {
     return getRelationInferredById(stixSightingId);
   }
   return loadRelationById(stixSightingId, 'stix_sighting');
@@ -50,10 +47,10 @@ export const addstixSighting = async (user, stixSighting, reversedReturn = false
   const finalStixSighting = pipe(
     assoc('relationship_type', 'stix_sighting'),
     assoc('fromRole', 'so'),
-    assoc('toRole', 'sighted_in'),
-    assoc('toId', stixSighting.toId ? stixSighting.toId : user.id)
+    assoc('toId', stixSighting.toId ? stixSighting.toId : user.id),
+    assoc('toRole', 'sighted_in')
   )(stixSighting);
-  const created = await createRelation(user, stixSighting.fromId, finalStixSighting, {
+  const created = await createRelation(user, finalStixSighting, {
     reversedReturn,
     isStixSighting: true,
   });
@@ -71,11 +68,12 @@ export const stixSightingEditField = (user, stixSightingId, input) => {
   });
 };
 export const stixSightingAddRelation = async (user, stixSightingId, input) => {
-  const data = await loadEntityById(stixSightingId, 'stix_sighting');
-  if (!data.parent_types.includes('stix_sighting') || !input.through) {
+  const data = await internalLoadEntityById(stixSightingId);
+  if (data.type !== RELATION_SIGHTING || !input.through) {
     throw ForbiddenAccess();
   }
-  return createRelation(user, stixSightingId, input).then((relationData) => {
+  const finalInput = assoc('fromId', stixSightingId, input);
+  return createRelation(user, finalInput).then((relationData) => {
     notify(BUS_TOPICS.StixSighting.EDIT_TOPIC, relationData, user);
     return relationData;
   });

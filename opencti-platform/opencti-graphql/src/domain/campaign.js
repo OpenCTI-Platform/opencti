@@ -1,19 +1,10 @@
 import { assoc, pipe } from 'ramda';
-import {
-  createEntity,
-  listEntities,
-  loadEntityById,
-  loadEntityByStixId,
-  now,
-  timeSeriesEntities,
-} from '../database/grakn';
+import { createEntity, listEntities, loadEntityById, now, timeSeriesEntities } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
+import { ENTITY_TYPE_CAMPAIGN } from '../utils/idGenerator';
 
 export const findById = (campaignId) => {
-  if (campaignId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(campaignId, 'Campaign');
-  }
   return loadEntityById(campaignId, 'Campaign');
 };
 export const findAll = (args) => {
@@ -36,6 +27,6 @@ export const addCampaign = async (user, campaign) => {
     assoc('first_seen', campaign.first_seen ? campaign.first_seen : currentDate),
     assoc('last_seen', campaign.first_seen ? campaign.first_seen : currentDate)
   )(campaign);
-  const created = await createEntity(user, campaignToCreate, 'Campaign');
+  const created = await createEntity(user, campaignToCreate, ENTITY_TYPE_CAMPAIGN);
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };

@@ -11,7 +11,7 @@ import {
 } from '../domain/stixObservableRelation';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { loadByGraknId } from '../database/grakn';
+import { loadById } from '../database/grakn';
 
 const stixObservableRelationResolvers = {
   Query: {
@@ -24,8 +24,8 @@ const stixObservableRelationResolvers = {
     },
   },
   StixObservableRelation: {
-    from: (rel) => loadByGraknId(rel.fromId),
-    to: (rel) => loadByGraknId(rel.toId),
+    from: (rel) => loadById(rel.fromId, rel.fromType),
+    to: (rel) => loadById(rel.toId, rel.toType),
   },
   Mutation: {
     stixObservableRelationEdit: (_, { id }, { user }) => ({

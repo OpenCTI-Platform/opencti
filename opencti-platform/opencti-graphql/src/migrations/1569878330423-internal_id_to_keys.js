@@ -1,9 +1,9 @@
 import { v4 as uuid } from 'uuid';
 import { assoc, pipe, splitEvery } from 'ramda';
-import { attributeExists, conceptTypes, executeWrite, loadEntityByGraknId } from '../database/grakn';
+import { attributeExists, executeWrite, loadEntityById } from '../database/grakn';
 import { logger } from '../config/conf';
 import { elIndex } from '../database/elasticSearch';
-import { inferIndexFromConceptTypes } from '../database/utils';
+import { inferIndexFromConceptType } from '../database/utils';
 
 export const up = async (next) => {
   logger.info(
@@ -49,8 +49,9 @@ export const up = async (next) => {
             const actionsToDo = await Promise.all(
               answers2.map(async (answer) => {
                 const concept = await answer.map().get('x');
-                const types = await conceptTypes(concept);
-                const getIndex = inferIndexFromConceptTypes(types);
+                const remoteConceptType = await concept.type();
+                const conceptType = await remoteConceptType.label();
+                const getIndex = inferIndexFromConceptType(conceptType);
                 const conceptId = await concept.id;
                 let entityInternalId = await answer.map().get('s').value();
                 if (internalIds.includes(entityInternalId)) {
@@ -61,14 +62,13 @@ export const up = async (next) => {
                 }
                 internalIds.push(entityInternalId);
                 const graknQuery = `match $x id ${conceptId}; insert $x has internal_id_key "${entityInternalId}";`;
-                let elasticQuery = null;
                 // elReindex if necessary
-                const attributes = await loadEntityByGraknId(concept.id);
+                const attributes = await loadEntityById(entityInternalId);
                 const finalAttributes = pipe(
                   assoc('id', entityInternalId),
                   assoc('internal_id_key', entityInternalId)
                 )(attributes);
-                elasticQuery = { index: getIndex, data: finalAttributes };
+                const elasticQuery = { index: getIndex, data: finalAttributes };
                 return { id: entityInternalId, graknQuery, elasticQuery };
               })
             );

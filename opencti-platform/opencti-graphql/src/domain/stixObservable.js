@@ -20,7 +20,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { elCount } from '../database/elasticSearch';
-import { buildPagination, TYPE_STIX_OBSERVABLE } from '../database/utils';
+import {buildPagination, INDEX_STIX_OBSERVABLE} from '../database/utils';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { addIndicator } from './indicator';
@@ -46,8 +46,8 @@ export const findAll = async (args) => {
 
 // region by elastic
 export const stixObservablesNumber = (args) => ({
-  count: elCount('stix_observables', args),
-  total: elCount('stix_observables', dissoc('endDate', args)),
+  count: elCount(INDEX_STIX_OBSERVABLE, args),
+  total: elCount(INDEX_STIX_OBSERVABLE, dissoc('endDate', args)),
 });
 // endregion
 
@@ -102,10 +102,7 @@ export const addStixObservable = async (user, stixObservable) => {
     dissoc('type'),
     dissoc('createIndicator')
   )(stixObservable);
-  const created = await createEntity(user, observableToCreate, innerType, {
-    modelType: TYPE_STIX_OBSERVABLE,
-    stixIdType: 'observable',
-  });
+  const created = await createEntity(user, observableToCreate, innerType);
   await askEnrich(created.id, innerType);
   // create the linked indicator
   if (stixObservable.createIndicator) {
@@ -141,11 +138,9 @@ export const stixObservableDelete = async (user, stixObservableId) => {
   return deleteEntityById(user, stixObservableId, 'Stix-Observable');
 };
 export const stixObservableAddRelation = (user, stixObservableId, input) => {
-  if (!input.through) {
-    throw ForbiddenAccess();
-  }
-  const finalInput = assoc('fromType', 'Stix-Observable', input);
-  return createRelation(user, stixObservableId, finalInput).then((relationData) => {
+  if (!input.through) throw ForbiddenAccess();
+  const finalInput = pipe(assoc('fromId', stixObservableId), assoc('fromType', 'Stix-Observable'))(input);
+  return createRelation(user, finalInput).then((relationData) => {
     notify(BUS_TOPICS.StixObservable.EDIT_TOPIC, relationData, user);
     return relationData;
   });
@@ -187,7 +182,7 @@ export const stixObservableDeleteRelation = async (
   }
   if (relationId) {
     const data = await loadRelationById(relationId, 'relation');
-    if (data.fromId !== stixObservable.grakn_id) {
+    if (data.fromId !== stixObservable.internal_id_key) {
       throw ForbiddenAccess();
     }
     await deleteRelationById(user, relationId, 'relation');

@@ -1,19 +1,22 @@
-import { head, includes, last, mapObjIndexed, pipe, values, join } from 'ramda';
+import { head, last, mapObjIndexed, pipe, values, join } from 'ramda';
 import { offsetToCursor } from 'graphql-relay';
 import moment from 'moment';
+import {
+  isInternalEntity,
+  isInternalRelation, isObservableRelation,
+  isStixElement,
+  isStixObservable,
+  isStixRelation,
+} from '../utils/idGenerator';
+import { DatabaseError } from '../config/errors';
 
-export const INDEX_STIX_OBSERVABLE = 'stix_observables';
-export const INDEX_STIX_ENTITIES = 'stix_domain_entities_v2';
-export const INDEX_STIX_RELATIONS = 'stix_relations';
+export const INDEX_STIX_OBSERVABLE = 'opencti_stix_observables';
+export const INDEX_STIX_ENTITIES = 'opencti_stix_entities';
+export const INDEX_STIX_RELATIONS = 'opencti_stix_relations';
+export const INDEX_INTERNAL_ENTITIES = 'opencti_internal_entities';
+export const INDEX_INTERNAL_RELATIONS = 'opencti_internal_relations';
 
-export const TYPE_OPENCTI_INTERNAL = 'Internal';
-export const TYPE_STIX_DOMAIN_ENTITY = 'Stix-Domain-Entity';
-export const TYPE_STIX_OBSERVABLE = 'Stix-Observable';
-export const TYPE_STIX_RELATION = 'stix_relation';
-export const TYPE_STIX_SIGHTING = 'stix_sighting';
-export const TYPE_STIX_OBSERVABLE_RELATION = 'stix_observable_relation';
-export const TYPE_RELATION_EMBEDDED = 'relation_embedded';
-export const TYPE_STIX_RELATION_EMBEDDED = 'stix_relation_embedded';
+export const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const utcDate = (date = undefined) => (date ? moment(date).utc() : moment().utc());
 
@@ -80,19 +83,20 @@ export const buildPagination = (first, offset, instances, globalCount) => {
   return { edges, pageInfo };
 };
 
-export const inferIndexFromConceptTypes = (types, parentType = null) => {
-  // Observable index
-  if (includes(TYPE_STIX_OBSERVABLE, types) || parentType === TYPE_STIX_OBSERVABLE) return INDEX_STIX_OBSERVABLE;
-  // Relation index
-  if (includes(TYPE_STIX_RELATION, types) || parentType === TYPE_STIX_RELATION) return INDEX_STIX_RELATIONS;
-  if (includes(TYPE_STIX_SIGHTING, types) || parentType === TYPE_STIX_SIGHTING) return INDEX_STIX_RELATIONS;
-  if (includes(TYPE_STIX_OBSERVABLE_RELATION, types) || parentType === TYPE_STIX_OBSERVABLE_RELATION)
-    return INDEX_STIX_RELATIONS;
-  if (includes(TYPE_STIX_RELATION_EMBEDDED, types) || parentType === TYPE_STIX_RELATION_EMBEDDED)
-    return INDEX_STIX_RELATIONS;
-  if (includes(TYPE_RELATION_EMBEDDED, types) || parentType === TYPE_RELATION_EMBEDDED) return INDEX_STIX_RELATIONS;
-  // Everything else in entities index
-  return INDEX_STIX_ENTITIES;
+export const inferIndexFromConceptType = (conceptType) => {
+  // Entities
+  if (isStixElement(conceptType)) return INDEX_STIX_ENTITIES;
+  if (isStixObservable(conceptType)) return INDEX_STIX_OBSERVABLE;
+  if (isInternalEntity(conceptType)) return INDEX_INTERNAL_ENTITIES;
+  // Relations
+  if (isStixRelation(conceptType)) return INDEX_STIX_RELATIONS;
+  if (isObservableRelation(conceptType)) return INDEX_STIX_RELATIONS;
+  if (isInternalRelation(conceptType)) return INDEX_INTERNAL_RELATIONS;
+  throw DatabaseError(`Cant find index for type ${conceptType}`);
+};
+
+export const isIndexable = (type) => {
+  return inferIndexFromConceptType(type) !== null;
 };
 
 const extractEntityMainValue = (entityData) => {
@@ -130,7 +134,7 @@ export const generateLogMessage = (eventType, eventUser, eventData, eventExtraDa
   if (eventExtraData && eventExtraData.to) {
     toValue = extractEntityMainValue(eventExtraData.to);
     toType = eventExtraData.to.entity_type;
-    toRelationType = eventExtraData.to.relationship_type;
+    toRelationType = eventExtraData.to.entity_type;
   }
   const name = extractEntityMainValue(eventData);
   let message = '';
@@ -145,11 +149,11 @@ export const generateLogMessage = (eventType, eventUser, eventData, eventExtraDa
   } else if (eventType === 'delete') {
     message += 'deleted the ';
   }
-  if (eventData.relationship_type && eventData.entity_type !== 'relation_embedded') {
-    message += `relation \`${eventData.relationship_type}\` from ${fromType} \`${fromValue}\` to ${toType} \`${toValue}\`.`;
-  } else if (eventData.entity_type === 'relation_embedded') {
+  if (isStixRelation(eventData.entity_type)) {
+    message += `relation \`${eventData.entity_type}\` from ${fromType} \`${fromValue}\` to ${toType} \`${toValue}\`.`;
+  } else if (isInternalRelation(eventData.entity_type)) {
     if (eventType === 'update') {
-      message += `\`${eventData.relationship_type}\` with the value \`${toValue}\`.`;
+      message += `\`${eventData.entity_type}\` with the value \`${toValue}\`.`;
     } else if (toType === 'stix_relation') {
       message += `relation \`${toRelationType}\`${toValue ? `with value \`${toValue}\`` : ''}.`;
     } else {

@@ -8,65 +8,65 @@ import {
   executeWrite,
   listEntities,
   loadEntityById,
-  TYPE_STIX_DOMAIN,
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
+import {ENTITY_TYPE_KILL_CHAIN} from "../utils/idGenerator";
 
 export const findById = (killChainPhaseId) => {
-  return loadEntityById(killChainPhaseId, 'Kill-Chain-Phase');
+  return loadEntityById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN);
 };
 
 export const findAll = (args) => {
-  return listEntities(['Kill-Chain-Phase'], ['kill_chain_name', 'phase_name'], args);
+  return listEntities([ENTITY_TYPE_KILL_CHAIN], ['kill_chain_name', 'phase_name'], args);
 };
 
 export const addKillChainPhase = async (user, killChainPhase) => {
-  const killChainPhaseToCreate = assoc(
-    'phase_order',
-    killChainPhase.phase_order ? killChainPhase.phase_order : 0,
-    killChainPhase
-  );
-  const created = await createEntity(user, killChainPhaseToCreate, 'Kill-Chain-Phase', {
-    modelType: TYPE_STIX_DOMAIN,
+  const phaseOrder = killChainPhase.phase_order ? killChainPhase.phase_order : 0;
+  const killChainPhaseToCreate = assoc('phase_order', phaseOrder, killChainPhase);
+  const created = await createEntity(user, killChainPhaseToCreate, ENTITY_TYPE_KILL_CHAIN, {
     noLog: true,
   });
   return notify(BUS_TOPICS.KillChainPhase.ADDED_TOPIC, created, user);
 };
 
 export const killChainPhaseDelete = (user, killChainPhaseId) => {
-  return deleteEntityById(user, killChainPhaseId, 'Kill-Chain-Phase', { noLog: true });
+  return deleteEntityById(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN, { noLog: true });
 };
 export const killChainPhaseAddRelation = (user, killChainPhaseId, input) => {
-  const finalInput = pipe(assoc('through', 'kill_chain_phases'), assoc('toType', 'kill_chain_phases'))(input);
-  return createRelation(user, killChainPhaseId, finalInput).then((relationData) => {
+  const finalInput = pipe(
+    assoc('fromId', killChainPhaseId),
+    assoc('through', 'kill_chain_phases'),
+    assoc('toType', ENTITY_TYPE_KILL_CHAIN) // TODO @SAM CHECK?
+  )(input);
+  return createRelation(user, finalInput).then((relationData) => {
     notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
 export const killChainPhaseDeleteRelation = async (user, killChainPhaseId, relationId) => {
   await deleteRelationById(user, relationId, 'stix_relation_embedded');
-  const data = await loadEntityById(killChainPhaseId, 'Kill-Chain-Phase');
+  const data = await loadEntityById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN);
   return notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, data, user);
 };
 export const killChainPhaseEditField = (user, killChainPhaseId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(user, killChainPhaseId, 'Kill-Chain-Phase', input, wTx, { noLog: true });
+    return updateAttribute(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN, input, wTx, { noLog: true });
   }).then(async () => {
-    const killChainPhase = await loadEntityById(killChainPhaseId, 'Kill-Chain-Phase');
+    const killChainPhase = await loadEntityById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN);
     return notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase, user);
   });
 };
 
 export const killChainPhaseCleanContext = (user, killChainPhaseId) => {
   delEditContext(user, killChainPhaseId);
-  return loadEntityById(killChainPhaseId, 'Kill-Chain-Phase').then((killChainPhase) =>
+  return loadEntityById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN).then((killChainPhase) =>
     notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase, user)
   );
 };
 export const killChainPhaseEditContext = (user, killChainPhaseId, input) => {
   setEditContext(user, killChainPhaseId, input);
-  return loadEntityById(killChainPhaseId, 'Kill-Chain-Phase').then((killChainPhase) =>
+  return loadEntityById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN).then((killChainPhase) =>
     notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase, user)
   );
 };

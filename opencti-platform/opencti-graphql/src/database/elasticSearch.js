@@ -23,14 +23,17 @@ import {
 } from 'ramda';
 import {
   buildPagination,
+  INDEX_INTERNAL_ENTITIES,
+  INDEX_INTERNAL_RELATIONS,
   INDEX_STIX_ENTITIES,
   INDEX_STIX_OBSERVABLE,
   INDEX_STIX_RELATIONS,
-  inferIndexFromConceptTypes,
+  inferIndexFromConceptType,
 } from './utils';
 import conf, { logger } from '../config/conf';
 import { resolveNaturalRoles } from './graknRoles';
 import { ConfigurationError, DatabaseError, FunctionalError } from '../config/errors';
+import { BASE_TYPE_RELATION } from '../utils/idGenerator';
 
 const dateFields = [
   'created',
@@ -90,12 +93,24 @@ export const PLATFORM_INDICES = [
   INDEX_STIX_ENTITIES,
   INDEX_STIX_RELATIONS,
   INDEX_STIX_OBSERVABLE,
+  INDEX_INTERNAL_ENTITIES,
+  INDEX_INTERNAL_RELATIONS,
   INDEX_WORK_JOBS,
   INDEX_LOGS,
 ];
-export const KNOWLEDGE_INDICES = [INDEX_STIX_ENTITIES, INDEX_STIX_RELATIONS, INDEX_STIX_OBSERVABLE, INDEX_WORK_JOBS];
+export const KNOWLEDGE_INDICES = [
+  INDEX_STIX_ENTITIES,
+  INDEX_STIX_RELATIONS,
+  INDEX_STIX_OBSERVABLE,
+  INDEX_INTERNAL_ENTITIES,
+  INDEX_INTERNAL_RELATIONS,
+  INDEX_WORK_JOBS,
+];
 
-export const forceNoCache = () => conf.get('elasticsearch:noQueryCache') || false;
+export const useCache = (args = {}) => {
+  const { noCache = false } = args;
+  return !noCache && !conf.get('elasticsearch:noQueryCache');
+};
 export const el = new Client({ node: conf.get('elasticsearch:url') });
 
 export const elIsAlive = async () => {
@@ -251,10 +266,7 @@ export const elCount = (indexName, options = {}) => {
     const should = types.map((typeValue) => {
       return {
         bool: {
-          should: [
-            { match_phrase: { 'entity_type.keyword': typeValue } },
-            { match_phrase: { 'parent_types.keyword': typeValue } },
-          ],
+          should: [{ match_phrase: { 'entity_type.keyword': typeValue } }],
           minimum_should_match: 1,
         },
       };
@@ -339,10 +351,7 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
       query: {
         bool: {
           must: concat(dateFilter, histoFilters),
-          should: [
-            { match_phrase: { 'entity_type.keyword': type } },
-            { match_phrase: { 'parent_types.keyword': type } },
-          ],
+          should: [{ match_phrase: { 'entity_type.keyword': type } }],
           minimum_should_match: 1,
         },
       },
@@ -380,7 +389,7 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) =
   });
   for (let index = 0; index < toTypes.length; index += 1) {
     filters.push({
-      match_phrase: { 'connections.types': toTypes[index] },
+      match_phrase: { 'connections.type': toTypes[index] },
     });
   }
   const query = {
@@ -390,14 +399,14 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) =
       query: {
         bool: {
           must: filters,
-          should: [{ match_phrase: { relationship_type: type } }, { match_phrase: { parent_types: type } }],
+          should: [{ match_phrase: { entity_type: type } }],
           minimum_should_match: 1,
         },
       },
       aggs: {
         genres: {
           terms: {
-            field: `connections.types.keyword`,
+            field: `connections.type.keyword`,
             size: 100,
           },
         },
@@ -464,7 +473,7 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
             [
               {
                 bool: {
-                  should: [{ match_phrase: { entity_type: type } }, { match_phrase: { parent_types: type } }],
+                  should: [{ match_phrase: { entity_type: type } }],
                   minimum_should_match: 1,
                 },
               },
@@ -507,22 +516,21 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
 const elBuildRelation = (type, connection) => {
   return {
     [type]: null,
-    [`${type}Id`]: connection.grakn_id,
-    [`${type}InternalId`]: connection.internal_id_key,
+    [`${type}Id`]: connection.internal_id_key,
     [`${type}Role`]: connection.role,
-    [`${type}Types`]: connection.types,
+    [`${type}Type`]: connection.type,
   };
 };
 const elMergeRelation = (concept, fromConnection, toConnection) => {
   if (!fromConnection || !toConnection) {
-    throw DatabaseError(`[ELASTIC] Something fail in reconstruction of the relation`, concept.grakn_id);
+    throw DatabaseError(`[ELASTIC] Something fail in reconstruction of the relation`, concept.internal_id_key);
   }
   const from = elBuildRelation('from', fromConnection);
   const to = elBuildRelation('to', toConnection);
   return mergeAll([concept, from, to]);
 };
 export const elReconstructRelation = (concept, relationsMap = null, forceNatural = false) => {
-  const naturalDirections = resolveNaturalRoles(concept.relationship_type);
+  const naturalDirections = resolveNaturalRoles(concept.entity_type);
   const bindingByAlias = invertObj(naturalDirections);
   const { connections } = concept;
   // Need to rebuild the from and the to.
@@ -623,7 +631,7 @@ export const elPaginate = async (indexName, options = {}) => {
   if (types !== null && types.length > 0) {
     const should = flatten(
       types.map((typeValue) => {
-        return [{ match_phrase: { entity_type: typeValue } }, { match_phrase: { parent_types: typeValue } }];
+        return [{ match_phrase: { entity_type: typeValue } }];
       })
     );
     must = append({ bool: { should, minimum_should_match: 1 } }, must);
@@ -691,7 +699,7 @@ export const elPaginate = async (indexName, options = {}) => {
     .then((data) => {
       const dataWithIds = map((n) => {
         const loadedElement = pipe(assoc('id', n._source.internal_id_key), assoc('_index', n._index))(n._source);
-        if (loadedElement.relationship_type) {
+        if (loadedElement.base_type === BASE_TYPE_RELATION) {
           return elReconstructRelation(loadedElement, relationsMap, forceNatural);
         }
         if (loadedElement.event_data) {
@@ -746,35 +754,58 @@ export const elLoadByTerms = async (terms, relationsMap, indices = KNOWLEDGE_IND
   const response = total === 1 ? head(data.body.hits.hits) : null;
   if (!response) return response;
   const loadedElement = assoc('_index', response._index, response._source);
-  if (loadedElement.relationship_type) {
+  if (loadedElement.base_type === BASE_TYPE_RELATION) {
+    return elReconstructRelation(loadedElement, relationsMap);
+  }
+  return loadedElement;
+};
+const elInternalLoadById = async (
+  id,
+  elementTypes = ['internal_id_key'],
+  relationsMap = null,
+  indices = KNOWLEDGE_INDICES
+) => {
+  //       must = append({ bool: { should: valuesFiltering, minimum_should_match: 1 } }, must);
+  const mustTerms = [];
+  const idsTermsPerType = map((e) => ({ [`${e}.keyword`]: id }), elementTypes);
+  const should = { bool: { should: map((term) => ({ term }), idsTermsPerType), minimum_should_match: 1 } };
+  mustTerms.push(should);
+
+  const query = {
+    index: indices,
+    _source_excludes: `${REL_INDEX_PREFIX}*`,
+    body: {
+      query: {
+        bool: {
+          must: mustTerms,
+        },
+      },
+    },
+  };
+  logger.debug(`[ELASTICSEARCH] loadByTerms`, { query });
+  const data = await el.search(query);
+  const total = data.body.hits.total.value;
+  /* istanbul ignore if */
+  if (total > 1) {
+    const errorMeta = { id, elementTypes, hits: data.body.hits.hits };
+    throw DatabaseError('Expect only one response', errorMeta);
+  }
+  const response = total === 1 ? head(data.body.hits.hits) : null;
+  if (!response) return response;
+  const loadedElement = assoc('_index', response._index, response._source);
+  if (loadedElement.base_type === BASE_TYPE_RELATION) {
     return elReconstructRelation(loadedElement, relationsMap);
   }
   return loadedElement;
 };
 // endregion
 
-export const elLoadById = (id, type = null, relationsMap = null, indices = KNOWLEDGE_INDICES) => {
-  const terms = [{ 'internal_id_key.keyword': id }];
-  if (type) {
-    terms.push({ 'parent_types.keyword': type });
-  }
-  return elLoadByTerms(terms, relationsMap, indices);
+export const elLoadById = (id, relationsMap = null, indices = KNOWLEDGE_INDICES) => {
+  return elInternalLoadById(id, ['internal_id_key'], relationsMap, indices);
 };
-export const elLoadByStixId = (id, type = null, relationsMap = null, indices = KNOWLEDGE_INDICES) => {
-  const terms = [{ 'stix_id_key.keyword': id }];
-  if (type) {
-    terms.push({ 'parent_types.keyword': type });
-  }
-  return elLoadByTerms(terms, relationsMap, indices);
+export const elLoadByStixId = (id, relationsMap = null, indices = KNOWLEDGE_INDICES) => {
+  return elInternalLoadById(id, ['stix_id_key'], relationsMap, indices);
 };
-export const elLoadByGraknId = (id, type = null, relationsMap = null, indices = KNOWLEDGE_INDICES) => {
-  const terms = [{ 'grakn_id.keyword': id }];
-  if (type) {
-    terms.push({ 'parent_types.keyword': type });
-  }
-  return elLoadByTerms(terms, relationsMap, indices);
-};
-
 export const elBulk = async (args) => {
   return el.bulk(args);
 };
@@ -804,7 +835,7 @@ export const elIndex = async (indexName, documentBody, refresh = true) => {
   await el
     .index({
       index: indexName,
-      id: documentBody.grakn_id,
+      id: documentBody.internal_id_key,
       refresh,
       timeout: '60m',
       body: dissoc('_index', documentBody),
@@ -858,24 +889,24 @@ export const elDeleteInstanceIds = async (ids, indexesToHandle = KNOWLEDGE_INDIC
 };
 export const elRemoveRelationConnection = async (relationId) => {
   const relation = await elLoadById(relationId);
-  const from = await elLoadByGraknId(relation.fromId);
-  const to = await elLoadByGraknId(relation.toId);
-  const type = `${REL_INDEX_PREFIX + relation.relationship_type}.internal_id_key`;
+  const from = await elLoadById(relation.fromId);
+  const to = await elLoadById(relation.toId);
+  const type = `${REL_INDEX_PREFIX + relation.entity_type}.internal_id_key`;
   // Update the from entity
-  await elUpdate(from._index, from.grakn_id, {
+  await elUpdate(from._index, relation.fromId, {
     script: {
       source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
       params: {
-        key: to.internal_id_key,
+        key: relation.toId,
       },
     },
   });
   // Update to to entity
-  await elUpdate(to._index, to.grakn_id, {
+  await elUpdate(to._index, relation.toId, {
     script: {
       source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
       params: {
-        key: from.internal_id_key,
+        key: relation.fromId,
       },
     },
   });
@@ -896,24 +927,25 @@ const prepareIndexing = async (elements) => {
         }
       });
       // For relation, index a list of connections.
-      if (thing.relationship_type) {
+      if (thing.base_type === BASE_TYPE_RELATION) {
         if (thing.fromRole === undefined || thing.toRole === undefined) {
-          throw DatabaseError(`[ELASTIC] Cant index relation ${thing.grakn_id} connections without from or to`, thing);
+          throw DatabaseError(
+            `[ELASTIC] Cant index relation ${thing.internal_id_key} connections without from or to`,
+            thing
+          );
         }
         const connections = [];
-        const [from, to] = await Promise.all([elLoadByGraknId(thing.fromId), elLoadByGraknId(thing.toId)]);
+        const [from, to] = await Promise.all([elLoadById(thing.fromId), elLoadById(thing.toId)]);
         connections.push({
-          grakn_id: thing.fromId,
           internal_id_key: from.internal_id_key,
           stix_id_key: from.stix_id_key,
-          types: thing.fromTypes,
+          type: thing.fromType,
           role: thing.fromRole,
         });
         connections.push({
-          grakn_id: thing.toId,
           internal_id_key: to.internal_id_key,
           stix_id_key: to.stix_id_key,
-          types: thing.toTypes,
+          type: thing.toType,
           role: thing.toRole,
         });
         return pipe(
@@ -937,18 +969,18 @@ export const elIndexElements = async (elements, retry = 5) => {
   const transformedElements = await prepareIndexing(elements);
   // 01. Bulk the indexing of row elements
   const body = transformedElements.flatMap((doc) => [
-    { index: { _index: inferIndexFromConceptTypes(doc.parent_types), _id: doc.grakn_id } },
-    dissoc('_index', doc),
+    { index: { _index: inferIndexFromConceptType(doc.entity_type), _id: doc.internal_id_key } },
+    pipe(dissoc('_index'), dissoc('grakn_id'))(doc),
   ]);
   if (body.length > 0) {
     await elBulk({ refresh: true, body });
   }
   // 02. If relation, generate impacts for from and to sides
   const impactedEntities = pipe(
-    filter((e) => e.relationship_type !== undefined),
+    filter((e) => e.base_type === BASE_TYPE_RELATION),
     map((e) => {
       const { fromRole, toRole } = e;
-      const relationshipType = e.relationship_type;
+      const relationshipType = e.entity_type;
       const impacts = [];
       // We impact target entities of the relation only if not global entities like
       // MarkingDefinition (marking) / KillChainPhase (kill_chain_phase) / Tag (tagging)
@@ -961,9 +993,9 @@ export const elIndexElements = async (elements, retry = 5) => {
   )(elements);
   const elementsToUpdate = await Promise.all(
     // For each from, generate the
-    map(async (entityGraknId) => {
-      const entity = await elLoadByGraknId(entityGraknId);
-      const targets = impactedEntities[entityGraknId];
+    map(async (entityId) => {
+      const entity = await elLoadById(entityId);
+      const targets = impactedEntities[entityId];
       // Build document fields to update ( per relation type )
       // rel_membership: [{ internal_id_key: ID, types: [] }]
       const targetsByRelation = groupBy((i) => i.relationshipType, targets);
@@ -972,7 +1004,7 @@ export const elIndexElements = async (elements, retry = 5) => {
           const data = targetsByRelation[relType];
           const resolvedData = await Promise.all(
             map(async (d) => {
-              const resolvedTarget = await elLoadByGraknId(d.to);
+              const resolvedTarget = await elLoadById(d.to);
               return resolvedTarget.internal_id_key;
             }, data)
           );
@@ -993,7 +1025,7 @@ export const elIndexElements = async (elements, retry = 5) => {
         params[`${REL_INDEX_PREFIX + targetElement.relation}.internal_id_key`] = targetElement.elements;
       }
       // eslint-disable-next-line no-underscore-dangle
-      return { _index: entity._index, id: entityGraknId, data: { script: { source, params } } };
+      return { _index: entity._index, id: entityId, data: { script: { source, params } } };
     }, Object.keys(impactedEntities))
   );
   const bodyUpdate = elementsToUpdate.flatMap((doc) => [

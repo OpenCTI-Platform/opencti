@@ -9,11 +9,12 @@ import {
   stixEntityDeleteRelation,
 } from '../domain/stixEntity';
 import { findAll as findAllStixRelations, addStixRelation, stixRelationDelete } from '../domain/stixRelation';
-import { executeWrite, loadByGraknId, updateAttribute } from '../database/grakn';
+import { executeWrite, updateAttribute } from '../database/grakn';
 import { logger } from '../config/conf';
 import { addIndicator, findAll as findAllIndicators } from '../domain/indicator';
 import { objectRefs, observableRefs } from '../domain/report';
 import { createStixPattern } from '../python/pythonBridge';
+import { elLoadById } from '../database/elasticSearch';
 
 export const up = async (next) => {
   logger.info(`[MIGRATION] split_observables_indicators > Starting the migration of all observables...`);
@@ -132,7 +133,7 @@ export const up = async (next) => {
             for (let index = 0; index < stixRelations.edges.length; index += 1) {
               const stixrelationEdge = stixRelations.edges[index];
               const stixRelation = stixrelationEdge.node;
-              const to = await loadByGraknId(stixRelation.toId);
+              const to = await elLoadById(stixRelation.toId);
               const stixRelationReports = await reports(stixRelation.id);
               const createdStixRelation = await addStixRelation(null, {
                 relationship_type: to.entity_type === 'incident' ? 'related-to' : 'indicates',

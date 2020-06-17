@@ -1,5 +1,34 @@
 import { invertObj } from 'ramda';
-import {FunctionalError} from "../config/errors";
+import { FunctionalError } from '../config/errors';
+import {
+  RELATION_ATTRIBUTED_TO,
+  RELATION_AUTHORED_BY,
+  RELATION_BELONGS,
+  RELATION_COMES_AFTER,
+  RELATION_CONTAINS,
+  RELATION_CORRESPONDS,
+  RELATION_CREATED_BY_REF,
+  RELATION_DROPS,
+  RELATION_EXTERNAL_REFERENCES,
+  RELATION_GATHERING,
+  RELATION_IMPERSONATES,
+  RELATION_INDICATES,
+  RELATION_KILL_CHAIN_PHASES,
+  RELATION_LINKED,
+  RELATION_LOCALIZATION,
+  RELATION_MITIGATES,
+  RELATION_OBJECT_MARKING_REFS,
+  RELATION_OBJECT_REFS,
+  RELATION_OBSERVABLE_REFS,
+  RELATION_OWNED_BY,
+  RELATION_RELATED_TO,
+  RELATION_RESOLVES,
+  RELATION_SIGHTING,
+  RELATION_TAGGED,
+  RELATION_TARGETS,
+  RELATION_USES,
+  RELATION_VARIANT_OF,
+} from '../utils/idGenerator';
 
 export const ROLE_FROM = 'from';
 export const ROLE_TO = 'to';
@@ -32,117 +61,117 @@ const rolesMap = {
   },
   // endregion
   // region relation_embedded
-  authored_by: {
+  [RELATION_AUTHORED_BY]: {
     so: ROLE_FROM,
     author: ROLE_TO,
   },
-  owned_by: {
+  [RELATION_OWNED_BY]: {
     so: ROLE_FROM,
     owner: ROLE_TO,
   },
-  tagged: {
+  [RELATION_TAGGED]: {
     so: ROLE_FROM,
     tagging: ROLE_TO,
   },
   // endregion
   // region stix_relation_embedded
-  created_by_ref: {
+  [RELATION_CREATED_BY_REF]: {
     so: ROLE_FROM,
     creator: ROLE_TO,
   },
-  object_marking_refs: {
+  [RELATION_OBJECT_MARKING_REFS]: {
     so: ROLE_FROM,
     marking: ROLE_TO,
   },
-  object_refs: {
+  [RELATION_OBJECT_REFS]: {
     knowledge_aggregation: ROLE_FROM,
     so: ROLE_TO,
   },
-  kill_chain_phases: {
+  [RELATION_KILL_CHAIN_PHASES]: {
     phase_belonging: ROLE_FROM,
     kill_chain_phase: ROLE_TO,
   },
-  external_references: {
+  [RELATION_EXTERNAL_REFERENCES]: {
     so: ROLE_FROM,
     external_reference: ROLE_TO,
   },
-  observable_refs: {
+  [RELATION_OBSERVABLE_REFS]: {
     observables_aggregation: ROLE_FROM,
     soo: ROLE_TO,
   },
   // endregion
   // region stix_relation
-  targets: {
+  [RELATION_TARGETS]: {
     source: ROLE_FROM,
     target: ROLE_TO,
   },
-  uses: {
+  [RELATION_USES]: {
     user: ROLE_FROM,
     usage: ROLE_TO,
   },
-  'attributed-to': {
+  [RELATION_ATTRIBUTED_TO]: {
     attribution: ROLE_FROM,
     origin: ROLE_TO,
   },
-  mitigates: {
+  [RELATION_MITIGATES]: {
     mitigation: ROLE_FROM,
     problem: ROLE_TO,
   },
-  indicates: {
+  [RELATION_INDICATES]: {
     indicator: ROLE_FROM,
     characterize: ROLE_TO,
   },
-  'comes-after': {
+  [RELATION_COMES_AFTER]: {
     coming_from: ROLE_FROM,
     coming_after: ROLE_TO,
   },
-  'variant-of': {
+  [RELATION_VARIANT_OF]: {
     variation: ROLE_FROM,
     original: ROLE_TO,
   },
-  impersonates: {
+  [RELATION_IMPERSONATES]: {
     dummy: ROLE_FROM,
     genuine: ROLE_TO,
   },
-  'related-to': {
+  [RELATION_RELATED_TO]: {
     relate_from: ROLE_FROM,
     relate_to: ROLE_TO,
   },
-  localization: {
+  [RELATION_LOCALIZATION]: {
     localized: ROLE_FROM,
     location: ROLE_TO,
   },
-  drops: {
+  [RELATION_DROPS]: {
     dropping: ROLE_FROM,
     dropped: ROLE_TO,
   },
-  gathering: {
+  [RELATION_GATHERING]: {
     part_of: ROLE_FROM,
     gather: ROLE_TO,
   },
-  stix_sighting: {
+  [RELATION_SIGHTING]: {
     so: ROLE_FROM,
     sighted_in: ROLE_TO,
   },
   // endregion
   // region stix_observable_relation
-  linked: {
+  [RELATION_LINKED]: {
     link_from: ROLE_FROM,
     link_to: ROLE_TO,
   },
-  resolves: {
+  [RELATION_RESOLVES]: {
     resolving: ROLE_FROM,
     resolved: ROLE_TO,
   },
-  belongs: {
+  [RELATION_BELONGS]: {
     belonging_to: ROLE_FROM,
     belonged_to: ROLE_TO,
   },
-  corresponds: {
+  [RELATION_CORRESPONDS]: {
     correspond_from: ROLE_FROM,
     correspond_to: ROLE_TO,
   },
-  contains: {
+  [RELATION_CONTAINS]: {
     container: ROLE_FROM,
     contained: ROLE_TO,
   },

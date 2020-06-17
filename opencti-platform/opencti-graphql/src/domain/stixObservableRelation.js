@@ -6,7 +6,6 @@ import {
   executeWrite,
   getRelationInferredById,
   loadRelationById,
-  loadRelationByStixId,
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -16,9 +15,6 @@ export const findAll = (args) =>
   stixRelationFindAll(args.relationType ? args : assoc('relationType', 'stix_observable_relation', args));
 
 export const findById = (stixObservableRelationId) => {
-  if (stixObservableRelationId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadRelationByStixId(stixObservableRelationId, 'stix_observable_relation');
-  }
   if (stixObservableRelationId.length !== 36) {
     return getRelationInferredById(stixObservableRelationId);
   }
@@ -28,7 +24,7 @@ export const findById = (stixObservableRelationId) => {
 // region mutations
 export const addStixObservableRelation = async (user, input, reversedReturn = false) => {
   const finalInput = pipe(assoc('fromType', 'Stix-Observable'), assoc('toType', 'Stix-Observable'))(input);
-  const created = await createRelation(user, finalInput.fromId, finalInput, {
+  const created = await createRelation(user, finalInput, {
     reversedReturn,
     isStixObservableRelation: true,
     noLog: true,

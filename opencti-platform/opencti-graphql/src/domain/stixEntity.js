@@ -5,7 +5,6 @@ import {
   escapeString,
   findWithConnectedRelations,
   internalLoadEntityById,
-  internalLoadEntityByStixId,
   loadWithConnectedRelations,
 } from '../database/grakn';
 import { findAll as relationFindAll } from './stixRelation';
@@ -13,24 +12,12 @@ import { buildPagination } from '../database/utils';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
+import { ENTITY_TYPE_USER, isStixElement } from '../utils/idGenerator';
 
 export const findById = async (stixEntityId) => {
-  let data;
-  if (stixEntityId.match(/[a-z-]+--[\w-]{36}/g)) {
-    data = await internalLoadEntityByStixId(stixEntityId);
-  } else {
-    data = await internalLoadEntityById(stixEntityId);
-  }
-  if (!data) {
-    return data;
-  }
-  if (
-    !data.parent_types.includes('Stix-Domain-Entity') &&
-    !data.parent_types.includes('Stix-Observable') &&
-    !data.parent_types.includes('stix_relation')
-  ) {
-    throw ForbiddenAccess();
-  }
+  let data = await internalLoadEntityById(stixEntityId);
+  if (!data) return data;
+  if (!isStixElement(data.type)) throw ForbiddenAccess();
   data = pipe(dissoc('user_email'), dissoc('password'))(data);
   return data;
 };
@@ -111,33 +98,34 @@ export const stixRelations = (stixEntityId, args) => {
 
 export const stixEntityAddRelation = async (user, stixEntityId, input) => {
   const data = await internalLoadEntityById(stixEntityId);
+  const isUser = data.entity_type === 'user';
+  const stixElement = isStixElement(data.type);
+  // TODO @JRI NEED EXPLANATION
   if (
-    (data.entity_type === 'user' &&
-      !isNil(data.external) &&
-      !['tagged', 'created_by_ref', 'object_marking_refs'].includes(input.through)) ||
-    (!data.parent_types.includes('Stix-Domain-Entity') &&
-      !data.parent_types.includes('Stix-Observable') &&
-      !data.parent_types.includes('stix_relation')) ||
+    (isUser && !isNil(data.external) && !['tagged', 'created_by_ref', 'object_marking_refs'].includes(input.through)) ||
+    !stixElement ||
     !input.through
   ) {
     throw ForbiddenAccess();
   }
-  return createRelation(user, stixEntityId, input);
+  const finalInput = assoc('fromId', stixEntityId, input);
+  return createRelation(user, finalInput);
 };
 
 export const stixEntityDeleteRelation = async (user, stixEntityId, relationId) => {
   const stixDomainEntity = await internalLoadEntityById(stixEntityId);
-  const parentTypes = stixDomainEntity.parent_types;
+  const entityType = stixDomainEntity.entity_type;
   // Check if entity is a real stix domain
-  if (!parentTypes.includes('Stix-Domain-Entity') && !parentTypes.includes('stix_relation')) {
+  if (!isStixElement(entityType)) {
     throw ForbiddenAccess();
   }
   const data = await internalLoadEntityById(relationId);
+  // TODO JRI @SAM CHECK
   if (
     (data.entity_type !== 'stix_relation' && data.entity_type !== 'relation_embedded') ||
-    (stixDomainEntity.entity_type === 'user' &&
+    (stixDomainEntity.entity_type === ENTITY_TYPE_USER &&
       !isNil(stixDomainEntity.external) &&
-      !['tagged', 'created_by_ref', 'object_marking_refs'].includes(data.relationship_type))
+      !['tagged', 'created_by_ref', 'object_marking_refs'].includes(data.entity_type))
   ) {
     throw ForbiddenAccess();
   }

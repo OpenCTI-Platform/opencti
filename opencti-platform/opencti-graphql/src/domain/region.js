@@ -5,16 +5,13 @@ import {
   getSingleValueNumber,
   listEntities,
   loadEntityById,
-  loadEntityByStixId,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { buildPagination, TYPE_STIX_DOMAIN_ENTITY } from '../database/utils';
+import { buildPagination } from '../database/utils';
+import { ENTITY_TYPE_REGION } from '../utils/idGenerator';
 
 export const findById = (regionId) => {
-  if (regionId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(regionId, 'Region');
-  }
   return loadEntityById(regionId, 'Region');
 };
 export const findAll = (args) => {
@@ -47,9 +44,6 @@ export const isSubRegion = async (regionId, args) => {
   return numberOfParents > 0;
 };
 export const addRegion = async (user, region) => {
-  const created = await createEntity(user, region, 'Region', {
-    modelType: TYPE_STIX_DOMAIN_ENTITY,
-    stixIdType: 'identity',
-  });
+  const created = await createEntity(user, region, ENTITY_TYPE_REGION);
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };

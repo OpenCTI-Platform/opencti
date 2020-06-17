@@ -2,7 +2,8 @@ import { head } from 'ramda';
 import { elPaginate, INDEX_LOGS } from '../database/elasticSearch';
 import conf from '../config/conf';
 import { amqpUri, EVENT_TYPE_CREATE } from '../database/rabbitmq';
-import { findById, OPENCTI_ADMIN_UUID, SYSTEM_USER } from './user';
+import { findById, SYSTEM_USER } from './user';
+import { OPENCTI_ADMIN_UUID } from '../utils/idGenerator';
 
 export const findAll = (args) => elPaginate(INDEX_LOGS, args);
 

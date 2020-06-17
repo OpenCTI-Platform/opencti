@@ -12,7 +12,6 @@ import {
   executeWrite,
   listEntities,
   loadEntityById,
-  loadEntityByStixId,
   loadRelationById,
   timeSeriesEntities,
   updateAttribute,
@@ -31,6 +30,7 @@ import { INDEX_STIX_ENTITIES } from '../database/utils';
 import { createdByRef, killChainPhases, markingDefinitions, reports, notes } from './stixEntity';
 import { addPerson } from './user';
 import { noteContainsStixDomainEntity } from './note';
+import { ENTITY_TYPE_USER } from '../utils/idGenerator';
 
 export const findAll = async (args) => {
   const noTypes = !args.types || args.types.length === 0;
@@ -60,15 +60,8 @@ export const findAllDuplicates = (args) => {
   return [];
 };
 export const findById = async (stixDomainEntityId) => {
-  let data;
-  if (stixDomainEntityId.match(/[a-z-]+--[\w-]{36}/g)) {
-    data = await loadEntityByStixId(stixDomainEntityId, 'Stix-Domain-Entity');
-  } else {
-    data = await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
-  }
-  if (!data) {
-    return data;
-  }
+  let data = await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
+  if (!data) return data;
   data = pipe(dissoc('user_email'), dissoc('password'))(data);
   return data;
 };
@@ -205,17 +198,12 @@ export const stixDomainEntityExportPush = async (
   return true;
 };
 export const addStixDomainEntity = async (user, stixDomainEntity) => {
-  let args = {};
   const innerType = stixDomainEntity.type;
   const domainToCreate = dissoc('type', stixDomainEntity);
-  const entityType = innerType.toLowerCase();
-  if (entityType === 'user') {
+  if (innerType === ENTITY_TYPE_USER) {
     return addPerson(user, domainToCreate);
   }
-  if (includes(entityType, ['sector', 'organization', 'user', 'region', 'country', 'city'])) {
-    args = { stixIdType: 'identity' };
-  }
-  const created = await createEntity(user, domainToCreate, innerType, args);
+  const created = await createEntity(user, domainToCreate, innerType);
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 export const stixDomainEntityDelete = async (user, stixDomainEntityId) => {
@@ -239,16 +227,17 @@ export const stixDomainEntitiesDelete = async (user, stixDomainEntitiesIds) => {
 
 export const stixDomainEntityAddRelation = async (user, stixDomainEntityId, input) => {
   const stixDomainEntity = await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
+  const isUserType = stixDomainEntity.entity_type === 'user';
   if (
-    (stixDomainEntity.entity_type === 'user' &&
+    (isUserType &&
       !isNil(stixDomainEntity.external) &&
       !['tagged', 'created_by_ref', 'object_marking_refs'].includes(input.through)) ||
     !input.through
   ) {
     throw ForbiddenAccess();
   }
-  const finalInput = assoc('fromType', 'Stix-Domain-Entity', input);
-  const data = await createRelation(user, stixDomainEntityId, finalInput);
+  const finalInput = pipe(assoc('fromId', stixDomainEntityId), assoc('fromType', 'Stix-Domain-Entity'))(input);
+  const data = await createRelation(user, finalInput);
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
 };
 export const stixDomainEntityAddRelations = async (user, stixDomainEntityId, input) => {
@@ -290,10 +279,10 @@ export const stixDomainEntityDeleteRelation = async (
   if (relationId) {
     const data = await loadRelationById(relationId, 'relation');
     if (
-      data.fromId !== stixDomainEntity.grakn_id ||
-      (stixDomainEntity.entity_type === 'user' &&
-        !isNil(stixDomainEntity.external) &&
-        !['tagged', 'created_by_ref', 'object_marking_refs'].includes(data.relationship_type))
+      data.fromId !== stixDomainEntity.internal_id_key ||
+      (stixDomainEntity.entity_type === ENTITY_TYPE_USER &&
+      !isNil(stixDomainEntity.external) && // TODO JRI ASK @SAM
+        !['tagged', 'created_by_ref', 'object_marking_refs'].includes(data.entity_type))
     ) {
       throw ForbiddenAccess();
     }
@@ -348,7 +337,7 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
             fromRole: relation.fromRole,
             toId: relation.toInternalId,
             toRole: relation.toRole,
-            relationship_type: relation.relationship_type,
+            relationship_type: relation.entity_type,
             weight: relation.weight,
             description: relation.description,
             role_played: relation.role_played,

@@ -28,9 +28,9 @@ const retrieveMigrations = () => {
 const graknStateStorage = {
   async load(fn) {
     // Get current status of migrations in Grakn
-    const migration = await load(`match $status isa MigrationStatus; get;`, ['status'], {
-      noCache: true,
-    });
+    const migration = await load(`match $status isa MigrationStatus; $status has internal_id_key $status_id; get;`, [
+      'status',
+    ]);
     if (!migration) {
       // If no migration found, initialize
       logger.info('[MIGRATION] > Fresh platform detected, creating migration structure');
@@ -43,11 +43,8 @@ const graknStateStorage = {
       return fn(null, { lastRun: lastRunInit, migrations: [] });
     }
     // If migrations found, convert to current status
-    const migrations = await find(
-      `match $from isa MigrationStatus; $rel(status:$from, state:$to) isa migrate; get;`,
-      ['from', 'to'],
-      { noCache: true }
-    );
+    const query = `match $from isa MigrationStatus; $rel(status:$from, state:$to) isa migrate; get;`;
+    const migrations = await find(query, ['from', 'to']);
     logger.info(`[MIGRATION] > Read ${migrations.length} migrations from the database`);
     const migrationStatus = {
       lastRun: migration.status.lastRun,

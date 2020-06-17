@@ -1,19 +1,13 @@
 import { assoc, dissoc, map, pipe } from 'ramda';
-import { createEntity, listEntities, loadEntityById, loadEntityByStixId } from '../database/grakn';
+import { createEntity, listEntities, loadEntityById } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { addPerson } from './user';
+import { ENTITY_TYPE_USER } from '../utils/idGenerator';
 
 export const findById = async (identityId) => {
-  let data;
-  if (identityId.match(/[a-z-]+--[\w-]{36}/g)) {
-    data = await loadEntityByStixId(identityId, 'Identity');
-  } else {
-    data = await loadEntityById(identityId, 'Identity');
-  }
-  if (!data) {
-    return data;
-  }
+  let data = await loadEntityById(identityId, 'Identity');
+  if (!data) return data;
   data = pipe(dissoc('user_email'), dissoc('password'))(data);
   return data;
 };
@@ -39,9 +33,9 @@ export const findAll = async (args) => {
 
 export const addIdentity = async (user, identity) => {
   const identityToCreate = dissoc('type', identity);
-  if (identity.type.toLowerCase() === 'user') {
+  if (identity.type === ENTITY_TYPE_USER) {
     return addPerson(user, identityToCreate);
   }
-  const created = await createEntity(user, identityToCreate, identity.type, { stixIdType: 'identity' });
+  const created = await createEntity(user, identityToCreate, identity.type);
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };

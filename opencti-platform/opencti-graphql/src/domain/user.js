@@ -1,7 +1,7 @@
 import { assoc, find as rFind, head, isNil, pipe, map, dissoc, append, flatten, propOr, propEq, includes } from 'ramda';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
-import { v4 as uuid, v5 as uuidv5 } from 'uuid';
+import { v4 as uuid } from 'uuid';
 import {
   clearAccessCache,
   delEditContext,
@@ -33,12 +33,19 @@ import {
   listEntities,
   load,
   loadEntityById,
-  loadEntityByStixId,
   loadWithConnectedRelations,
   now,
   updateAttribute,
 } from '../database/grakn';
-import { buildPagination, TYPE_OPENCTI_INTERNAL, TYPE_STIX_DOMAIN_ENTITY } from '../database/utils';
+import { buildPagination } from '../database/utils';
+import {
+  ENTITY_TYPE_CAPABILITY,
+  ENTITY_TYPE_ROLE,
+  ENTITY_TYPE_TOKEN,
+  ENTITY_TYPE_USER,
+  generateInternalId,
+  OPENCTI_ADMIN_UUID,
+} from '../utils/idGenerator';
 
 // region utils
 export const BYPASS = 'BYPASS';
@@ -64,18 +71,12 @@ export const setAuthenticationCookie = (token, res) => {
 };
 // endregion
 
-export const OPENCTI_ADMIN_UUID = '88ec0c6a-13ce-5e39-b486-354fe4a7084f';
 export const SYSTEM_USER = { name: 'system' };
 export const ROLE_DEFAULT = 'Default';
 export const ROLE_ADMINISTRATOR = 'Administrator';
 
 export const findById = async (userId, options = { isUser: false }) => {
-  let data;
-  if (userId.match(/[a-z-]+--[\w-]{36}/g)) {
-    data = await loadEntityByStixId(userId, 'User', options);
-  } else {
-    data = await loadEntityById(userId, 'User', options);
-  }
+  let data = await loadEntityById(userId, ENTITY_TYPE_USER, options);
   if (!options.isUser) {
     data = pipe(dissoc('user_email'), dissoc('password'))(data);
   }
@@ -84,7 +85,7 @@ export const findById = async (userId, options = { isUser: false }) => {
 export const findAll = async (args = {}, isUser = false) => {
   const filters = propOr([], 'filters', args);
   let data = await listEntities(
-    ['User'],
+    [ENTITY_TYPE_USER],
     ['user_email', 'firstname', 'lastname'],
     assoc('filters', isUser ? append({ key: 'external', values: ['EXISTS'] }, filters) : filters, args)
   );
@@ -131,25 +132,23 @@ export const token = (userId, args, context) => {
     $rel(authorization:$x, client:$client) isa authorize;
     $client has internal_id_key "${escapeString(userId)}"; get; offset 0; limit 1;`,
     'x',
-    { extraRelKey: 'rel', noCache: true }
+    { extraRelKey: 'rel' }
   ).then((result) => (result ? result.node.uuid : result));
 };
 
 const internalGetToken = async (userId) => {
-  return loadWithConnectedRelations(
-    `match $x isa Token;
-    $rel(authorization:$x, client:$client) isa authorize;
-    $client has internal_id_key "${escapeString(userId)}"; get; offset 0; limit 1;`,
-    'x',
-    { extraRelKey: 'rel', noCache: true }
-  ).then((result) => result && result.node);
+  const query = `match $x isa Token; $x has internal_id_key $x_id;
+  $rel(authorization:$x, client:$client) isa authorize; $rel has internal_id_key $rel_id;
+  $x has internal_id_key $rel_from_id; $client has internal_id_key $rel_to_id;
+  $client has internal_id_key "${escapeString(userId)}"; get; offset 0; limit 1;`;
+  return loadWithConnectedRelations(query, 'x', { extraRelKey: 'rel' }).then((result) => result && result.node);
 };
 
 const internalGetTokenByUUID = async (tokenUUID) => {
-  const query = `match $token isa Token; $x has uuid "${escapeString(tokenUUID)}"; get;`;
-  return load(query, ['token'], {
-    noCache: true,
-  }).then((result) => result && result.token);
+  const query = `match $token isa Token; $token has internal_id_key $token_id; $token has uuid "${escapeString(
+    tokenUUID
+  )}"; get;`;
+  return load(query, ['token']).then((result) => result && result.token);
 };
 
 const clearUserTokenCache = (userId) => {
@@ -174,7 +173,7 @@ export const getCapabilities = async (userId) => {
   );
   const capabilities = map((r) => r.capability, data);
   if (userId === OPENCTI_ADMIN_UUID && !rFind(propEq('name', BYPASS))(capabilities)) {
-    const id = uuidv5(BYPASS, uuidv5.DNS);
+    const id = generateInternalId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
     capabilities.push({ id, internal_id_key: id, name: BYPASS });
   }
   return capabilities;
@@ -190,14 +189,14 @@ export const getRoleCapabilities = async (roleId) => {
 };
 
 export const findRoleById = (roleId) => {
-  return loadEntityById(roleId, 'Role');
+  return loadEntityById(roleId, ENTITY_TYPE_ROLE);
 };
 export const findRoles = (args) => {
-  return listEntities(['Role'], ['name'], args);
+  return listEntities([ENTITY_TYPE_ROLE], ['name'], args);
 };
 export const findCapabilities = (args) => {
   const finalArgs = assoc('orderBy', 'ordering', args);
-  return listEntities(['Capability'], ['description'], finalArgs);
+  return listEntities([ENTITY_TYPE_CAPABILITY], ['description'], finalArgs);
 };
 
 export const removeRole = async (userId, roleName) => {
@@ -222,45 +221,40 @@ export const roleRemoveCapability = async (user, roleId, capabilityName) => {
   // Clear cache of every user with this modified role
   const impactedUsers = await findAll({ filters: [{ key: 'rel_user_role.internal_id_key', values: [roleId] }] });
   await Promise.all(map((e) => clearUserTokenCache(e.node.id), impactedUsers.edges));
-  return loadEntityById(roleId, 'Role');
+  return loadEntityById(roleId, ENTITY_TYPE_ROLE);
 };
 export const roleDelete = async (user, roleId) => {
   // Clear cache of every user with this deleted role
   const impactedUsers = await findAll({ filters: [{ key: 'rel_user_role.internal_id_key', values: [roleId] }] });
   await Promise.all(map((e) => clearUserTokenCache(e.node.id), impactedUsers.edges));
-  return deleteEntityById(user, roleId, 'Role', { noLog: true });
+  return deleteEntityById(user, roleId, ENTITY_TYPE_ROLE, { noLog: true });
 };
 export const roleCleanContext = (user, roleId) => {
   delEditContext(user, roleId);
-  return loadEntityById(roleId, 'Role').then((role) => notify(BUS_TOPICS.Role.EDIT_TOPIC, role, user));
+  return loadEntityById(roleId, ENTITY_TYPE_ROLE).then((role) => notify(BUS_TOPICS.Role.EDIT_TOPIC, role, user));
 };
 export const roleEditContext = (user, roleId, input) => {
   setEditContext(user, roleId, input);
-  return loadEntityById(roleId, 'Role').then((role) => notify(BUS_TOPICS.Role.EDIT_TOPIC, role, user));
+  return loadEntityById(roleId, ENTITY_TYPE_ROLE).then((role) => notify(BUS_TOPICS.Role.EDIT_TOPIC, role, user));
 };
 // endregion
 
 export const addPerson = async (user, newUser) => {
   const creatingUser = assoc('user_email', `${uuid()}@mail.com`, newUser);
-  const created = await createEntity(user, creatingUser, 'User', {
-    stixIdType: 'identity',
-  });
+  const created = await createEntity(user, creatingUser, ENTITY_TYPE_USER);
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 export const assignRoleToUser = (user, userId, roleName) => {
-  return createRelation(
-    user,
-    userId,
-    {
-      fromType: 'User',
-      fromRole: 'client',
-      toId: uuidv5(roleName, uuidv5.DNS),
-      toType: 'Role',
-      toRole: 'position',
-      through: 'user_role',
-    },
-    { indexable: false, noLog: true }
-  );
+  const assignInput = {
+    fromId: userId,
+    fromType: ENTITY_TYPE_USER,
+    fromRole: 'client',
+    toId: generateInternalId(ENTITY_TYPE_ROLE, { name: roleName }),
+    toType: ENTITY_TYPE_ROLE,
+    toRole: 'position',
+    through: 'user_role',
+  };
+  return createRelation(user, assignInput, { noLog: true });
 };
 export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken()) => {
   let userRoles = newUser.roles || []; // Expected roles name
@@ -279,35 +273,40 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
     assoc('external', newUser.external ? newUser.external : false),
     dissoc('roles')
   )(newUser);
-  const userOptions = { modelType: TYPE_STIX_DOMAIN_ENTITY, stixIdType: 'identity', noLog: newUser.name === 'admin' };
-  const userCreated = await createEntity(user, userToCreate, 'User', userOptions);
+  const userOptions = { noLog: newUser.name === 'admin' };
+  const userCreated = await createEntity(user, userToCreate, ENTITY_TYPE_USER, userOptions);
   // Create token and link it to the user
-  const tokenOptions = { modelType: TYPE_OPENCTI_INTERNAL, indexable: false, noLog: true };
-  const defaultToken = await createEntity(user, newToken, 'Token', tokenOptions);
+  const tokenOptions = { noLog: true };
+  const defaultToken = await createEntity(user, newToken, ENTITY_TYPE_TOKEN, tokenOptions);
   const input = {
-    fromType: 'User',
+    fromId: userCreated.id,
+    fromType: ENTITY_TYPE_USER,
     fromRole: 'client',
     toId: defaultToken.id,
-    toType: 'Token',
+    toType: ENTITY_TYPE_TOKEN,
     toRole: 'authorization',
     through: 'authorize',
   };
-  await createRelation(user, userCreated.id, input, { indexable: false, noLog: true });
+  await createRelation(user, input, { noLog: true });
   // Link to the roles
   await Promise.all(map((role) => assignRoleToUser(user, userCreated.id, role), userRoles));
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, userCreated, user);
 };
 export const roleEditField = (user, roleId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(user, roleId, 'Role', input, wTx, { noLog: true });
+    return updateAttribute(user, roleId, ENTITY_TYPE_ROLE, input, wTx, { noLog: true });
   }).then(async () => {
-    const userToEdit = await loadEntityById(roleId, 'Role');
+    const userToEdit = await loadEntityById(roleId, ENTITY_TYPE_ROLE);
     return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
   });
 };
 export const roleAddRelation = async (user, roleId, input) => {
-  const finalInput = pipe(assoc('through', 'role_capability'), assoc('fromType', 'Role'))(input);
-  const data = await createRelation(user, roleId, finalInput, { indexable: false, noLog: true });
+  const finalInput = pipe(
+    assoc('fromId', roleId),
+    assoc('through', 'role_capability'),
+    assoc('fromType', ENTITY_TYPE_ROLE)
+  )(input);
+  const data = await createRelation(user, finalInput, { noLog: true });
   // Clear cache of every user with this modified role
   const impactedUsers = await findAll({ filters: [{ key: 'rel_user_role.internal_id_key', values: [roleId] }] });
   await Promise.all(map((e) => clearUserTokenCache(e.node.id), impactedUsers.edges));
@@ -319,21 +318,21 @@ export const userEditField = (user, userId, input) => {
   const value = key === 'password' ? [bcrypt.hashSync(head(input.value).toString(), 10)] : input.value;
   const finalInput = { key, value };
   return executeWrite((wTx) => {
-    return updateAttribute(user, userId, 'User', finalInput, wTx, { noLog: key === 'password' });
+    return updateAttribute(user, userId, ENTITY_TYPE_USER, finalInput, wTx, { noLog: key === 'password' });
   }).then(async () => {
-    const userToEdit = await loadEntityById(userId, 'User');
+    const userToEdit = await loadEntityById(userId, ENTITY_TYPE_USER);
     return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
   });
 };
 export const personEditField = async (user, userId, input) => {
-  const data = await loadEntityById(userId, 'User');
+  const data = await loadEntityById(userId, ENTITY_TYPE_USER);
   if (!isNil(data.external)) {
     throw ForbiddenAccess();
   }
   return executeWrite((wTx) => {
-    return updateAttribute(user, userId, 'User', input, wTx);
+    return updateAttribute(user, userId, ENTITY_TYPE_USER, input, wTx);
   }).then(async () => {
-    const userToEdit = await loadEntityById(userId, 'User');
+    const userToEdit = await loadEntityById(userId, ENTITY_TYPE_USER);
     return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
   });
 };
@@ -343,21 +342,21 @@ export const meEditField = (user, userId, input) => {
 export const userDelete = async (user, userId) => {
   const userToken = await internalGetToken(userId);
   if (userToken) {
-    await deleteEntityById(user, userToken.id, 'Token', { noCache: true, noLog: true });
+    await deleteEntityById(user, userToken.id, ENTITY_TYPE_TOKEN, { noLog: true });
     await clearAccessCache(userToken.uuid);
   }
-  await deleteEntityById(user, userId, 'User');
+  await deleteEntityById(user, userId, ENTITY_TYPE_USER);
   return userId;
 };
 export const personDelete = async (user, personId) => {
-  const data = await loadEntityById(personId, 'User');
+  const data = await loadEntityById(personId, ENTITY_TYPE_USER);
   if (!isNil(data.external)) throw ForbiddenAccess();
-  await deleteEntityById(user, personId, 'User');
+  await deleteEntityById(user, personId, ENTITY_TYPE_USER);
   return personId;
 };
 export const userAddRelation = async (user, userId, input) => {
-  const finalInput = assoc('fromType', 'User', input);
-  const data = await createRelation(user, userId, finalInput);
+  const finalInput = pipe(assoc('fromId', userId), assoc('fromType', ENTITY_TYPE_USER))(input);
+  const data = await createRelation(user, finalInput);
   await clearUserTokenCache(userId);
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
 };
@@ -377,8 +376,8 @@ export const personAddRelation = async (user, userId, input) => {
   if (!['tagged', 'created_by_ref', 'object_marking_refs'].includes(input.through)) {
     throw ForbiddenAccess();
   }
-  const finalInput = assoc('fromType', 'User', input);
-  const data = await createRelation(user, userId, finalInput);
+  const finalInput = pipe(assoc('fromId', userId), assoc('fromType', ENTITY_TYPE_USER))(input);
+  const data = await createRelation(user, finalInput);
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
 };
 export const personDeleteRelation = async (
@@ -395,7 +394,7 @@ export const personDeleteRelation = async (
   } else {
     throw FunctionalError('Cannot delete the relation, missing relationId or toId');
   }
-  const data = await loadEntityById(userId, 'User');
+  const data = await loadEntityById(userId, ENTITY_TYPE_USER);
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
 };
 export const stixDomainEntityEditField = async (user, stixDomainEntityId, input) => {
@@ -428,12 +427,12 @@ export const loginFromProvider = async (email, name) => {
   return result.token;
 };
 export const login = async (email, password) => {
-  const result = await load(
-    `match $client isa User, has user_email "${escapeString(email)}";
-     (authorization:$token, client:$client) isa authorize; get;`,
-    ['client', 'token'],
-    { noCache: true } // Because of the fetching of the token that not in cache
-  );
+  const query = `match $client isa User, has user_email "${escapeString(email)}";
+   $client has internal_id_key $client_id;
+   (authorization:$token, client:$client) isa authorize; 
+   $token has internal_id_key $token_id;
+   get;`;
+  const result = await load(query, ['client', 'token']);
   if (isNil(result)) throw AuthenticationFailure();
   const dbPassword = result.client.password;
   const match = bcrypt.compareSync(password, dbPassword);
@@ -454,41 +453,41 @@ export const userRenewToken = async (user, userId, newToken = generateOpenCTIWeb
   const currentToken = await internalGetToken(userId);
   // 02. Remove the token
   if (currentToken) {
-    await deleteEntityById(user, currentToken.id, 'Token', { noCache: true, noLog: true });
+    await deleteEntityById(user, currentToken.id, ENTITY_TYPE_TOKEN, { noLog: true });
   } else {
     logger.error(`[GRAKN] ${userId} user have no token to renew, please report this problem in github`);
     const detachedToken = await internalGetTokenByUUID(newToken.uuid);
     if (detachedToken) {
-      await deleteEntityById(user, detachedToken.id, 'Token', { noCache: true, noLog: true });
+      await deleteEntityById(user, detachedToken.id, ENTITY_TYPE_TOKEN, { noLog: true });
     }
   }
   // 03. Create a new one
-  const defaultToken = await createEntity(user, newToken, 'Token', {
-    modelType: TYPE_OPENCTI_INTERNAL,
-    indexable: false,
-    noLog: true,
-  });
+  const defaultToken = await createEntity(user, newToken, ENTITY_TYPE_TOKEN, { noLog: true });
   // 04. Associate new token to user.
   const input = {
-    fromType: 'User',
+    fromId: userId,
+    fromType: ENTITY_TYPE_USER,
     fromRole: 'client',
     toId: defaultToken.id,
-    toType: 'Token',
+    toType: ENTITY_TYPE_TOKEN,
     toRole: 'authorization',
     through: 'authorize',
   };
-  await createRelation(user, userId, input, { indexable: false, noLog: true });
-  return loadEntityById(userId, 'User');
+  await createRelation(user, input, { noLog: true });
+  return loadEntityById(userId, ENTITY_TYPE_USER);
 };
 export const findByTokenUUID = async (tokenValue) => {
   // This method is call every time a user to a platform action
   let user = await getAccessCache(tokenValue);
   if (!user) {
     const data = await load(
-      `match $token isa Token, has uuid "${escapeString(tokenValue)}", has revoked false;
-            (authorization:$token, client:$client) isa authorize; get;`,
-      ['token', 'client'],
-      { noCache: true }
+      `match $token isa Token;
+            $token has internal_id_key $token_id;
+            $token has uuid "${escapeString(tokenValue)}", has revoked false;
+            (authorization:$token, client:$client) isa authorize; 
+            $client has internal_id_key $client_id;
+            get;`,
+      ['token', 'client']
     );
     if (!data) return undefined;
     // eslint-disable-next-line no-shadow
@@ -526,24 +525,23 @@ export const authentication = async (tokenUUID) => {
  * @returns {*}
  */
 export const initAdmin = async (email, password, tokenValue) => {
-  const admin = await findById(OPENCTI_ADMIN_UUID, { isUser: true, noCache: true });
+  const admin = await findById(OPENCTI_ADMIN_UUID, { isUser: true });
   const tokenAdmin = generateOpenCTIWebToken(tokenValue);
   if (admin) {
     // Update admin fields
     await executeWrite(async (wTx) => {
       const inputEmail = { key: 'user_email', value: [email] };
-      await updateAttribute(admin, admin.id, 'User', inputEmail, wTx);
+      await updateAttribute(admin, admin.id, ENTITY_TYPE_USER, inputEmail, wTx);
       const inputPassword = { key: 'password', value: [bcrypt.hashSync(password, 10)] };
-      await updateAttribute(admin, admin.id, 'User', inputPassword, wTx, { noLog: true });
+      await updateAttribute(admin, admin.id, ENTITY_TYPE_USER, inputPassword, wTx, { noLog: true });
       const inputExternal = { key: 'external', value: [true] };
-      await updateAttribute(admin, admin.id, 'User', inputExternal, wTx, { noLog: true });
+      await updateAttribute(admin, admin.id, ENTITY_TYPE_USER, inputExternal, wTx, { noLog: true });
     });
     // Renew the token
     await userRenewToken(admin, admin.id, tokenAdmin);
   } else {
     const userToCreate = {
       internal_id_key: OPENCTI_ADMIN_UUID,
-      stix_id_key: `identity--${OPENCTI_ADMIN_UUID}`,
       external: true,
       user_email: email.toLowerCase(),
       name: 'admin',

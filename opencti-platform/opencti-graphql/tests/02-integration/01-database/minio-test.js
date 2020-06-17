@@ -1,5 +1,5 @@
 import { head } from 'ramda';
-import { internalLoadEntityByStixId } from '../../../src/database/grakn';
+import { internalLoadEntityById } from '../../../src/database/grakn';
 import {
   deleteFile,
   downloadFile,
@@ -43,7 +43,7 @@ describe('Minio basic and utils', () => {
     const exportType = 'all';
     const connector = { name: 'ExportFileStix' };
     const maxMarking = { definition: 'TLP:RED' };
-    const entity = await internalLoadEntityByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const entity = await internalLoadEntityById('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const fileExportName = generateFileExportName('application/json', connector, entity, type, exportType, maxMarking);
     const expectedName = '_TLP:RED_(ExportFileStix)_malware-Paradise Ransomware_all.json';
     expect(fileExportName).toEqual(expect.stringContaining(expectedName));

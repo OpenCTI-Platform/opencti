@@ -121,7 +121,6 @@ define
   contact_information sub attribute, datatype string;
 
   # STIX SRO
-  relationship_type sub attribute, datatype string;
   role_played sub attribute, datatype string;
   weight sub attribute, datatype long;
   negative sub attribute, datatype boolean;
@@ -220,99 +219,86 @@ define
   sighted_in sub role;
 
   ## RELATIONSHIPS
+  opencti_relation sub relation,
+    abstract,
+    key internal_id_key;
 
   # Login relationship
-  authorize sub relation,
-    key internal_id_key,
+  authorize sub opencti_relation,
     relates client,
     relates authorization;
 
   # Migration relationships
-  migrate sub relation,
-    key internal_id_key,
+  migrate sub opencti_relation,
     relates status,
     relates state;
 
   # Group membership relationships
-  membership sub relation,
-    key internal_id_key,
+  membership sub opencti_relation,
     relates member,
     relates grouping;
 
   # Access relationships
-  permission sub relation,
-    key internal_id_key,
+  permission sub opencti_relation,
     has grant,
     relates allowed,
     relates allow;
 
-  user_role sub relation,
-    key internal_id_key,
+  user_role sub opencti_relation,
     relates client,
     relates position;
 
-  role_capability sub relation,
-    key internal_id_key,
+  role_capability sub opencti_relation,
     relates position,
     relates capability;
 
   # OpenCTI embeded relationships
-  relation_embedded sub relation,
-    abstract,
-    key internal_id_key;
-
-  authored_by sub relation_embedded,
+  authored_by sub opencti_relation,
     relates so,
     relates author;
 
-  owned_by sub relation_embedded,
+  owned_by sub opencti_relation,
     relates so,
     relates owner;
 
-  tagged sub relation_embedded,
+  tagged sub opencti_relation,
     relates so,
     relates tagging;
 
   # STIX embeded relationships
-  stix_relation_embedded sub relation,
-    abstract,
-    key internal_id_key;
-
-  created_by_ref sub stix_relation_embedded,
+  created_by_ref sub opencti_relation,
     relates so,
     relates creator;
 
-  object_marking_refs sub stix_relation_embedded,
+  object_marking_refs sub opencti_relation,
     relates so,
     relates marking;
 
-  object_refs sub stix_relation_embedded,
+  object_refs sub opencti_relation,
     relates knowledge_aggregation,
     relates so;
 
-  external_references sub stix_relation_embedded,
+  external_references sub opencti_relation,
     relates so,
     relates external_reference;
 
-  kill_chain_phases sub stix_relation_embedded,
+  kill_chain_phases sub opencti_relation,
     relates phase_belonging,
     relates kill_chain_phase;
 
-  observable_refs sub stix_relation_embedded,
+  observable_refs sub opencti_relation,
     relates observables_aggregation,
     relates soo;
 
   # STIX SRO relationships
-  stix_sighting sub relation,
-    key internal_id_key,
-    key stix_id_key,
+  stix_sighting sub opencti_relation,
+    has stix_id_key,
     has name,
     has description,
     has created,
     has modified,
     has revoked,
     has entity_type,
-    has relationship_type,
     has weight,
     has confidence,
     has negative,
@@ -334,15 +320,13 @@ define
     relates sighted_in,
     relates so;
 
-  stix_relation sub relation,
+  stix_relation sub opencti_relation,
     abstract,
-    key internal_id_key,
-    key stix_id_key,
+    has stix_id_key,
     has created,
     has modified,
     has revoked,
     has entity_type,
-    has relationship_type,
     has weight,
     has confidence,
     has first_seen,
@@ -433,15 +417,13 @@ define
     relates dropped;
 
   # STIX SOO relationships
-  stix_observable_relation sub relation,
+  stix_observable_relation sub opencti_relation,
     abstract,
-    key internal_id_key,
-    key stix_id_key,
+    has stix_id_key,
     has created,
     has modified,
     has revoked,
     has entity_type,
-    has relationship_type,
     has first_seen,
     has first_seen_day,
     has first_seen_month,
@@ -484,21 +466,22 @@ define
     relates correspond_to;
 
   ## ENTITIES
+  OpenctiEntity sub entity,
+      key internal_id_key,
+      abstract;
+
   # Migration entities
-  MigrationStatus sub entity,
-    key internal_id_key,
+  MigrationStatus sub OpenctiEntity,
     has lastRun,
     plays status;
 
-  MigrationReference sub entity,
-    key internal_id_key,
+  MigrationReference sub OpenctiEntity,
     has title,
     has timestamp,
     plays state;
 
   # OpenCTI entities
-  Settings sub entity,
-    key internal_id_key,
+  Settings sub OpenctiEntity,
     has entity_type,
     has platform_title,
     has platform_email,
@@ -510,8 +493,7 @@ define
     has created_at_year,
     has updated_at;
 
-  Tag sub entity,
-    key internal_id_key,
+  Tag sub OpenctiEntity,
     has tag_type,
     has entity_type,
     key value,
@@ -523,8 +505,7 @@ define
     has updated_at,
     plays tagging;
 
-  Connector sub entity,
-    key internal_id_key,
+  Connector sub OpenctiEntity,
     has entity_type,
     has name,
     has connector_type,
@@ -537,8 +518,7 @@ define
     has created_at_year,
     has updated_at;
 
-  Group sub entity,
-    key internal_id_key,
+  Group sub OpenctiEntity,
     has entity_type,
     has name,
     has description,
@@ -550,8 +530,7 @@ define
     plays allowed,
     plays grouping;
 
-  Workspace sub entity,
-    key internal_id_key,
+  Workspace sub OpenctiEntity,
     has entity_type,
     has workspace_type,
     has name,
@@ -566,8 +545,7 @@ define
     plays so,
     plays knowledge_aggregation;
 
-  Token sub entity,
-    key internal_id_key,
+  Token sub OpenctiEntity,
     key uuid,
     has entity_type,
     has name,
@@ -582,15 +560,15 @@ define
     has updated_at,
     plays authorization;
 
-  Stix-Domain sub entity,
+  Stix-Domain sub OpenctiEntity,
     abstract,
-    key internal_id_key,
-    key stix_id_key,
+    has stix_id_key,
     has stix_label,
     has entity_type,
     has created,
     has modified,
     has revoked,
+    has alias,
     has object_status,
     has created_at,
     has created_at_day,
@@ -605,7 +583,6 @@ define
     abstract,
     has name,
     has description,
-    has alias,
     has confidence,
     has graph_data;
 
@@ -734,8 +711,7 @@ define
     plays allowed,
     plays characterize;
 
-  Role sub entity,
-    key internal_id_key,
+  Role sub OpenctiEntity,
     key name,
     has entity_type,
     has default_assignation,
@@ -747,8 +723,7 @@ define
     has updated_at,
     plays position;
 
-  Capability sub entity,
-    key internal_id_key,
+  Capability sub OpenctiEntity,
     key name,
     has ordering,
     has entity_type,
@@ -870,10 +845,9 @@ define
     plays phase_belonging,
     plays indicator;
 
-  Stix-Observable sub entity,
+  Stix-Observable sub OpenctiEntity,
     abstract,
-    key internal_id_key,
-    key stix_id_key,
+    has stix_id_key,
     has entity_type,
     has name,
     has description,

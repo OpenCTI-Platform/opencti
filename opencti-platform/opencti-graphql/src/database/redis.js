@@ -1,4 +1,5 @@
 import Redis from 'ioredis';
+import Redlock from 'redlock';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { assoc, isEmpty, map } from 'ramda';
 import conf, { logger } from '../config/conf';
@@ -163,3 +164,25 @@ export const clearAccessCache = async (tokenUUID) => {
   await client.del(tokenUUID);
 };
 // endregion
+
+export const lockResource = async (resource) => {
+  if (resource != null) {
+    const redisClient = await getClient();
+    // Retry during 5 secs
+    const redlock = new Redlock([redisClient], { retryCount: 10, retryDelay: 500 });
+    const lock = await redlock.lock(resource, 10000); // Force unlock after 10 secs
+    return {
+      unlock: async () => {
+        try {
+          await lock.unlock();
+        } catch (e) {
+          logger.debug(e, 'Failed to unlock resource', { resource });
+        }
+      },
+    };
+  }
+  return {
+    extend: () => true,
+    unlock: () => {},
+  };
+};

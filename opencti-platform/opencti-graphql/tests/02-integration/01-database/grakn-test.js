@@ -17,17 +17,11 @@ import {
   getSingleValueNumber,
   graknIsAlive,
   internalLoadEntityById,
-  internalLoadEntityByStixId,
   listEntities,
   listRelations,
   load,
-  loadByGraknId,
-  loadEntityByGraknId,
   loadEntityById,
-  loadEntityByStixId,
-  loadRelationByGraknId,
   loadRelationById,
-  loadRelationByStixId,
   monthFormat,
   now,
   prepareDate,
@@ -45,8 +39,9 @@ import { attributeUpdate, findAll as findAllAttributes } from '../../../src/doma
 import { INDEX_STIX_ENTITIES, utcDate } from '../../../src/database/utils';
 import { GATHERING_TARGETS_RULE, inferenceDisable, inferenceEnable } from '../../../src/domain/inference';
 import { resolveNaturalRoles } from '../../../src/database/graknRoles';
-import { forceNoCache, REL_INDEX_PREFIX } from '../../../src/database/elasticSearch';
+import { elLoadById, useCache, REL_INDEX_PREFIX } from '../../../src/database/elasticSearch';
 import { ADMIN_USER } from '../../utils/testQuery';
+import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_ORGANIZATION, ENTITY_TYPE_REPORT } from '../../../src/utils/idGenerator';
 
 describe('Grakn basic and utils', () => {
   it('should database accessible', () => {
@@ -179,10 +174,11 @@ describe('Grakn low level commands', () => {
 describe('Grakn loaders', () => {
   const noCacheCases = [[true], [false]];
   it.each(noCacheCases)('should load simple query (noCache = %s)', async (noCache) => {
-    const query = 'match $m isa Malware; $m has stix_id_key "malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88"; get;';
+    const query = 'match $m isa Malware; $m has external_stix_id "malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88"; get;';
     const malware = await load(query, ['m'], { noCache });
     expect(malware.m).not.toBeNull();
-    expect(malware.m.stix_id_key).toEqual('malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
+    expect(malware.m.external_stix_id).toEqual(['malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88']);
+    expect(malware.m.stix_id_key).toEqual('malware--0de70f14-d9a8-555b-ba1a-834cc27a1166');
   });
   it('should load subTypes values', async () => {
     const stixObservableSubTypes = await querySubTypes('Stix-Observable');
@@ -240,7 +236,7 @@ describe('Grakn attribute updater', () => {
     const campaignId = 'fab6fa99-b07f-4278-86b4-b674edf60877';
     const input = { key: 'observable_value', value: ['test'] };
     const update = executeWrite((wTx) => {
-      return updateAttribute(ADMIN_USER, campaignId, 'Stix-Domain-Entity', input, wTx);
+      return updateAttribute(ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, input, wTx);
     });
     expect(update).rejects.toThrow();
   });
@@ -248,20 +244,20 @@ describe('Grakn attribute updater', () => {
     const campaignId = 'fab6fa99-b07f-4278-86b4-b674edf60877';
     const input = { key: 'description', value: ['A test campaign'] };
     const update = await executeWrite((wTx) => {
-      return updateAttribute(ADMIN_USER, campaignId, 'Stix-Domain-Entity', input, wTx);
+      return updateAttribute(ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, input, wTx);
     });
     expect(update).toEqual(campaignId);
   });
   it.each(noCacheCases)('should update date with dependencies', async (noCache) => {
     const campaignId = 'fab6fa99-b07f-4278-86b4-b674edf60877';
     const stixId = 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214';
-    let campaign = await internalLoadEntityByStixId(stixId, null, { noCache });
+    let campaign = await internalLoadEntityById(stixId, null, { noCache });
     expect(campaign.first_seen).toEqual('2020-02-27T08:45:43.365Z');
     const type = 'Stix-Domain-Entity';
     let input = { key: 'first_seen', value: ['2020-02-20T08:45:43.366Z'] };
     let update = await executeWrite((wTx) => updateAttribute(ADMIN_USER, campaignId, type, input, wTx));
     expect(update).toEqual(campaignId);
-    campaign = await internalLoadEntityByStixId(stixId, null, { noCache });
+    campaign = await internalLoadEntityById(stixId, null, { noCache });
     expect(campaign.first_seen).toEqual('2020-02-20T08:45:43.366Z');
     expect(campaign.first_seen_day).toEqual('2020-02-20');
     expect(campaign.first_seen_month).toEqual('2020-02');
@@ -270,39 +266,39 @@ describe('Grakn attribute updater', () => {
     input = { key: 'first_seen', value: ['2020-02-27T08:45:43.365Z'] };
     update = await executeWrite((wTx) => updateAttribute(ADMIN_USER, campaignId, type, input, wTx));
     expect(update).toEqual(campaignId);
-    campaign = await internalLoadEntityByStixId(stixId, null, { noCache });
+    campaign = await internalLoadEntityById(stixId, null, { noCache });
     expect(campaign.first_seen).toEqual('2020-02-27T08:45:43.365Z');
     expect(campaign.first_seen_day).toEqual('2020-02-27');
   });
   it.each(noCacheCases)('should update numeric', async (noCache) => {
     const stixId = 'relationship--efc9bbb8-e606-4fb1-83ae-d74690fd0416';
     const relationId = '74559c72-c2ff-4822-8f41-7ece3a007987';
-    let relation = await internalLoadEntityByStixId(stixId, null, { noCache });
+    let relation = await internalLoadEntityById(stixId, null, { noCache });
     expect(relation.weight).toEqual(1);
     let input = { key: 'weight', value: [5] };
     await executeWrite((wTx) => updateAttribute(ADMIN_USER, relationId, 'mitigates', input, wTx));
-    relation = await internalLoadEntityByStixId(stixId, null, { noCache });
+    relation = await internalLoadEntityById(stixId, null, { noCache });
     expect(relation.weight).toEqual(5);
     // Value back to before
     input = { key: 'weight', value: [1] };
     await executeWrite((wTx) => updateAttribute(ADMIN_USER, relationId, 'mitigates', input, wTx));
-    relation = await internalLoadEntityByStixId(stixId, null, { noCache });
+    relation = await internalLoadEntityById(stixId, null, { noCache });
     expect(relation.weight).toEqual(1);
   });
   it.each(noCacheCases)('should update multivalued attribute', async (noCache) => {
     const stixId = 'identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132';
     const identityId = '78ef0cb8-4397-4603-86b4-f1d60be7400d';
     const type = 'Stix-Domain-Entity';
-    let identity = await internalLoadEntityByStixId(stixId, null, { noCache });
+    let identity = await internalLoadEntityById(stixId, null, { noCache });
     expect(identity.alias.sort()).toEqual(['Computer Incident', 'Incident'].sort());
     let input = { key: 'alias', value: ['Computer', 'Test', 'Grakn'] };
     await executeWrite((wTx) => updateAttribute(ADMIN_USER, identityId, type, input, wTx));
-    identity = await internalLoadEntityByStixId(stixId, null, { noCache });
+    identity = await internalLoadEntityById(stixId, null, { noCache });
     expect(identity.alias.sort()).toEqual(['Computer', 'Test', 'Grakn'].sort());
     // Value back to before
     input = { key: 'alias', value: ['Computer Incident', 'Incident'] };
     await executeWrite((wTx) => updateAttribute(ADMIN_USER, identityId, type, input, wTx));
-    identity = await internalLoadEntityByStixId(stixId, null, { noCache });
+    identity = await internalLoadEntityById(stixId, null, { noCache });
     expect(identity.alias.sort()).toEqual(['Computer Incident', 'Incident'].sort());
   });
 });
@@ -317,7 +313,7 @@ describe('Grakn entities listing', () => {
     const malwares = await listEntities(['Malware'], ['name', 'alias'], { noCache });
     expect(malwares).not.toBeNull();
     expect(malwares.edges.length).toEqual(2);
-    const dataMap = new Map(malwares.edges.map((i) => [i.node.stix_id_key, i.node]));
+    const dataMap = new Map(malwares.edges.map((i) => [head(i.node.external_stix_id), i.node]));
     const malware = dataMap.get('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     expect(malware.grakn_id).not.toBeNull();
     expect(malware.id).toEqual('ab78a62f-4928-4d5a-8740-03f0af9c4330');
@@ -359,7 +355,7 @@ describe('Grakn entities listing', () => {
     expect(indicators.edges.length).toEqual(2);
     options = { search: 'i want a location', noCache };
     indicators = await listEntities(['Indicator'], ['description'], options);
-    const forceToNoCache = forceNoCache();
+    const forceToNoCache = useCache();
     expect(indicators.edges.length).toEqual(noCache || forceToNoCache ? 0 : 3); // Grakn is not a full text search engine :)
   });
   it.each(noCacheCases)('should list entities order by relation (noCache = %s)', async (noCache) => {
@@ -384,7 +380,7 @@ describe('Grakn entities listing', () => {
     // France (f2ea7d37-996d-4313-8f73-42a8782d39a0) < localization > Hietzing (d1881166-f431-4335-bfed-b1c647e59f89)
     // Hietzing (d1881166-f431-4335-bfed-b1c647e59f89) < localization > France (f2ea7d37-996d-4313-8f73-42a8782d39a0)
     // We accept that ElasticSearch is not able to have both direction of the relations
-    const forceToNoCache = forceNoCache();
+    const forceToNoCache = useCache();
     if (forceToNoCache || noCache) {
       const options = { orderBy: 'rel_localization.internal_id_key', orderMode: 'desc', noCache };
       const identities = await listEntities(['Identity'], ['name'], options);
@@ -413,7 +409,7 @@ describe('Grakn entities listing', () => {
     expect(attacks).not.toBeNull();
     expect(attacks.edges.length).toEqual(1);
     expect(head(attacks.edges).node.id).toEqual('9f7f00f9-304b-4055-8c4f-f5eadb00de3b');
-    expect(head(attacks.edges).node.stix_id_key).toEqual('attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc');
+    expect(head(attacks.edges).node.external_stix_id).toEqual(['attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc']);
   });
   it.each(noCacheCases)('should list multiple entities with attribute filters (noCache = %s)', async (noCache) => {
     const filters = [{ key: `rel_created_by_ref.internal_id_key`, values: ['91649a10-216b-4f79-a2fe-e6549e1b6893'] }];
@@ -436,7 +432,7 @@ describe('Grakn entities listing', () => {
       const entities = await listEntities(['Stix-Domain-Entity'], ['name'], options);
       expect(entities).not.toBeNull();
       expect(entities.edges.length).toEqual(3);
-      const aggregationMap = new Map(entities.edges.map((i) => [i.node.stix_id_key, i.node]));
+      const aggregationMap = new Map(entities.edges.map((i) => [head(i.node.external_stix_id), i.node]));
       expect(aggregationMap.get('attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17')).not.toBeUndefined();
       expect(aggregationMap.get('attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc')).not.toBeUndefined();
       expect(aggregationMap.get('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7')).not.toBeUndefined();
@@ -453,7 +449,7 @@ describe('Grakn relations listing', () => {
     const data = await find('match $m isa Malware; get;', ['m'], { noCache });
     expect(data).not.toBeNull();
     expect(data.length).toEqual(2);
-    const aggregationMap = new Map(data.map((i) => [i.m.stix_id_key, i.m]));
+    const aggregationMap = new Map(data.map((i) => [head(i.m.external_stix_id), i.m]));
     const malware = aggregationMap.get('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     expect(malware).not.toBeUndefined();
     expect(malware.name).toEqual('Paradise Ransomware');
@@ -552,7 +548,7 @@ describe('Grakn relations listing', () => {
   it.each(noCacheCases)('should list relations with from types option (noCache = %s)', async (noCache) => {
     // Just id specified,
     // "name": "Paradise Ransomware"
-    const intrusionSet = await internalLoadEntityByStixId('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
+    const intrusionSet = await internalLoadEntityById('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
     expect(intrusionSet.entity_type).toEqual('intrusion-set');
     const options = { noCache, fromId: '82316ffd-a0ec-4519-a454-6566f8f5676c', fromTypes: ['Intrusion-Set'] };
     const stixRelations = await listRelations('targets', options);
@@ -565,14 +561,14 @@ describe('Grakn relations listing', () => {
   it.each(noCacheCases)('should list relations with to types option (noCache = %s)', async (noCache) => {
     // Just id specified,
     // "name": "Paradise Ransomware"
-    const malware = await internalLoadEntityByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const malware = await internalLoadEntityById('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = { noCache, fromId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330', toTypes: ['Attack-Pattern'] };
     const stixRelations = await listRelations('uses', options);
     expect(stixRelations.edges.length).toEqual(2);
     for (let index = 0; index < stixRelations.edges.length; index += 1) {
       const stixRelation = stixRelations.edges[index].node;
       // eslint-disable-next-line no-await-in-loop
-      const toThing = await loadByGraknId(stixRelation.toId);
+      const toThing = await elLoadById(stixRelation.toId);
       expect(toThing.entity_type).toEqual('attack-pattern');
       expect(stixRelation.fromId).toEqual(malware.grakn_id);
     }
@@ -593,10 +589,11 @@ describe('Grakn relations listing', () => {
     }
     const relation = head(stixRelations.edges).node;
     expect(relation.created).toEqual('2020-03-28T02:42:53.582Z');
-    const from = await loadByGraknId(relation.fromId);
-    expect(from.stix_id_key).toEqual('identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f');
-    const to = await loadByGraknId(relation.toId);
-    expect(to.stix_id_key).toEqual('identity--c017f212-546b-4f21-999d-97d3dc558f7b');
+    const from = await elLoadById(relation.fromId);
+    expect(from.stix_id_key).toEqual('identity--74b0ab18-7cc7-54da-b061-36f6660dde65');
+    expect(from.external_stix_id).toEqual(['identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f']);
+    const to = await elLoadById(relation.toId);
+    expect(to.external_stix_id).toEqual(['identity--c017f212-546b-4f21-999d-97d3dc558f7b']);
   });
   it.each(noCacheCases)('should list relations ordered by relation (noCache = %s)', async (noCache) => {
     // "relationship_type": "uses",
@@ -623,8 +620,8 @@ describe('Grakn relations listing', () => {
     expect(stixRelations.edges.length).toEqual(2);
     const first = head(stixRelations.edges).node;
     const second = last(stixRelations.edges).node;
-    expect(first.stix_id_key).toEqual('relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02');
-    expect(second.stix_id_key).toEqual('relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de');
+    expect(first.external_stix_id).toEqual(['relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02']);
+    expect(second.external_stix_id).toEqual(['relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de']);
   });
   it.each(noCacheCases)('should list relations with relation filtering (noCache = %s)', async (noCache) => {
     let stixRelations = await listRelations('uses', { noCache });
@@ -646,7 +643,8 @@ describe('Grakn relations listing', () => {
     stixRelations = await listRelations('uses', options);
     expect(stixRelations.edges.length).toEqual(1);
     const relation = head(stixRelations.edges).node;
-    expect(relation.stix_id_key).toEqual('relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de');
+    expect(relation.stix_id_key).toEqual('relationship--f1b0a568-2c7d-59b8-a9c4-e585cb1e04fc');
+    expect(relation.external_stix_id).toEqual(['relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de']);
     expect(relation.fromRole).toEqual('user');
     expect(relation.toRole).toEqual('usage');
     expect(relation.created).toEqual('2020-03-01T14:05:16.797Z');
@@ -687,7 +685,7 @@ describe('Grakn relations listing', () => {
     }
     // Check the specific relation that have been reversed
     const thing = await internalLoadEntityById('ab78a62f-4928-4d5a-8740-03f0af9c4330');
-    const aggregationMap = new Map(stixRelations.edges.map((i) => [i.node.stix_id_key, i]));
+    const aggregationMap = new Map(stixRelations.edges.map((i) => [head(i.node.external_stix_id), i]));
     const reversedRelation = aggregationMap.get('relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3');
     expect(reversedRelation.fromId).not.toEqual(thing.grakn_id);
   });
@@ -695,7 +693,7 @@ describe('Grakn relations listing', () => {
     const options = { noCache, fromId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330', search: 'Spear phishing' };
     const stixRelations = await listRelations('uses', options);
     expect(stixRelations.edges.length).toEqual(2);
-    const relTargets = await Promise.all(map((s) => loadByGraknId(s.node.toId), stixRelations.edges));
+    const relTargets = await Promise.all(map((s) => elLoadById(s.node.toId), stixRelations.edges));
     for (let index = 0; index < relTargets.length; index += 1) {
       const target = relTargets[index];
       expect(target.name).toEqual(expect.stringContaining('Spear phishing'));
@@ -731,7 +729,7 @@ describe('Grakn relations listing', () => {
     let stixRelations = await listRelations('uses', options);
     expect(stixRelations.edges.length).toEqual(1);
     const relation = head(stixRelations.edges).node;
-    const target = await loadByGraknId(relation.toId);
+    const target = await elLoadById(relation.toId);
     expect(target.name).toEqual(expect.stringContaining('malicious'));
     // Test with exact match
     filters = [{ key, values: ['malicious'] }];
@@ -758,17 +756,16 @@ describe('Grakn relations listing', () => {
 });
 
 describe('Grakn relations with inferences', () => {
-  const noCacheCases = [[true], [false]];
-  it.each(noCacheCases)('should inference explanation correctly resolved', async (noCache) => {
+  it('should inference explanation correctly resolved', async () => {
     await inferenceEnable(GATHERING_TARGETS_RULE);
     // Find the Grakn ID of the connections to build the inferred relation
     // In the data loaded its APT41 (intrusion-set) < target > Southwire (organization)
-    const apt28 = await internalLoadEntityByStixId('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
-    const southwire = await internalLoadEntityByStixId('identity--5a510e41-5cb2-45cc-a191-a4844ea0a141');
+    const apt28 = await internalLoadEntityById('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
+    const southwire = await internalLoadEntityById('identity--5a510e41-5cb2-45cc-a191-a4844ea0a141');
     // Build the inferred relation for testing
     const inference = `{ $rel(source: $from, target: $to) isa targets; $from id ${apt28.grakn_id}; $to id ${southwire.grakn_id}; };`;
     const inferenceId = Buffer.from(inference).toString('base64');
-    const relation = await getRelationInferredById(inferenceId, { noCache });
+    const relation = await getRelationInferredById(inferenceId);
     expect(relation).not.toBeNull();
     expect(relation.relationship_type).toEqual('targets');
     expect(relation.inferred).toBeTruthy();
@@ -776,7 +773,7 @@ describe('Grakn relations with inferences', () => {
     expect(relation.toRole).toEqual('target');
     expect(relation.inferences).not.toBeNull();
     expect(relation.inferences.edges.length).toEqual(2);
-    const aggregationMap = new Map(relation.inferences.edges.map((i) => [i.node.stix_id_key, i.node]));
+    const aggregationMap = new Map(relation.inferences.edges.map((i) => [head(i.node.external_stix_id), i.node]));
     // relationship--3541149d-1af6-4688-993c-dc32c7ee3880
     // APT41 > intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7
     // Allied Universal > identity--c017f212-546b-4f21-999d-97d3dc558f7b
@@ -820,7 +817,7 @@ describe('Grakn element loader', () => {
     const internalId = '685aac19-d2f6-4835-a256-0631bb322732';
     const loadPromise = loadEntityById(internalId, null, { noCache });
     expect(loadPromise).rejects.toThrow();
-    const element = await loadEntityById(internalId, 'Report', { noCache });
+    const element = await loadEntityById(internalId, ENTITY_TYPE_REPORT, { noCache });
     expect(element).not.toBeNull();
     expect(element.id).toEqual(internalId);
     expect(element.name).toEqual('A demo report for testing purposes');
@@ -828,20 +825,11 @@ describe('Grakn element loader', () => {
   it.each(noCacheCases)('should load entity by stix id (noCache = %s)', async (noCache) => {
     // No type
     const stixId = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
-    const loadPromise = loadEntityByStixId(stixId, null, { noCache });
+    const loadPromise = loadEntityById(stixId, null, { noCache });
     expect(loadPromise).rejects.toThrow();
-    const element = await loadEntityByStixId(stixId, 'Report', { noCache });
+    const element = await loadEntityById(stixId, ENTITY_TYPE_REPORT, { noCache });
     expect(element).not.toBeNull();
     expect(element.id).toEqual('685aac19-d2f6-4835-a256-0631bb322732');
-    expect(element.name).toEqual('A demo report for testing purposes');
-  });
-  it.each(noCacheCases)('should load entity by grakn id (noCache = %s)', async (noCache) => {
-    // No type
-    const stixId = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
-    const report = await loadEntityByStixId(stixId, 'Report', { noCache });
-    const element = await loadEntityByGraknId(report.grakn_id, { noCache });
-    expect(element).not.toBeNull();
-    expect(element.stix_id_key).toEqual(stixId);
     expect(element.name).toEqual('A demo report for testing purposes');
   });
   it.each(noCacheCases)('should load relation by id (noCache = %s)', async (noCache) => {
@@ -856,40 +844,17 @@ describe('Grakn element loader', () => {
   });
   it.each(noCacheCases)('should load relation by stix id (noCache = %s)', async (noCache) => {
     const stixId = 'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02';
-    const loadPromise = loadRelationByStixId(stixId, null, { noCache });
+    const loadPromise = loadRelationById(stixId, null, { noCache });
     expect(loadPromise).rejects.toThrow();
-    const element = await loadRelationByStixId(stixId, 'uses', { noCache });
+    const element = await loadRelationById(stixId, 'uses', { noCache });
     expect(element).not.toBeNull();
-    expect(element.stix_id_key).toEqual(stixId);
+    expect(element.stix_id_key).toEqual('relationship--a8391d03-e8f6-52d7-b2c0-a63df0fbef98');
+    expect(element.external_stix_id).toEqual([stixId]);
     expect(element.weight).toEqual(3);
-  });
-  it.each(noCacheCases)('should load relation by grakn id (noCache = %s)', async (noCache) => {
-    const stixId = 'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02';
-    const report = await loadRelationByStixId(stixId, 'uses', { noCache });
-    const element = await loadRelationByGraknId(report.grakn_id, { noCache });
-    expect(element).not.toBeNull();
-    expect(element.stix_id_key).toEqual(stixId);
-    expect(element.weight).toEqual(3);
-  });
-  it.each(noCacheCases)('should load by grakn id (noCache = %s)', async (noCache) => {
-    // Load a relation
-    let stixId = 'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02';
-    const report = await loadRelationByStixId(stixId, 'uses', { noCache });
-    let element = await loadByGraknId(report.grakn_id, { noCache });
-    expect(element).not.toBeNull();
-    expect(element.stix_id_key).toEqual(stixId);
-    expect(element.weight).toEqual(3);
-    // Load an entity
-    stixId = 'course-of-action--ae56a49d-5281-45c5-ab95-70a1439c338e';
-    const courseOfAction = await loadEntityByStixId(stixId, 'Course-Of-Action', { noCache });
-    element = await loadByGraknId(courseOfAction.grakn_id, { noCache });
-    expect(element).not.toBeNull();
-    expect(element.stix_id_key).toEqual(stixId);
-    expect(element.name).toEqual('Compile After Delivery Mitigation');
   });
   it.each(noCacheCases)('should load by grakn id for multiple attributes (noCache = %s)', async (noCache) => {
     const stixId = 'identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132';
-    const identity = await loadEntityByStixId(stixId, 'Organization', { noCache });
+    const identity = await loadEntityById(stixId, ENTITY_TYPE_ORGANIZATION, { noCache });
     expect(identity).not.toBeNull();
     expect(identity.alias).not.toBeNull();
     expect(identity.alias.length).toEqual(2);
@@ -910,7 +875,7 @@ describe('Grakn attribute updated and indexed correctly', () => {
     const attributeGraknId = threatReportAttribute.node.id;
     // 01. Get the report directly and test if type is "Threat report".
     const stixId = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
-    let report = await loadEntityByStixId(stixId, 'Report', { noCache });
+    let report = await loadEntityById(stixId, ENTITY_TYPE_REPORT, { noCache });
     expect(report).not.toBeNull();
     expect(report.report_class).toEqual('Threat Report');
     // 02. Update attribute "Threat report" to "Threat test"
@@ -921,7 +886,7 @@ describe('Grakn attribute updated and indexed correctly', () => {
     });
     expect(updatedAttribute).not.toBeNull();
     // 03. Get the report directly and test if type is Threat test
-    report = await loadEntityByStixId(stixId, 'Report', { noCache });
+    report = await loadEntityById(stixId, ENTITY_TYPE_REPORT, { noCache });
     expect(report).not.toBeNull();
     expect(report.report_class).toEqual('Threat Test');
     // 04. Back to original configuration
@@ -933,7 +898,7 @@ describe('Grakn attribute updated and indexed correctly', () => {
       newValue: 'Threat Report',
     });
     expect(updatedAttribute).not.toBeNull();
-    report = await loadEntityByStixId(stixId, 'Report', { noCache });
+    report = await loadEntityById(stixId, ENTITY_TYPE_REPORT, { noCache });
     expect(report).not.toBeNull();
     expect(report.report_class).toEqual('Threat Report');
   });
@@ -948,7 +913,7 @@ describe('Grakn attribute updated and indexed correctly', () => {
     const attributeGraknId = relationAttribute.node.id;
     // 01. Get the relation relationship--c32d553c-e22f-40ce-93e6-eb62dd145f3b and test if type is "Unknown"
     const stixId = 'relationship--c32d553c-e22f-40ce-93e6-eb62dd145f3b';
-    let relation = await loadRelationByStixId(stixId, 'indicates', { noCache });
+    let relation = await loadRelationById(stixId, 'indicates', { noCache });
     expect(relation).not.toBeNull();
     expect(relation.role_played).toEqual('Unknown');
     // 02. Update attribute "Unknown" to "For test"
@@ -959,7 +924,7 @@ describe('Grakn attribute updated and indexed correctly', () => {
     });
     expect(updatedAttribute).not.toBeNull();
     // 03. Get the relation directly and test if type is "For test"
-    relation = await loadRelationByStixId(stixId, 'indicates', { noCache });
+    relation = await loadRelationById(stixId, 'indicates', { noCache });
     expect(relation).not.toBeNull();
     expect(relation.role_played).toEqual('For test');
     // 04. Back to original configuration
@@ -971,7 +936,7 @@ describe('Grakn attribute updated and indexed correctly', () => {
       value: 'For test',
       newValue: 'Unknown',
     });
-    relation = await loadRelationByStixId(stixId, 'indicates', { noCache });
+    relation = await loadRelationById(stixId, 'indicates', { noCache });
     expect(relation).not.toBeNull();
     expect(relation.role_played).toEqual('Unknown');
   });

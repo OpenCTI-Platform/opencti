@@ -8,7 +8,6 @@ import {
   listEntities,
   listRelations,
   loadEntityById,
-  loadEntityByStixId,
   prepareDate,
   timeSeriesEntities,
 } from '../database/grakn';
@@ -17,15 +16,13 @@ import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { notify } from '../database/redis';
 import { findAll as findAllStixObservables } from './stixObservable';
 import { findAll as findAllStixDomainEntities } from './stixDomainEntity';
+import { ENTITY_TYPE_NOTE } from '../utils/idGenerator';
 
 export const findById = (noteId) => {
-  if (noteId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(noteId, 'Note');
-  }
-  return loadEntityById(noteId, 'Note');
+  return loadEntityById(noteId, ENTITY_TYPE_NOTE);
 };
 export const findAll = async (args) => {
-  return listEntities(['Note'], ['name', 'content'], args);
+  return listEntities([ENTITY_TYPE_NOTE], ['name', 'content'], args);
 };
 
 // Entities tab
@@ -79,7 +76,7 @@ export const noteContainsStixObservable = async (noteId, objectId) => {
 };
 // region series
 export const notesTimeSeries = (args) => {
-  return timeSeriesEntities('Note', [], args);
+  return timeSeriesEntities(ENTITY_TYPE_NOTE, [], args);
 };
 export const notesNumber = (args) => ({
   count: getSingleValueNumber(
@@ -87,20 +84,20 @@ export const notesNumber = (args) => ({
       args.endDate ? `$x has created_at $date; $date < ${prepareDate(args.endDate)};` : ''
     } get; count;`
   ),
-  total: getSingleValueNumber(`match $x isa Note; get; count;`),
+  total: getSingleValueNumber(`match $x isa ${ENTITY_TYPE_NOTE}; get; count;`),
 });
 export const notesTimeSeriesByEntity = (args) => {
   const filters = [{ isRelation: true, type: 'object_refs', value: args.objectId }];
-  return timeSeriesEntities('Note', filters, args);
+  return timeSeriesEntities(ENTITY_TYPE_NOTE, filters, args);
 };
 export const notesTimeSeriesByAuthor = async (args) => {
   const { authorId } = args;
   const filters = [{ isRelation: true, from: 'so', to: 'creator', type: 'created_by_ref', value: authorId }];
-  return timeSeriesEntities('Note', filters, args);
+  return timeSeriesEntities(ENTITY_TYPE_NOTE, filters, args);
 };
 export const notesNumberByEntity = (args) => ({
   count: getSingleValueNumber(
-    `match $x isa Note;
+    `match $x isa ${ENTITY_TYPE_NOTE};
     $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
     $so has internal_id_key "${escapeString(args.objectId)}" ${
       args.endDate ? `; $x has created_at $date; $date < ${prepareDate(args.endDate)};` : ''
@@ -109,7 +106,7 @@ export const notesNumberByEntity = (args) => ({
     count;`
   ),
   total: getSingleValueNumber(
-    `match $x isa Note;
+    `match $x isa ${ENTITY_TYPE_NOTE};
     $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
     $so has internal_id_key "${escapeString(args.objectId)}";
     get;
@@ -121,7 +118,7 @@ export const notesDistributionByEntity = async (args) => {
   if (field.includes('.')) {
     const options = pipe(
       assoc('relationType', 'object_refs'),
-      assoc('toType', 'Note'),
+      assoc('toType', ENTITY_TYPE_NOTE),
       assoc('field', field.split('.')[1]),
       assoc('remoteRelationType', field.split('.')[0]),
       assoc('fromId', objectId)
@@ -129,13 +126,13 @@ export const notesDistributionByEntity = async (args) => {
     return distributionEntitiesThroughRelations(options);
   }
   const filters = [{ isRelation: true, type: 'object_refs', value: objectId }];
-  return distributionEntities('Note', filters, args);
+  return distributionEntities(ENTITY_TYPE_NOTE, filters, args);
 };
 // endregion
 
 // region mutations
 export const addNote = async (user, note) => {
-  const created = await createEntity(user, note, 'Note');
+  const created = await createEntity(user, note, ENTITY_TYPE_NOTE);
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 // endregion

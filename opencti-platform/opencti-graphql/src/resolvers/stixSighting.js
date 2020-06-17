@@ -14,7 +14,7 @@ import {
 } from '../domain/stixSighting';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { distributionRelations, loadByGraknId, timeSeriesRelations, REL_CONNECTED_SUFFIX } from '../database/grakn';
+import { distributionRelations, loadById, timeSeriesRelations, REL_CONNECTED_SUFFIX } from '../database/grakn';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { convertDataToStix } from '../database/stix';
 
@@ -41,13 +41,13 @@ const stixSightingResolvers = {
     toCreatedAt: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.created_at`,
   },
   StixSighting: {
-    from: (rel) => loadByGraknId(rel.fromId),
-    to: (rel) => loadByGraknId(rel.toId),
+    from: (rel) => loadById(rel.fromId, rel.fromType),
+    to: (rel) => loadById(rel.toId, rel.toType),
     toStix: (rel) => convertDataToStix(rel).then((stixData) => JSON.stringify(stixData)),
   },
   RelationEmbedded: {
-    from: (rel) => loadByGraknId(rel.fromId),
-    to: (rel) => loadByGraknId(rel.toId),
+    from: (rel) => loadById(rel.fromId, rel.fromType),
+    to: (rel) => loadById(rel.toId, rel.toType),
   },
   Mutation: {
     stixSightingEdit: (_, { id }, { user }) => ({

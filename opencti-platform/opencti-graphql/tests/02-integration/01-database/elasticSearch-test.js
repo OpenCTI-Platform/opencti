@@ -14,7 +14,6 @@ import {
   elIndexElements,
   elIndexExists,
   elIsAlive,
-  elLoadByGraknId,
   elLoadById,
   elLoadByStixId,
   elLoadByTerms,
@@ -54,11 +53,9 @@ describe('Elasticsearch document loader', () => {
 
   it('should create and retrieve document', async () => {
     // Index an element and try to retrieve the data
-    const graknId = 'V23181';
     const stixId = 'campaign--aae8b913-564b-405e-a9c1-5e5ea6c60259';
     const internalIdKey = '867d03f4-be73-44f6-82d9-7d7b14df55d7';
     const documentBody = {
-      grakn_id: graknId,
       internal_id_key: internalIdKey,
       stix_id_key: stixId,
       name: 'Germany - Maze - October 2019',
@@ -68,17 +65,14 @@ describe('Elasticsearch document loader', () => {
     expect(indexedData).toEqual(documentBody);
     const documentWithIndex = assoc('_index', 'test_index', documentBody);
     // Load by internal Id
-    const dataThroughInternal = await elLoadById(internalIdKey, null, null, ['test_index']);
+    const dataThroughInternal = await elLoadById(internalIdKey, null, ['test_index']);
     expect(dataThroughInternal).toEqual(documentWithIndex);
     // Load by stix id
-    const dataThroughStix = await elLoadByStixId(stixId, 'Campaign', null, ['test_index']);
+    const dataThroughStix = await elLoadByStixId(stixId, null, ['test_index']);
     expect(dataThroughStix).toEqual(documentWithIndex);
-    // Load by grakn id
-    const dataThroughGraknId = await elLoadByGraknId(graknId, 'Stix-Domain', null, ['test_index']);
-    expect(dataThroughGraknId).toEqual(documentWithIndex);
     // Try to delete
     await elDeleteByField('test_index', 'internal_id_key', internalIdKey);
-    const removedInternal = await elLoadById(internalIdKey, null, null, ['test_index']);
+    const removedInternal = await elLoadById(internalIdKey, null, ['test_index']);
     expect(removedInternal).toBeNull();
   });
 });
@@ -411,7 +405,7 @@ describe('Elasticsearch pagination', () => {
     expect(data).not.toBeNull();
     expect(data.edges.length).toEqual(2);
     const nodes = map((e) => e.node, data.edges);
-    const malware = find(propEq('stix_id_key', 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c'))(nodes);
+    const malware = find(propEq('external_stix_id', ['malware--faa5b705-cf44-4e50-8472-29e5fec43c3c']))(nodes);
     expect(malware.internal_id_key).not.toBeNull();
     expect(malware.name).toEqual('Paradise Ransomware');
     expect(malware._index).toEqual(INDEX_STIX_ENTITIES);
@@ -536,9 +530,9 @@ describe('Elasticsearch pagination', () => {
 
 describe('Elasticsearch basic loader', () => {
   it('should entity load by internal id', async () => {
-    const data = await elLoadById('ab78a62f-4928-4d5a-8740-03f0af9c4330', 'Stix-Domain-Entity');
+    const data = await elLoadById('ab78a62f-4928-4d5a-8740-03f0af9c4330');
     expect(data).not.toBeNull();
-    expect(data.stix_id_key).toEqual('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    expect(data.stix_id_key).toEqual('malware--f3acb6c7-40d8-5fab-9a90-07746ceb0f9a');
     expect(data.revoked).toBeFalsy();
     expect(data.name).toEqual('Paradise Ransomware');
     expect(data.entity_type).toEqual('malware');
@@ -547,15 +541,6 @@ describe('Elasticsearch basic loader', () => {
     const data = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', 'Stix-Domain');
     expect(data).not.toBeNull();
     expect(data.id).toEqual('ab78a62f-4928-4d5a-8740-03f0af9c4330');
-    expect(data.revoked).toBeFalsy();
-    expect(data.name).toEqual('Paradise Ransomware');
-    expect(data.entity_type).toEqual('malware');
-  });
-  it('should entity load by grakn id', async () => {
-    const finder = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', 'Malware');
-    const data = await elLoadByGraknId(finder.grakn_id, 'malware');
-    expect(data).not.toBeNull();
-    expect(data.grakn_id).toEqual(finder.grakn_id);
     expect(data.revoked).toBeFalsy();
     expect(data.name).toEqual('Paradise Ransomware');
     expect(data.entity_type).toEqual('malware');
