@@ -599,9 +599,9 @@ class OpenCTIApiClient:
             },
             "variant-of": {
                 "malware": {
-                    "malware": {"from_role": "original", "to_role": "variation"},
+                    "malware": {"from_role": "variation", "to_role": "original"},
                 },
-                "tool": {"tool": {"from_role": "original", "to_role": "variation"},},
+                "tool": {"tool": {"from_role": "variation", "to_role": "original"},},
             },
             "targets": {
                 "threat-actor": {
