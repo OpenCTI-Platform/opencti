@@ -1409,14 +1409,22 @@ class OpenCTIStix2:
             created_by_ref["modified"] = self.format_date(
                 entity_created_by_ref["modified"]
             )
-            if (
-                entity_created_by_ref["entity_type"] == "organization"
-                and "organization_class" in entity_created_by_ref
-                and self.opencti.not_empty(entity_created_by_ref["organization_class"])
-            ):
-                created_by_ref[CustomProperties.ORG_CLASS] = entity_created_by_ref[
-                    "organization_class"
-                ]
+            if entity_created_by_ref["entity_type"] == "organization":
+                if (
+                    "organization_class" in entity_created_by_ref
+                    and self.opencti.not_empty(
+                        entity_created_by_ref["organization_class"]
+                    )
+                ):
+                    created_by_ref[CustomProperties.ORG_CLASS] = entity_created_by_ref[
+                        "organization_class"
+                    ]
+                if "reliability" in entity_created_by_ref and self.opencti.not_empty(
+                    entity_created_by_ref["reliability"]
+                ):
+                    created_by_ref[
+                        CustomProperties.RELIABILITY
+                    ] = entity_created_by_ref["reliability"]
             if self.opencti.not_empty(entity_created_by_ref["alias"]):
                 created_by_ref[CustomProperties.ALIASES] = entity_created_by_ref[
                     "alias"

@@ -143,6 +143,7 @@ class CustomProperties:
 
     # applies to STIX Identity
     ORG_CLASS = "x_opencti_organization_class"
+    RELIABILITY = "x_opencti_reliability"
     IDENTITY_TYPE = (
         "x_opencti_identity_type"  # this overrides the stix 'identity_class' property!
     )

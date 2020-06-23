@@ -24,6 +24,7 @@ class Identity:
             updated_at
             ... on Organization {
                 organization_class
+                reliability
             }
             createdByRef {
                 node {
@@ -38,6 +39,7 @@ class Identity:
                     modified
                     ... on Organization {
                         organization_class
+                        reliability
                     }
                 }
                 relation {
@@ -226,6 +228,7 @@ class Identity:
         marking_definitions = kwargs.get("markingDefinitions", None)
         tags = kwargs.get("tags", None)
         organization_class = kwargs.get("organization_class", None)
+        reliability = kwargs.get("reliability", None)
 
         if name is not None and description is not None:
             self.opencti.log("info", "Creating Identity {" + name + "}.")
@@ -254,6 +257,7 @@ class Identity:
                     }
                 """
                 input_variables["organization_class"] = organization_class
+                input_variables["reliability"] = reliability
                 result_data_field = "organizationAdd"
             else:
                 query = """
@@ -296,9 +300,11 @@ class Identity:
         marking_definitions = kwargs.get("markingDefinitions", None)
         tags = kwargs.get("tags", None)
         organization_class = kwargs.get("organization_class", None)
+        reliability = kwargs.get("reliability", None)
         update = kwargs.get("update", False)
         custom_attributes = """
             id
+            stix_id_key
             entity_type
             name
             description 
@@ -308,6 +314,7 @@ class Identity:
             }
             ... on Organization {
                 organization_class
+                reliability
             }
             createdByRef {
                 node {
@@ -373,6 +380,16 @@ class Identity:
                         value=organization_class,
                     )
                     object_result["organization_class"] = organization_class
+                # reliability
+                if (
+                    self.opencti.not_empty(reliability)
+                    and "reliability" in object_result
+                    and object_result["reliability"] != reliability
+                ):
+                    self.opencti.stix_domain_entity.update_field(
+                        id=object_result["id"], key="reliability", value=reliability,
+                    )
+                    object_result["reliability"] = reliability
             return object_result
         else:
             return self.create_raw(
@@ -389,6 +406,7 @@ class Identity:
                 markingDefinitions=marking_definitions,
                 tags=tags,
                 organization_class=organization_class,
+                reliability=reliability,
             )
 
     """
@@ -446,6 +464,9 @@ class Identity:
                 organization_class=stix_object[CustomProperties.ORG_CLASS]
                 if CustomProperties.ORG_CLASS in stix_object
                 else None,
+                reliability=stix_object[CustomProperties.RELIABILITY]
+                if CustomProperties.RELIABILITY in stix_object
+                else None,
                 update=update,
             )
         else:
@@ -494,12 +515,15 @@ class Identity:
             identity["modified"] = self.opencti.stix2.format_date(entity["modified"])
             if self.opencti.not_empty(entity["alias"]):
                 identity["aliases"] = entity["alias"]
-            if (
-                entity["entity_type"] == "organization"
-                and "organization_class" in entity
-                and self.opencti.not_empty(entity["organization_class"])
-            ):
-                identity[CustomProperties.ORG_CLASS] = entity["organization_class"]
+            if entity["entity_type"] == "organization":
+                if "organization_class" in entity and self.opencti.not_empty(
+                    entity["organization_class"]
+                ):
+                    identity[CustomProperties.ORG_CLASS] = entity["organization_class"]
+                if "reliability" in entity and self.opencti.not_empty(
+                    entity["reliability"]
+                ):
+                    identity[CustomProperties.RELIABILITY] = entity["reliability"]
             identity[CustomProperties.IDENTITY_TYPE] = entity["entity_type"]
             identity[CustomProperties.ID] = entity["id"]
             return self.opencti.stix2.prepare_export(
