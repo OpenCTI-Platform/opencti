@@ -20,6 +20,7 @@ import {
   pipe,
   toPairs,
   uniq,
+  isNil,
 } from 'ramda';
 import {
   buildPagination,
@@ -858,6 +859,10 @@ export const elDeleteInstanceIds = async (ids, indexesToHandle = KNOWLEDGE_INDIC
 };
 export const elRemoveRelationConnection = async (relationId) => {
   const relation = await elLoadById(relationId);
+  if (isNil(relation)) {
+    logger.warn('[ELASTICSEARCH] Relation not found for deletion', { relationId });
+    return;
+  }
   const from = await elLoadByGraknId(relation.fromId);
   const to = await elLoadByGraknId(relation.toId);
   const type = `${REL_INDEX_PREFIX + relation.relationship_type}.internal_id_key`;

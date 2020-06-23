@@ -681,6 +681,7 @@ enum StixRelationsOrdering {
   weight
   first_seen
   last_seen
+  role_played
   created
   modified
   created_at
@@ -1153,7 +1154,7 @@ input IdentityAddInput {
 enum UsersOrdering {
   name
   confidence
-  email
+  user_email
   firstname
   lastname
   created

@@ -525,7 +525,7 @@ const loadConcept = async (tx, concept, args = {}) => {
       // Wait for all promises before building the result
       return Promise.all([isInferredPromise, rolesPromises]).then(([isInferred, roles]) => {
         return pipe(
-          assoc('id', isInferred ? uuid() : entityData.id),
+          assoc('id', isInferred ? '' : entityData.id),
           assoc('inferred', isInferred),
           assoc('entity_type', entityData.entity_type || TYPE_RELATION_EMBEDDED),
           assoc('relationship_type', head(types)),
@@ -1880,9 +1880,10 @@ export const updateAttribute = async (user, id, type, input, wTx, options = {}) 
 
 const getElementsRelated = async (targetId, elements = [], options = {}) => {
   const eid = escapeString(targetId);
-  const read = `match $from has internal_id_key "${eid}"; $rel($from, $to);
-   { $rel isa stix_relation; } or { $rel isa stix_observable_relation; } or { $rel isa stix_relation_embedded; } 
-   or { $rel isa relation_embedded; } or { $rel isa stix_sighting; }; get;`;
+  const read = `match $from has internal_id_key "${eid}"; $rel($from, $to); { $rel isa authorize; } or
+  { $rel isa membership; } or { $rel isa permission; } or { $rel isa user_role; } or { $rel isa role_capability; }
+  { $rel isa stix_relation; } or { $rel isa stix_observable_relation; } or { $rel isa stix_relation_embedded; } 
+  or { $rel isa relation_embedded; } or { $rel isa stix_sighting; }; get;`;
   const connectedRelations = await find(read, ['rel'], options);
   const connectedRelationsIds = map((r) => ({ id: r.rel.id, relDependency: true }), connectedRelations);
   elements.push(...connectedRelationsIds);
