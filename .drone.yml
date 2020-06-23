@@ -65,9 +65,9 @@ services:
 - name: grakn
   image: graknlabs/grakn:1.7.2
 - name: redis
-  image: redis:6.0.3
+  image: redis:6.0.5
 - name: elastic
-  image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
+  image: docker.elastic.co/elasticsearch/elasticsearch:7.8.0
   environment:
     discovery.type: single-node
     ES_JAVA_OPTS: -Xms750m -Xmx750m
