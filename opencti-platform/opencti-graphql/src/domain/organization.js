@@ -8,7 +8,7 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { buildPagination } from '../database/utils';
-import { ENTITY_TYPE_ORGANIZATION } from '../utils/idGenerator';
+import { ENTITY_TYPE_ORGA } from '../utils/idGenerator';
 
 export const findById = (organizationId) => {
   return loadEntityById(organizationId, 'Organization');
@@ -26,6 +26,6 @@ export const sectors = (organizationId) => {
 };
 
 export const addOrganization = async (user, organization) => {
-  const created = await createEntity(user, organization, ENTITY_TYPE_ORGANIZATION);
+  const created = await createEntity(user, organization, ENTITY_TYPE_ORGA);
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };

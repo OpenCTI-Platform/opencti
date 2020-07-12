@@ -10,7 +10,7 @@ import {
   updateAttribute,
 } from '../database/grakn';
 import { connectorConfig, registerConnectorQueues, unregisterConnector } from '../database/rabbitmq';
-import { ENTITY_TYPE_CONNECTOR } from '../utils/idGenerator';
+import {ENTITY_TYPE_CONNECTOR, generateId} from '../utils/idGenerator';
 
 export const CONNECTOR_INTERNAL_IMPORT_FILE = 'INTERNAL_IMPORT_FILE'; // Files mime types to support (application/json, ...) -> import-
 export const CONNECTOR_INTERNAL_EXPORT_FILE = 'INTERNAL_EXPORT_FILE'; // Files mime types to generate (application/pdf, ...) -> export-
@@ -81,7 +81,9 @@ export const resetStateConnector = async (user, id) => {
   });
   return loadEntityById(id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
 };
-export const registerConnector = async (user, { id, name, type, scope }) => {
+export const registerConnector = async (user, connectorData) => {
+  const { name, type, scope } = connectorData;
+  const id = generateId(ENTITY_TYPE_CONNECTOR, connectorData);
   const connector = await loadEntityById(id, ENTITY_TYPE_CONNECTOR);
   // Register queues
   await registerConnectorQueues(id, name, type, scope);

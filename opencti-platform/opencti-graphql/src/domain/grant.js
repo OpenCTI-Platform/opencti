@@ -1,6 +1,6 @@
 import { assoc, dissoc, map, propOr, pipe } from 'ramda';
 import { createEntity, createRelation, deleteEntityById } from '../database/grakn';
-import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_ROLE, generateInternalId } from '../utils/idGenerator';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_ROLE, generateId, RELATION_ROLE_CAPABILITY } from '../utils/idGenerator';
 
 export const addCapability = async (user, capability) => {
   return createEntity(user, capability, ENTITY_TYPE_CAPABILITY, { noLog: true });
@@ -22,10 +22,10 @@ export const addRole = async (user, role) => {
           fromId: roleEntity.id,
           fromType: ENTITY_TYPE_ROLE,
           fromRole: 'position',
-          toId: generateInternalId(ENTITY_TYPE_CAPABILITY, { name: capabilityName }),
+          toId: generateId(ENTITY_TYPE_CAPABILITY, { name: capabilityName }),
           toType: ENTITY_TYPE_CAPABILITY,
           toRole: 'capability',
-          through: 'role_capability',
+          through: RELATION_ROLE_CAPABILITY,
         },
         { noLog: true }
       ),

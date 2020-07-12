@@ -43,9 +43,14 @@ import {
   ENTITY_TYPE_ROLE,
   ENTITY_TYPE_TOKEN,
   ENTITY_TYPE_USER,
-  generateInternalId,
+  generateId,
   OPENCTI_ADMIN_UUID,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING,
+  RELATION_ROLE_CAPABILITY,
+  RELATION_USER_ROLE,
 } from '../utils/idGenerator';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 // region utils
 export const BYPASS = 'BYPASS';
@@ -157,7 +162,7 @@ const clearUserTokenCache = (userId) => {
 export const getRoles = async (userId) => {
   const data = await find(
     `match $client isa User, has internal_id_key "${escapeString(userId)}";
-            (client: $client, position: $role) isa user_role; 
+            (client: $client, position: $role) isa ${RELATION_USER_ROLE}; 
             get;`,
     ['role']
   );
@@ -166,14 +171,14 @@ export const getRoles = async (userId) => {
 export const getCapabilities = async (userId) => {
   const data = await find(
     `match $client isa User, has internal_id_key "${escapeString(userId)}";
-            (client: $client, position: $role) isa user_role; 
-            (position: $role, capability: $capability) isa role_capability; 
+            (client: $client, position: $role) isa ${RELATION_USER_ROLE}; 
+            (position: $role, capability: $capability) isa ${RELATION_ROLE_CAPABILITY}; 
             get;`,
     ['capability']
   );
   const capabilities = map((r) => r.capability, data);
   if (userId === OPENCTI_ADMIN_UUID && !rFind(propEq('name', BYPASS))(capabilities)) {
-    const id = generateInternalId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
+    const id = generateId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
     capabilities.push({ id, internal_id_key: id, name: BYPASS });
   }
   return capabilities;
@@ -181,7 +186,7 @@ export const getCapabilities = async (userId) => {
 export const getRoleCapabilities = async (roleId) => {
   const data = await find(
     `match $role isa Role, has internal_id_key "${escapeString(roleId)}";
-            (position: $role, capability: $capability) isa role_capability; 
+            (position: $role, capability: $capability) isa ${RELATION_ROLE_CAPABILITY}; 
             get;`,
     ['capability']
   );
@@ -201,7 +206,7 @@ export const findCapabilities = (args) => {
 
 export const removeRole = async (userId, roleName) => {
   await executeWrite(async (wTx) => {
-    const query = `match $rel(client: $from, position: $to) isa user_role; 
+    const query = `match $rel(client: $from, position: $to) isa ${RELATION_USER_ROLE}; 
             $from has internal_id_key "${escapeString(userId)}"; 
             $to has name "${escapeString(roleName)}"; 
             delete $rel;`;
@@ -212,20 +217,24 @@ export const removeRole = async (userId, roleName) => {
 };
 export const roleRemoveCapability = async (user, roleId, capabilityName) => {
   await executeWrite(async (wTx) => {
-    const query = `match $rel(position: $from, capability: $to) isa role_capability; 
+    const query = `match $rel(position: $from, capability: $to) isa ${RELATION_ROLE_CAPABILITY}; 
             $from isa Role, has internal_id_key "${escapeString(roleId)}"; 
             $to isa Capability, has name $name; { $name contains "${escapeString(capabilityName)}";}; 
             delete $rel;`;
     await wTx.query(query, { infer: false });
   });
   // Clear cache of every user with this modified role
-  const impactedUsers = await findAll({ filters: [{ key: 'rel_user_role.internal_id_key', values: [roleId] }] });
+  const impactedUsers = await findAll({
+    filters: [{ key: `${REL_INDEX_PREFIX}${RELATION_USER_ROLE}.internal_id_key`, values: [roleId] }],
+  });
   await Promise.all(map((e) => clearUserTokenCache(e.node.id), impactedUsers.edges));
   return loadEntityById(roleId, ENTITY_TYPE_ROLE);
 };
 export const roleDelete = async (user, roleId) => {
   // Clear cache of every user with this deleted role
-  const impactedUsers = await findAll({ filters: [{ key: 'rel_user_role.internal_id_key', values: [roleId] }] });
+  const impactedUsers = await findAll({
+    filters: [{ key: `${REL_INDEX_PREFIX}${RELATION_USER_ROLE}.internal_id_key`, values: [roleId] }],
+  });
   await Promise.all(map((e) => clearUserTokenCache(e.node.id), impactedUsers.edges));
   return deleteEntityById(user, roleId, ENTITY_TYPE_ROLE, { noLog: true });
 };
@@ -249,10 +258,10 @@ export const assignRoleToUser = (user, userId, roleName) => {
     fromId: userId,
     fromType: ENTITY_TYPE_USER,
     fromRole: 'client',
-    toId: generateInternalId(ENTITY_TYPE_ROLE, { name: roleName }),
+    toId: generateId(ENTITY_TYPE_ROLE, { name: roleName }),
     toType: ENTITY_TYPE_ROLE,
     toRole: 'position',
-    through: 'user_role',
+    through: RELATION_USER_ROLE,
   };
   return createRelation(user, assignInput, { noLog: true });
 };
@@ -303,12 +312,14 @@ export const roleEditField = (user, roleId, input) => {
 export const roleAddRelation = async (user, roleId, input) => {
   const finalInput = pipe(
     assoc('fromId', roleId),
-    assoc('through', 'role_capability'),
+    assoc('through', RELATION_ROLE_CAPABILITY),
     assoc('fromType', ENTITY_TYPE_ROLE)
   )(input);
   const data = await createRelation(user, finalInput, { noLog: true });
   // Clear cache of every user with this modified role
-  const impactedUsers = await findAll({ filters: [{ key: 'rel_user_role.internal_id_key', values: [roleId] }] });
+  const impactedUsers = await findAll({
+    filters: [{ key: `${REL_INDEX_PREFIX}${RELATION_USER_ROLE}.internal_id_key`, values: [roleId] }],
+  });
   await Promise.all(map((e) => clearUserTokenCache(e.node.id), impactedUsers.edges));
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
 };
@@ -373,7 +384,7 @@ export const userDeleteRelation = async (user, userId, relationId = null, toId =
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
 };
 export const personAddRelation = async (user, userId, input) => {
-  if (!['tagged', 'created_by_ref', 'object_marking_refs'].includes(input.through)) {
+  if (![RELATION_OBJECT_LABEL, RELATION_CREATED_BY, RELATION_OBJECT_MARKING].includes(input.through)) {
     throw ForbiddenAccess();
   }
   const finalInput = pipe(assoc('fromId', userId), assoc('fromType', ENTITY_TYPE_USER))(input);

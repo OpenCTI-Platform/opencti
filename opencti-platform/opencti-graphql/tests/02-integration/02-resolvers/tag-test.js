@@ -61,7 +61,7 @@ describe('Tag resolver standard behavior', () => {
     expect(queryResult.data.tag).not.toBeNull();
     expect(queryResult.data.tag.id).toEqual(tagInternalId);
   });
-  it('should list tags', async () => {
+  it('should list labels', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
     expect(queryResult.data.tags.edges.length).toEqual(4);
   });

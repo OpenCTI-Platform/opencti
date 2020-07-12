@@ -14,13 +14,13 @@ import { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
 import { elCount } from '../database/elasticSearch';
 import { INDEX_STIX_RELATIONS } from '../database/utils';
-import { isStixId, isStandardId, isStixRelation } from '../utils/idGenerator';
+import { isStixId, isInternalId, isStixRelation } from '../utils/idGenerator';
 
 export const findAll = async (args) => {
   return listRelations(propOr('stix_relation', 'relationType', args), args);
 };
 export const findById = (stixRelationId) => {
-  if (!isStixId(stixRelationId) && !isStandardId(stixRelationId)) {
+  if (!isStixId(stixRelationId) && !isInternalId(stixRelationId)) {
     return getRelationInferredById(stixRelationId);
   }
   return loadRelationById(stixRelationId, 'stix_relation');

@@ -8,6 +8,7 @@ import {
   stixDomainEntityEditField,
 } from '../domain/stixDomainEntity';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
+import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
 
 const cityResolvers = {
   Query: {
@@ -18,9 +19,9 @@ const cityResolvers = {
     country: (city) => country(city.id),
   },
   CitiesFilter: {
-    createdBy: `${REL_INDEX_PREFIX}created_by_ref.internal_id_key`,
-    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.internal_id_key`,
-    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
+    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id_key`,
+    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id_key`,
+    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id_key`,
   },
   Mutation: {
     cityEdit: (_, { id }, { user }) => ({

@@ -30,7 +30,13 @@ import { INDEX_STIX_ENTITIES } from '../database/utils';
 import { createdByRef, killChainPhases, markingDefinitions, reports, notes } from './stixEntity';
 import { addPerson } from './user';
 import { noteContainsStixDomainEntity } from './note';
-import { ENTITY_TYPE_USER } from '../utils/idGenerator';
+import {
+  ENTITY_TYPE_USER,
+  RELATION_CREATED_BY,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT,
+  RELATION_OBJECT_MARKING,
+} from '../utils/idGenerator';
 
 export const findAll = async (args) => {
   const noTypes = !args.types || args.types.length === 0;
@@ -69,7 +75,7 @@ export const findById = async (stixDomainEntityId) => {
 // region time series
 export const reportsTimeSeries = (stixDomainEntityId, args) => {
   const filters = [
-    { isRelation: true, from: 'knowledge_aggregation', to: 'so', type: 'object_refs', value: stixDomainEntityId },
+    { isRelation: true, from: 'knowledge_aggregation', to: 'so', type: RELATION_OBJECT, value: stixDomainEntityId },
   ];
   return timeSeriesEntities('Report', filters, args);
 };
@@ -231,7 +237,7 @@ export const stixDomainEntityAddRelation = async (user, stixDomainEntityId, inpu
   if (
     (isUserType &&
       !isNil(stixDomainEntity.external) &&
-      !['tagged', 'created_by_ref', 'object_marking_refs'].includes(input.through)) ||
+      ![RELATION_OBJECT_LABEL, RELATION_CREATED_BY, RELATION_OBJECT_MARKING].includes(input.through)) ||
     !input.through
   ) {
     throw ForbiddenAccess();
@@ -245,7 +251,7 @@ export const stixDomainEntityAddRelations = async (user, stixDomainEntityId, inp
   if (
     (stixDomainEntity.entity_type === 'user' &&
       !isNil(stixDomainEntity.external) &&
-      !['tagged', 'created_by_ref', 'object_marking_refs'].includes(input.through)) ||
+      ![RELATION_OBJECT_LABEL, RELATION_CREATED_BY, RELATION_OBJECT_MARKING].includes(input.through)) ||
     !input.through
   ) {
     throw ForbiddenAccess();
@@ -282,7 +288,7 @@ export const stixDomainEntityDeleteRelation = async (
       data.fromId !== stixDomainEntity.internal_id_key ||
       (stixDomainEntity.entity_type === ENTITY_TYPE_USER &&
       !isNil(stixDomainEntity.external) && // TODO JRI ASK @SAM
-        !['tagged', 'created_by_ref', 'object_marking_refs'].includes(data.entity_type))
+        ![RELATION_OBJECT_LABEL, RELATION_CREATED_BY, RELATION_OBJECT_MARKING].includes(data.entity_type))
     ) {
       throw ForbiddenAccess();
     }
@@ -291,7 +297,7 @@ export const stixDomainEntityDeleteRelation = async (
     if (
       stixDomainEntity.entity_type === 'user' &&
       !isNil(stixDomainEntity.external) &&
-      !['tagged', 'created_by_ref', 'object_marking_refs'].includes(relationType)
+      ![RELATION_OBJECT_LABEL, RELATION_CREATED_BY, RELATION_OBJECT_MARKING].includes(relationType)
     ) {
       throw ForbiddenAccess();
     }
@@ -357,7 +363,7 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
                   fromRole: 'knowledge_aggregation',
                   toId: newRelation.internal_id_key,
                   toRole: 'so',
-                  through: 'object_refs',
+                  through: RELATION_OBJECT,
                 });
               })
             );
@@ -367,7 +373,7 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
                   fromRole: 'knowledge_aggregation',
                   toId: newRelation.internal_id_key,
                   toRole: 'so',
-                  through: 'object_refs',
+                  through: RELATION_OBJECT,
                 });
               })
             );
@@ -391,7 +397,7 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
               fromRole: 'knowledge_aggregation',
               toId: stixDomainEntityId,
               toRole: 'so',
-              through: 'object_refs',
+              through: RELATION_OBJECT,
             });
           }
           return true;
@@ -413,7 +419,7 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
               fromRole: 'knowledge_aggregation',
               toId: stixDomainEntityId,
               toRole: 'so',
-              through: 'object_refs',
+              through: RELATION_OBJECT,
             });
           }
           return true;

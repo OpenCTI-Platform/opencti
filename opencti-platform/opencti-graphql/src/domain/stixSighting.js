@@ -6,36 +6,41 @@ import {
   escapeString,
   executeWrite,
   getRelationInferredById,
-  getSingleValueNumber, internalLoadEntityById,
-  listRelations,
-  loadEntityById,
+  getSingleValueNumber,
+  internalLoadEntityById,
+  listRelations, loadEntityById,
   loadRelationById,
   prepareDate,
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
-import {isStandardId, isStixId, RELATION_SIGHTING} from '../utils/idGenerator';
+import {
+  ABSTRACT_STIX_SIGHTING_RELATIONSHIP,
+  isInternalId,
+  isStixId,
+  RELATION_SIGHTING_POSITIVE,
+} from '../utils/idGenerator';
 
 export const findAll = async (args) => {
-  return listRelations('stix_sighting', args);
+  return listRelations(ABSTRACT_STIX_SIGHTING_RELATIONSHIP, args);
 };
 export const findById = (stixSightingId) => {
-  if (!isStixId(stixSightingId) && !isStandardId(stixSightingId)) {
+  if (!isStixId(stixSightingId) && !isInternalId(stixSightingId)) {
     return getRelationInferredById(stixSightingId);
   }
-  return loadRelationById(stixSightingId, 'stix_sighting');
+  return loadRelationById(stixSightingId, ABSTRACT_STIX_SIGHTING_RELATIONSHIP);
 };
 
 export const stixSightingsNumber = (args) => ({
   count: getSingleValueNumber(
-    `match $x($y, $z) isa stix_sighting; ${
+    `match $x($y, $z) isa ${ABSTRACT_STIX_SIGHTING_RELATIONSHIP}; ${
       args.endDate ? `$x has created_at $date; $date < ${prepareDate(args.endDate)};` : ''
     } ${args.fromId ? `$y has internal_id_key "${escapeString(args.fromId)}";` : ''} get; count;`,
     args.inferred ? args.inferred : false
   ),
   total: getSingleValueNumber(
-    `match $x($y, $z) isa stix_sighting; ${
+    `match $x($y, $z) isa ${ABSTRACT_STIX_SIGHTING_RELATIONSHIP}; ${
       args.fromId ? `$y has internal_id_key "${escapeString(args.fromId)}";` : ''
     } get; count;`,
     args.inferred ? args.inferred : false
@@ -44,8 +49,9 @@ export const stixSightingsNumber = (args) => ({
 
 // region mutations
 export const addstixSighting = async (user, stixSighting, reversedReturn = false) => {
+  // TODO @JRI @SAM Define when to use RELATION_SIGHTING_POSITIVE or NEGATIVE
   const finalStixSighting = pipe(
-    assoc('relationship_type', 'stix_sighting'),
+    assoc('relationship_type', RELATION_SIGHTING_POSITIVE),
     assoc('fromRole', 'so'),
     assoc('toId', stixSighting.toId ? stixSighting.toId : user.id),
     assoc('toRole', 'sighted_in')
@@ -57,19 +63,19 @@ export const addstixSighting = async (user, stixSighting, reversedReturn = false
   return notify(BUS_TOPICS.StixSighting.ADDED_TOPIC, created, user);
 };
 export const stixSightingDelete = async (user, stixSightingId) => {
-  return deleteRelationById(user, stixSightingId, 'stix_sighting');
+  return deleteRelationById(user, stixSightingId, RELATION_SIGHTING_POSITIVE);
 };
 export const stixSightingEditField = (user, stixSightingId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(user, stixSightingId, 'stix_sighting', input, wTx);
+    return updateAttribute(user, stixSightingId, RELATION_SIGHTING_POSITIVE, input, wTx);
   }).then(async () => {
-    const stixSighting = await loadRelationById(stixSightingId, 'stix_sighting');
+    const stixSighting = await loadRelationById(stixSightingId, RELATION_SIGHTING_POSITIVE);
     return notify(BUS_TOPICS.StixSighting.EDIT_TOPIC, stixSighting, user);
   });
 };
 export const stixSightingAddRelation = async (user, stixSightingId, input) => {
-  const data = await internalLoadEntityById(stixSightingId);
-  if (data.type !== RELATION_SIGHTING || !input.through) {
+  const data = await loadEntityById(stixSightingId, RELATION_SIGHTING_POSITIVE);
+  if (data.type !== ABSTRACT_STIX_SIGHTING_RELATIONSHIP || !input.through) {
     throw ForbiddenAccess();
   }
   const finalInput = assoc('fromId', stixSightingId, input);
@@ -79,8 +85,8 @@ export const stixSightingAddRelation = async (user, stixSightingId, input) => {
   });
 };
 export const stixSightingDeleteRelation = async (user, stixSightingId, relationId) => {
-  await deleteRelationById(user, relationId, 'stix_relation_embedded');
-  const data = await loadRelationById(stixSightingId, 'stix_sighting');
+  await deleteRelationById(user, relationId, ABSTRACT_STIX_SIGHTING_RELATIONSHIP);
+  const data = await loadRelationById(stixSightingId, RELATION_SIGHTING_POSITIVE);
   return notify(BUS_TOPICS.StixSighting.EDIT_TOPIC, data, user);
 };
 // endregion
@@ -88,13 +94,13 @@ export const stixSightingDeleteRelation = async (user, stixSightingId, relationI
 // region context
 export const stixSightingCleanContext = (user, stixSightingId) => {
   delEditContext(user, stixSightingId);
-  return loadRelationById(stixSightingId, 'stix_sighting').then((stixSighting) =>
+  return loadRelationById(stixSightingId, RELATION_SIGHTING_POSITIVE).then((stixSighting) =>
     notify(BUS_TOPICS.StixSighting.EDIT_TOPIC, stixSighting, user)
   );
 };
 export const stixSightingEditContext = (user, stixSightingId, input) => {
   setEditContext(user, stixSightingId, input);
-  return loadRelationById(stixSightingId, 'stix_sighting').then((stixSighting) =>
+  return loadRelationById(stixSightingId, RELATION_SIGHTING_POSITIVE).then((stixSighting) =>
     notify(BUS_TOPICS.StixSighting.EDIT_TOPIC, stixSighting, user)
   );
 };

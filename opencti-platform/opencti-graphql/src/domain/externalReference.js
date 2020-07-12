@@ -11,7 +11,7 @@ import {
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { ENTITY_TYPE_EXT_REF } from '../utils/idGenerator';
+import { ENTITY_TYPE_EXT_REF, RELATION_EXTERNAL_REFERENCE } from '../utils/idGenerator';
 
 export const findById = (externalReferenceId) => {
   return loadEntityById(externalReferenceId, ENTITY_TYPE_EXT_REF);
@@ -33,7 +33,7 @@ export const externalReferenceDelete = async (user, externalReferenceId) => {
 export const externalReferenceAddRelation = (user, externalReferenceId, input) => {
   const finalInput = pipe(
     assoc('fromId', externalReferenceId),
-    assoc('through', 'external_references'),
+    assoc('through', RELATION_EXTERNAL_REFERENCE),
     assoc('toType', ENTITY_TYPE_EXT_REF)
   )(input);
   return createRelation(user, finalInput).then((relationData) => {

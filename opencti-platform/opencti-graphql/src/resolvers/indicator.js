@@ -1,4 +1,4 @@
-import { addIndicator, findAll, findById, observableRefs } from '../domain/indicator';
+import { addIndicator, findAll, findById, observables } from '../domain/indicator';
 import {
   stixDomainEntityAddRelation,
   stixDomainEntityCleanContext,
@@ -8,6 +8,7 @@ import {
   stixDomainEntityEditField,
 } from '../domain/stixDomainEntity';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
+import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
 
 const indicatorResolvers = {
   Query: {
@@ -15,18 +16,18 @@ const indicatorResolvers = {
     indicators: (_, args) => findAll(args),
   },
   IndicatorsOrdering: {
-    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
-    tags: `${REL_INDEX_PREFIX}tagged.value`,
+    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
+    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
   },
   IndicatorsFilter: {
-    createdBy: `${REL_INDEX_PREFIX}created_by_ref.internal_id_key`,
-    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.internal_id_key`,
-    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
+    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id_key`,
+    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id_key`,
+    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id_key`,
     observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`,
     indicates: `${REL_INDEX_PREFIX}indicates.internal_id_key`,
   },
   Indicator: {
-    observableRefs: (indicator) => observableRefs(indicator.id),
+    observables: (indicator) => observables(indicator.id),
   },
   Mutation: {
     indicatorEdit: (_, { id }, { user }) => ({

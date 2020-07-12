@@ -335,7 +335,7 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
     });
   }
   const histoFilters = map((f) => {
-    const key = f.isRelation ? 'rel_*.internal_id_key.keyword' : `${f.type}.keyword`;
+    const key = f.isRelation ? `${REL_INDEX_PREFIX}*.internal_id_key.keyword` : `${f.type}.keyword`;
     return {
       multi_match: {
         fields: [key],
@@ -438,8 +438,8 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
     // eslint-disable-next-line no-nested-ternary
     const key = f.isRelation
       ? f.type
-        ? `rel_${f.type}.internal_id_key`
-        : 'rel_*.internal_id_key'
+        ? `${REL_INDEX_PREFIX}${f.type}.internal_id_key`
+        : `${REL_INDEX_PREFIX}*.internal_id_key`
       : `${f.type}.keyword`;
     return {
       multi_match: {
@@ -804,7 +804,7 @@ export const elLoadById = (id, relationsMap = null, indices = KNOWLEDGE_INDICES)
   return elInternalLoadById(id, ['internal_id_key'], relationsMap, indices);
 };
 export const elLoadByStixId = (id, relationsMap = null, indices = KNOWLEDGE_INDICES) => {
-  return elInternalLoadById(id, ['stix_id_key'], relationsMap, indices);
+  return elInternalLoadById(id, ['standard_stix_id', 'stix_ids'], relationsMap, indices);
 };
 export const elBulk = async (args) => {
   return el.bulk(args);
@@ -938,13 +938,13 @@ const prepareIndexing = async (elements) => {
         const [from, to] = await Promise.all([elLoadById(thing.fromId), elLoadById(thing.toId)]);
         connections.push({
           internal_id_key: from.internal_id_key,
-          stix_id_key: from.stix_id_key,
+          stix_ids: from.stix_ids,
           type: thing.fromType,
           role: thing.fromRole,
         });
         connections.push({
           internal_id_key: to.internal_id_key,
-          stix_id_key: to.stix_id_key,
+          stix_ids: to.stix_ids,
           type: thing.toType,
           role: thing.toRole,
         });
@@ -983,7 +983,7 @@ export const elIndexElements = async (elements, retry = 5) => {
       const relationshipType = e.entity_type;
       const impacts = [];
       // We impact target entities of the relation only if not global entities like
-      // MarkingDefinition (marking) / KillChainPhase (kill_chain_phase) / Tag (tagging)
+      // MarkingDefinition (marking) / KillChainPhase (kill_chain_phase) / Label (tagging)
       if (!includes(fromRole, UNIMPACTED_ENTITIES_ROLE)) impacts.push({ from: e.fromId, relationshipType, to: e.toId });
       if (!includes(toRole, UNIMPACTED_ENTITIES_ROLE)) impacts.push({ from: e.toId, relationshipType, to: e.fromId });
       return impacts;

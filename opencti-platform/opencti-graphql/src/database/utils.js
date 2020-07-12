@@ -2,10 +2,10 @@ import { head, last, mapObjIndexed, pipe, values, join } from 'ramda';
 import { offsetToCursor } from 'graphql-relay';
 import moment from 'moment';
 import {
-  isInternalEntity,
-  isInternalRelation, isObservableRelation,
-  isStixElement,
-  isStixObservable,
+  isInternalObject,
+  isInternalRelationship, isObservableRelation,
+  isStixCoreObject,
+  isStixCyberObservable,
   isStixRelation,
 } from '../utils/idGenerator';
 import { DatabaseError } from '../config/errors';
@@ -85,13 +85,13 @@ export const buildPagination = (first, offset, instances, globalCount) => {
 
 export const inferIndexFromConceptType = (conceptType) => {
   // Entities
-  if (isStixElement(conceptType)) return INDEX_STIX_ENTITIES;
-  if (isStixObservable(conceptType)) return INDEX_STIX_OBSERVABLE;
-  if (isInternalEntity(conceptType)) return INDEX_INTERNAL_ENTITIES;
+  if (isStixCoreObject(conceptType)) return INDEX_STIX_ENTITIES;
+  if (isStixCyberObservable(conceptType)) return INDEX_STIX_OBSERVABLE;
+  if (isInternalObject(conceptType)) return INDEX_INTERNAL_ENTITIES;
   // Relations
   if (isStixRelation(conceptType)) return INDEX_STIX_RELATIONS;
   if (isObservableRelation(conceptType)) return INDEX_STIX_RELATIONS;
-  if (isInternalRelation(conceptType)) return INDEX_INTERNAL_RELATIONS;
+  if (isInternalRelationship(conceptType)) return INDEX_INTERNAL_RELATIONS;
   throw DatabaseError(`Cant find index for type ${conceptType}`);
 };
 
@@ -151,7 +151,7 @@ export const generateLogMessage = (eventType, eventUser, eventData, eventExtraDa
   }
   if (isStixRelation(eventData.entity_type)) {
     message += `relation \`${eventData.entity_type}\` from ${fromType} \`${fromValue}\` to ${toType} \`${toValue}\`.`;
-  } else if (isInternalRelation(eventData.entity_type)) {
+  } else if (isInternalRelationship(eventData.entity_type)) {
     if (eventType === 'update') {
       message += `\`${eventData.entity_type}\` with the value \`${toValue}\`.`;
     } else if (toType === 'stix_relation') {

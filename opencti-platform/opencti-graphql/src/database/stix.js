@@ -2,7 +2,9 @@ import { assoc, head, includes, isEmpty, map, pipe } from 'ramda';
 import { FunctionalError } from '../config/errors';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
-  ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_CITY, ENTITY_TYPE_COUNTRY,
+  ENTITY_TYPE_CAMPAIGN,
+  ENTITY_TYPE_CITY,
+  ENTITY_TYPE_COUNTRY,
   ENTITY_TYPE_COURSE,
   ENTITY_TYPE_INCIDENT,
   ENTITY_TYPE_INDICATOR,
@@ -10,11 +12,24 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_MARKING,
   ENTITY_TYPE_NOTE,
-  ENTITY_TYPE_OPINION, ENTITY_TYPE_ORGANIZATION, ENTITY_TYPE_REGION,
-  ENTITY_TYPE_REPORT, ENTITY_TYPE_SECTOR,
+  ENTITY_TYPE_OPINION,
+  ENTITY_TYPE_ORGA,
+  ENTITY_TYPE_REGION,
+  ENTITY_TYPE_REPORT,
+  ENTITY_TYPE_SECTOR,
   ENTITY_TYPE_THREAT_ACTOR,
-  ENTITY_TYPE_TOOL, ENTITY_TYPE_USER, ENTITY_TYPE_VULN
-} from "../utils/idGenerator";
+  ENTITY_TYPE_TOOL,
+  ENTITY_TYPE_USER,
+  ENTITY_TYPE_VULN,
+  RELATION_CREATED_BY,
+  RELATION_EXTERNAL_REFERENCE,
+  RELATION_KILL_CHAIN_PHASE,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT,
+  RELATION_OBJECT_MARKING,
+  RELATION_SIGHTING_NEGATIVE,
+  RELATION_SIGHTING_POSITIVE,
+} from '../utils/idGenerator';
 
 export const STIX_SPEC_VERSION = '2.1';
 export const OBSERVABLE_TYPES = [
@@ -71,7 +86,7 @@ export const buildStixData = (baseData, entityData, associationMap) => {
 };
 
 export const markingDefinitionsToStix = (markingDefinitionsEdges) =>
-  map((markingDefinition) => markingDefinition.node.stix_id_key, markingDefinitionsEdges);
+  map((markingDefinition) => markingDefinition.node.standard_stix_id, markingDefinitionsEdges);
 
 export const externalReferencesToStix = (externalReferencesEdges) =>
   map(
@@ -80,8 +95,7 @@ export const externalReferencesToStix = (externalReferencesEdges) =>
     externalReferencesEdges
   );
 
-export const tagsToStix = (tagsEdges) =>
-  map((tag) => buildStixData({}, tag.node, { tag_type: 'tag_type', value: 'value', color: 'color' }), tagsEdges);
+export const labelsToStix = (labelsEdges) => map((label) => label.value, labelsEdges);
 
 export const killChainPhasesToStix = (killChainPhasesEdges) =>
   map(
@@ -90,12 +104,12 @@ export const killChainPhasesToStix = (killChainPhasesEdges) =>
     killChainPhasesEdges
   );
 
-export const objectRefsToStix = (objectRefsEdges) => map((objectRef) => objectRef.node.stix_id_key, objectRefsEdges);
+export const objectRefsToStix = (objectRefsEdges) =>
+  map((objectRef) => objectRef.node.standard_stix_id, objectRefsEdges);
 
 export const markingDefinitionToStix = (markingDefinition, onlyBase = false) => {
   const baseData = {
-    id: markingDefinition.stix_id_key,
-    x_opencti_id: markingDefinition.id,
+    id: markingDefinition.standard_stix_id,
     type: 'marking-definition',
     spec_version: STIX_SPEC_VERSION,
   };
@@ -114,8 +128,7 @@ export const markingDefinitionToStix = (markingDefinition, onlyBase = false) => 
 
 export const attackPatternToStix = (attackPattern, onlyBase = false) => {
   const baseData = {
-    id: attackPattern.stix_id_key,
-    x_opencti_id: attackPattern.id,
+    id: attackPattern.standard_stix_id,
     type: 'attack-pattern',
     spec_version: STIX_SPEC_VERSION,
   };
@@ -137,8 +150,7 @@ export const attackPatternToStix = (attackPattern, onlyBase = false) => {
 
 export const campaignToStix = async (campaign, onlyBase = false) => {
   const baseData = {
-    id: campaign.stix_id_key,
-    x_opencti_id: campaign.id,
+    id: campaign.standard_stix_id,
     type: 'campaign',
     spec_version: STIX_SPEC_VERSION,
   };
@@ -161,8 +173,7 @@ export const campaignToStix = async (campaign, onlyBase = false) => {
 
 export const courseOfActionToStix = async (courseOfAction, onlyBase = false) => {
   const baseData = {
-    id: courseOfAction.stix_id_key,
-    x_opencti_id: courseOfAction.id,
+    id: courseOfAction.standard_stix_id,
     type: 'course-of-action',
     spec_version: STIX_SPEC_VERSION,
   };
@@ -188,8 +199,7 @@ export const identityToStix = async (identity, onlyBase = false) => {
     identityClass = 'class';
   }
   const baseData = {
-    id: identity.stix_id_key,
-    x_opencti_id: identity.id,
+    id: identity.standard_stix_id,
     type: 'identity',
     spec_version: STIX_SPEC_VERSION,
     identity_class: identityClass,
@@ -211,8 +221,7 @@ export const identityToStix = async (identity, onlyBase = false) => {
 
 export const incidentToStix = async (incident, onlyBase = false) => {
   const baseData = {
-    id: incident.stix_id_key,
-    x_opencti_id: incident.id,
+    id: incident.standard_stix_id,
     type: 'x-opencti-incident',
     spec_version: STIX_SPEC_VERSION,
   };
@@ -235,8 +244,7 @@ export const incidentToStix = async (incident, onlyBase = false) => {
 
 export const indicatorToStix = async (indicator, onlyBase = false) => {
   const baseData = {
-    id: indicator.stix_id_key,
-    x_opencti_id: indicator.id,
+    id: indicator.standard_stix_id,
     type: 'indicator',
     spec_version: STIX_SPEC_VERSION,
   };
@@ -260,8 +268,7 @@ export const indicatorToStix = async (indicator, onlyBase = false) => {
 
 export const intrusionSetToStix = async (intrusionSet, onlyBase = false) => {
   const baseData = {
-    id: intrusionSet.stix_id_key,
-    x_opencti_id: intrusionSet.id,
+    id: intrusionSet.standard_stix_id,
     type: 'intrusion-set',
     spec_version: STIX_SPEC_VERSION,
   };
@@ -288,8 +295,7 @@ export const intrusionSetToStix = async (intrusionSet, onlyBase = false) => {
 
 export const malwareToStix = async (malware, onlyBase = false) => {
   const baseData = {
-    id: malware.stix_id_key,
-    x_opencti_id: malware.id,
+    id: malware.standard_stix_id,
     type: 'malware',
     spec_version: STIX_SPEC_VERSION,
   };
@@ -309,8 +315,7 @@ export const malwareToStix = async (malware, onlyBase = false) => {
 
 export const noteToStix = async (note, onlyBase = false) => {
   const baseData = {
-    id: note.stix_id_key,
-    x_opencti_id: note.id,
+    id: note.standard_stix_id,
     type: 'note',
     spec_version: STIX_SPEC_VERSION,
   };
@@ -332,8 +337,7 @@ export const noteToStix = async (note, onlyBase = false) => {
 
 export const opinionToStix = async (opinion, onlyBase = false) => {
   const baseData = {
-    id: opinion.stix_id_key,
-    x_opencti_id: opinion.id,
+    id: opinion.standard_stix_id,
     type: 'opinion',
     spec_version: STIX_SPEC_VERSION,
   };
@@ -355,8 +359,7 @@ export const opinionToStix = async (opinion, onlyBase = false) => {
 
 export const reportToStix = async (report, onlyBase = false) => {
   const baseData = {
-    id: report.stix_id_key,
-    x_opencti_id: report.id,
+    id: report.standard_stix_id,
     type: 'report',
     spec_version: STIX_SPEC_VERSION,
   };
@@ -381,8 +384,7 @@ export const reportToStix = async (report, onlyBase = false) => {
 
 export const threatActorToStix = async (threatActor, onlyBase = false) => {
   const baseData = {
-    id: threatActor.stix_id_key,
-    x_opencti_id: threatActor.id,
+    id: threatActor.standard_stix_id,
     type: 'threat-actor',
     spec_version: STIX_SPEC_VERSION,
   };
@@ -408,8 +410,7 @@ export const threatActorToStix = async (threatActor, onlyBase = false) => {
 
 export const toolToStix = async (tool, onlyBase = false) => {
   const baseData = {
-    id: tool.stix_id_key,
-    x_opencti_id: tool.id,
+    id: tool.standard_stix_id,
     type: 'tool',
     spec_version: STIX_SPEC_VERSION,
   };
@@ -431,8 +432,7 @@ export const toolToStix = async (tool, onlyBase = false) => {
 
 export const vulnerabilityToStix = async (vulnerability, onlyBase = false) => {
   const baseData = {
-    id: vulnerability.stix_id_key,
-    x_opencti_id: vulnerability.id,
+    id: vulnerability.standard_stix_id,
     type: 'vulnerability',
     spec_version: STIX_SPEC_VERSION,
   };
@@ -451,8 +451,7 @@ export const vulnerabilityToStix = async (vulnerability, onlyBase = false) => {
 
 export const stixObservableToStix = async (stixObservable, onlyBase = false) => {
   const baseData = {
-    id: stixObservable.stix_id_key,
-    x_opencti_id: stixObservable.id,
+    id: stixObservable.standard_stix_id,
     type: stixObservable.entity_type,
     spec_version: STIX_SPEC_VERSION,
   };
@@ -467,17 +466,14 @@ export const stixObservableToStix = async (stixObservable, onlyBase = false) => 
 
 export const stixRelationToStix = async (stixRelation, extra = null, onlyBase = true) => {
   let baseData = {
-    id: stixRelation.stix_id_key,
-    x_opencti_id: stixRelation.id,
+    id: stixRelation.standard_stix_id,
     type: 'relationship',
     spec_version: STIX_SPEC_VERSION,
   };
   if (extra && extra.from && extra.to) {
     baseData = pipe(
-      assoc('source_ref', extra.from.stix_id_key),
-      assoc('x_opencti_source_ref', extra.from.internal_id_key),
-      assoc('target_ref', extra.to.stix_id_key),
-      assoc('x_opencti_target_ref', extra.to.internal_id_key)
+      assoc('source_ref', extra.from.standard_stix_id),
+      assoc('target_ref', extra.to.standard_stix_id),
     )(baseData);
   }
   if (onlyBase) {
@@ -500,15 +496,14 @@ export const stixRelationToStix = async (stixRelation, extra = null, onlyBase = 
 
 export const stixSightingToStix = async (stixRelation, extra = null, onlyBase = true) => {
   let baseData = {
-    id: stixRelation.stix_id_key,
-    x_opencti_id: stixRelation.id,
+    id: stixRelation.standard_stix_id,
     type: 'sighting',
     spec_version: STIX_SPEC_VERSION,
   };
   if (extra && extra.from && extra.to) {
     baseData = pipe(
-      assoc('sighting_of_ref', extra.from.stix_id_key),
-      assoc('where_sighted_refs', [extra.to.stix_id_key])
+      assoc('sighting_of_ref', extra.from.standard_stix_id),
+      assoc('where_sighted_refs', [extra.to.standard_stix_id])
     )(baseData);
   }
   if (onlyBase) {
@@ -534,25 +529,22 @@ export const relationEmbeddedToStix = async (relationEmbedded, eventType, extra)
     entityType = 'identity';
   }
   let data = {
-    id: extra.from.stix_id_key,
-    x_opencti_id: extra.from.id,
+    id: extra.from.standard_stix_id,
     type: entityType,
     spec_version: STIX_SPEC_VERSION,
   };
-  if (relationEmbedded.entity_type === 'created_by_ref') {
-    data = assoc('created_by_ref', extra.to ? extra.to.stix_id_key : null, data);
-  } else if (relationEmbedded.entity_type === 'object_marking_refs') {
-    data = assoc('object_marking_refs', markingDefinitionsToStix([{ node: extra.to }]), data);
-  } else if (relationEmbedded.entity_type === 'external_references') {
-    data = assoc('external_references', externalReferencesToStix([{ node: extra.to }]), data);
-  } else if (relationEmbedded.entity_type === 'kill_chain_phases') {
-    data = assoc('kill_chain_phases', killChainPhasesToStix([{ node: extra.to }]), data);
-  } else if (relationEmbedded.entity_type === 'object_refs') {
-    data = assoc('object_refs', objectRefsToStix([{ node: extra.to }]), data);
-  } else if (relationEmbedded.entity_type === 'observable_refs') {
-    data = assoc('object_refs', objectRefsToStix([{ node: extra.to }]), data);
-  } else if (relationEmbedded.entity_type === 'tagged') {
-    data = assoc('x_opencti_tags', tagsToStix([{ node: extra.to }]), data);
+  if (relationEmbedded.entity_type === RELATION_CREATED_BY) {
+    data = assoc(RELATION_CREATED_BY, extra.to ? extra.to.standard_stix_id : null, data);
+  } else if (relationEmbedded.entity_type === RELATION_OBJECT_MARKING) {
+    data = assoc(RELATION_OBJECT_MARKING, markingDefinitionsToStix([{ node: extra.to }]), data);
+  } else if (relationEmbedded.entity_type === RELATION_EXTERNAL_REFERENCE) {
+    data = assoc(RELATION_EXTERNAL_REFERENCE, externalReferencesToStix([{ node: extra.to }]), data);
+  } else if (relationEmbedded.entity_type === RELATION_KILL_CHAIN_PHASE) {
+    data = assoc(RELATION_KILL_CHAIN_PHASE, killChainPhasesToStix([{ node: extra.to }]), data);
+  } else if (relationEmbedded.entity_type === RELATION_OBJECT) {
+    data = assoc(RELATION_OBJECT, objectRefsToStix([{ node: extra.to }]), data);
+  } else if (relationEmbedded.entity_type === RELATION_OBJECT_LABEL) {
+    data = assoc('labels', labelsToStix([{ node: extra.to }]), data);
   }
   return data;
 };
@@ -582,7 +574,7 @@ export const convertDataToStix = async (data, eventType = null, eventExtraData =
     case ENTITY_TYPE_CITY:
     case ENTITY_TYPE_COUNTRY:
     case ENTITY_TYPE_USER:
-    case ENTITY_TYPE_ORGANIZATION:
+    case ENTITY_TYPE_ORGA:
     case ENTITY_TYPE_REGION:
     case ENTITY_TYPE_SECTOR:
       return identityToStix(data, onlyBase);
@@ -610,7 +602,8 @@ export const convertDataToStix = async (data, eventType = null, eventExtraData =
       return stixObservableToStix(data, onlyBase);
     case 'stix_relation':
       return stixRelationToStix(data, eventExtraData, onlyBase);
-    case 'stix_sighting':
+    case RELATION_SIGHTING_NEGATIVE:
+    case RELATION_SIGHTING_POSITIVE:
       return stixSightingToStix(data, eventExtraData, onlyBase);
     case 'relation_embedded':
       return relationEmbeddedToStix(data, eventType, eventExtraData);

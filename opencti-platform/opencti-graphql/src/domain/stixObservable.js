@@ -20,7 +20,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { elCount } from '../database/elasticSearch';
-import {buildPagination, INDEX_STIX_OBSERVABLE} from '../database/utils';
+import { buildPagination, INDEX_STIX_OBSERVABLE } from '../database/utils';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { addIndicator } from './indicator';
@@ -33,6 +33,7 @@ import { connectorsForExport } from './connector';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { generateFileExportName, upload } from '../database/minio';
 import stixObservableResolvers from '../resolvers/stixObservable';
+import { RELATION_OBJECT } from '../utils/idGenerator';
 
 export const findById = (stixObservableId) => {
   return loadEntityById(stixObservableId, 'Stix-Observable');
@@ -54,7 +55,7 @@ export const stixObservablesNumber = (args) => ({
 // region time series
 export const reportsTimeSeries = (stixObservableId, args) => {
   const filters = [
-    { isRelation: true, from: 'knowledge_aggregation', to: 'so', type: 'object_refs', value: stixObservableId },
+    { isRelation: true, from: 'knowledge_aggregation', to: 'so', type: RELATION_OBJECT, value: stixObservableId },
   ];
   return timeSeriesEntities('Report', filters, args);
 };
@@ -111,7 +112,7 @@ export const addStixObservable = async (user, stixObservable) => {
       if (pattern) {
         const indicatorToCreate = pipe(
           dissoc('internal_id_key'),
-          dissoc('stix_id_key'),
+          dissoc('stix_id'),
           dissoc('observable_value'),
           assoc('name', stixObservable.observable_value),
           assoc(

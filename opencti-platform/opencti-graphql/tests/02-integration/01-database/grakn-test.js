@@ -41,7 +41,7 @@ import { GATHERING_TARGETS_RULE, inferenceDisable, inferenceEnable } from '../..
 import { resolveNaturalRoles } from '../../../src/database/graknRoles';
 import { elLoadById, useCache, REL_INDEX_PREFIX } from '../../../src/database/elasticSearch';
 import { ADMIN_USER } from '../../utils/testQuery';
-import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_ORGANIZATION, ENTITY_TYPE_REPORT } from '../../../src/utils/idGenerator';
+import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_ORGA, ENTITY_TYPE_REPORT } from '../../../src/utils/idGenerator';
 
 describe('Grakn basic and utils', () => {
   it('should database accessible', () => {
@@ -854,7 +854,7 @@ describe('Grakn element loader', () => {
   });
   it.each(noCacheCases)('should load by grakn id for multiple attributes (noCache = %s)', async (noCache) => {
     const stixId = 'identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132';
-    const identity = await loadEntityById(stixId, ENTITY_TYPE_ORGANIZATION, { noCache });
+    const identity = await loadEntityById(stixId, ENTITY_TYPE_ORGA, { noCache });
     expect(identity).not.toBeNull();
     expect(identity.alias).not.toBeNull();
     expect(identity.alias.length).toEqual(2);

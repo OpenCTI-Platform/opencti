@@ -79,17 +79,20 @@ import {
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
   ENTITY_TYPE_KILL_CHAIN,
-  generateEmbeddedId,
-  generateInternalId,
-  generateRandomId,
-  generateStixId,
-  isExtendedStixRelation,
-  isInternalEntity,
-  isStixElement,
-  isStixEntity,
+  generateId,
+  isMetaStixRelationship,
+  isInternalObject,
+  isStixCoreObject,
+  isStixDomainObject,
   isStixId,
-  isStixObservable,
+  isStixCyberObservable,
   isStixRelation,
+  RELATION_OBJECT_LABEL,
+  RELATION_CREATED_BY,
+  RELATION_OBJECT_MARKING,
+  RELATION_OBJECT,
+  RELATION_KILL_CHAIN_PHASE,
+  ENTITY_TYPE_LABEL,
 } from '../utils/idGenerator';
 import { lockResource } from './redis';
 
@@ -127,7 +130,7 @@ export const escapeString = (s) => (s ? s.replace(/\\/g, '\\\\').replace(/"/g, '
 // Attributes key that can contains multiple values.
 export const multipleAttributes = [
   'stix_label',
-  'stix_id_key',
+  'stix_ids',
   'alias',
   'grant',
   'platform',
@@ -523,7 +526,7 @@ const loadConcept = async (tx, concept, args = {}) => {
       // Wait for all promises before building the result
       return Promise.all([isInferredPromise, rolesPromises]).then(([isInferred, roles]) => {
         return pipe(
-          assoc('id', isInferred ? generateRandomId() : entityData.id),
+          assoc('id', entityData.id),
           assoc('inferred', isInferred),
           assoc('entity_type', entityData.entity_type),
           mergeRight(mergeAll(roles))
@@ -539,7 +542,6 @@ const loadConcept = async (tx, concept, args = {}) => {
         return pipe(
           assoc('id', Buffer.from(pattern).toString('base64')),
           assoc('internal_id_key', Buffer.from(pattern).toString('base64')),
-          assoc('stix_id_key', `relationship--${generateRandomId()}`), // TODO JRI @Sam Really needed?
           assoc('created', now()),
           assoc('modified', now()),
           assoc('created_at', now()),
@@ -1042,7 +1044,10 @@ const internalLoadEntityByStixId = async (id, args = {}) => {
   if (useCache(args)) return elLoadByStixId(id);
   const queryType = type || 'thing';
   const stixId = `${escapeString(id)}`;
-  const query = `match $x isa ${queryType}; { $x has internal_id_key "${stixId}";} or { $x has stix_id_key "${stixId}";}; get;`;
+  const query = `match $x isa ${queryType}; { $x has internal_id_key "${stixId}";} 
+    or { $x has standard_stix_id "${stixId}";}
+    or { $x has stix_ids "${stixId}";}; 
+    get;`;
   const element = await load(query, ['x'], args);
   return element ? element.x : null;
 };
@@ -1063,7 +1068,9 @@ const loadRelationByStixId = async (id, type, args = {}) => {
   if (isNil(type)) throw FunctionalError(`You need to specify a type when loading a relation (stix)`);
   if (!useCache()) return elLoadByStixId(id, type);
   const eid = escapeString(id);
-  const query = `match $rel($from, $to) isa ${type}; { $rel has internal_id_key "${eid}"; } or { $rel has stix_id_key "${eid}"; }; get;`;
+  const query = `match $rel($from, $to) isa ${type}; { $rel has internal_id_key "${eid}"; } 
+    or { $rel has standard_stix_id "${eid}"; }
+    or { $x has stix_ids "${eid}";}; get;`;
   const element = await load(query, ['rel'], args);
   return element ? element.rel : null;
 };
@@ -1079,7 +1086,7 @@ export const loadRelationById = async (id, type, args = {}) => {
 
 export const loadById = async (id, type, args = {}) => {
   if (!useCache()) return elLoadById(id);
-  if (isStixEntity(type) || isInternalEntity(type)) return loadEntityById(id, type, args);
+  if (isStixDomainObject(type) || isInternalObject(type)) return loadEntityById(id, type, args);
   return loadRelationById(id, type, args);
 };
 // endregion
@@ -1316,15 +1323,15 @@ const createRelationRaw = async (user, input, opts = {}) => {
   if (isStixRelation(relationshipType)) {
     const stixType = isStixSighting ? 'sighting' : 'relationship';
     const inputId = mergeRight(input, { fromId: from.internal_id_key, toId: to.internal_id_key });
-    relationId = generateStixId(stixType, inputId);
+    relationId = generateId(stixType, inputId);
   } else {
-    relationId = generateEmbeddedId({ fromId: from.internal_id_key, toId: to.internal_id_key, relationshipType });
+    relationId = generateId(relationshipType, { fromId: from.internal_id_key, toId: to.internal_id_key });
   }
   let relationAttributes = { internal_id_key: relationId };
   if (isStixRelation(relationshipType)) {
     const firstSeen = input.first_seen ? input.first_seen : new Date(FROM_START);
     const lastSeen = input.last_seen ? input.last_seen : new Date(UNTIL_END);
-    relationAttributes.stix_id_key = input.stix_id_key ? [input.stix_id_key] : [];
+    relationAttributes.stix_ids = input.stix_id ? [input.stix_id] : [];
     // TODO: Remove this in STIX 2.1
     // Adapt the frontend
     // Do the migration weight => confidence
@@ -1429,10 +1436,10 @@ const createRelationRaw = async (user, input, opts = {}) => {
   if (!noLog) {
     // TODO JRI HELP SAM
     // if (entityType === TYPE_RELATION_EMBEDDED) {
-    //   const eventType = relationshipType === 'created_by_ref' ? EVENT_TYPE_UPDATE : EVENT_TYPE_UPDATE_ADD;
+    //   const eventType = relationshipType === RELATION_CREATED_BY ? EVENT_TYPE_UPDATE : EVENT_TYPE_UPDATE_ADD;
     //   postOperations.push(sendLog(eventType, user, createdRel, { from, to }));
     // }
-    postOperations.push(sendLog(EVENT_TYPE_CREATE, user, createdRel, { from, to }));
+    // postOperations.push(sendLog(EVENT_TYPE_CREATE, user, createdRel, { from, to }));
   }
   await Promise.all(postOperations);
   // 06. Return result if no need to reverse the relations from and to
@@ -1468,7 +1475,7 @@ const addCreatedByRef = async (user, fromInternalId, createdByRefId, opts = {}) 
     toId: createdByRefId,
     toType: 'Identity',
     toRole: 'creator',
-    through: 'created_by_ref',
+    through: RELATION_CREATED_BY,
   };
   return createRelationRaw(user, input, opts);
 };
@@ -1480,7 +1487,7 @@ const addMarkingDef = async (user, fromInternalId, markingDefId, opts = {}) => {
     toId: markingDefId,
     toType: 'Marking-Definition',
     toRole: 'marking',
-    through: 'object_marking_refs',
+    through: RELATION_OBJECT_MARKING,
   };
   return createRelationRaw(user, input, opts);
 };
@@ -1495,28 +1502,28 @@ const addMarkingDefs = async (user, internalId, markingDefIds, opts = {}) => {
   }
   return markings;
 };
-const addTag = async (user, fromInternalId, tagId, opts = {}) => {
-  if (!tagId) return undefined;
+const addLabel = async (user, fromInternalId, labelId, opts = {}) => {
+  if (!labelId) return undefined;
   const input = {
     fromId: fromInternalId,
     fromRole: 'so',
-    toId: tagId,
-    toType: 'Tag',
+    toId: labelId,
+    toType: ENTITY_TYPE_LABEL,
     toRole: 'tagging',
-    through: 'tagged',
+    through: RELATION_OBJECT_LABEL,
   };
   return createRelationRaw(user, input, opts);
 };
-const addTags = async (user, internalId, tagsIds, opts = {}) => {
-  if (!tagsIds || isEmpty(tagsIds)) return undefined;
-  const tags = [];
+const addLabels = async (user, internalId, labelIds, opts = {}) => {
+  if (!labelIds || isEmpty(labelIds)) return undefined;
+  const labels = [];
   // Relations cannot be created in parallel.
-  for (let i = 0; i < tagsIds.length; i += 1) {
+  for (let i = 0; i < labelIds.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
-    const tag = await addTag(user, internalId, tagsIds[i], opts);
-    tags.push(tag);
+    const tag = await addLabel(user, internalId, labelIds[i], opts);
+    labels.push(tag);
   }
-  return tags;
+  return labels;
 };
 const addKillChain = async (user, fromInternalId, killChainId, opts = {}) => {
   if (!killChainId) return undefined;
@@ -1526,7 +1533,7 @@ const addKillChain = async (user, fromInternalId, killChainId, opts = {}) => {
     toId: killChainId,
     toType: ENTITY_TYPE_KILL_CHAIN,
     toRole: 'kill_chain_phase',
-    through: 'kill_chain_phases',
+    through: RELATION_KILL_CHAIN_PHASE,
   };
   return createRelationRaw(user, input, opts);
 };
@@ -1549,7 +1556,7 @@ const addObjectRef = async (user, fromInternalId, stixObjectId, opts = {}) => {
     toId: stixObjectId,
     toType: 'Stix-Domain-Entity',
     toRole: 'so',
-    through: 'object_refs',
+    through: RELATION_OBJECT,
   };
   return createRelationRaw(user, input, opts);
 };
@@ -1564,29 +1571,6 @@ const addObjectRefs = async (user, internalId, stixObjectIds, opts = {}) => {
   }
   return objectRefs;
 };
-const addObservableRef = async (user, fromInternalId, observableId, opts = {}) => {
-  if (!observableId) return undefined;
-  const input = {
-    fromId: fromInternalId,
-    fromRole: 'observables_aggregation',
-    toId: observableId,
-    toType: 'Stix-Observable',
-    toRole: 'soo',
-    through: 'observable_refs',
-  };
-  return createRelationRaw(user, input, opts);
-};
-const addObservableRefs = async (user, internalId, observableIds, opts = {}) => {
-  if (!observableIds || isEmpty(observableIds)) return undefined;
-  const observableRefs = [];
-  // Relations cannot be created in parallel.
-  for (let i = 0; i < observableIds.length; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
-    const observableRef = await addObservableRef(user, internalId, observableIds[i], opts);
-    observableRefs.push(observableRef);
-  }
-  return observableRefs;
-};
 const addRelationRef = async (user, fromInternalId, stixRelationId, opts = {}) => {
   if (!stixRelationId) return undefined;
   const input = {
@@ -1595,7 +1579,7 @@ const addRelationRef = async (user, fromInternalId, stixRelationId, opts = {}) =
     toId: stixRelationId,
     toType: 'stix_relation',
     toRole: 'so',
-    through: 'object_refs',
+    through: RELATION_OBJECT,
   };
   return createRelationRaw(user, input, opts);
 };
@@ -1649,30 +1633,20 @@ export const createRelations = async (user, inputs, opts = {}) => {
 export const createEntity = async (user, entity, type, opts = {}) => {
   const { noLog = false } = opts;
   // We need to check existing dependencies
-  // Except, Tags and KillChains that are embedded in same execution.
+  // Except, Labels and KillChains that are embedded in same execution.
   const idsToResolve = [];
-  if (entity.createdByRef) idsToResolve.push({ id: entity.createdByRef, type: 'createdByRef' });
-  forEach((marking) => idsToResolve.push({ id: marking, type: 'markingDef' }), entity.markingDefinitions || []);
-  forEach((object) => idsToResolve.push({ id: object, type: 'objectRef' }), entity.objectRefs || []);
-  forEach((observable) => idsToResolve.push({ id: observable, type: 'observableRef' }), entity.observableRefs || []);
-  forEach((relation) => idsToResolve.push({ id: relation, type: 'relationRef' }), entity.relationRefs || []);
+  if (entity.createdByRef) idsToResolve.push({ id: entity.createdByRef });
+  forEach((marking) => idsToResolve.push({ id: marking }), entity.markingDefinitions || []);
+  forEach((object) => idsToResolve.push({ id: object }), entity.objectRefs || []);
+  forEach((observable) => idsToResolve.push({ id: observable }), entity.observableRefs || []);
+  forEach((relation) => idsToResolve.push({ id: relation }), entity.relationRefs || []);
   const elemPromise = (ref) => internalLoadEntityById(ref.id).then((e) => ({ ref, available: e !== null }));
   const checkIds = await Promise.all(map(elemPromise, idsToResolve));
   const notResolvedElements = filter((c) => !c.available, checkIds);
   if (notResolvedElements.length > 0) {
     throw MissingReferenceError({ input: map((n) => n.ref, notResolvedElements) });
   }
-  let internalId;
-  // We need to force the ID for the admin creation
-  if (entity.internal_id_key) {
-    internalId = entity.internal_id_key;
-  } else if (isStixElement(type)) {
-    internalId = generateStixId(type, entity);
-  } else if (isInternalEntity(type)) {
-    internalId = generateInternalId(type, entity);
-  } else {
-    throw DatabaseError(`Unknown type ${type}`);
-  }
+  const internalId = generateId(type, entity);
   // Complete with identifiers
   const today = now();
   let data = pipe(
@@ -1683,21 +1657,20 @@ export const createEntity = async (user, entity, type, opts = {}) => {
     dissoc('createdByOwner'),
     dissoc('createdByRef'),
     dissoc('markingDefinitions'),
-    dissoc('tags'),
+    dissoc('labels'),
     dissoc('killChainPhases'),
     dissoc('objectRefs'),
-    dissoc('relationRefs'),
-    dissoc('observableRefs')
+    dissoc('relationRefs')
   )(entity);
   // Apply stix id when needed
-  if (isStixElement(type)) {
-    const stixIds = entity.stix_id_key ? [entity.stix_id_key] : [];
-    data = assoc('stix_id_key', stixIds, data);
+  if (isStixCoreObject(type)) {
+    const stixIds = entity.stix_id ? [entity.stix_id] : [];
+    data = assoc('stix_ids', stixIds, data);
   }
-  if (isStixObservable(type)) {
+  if (isStixCyberObservable(type)) {
     data = assoc('name', data.name ? data.name : '', data);
   }
-  if (isStixEntity(type)) {
+  if (isStixDomainObject(type)) {
     data = pipe(
       assoc('alias', data.alias ? data.alias : ['']),
       assoc('created', entity.created ? entity.created : today),
@@ -1768,14 +1741,13 @@ export const createEntity = async (user, entity, type, opts = {}) => {
   if (!noLog) postOperations.push(sendLog(EVENT_TYPE_CREATE, user, completedData));
   // Complete with eventual relations (will eventually update the index)
   postOperations.push(addOwner(user, internalId, entity.createdByOwner, opts));
-  if (isStixElement(type)) {
+  if (isStixCoreObject(type)) {
     postOperations.push(
       addCreatedByRef(user, internalId, entity.createdByRef || user.id, opts),
       addMarkingDefs(user, internalId, entity.markingDefinitions, opts),
-      addTags(user, internalId, entity.tags, opts), // Embedded in same execution.
+      addLabels(user, internalId, entity.labels, opts), // Embedded in same execution.
       addKillChains(user, internalId, entity.killChainPhases, opts), // Embedded in same execution.
       addObjectRefs(user, internalId, entity.objectRefs, opts),
-      addObservableRefs(user, internalId, entity.observableRefs, opts),
       addRelationRefs(user, internalId, entity.relationRefs, opts)
     );
   }
@@ -1837,7 +1809,7 @@ const innerUpdateAttribute = async (user, instance, input, wTx, options = {}) =>
     updateOperations.push(innerUpdateAttribute(user, instance, yearInput, wTx, noLogOpts));
   }
   // Update modified / updated_at
-  if (isStixEntity(instance.entity_type) && key !== 'modified' && key !== 'updated_at') {
+  if (isStixDomainObject(instance.entity_type) && key !== 'modified' && key !== 'updated_at') {
     const today = now();
     const updatedAtInput = { key: 'updated_at', value: [today] };
     updateOperations.push(innerUpdateAttribute(user, instance, updatedAtInput, wTx, noLogOpts));
@@ -1868,7 +1840,7 @@ const innerUpdateAttribute = async (user, instance, input, wTx, options = {}) =>
         user,
         {
           id: instance.id,
-          stix_id_key: instance.stix_id_key,
+          stix_ids: instance.stix_ids,
           entity_type: instance.entity_type,
           [escapedKey]: includes(input.key, multipleAttributes) ? input.value : head(input.value),
         },
@@ -1881,7 +1853,7 @@ const innerUpdateAttribute = async (user, instance, input, wTx, options = {}) =>
 };
 
 export const updateAttribute = async (user, id, type, input, wTx, options = {}) => {
-  // TODO IF PART OF KEY CHANGE, CHANGE THE STIX_ID_KEY
+  // TODO IF PART OF KEY CHANGE, CHANGE THE STIX_ID
   const { forceUpdate = false } = options;
   const { key, value } = input; // value can be multi valued
   if (includes(key, readOnlyAttributes)) {
@@ -1902,7 +1874,7 @@ export const updateAttribute = async (user, id, type, input, wTx, options = {}) 
   let updatedId;
   try {
     // Try to get the lock in redis
-    lock = await lockResource(currentInstanceData.stix_id_key || currentInstanceData.internal_id_key);
+    lock = await lockResource(currentInstanceData.stix_id || currentInstanceData.internal_id_key);
     // Update the attribute
     updatedId = await innerUpdateAttribute(user, currentInstanceData, input, wTx, options);
   } finally {
@@ -1982,8 +1954,8 @@ export const deleteRelationById = async (user, relationId, type, options = {}) =
   // Send the log if everything fine
   if (!noLog) {
     const [from, to] = await Promise.all([elLoadById(relation.fromId), elLoadById(relation.toId)]);
-    if (isExtendedStixRelation(relation.entity_type)) {
-      if (relation.entity_type === 'created_by_ref') {
+    if (isMetaStixRelationship(relation.entity_type)) {
+      if (relation.entity_type === RELATION_CREATED_BY) {
         await sendLog(EVENT_TYPE_UPDATE, user, relation, { from });
       } else {
         await sendLog(EVENT_TYPE_UPDATE_REMOVE, user, relation, { from, to });

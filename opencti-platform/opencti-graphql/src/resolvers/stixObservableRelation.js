@@ -17,8 +17,8 @@ const stixObservableRelationResolvers = {
   Query: {
     stixObservableRelation: (_, { id }) => findById(id),
     stixObservableRelations: (_, args) => {
-      if (args.stix_id_key && args.stix_id_key.length > 0) {
-        return findById(args.stix_id_key);
+      if (args.stix_id && args.stix_id.length > 0) {
+        return findById(args.stix_id);
       }
       return findAll(args);
     },

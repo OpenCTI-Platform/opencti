@@ -26,6 +26,13 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { filesListing } from '../database/minio';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { stixRelations } from '../domain/stixEntity';
+import {
+  RELATION_CREATED_BY,
+  RELATION_EXTERNAL_REFERENCE,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT,
+  RELATION_OBJECT_MARKING,
+} from '../utils/idGenerator';
 
 const stixDomainEntityResolvers = {
   Query: {
@@ -37,16 +44,16 @@ const stixDomainEntityResolvers = {
     stixDomainEntitiesExportFiles: (_, { type, first, context }) => filesListing(first, 'export', type, null, context),
   },
   StixDomainEntitiesOrdering: {
-    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
-    tags: `${REL_INDEX_PREFIX}tagged.value`,
+    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
+    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
   },
   StixDomainEntitiesFilter: {
-    createdBy: `${REL_INDEX_PREFIX}created_by_ref.internal_id_key`,
-    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.internal_id_key`,
-    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
-    knowledgeContains: `${REL_INDEX_PREFIX}object_refs.internal_id_key`,
+    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id_key`,
+    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id_key`,
+    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id_key`,
+    knowledgeContains: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id_key`,
     observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`,
-    hasExternalReference: `${REL_INDEX_PREFIX}external_references.internal_id_key`,
+    hasExternalReference: `${REL_INDEX_PREFIX}${RELATION_EXTERNAL_REFERENCE}.internal_id_key`,
     indicates: `${REL_INDEX_PREFIX}indicates.internal_id_key`,
   },
   StixDomainEntity: {

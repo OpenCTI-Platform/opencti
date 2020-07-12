@@ -2,6 +2,7 @@ import nconf from 'nconf';
 import winston, { format } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
+import { ENTITY_TYPE_LABEL } from '../utils/idGenerator';
 
 const DEFAULT_ENV = 'production';
 export const OPENCTI_TOKEN = 'opencti_token';
@@ -17,9 +18,9 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: 'ROLE_EDIT_TOPIC',
     ADDED_TOPIC: 'ROLE_ADDED_TOPIC',
   },
-  Tag: {
-    EDIT_TOPIC: 'TAG_EDIT_TOPIC',
-    ADDED_TOPIC: 'TAG_ADDED_TOPIC',
+  [ENTITY_TYPE_LABEL]: {
+    EDIT_TOPIC: 'LABEL_EDIT_TOPIC',
+    ADDED_TOPIC: 'LABEL_ADDED_TOPIC',
   },
   Connector: {
     EDIT_TOPIC: 'CONNECTOR_EDIT_TOPIC',

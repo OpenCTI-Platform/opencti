@@ -7,8 +7,9 @@ import {
   stixDomainEntityDeleteRelation,
   stixDomainEntityDelete,
 } from '../domain/stixDomainEntity';
-import { createdByRef, markingDefinitions, reports, stixRelations, tags } from '../domain/stixEntity';
+import { createdByRef, markingDefinitions, reports, stixRelations, labels } from '../domain/stixEntity';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
+import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
 
 const identityResolvers = {
   Query: {
@@ -16,12 +17,12 @@ const identityResolvers = {
     identities: (_, args) => findAll(args),
   },
   IdentitiesOrdering: {
-    tags: `${REL_INDEX_PREFIX}tagged.value`,
+    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
   },
   IdentitiesFilter: {
-    createdBy: `${REL_INDEX_PREFIX}created_by_ref.internal_id_key`,
-    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.internal_id_key`,
-    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
+    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id_key`,
+    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id_key`,
+    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id_key`,
   },
   Identity: {
     // eslint-disable-next-line no-underscore-dangle
@@ -33,7 +34,7 @@ const identityResolvers = {
     },
     createdByRef: (identity) => createdByRef(identity.id),
     markingDefinitions: (identity) => markingDefinitions(identity.id),
-    tags: (identity) => tags(identity.id),
+    labels: (identity) => labels(identity.id),
     reports: (identity) => reports(identity.id),
     stixRelations: (identity, args) => stixRelations(identity.id, args),
   },

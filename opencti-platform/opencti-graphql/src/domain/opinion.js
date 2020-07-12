@@ -16,7 +16,7 @@ import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { notify } from '../database/redis';
 import { findAll as findAllStixObservables } from './stixObservable';
 import { findAll as findAllStixDomainEntities } from './stixDomainEntity';
-import { ENTITY_TYPE_OPINION } from '../utils/idGenerator';
+import { ENTITY_TYPE_OPINION, RELATION_CREATED_BY, RELATION_OBJECT } from '../utils/idGenerator';
 
 export const findById = (opinionId) => {
   return loadEntityById(opinionId, ENTITY_TYPE_OPINION);
@@ -27,14 +27,14 @@ export const findAll = async (args) => {
 
 // Entities tab
 export const objectRefs = (opinionId, args) => {
-  const key = `${REL_INDEX_PREFIX}object_refs.internal_id_key`;
+  const key = `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id_key`;
   const finalArgs = assoc('filters', append({ key, values: [opinionId] }, propOr([], 'filters', args)), args);
   return findAllStixDomainEntities(finalArgs);
 };
 export const opinionContainsStixDomainEntity = async (opinionId, objectId) => {
   const args = {
     filters: [
-      { key: `${REL_INDEX_PREFIX}object_refs.internal_id_key`, values: [opinionId] },
+      { key: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id_key`, values: [opinionId] },
       { key: 'internal_id_key', values: [objectId] },
     ],
   };
@@ -43,13 +43,13 @@ export const opinionContainsStixDomainEntity = async (opinionId, objectId) => {
 };
 // Relation refs
 export const relationRefs = (opinionId, args) => {
-  const relationFilter = { relation: 'object_refs', fromRole: 'so', toRole: 'knowledge_aggregation', id: opinionId };
+  const relationFilter = { relation: RELATION_OBJECT, fromRole: 'so', toRole: 'knowledge_aggregation', id: opinionId };
   const finalArgs = assoc('relationFilter', relationFilter, args);
   return listRelations(args.relationType, finalArgs);
 };
 export const opinionContainsStixRelation = async (opinionId, objectId) => {
   const relationFilter = {
-    relation: 'object_refs',
+    relation: RELATION_OBJECT,
     fromRole: 'so',
     toRole: 'knowledge_aggregation',
     id: opinionId,
@@ -87,18 +87,18 @@ export const opinionsNumber = (args) => ({
   total: getSingleValueNumber(`match $x isa ${ENTITY_TYPE_OPINION}; get; count;`),
 });
 export const opinionsTimeSeriesByEntity = (args) => {
-  const filters = [{ isRelation: true, type: 'object_refs', value: args.objectId }];
+  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: args.objectId }];
   return timeSeriesEntities(ENTITY_TYPE_OPINION, filters, args);
 };
 export const opinionsTimeSeriesByAuthor = async (args) => {
   const { authorId } = args;
-  const filters = [{ isRelation: true, from: 'so', to: 'creator', type: 'created_by_ref', value: authorId }];
+  const filters = [{ isRelation: true, from: 'so', to: 'creator', type: RELATION_CREATED_BY, value: authorId }];
   return timeSeriesEntities(ENTITY_TYPE_OPINION, filters, args);
 };
 export const opinionsNumberByEntity = (args) => ({
   count: getSingleValueNumber(
     `match $x isa ${ENTITY_TYPE_OPINION};
-    $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
+    $rel(knowledge_aggregation:$x, so:$so) isa ${RELATION_OBJECT}; 
     $so has internal_id_key "${escapeString(args.objectId)}" ${
       args.endDate ? `; $x has created_at $date; $date < ${prepareDate(args.endDate)};` : ''
     }
@@ -107,7 +107,7 @@ export const opinionsNumberByEntity = (args) => ({
   ),
   total: getSingleValueNumber(
     `match $x isa ${ENTITY_TYPE_OPINION};
-    $rel(knowledge_aggregation:$x, so:$so) isa object_refs; 
+    $rel(knowledge_aggregation:$x, so:$so) isa ${RELATION_OBJECT}; 
     $so has internal_id_key "${escapeString(args.objectId)}";
     get;
     count;`
@@ -117,7 +117,7 @@ export const opinionsDistributionByEntity = async (args) => {
   const { objectId, field } = args;
   if (field.includes('.')) {
     const options = pipe(
-      assoc('relationType', 'object_refs'),
+      assoc('relationType', RELATION_OBJECT),
       assoc('toType', ENTITY_TYPE_OPINION),
       assoc('field', field.split('.')[1]),
       assoc('remoteRelationType', field.split('.')[0]),
@@ -125,7 +125,7 @@ export const opinionsDistributionByEntity = async (args) => {
     )(args);
     return distributionEntitiesThroughRelations(options);
   }
-  const filters = [{ isRelation: true, type: 'object_refs', value: objectId }];
+  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];
   return distributionEntities(ENTITY_TYPE_OPINION, filters, args);
 };
 // endregion

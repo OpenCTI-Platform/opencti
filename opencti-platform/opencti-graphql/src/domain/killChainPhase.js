@@ -11,7 +11,7 @@ import {
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import {ENTITY_TYPE_KILL_CHAIN} from "../utils/idGenerator";
+import {ENTITY_TYPE_KILL_CHAIN, RELATION_KILL_CHAIN_PHASE} from "../utils/idGenerator";
 
 export const findById = (killChainPhaseId) => {
   return loadEntityById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN);
@@ -36,7 +36,7 @@ export const killChainPhaseDelete = (user, killChainPhaseId) => {
 export const killChainPhaseAddRelation = (user, killChainPhaseId, input) => {
   const finalInput = pipe(
     assoc('fromId', killChainPhaseId),
-    assoc('through', 'kill_chain_phases'),
+    assoc('through', RELATION_KILL_CHAIN_PHASE),
     assoc('toType', ENTITY_TYPE_KILL_CHAIN) // TODO @SAM CHECK?
   )(input);
   return createRelation(user, finalInput).then((relationData) => {

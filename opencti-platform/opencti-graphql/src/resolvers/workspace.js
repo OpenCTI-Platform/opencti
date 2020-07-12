@@ -17,7 +17,7 @@ import {
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { BUS_TOPICS } from '../config/conf';
-import { markingDefinitions, tags } from '../domain/stixEntity';
+import { markingDefinitions, labels } from '../domain/stixEntity';
 
 const workspaceResolvers = {
   Query: {
@@ -28,7 +28,7 @@ const workspaceResolvers = {
   Workspace: {
     ownedBy: (workspace) => ownedBy(workspace.id),
     markingDefinitions: (workspace) => markingDefinitions(workspace.id),
-    tags: (workspace) => tags(workspace.id),
+    labels: (workspace) => labels(workspace.id),
     objectRefs: (workspace, args) => objectRefs(workspace.id, args),
     editContext: (workspace) => fetchEditContext(workspace.id),
   },

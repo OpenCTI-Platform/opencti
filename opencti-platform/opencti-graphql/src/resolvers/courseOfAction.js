@@ -8,6 +8,7 @@ import {
   stixDomainEntityEditField,
 } from '../domain/stixDomainEntity';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
+import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
 
 const courseOfActionResolvers = {
   Query: {
@@ -18,13 +19,13 @@ const courseOfActionResolvers = {
     attackPatterns: (courseOfAction) => attackPatterns(courseOfAction.id),
   },
   CoursesOfActionOrdering: {
-    tags: `${REL_INDEX_PREFIX}tagged.value`,
-    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
+    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
+    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
   },
   CoursesOfActionFilter: {
-    createdBy: `${REL_INDEX_PREFIX}created_by_ref.internal_id_key`,
-    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.internal_id_key`,
-    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
+    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id_key`,
+    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id_key`,
+    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id_key`,
     mitigateBy: `${REL_INDEX_PREFIX}mitigates.internal_id_key`,
   },
   Mutation: {

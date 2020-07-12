@@ -2,6 +2,7 @@ import { filter, head, isEmpty, isNil, includes } from 'ramda';
 import { stripIgnoredCharacters } from 'graphql';
 import nconf from 'nconf';
 import { logger } from '../config/conf';
+import {labels} from "../domain/stixEntity";
 
 const innerCompute = (inners) => {
   return filter((i) => !isNil(i) && !isEmpty(i), inners).length;
@@ -48,7 +49,7 @@ export default {
           if (input) {
             if (!isNil(input.createdByRef) && !isEmpty(input.createdByRef)) innerRelationCount += 1;
             if (!isNil(input.markingDefinitions)) innerRelationCount += innerCompute(input.markingDefinitions);
-            if (!isNil(input.tags)) innerRelationCount += innerCompute(input.tags);
+            if (!isNil(input.labels)) innerRelationCount += innerCompute(input.labels);
             if (!isNil(input.killChainPhases)) innerRelationCount += innerCompute(input.killChainPhases);
             if (!isNil(input.objectRefs)) innerRelationCount += innerCompute(input.objectRefs);
             if (!isNil(input.observableRefs)) innerRelationCount += innerCompute(input.observableRefs);

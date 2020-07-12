@@ -18,7 +18,7 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { findAll as findAllStixDomains } from './stixDomainEntity';
 import { ForbiddenAccess } from '../config/errors';
-import { ENTITY_TYPE_WORKSPACE } from '../utils/idGenerator';
+import { ENTITY_TYPE_WORKSPACE, RELATION_OBJECT } from '../utils/idGenerator';
 
 // region grakn fetch
 export const findById = (workspaceId) => {
@@ -37,7 +37,7 @@ export const ownedBy = (workspaceId) => {
   );
 };
 export const objectRefs = (workspaceId, args) => {
-  const filter = { key: 'object_refs.internal_id_key', values: [workspaceId] };
+  const filter = { key: `${RELATION_OBJECT}.internal_id_key`, values: [workspaceId] };
   const filters = concat([filter], args.filters || []);
   const finalArgs = pipe(assoc('filters', filters), assoc('types', ['Stix-Domain-Entity']))(args);
   return findAllStixDomains(finalArgs);

@@ -26,6 +26,7 @@ import { connectorsForEnrichment } from '../domain/enrichment';
 import { convertDataToStix } from '../database/stix';
 import { stixRelations } from '../domain/stixEntity';
 import { filesListing } from '../database/minio';
+import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
 
 const stixObservableResolvers = {
   Query: {
@@ -37,13 +38,13 @@ const stixObservableResolvers = {
       filesListing(first, 'export', 'stix-observable', null, context),
   },
   StixObservablesOrdering: {
-    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
-    tags: `${REL_INDEX_PREFIX}tagged.value`,
+    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
+    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
   },
   StixObservablesFilter: {
-    createdBy: `${REL_INDEX_PREFIX}created_by_ref.internal_id_key`,
-    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.internal_id_key`,
-    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
+    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id_key`,
+    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id_key`,
+    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id_key`,
     relatedTo: `${REL_INDEX_PREFIX}related-to.internal_id_key`,
     observablesContained: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`,
   },
