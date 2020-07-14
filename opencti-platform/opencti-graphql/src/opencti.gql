@@ -10,7 +10,7 @@ define
   name sub attribute, datatype string;
   description sub attribute, datatype string;
   graph_data sub attribute, datatype string;
-  attribute_order sub attribute, datatype string;
+  attribute_order sub attribute, datatype double;
   issuer sub attribute, datatype string;
 
   # Internal Common
@@ -98,6 +98,10 @@ define
   longitude sub attribute, datatype double;
   precision sub attribute, datatype double;
   objective sub attribute, datatype string;
+  md5 sub attribute, datatype string;
+  sha-1 sub attribute, datatype string;
+  sha-256 sub attribute, datatype string;
+  sha-512 sub attribute, datatype string;
   pattern_type sub attribute, datatype string;
   pattern_version sub attribute, datatype string;
   pattern sub attribute, datatype string;
@@ -106,6 +110,7 @@ define
   valid_until sub attribute, datatype date;
   x_opencti_score sub attribute, datatype long;
   x_opencti_detection sub attribute, datatype boolean;
+  x_opencti_main_observable_type sub attribute, datatype string;
   infrastructure_types sub attribute, datatype string;
   goals sub attribute, datatype string;
   resource_level sub attribute, datatype string;
@@ -138,7 +143,6 @@ define
   # STIX Cyber Observables
   mime_type sub attribute, datatype string;
   payload_bin sub attribute, datatype string;
-  hashes sub attribute, datatype string;
   encryption_algorithm sub attribute, datatype string;
   decryption_key sub attribute, datatype string;
   number sub attribute, datatype long;
@@ -384,7 +388,7 @@ define
     has created,
     has modified;
 
-  # STIX Knowledge Relationships
+  # STIX Core Relationships
   stix-core-relationship sub stix-relationship,
     abstract,
     has relationship_type,
@@ -731,7 +735,9 @@ define
     has platform_title,
     has platform_email,
     has platform_url,
-    has platform_language;
+    has platform_language,
+    has created_at,
+    has updated_at;
 
   MigrationStatus sub Internal-Object,
     has last_run,
@@ -761,6 +767,7 @@ define
   User sub Internal-Object,
     has user_email,
     has password,
+    has name,
     has firstname,
     has lastname,
     has language,
@@ -850,6 +857,10 @@ define
     plays kill-chain-phase_to;
 
   Stix-Core-Object sub Stix-Object,
+    plays created-by_from,
+    plays object-marking_from,
+    plays object-label_from,
+    plays external-reference_from,
     abstract;
 
   # STIX Domain Object Entities
@@ -860,10 +871,7 @@ define
     has lang,
     has created,
     has modified,
-    plays created-by_from,
-    plays object-marking_from,
-    plays object-label_from,
-    plays external-reference_from,
+    plays object_to,
     plays duplicate-of_from,
     plays derived-from_from,
     plays related-to_from,
@@ -902,6 +910,28 @@ define
     plays targets_from,
     plays uses_from,
     plays indicates_to;
+
+  Container sub Stix-Domain-Object,
+    abstract,
+    plays object_from;
+
+  Note sub Container,
+    has attribute_abstract,
+    has content,
+    has authors;
+
+  Opinion sub Container,
+    has explanation,
+    has authors,
+    has opinion;
+
+  Report sub Container,
+    has name,
+    has description,
+    has report_types,
+    has published,
+    has graph_data,
+    has published;
 
   Course-Of-Action sub Stix-Domain-Object,
     has name,
@@ -944,6 +974,7 @@ define
     has valid_until,
     has x_opencti_score,
     has x_opencti_detection,
+    has x_opencti_main_observable_type,
     plays kill-chain-phase_from,
     plays indicates_from,
     plays based-on_from,
@@ -1053,12 +1084,6 @@ define
     plays static-analysis-of_to,
     plays dynamic-analysis-of_to;
 
-  Note sub Stix-Domain-Object,
-    has attribute_abstract,
-    has content,
-    has authors,
-    plays object_to;
-
   Observed-Data sub Stix-Domain-Object,
     has first_observed,
     has last_observed,
@@ -1066,21 +1091,6 @@ define
     plays object_to,
     plays based-on_to,
     plays consists-of_to;
-
-  Opinion sub Stix-Domain-Object,
-    has explanation,
-    has authors,
-    has opinion,
-    plays object_to;
-
-  Report sub Stix-Domain-Object,
-    has name,
-    has description,
-    has report_types,
-    has published,
-    has graph_data,
-    has published,
-    plays object_to;
 
   Threat-Actor sub Stix-Domain-Object,
     has name,
@@ -1138,22 +1148,8 @@ define
    # STIX Cyber Observables Entities
   Stix-Cyber-Observable sub Stix-Core-Object,
     abstract,
-    plays created-by_from,
-    plays object-marking_from,
-    plays object-label_from,
-    plays external-reference_from,
     plays consists-of_to,
     plays based-on_to;
-
-  Artifact sub Stix-Cyber-Observable,
-    has mime_type,
-    has payload_bin,
-    has url,
-    has hashes,
-    has encryption_algorithm,
-    has decryption_key,
-    plays raw-email_to,
-    plays body-raw_to;
 
   Autonomous-System sub Stix-Cyber-Observable,
     has number,
@@ -1213,9 +1209,24 @@ define
     plays body-raw_from,
     plays body-multipart_to;
 
-  File sub Stix-Cyber-Observable,
+  Hashed-Observable sub Stix-Cyber-Observable,
+    abstract,
+    has md5,
+    has sha-1,
+    has sha-256,
+    has sha-512;
+
+  Artifact sub Hashed-Observable,
+    has mime_type,
+    has payload_bin,
+    has url,
+    has encryption_algorithm,
+    has decryption_key,
+    plays raw-email_to,
+    plays body-raw_to;
+
+  File sub Hashed-Observable,
     has extensions,
-    has hashes,
     has size,
     has name,
     has name_enc,
@@ -1230,6 +1241,20 @@ define
     plays parent-directory_to,
     plays contains_to,
     plays image_to;
+
+  X509-Certificate sub Hashed-Observable,
+    has is_self_signed,
+    has version,
+    has serial_number,
+    has signature_algorithm,
+    has issuer,
+    has validity_not_before,
+    has validity_not_after,
+    has subject,
+    has subject_public_key_algorithm,
+    has subject_public_key_modulus,
+    has subject_public_key_exponent,
+    plays x509-v3-extensions_from;
 
   IPv4-Addr sub Stix-Cyber-Observable,
     has value,
@@ -1341,21 +1366,6 @@ define
     has data,
     has data_type,
     plays values_to;
-
-  X509-Certificate sub Stix-Cyber-Observable,
-    has is_self_signed,
-    has hashes,
-    has version,
-    has serial_number,
-    has signature_algorithm,
-    has issuer,
-    has validity_not_before,
-    has validity_not_after,
-    has subject,
-    has subject_public_key_algorithm,
-    has subject_public_key_modulus,
-    has subject_public_key_exponent,
-    plays x509-v3-extensions_from;
 
   X509-V3-Extensions-Type sub Stix-Cyber-Observable,
     has basic_constraints,
