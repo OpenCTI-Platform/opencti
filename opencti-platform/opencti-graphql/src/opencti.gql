@@ -11,6 +11,7 @@ define
   description sub attribute, datatype string;
   graph_data sub attribute, datatype string;
   attribute_order sub attribute, datatype string;
+  issuer sub attribute, datatype string;
 
   # Internal Common
   standard_id sub attribute, datatype string;
@@ -51,7 +52,6 @@ define
   last_run sub attribute, datatype string;
   uuid sub attribute, datatype string;
   duration sub attribute, datatype string;
-  issuer sub attribute, datatype string;
   firstname sub attribute, datatype string;
   lastname sub attribute, datatype string;
   user_email sub attribute, datatype string;
@@ -69,13 +69,13 @@ define
 
   # STIX Object
   value sub attribute, datatype string;
+  url sub attribute, datatype string;
 
   # STIX Meta Objects
   definition_type sub attribute, datatype string;
   definition sub attribute, datatype string;
   color sub attribute, datatype string;
   source_name sub attribute, datatype string;
-  url sub attribute, datatype string;
   hash sub attribute, datatype string;
   external_id sub attribute, datatype string;
   kill_chain_name sub attribute, datatype string;
@@ -136,6 +136,95 @@ define
   tool_version sub attribute, datatype string;
 
   # STIX Cyber Observables
+  mime_type sub attribute, datatype string;
+  payload_bin sub attribute, datatype string;
+  hashes sub attribute, datatype string;
+  encryption_algorithm sub attribute, datatype string;
+  decryption_key sub attribute, datatype string;
+  number sub attribute, datatype long;
+  rir sub attribute, datatype string;
+  path sub attribute, datatype string;
+  path_enc sub attribute, datatype string;
+  ctime sub attribute, datatype date;
+  mtime sub attribute, datatype date;
+  atime sub attribute, datatype date;
+  display_name sub attribute, datatype string;
+  is_multipart sub attribute, datatype boolean;
+  attribute_date sub attribute, datatype date;
+  content_type sub attribute, datatype string;
+  message_id sub attribute, datatype string;
+  subject sub attribute, datatype string;
+  received_lines sub attribute, datatype string;
+  body sub attribute, datatype string;
+  content_disposition sub attribute, datatype string;
+  size sub attribute, datatype long;
+  extensions sub attribute, datatype string;
+  name_enc sub attribute, datatype string;
+  magic_number_hex sub attribute, datatype string;
+  start sub attribute, datatype date;
+  end sub attribute, datatype date;
+  is_active sub attribute, datatype boolean;
+  protocols sub attribute, datatype string;
+  src_port sub attribute, datatype long;
+  dst_port sub attribute, datatype long;
+  src_byte_count sub attribute, datatype long;
+  dst_byte_count sub attribute, datatype long;
+  src_packets sub attribute, datatype long;
+  dst_packets sub attribute, datatype long;
+  is_hidden sub attribute, datatype boolean;
+  pid sub attribute, datatype long;
+  created_time sub attribute, datatype date;
+  cwd sub attribute, datatype string;
+  command_line sub attribute, datatype string;
+  environment_variables sub attribute, datatype string;
+  cpe sub attribute, datatype string;
+  swid sub attribute, datatype string;
+  languages sub attribute, datatype string;
+  vendor sub attribute, datatype string;
+  version sub attribute, datatype string;
+  user_id sub attribute, datatype string;
+  credential sub attribute, datatype string;
+  account_login sub attribute, datatype string;
+  account_type sub attribute, datatype string;
+  is_service_account sub attribute, datatype boolean;
+  is_privileged sub attribute, datatype boolean;
+  can_escalate_privs sub attribute, datatype boolean;
+  is_disabled sub attribute, datatype boolean;
+  account_created sub attribute, datatype date;
+  account_expires sub attribute, datatype date;
+  credential_last_changed sub attribute, datatype date;
+  account_first_login sub attribute, datatype date;
+  account_last_login sub attribute, datatype date;
+  attribute_key sub attribute, datatype string;
+  modified_time sub attribute, datatype date;
+  number_of_subkeys sub attribute, datatype double;
+  data sub attribute, datatype string;
+  data_type sub attribute, datatype string;
+  is_self_signed sub attribute, datatype boolean;
+  serial_number sub attribute, datatype string;
+  signature_algorithm sub attribute, datatype string;
+  validity_not_before sub attribute, datatype date;
+  validity_not_after sub attribute, datatype date;
+  subject_public_key_algorithm sub attribute, datatype string;
+  subject_public_key_modulus sub attribute, datatype string;
+  subject_public_key_exponent sub attribute, datatype string;
+  basic_constraints sub attribute, datatype string;
+  name_constraints sub attribute, datatype string;
+  policy_constraints sub attribute, datatype string;
+  key_usage sub attribute, datatype string;
+  extended_key_usage sub attribute, datatype string;
+  subject_key_identifier sub attribute, datatype string;
+  authority_key_identifier sub attribute, datatype string;
+  subject_alternative_name sub attribute, datatype string;
+  issuer_alternative_name sub attribute, datatype string;
+  subject_directory_attributes sub attribute, datatype string;
+  crl_distribution_points sub attribute, datatype string;
+  inhibit_any_policy sub attribute, datatype string;
+  private_key_usage_period_not_before sub attribute, datatype date;
+  private_key_usage_period_not_after sub attribute, datatype date;
+  certificate_policies sub attribute, datatype string;
+  policy_mappings sub attribute, datatype string;
+
 
   ## ROLES
 
@@ -243,6 +332,7 @@ define
   kill-chain-phase_from sub role;
   kill-chain-phase_to sub role;
 
+
   ## RELATIONS
 
   basic-relationship sub relation,
@@ -295,7 +385,7 @@ define
     has modified;
 
   # STIX Knowledge Relationships
-  stix-knowledge-relationship sub stix-relationship,
+  stix-core-relationship sub stix-relationship,
     abstract,
     has relationship_type,
     has description,
@@ -312,149 +402,149 @@ define
     plays derived-from_to,
     plays related-to_to;
 
-  delivers sub stix-knowledge-relationship,
+  delivers sub stix-core-relationship,
     relates delivers_from,
     relates delivers_to,
     plays indicates_to;
 
-  targets sub stix-knowledge-relationship,
+  targets sub stix-core-relationship,
     relates targets_from,
     relates targets_to,
     plays located-at_from;
 
-  uses sub stix-knowledge-relationship,
+  uses sub stix-core-relationship,
     relates uses_from,
     relates uses_to,
     plays indicates_to;
 
-  attributed-to sub stix-knowledge-relationship,
+  attributed-to sub stix-core-relationship,
     relates attributed-to_from,
     relates attributed-to_to;
 
-  compromises sub stix-knowledge-relationship,
+  compromises sub stix-core-relationship,
     relates compromises_from,
     relates compromises_to;
 
-  originates-from sub stix-knowledge-relationship,
+  originates-from sub stix-core-relationship,
     relates originates-from_from,
     relates originates-from_to;
 
-  investigates sub stix-knowledge-relationship,
+  investigates sub stix-core-relationship,
     relates investigates_from,
     relates investigates_to;
 
-  mitigates sub stix-knowledge-relationship,
+  mitigates sub stix-core-relationship,
     relates mitigates_from,
     relates mitigates_to;
 
-  located-at sub stix-knowledge-relationship,
+  located-at sub stix-core-relationship,
     relates located-at_from,
     relates located-at_to;
 
-  indicates sub stix-knowledge-relationship,
+  indicates sub stix-core-relationship,
     relates indicates_from,
     relates indicates_to;
 
-  based-on sub stix-knowledge-relationship,
+  based-on sub stix-core-relationship,
     relates based-on_from,
     relates based-on_to;
 
-  communicates-with sub stix-knowledge-relationship,
+  communicates-with sub stix-core-relationship,
     relates communicates-with_from,
     relates communicates-with_to,
     plays indicates_to;
 
-  consists-of sub stix-knowledge-relationship,
+  consists-of sub stix-core-relationship,
     relates consists-of_from,
     relates consists-of_to;
 
-  controls sub stix-knowledge-relationship,
+  controls sub stix-core-relationship,
     relates controls_from,
     relates controls_to;
 
-  relation-has sub stix-knowledge-relationship,
+  relation-has sub stix-core-relationship,
     relates relation-has_from,
     relates relation-has_to;
 
-  hosts sub stix-knowledge-relationship,
+  hosts sub stix-core-relationship,
     relates hosts_from,
     relates hosts_to;
 
-  owns sub stix-knowledge-relationship,
+  owns sub stix-core-relationship,
     relates owns_from,
     relates owns_to;
 
-  authored-by sub stix-knowledge-relationship,
+  authored-by sub stix-core-relationship,
     relates authored-by_from,
     relates authored-by_to;
 
-  beacons-to sub stix-knowledge-relationship,
+  beacons-to sub stix-core-relationship,
     relates beacons-to_from,
     relates beacons-to_to,
     plays indicates_to;
 
-  exfiltrate-to sub stix-knowledge-relationship,
+  exfiltrate-to sub stix-core-relationship,
     relates exfiltrate-to_from,
     relates exfiltrate-to_to;
 
-  downloads sub stix-knowledge-relationship,
+  downloads sub stix-core-relationship,
     relates downloads_from,
     relates downloads_to;
 
-  drops sub stix-knowledge-relationship,
+  drops sub stix-core-relationship,
     relates drops_from,
     relates drops_to;
 
-  exploits sub stix-knowledge-relationship,
+  exploits sub stix-core-relationship,
     relates exploits_from,
     relates exploits_to,
     plays indicates_to;
 
-  variant-of sub stix-knowledge-relationship,
+  variant-of sub stix-core-relationship,
     relates variant-of_from,
     relates variant-of_to;
 
-  characterizes sub stix-knowledge-relationship,
+  characterizes sub stix-core-relationship,
     relates characterizes_from,
     relates characterizes_to;
 
-  analysis-of sub stix-knowledge-relationship,
+  analysis-of sub stix-core-relationship,
     relates analysis-of_from,
     relates analysis-of_to;
 
-  static-analysis-of sub stix-knowledge-relationship,
+  static-analysis-of sub stix-core-relationship,
     relates static-analysis-of_from,
     relates static-analysis-of_to;
 
-  dynamic-analysis-of sub stix-knowledge-relationship,
+  dynamic-analysis-of sub stix-core-relationship,
     relates dynamic-analysis-of_from,
     relates dynamic-analysis-of_to;
 
-  impersonates sub stix-knowledge-relationship,
+  impersonates sub stix-core-relationship,
     relates impersonates_from,
     relates impersonates_to;
 
-  remediates sub stix-knowledge-relationship,
+  remediates sub stix-core-relationship,
     relates remediates_from,
     relates remediates_to;
 
-  related-to sub stix-knowledge-relationship,
+  related-to sub stix-core-relationship,
     relates related-to_from,
     relates related-to_to;
 
-  derived-from sub stix-knowledge-relationship,
+  derived-from sub stix-core-relationship,
     relates derived-from_from,
     relates derived-from_to;
 
-  duplicate-of sub stix-knowledge-relationship,
+  duplicate-of sub stix-core-relationship,
     relates duplicate-of_from,
     relates duplicate-of_to;
 
-  part-of sub stix-knowledge-relationship,
+  part-of sub stix-core-relationship,
     relates part-of_from,
     relates part-of_to;
 
-  subtechnique-of sub stix-knowledge-relationship,
+  subtechnique-of sub stix-core-relationship,
     relates subtechnique-of_from,
     relates subtechnique-of_to;
 
@@ -499,6 +589,122 @@ define
   kill-chain-phase sub stix-meta-relationship,
     relates kill-chain-phase_from,
     relates kill-chain-phase_to;
+
+  # STIX Observable Relationships
+  stix-cyber-observable-relationship sub stix-relationship,
+    abstract;
+
+  operating-system sub stix-cyber-observable-relationship,
+    relates operating-system_from,
+    relates operating-system_to;
+
+  sample sub stix-cyber-observable-relationship,
+    relates sample_from,
+    relates sample_to;
+
+  contains sub stix-cyber-observable-relationship,
+    relates contains_from,
+    relates contains_to;
+
+  resolves-to sub stix-cyber-observable-relationship,
+    relates resolves-to_from,
+    relates resolves-to_to;
+
+  belongs-to sub stix-cyber-observable-relationship,
+    relates belongs-to_from,
+    relates belongs-to_to;
+
+  from sub stix-cyber-observable-relationship,
+    relates from_from,
+    relates from_to;
+
+  sender sub stix-cyber-observable-relationship,
+    relates sender_from,
+    relates sender_to;
+
+  to sub stix-cyber-observable-relationship,
+    relates to_from,
+    relates to_to;
+
+  cc sub stix-cyber-observable-relationship,
+    relates cc_from,
+    relates cc_to;
+
+  bcc sub stix-cyber-observable-relationship,
+    relates bcc_from,
+    relates bcc_to;
+
+  body-multipart sub stix-cyber-observable-relationship,
+    relates body-multipart_from,
+    relates body-multipart_to;
+
+  raw-email sub stix-cyber-observable-relationship,
+    relates raw-email_from,
+    relates raw-email_to;
+
+  body-raw sub stix-cyber-observable-relationship,
+    relates body-raw_from,
+    relates body-raw_to;
+
+  parent-directory sub stix-cyber-observable-relationship,
+    relates parent-directory_from,
+    relates parent-directory_to;
+
+  relation-content sub stix-cyber-observable-relationship,
+    relates relation-content_from,
+    relates relation-content_to;
+
+  src sub stix-cyber-observable-relationship,
+    relates src_from,
+    relates src_to;
+
+  dst sub stix-cyber-observable-relationship,
+    relates dst_from,
+    relates dst_to;
+
+  src-payload sub stix-cyber-observable-relationship,
+    relates src-payload_from,
+    relates src-payload_to;
+
+  dst-payload sub stix-cyber-observable-relationship,
+    relates dst-payload_from,
+    relates dst-payload_to;
+
+  encapsulates sub stix-cyber-observable-relationship,
+    relates encapsulates_from,
+    relates encapsulates_to;
+
+  encapsulated-by sub stix-cyber-observable-relationship,
+    relates encapsulates-by_from,
+    relates encapsulates-by_to;
+
+  opened-connection sub stix-cyber-observable-relationship,
+    relates opened-connection_from,
+    relates opened-connection_to;
+
+  creator-user sub stix-cyber-observable-relationship,
+    relates creator-user_from,
+    relates creator-user_to;
+
+  image sub stix-cyber-observable-relationship,
+    relates image_from,
+    relates image_to;
+
+  parent sub stix-cyber-observable-relationship,
+    relates parent_from,
+    relates parent_to;
+
+  child sub stix-cyber-observable-relationship,
+    relates child_from,
+    relates child_to;
+
+  values sub stix-cyber-observable-relationship,
+    relates values_from,
+    relates values_to;
+
+  x509-v3-extensions sub stix-cyber-observable-relationship,
+    relates x509-v3-extensions_from,
+    relates x509-v3-extensions_to;
 
   ## ENTITIES
 
@@ -602,6 +808,7 @@ define
     has created_at,
     has updated_at;
 
+  # STIX Meta Object Entities
   Stix-Meta-Object sub Stix-Object,
     abstract,
     has created,
@@ -636,6 +843,7 @@ define
   Stix-Core-Object sub Stix-Object,
     abstract;
 
+  # STIX Domain Object Entities
   Stix-Domain-Object sub Stix-Core-Object,
     abstract,
     has revoked,
@@ -811,6 +1019,8 @@ define
     has architecture_execution_envs,
     has implementation_languages,
     has capabilities,
+    plays operating-system_from,
+    plays sample_from,
     plays authorized-by_from,
     plays beacons-to_from,
     plays exfiltrate-to_from,
@@ -915,3 +1125,244 @@ define
     plays mitigates_to,
     plays remediates_to,
     plays relation-has_to;
+
+   # STIX Cyber Observables Entities
+  Stix-Cyber-Observable sub Stix-Core-Object,
+    abstract,
+    plays created-by_from,
+    plays object-marking_from,
+    plays object-label_from,
+    plays external-reference_from,
+    plays consists-of_to,
+    plays based-on_to;
+
+  Artifact sub Stix-Cyber-Observable,
+    has mime_type,
+    has payload_bin,
+    has url,
+    has hashes,
+    has encryption_algorithm,
+    has decryption_key,
+    plays raw-email_to,
+    plays body-raw_to;
+
+  Autonomous-System sub Stix-Cyber-Observable,
+    has number,
+    has name,
+    has rir;
+
+  Cryptographic-Key sub Stix-Cyber-Observable,
+    has value;
+
+  Cryptocurrency-Wallet sub Stix-Cyber-Observable,
+    has value;
+
+  Directory sub Stix-Cyber-Observable,
+    has path,
+    has path_enc,
+    has ctime,
+    has mtime,
+    has atime,
+    plays contains_from;
+
+  Domain-Name sub Stix-Cyber-Observable,
+    has value,
+    plays resolves-to_from,
+    plays src_to,
+    plays dst_to;
+
+  Email-Addr sub Stix-Cyber-Observable,
+    has value,
+    has display_name,
+    plays belongs-to_from,
+    plays from_to,
+    plays sender_to,
+    plays to_to,
+    plays cc_to,
+    plays bcc_to;
+
+  Email-Message sub Stix-Cyber-Observable,
+    has is_multipart,
+    has attribute_date,
+    has content_type,
+    has message_id,
+    has subject,
+    has received_lines,
+    has body,
+    plays from_from,
+    plays sender_from,
+    plays to_from,
+    plays cc_from,
+    plays bcc_from,
+    plays body-multipart_from,
+    plays raw-email_from;
+
+  Email-Mime-Part-Type sub Stix-Cyber-Observable,
+    has body,
+    has content_type,
+    has content_disposition,
+    plays body-raw_from,
+    plays body-multipart_to;
+
+  File sub Stix-Cyber-Observable,
+    has extensions,
+    has hashes,
+    has size,
+    has name,
+    has name_enc,
+    has magic_number_hex,
+    has mime_type,
+    has ctime,
+    has mtime,
+    has atime,
+    plays parent-directory_from,
+    plays contains_from,
+    plays relation-content_from,
+    plays parent-directory_to,
+    plays contains_to,
+    plays image_to;
+
+  IPv4-Addr sub Stix-Cyber-Observable,
+    has value,
+    plays resolves-to_from,
+    plays belongs-to_from,
+    plays resolves-to_to,
+    plays src_to,
+    plays dst_to;
+
+  IPv6-Addr sub Stix-Cyber-Observable,
+    has value,
+    plays resolves-to_from,
+    plays belongs-to_from,
+    plays resolves-to_to,
+    plays src_to,
+    plays dst_to;
+
+  Mac-Addr sub Stix-Cyber-Observable,
+    has value,
+    plays resolves-to_to,
+    plays src_to,
+    plays dst_to;
+
+  Mutex sub Stix-Cyber-Observable,
+    has name;
+
+  Network-Traffic sub Stix-Cyber-Observable,
+    has extensions,
+    has start,
+    has end,
+    has is_active,
+    has src_port,
+    has dst_port,
+    has protocols,
+    has src_byte_count,
+    has dst_byte_count,
+    has src_packets,
+    has dst_packets,
+    plays src_from,
+    plays dst_from,
+    plays src-payload_from,
+    plays dst-payload_from,
+    plays encapsulates_from,
+    plays encapsulates-by_from,
+    plays encapsulates_to,
+    plays encapsulates-by_to,
+    plays opened-connection_to;
+
+  Process sub Stix-Cyber-Observable,
+    has extensions,
+    has is_hidden,
+    has pid,
+    has created_time,
+    has cwd,
+    has command_line,
+    has environment_variables,
+    plays opened-connection_from,
+    plays creator-user_from,
+    plays image_from,
+    plays parent_from,
+    plays child_from,
+    plays parent_to,
+    plays child_to;
+
+  Software sub Stix-Cyber-Observable,
+    has name,
+    has cpe,
+    has swid,
+    has languages,
+    has vendor,
+    has version;
+
+  Url sub Stix-Cyber-Observable,
+    has value;
+
+  User-Account sub Stix-Cyber-Observable,
+    has extensions,
+    has user_id,
+    has credential,
+    has account_login,
+    has account_type,
+    has display_name,
+    has is_service_account,
+    has is_privileged,
+    has can_escalate_privs,
+    has is_disabled,
+    has account_created,
+    has account_expires,
+    has credential_last_changed,
+    has account_first_login,
+    has account_last_login,
+    plays creator-user_to;
+
+  User-Agent sub Stix-Cyber-Observable,
+    has value;
+
+  Text sub Stix-Cyber-Observable,
+    has value;
+
+  Windows-Registry-Key sub Stix-Cyber-Observable,
+    has attribute_key,
+    has modified_time,
+    has number_of_subkeys,
+    plays values_from,
+    plays creator-user_from;
+
+  Windows-Registry-Value-Type sub Stix-Cyber-Observable,
+    has name,
+    has data,
+    has data_type,
+    plays values_to;
+
+  X509-Certificate sub Stix-Cyber-Observable,
+    has is_self_signed,
+    has hashes,
+    has version,
+    has serial_number,
+    has signature_algorithm,
+    has issuer,
+    has validity_not_before,
+    has validity_not_after,
+    has subject,
+    has subject_public_key_algorithm,
+    has subject_public_key_modulus,
+    has subject_public_key_exponent,
+    plays x509-v3-extensions_from;
+
+  X509-V3-Extensions-Type sub Stix-Cyber-Observable,
+    has basic_constraints,
+    has name_constraints,
+    has policy_constraints,
+    has key_usage,
+    has extended_key_usage,
+    has subject_key_identifier,
+    has authority_key_identifier,
+    has subject_alternative_name,
+    has issuer_alternative_name,
+    has subject_directory_attributes,
+    has crl_distribution_points,
+    has inhibit_any_policy,
+    has private_key_usage_period_not_before,
+    has private_key_usage_period_not_after,
+    has certificate_policies,
+    has policy_mappings,
+    plays x509-v3-extensions_to;
