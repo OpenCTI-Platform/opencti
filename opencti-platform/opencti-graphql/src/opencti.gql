@@ -386,7 +386,8 @@ define
     has confidence,
     has lang,
     has created,
-    has modified;
+    has modified,
+    plays object_to;
 
   # STIX Core Relationships
   stix-core-relationship sub stix-relationship,
@@ -857,11 +858,12 @@ define
     plays kill-chain-phase_to;
 
   Stix-Core-Object sub Stix-Object,
+    abstract,
     plays created-by_from,
     plays object-marking_from,
     plays object-label_from,
     plays external-reference_from,
-    abstract;
+    plays object_to;
 
   # STIX Domain Object Entities
   Stix-Domain-Object sub Stix-Core-Object,
@@ -871,7 +873,6 @@ define
     has lang,
     has created,
     has modified,
-    plays object_to,
     plays duplicate-of_from,
     plays derived-from_from,
     plays related-to_from,
@@ -930,8 +931,7 @@ define
     has description,
     has report_types,
     has published,
-    has graph_data,
-    has published;
+    has graph_data;
 
   Course-Of-Action sub Stix-Domain-Object,
     has name,
@@ -943,6 +943,7 @@ define
   Identity sub Stix-Domain-Object,
     abstract,
     has name,
+    has description,
     has aliases,
     has contact_information,
     plays located-at_from,
