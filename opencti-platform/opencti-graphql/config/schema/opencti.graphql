@@ -996,7 +996,7 @@ input StixDomainObjectAddInput {
   confidence: Int
   alias: [String]
   type: String!
-  createdByRef: String
+  createdBy: String
   markingDefinitions: [String]
   labels: [String]
   clientMutationId: String
@@ -1236,7 +1236,7 @@ input CampaignAddInput {
 }
 
 ############## Containers
-interface Container implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+interface Container {
   # BasicObject
   id: ID! # internal_id
   entity_type: String!
@@ -1388,7 +1388,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   ): StixCoreObjectOrStixRelationship
   # Note
   attribute_abstract: String
-  content: String
+  content: String!
   authors: [String]
   # Technical
   creator: User
@@ -1400,7 +1400,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
 input NoteAddInput {
   stix_id: String
   attribute_abstract: String
-  content: String
+  content: String! @constraint(minLength: 3)
   authors: [String]
   confidence: Int
   createdBy: String
@@ -1506,7 +1506,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   # Opinion
   explanation: String
   authors: [String]
-  opinion: String
+  opinion: String!
   # Technical
   creator: User
   importFiles(first: Int): FileConnection
@@ -1515,19 +1515,19 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   editContext: [EditUserContext]
 }
 input OpinionAddInput {
-  internal_id_key: String
   stix_id: String
   name: String!
   description: String!
-  confidence: Int
+  opinion: String
   explanation: String
   graph_data: String
-  createdByRef: String
+  confidence: Int
+  createdBy: String
   markingDefinitions: [String]
   labels: [String]
-  clientMutationId: String
   created: DateTime
   modified: DateTime
+  clientMutationId: String
 }
 
 ################ Reports
@@ -1540,8 +1540,8 @@ enum ReportsOrdering {
   created_at
   updated_at
   createdBy
-  labels
   markingDefinitions
+  labels
 }
 enum ReportsFilter {
   name
@@ -1632,25 +1632,20 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   report_types: [String]
   published: DateTime
   graph_data: String
-
 }
 input ReportAddInput {
-  internal_id_key: String
   stix_id: String
-  name: String!
+  name: String! @constraint(minLength: 3)
   description: String
-  confidence: Int
   published: DateTime
-  report_class: String
-  graph_data: String
-  object_status: Int
-  source_confidence_level: Int
-  createdByRef: String
+  report_types: [String]
+  report_status: Int
+  createdBy: String
   markingDefinitions: [String]
   labels: [String]
-  clientMutationId: String
   created: DateTime
   modified: DateTime
+  clientMutationId: String
 }
 
 ############## CoursesOfAction
@@ -1756,6 +1751,46 @@ input CourseOfActionAddInput {
 }
 
 ############## Identities
+enum IdentitiesOrdering {
+  name
+  created
+  modified
+  created_at
+  updated_at
+  markingDefinitions
+  labels
+}
+enum IdentitiesFilter {
+  entity_type
+  name
+  aliases
+  confidence
+  created
+  modified
+  created_at
+  updated_at
+  createdBy
+  markedBy
+  labelledBy
+}
+input IdentitiesFiltering {
+  key: IdentitiesFilter!
+  values: [String]
+  operator: String
+}
+type IdentityConnection {
+  pageInfo: PageInfo!
+  edges: [IdentityEdge]
+}
+type IdentityEdge {
+  cursor: String!
+  node: Identity!
+}
+enum IdentityType {
+  Sector
+  Organization
+  Individual
+}
 interface Identity {
   # BasicObject
   id: ID! # internal_id
@@ -1807,6 +1842,21 @@ interface Identity {
   aliases: [String]
   contact_information: String
 }
+input IdentityAddInput {
+  stix_id: String
+  name: String!
+  description: String
+  contact_information: String
+  confidence: Int
+  alias: [String]
+  type: IdentityType!
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
 
 ################ Individuals
 enum IndividualsOrdering {
@@ -1822,10 +1872,10 @@ enum IndividualsOrdering {
 enum IndividualsFilter {
   name
   aliases
-  alias
   created
   modified
   created_at
+  updated_at
   createdBy
   markedBy
   labelledBy
@@ -2434,7 +2484,7 @@ type IntrusionSetEdge {
   cursor: String!
   node: IntrusionSet!
 }
-type IntrusionSet implements StixDomainObject & StixCoreObject & StixObject & BasicObject {
+type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   # BasicObject
   id: ID! # internal_id
   entity_type: String!
@@ -2567,6 +2617,566 @@ interface Location {
   latitude: Float
   longitude: Float
   precision: Float
+}
+
+################ Positions
+enum PositionsOrdering {
+  postal_address
+  postal_code
+  created
+  modified
+  created_at
+  updated_at
+  labels
+  markingDefinitions
+}
+enum PositionsFilter {
+  created
+  modified
+  created_at
+  updated_at
+  createdBy
+  markedBy
+  labelledBy
+}
+input Positionsiltering {
+  key: PositionsFilter!
+  values: [String]
+  operator: String
+}
+type PositionConnection {
+  pageInfo: PageInfo!
+  edges: [PositionEdge]
+}
+type PositionEdge {
+  cursor: String!
+  node: Position!
+}
+type Position implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Location {
+  # BasicObject
+  id: ID! # internal_id
+  entity_type: String!
+  # StixObject
+  standard_stix_id: String!
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixDomainObject
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime!
+  modified: DateTime!
+  # Location
+  name: String!
+  description: String
+  latitude: Float
+  longitude: Float
+  precision: Float
+  # Position
+  street_address: String
+  postal_code: String
+  # Technical
+  creator: User
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  toStix: String
+  editContext: [EditUserContext]
+}
+input PositionAddInput {
+  stix_id: String
+  name: String!
+  description: String
+  latitude: Float
+  longitude: Float
+  precision: Float
+  street_address: String
+  postal_code: String
+  confidence: Int
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+
+################ Cities
+enum CitiesOrdering {
+  name
+  description
+  aliases
+  created
+  modified
+  created_at
+  updated_at
+  markingDefinitions
+  labels
+}
+enum CitiesFilter {
+  name
+  created
+  modified
+  created_at
+  updated_at
+  createdBy
+  markedBy
+  labelledBy
+}
+input CitiesFiltering {
+  key: CitiesFilter!
+  values: [String]
+  operator: String
+}
+type CityConnection {
+  pageInfo: PageInfo!
+  edges: [CityEdge]
+}
+type CityEdge {
+  cursor: String!
+  node: City!
+}
+type City implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Location {
+  # BasicObject
+  id: ID! # internal_id
+  entity_type: String!
+  # StixObject
+  standard_stix_id: String!
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixDomainObject
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime!
+  modified: DateTime!
+  # Location
+  name: String!
+  description: String
+  latitude: Float
+  longitude: Float
+  precision: Float
+  # Technical
+  creator: User
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  toStix: String
+  editContext: [EditUserContext]
+}
+input CityAddInput {
+  stix_id: String
+  name: String!
+  description: String
+  latitude: Float
+  longitude: Float
+  precision: Float
+  confidence: Int
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+
+################ Countries
+enum CountriesOrdering {
+  name
+  description
+  created
+  modified
+  created_at
+  updated_at
+  labels
+  markingDefinitions
+}
+enum CountriesFilter {
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
+  labels
+}
+input CountriesFiltering {
+  key: CountriesFilter!
+  values: [String]
+  operator: String
+}
+type CountryConnection {
+  pageInfo: PageInfo!
+  edges: [CountryEdge]
+}
+type CountryEdge {
+  cursor: String!
+  node: Country!
+}
+type Country implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Location {
+  # BasicObject
+  id: ID! # internal_id
+  entity_type: String!
+  # StixObject
+  standard_stix_id: String!
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixDomainObject
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime!
+  modified: DateTime!
+  # Location
+  name: String!
+  description: String
+  latitude: Float
+  longitude: Float
+  precision: Float
+  # Country
+  region: Region
+  # Technical
+  creator: User
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  toStix: String
+  editContext: [EditUserContext]
+}
+input CountryAddInput {
+  stix_id: String
+  name: String!
+  description: String
+  aliases: [String]
+  confidence: Int
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+
+################ Regions
+enum RegionsOrdering {
+  name
+  description
+  created
+  modified
+  created_at
+  updated_at
+  labels
+  markingDefinitions
+}
+enum RegionsFilter {
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
+  labels
+}
+input RegionsFiltering {
+  key: RegionsFilter!
+  values: [String]
+  operator: String
+}
+type RegionConnection {
+  pageInfo: PageInfo!
+  edges: [RegionEdge]
+}
+type RegionEdge {
+  cursor: String!
+  node: Region!
+}
+type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Location {
+  # BasicObject
+  id: ID! # internal_id
+  entity_type: String!
+  # StixObject
+  standard_stix_id: String!
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixDomainObject
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime!
+  modified: DateTime!
+  # Location
+  name: String!
+  description: String
+  latitude: Float
+  longitude: Float
+  precision: Float
+  # Region
+  parentRegions: Region
+  subRegions: RegionConnection
+  isSubRegion: Boolean
+  # Technical
+  creator: User
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  toStix: String
+  editContext: [EditUserContext]
+}
+input RegionAddInput {
+  stix_id: String
+  name: String!
+  description: String
+  contact_information: String
+  confidence: Int
+  alias: [String]
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+
+############## Malware
+enum MalwaresOrdering {
+  name
+  malware_types
+  first_seen
+  last_seen
+  created
+  modified
+  created_at
+  updated_at
+  markingDefinitions
+  labels
+}
+enum MalwaresFilter {
+  name
+  aliases
+  malware_types
+  first_seen
+  last_seen
+  is_family
+  created
+  modified
+  created_at
+  updated_at
+  createdBy
+  markedBy
+  labelledBy
+}
+input MalwaresFiltering {
+  key: MalwaresFilter!
+  values: [String]
+  operator: String
+}
+type MalwareConnection {
+  pageInfo: PageInfo!
+  edges: [MalwareEdge]
+}
+type MalwareEdge {
+  cursor: String!
+  node: Malware!
+}
+type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+  # BasicObject
+  id: ID! # internal_id
+  entity_type: String!
+  # StixObject
+  standard_stix_id: String!
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixDomainObject
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime!
+  modified: DateTime!
+  # Malware
+  name: String!
+  description: String
+  aliases: [String]
+  malware_types: [String]
+  is_family: Boolean
+  first_seen: DateTime
+  last_seen: DateTime
+  goals: [String]
+  resource_level: String
+  primary_motivation: String
+  secondary_motivations: [String]
+  killChainPhases: KillChainPhaseConnection
+  # Technical
+  creator: User
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  toStix: String
+  editContext: [EditUserContext]
+}
+input MalwareAddInput {
+  internal_id_key: String
+  stix_id: String
+  name: String!
+  description: String!
+  malware_types: [String]
+  aliases: [String]
+  is_family: Boolean
+  confidence: Int
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
+  killChainPhases: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
 }
 
 ###### RELATIONSHIPS
@@ -3210,9 +3820,6 @@ type Query {
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
   stixSightingsNumber(fromId: String, endDate: DateTime, inferred: Boolean): Number
-  # Workspaces
-
-  # Identities
 
   # Users
   person(id: String!): User @auth(for: [KNOWLEDGE])
@@ -3371,8 +3978,6 @@ type Query {
     search: String
     toStix: Boolean
   ): VulnerabilityConnection @auth(for: [KNOWLEDGE])
-
-
 
   # Indicators
   indicator(id: String!): Indicator @auth(for: [KNOWLEDGE])

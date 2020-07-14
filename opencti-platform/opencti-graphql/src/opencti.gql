@@ -97,6 +97,7 @@ define
   latitude sub attribute, datatype double;
   longitude sub attribute, datatype double;
   precision sub attribute, datatype double;
+  x_opencti_aliases sub attribute, datatype string;
   objective sub attribute, datatype string;
   md5 sub attribute, datatype string;
   sha-1 sub attribute, datatype string;
@@ -132,6 +133,7 @@ define
   explanation sub attribute, datatype string;
   opinion sub attribute, datatype string;
   report_types sub attribute, datatype string;
+  report_status sub attribute, datatype long;
   published sub attribute, datatype date;
   threat_actor_types sub attribute, datatype string;
   sophistication sub attribute, datatype string;
@@ -926,10 +928,19 @@ define
     has authors,
     has opinion;
 
+  Observed-Data sub Container,
+    has first_observed,
+    has last_observed,
+    has number_observed,
+    plays object_to,
+    plays based-on_to,
+    plays consists-of_to;
+
   Report sub Container,
     has name,
     has description,
     has report_types,
+    has report_status,
     has published,
     has graph_data;
 
@@ -1034,6 +1045,7 @@ define
     has latitude,
     has longitude,
     has precision,
+    has x_opencti_aliases,
     plays located-at_from,
     plays located-at_to,
     plays originates-from_to,
@@ -1084,14 +1096,6 @@ define
     plays characterizes_to,
     plays static-analysis-of_to,
     plays dynamic-analysis-of_to;
-
-  Observed-Data sub Stix-Domain-Object,
-    has first_observed,
-    has last_observed,
-    has number_observed,
-    plays object_to,
-    plays based-on_to,
-    plays consists-of_to;
 
   Threat-Actor sub Stix-Domain-Object,
     has name,
