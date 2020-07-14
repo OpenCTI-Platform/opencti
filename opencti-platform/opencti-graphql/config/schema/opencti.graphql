@@ -446,6 +446,10 @@ input UserAddInput {
   language: String
   roles: [ID]
 }
+input UserLoginInput {
+  email: String!
+  password: String!
+}
 
 ############## Roles
 enum RolesOrdering {
@@ -591,6 +595,7 @@ input WorkspaceAddInput {
 }
 
 ######## STIX OBJECT ENTITIES
+
 interface StixObject {
   # BasicObject
   id: ID! # internal_id
@@ -604,6 +609,7 @@ interface StixObject {
 }
 
 ######## STIX META OBJECT ENTITIES
+
 interface StixMetaObject {
   # BasicObject
   id: ID! # internal_id
@@ -887,10 +893,10 @@ interface StixCoreObject {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     weights: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -972,10 +978,10 @@ interface StixDomainObject {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     weights: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -1071,10 +1077,10 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     weights: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -1188,10 +1194,10 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     weights: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -1265,10 +1271,10 @@ interface Container {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     weights: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -1300,7 +1306,7 @@ enum NotesOrdering {
   modified
   created_at
   updated_at
-  createdBY
+  createdBy
   markingDefinitions
   labels
 }
@@ -1359,10 +1365,10 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     weights: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -1402,6 +1408,126 @@ input NoteAddInput {
   attribute_abstract: String
   content: String! @constraint(minLength: 3)
   authors: [String]
+  confidence: Int
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+
+################ ObservedDatas
+enum ObservedDatasOrdering {
+  first_observed
+  last_observed
+  number_observed
+  created
+  modified
+  created_at
+  updated_at
+  createdBy
+  markingDefinitions
+  labels
+}
+enum ObservedDatasFilter {
+  first_observed
+  last_observed
+  number_observed
+  created
+  modified
+  created_at
+  updated_at
+  createdBy
+  markedBy
+  labelledBy
+  objectContains
+}
+input ObservedDatasFiltering {
+  key: ObservedDatasFilter!
+  values: [String]!
+  operator: String
+}
+type ObservedDataConnection {
+  pageInfo: PageInfo!
+  edges: [ObservedDataEdge]
+}
+type ObservedDataEdge {
+  cursor: String!
+  node: Note!
+}
+type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
+  # BasicObject
+  id: ID! # internal_id
+  entity_type: String!
+  # StixObject
+  standard_stix_id: String!
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixDomainObject
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime!
+  modified: DateTime!
+  # Container
+  objects(
+    first: Int
+    after: ID
+    orderBy: StixDomainObjectOrdering
+    orderMode: OrderingMode
+    filters: [StixDomainObjectFiltering]
+    filterMode: FilterMode
+    search: String
+    types: [String]
+  ): StixCoreObjectOrStixRelationship
+  # ObservedData
+  first_observed: DateTime!
+  last_observed: DateTime!
+  number_observed: Int
+  # Technical
+  creator: User
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  toStix: String
+  editContext: [EditUserContext]
+}
+input ObservedDataAddInput {
+  stix_id: String
+  first_observed: DateTime
+  last_observed: DateTime
+  number_observed: Int
   confidence: Int
   createdBy: String
   markingDefinitions: [String]
@@ -1476,10 +1602,10 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     weights: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -1599,10 +1725,10 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     weights: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -1711,10 +1837,10 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     weights: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -1820,10 +1946,10 @@ interface Identity {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     weights: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -1922,10 +2048,10 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     weights: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -1983,6 +2109,8 @@ enum OrganizationsFilter {
   name
   aliases
   alias
+  x_opencti_organization_type
+  x_opencti_reliability
   created
   modified
   created_at
@@ -2041,10 +2169,10 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     weights: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -2155,10 +2283,10 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     weights: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -2280,10 +2408,10 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     weights: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -2320,7 +2448,7 @@ input IndicatorAddInput {
   pattern_type: String!
   pattern_version: String
   pattern: String!
-  name: String!
+  name: String! @constraint(minLength: 3)
   description: String
   valid_from: DateTime
   valid_until: DateTime
@@ -2405,10 +2533,10 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     weights: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -2436,7 +2564,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
 }
 input InfrastructureAddInput {
   stix_id: String
-  name: String!
+  name: String! @constraint(minLength: 3)
   description: String
   infrastructure_types: [String]
   first_seen: DateTime
@@ -2513,10 +2641,10 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     weights: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -2548,7 +2676,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
 }
 input IntrusionSetAddInput {
   stix_id: String
-  name: String!
+  name: String! @constraint(minLength: 3)
   description: String!
   aliases: [String]
   first_seen: DateTime
@@ -2566,6 +2694,7 @@ input IntrusionSetAddInput {
   clientMutationId: String
 }
 
+############## Locations
 interface Location {
   # BasicObject
   id: ID! # internal_id
@@ -2595,10 +2724,10 @@ interface Location {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     weights: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -2639,7 +2768,7 @@ enum PositionsFilter {
   markedBy
   labelledBy
 }
-input Positionsiltering {
+input PositionsFiltering {
   key: PositionsFilter!
   values: [String]
   operator: String
@@ -2681,10 +2810,10 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     weights: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -2715,7 +2844,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
 }
 input PositionAddInput {
   stix_id: String
-  name: String!
+  name: String! @constraint(minLength: 3)
   description: String
   latitude: Float
   longitude: Float
@@ -2795,10 +2924,10 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     weights: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -2826,7 +2955,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
 }
 input CityAddInput {
   stix_id: String
-  name: String!
+  name: String! @constraint(minLength: 3)
   description: String
   latitude: Float
   longitude: Float
@@ -2901,10 +3030,10 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     weights: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -2934,7 +3063,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
 }
 input CountryAddInput {
   stix_id: String
-  name: String!
+  name: String! @constraint(minLength: 3)
   description: String
   aliases: [String]
   confidence: Int
@@ -3007,10 +3136,10 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     weights: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -3042,7 +3171,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
 }
 input RegionAddInput {
   stix_id: String
-  name: String!
+  name: String! @constraint(minLength: 3)
   description: String
   contact_information: String
   confidence: Int
@@ -3125,10 +3254,10 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     weights: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -3164,7 +3293,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
 input MalwareAddInput {
   internal_id_key: String
   stix_id: String
-  name: String!
+  name: String! @constraint(minLength: 3)
   description: String!
   malware_types: [String]
   aliases: [String]
@@ -3177,6 +3306,591 @@ input MalwareAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+}
+
+############## ThreatActors
+enum ThreatActorsOrdering {
+  name
+  created
+  modified
+  created_at
+  updated_at
+  labels
+  markingDefinitions
+}
+enum ThreatActorsFilter {
+  name
+  aliases
+  created
+  modified
+  created_at
+  updated_at
+  createdBy
+  markedBy
+  labelledBy
+}
+input ThreatActorsFiltering {
+  key: ThreatActorsFilter!
+  values: [String]
+  operator: String
+}
+type ThreatActorConnection {
+  pageInfo: PageInfo!
+  edges: [ThreatActorEdge]
+}
+type ThreatActorEdge {
+  cursor: String!
+  node: ThreatActor!
+}
+type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+  # BasicObject
+  id: ID! # internal_id
+  entity_type: String!
+  # StixObject
+  standard_stix_id: String!
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixDomainObject
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime!
+  modified: DateTime!
+  # ThreatActor
+  name: String!
+  description: String
+  aliases: [String]
+  threat_actor_types: [String]
+  first_seen: DateTime
+  last_seen: DateTime
+  roles: [String]
+  goals: [String]
+  sophistication: String
+  resource_level: String
+  primary_motivation: String
+  secondary_motivations: [String]
+  personal_motivations: [String]
+  # Technical
+  creator: User
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  toStix: String
+  editContext: [EditUserContext]
+}
+input ThreatActorAddInput {
+  stix_id: String
+  name: String! @constraint(minLength: 3)
+  description: String!
+  aliases: [String]
+  threat_actor_types: [String]
+  first_seen: DateTime
+  last_seen: DateTime
+  goals: [String]
+  sophistication: String
+  resource_level: String
+  primary_motivation: String
+  secondary_motivations: [String]
+  personal_motivations: [String]
+  confidence: Int
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+
+############## Tools
+enum ToolsOrdering {
+  name
+  created
+  modified
+  created_at
+  updated_at
+  labels
+  markingDefinitions
+}
+enum ToolsFilter {
+  name
+  alias
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
+  labels
+}
+input ToolsFiltering {
+  key: ToolsFilter!
+  values: [String]
+  operator: String
+}
+type ToolConnection {
+  pageInfo: PageInfo!
+  edges: [ToolEdge]
+}
+type ToolEdge {
+  cursor: String!
+  node: Tool!
+}
+type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObject {
+  # BasicObject
+  id: ID! # internal_id
+  entity_type: String!
+  # StixObject
+  standard_stix_id: String!
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixDomainObject
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime!
+  modified: DateTime!
+  # Tool
+  name: String!
+  description: String
+  aliases: [String]
+  tool_types: [String]
+  tool_version: String
+  # Technical
+  creator: User
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  toStix: String
+  editContext: [EditUserContext]
+}
+input ToolAddInput {
+  stix_id: String
+  name: String! @constraint(minLength: 3)
+  description: String!
+  aliases: [String]
+  tool_version: String
+  confidence: Int
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
+  killChainPhases: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+
+############## Vulnerabilities
+enum VulnerabilitiesOrdering {
+  name
+  base_score
+  base_severity
+  attack_vector
+  created
+  modified
+  created_at
+  updated_at
+  labels
+  markingDefinitions
+}
+enum VulnerabilitiesFilter {
+  name
+  base_score
+  base_severity
+  attack_vector
+  alias
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
+  labels
+}
+input VulnerabilitiesFiltering {
+  key: VulnerabilitiesFilter!
+  values: [String]
+  operator: String
+}
+type VulnerabilityConnection {
+  pageInfo: PageInfo!
+  edges: [VulnerabilityEdge]
+}
+type VulnerabilityEdge {
+  cursor: String!
+  node: Vulnerability!
+}
+type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & BasicObject {
+  # BasicObject
+  id: ID! # internal_id
+  entity_type: String!
+  # StixObject
+  standard_stix_id: String!
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixDomainObject
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime!
+  modified: DateTime!
+  # Vulnerability
+  name: String!
+  description: String
+  x_opencti_base_score: Int
+  x_opencti_base_severity: String
+  x_opencti_attack_vector: String
+  x_opencti_integrity_impact: String
+  x_opencti_availability_impact: String
+  # Technical
+  creator: User
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  toStix: String
+  editContext: [EditUserContext]
+}
+input VulnerabilityAddInput {
+  stix_id: String
+  name: String! @constraint(minLength: 3)
+  description: String!
+  x_opencti_base_score: Int
+  x_opencti_base_severity: String
+  x_opencti_attack_vector: String
+  x_opencti_integrity_impact: String
+  x_opencti_availability_impact: String
+  confidence: Int
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+
+############## XOpenctiIncident
+enum XOpenctiIncidentsOrdering {
+  name
+  first_seen
+  last_seen
+  created
+  modified
+  created_at
+  updated_at
+  labels
+  markingDefinitions
+}
+enum XOpenctiIncidentsFilter {
+  name
+  alias
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
+  labels
+}
+input XOpenctiIncidentsFiltering {
+  key: XOpenctiIncidentsFilter!
+  values: [String]
+  operator: String
+}
+type XOpenctiIncidentConnection {
+  pageInfo: PageInfo!
+  edges: [XOpenctiIncidentEdge]
+}
+type XOpenctiIncidentEdge {
+  cursor: String!
+  node: XOpenctiIncident!
+}
+type XOpenctiIncident implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+  # BasicObject
+  id: ID! # internal_id
+  entity_type: String!
+  # StixObject
+  standard_stix_id: String!
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixDomainObject
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime!
+  modified: DateTime!
+  # XOpenctiIncident
+  first_seen: DateTime
+  last_seen: DateTime
+  objective: String
+  # Technical
+  creator: User
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  toStix: String
+  editContext: [EditUserContext]
+}
+input XOpenctiIncidentAddInput {
+  stix_id: String
+  name: String! @constraint(minLength: 3)
+  description: String!
+  confidence: Int
+  objective: String
+  first_seen: DateTime
+  last_seen: DateTime
+  alias: [String]
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
+}
+
+######## STIX CYBER OBSERVABLES ENTITIES
+
+enum StixCyberObservableOrdering {
+  name
+  entity_type
+  observable_value
+  value
+  created_at
+  updated_at
+  labels
+  markingDefinitions
+}
+enum StixCyberObservableFilter {
+  entity_type
+  observable_value
+  created
+  modified
+  created_at
+  createdBy
+  markingDefinitions
+  labels
+  relatedTo
+  observablesContained
+}
+input StixCyberObservableFiltering {
+  key: StixCyberObservableFilter!
+  values: [String]
+  operator: String
+}
+type StixCyberObservableConnection {
+  pageInfo: PageInfo!
+  edges: [StixCyberObservableEdge]
+}
+type StixCyberObservableEdge {
+  cursor: String!
+  node: StixCyberObservable!
+}
+interface StixCyberObservable {
+  # BasicObject
+  id: ID! # internal_id
+  entity_type: String!
+  # StixObject
+  standard_stix_id: String!
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  indicators: IndicatorConnection
+}
+
+############## HashedObservables
+interface HashedObservable {
+  # BasicObject
+  id: ID! # internal_id
+  entity_type: String!
+  # StixObject
+  standard_stix_id: String!
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  indicators: IndicatorConnection
+  # HashedObservables
+  md5: String
+  sha1: String
+  sha256: String
+  sha512: String
+  jobs(first: Int): [Work]
 }
 
 ###### RELATIONSHIPS
@@ -3201,6 +3915,10 @@ type InternalRelationship implements BasicRelationship {
   from: InternalObject
   to: InternalObject
 }
+input InternalRelationshipAddInput {
+  relationship_type: String! # Will be check by code
+  toId: ID!
+}
 
 ######## STIX RELATIONSHIPS
 
@@ -3223,9 +3941,8 @@ interface StixRelationship {
 enum StixCoreRelationshipsOrdering {
   entity_type
   confidence
-  weight
-  first_seen
-  last_seen
+  start_time
+  stop_time
   created
   modified
   created_at
@@ -3298,11 +4015,11 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
-    weights: [Int]
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -3359,7 +4076,7 @@ input StixSightingRelationshipsFiltering {
   values: [String]
   operator: String
 }
-type StixSightingRelationshipsConnection {
+type StixSightingRelationshipConnection {
   pageInfo: PageInfo!
   edges: [StixSightingRelationshipsEdge]
 }
@@ -3409,6 +4126,24 @@ input StixSightingRelationshipsAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+}
+
+type StixMetaRelationship implements BasicRelationship & StixRelationship {
+  # BasicRelationship
+  id: ID! # internal_id
+  entity_type: String!
+  fromRole: String
+  toRole: String
+  # StixRelationship
+  standard_stix_id: String!
+  stix_ids: [String]
+  from: StixCoreObjectOrStixRelationship
+  to: StixCoreObjectOrStixRelationship
+  inferred: Boolean
+}
+input StixMetaRelationshipAddInput {
+  relationship_type: String! # Will be check by code
+  toIds: [ID]!
 }
 
 ### QUERIES
@@ -3574,7 +4309,6 @@ type Query {
     search: String
     toStix: Boolean
   ): AttackPatternConnection @auth(for: [KNOWLEDGE])
-  # Campaigns
   campaign(id: String): Campaign @auth(for: [KNOWLEDGE])
   campaigns(
     first: Int
@@ -3596,7 +4330,7 @@ type Query {
     relationType: String
     inferred: Boolean
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
-  ########### Containers
+  # Containers
   note(id: String): Note @auth(for: [KNOWLEDGE])
   notes(
     first: Int
@@ -3626,6 +4360,35 @@ type Query {
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
   noteObjectContains(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
+  observedData(id: String): Opinion @auth(for: [KNOWLEDGE])
+  observedDatas(
+    first: Int
+    after: ID
+    orderBy: ObservedDatasOrdering
+    orderMode: OrderingMode
+    filters: [ObservedDatasFiltering]
+    filterMode: FilterMode
+    search: String
+    toStix: Boolean
+  ): ObservedDataConnection @auth(for: [KNOWLEDGE])
+  observedDatasTimeSeries(
+    objectId: String
+    authorId: String
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime!
+    endDate: DateTime!
+    interval: String!
+  ): [TimeSeries] @auth(for: [KNOWLEDGE])
+  observedDatasNumber(objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
+  observedDatasDistribution(
+    objectId: String
+    field: String!
+    operation: StatsOperation!
+    limit: Int
+    order: String
+  ): [Distribution] @auth(for: [KNOWLEDGE])
+  observedDatasObjectContains(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
   opinion(id: String): Opinion @auth(for: [KNOWLEDGE])
   opinions(
     first: Int
@@ -3696,6 +4459,7 @@ type Query {
     search: String
     toStix: Boolean
   ): CourseOfActionConnection @auth(for: [KNOWLEDGE])
+  # Identities
   identity(id: String!): Identity @auth(for: [KNOWLEDGE])
   identities(
     first: Int
@@ -3708,6 +4472,180 @@ type Query {
     filterMode: FilterMode
     toStix: Boolean
   ): IdentityConnection @auth(for: [KNOWLEDGE])
+  individual(id: String!): User @auth(for: [KNOWLEDGE])
+  individuals(
+    first: Int
+    after: ID
+    orderBy: IndividualsOrdering
+    orderMode: OrderingMode
+    filters: [IndividualsFiltering]
+    filterMode: FilterMode
+    search: String
+    toStix: Boolean
+  ): IndividualConnection @auth(for: [KNOWLEDGE])
+  organization(id: String): Organization @auth(for: [KNOWLEDGE])
+  organizations(
+    first: Int
+    after: ID
+    orderBy: OrganizationsOrdering
+    orderMode: OrderingMode
+    filters: [OrganizationsFiltering]
+    filterMode: FilterMode
+    search: String
+    toStix: Boolean
+  ): OrganizationConnection @auth(for: [KNOWLEDGE])
+  sector(id: String): Sector @auth(for: [KNOWLEDGE])
+  sectors(
+    first: Int
+    after: ID
+    orderBy: SectorsOrdering
+    orderMode: OrderingMode
+    filters: [SectorsFiltering]
+    filterMode: FilterMode
+    search: String
+    toStix: Boolean
+  ): SectorConnection @auth(for: [KNOWLEDGE])
+  indicator(id: String!): Indicator @auth(for: [KNOWLEDGE])
+  indicators(
+    first: Int
+    after: ID
+    orderBy: IndicatorsOrdering
+    orderMode: OrderingMode
+    filters: [IndicatorsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): IndicatorConnection @auth(for: [KNOWLEDGE])
+  infrastructure(id: String!): Indicator @auth(for: [KNOWLEDGE])
+  infrastructures(
+    first: Int
+    after: ID
+    orderBy: InfrastructuresOrdering
+    orderMode: OrderingMode
+    filters: [InfrastructuresFiltering]
+    filterMode: FilterMode
+    search: String
+  ): InfrastructureConnection @auth(for: [KNOWLEDGE])
+  intrusionSet(id: String): IntrusionSet @auth(for: [KNOWLEDGE])
+  intrusionSets(
+    first: Int
+    after: ID
+    orderBy: IntrusionSetsOrdering
+    orderMode: OrderingMode
+    filters: [IntrusionSetsFiltering]
+    filterMode: FilterMode
+    search: String
+    toStix: Boolean
+  ): IntrusionSetConnection @auth(for: [KNOWLEDGE])
+  # Locations
+  city(id: String): City @auth(for: [KNOWLEDGE])
+  cities(
+    first: Int
+    after: ID
+    orderBy: CitiesOrdering
+    orderMode: OrderingMode
+    filters: [CitiesFiltering]
+    filterMode: FilterMode
+    search: String
+    toStix: Boolean
+  ): CityConnection @auth(for: [KNOWLEDGE])
+  country(id: String): Country @auth(for: [KNOWLEDGE])
+  countries(
+    first: Int
+    after: ID
+    orderBy: CountriesOrdering
+    orderMode: OrderingMode
+    filters: [CountriesFiltering]
+    filterMode: FilterMode
+    search: String
+    toStix: Boolean
+  ): CountryConnection @auth(for: [KNOWLEDGE])
+  region(id: String!): Region @auth(for: [KNOWLEDGE])
+  regions(
+    first: Int
+    after: ID
+    orderBy: RegionsOrdering
+    orderMode: OrderingMode
+    filters: [RegionsFiltering]
+    filterMode: FilterMode
+    search: String
+    toStix: Boolean
+  ): RegionConnection @auth(for: [KNOWLEDGE])
+  position(id: String!): Region @auth(for: [KNOWLEDGE])
+  positions(
+    first: Int
+    after: ID
+    orderBy: PositionsOrdering
+    orderMode: OrderingMode
+    filters: [PositionsFiltering]
+    filterMode: FilterMode
+    search: String
+    toStix: Boolean
+  ): PositionConnection @auth(for: [KNOWLEDGE])
+  malware(id: String): Malware @auth(for: [KNOWLEDGE])
+  malwares(
+    first: Int
+    after: ID
+    orderBy: MalwaresOrdering
+    orderMode: OrderingMode
+    filters: [MalwaresFiltering]
+    filterMode: FilterMode
+    search: String
+    toStix: Boolean
+  ): MalwareConnection @auth(for: [KNOWLEDGE])
+  threatActor(id: String): ThreatActor @auth(for: [KNOWLEDGE])
+  threatActors(
+    first: Int
+    after: ID
+    orderBy: ThreatActorsOrdering
+    orderMode: OrderingMode
+    filters: [ThreatActorsFiltering]
+    filterMode: FilterMode
+    search: String
+    toStix: Boolean
+  ): ThreatActorConnection @auth(for: [KNOWLEDGE])
+  tool(id: String): Tool @auth(for: [KNOWLEDGE])
+  tools(
+    first: Int
+    after: ID
+    orderBy: ToolsOrdering
+    orderMode: OrderingMode
+    filters: [ToolsFiltering]
+    filterMode: FilterMode
+    search: String
+    toStix: Boolean
+  ): ToolConnection @auth(for: [KNOWLEDGE])
+  vulnerability(id: String): Vulnerability @auth(for: [KNOWLEDGE])
+  vulnerabilities(
+    first: Int
+    after: ID
+    orderBy: VulnerabilitiesOrdering
+    orderMode: OrderingMode
+    filters: [VulnerabilitiesFiltering]
+    filterMode: FilterMode
+    search: String
+    toStix: Boolean
+  ): VulnerabilityConnection @auth(for: [KNOWLEDGE])
+  xOpenctiIncident(id: String): XOpenctiIncident @auth(for: [KNOWLEDGE])
+  xOpenctiIncidents(
+    first: Int
+    after: ID
+    orderBy: XOpenctiIncidentsOrdering
+    orderMode: OrderingMode
+    filters: [XOpenctiIncidentsFiltering]
+    filterMode: FilterMode
+    search: String
+    toStix: Boolean
+  ): XOpenctiIncidentConnection @auth(for: [KNOWLEDGE])
+  xOpenctiIncidentsTimeSeries(
+    objectId: String
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime!
+    endDate: DateTime!
+    interval: String!
+    relationType: String
+    inferred: Boolean
+  ): [TimeSeries] @auth(for: [KNOWLEDGE])
 
   ######## STIX CYBER OBSERVABLE ENTITIES
 
@@ -3715,24 +4653,26 @@ type Query {
   stixCyberObservables(
     first: Int
     after: ID
-    types: [String]
+    entity_types: [String]
     orderBy: StixCyberObservableOrdering
     orderMode: OrderingMode
     filters: [StixCyberObservableFiltering]
     filterMode: FilterMode
     search: String
-    stix: Boolean
+    toStix: Boolean
   ): StixCyberObservableConnection @auth(for: [KNOWLEDGE])
   stixCyberObservableExportFiles(first: Int, context: String): FileConnection
   stixCyberObservableNumber(types: [String], endDate: DateTime): Number @auth(for: [KNOWLEDGE])
   stixCyberObservableTimeSeries(type: String): [TimeSeries] @auth(for: [KNOWLEDGE])
   stixCyberObservableDistribution(type: String): [Distribution] @auth(for: [KNOWLEDGE])
-  # StixRelations
-  stixRelation(id: String): StixKnowledgeRelationship @auth(for: [KNOWLEDGE])
-  stixRelations(
+
+  ######## STIX CORE RELATIONSHIPS
+
+  stixCoreRelationship(id: String): StixCoreRelationship @auth(for: [KNOWLEDGE])
+  stixCoreRelationships(
     first: Int
     after: ID
-    orderBy: StixRelationsOrdering
+    orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
     fromRole: String
@@ -3742,18 +4682,18 @@ type Query {
     fromTypes: [String]
     toTypes: [String]
     relationType: String
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
-    weights: [Int]
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    confidences: [Int]
     search: String
-    filters: [StixRelationsFiltering]
+    filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
     forceNatural: Boolean
     stix: Boolean
-  ): StixRelationConnection @auth(for: [KNOWLEDGE])
-  stixRelationsTimeSeries(
+  ): StixCoreRelationshipConnection @auth(for: [KNOWLEDGE])
+  stixCoreRelationshipsTimeSeries(
     fromId: String
     relationType: String
     inferred: Boolean
@@ -3763,7 +4703,7 @@ type Query {
     endDate: DateTime!
     interval: String!
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
-  stixRelationsDistribution(
+  sstixCoreRelationshipsDistribution(
     fromId: String!
     field: String!
     operation: StatsOperation!
@@ -3775,30 +4715,32 @@ type Query {
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
-  stixRelationsNumber(type: String, fromId: String, endDate: DateTime, inferred: Boolean): Number
+  stixCoreRelationshipsNumber(type: String, fromId: String, endDate: DateTime, inferred: Boolean): Number
     @auth(for: [KNOWLEDGE])
-  # StixRelations
-  stixSighting(id: String): StixSightingRelationship @auth(for: [KNOWLEDGE])
-  stixSightings(
+
+  ######## STIX SIGHTING RELATIONSHIPS
+
+  stixSightingRelationship(id: String): StixSightingRelationship @auth(for: [KNOWLEDGE])
+  stixSightingRelationships(
     first: Int
     after: ID
-    orderBy: StixSightingsOrdering
+    orderBy: StixSightingRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
     inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     search: String
-    filters: [StixSightingsFiltering]
+    filters: [StixSightingRelationshipsFiltering]
     filterMode: FilterMode
     forceNatural: Boolean
     toStix: Boolean
-  ): StixSightingConnection @auth(for: [KNOWLEDGE])
+  ): StixSightingRelationshipConnection @auth(for: [KNOWLEDGE])
   stixSightingsTimeSeries(
     fromId: String
     inferred: Boolean
@@ -3820,174 +4762,510 @@ type Query {
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
   stixSightingsNumber(fromId: String, endDate: DateTime, inferred: Boolean): Number
+}
 
-  # Users
-  person(id: String!): User @auth(for: [KNOWLEDGE])
-  persons(
-    first: Int
-    after: ID
-    orderBy: UsersOrdering
-    orderMode: OrderingMode
-    filters: [UsersFiltering]
-    filterMode: FilterMode
-    search: String
-    toStix: Boolean
-  ): UserConnection @auth(for: [KNOWLEDGE])
-  # Organizations
-  organization(id: String): Organization @auth(for: [KNOWLEDGE])
-  organizations(
-    organizationClass: String
-    first: Int
-    after: ID
-    orderBy: OrganizationsOrdering
-    orderMode: OrderingMode
-    filters: [OrganizationsFiltering]
-    filterMode: FilterMode
-    search: String
-    toStix: Boolean
-  ): OrganizationConnection @auth(for: [KNOWLEDGE])
-  # Sectors
-  sector(id: String): Sector @auth(for: [KNOWLEDGE])
-  sectors(
-    first: Int
-    after: ID
-    orderBy: SectorsOrdering
-    orderMode: OrderingMode
-    filters: [SectorsFiltering]
-    filterMode: FilterMode
-    search: String
-    toStix: Boolean
-  ): SectorConnection @auth(for: [KNOWLEDGE])
-  # Cities
-  city(id: String): City @auth(for: [KNOWLEDGE])
-  cities(
-    first: Int
-    after: ID
-    orderBy: CitiesOrdering
-    orderMode: OrderingMode
-    filters: [CitiesFiltering]
-    filterMode: FilterMode
-    search: String
-    toStix: Boolean
-  ): CityConnection @auth(for: [KNOWLEDGE])
-  # Countries
-  country(id: String): Country @auth(for: [KNOWLEDGE])
-  countries(
-    first: Int
-    after: ID
-    orderBy: CountriesOrdering
-    orderMode: OrderingMode
-    filters: [CountriesFiltering]
-    filterMode: FilterMode
-    search: String
-    toStix: Boolean
-  ): CountryConnection @auth(for: [KNOWLEDGE])
-  # Regions
-  region(id: String!): Region @auth(for: [KNOWLEDGE])
-  regions(
-    first: Int
-    after: ID
-    orderBy: RegionsOrdering
-    orderMode: OrderingMode
-    filters: [RegionsFiltering]
-    filterMode: FilterMode
-    search: String
-    toStix: Boolean
-  ): RegionConnection @auth(for: [KNOWLEDGE])
+### SUBSCRIPTIONS
 
-  # ThreatActors
-  threatActor(id: String): ThreatActor @auth(for: [KNOWLEDGE])
-  threatActors(
-    first: Int
-    after: ID
-    orderBy: ThreatActorsOrdering
-    orderMode: OrderingMode
-    filters: [ThreatActorsFiltering]
-    filterMode: FilterMode
-    search: String
-    toStix: Boolean
-  ): ThreatActorConnection @auth(for: [KNOWLEDGE])
-  # IntursionSets
-  intrusionSet(id: String): IntrusionSet @auth(for: [KNOWLEDGE])
-  intrusionSets(
-    first: Int
-    after: ID
-    orderBy: IntrusionSetsOrdering
-    orderMode: OrderingMode
-    filters: [IntrusionSetsFiltering]
-    filterMode: FilterMode
-    search: String
-    toStix: Boolean
-  ): IntrusionSetConnection @auth(for: [KNOWLEDGE])
+type Subscription {
+  settings(id: ID!): Settings @auth(for: [SETTINGS])
+  label(id: ID!): Label @auth(for: [SETTINGS])
+  markingDefinition(id: ID!): MarkingDefinition @auth(for: [SETTINGS])
+  killChainPhase(id: ID!): KillChainPhase @auth(for: [SETTINGS])
+  StixDomainObject(id: ID!): StixDomainObject @auth(for: [KNOWLEDGE])
+  StixCyberObservable(id: ID!): StixCyberObservable @auth(for: [KNOWLEDGE])
+  stixCoreRelationship(id: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE])
+  stixSightingRelationship(id: ID!): StixSightingRelationship @auth(for: [KNOWLEDGE])
+  externalReference(id: ID!): ExternalReference @auth(for: [KNOWLEDGE])
+  workspace(id: ID!): Workspace @auth(for: [EXPLORE])
+}
 
-  # Incidents
-  incident(id: String): Incident @auth(for: [KNOWLEDGE])
-  incidents(
-    first: Int
-    after: ID
-    orderBy: IncidentsOrdering
-    orderMode: OrderingMode
-    filters: [IncidentsFiltering]
-    filterMode: FilterMode
-    search: String
-    toStix: Boolean
-  ): IncidentConnection @auth(for: [KNOWLEDGE])
-  incidentsTimeSeries(
-    objectId: String
-    field: String!
-    operation: StatsOperation!
-    startDate: DateTime!
-    endDate: DateTime!
-    interval: String!
-    relationType: String
-    inferred: Boolean
-  ): [TimeSeries] @auth(for: [KNOWLEDGE])
-  # Malwares
-  malware(id: String): Malware @auth(for: [KNOWLEDGE])
-  malwares(
-    first: Int
-    after: ID
-    orderBy: MalwaresOrdering
-    orderMode: OrderingMode
-    filters: [MalwaresFiltering]
-    filterMode: FilterMode
-    search: String
-    toStix: Boolean
-  ): MalwareConnection @auth(for: [KNOWLEDGE])
-  # Tools
-  tool(id: String): Tool @auth(for: [KNOWLEDGE])
-  tools(
-    first: Int
-    after: ID
-    orderBy: ToolsOrdering
-    orderMode: OrderingMode
-    filters: [ToolsFiltering]
-    filterMode: FilterMode
-    search: String
-    toStix: Boolean
-  ): ToolConnection @auth(for: [KNOWLEDGE])
-  # Vulnerabilities
-  vulnerability(id: String): Vulnerability @auth(for: [KNOWLEDGE])
-  vulnerabilities(
-    first: Int
-    after: ID
-    orderBy: VulnerabilitiesOrdering
-    orderMode: OrderingMode
-    filters: [VulnerabilitiesFiltering]
-    filterMode: FilterMode
-    search: String
-    toStix: Boolean
-  ): VulnerabilityConnection @auth(for: [KNOWLEDGE])
+### MUTATIONS
 
-  # Indicators
-  indicator(id: String!): Indicator @auth(for: [KNOWLEDGE])
-  indicators(
-    first: Int
-    after: ID
-    orderBy: IndicatorsOrdering
-    orderMode: OrderingMode
-    filters: [IndicatorsFiltering]
-    filterMode: FilterMode
+###### INTERNAL
+
+type AttributeEditMutations {
+  delete: ID
+  update(input: AttributeEditInput): Attribute
+}
+
+######## INTERNAL OBJECT ENTITIES
+
+type SettingsEditMutations {
+  fieldPatch(input: EditInput): Settings
+  contextPatch(input: EditContext): Settings
+  contextClean: Settings
+}
+type GroupEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): Group
+  contextPatch(input: EditContext): Group
+  contextClean: Group
+  relationAdd(input: InternalRelationshipAddInput): StixMetaRelationship
+  relationDelete(toId: String, relationType: String): Group
+}
+type UserEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): User
+  contextPatch(input: EditContext): User
+  contextClean: User
+  tokenRenew: User
+  relationAdd(input: InternalRelationshipAddInput): InternalRelationship
+  removeRole(name: String!): User
+  relationDelete(toId: String, relationType: String): User
+}
+type RoleEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): Role
+  contextPatch(input: EditContext): Role
+  contextClean: Role
+  relationAdd(input: InternalRelationshipAddInput): StixMetaRelationship
+  removeCapability(name: String!): Role
+}
+type WorkspaceEditMutations {
+  delete: ID @auth(for: [EXPLORE_EXUPDATE_EXDELETE])
+  fieldPatch(input: EditInput): Workspace @auth(for: [EXPLORE_EXUPDATE])
+  contextPatch(input: EditContext): Workspace @auth(for: [EXPLORE_EXUPDATE])
+  contextClean: Workspace @auth(for: [EXPLORE_EXUPDATE])
+  relationAdd(input: InternalRelationshipAddInput): StixMetaRelationship @auth(for: [EXPLORE_EXUPDATE])
+  relationDelete(relationId: ID!): Workspace @auth(for: [EXPLORE_EXUPDATE])
+}
+
+######## STIX OBJECT ENTITIES
+
+######## STIX META OBJECT ENTITIES
+
+type MarkingDefinitionEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): MarkingDefinition
+  contextPatch(input: EditContext): MarkingDefinition
+  contextClean: MarkingDefinition
+}
+type LabelEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): Label
+  contextPatch(input: EditContext): Label
+  contextClean: Label
+}
+type ExternalReferenceEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+type KillChainPhaseEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): KillChainPhase
+  contextPatch(input: EditContext): KillChainPhase
+  contextClean: KillChainPhase
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationDelete(relationId: ID!): KillChainPhase
+}
+
+######## STIX CORE OBJECT ENTITIES
+
+type StixCoreObjectEditMutations {
+  relationAdd(input: StixCoreRelationshipAddInput): StixCoreRelationship
+  relationDelete(relationId: ID!): StixObject
+}
+
+######## STIX DOMAIN OBJECT ENTITIES
+
+type StixDomainObjectEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  changeType(newType: String!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: EditInput): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationshipAddInput @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID, toId: String, relationType: String): StixObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  importPush(file: Upload!): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
+  mergeEntities(StixDomainObjectIds: [String]!, alias: [String]): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+type AttackPatternEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String, relationType: String!): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+type CampaignEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String, relationType: String!): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+############### Containers
+type NoteEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): Note @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Note @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Note @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String, relationType: String!): Note @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+type ObservedDataEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String, relationType: String!): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+type OpinionEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String, relationType: String!): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+type ReportEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): Report @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Report @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Report @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID, toId: String, relationType: String!): Report @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+type CourseOfActionEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+############### Identities
+type IdentityEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Identity @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationshipAddInput @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+type IndividualEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): Individual
+  contextPatch(input: EditContext): Individual
+  contextClean: Individual
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationDelete(relationId: ID!): Individual
+}
+type OrganizationEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Organization @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+type SectorEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Sector @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+type IndicatorEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+type InfrastructureEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+type IntrusionSetEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+############### Locations
+type CityEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): City @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): City @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: City @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): City @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+type CountryEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): Country @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Country @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Country @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Country @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+type RegionEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): Region @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Region @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Region @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Region @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+type PositionEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): Position @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Position @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Position @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Position: [KNOWLEDGE_KNUPDATE])
+}
+type MalwareEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Malware @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+type ThreatActorEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+type ToolEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Tool @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+type VulnerabilityEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+type XOpenctiIncidentEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): XOpenctiIncident @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): XOpenctiIncident @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: XOpenctiIncident @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): XOpenctiIncident @auth(for: [KNOWLEDGE_KNUPDATE])
+}
+
+######## STIX CYBER OBSERVABLE ENTITIES
+
+type StixCyberObservableEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String, relationType: String!): StixCyberObservable
+    @auth(for: [KNOWLEDGE_KNUPDATE])
+  askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
+}
+
+######## STIX RELATIONSHIPS
+
+######## STIX CORE RELATIONSHIPS
+
+type StixCoreRelationEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): StixCoreRelationship
+  contextPatch(input: EditContext): StixCoreRelationship
+  contextClean: StixCoreRelationship
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationDelete(relationId: ID!): StixCoreRelationship
+}
+
+######## STIX SIGHTING RELATIONSHIPS
+
+type StixSightingRelationshipEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): StixSightingRelationship
+  contextPatch(input: EditContext): StixSightingRelationship
+  contextClean: StixSightingRelationship
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationDelete(relationId: ID!): StixSightingRelationship
+}
+
+### MUTATIONS DECLARATION
+
+type Mutation {
+  ###### INTERNAL
+  token(input: UserLoginInput): String
+  inferenceEnable(id: ID!): Inference @auth(for: [SETTINGS_SETINFERENCES])
+  inferenceDisable(id: ID!): Inference @auth(for: [SETTINGS_SETINFERENCES])
+  attributeAdd(input: AttributeAddInput): Attribute @auth(for: [SETTINGS])
+  attributeEdit(id: ID!): AttributeEditMutations @auth(for: [SETTINGS])
+  deleteWork(id: ID!): ID! @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  initiateJob(workId: ID!): Job @auth(for: [CONNECTORAPI])
+  updateJob(jobId: ID!, status: Status!, messages: [String]): Job @auth(for: [CONNECTORAPI])
+  deleteImport(fileName: String): Boolean @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  uploadImport(file: Upload!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  askJobImport(fileName: ID!, context: String): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
+
+  ######## INTERNAL OBJECT ENTITIES
+  settingsEdit(id: ID!): SettingsEditMutations @auth(for: [SETTINGS])
+  pingConnector(id: ID!, state: String): Connector @auth(for: [CONNECTORAPI])
+  registerConnector(input: RegisterConnectorInput): Connector @auth(for: [CONNECTORAPI])
+  resetStateConnector(id: ID!): Connector @auth(for: [MODULES_MODMANAGE])
+  deleteConnector(id: ID!): ID! @auth(for: [MODULES_MODMANAGE])
+
+  # Label
+  labelAdd(input: LabelAddInput): Label @auth(for: [KNOWLEDGE_KNUPDATE])
+  labelEdit(id: ID!): LabelEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
+  # StixObject
+  stixEntityEdit(id: ID!): StixObjectEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
+  # StixDomainObject
+  StixDomainObjectAdd(input: StixDomainObjectAddInput): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  StixDomainObjectEdit(id: ID!): StixDomainObjectEditMutations
+  StixDomainObjectExportAsk(
+    type: String!
+    format: String!
+    exportType: String!
+    maxMarkingDefinition: String
+    context: String
     search: String
-  ): IndicatorConnection @auth(for: [KNOWLEDGE])
+    orderBy: StixDomainObjectOrdering
+    orderMode: OrderingMode
+    filters: [StixDomainObjectFiltering]
+    filterMode: FilterMode
+  ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  StixDomainObjectMerge(
+    keepedEntityId: ID!
+    mergedEntityId: ID!
+    mergeRelations: Boolean
+    mergeAliases: Boolean
+  ): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  StixDomainObjectDelete(id: [ID]!): [ID]!
+  StixDomainObjectExportPush(type: String!, file: Upload!, context: String, listArgs: String): Boolean
+    @auth(for: [CONNECTORAPI])
+  # StixCyberObservable
+  StixCyberObservableAdd(input: StixCyberObservableAddInput): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
+  StixCyberObservableEdit(id: ID!): StixCyberObservableEditMutations
+  StixCyberObservableExportAsk(
+    format: String!
+    exportType: String!
+    maxMarkingDefinition: String
+    context: String
+    types: [String]
+    search: String
+    orderBy: StixCyberObservableOrdering
+    orderMode: OrderingMode
+    filters: [StixCyberObservableFiltering]
+    filterMode: FilterMode
+  ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  StixCyberObservableExportPush(file: Upload!, context: String, listArgs: String): Boolean @auth(for: [CONNECTORAPI])
+  # StixRelation
+  stixRelationAdd(input: StixRelationAddInput, reversedReturn: Boolean): StixKnowledgeRelationship
+    @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixRelationEdit(id: ID!): StixRelationEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
+  # StixSighting
+  stixSightingAdd(input: StixSightingAddInput, reversedReturn: Boolean): StixSightingRelationship
+    @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixSightingEdit(id: ID!): StixSightingEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
+  # Workspace
+  workspaceAdd(input: WorkspaceAddInput): Workspace @auth(for: [EXPLORE_EXUPDATE])
+  workspaceEdit(id: ID!): WorkspaceEditMutations
+  # Identity
+  identityAdd(input: IdentityAddInput): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
+  identityEdit(id: ID!): IdentityEditMutations
+  # User
+  userAdd(input: UserAddInput): User @auth(for: [SETTINGS_SETACCESSES])
+  userEdit(id: ID!): UserEditMutations @auth(for: [SETTINGS_SETACCESSES])
+  personAdd(input: PersonAddInput): User @auth(for: [KNOWLEDGE_KNUPDATE])
+  personEdit(id: ID!): PersonEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
+  meEdit(input: EditInput): User @auth
+  logout: ID @auth
+  # Role
+  roleAdd(input: RoleAddInput): Role @auth(for: [SETTINGS_SETACCESSES])
+  roleEdit(id: ID!): RoleEditMutations @auth(for: [SETTINGS_SETACCESSES])
+  # Organization
+  organizationAdd(input: OrganizationAddInput): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
+  organizationEdit(id: ID!): OrganizationEditMutations
+  # Sector
+  sectorAdd(input: SectorAddInput): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
+  sectorEdit(id: ID!): SectorEditMutations
+  # City
+  cityAdd(input: CityAddInput): City @auth(for: [KNOWLEDGE_KNUPDATE])
+  cityEdit(id: ID!): CityEditMutations
+  # Country
+  countryAdd(input: CountryAddInput): Country @auth(for: [KNOWLEDGE_KNUPDATE])
+  countryEdit(id: ID!): CountryEditMutations
+  # Region
+  regionAdd(input: RegionAddInput): Region @auth(for: [KNOWLEDGE_KNUPDATE])
+  regionEdit(id: ID!): RegionEditMutations
+  # Group
+  groupAdd(input: GroupAddInput): Group @auth(for: [SETTINGS_SETACCESSES])
+  groupEdit(id: ID!): GroupEditMutations @auth(for: [SETTINGS_SETACCESSES])
+  # MarkingDefinition
+  markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition @auth(for: [SETTINGS_SETMARKINGS])
+  markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations @auth(for: [SETTINGS_SETMARKINGS])
+  # ExternalReference
+  externalReferenceAdd(input: ExternalReferenceAddInput): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
+  externalReferenceEdit(id: ID!): ExternalReferenceEditMutations
+  # KillChainPhase
+  killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase @auth(for: [SETTINGS])
+  killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations @auth(for: [SETTINGS])
+  # AttackPattern
+  attackPatternAdd(input: AttackPatternAddInput): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
+  attackPatternEdit(id: ID!): AttackPatternEditMutations
+  # CourseOfAction
+  courseOfActionAdd(input: CourseOfActionAddInput): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
+  courseOfActionEdit(id: ID!): CourseOfActionEditMutations
+  # ThreatActor
+  threatActorAdd(input: ThreatActorAddInput): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
+  threatActorEdit(id: ID!): ThreatActorEditMutations
+  # IntrusionSet
+  intrusionSetAdd(input: IntrusionSetAddInput): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
+  intrusionSetEdit(id: ID!): IntrusionSetEditMutations
+  # Campaign
+  campaignAdd(input: CampaignAddInput): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
+  campaignEdit(id: ID!): CampaignEditMutations
+  # Incident
+  incidentAdd(input: IncidentAddInput): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
+  incidentEdit(id: ID!): IncidentEditMutations
+  # Malware
+  malwareAdd(input: MalwareAddInput): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
+  malwareEdit(id: ID!): MalwareEditMutations
+  # Tool
+  toolAdd(input: ToolAddInput): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
+  toolEdit(id: ID!): ToolEditMutations
+  # Vulnerability
+  vulnerabilityAdd(input: VulnerabilityAddInput): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
+  vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
+  # Report
+  reportAdd(input: ReportAddInput): Report @auth(for: [KNOWLEDGE_KNUPDATE])
+  reportEdit(id: ID!): ReportEditMutations
+  # Note
+  noteAdd(input: NoteAddInput): Note @auth(for: [KNOWLEDGE_KNUPDATE])
+  noteEdit(id: ID!): NoteEditMutations
+  # Report
+  opinionAdd(input: OpinionAddInput): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+  opinionEdit(id: ID!): OpinionEditMutations
+  # Indicator
+  indicatorAdd(input: IndicatorAddInput): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorEdit(id: ID!): IndicatorEditMutations
 }

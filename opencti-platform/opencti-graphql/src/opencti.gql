@@ -33,7 +33,7 @@ define
   # Internal Relationships
   grant sub attribute, datatype string;
 
-  # STIX Knowledge Relationship
+  # STIX Core Relationship
   relationship_type sub attribute, datatype string;
   start_time sub attribute, datatype date;
   stop_time sub attribute, datatype date;
@@ -100,9 +100,9 @@ define
   x_opencti_aliases sub attribute, datatype string;
   objective sub attribute, datatype string;
   md5 sub attribute, datatype string;
-  sha-1 sub attribute, datatype string;
-  sha-256 sub attribute, datatype string;
-  sha-512 sub attribute, datatype string;
+  sha1 sub attribute, datatype string;
+  sha256 sub attribute, datatype string;
+  sha512 sub attribute, datatype string;
   pattern_type sub attribute, datatype string;
   pattern_version sub attribute, datatype string;
   pattern sub attribute, datatype string;
@@ -141,6 +141,11 @@ define
   roles sub attribute, datatype string;
   tool_types sub attribute, datatype string;
   tool_version sub attribute, datatype string;
+  x_opencti_base_score sub attribute, datatype double;
+  x_opencti_base_severity sub attribute, datatype string;
+  x_opencti_attack_vector sub attribute, datatype string;
+  x_opencti_integrity_impact sub attribute, datatype string;
+  x_opencti_availability_impact sub attribute, datatype string;
 
   # STIX Cyber Observables
   mime_type sub attribute, datatype string;
@@ -912,6 +917,7 @@ define
     plays originates-from_from,
     plays targets_from,
     plays uses_from,
+    plays attributed-to_to,
     plays indicates_to;
 
   Container sub Stix-Domain-Object,
@@ -923,11 +929,6 @@ define
     has content,
     has authors;
 
-  Opinion sub Container,
-    has explanation,
-    has authors,
-    has opinion;
-
   Observed-Data sub Container,
     has first_observed,
     has last_observed,
@@ -935,6 +936,11 @@ define
     plays object_to,
     plays based-on_to,
     plays consists-of_to;
+
+  Opinion sub Container,
+    has explanation,
+    has authors,
+    has opinion;
 
   Report sub Container,
     has name,
@@ -1051,15 +1057,15 @@ define
     plays originates-from_to,
     plays targets_to;
 
-  Position sub Location,
-    has street_address,
-    has postal_code;
-
   City sub Location;
 
   Country sub Location;
 
   Region sub Location;
+
+  Position sub Location,
+    has street_address,
+    has postal_code;
 
   Malware sub Stix-Domain-Object,
     has name,
@@ -1144,11 +1150,29 @@ define
   Vulnerability sub Stix-Domain-Object,
     has name,
     has description,
+    has x_opencti_base_score,
+    has x_opencti_base_severity,
+    has x_opencti_attack_vector,
+    has x_opencti_integrity_impact,
+    has x_opencti_availability_impact,
     plays targets_to,
     plays exploits_to,
     plays mitigates_to,
     plays remediates_to,
     plays relation-has_to;
+
+  X-OpenCTI-Incident sub Stix-Domain-Object,
+    has name,
+    has description,
+    has aliases,
+    has first_seen,
+    has last_seen,
+    has objective,
+    plays attributed-to_from,
+    plays compromises_from,
+    plays targets_from,
+    plays uses_from,
+    plays indicates_to;
 
    # STIX Cyber Observables Entities
   Stix-Cyber-Observable sub Stix-Core-Object,
@@ -1217,9 +1241,9 @@ define
   Hashed-Observable sub Stix-Cyber-Observable,
     abstract,
     has md5,
-    has sha-1,
-    has sha-256,
-    has sha-512;
+    has sha1,
+    has sha256,
+    has sha512;
 
   Artifact sub Hashed-Observable,
     has mime_type,
