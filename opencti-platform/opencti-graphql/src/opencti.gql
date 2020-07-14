@@ -566,10 +566,6 @@ define
   stix-meta-relationship sub stix-relationship,
     abstract;
 
-  object-label sub stix-meta-relationship,
-    relates object-label_from,
-    relates object-label_to;
-
   created-by sub stix-meta-relationship,
     relates created-by_from,
     relates created-by_to;
@@ -582,15 +578,23 @@ define
     relates object_from,
     relates object_to;
 
-  external-reference sub stix-meta-relationship,
+  # STIX Internal Meta Relationships
+  internal-meta-relationship sub stix-meta-relationship,
+    abstract;
+
+  external-reference sub internal-meta-relationship,
     relates external-reference_from,
     relates external-reference_to;
 
-  kill-chain-phase sub stix-meta-relationship,
+  kill-chain-phase sub internal-meta-relationship,
     relates kill-chain-phase_from,
     relates kill-chain-phase_to;
 
-  # STIX Observable Relationships
+  object-label sub internal-meta-relationship,
+    relates object-label_from,
+    relates object-label_to;
+
+  # STIX Cyber Observable Relationships
   stix-cyber-observable-relationship sub stix-relationship,
     abstract;
 
@@ -633,10 +637,6 @@ define
   bcc sub stix-cyber-observable-relationship,
     relates bcc_from,
     relates bcc_to;
-
-  body-multipart sub stix-cyber-observable-relationship,
-    relates body-multipart_from,
-    relates body-multipart_to;
 
   raw-email sub stix-cyber-observable-relationship,
     relates raw-email_from,
@@ -698,13 +698,22 @@ define
     relates child_from,
     relates child_to;
 
-  values sub stix-cyber-observable-relationship,
+  # Interrnal Cyber Observable Relationships
+  internal-cyber-observable-relationship sub stix-cyber-observable-relationship,
+      abstract;
+
+  body-multipart sub internal-cyber-observable-relationship,
+    relates body-multipart_from,
+    relates body-multipart_to;
+
+  values sub internal-cyber-observable-relationship,
     relates values_from,
     relates values_to;
 
-  x509-v3-extensions sub stix-cyber-observable-relationship,
+  x509-v3-extensions sub internal-cyber-observable-relationship,
     relates x509-v3-extensions_from,
     relates x509-v3-extensions_to;
+
 
   ## ENTITIES
 
