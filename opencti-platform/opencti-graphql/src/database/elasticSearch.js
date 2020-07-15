@@ -31,7 +31,6 @@ import {
   inferIndexFromConceptType,
 } from './utils';
 import conf, { logger } from '../config/conf';
-import { resolveNaturalRoles } from './graknRoles';
 import { ConfigurationError, DatabaseError, FunctionalError } from '../config/errors';
 import { BASE_TYPE_RELATION } from '../utils/idGenerator';
 
@@ -530,16 +529,15 @@ const elMergeRelation = (concept, fromConnection, toConnection) => {
   return mergeAll([concept, from, to]);
 };
 export const elReconstructRelation = (concept, relationsMap = null, forceNatural = false) => {
-  const naturalDirections = resolveNaturalRoles(concept.entity_type);
-  const bindingByAlias = invertObj(naturalDirections);
   const { connections } = concept;
+  const entityType = concept.entity_type;
   // Need to rebuild the from and the to.
   let toConnection;
   let fromConnection;
   if (relationsMap === null || relationsMap.size === 0) {
     // We dont know anything, force from and to from roles map
-    fromConnection = Rfind((connection) => connection.role === bindingByAlias.from, connections);
-    toConnection = Rfind((connection) => connection.role === bindingByAlias.to, connections);
+    fromConnection = Rfind((connection) => connection.role === `${entityType}_from`, connections);
+    toConnection = Rfind((connection) => connection.role === `${entityType}_to`, connections);
     return elMergeRelation(concept, fromConnection, toConnection);
   }
   // If map is specified, decide the resolution.
@@ -565,8 +563,8 @@ export const elReconstructRelation = (concept, relationsMap = null, forceNatural
     return elMergeRelation(concept, fromConnection, toConnection);
   }
   // If nothing in map to reconstruct
-  fromConnection = Rfind((connection) => connection.role === bindingByAlias.from, connections);
-  toConnection = Rfind((connection) => connection.role === bindingByAlias.to, connections);
+  fromConnection = Rfind((connection) => connection.role === `${entityType}_from`, connections);
+  toConnection = Rfind((connection) => connection.role === `${entityType}_to`, connections);
   return elMergeRelation(concept, fromConnection, toConnection);
 };
 // endregion

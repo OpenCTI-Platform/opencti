@@ -57,7 +57,6 @@ import {
   inferIndexFromConceptType,
   utcDate,
 } from './utils';
-import { isInversed, resolveNaturalRoles, ROLE_FROM } from './graknRoles';
 import {
   elAggregationCount,
   elAggregationRelationsCount,
@@ -270,8 +269,7 @@ const getAliasInternalIdFilter = (query, alias) => {
 };
 const extractRelationAlias = (alias, role, oppositeAlias, relationType) => {
   const variables = [];
-  const naturalRoles = resolveNaturalRoles(relationType);
-  const oppositeRole = head(Rfind((n) => head(n) !== role, Object.entries(naturalRoles)));
+  const oppositeRole = role.endsWith('_from') ? `${relationType}_to` : `${relationType}_from`;
   // Control the role specified in the query.
   variables.push({ role, alias, forceNatural: false });
   variables.push({ role: oppositeRole, alias: oppositeAlias, forceNatural: false });
@@ -512,8 +510,7 @@ const loadConcept = async (tx, concept, args = {}) => {
           return head(roleItem)
             .label()
             .then(async (roleLabel) => {
-              const naturalRoles = resolveNaturalRoles(conceptType);
-              const useAlias = naturalRoles[roleLabel];
+              const useAlias = `${conceptType}_${roleLabel}`;
               return {
                 [useAlias]: null, // With be use lazily
                 [`${useAlias}Id`]: roleTargetId,
@@ -679,8 +676,7 @@ export const findWithConnectedRelations = async (query, key, options = {}) => {
   if (forceNatural) {
     dataFind = map((relation) => {
       const data = relation[key];
-      const naturalRoles = resolveNaturalRoles(data.entity_type);
-      if (naturalRoles[data.fromRole] !== ROLE_FROM) {
+      if (!data.fromRole.endsWith('_from')) {
         return assoc(
           key,
           pipe(
@@ -1303,12 +1299,6 @@ const createRelationRaw = async (user, input, opts = {}) => {
       from: input.fromId,
       relationshipType,
     });
-  }
-  const isInv = isInversed(relationshipType, input.fromRole);
-  /* istanbul ignore if */
-  if (isInv) {
-    const definition = `{ from '${input.fromRole}' to '${input.toRole}' through ${relationshipType} }`;
-    throw FunctionalError(`You cant create a relation in incorrect order`, { definition });
   }
   // Check dependencies
   const fromPromise = internalLoadEntityById(input.fromId);

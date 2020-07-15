@@ -125,6 +125,12 @@ const RELATIONS_META = [
 export const isMetaStixRelationship = (type) => includes(type, RELATIONS_META);
 // endregion
 
+// region STIX CYBER OBSERVABLE RELATIONSHIP
+export const isObservableRelation = (conceptType) => {
+  return false;
+};
+// endregion
+
 // region INTERNAL RELATIONSHIP
 export const RELATION_AUTHORIZE = 'authorize';
 export const RELATION_MIGRATE = 'migrate';

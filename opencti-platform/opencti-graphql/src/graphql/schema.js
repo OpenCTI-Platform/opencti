@@ -7,7 +7,7 @@ import logResolvers from '../resolvers/log';
 import inferenceResolvers from '../resolvers/inference';
 import attributeResolvers from '../resolvers/attribute';
 import subTypeResolvers from '../resolvers/subType';
-import tagResolvers from '../resolvers/tag';
+import labelResolvers from '../resolvers/label';
 import rabbitmqMetricsResolvers from '../resolvers/rabbitmqMetrics';
 import globalObjectResolvers from '../resolvers/globalObject';
 import stixEntityResolvers from '../resolvers/stixEntity';
@@ -58,7 +58,7 @@ const createSchema = () => {
     inferenceResolvers,
     attributeResolvers,
     subTypeResolvers,
-    tagResolvers,
+    labelResolvers,
     rabbitmqMetricsResolvers,
     connectorResolvers,
     fileResolvers,

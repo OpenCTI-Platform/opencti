@@ -38,7 +38,6 @@ import {
 import { attributeUpdate, findAll as findAllAttributes } from '../../../src/domain/attribute';
 import { INDEX_STIX_ENTITIES, utcDate } from '../../../src/database/utils';
 import { GATHERING_TARGETS_RULE, inferenceDisable, inferenceEnable } from '../../../src/domain/inference';
-import { resolveNaturalRoles } from '../../../src/database/graknRoles';
 import { elLoadById, useCache, REL_INDEX_PREFIX } from '../../../src/database/elasticSearch';
 import { ADMIN_USER } from '../../utils/testQuery';
 import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_ORGA, ENTITY_TYPE_REPORT } from '../../../src/utils/idGenerator';
@@ -583,9 +582,8 @@ describe('Grakn relations listing', () => {
       const stixRelation = stixRelations.edges[index].node;
       // eslint-disable-next-line camelcase
       const { fromRole, toRole, relationship_type } = stixRelation;
-      const roles = invertObj(resolveNaturalRoles(relationship_type));
-      expect(fromRole).toEqual(roles.from);
-      expect(toRole).toEqual(roles.to);
+      expect(fromRole).toEqual(`${relationship_type}_from`);
+      expect(toRole).toEqual(`${relationship_type}_to`);
     }
     const relation = head(stixRelations.edges).node;
     expect(relation.created).toEqual('2020-03-28T02:42:53.582Z');
