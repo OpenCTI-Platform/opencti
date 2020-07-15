@@ -3758,9 +3758,9 @@ input XOpenctiIncidentAddInput {
   createdBy: String
   markingDefinitions: [String]
   labels: [String]
-  clientMutationId: String
   created: DateTime
   modified: DateTime
+  clientMutationId: String
 }
 
 ######## STIX CYBER OBSERVABLES ENTITIES
@@ -3842,6 +3842,56 @@ interface StixCyberObservable {
   # StixCyberObservable
   indicators: IndicatorConnection
 }
+input AutonomousSystemAddInput {
+  stix_id: String
+  number: Int
+  name: String
+  rir: String
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+input CryptographicKeyddInput {
+  stix_id: String
+  value: String
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+input CryptographicWalletddInput {
+  stix_id: String
+  value: String
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+input DirectoryAddInput {
+  stix_id: String
+  path: String
+  path_enc: String
+  ctime: DateTime
+  mtime: DateTime
+  atime: DateTime
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+input DomainNameAddInput {
+  stix_id: String
+  value: String
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+union StixCyberObservableAddInput =
+    AutonomousSystemAddInput
+  | CryptographicKeyddInput
+  | CryptographicWalletddInput
+  | DirectoryAddInput
+  | DomainNameAddInput
 
 ############## HashedObservables
 interface HashedObservable {
@@ -4112,7 +4162,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   notes: NoteConnection
   opinions: OpinionConnection
 }
-input StixSightingRelationshipsAddInput {
+input StixSightingRelationshipAddInput {
   stix_id: String
   fromId: String!
   toId: String
@@ -4881,7 +4931,8 @@ type StixDomainObjectEditMutations {
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationshipAddInput @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(relationId: ID, toId: String, relationType: String): StixObject @auth(for: [KNOWLEDGE_KNUPDATE])
   importPush(file: Upload!): File @auth(for: [KNOWLEDGE_KNUPLOAD])
-  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
+    @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
   mergeEntities(StixDomainObjectIds: [String]!, alias: [String]): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
 }
@@ -5030,7 +5081,7 @@ type PositionEditMutations {
   contextPatch(input: EditContext): Position @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Position @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(relationId: ID!): Position: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID!): Position @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type MalwareEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -5081,8 +5132,7 @@ type StixCyberObservableEditMutations {
   contextPatch(input: EditContext): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String, relationType: String!): StixCyberObservable
-    @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String, relationType: String!): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
 }
 
@@ -5090,7 +5140,7 @@ type StixCyberObservableEditMutations {
 
 ######## STIX CORE RELATIONSHIPS
 
-type StixCoreRelationEditMutations {
+type StixCoreRelationshipEditMutations {
   delete: ID
   fieldPatch(input: EditInput): StixCoreRelationship
   contextPatch(input: EditContext): StixCoreRelationship
@@ -5114,7 +5164,6 @@ type StixSightingRelationshipEditMutations {
 
 type Mutation {
   ###### INTERNAL
-  token(input: UserLoginInput): String
   inferenceEnable(id: ID!): Inference @auth(for: [SETTINGS_SETINFERENCES])
   inferenceDisable(id: ID!): Inference @auth(for: [SETTINGS_SETINFERENCES])
   attributeAdd(input: AttributeAddInput): Attribute @auth(for: [SETTINGS])
@@ -5127,18 +5176,39 @@ type Mutation {
   askJobImport(fileName: ID!, context: String): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
 
   ######## INTERNAL OBJECT ENTITIES
+  token(input: UserLoginInput): String
   settingsEdit(id: ID!): SettingsEditMutations @auth(for: [SETTINGS])
+  groupAdd(input: GroupAddInput): Group @auth(for: [SETTINGS_SETACCESSES])
+  groupEdit(id: ID!): GroupEditMutations @auth(for: [SETTINGS_SETACCESSES])
+  userAdd(input: UserAddInput): User @auth(for: [SETTINGS_SETACCESSES])
+  userEdit(id: ID!): UserEditMutations @auth(for: [SETTINGS_SETACCESSES])
+  meEdit(input: EditInput): User @auth
+  logout: ID @auth
+  roleAdd(input: RoleAddInput): Role @auth(for: [SETTINGS_SETACCESSES])
+  roleEdit(id: ID!): RoleEditMutations @auth(for: [SETTINGS_SETACCESSES])
   pingConnector(id: ID!, state: String): Connector @auth(for: [CONNECTORAPI])
   registerConnector(input: RegisterConnectorInput): Connector @auth(for: [CONNECTORAPI])
   resetStateConnector(id: ID!): Connector @auth(for: [MODULES_MODMANAGE])
   deleteConnector(id: ID!): ID! @auth(for: [MODULES_MODMANAGE])
+  workspaceAdd(input: WorkspaceAddInput): Workspace @auth(for: [EXPLORE_EXUPDATE])
+  workspaceEdit(id: ID!): WorkspaceEditMutations
 
-  # Label
+  ######## STIX OBJECT ENTITIES
+
+  ######## STIX META OBJECT ENTITIES
+  markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition @auth(for: [SETTINGS_SETMARKINGS])
+  markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations @auth(for: [SETTINGS_SETMARKINGS])
   labelAdd(input: LabelAddInput): Label @auth(for: [KNOWLEDGE_KNUPDATE])
   labelEdit(id: ID!): LabelEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
-  # StixObject
-  stixEntityEdit(id: ID!): StixObjectEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
-  # StixDomainObject
+  externalReferenceAdd(input: ExternalReferenceAddInput): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
+  externalReferenceEdit(id: ID!): ExternalReferenceEditMutations
+  killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase @auth(for: [SETTINGS])
+  killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations @auth(for: [SETTINGS])
+
+  ######## STIX CORE OBJECT ENTITIES
+  stixCoreObjectEdit(id: ID!): StixCoreObjectEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
+
+  ######## STIX DOMAIN OBJECT ENTITIES
   StixDomainObjectAdd(input: StixDomainObjectAddInput): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   StixDomainObjectEdit(id: ID!): StixDomainObjectEditMutations
   StixDomainObjectExportAsk(
@@ -5162,7 +5232,57 @@ type Mutation {
   StixDomainObjectDelete(id: [ID]!): [ID]!
   StixDomainObjectExportPush(type: String!, file: Upload!, context: String, listArgs: String): Boolean
     @auth(for: [CONNECTORAPI])
-  # StixCyberObservable
+  attackPatternAdd(input: AttackPatternAddInput): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
+  attackPatternEdit(id: ID!): AttackPatternEditMutations
+  campaignAdd(input: CampaignAddInput): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
+  campaignEdit(id: ID!): CampaignEditMutations
+  ############### Containers
+  noteAdd(input: NoteAddInput): Note @auth(for: [KNOWLEDGE_KNUPDATE])
+  noteEdit(id: ID!): NoteEditMutations
+  observedDataAdd(input: ObservedDataAddInput): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
+  observedDataEdit(id: ID!): ObservedDataEditMutations
+  opinionAdd(input: OpinionAddInput): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+  opinionEdit(id: ID!): OpinionEditMutations
+  reportAdd(input: ReportAddInput): Report @auth(for: [KNOWLEDGE_KNUPDATE])
+  reportEdit(id: ID!): ReportEditMutations
+  courseOfActionAdd(input: CourseOfActionAddInput): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
+  courseOfActionEdit(id: ID!): CourseOfActionEditMutations
+  ############### Identities
+  identityAdd(input: IdentityAddInput): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
+  identityEdit(id: ID!): IdentityEditMutations
+  individualAdd(input: IndividualAddInput): Individual @auth(for: [KNOWLEDGE_KNUPDATE])
+  individualEdit(id: ID!): IndividualEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
+  organizationAdd(input: OrganizationAddInput): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
+  organizationEdit(id: ID!): OrganizationEditMutations
+  sectorAdd(input: SectorAddInput): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
+  sectorEdit(id: ID!): SectorEditMutations
+  indicatorAdd(input: IndicatorAddInput): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorEdit(id: ID!): IndicatorEditMutations
+  infrastructureAdd(input: InfrastructureAddInput): Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
+  infrastructureEdit(id: ID!): InfrastructureEditMutations
+  intrusionSetAdd(input: IntrusionSetAddInput): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
+  intrusionSetEdit(id: ID!): IntrusionSetEditMutations
+  ############### Locations
+  cityAdd(input: CityAddInput): City @auth(for: [KNOWLEDGE_KNUPDATE])
+  cityEdit(id: ID!): CityEditMutations
+  countryAdd(input: CountryAddInput): Country @auth(for: [KNOWLEDGE_KNUPDATE])
+  countryEdit(id: ID!): CountryEditMutations
+  regionAdd(input: RegionAddInput): Region @auth(for: [KNOWLEDGE_KNUPDATE])
+  regionEdit(id: ID!): RegionEditMutations
+  positionAdd(input: PositionAddInput): Position @auth(for: [KNOWLEDGE_KNUPDATE])
+  positionEdit(id: ID!): PositionEditMutations
+  malwareAdd(input: MalwareAddInput): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
+  malwareEdit(id: ID!): MalwareEditMutations
+  threatActorAdd(input: ThreatActorAddInput): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
+  threatActorEdit(id: ID!): ThreatActorEditMutations
+  toolAdd(input: ToolAddInput): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
+  toolEdit(id: ID!): ToolEditMutations
+  vulnerabilityAdd(input: VulnerabilityAddInput): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
+  vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
+  xOpenctiIncidentAdd(input: XOpenctiIncidentAddInput): XOpenctiIncident @auth(for: [KNOWLEDGE_KNUPDATE])
+  xOpenctiIncidentEdit(id: ID!): XOpenctiIncidentEditMutations
+
+  ######## STIX CYBER OBSERVABLE ENTITIES
   StixCyberObservableAdd(input: StixCyberObservableAddInput): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   StixCyberObservableEdit(id: ID!): StixCyberObservableEditMutations
   StixCyberObservableExportAsk(
@@ -5178,94 +5298,18 @@ type Mutation {
     filterMode: FilterMode
   ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   StixCyberObservableExportPush(file: Upload!, context: String, listArgs: String): Boolean @auth(for: [CONNECTORAPI])
-  # StixRelation
-  stixRelationAdd(input: StixRelationAddInput, reversedReturn: Boolean): StixKnowledgeRelationship
+
+  ######## STIX RELATIONSHIPS
+
+  ######## STIX CORE RELATIONSHIPS
+  stixCoreRelationshipAdd(input: StixCoreRelationshipAddInput, reversedReturn: Boolean): StixCoreRelationship
     @auth(for: [KNOWLEDGE_KNUPDATE])
-  stixRelationEdit(id: ID!): StixRelationEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
-  # StixSighting
-  stixSightingAdd(input: StixSightingAddInput, reversedReturn: Boolean): StixSightingRelationship
-    @auth(for: [KNOWLEDGE_KNUPDATE])
-  stixSightingEdit(id: ID!): StixSightingEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
-  # Workspace
-  workspaceAdd(input: WorkspaceAddInput): Workspace @auth(for: [EXPLORE_EXUPDATE])
-  workspaceEdit(id: ID!): WorkspaceEditMutations
-  # Identity
-  identityAdd(input: IdentityAddInput): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
-  identityEdit(id: ID!): IdentityEditMutations
-  # User
-  userAdd(input: UserAddInput): User @auth(for: [SETTINGS_SETACCESSES])
-  userEdit(id: ID!): UserEditMutations @auth(for: [SETTINGS_SETACCESSES])
-  personAdd(input: PersonAddInput): User @auth(for: [KNOWLEDGE_KNUPDATE])
-  personEdit(id: ID!): PersonEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
-  meEdit(input: EditInput): User @auth
-  logout: ID @auth
-  # Role
-  roleAdd(input: RoleAddInput): Role @auth(for: [SETTINGS_SETACCESSES])
-  roleEdit(id: ID!): RoleEditMutations @auth(for: [SETTINGS_SETACCESSES])
-  # Organization
-  organizationAdd(input: OrganizationAddInput): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
-  organizationEdit(id: ID!): OrganizationEditMutations
-  # Sector
-  sectorAdd(input: SectorAddInput): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
-  sectorEdit(id: ID!): SectorEditMutations
-  # City
-  cityAdd(input: CityAddInput): City @auth(for: [KNOWLEDGE_KNUPDATE])
-  cityEdit(id: ID!): CityEditMutations
-  # Country
-  countryAdd(input: CountryAddInput): Country @auth(for: [KNOWLEDGE_KNUPDATE])
-  countryEdit(id: ID!): CountryEditMutations
-  # Region
-  regionAdd(input: RegionAddInput): Region @auth(for: [KNOWLEDGE_KNUPDATE])
-  regionEdit(id: ID!): RegionEditMutations
-  # Group
-  groupAdd(input: GroupAddInput): Group @auth(for: [SETTINGS_SETACCESSES])
-  groupEdit(id: ID!): GroupEditMutations @auth(for: [SETTINGS_SETACCESSES])
-  # MarkingDefinition
-  markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition @auth(for: [SETTINGS_SETMARKINGS])
-  markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations @auth(for: [SETTINGS_SETMARKINGS])
-  # ExternalReference
-  externalReferenceAdd(input: ExternalReferenceAddInput): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
-  externalReferenceEdit(id: ID!): ExternalReferenceEditMutations
-  # KillChainPhase
-  killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase @auth(for: [SETTINGS])
-  killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations @auth(for: [SETTINGS])
-  # AttackPattern
-  attackPatternAdd(input: AttackPatternAddInput): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
-  attackPatternEdit(id: ID!): AttackPatternEditMutations
-  # CourseOfAction
-  courseOfActionAdd(input: CourseOfActionAddInput): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
-  courseOfActionEdit(id: ID!): CourseOfActionEditMutations
-  # ThreatActor
-  threatActorAdd(input: ThreatActorAddInput): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
-  threatActorEdit(id: ID!): ThreatActorEditMutations
-  # IntrusionSet
-  intrusionSetAdd(input: IntrusionSetAddInput): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
-  intrusionSetEdit(id: ID!): IntrusionSetEditMutations
-  # Campaign
-  campaignAdd(input: CampaignAddInput): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
-  campaignEdit(id: ID!): CampaignEditMutations
-  # Incident
-  incidentAdd(input: IncidentAddInput): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
-  incidentEdit(id: ID!): IncidentEditMutations
-  # Malware
-  malwareAdd(input: MalwareAddInput): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
-  malwareEdit(id: ID!): MalwareEditMutations
-  # Tool
-  toolAdd(input: ToolAddInput): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
-  toolEdit(id: ID!): ToolEditMutations
-  # Vulnerability
-  vulnerabilityAdd(input: VulnerabilityAddInput): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
-  vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
-  # Report
-  reportAdd(input: ReportAddInput): Report @auth(for: [KNOWLEDGE_KNUPDATE])
-  reportEdit(id: ID!): ReportEditMutations
-  # Note
-  noteAdd(input: NoteAddInput): Note @auth(for: [KNOWLEDGE_KNUPDATE])
-  noteEdit(id: ID!): NoteEditMutations
-  # Report
-  opinionAdd(input: OpinionAddInput): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
-  opinionEdit(id: ID!): OpinionEditMutations
-  # Indicator
-  indicatorAdd(input: IndicatorAddInput): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
-  indicatorEdit(id: ID!): IndicatorEditMutations
+  stixCoreRelationshipEdit(id: ID!): StixCoreRelationshipEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
+
+  ######## STIX SIGHTING RELATIONSHIPS
+  stixSightingRelationshipAdd(
+    input: StixSightingRelationshipAddInput
+    reversedReturn: Boolean
+  ): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
 }
