@@ -21,7 +21,6 @@ const killChainPhaseResolvers = {
     killChainPhases: (_, args) => findAll(args),
   },
   KillChainPhase: {
-    markingDefinitions: (killChainPhase) => markingDefinitions(killChainPhase.id),
     editContext: (killChainPhase) => fetchEditContext(killChainPhase.id),
   },
   Mutation: {

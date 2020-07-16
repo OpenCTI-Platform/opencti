@@ -5,8 +5,6 @@ import {
   findAll,
   findById,
   workspacesNumber,
-  ownedBy,
-  objectRefs,
   workspaceEditContext,
   workspaceEditField,
   workspaceAddRelation,
@@ -17,7 +15,6 @@ import {
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { BUS_TOPICS } from '../config/conf';
-import { markingDefinitions, labels } from '../domain/stixCoreObject';
 
 const workspaceResolvers = {
   Query: {
@@ -26,10 +23,6 @@ const workspaceResolvers = {
     workspacesNumber: (_, args) => workspacesNumber(args),
   },
   Workspace: {
-    ownedBy: (workspace) => ownedBy(workspace.id),
-    markingDefinitions: (workspace) => markingDefinitions(workspace.id),
-    labels: (workspace) => labels(workspace.id),
-    objectRefs: (workspace, args) => objectRefs(workspace.id, args),
     editContext: (workspace) => fetchEditContext(workspace.id),
   },
   Mutation: {

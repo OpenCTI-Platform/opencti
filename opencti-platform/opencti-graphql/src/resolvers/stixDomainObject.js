@@ -43,20 +43,20 @@ const stixDomainObjectResolvers = {
     stixDomainObjectsNumber: (_, args) => stixDomainObjectsNumber(args),
     stixDomainObjectsExportFiles: (_, { type, first, context }) => filesListing(first, 'export', type, null, context),
   },
-  stixDomainObjectsOrdering: {
+  StixDomainObjectsOrdering: {
     markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
     labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
   },
-  stixDomainObjectsFilter: {
+  StixDomainObjectsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
-    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
-    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
+    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
+    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
     knowledgeContains: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
     observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id`,
     hasExternalReference: `${REL_INDEX_PREFIX}${RELATION_EXTERNAL_REFERENCE}.internal_id`,
     indicates: `${REL_INDEX_PREFIX}indicates.internal_id`,
   },
-  stixDomainObject: {
+  StixDomainObject: {
     // eslint-disable-next-line no-underscore-dangle
     __resolveType(obj) {
       if (obj.entity_type) {
@@ -64,7 +64,6 @@ const stixDomainObjectResolvers = {
       }
       return 'Unknown';
     },
-    stixRelations: (rel, args) => stixCoreRelationships(rel.id, args),
     importFiles: (entity, { first }) => filesListing(first, 'import', entity.entity_type, entity),
     exportFiles: (entity, { first }) => filesListing(first, 'export', entity.entity_type, entity),
   },

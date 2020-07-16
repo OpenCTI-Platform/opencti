@@ -33,9 +33,9 @@ const attackPatternResolvers = {
   },
   AttackPatternsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
-    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
-    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
-    mitigateBy: `${REL_INDEX_PREFIX}mitigates.internal_id`,
+    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
+    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
+    mitigatedBy: `${REL_INDEX_PREFIX}mitigates.internal_id`,
   },
   Mutation: {
     attackPatternEdit: (_, { id }, { user }) => ({

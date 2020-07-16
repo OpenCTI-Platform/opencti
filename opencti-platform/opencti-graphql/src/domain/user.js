@@ -82,8 +82,9 @@ export const SYSTEM_USER = { name: 'system' };
 export const ROLE_DEFAULT = 'Default';
 export const ROLE_ADMINISTRATOR = 'Administrator';
 
-export const findById = (individualId) => {
-  return loadEntityById(individualId, ENTITY_TYPE_USER);
+export const findById = async (userId) => {
+  const data = await loadEntityById(userId, ENTITY_TYPE_USER);
+  return pipe(dissoc('user_email'), dissoc('password'))(data);
 };
 
 export const findAll = (args) => {

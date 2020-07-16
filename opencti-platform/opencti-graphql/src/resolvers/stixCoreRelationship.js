@@ -37,8 +37,8 @@ const stixCoreRelationshipResolvers = {
   },
   StixCoreRelationshipsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
-    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
-    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
+    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
+    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
     toPatternType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.pattern_type`,
     toMainObservableType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.main_observable_type`,
   },
@@ -55,13 +55,13 @@ const stixCoreRelationshipResolvers = {
     toStix: (rel) => convertDataToStix(rel).then((stixData) => JSON.stringify(stixData)),
     creator: (rel) => creator(rel.id),
     createdBy: (rel) => createdBy(rel.id),
+    objectMarking: (rel) => markingDefinitions(rel.id),
+    objectLabel: (rel) => labels(rel.id),
     editContext: (rel) => fetchEditContext(rel.id),
     externalReferences: (rel) => externalReferences(rel.id),
     killChainPhases: (rel) => killChainPhases(rel.id),
-    labels: (rel) => labels(rel.id),
     reports: (rel) => reports(rel.id),
     notes: (rel) => notes(rel.id),
-    markingDefinitions: (rel) => markingDefinitions(rel.id),
   },
   Mutation: {
     stixCoreRelationshipEdit: (_, { id }, { user }) => ({

@@ -22,13 +22,13 @@ const campaignResolvers = {
     },
   },
   CampaignsOrdering: {
-    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
+    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
+    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
   },
   CampaignsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
-    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
-    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
+    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
+    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
   },
   Mutation: {
     campaignEdit: (_, { id }, { user }) => ({

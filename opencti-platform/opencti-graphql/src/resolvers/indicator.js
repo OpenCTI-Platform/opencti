@@ -21,8 +21,8 @@ const indicatorResolvers = {
   },
   IndicatorsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
-    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
-    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
+    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
+    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
     observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id`,
     indicates: `${REL_INDEX_PREFIX}indicates.internal_id`,
   },

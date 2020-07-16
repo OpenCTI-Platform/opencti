@@ -34,7 +34,6 @@ import passport, { PROVIDERS } from '../config/providers';
 import { AuthenticationFailure } from '../config/errors';
 import { addRole } from '../domain/grant';
 import { fetchEditContext } from '../database/redis';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
 
 const userResolvers = {
   Query: {
@@ -44,15 +43,6 @@ const userResolvers = {
     roles: (_, args) => findRoles(args),
     capabilities: (_, args) => findCapabilities(args),
     me: (_, args, { user }) => findById(user.id, { isUser: true }),
-  },
-  UsersOrdering: {
-    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
-  },
-  UsersFilter: {
-    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
-    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
-    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
   },
   User: {
     groups: (user) => groups(user.id),

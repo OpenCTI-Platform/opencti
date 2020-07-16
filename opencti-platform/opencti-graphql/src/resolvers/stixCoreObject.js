@@ -8,6 +8,7 @@ import {
   externalReferences,
   stixCoreObjectAddRelation,
   stixCoreObjectDeleteRelation,
+  stixCoreRelationships,
 } from '../domain/stixCoreObject';
 import { creator } from '../domain/log';
 import { fetchEditContext } from '../database/redis';
@@ -29,12 +30,13 @@ const stixCoreObjectResolvers = {
     toStix: (stixEntity) => convertDataToStix(stixEntity).then((stixData) => JSON.stringify(stixData)),
     creator: (stixEntity) => creator(stixEntity.id),
     createdBy: (stixEntity) => createdBy(stixEntity.id),
+    objectMarking: (stixEntity) => markingDefinitions(stixEntity.id),
+    objectLabel: (stixEntity) => labels(stixEntity.id),
     editContext: (stixEntity) => fetchEditContext(stixEntity.id),
     externalReferences: (stixEntity) => externalReferences(stixEntity.id),
-    labels: (stixEntity) => labels(stixEntity.id),
     reports: (stixEntity) => reports(stixEntity.id),
     notes: (stixEntity) => notes(stixEntity.id),
-    markingDefinitions: (stixEntity) => markingDefinitions(stixEntity.id),
+    stixCoreRelationships: (rel, args) => stixCoreRelationships(rel.id, args),
   },
   Mutation: {
     stixCoreObjectEdit: (_, { id }, { user }) => ({

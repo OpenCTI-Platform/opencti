@@ -338,6 +338,7 @@ type Settings implements InternalObject & BasicObject {
   platform_providers: [Provider]
   platform_language: String
   platform_parameters: String
+  platform_demo: String
   created_at: DateTime!
   updated_at: DateTime!
   # Technical
@@ -895,11 +896,15 @@ interface StixCoreObject {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixCoreRelationshipConnection
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
 }
 
 ########## STIX DOMAIN OBJECT ENTITIES
 
-enum StixDomainObjectOrdering {
+enum StixDomainObjectsOrdering {
   name
   entity_type
   created
@@ -914,22 +919,22 @@ enum StixDomainObjectOrdering {
   valid_to
   indicator_pattern
 }
-enum StixDomainObjectFilter {
+enum StixDomainObjectsFilter {
   name
   created
   modified
   created_at
   createdBy
-  markingDefinitions
-  labels
+  markedBy
+  labelledBy
   hasExternalReference
   knowledgeContains
   observablesContains
   indicates
   confidence
 }
-input StixDomainObjectFiltering {
-  key: StixDomainObjectFilter!
+input StixDomainObjectsFiltering {
+  key: StixDomainObjectsFilter!
   values: [String]
   operator: String
 }
@@ -986,6 +991,12 @@ interface StixDomainObject {
   lang: String
   created: DateTime!
   modified: DateTime!
+  # Technical
+  creator: User
+  toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext]
 }
 input StixDomainObjectAddInput {
   internal_id_key: String
@@ -1283,9 +1294,9 @@ interface Container {
   objects(
     first: Int
     after: ID
-    orderBy: StixDomainObjectOrdering
+    orderBy: StixDomainObjectsOrdering
     orderMode: OrderingMode
-    filters: [StixDomainObjectFiltering]
+    filters: [StixDomainObjectsFiltering]
     filterMode: FilterMode
     search: String
     types: [String]
@@ -1377,9 +1388,9 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   objects(
     first: Int
     after: ID
-    orderBy: StixDomainObjectOrdering
+    orderBy: StixDomainObjectsOrdering
     orderMode: OrderingMode
-    filters: [StixDomainObjectFiltering]
+    filters: [StixDomainObjectsFiltering]
     filterMode: FilterMode
     search: String
     types: [String]
@@ -1497,9 +1508,9 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   objects(
     first: Int
     after: ID
-    orderBy: StixDomainObjectOrdering
+    orderBy: StixDomainObjectsOrdering
     orderMode: OrderingMode
-    filters: [StixDomainObjectFiltering]
+    filters: [StixDomainObjectsFiltering]
     filterMode: FilterMode
     search: String
     types: [String]
@@ -1548,8 +1559,8 @@ enum OpinionsFilter {
   created_at
   updated_at
   createdBy
-  markingDefinitions
-  labels
+  markedBy
+  labelledBy
   objectContains
 }
 input OpinionsFiltering {
@@ -1614,9 +1625,9 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objects(
     first: Int
     after: ID
-    orderBy: StixDomainObjectOrdering
+    orderBy: StixDomainObjectsOrdering
     orderMode: OrderingMode
-    filters: [StixDomainObjectFiltering]
+    filters: [StixDomainObjectsFiltering]
     filterMode: FilterMode
     search: String
     types: [String]
@@ -1737,9 +1748,9 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   objects(
     first: Int
     after: ID
-    orderBy: StixDomainObjectOrdering
+    orderBy: StixDomainObjectsOrdering
     orderMode: OrderingMode
-    filters: [StixDomainObjectFiltering]
+    filters: [StixDomainObjectsFiltering]
     filterMode: FilterMode
     search: String
     types: [String]
@@ -1750,6 +1761,12 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   report_types: [String]
   published: DateTime
   graph_data: String
+  # Technical
+  creator: User
+  toStix: String
+  importFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext]
 }
 input ReportAddInput {
   stix_id: String
@@ -1785,7 +1802,7 @@ enum CoursesOfActionFilter {
   createdBy
   markingDefinitions
   labels
-  mitigateBy
+  mitigatedBy
 }
 input CoursesOfActionFiltering {
   key: CoursesOfActionFilter!
@@ -3757,7 +3774,7 @@ input XOpenctiIncidentAddInput {
 
 ######## STIX CYBER OBSERVABLES ENTITIES
 
-enum StixCyberObservableOrdering {
+enum StixCyberObservablesOrdering {
   name
   entity_type
   observable_value
@@ -3767,7 +3784,7 @@ enum StixCyberObservableOrdering {
   labels
   markingDefinitions
 }
-enum StixCyberObservableFilter {
+enum StixCyberObservablesFilter {
   entity_type
   observable_value
   created
@@ -3779,8 +3796,8 @@ enum StixCyberObservableFilter {
   relatedTo
   observablesContained
 }
-input StixCyberObservableFiltering {
-  key: StixCyberObservableFilter!
+input StixCyberObservablesFiltering {
+  key: StixCyberObservablesFilter!
   values: [String]
   operator: String
 }
@@ -3879,6 +3896,10 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   number: Int
   name: String
   rir: String
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
 }
 input AutonomousSystemAddInput {
   stix_id: String
@@ -3939,6 +3960,10 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCoreOb
   ctime: DateTime
   mtime: DateTime
   atime: DateTime
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
 }
 input DirectoryAddInput {
   stix_id: String
@@ -3997,6 +4022,10 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCoreO
   indicators: IndicatorConnection
   # DomainName
   value: String
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
 }
 input DomainNameAddInput {
   stix_id: String
@@ -4052,6 +4081,10 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCoreOb
   # EmailAddr
   value: String
   display_name: String
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
 }
 input EmailAddrAddInput {
   stix_id: String
@@ -4113,6 +4146,10 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCor
   subject: String
   received_lines: [String]
   body: String
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
 }
 input EmailMessageAddInput {
   stix_id: String
@@ -4178,6 +4215,10 @@ interface HashedObservable {
   sha256: String
   sha512: String
   jobs(first: Int): [Work]
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
 }
 
 type XOpenctiCryptographicKey implements BasicObject & StixObject & StixCoreObject & StixCoreObject & StixCyberObservable {
@@ -4223,6 +4264,10 @@ type XOpenctiCryptographicKey implements BasicObject & StixObject & StixCoreObje
   indicators: IndicatorConnection
   # CryptographicKey
   value: String
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
 }
 input XOpenctiCryptographicKeyAddInput {
   stix_id: String
@@ -4277,6 +4322,10 @@ type XOpenctiCryptocurrencyWallet implements BasicObject & StixObject & StixCore
   indicators: IndicatorConnection
   # CryptocyrrencyWallet
   value: String
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
 }
 input XOpenctiCryptocurrencyWalletAddInput {
   stix_id: String
@@ -4331,6 +4380,10 @@ type XOpenctiText implements BasicObject & StixObject & StixCoreObject & StixCor
   indicators: IndicatorConnection
   # XOpenctiText
   value: String
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
 }
 input XOpenctiTextAddInput {
   stix_id: String
@@ -4385,6 +4438,10 @@ type XOpenctiUserAgent implements BasicObject & StixObject & StixCoreObject & St
   indicators: IndicatorConnection
   # XOpenctiUserAgent
   value: String
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
 }
 input XOpenctiUserAgentAddInput {
   stix_id: String
@@ -4644,6 +4701,66 @@ input StixSightingRelationshipAddInput {
   clientMutationId: String
 }
 
+############## StixCyberObservableRelationships
+enum StixCyberObservableRelationshipsOrdering {
+  entity_type
+  confidence
+  start_time
+  stop_time
+  created
+  modified
+  created_at
+  updated_at
+  toName
+  toValidFrom
+  toValidUntil
+  toPatternType
+  toCreatedAt
+}
+enum StixCyberObservableRelationshipsFilter {
+  created_at
+}
+input StixCyberObservableRelationshipsFiltering {
+  key: StixCyberObservableRelationshipsFilter!
+  values: [String]
+  operator: String
+}
+type StixCyberObservableRelationshipConnection {
+  pageInfo: PageInfo!
+  edges: [StixCyberObservableRelationshipEdge]
+}
+type StixCyberObservableRelationshipEdge {
+  cursor: String!
+  node: StixCyberObservableRelationship!
+}
+type StixCyberObservableRelationship implements BasicRelationship & StixRelationship {
+  # BasicRelationship
+  id: ID! # internal_id
+  entity_type: String!
+  fromRole: String
+  toRole: String
+  # StixRelationship
+  standard_id: String!
+  stix_ids: [String]
+  from: StixCoreObjectOrStixRelationship
+  to: StixCoreObjectOrStixRelationship
+  inferred: Boolean
+}
+input StixCyberObservableRelationshipAddInput {
+  stix_id: String
+  fromId: String!
+  toId: String!
+  relationship_type: String!
+  confidence: Int
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+
+############## StixMetaRelationships
 type StixMetaRelationship implements BasicRelationship & StixRelationship {
   # BasicRelationship
   id: ID! # internal_id
@@ -4797,9 +4914,9 @@ type Query {
     first: Int
     after: ID
     types: [String]
-    orderBy: StixDomainObjectOrdering
+    orderBy: StixDomainObjectsOrdering
     orderMode: OrderingMode
-    filters: [StixDomainObjectFiltering]
+    filters: [StixDomainObjectsFiltering]
     filterMode: FilterMode
     search: String
   ): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
@@ -5170,9 +5287,9 @@ type Query {
     first: Int
     after: ID
     entity_types: [String]
-    orderBy: StixCyberObservableOrdering
+    orderBy: StixCyberObservablesOrdering
     orderMode: OrderingMode
-    filters: [StixCyberObservableFiltering]
+    filters: [StixCyberObservablesFiltering]
     filterMode: FilterMode
     search: String
     toStix: Boolean
@@ -5626,6 +5743,15 @@ type StixSightingRelationshipEditMutations {
   relationDelete(relationId: ID!): StixSightingRelationship
 }
 
+######## STIX CYBER OBSERVABLE RELATIONSHIPS
+
+type StixCyberObservableRelationshipEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput): StixCyberObservableRelationship
+  contextPatch(input: EditContext): StixCyberObservableRelationship
+  contextClean: StixCyberObservableRelationship
+}
+
 ### MUTATIONS DECLARATION
 
 type Mutation {
@@ -5684,9 +5810,9 @@ type Mutation {
     maxMarkingDefinition: String
     context: String
     search: String
-    orderBy: StixDomainObjectOrdering
+    orderBy: StixDomainObjectsOrdering
     orderMode: OrderingMode
-    filters: [StixDomainObjectFiltering]
+    filters: [StixDomainObjectsFiltering]
     filterMode: FilterMode
   ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   StixDomainObjectMerge(
@@ -5758,9 +5884,9 @@ type Mutation {
     context: String
     types: [String]
     search: String
-    orderBy: StixCyberObservableOrdering
+    orderBy: StixCyberObservablesOrdering
     orderMode: OrderingMode
-    filters: [StixCyberObservableFiltering]
+    filters: [StixCyberObservablesFiltering]
     filterMode: FilterMode
   ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   StixCyberObservableExportPush(file: Upload!, context: String, listArgs: String): Boolean @auth(for: [CONNECTORAPI])
@@ -5771,6 +5897,14 @@ type Mutation {
   stixCoreRelationshipAdd(input: StixCoreRelationshipAddInput, reversedReturn: Boolean): StixCoreRelationship
     @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCoreRelationshipEdit(id: ID!): StixCoreRelationshipEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
+
+  ######## STIX CYBER OBSERVABLE RELATIONSHIPS
+  stixCyberObservableRelationshipAdd(
+    input: StixCyberObservableRelationshipAddInput
+    reversedReturn: Boolean
+  ): StixCyberObservableRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixCyberObservableRelationshipEdit(id: ID!): StixCyberObservableRelationshipEditMutations
+    @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ######## STIX SIGHTING RELATIONSHIPS
   stixSightingRelationshipAdd(
