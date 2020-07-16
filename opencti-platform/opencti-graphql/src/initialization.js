@@ -13,7 +13,6 @@ import { addCapability, addRole } from './domain/grant';
 import { addAttribute } from './domain/attribute';
 import { checkPythonStix2 } from './python/pythonBridge';
 import { redisIsAlive } from './database/redis';
-import { OPENCTI_PLATFORM_UUID } from './utils/idGenerator';
 
 // noinspection NodeJsCodingAssistanceForCoreModules
 const fs = require('fs');
@@ -120,10 +119,30 @@ const initializeSchema = async (purgeIndex = false) => {
 };
 
 const createAttributesTypes = async () => {
-  await addAttribute({ type: 'report_class', value: 'Threat Report' });
-  await addAttribute({ type: 'report_class', value: 'Internal Report' });
-  await addAttribute({ type: 'role_played', value: 'C2 server' });
-  await addAttribute({ type: 'role_played', value: 'Relay node' });
+  await addAttribute({ type: 'report_types', value: 'threat-report' });
+  await addAttribute({ type: 'report_types', value: 'internal-report' });
+  await addAttribute({ type: 'malware_types', value: 'adware' });
+  await addAttribute({ type: 'malware_types', value: 'backdoor' });
+  await addAttribute({ type: 'malware_types', value: 'bot' });
+  await addAttribute({ type: 'malware_types', value: 'bootkit' });
+  await addAttribute({ type: 'malware_types', value: 'ddos' });
+  await addAttribute({ type: 'malware_types', value: 'downloader' });
+  await addAttribute({ type: 'malware_types', value: 'dropper' });
+  await addAttribute({ type: 'malware_types', value: 'exploit-kit' });
+  await addAttribute({ type: 'malware_types', value: 'keylogger' });
+  await addAttribute({ type: 'malware_types', value: 'ransomware' });
+  await addAttribute({ type: 'malware_types', value: 'remote-access-trojan' });
+  await addAttribute({ type: 'malware_types', value: 'resource-exploitation' });
+  await addAttribute({ type: 'malware_types', value: 'rogue-security-software' });
+  await addAttribute({ type: 'malware_types', value: 'rootkit' });
+  await addAttribute({ type: 'malware_types', value: 'screen-capture' });
+  await addAttribute({ type: 'malware_types', value: 'spyware' });
+  await addAttribute({ type: 'malware_types', value: 'trojan' });
+  await addAttribute({ type: 'malware_types', value: 'unknown' });
+  await addAttribute({ type: 'malware_types', value: 'virus' });
+  await addAttribute({ type: 'malware_types', value: 'webshell' });
+  await addAttribute({ type: 'malware_types', value: 'wiper' });
+  await addAttribute({ type: 'malware_types', value: 'worm' });
 };
 
 const createMarkingDefinitions = async () => {
@@ -132,29 +151,29 @@ const createMarkingDefinitions = async () => {
     stix_id: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9',
     definition_type: 'TLP',
     definition: 'TLP:WHITE',
-    color: '#ffffff',
-    level: 1,
+    x_opencti_color: '#ffffff',
+    x_opencti_order: 1,
   });
   await addMarkingDefinition(SYSTEM_USER, {
     stix_id: 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
     definition_type: 'TLP',
     definition: 'TLP:GREEN',
-    color: '#2e7d32',
-    level: 2,
+    x_opencti_color: '#2e7d32',
+    x_opencti_order: 2,
   });
   await addMarkingDefinition(SYSTEM_USER, {
     stix_id: 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
     definition_type: 'TLP',
     definition: 'TLP:AMBER',
-    color: '#d84315',
-    level: 3,
+    x_opencti_color: '#d84315',
+    x_opencti_order: 3,
   });
   await addMarkingDefinition(SYSTEM_USER, {
     stix_id: 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
     definition_type: 'TLP',
     definition: 'TLP:RED',
-    color: '#c62828',
-    level: 4,
+    x_opencti_color: '#c62828',
+    x_opencti_order: 4,
   });
 };
 

@@ -479,21 +479,7 @@ const reportId = (type, data) => {
 const indicatorId = (type, data) => {
   return uuid({ type, pattern: data.indicator_pattern });
 };
-// endregion
-
-// region relationship
-const relationshipId = (prefix, data) => {
-  // eslint-disable-next-line camelcase
-  const { fromId, toId, relationship_type, first_seen, last_seen } = data;
-  return uuid({ prefix, fromId, toId, relationship_type, first_seen, last_seen });
-};
-export const generateEmbeddedId = (data) => {
-  const { fromId, toId } = data;
-  return uuid({ from: fromId, to: toId });
-};
-// endregion
-
-const generateInternalObjectId = (type, entity) => {
+const generateInternalObjectUUID = (type, entity) => {
   switch (type) {
     case ENTITY_TYPE_CAPABILITY:
     case ENTITY_TYPE_CONNECTOR:
@@ -532,19 +518,23 @@ const generateStixDomainObjectUUID = (type, data) => {
       return uuid({ type, name: data.name });
   }
 };
+const generateStixCyberObservableUUID = (type, data) => {
+  // TODO
+  return uuidv4();
+}
+const generateInternalObjectId = (type, data) => {
+  const prefix = convertEntityTypeToStixType(type);
+  const id = generateInternalObjectUUID(prefix, data);
+  return `${prefix}--${id}`;
+};
 const generateStixDomainObjectId = (type, data) => {
   const prefix = convertEntityTypeToStixType(type);
   const id = generateStixDomainObjectUUID(prefix, data);
   return `${prefix}--${id}`;
-  // if (type === 'report') return `${type}--${}`;
-  // if (type === 'observable') return `${type}--${observableId(type, data)}`;
-  // if (type === 'indicator') return `${type}--${indicatorId(type, data)}`;
-  // // Relations
-  // if (type === 'sighting' || type === 'relationship') return `${type}--${relationshipId(type, data)}`;
-  // // default - just the name
-  // return `${type}--${uuid({ type, name: data.name })}`;
 };
 const generateStixCyberObservableId = (type, data) => {
+  const prefix = convertEntityTypeToStixType(type);
+  const id = generateStixCyberObservableUUID(prefix, data);
   switch (type) {
     case ENTITY_AUTONOMOUS_SYSTEM:
     case ENTITY_CRYPTOGRAPHIC_KEY:
@@ -571,11 +561,44 @@ const generateStixCyberObservableId = (type, data) => {
     case ENTITY_WINDOWS_REGISTRY_KEY:
     case ENTITY_WINDOWS_REGISTRY_VALUE_TYPE:
     case ENTITY_X509_V3_EXTENSIONS_TYPE:
-      return ' test';
+      return `${prefix}--${id}`;
     default:
-      return 'test';
+      throw DatabaseError(`Cant generate an id for ${type}`);
   }
 };
+// endregion
+
+// region relationship
+const generateInternalRelationshipUUID = (prefix, data) => {
+  // TODO ASK JULIEN
+  return uuidv4();
+};
+const generateInternalRelationshipId = (type, data) => {
+  const prefix = convertEntityTypeToStixType(type);
+  const id = generateInternalRelationshipUUID(prefix, data);
+  return `internal-relationship--${id}`;
+};
+const generateStixCoreRelationshipUUID = (prefix, data) => {
+  // eslint-disable-next-line camelcase
+  const { fromId, toId, relationship_type, start_time, stop_time } = data;
+  return uuid({ prefix, fromId, toId, relationship_type, start_time, stop_time });
+};
+const generateStixCoreRelationshipId = (type, data) => {
+  const prefix = convertEntityTypeToStixType(type);
+  const id = generateStixCoreRelationshipUUID(prefix, data);
+  return `relationship--${id}`;
+};
+const generateStixMetaRelationshipUUID = (prefix, data) => {
+  // eslint-disable-next-line camelcase
+  const { fromId, toId } = data;
+  return uuid({ from: fromId, to: toId });
+};
+const generateStixMetaRelationshipId = (type, data) => {
+  const prefix = convertEntityTypeToStixType(type);
+  const id = generateStixMetaRelationshipUUID(prefix, data);
+  return `relationship-meta--${id}`;
+};
+// endregion
 
 export const generateInternalId = () => {
   return uuidv4();
@@ -583,11 +606,13 @@ export const generateInternalId = () => {
 
 export const generateStandardId = (type, data) => {
   // Entities
-  if (isStixDomainObject(type)) return `${type.toLowerCase()}-${generateStixDomainObjectId(type, data)}`;
-  if (isStixCyberObservable(type)) return `${type.toLowerCase()}-${generateStixCyberObservableId(type, data)}`;
-  if (isInternalObject(type)) return `${type.toLowerCase()}-${generateInternalObjectId(type, data)}`;
+  if (isStixMetaObject(type)) return generateStixDomainObjectId(type, data);
+  if (isStixDomainObject(type)) return generateStixDomainObjectId(type, data);
+  if (isStixCyberObservable(type)) return generateStixCyberObservableId(type, data);
+  if (isInternalObject(type)) return generateInternalObjectId(type, data);
   // Relations
-  if (isStixCoreRelationship(type)) return `${type.toLowerCase()}-`;
-  if (isInternalRelationship(type)) return `${type.toLowerCase()}-`;
+  if (isInternalRelationship(type)) return generateInternalRelationshipId(type, data);
+  if (isStixCoreRelationship(type)) return generateStixCoreRelationshipId(type, data);
+  if (isStixMetaRelationship(type)) return generateStixMetaRelationshipId(type, data);
   throw DatabaseError(`Cant generate an id for ${type}`);
 };
