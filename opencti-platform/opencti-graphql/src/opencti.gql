@@ -1257,12 +1257,6 @@ define
     has name,
     has rir;
 
-  Cryptographic-Key sub Stix-Cyber-Observable,
-    has value;
-
-  Cryptocurrency-Wallet sub Stix-Cyber-Observable,
-    has value;
-
   Directory sub Stix-Cyber-Observable,
     has path,
     has path_enc,
@@ -1449,12 +1443,6 @@ define
     has account_last_login,
     plays creator-user_to;
 
-  User-Agent sub Stix-Cyber-Observable,
-    has value;
-
-  Text sub Stix-Cyber-Observable,
-    has value;
-
   Windows-Registry-Key sub Stix-Cyber-Observable,
     has attribute_key,
     has modified_time,
@@ -1486,3 +1474,15 @@ define
     has certificate_policies,
     has policy_mappings,
     plays x509-v3-extensions_to;
+
+  X-OpenCTI-Cryptographic-Key sub Stix-Cyber-Observable,
+    has value;
+
+  X-OpenCTI-Cryptocurrency-Wallet sub Stix-Cyber-Observable,
+    has value;
+
+  X-OpenCTI-Text sub Stix-Cyber-Observable,
+    has value;
+
+  X-OpenCTI-User-Agent sub Stix-Cyber-Observable,
+    has value;

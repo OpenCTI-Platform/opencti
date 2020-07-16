@@ -115,15 +115,15 @@ export const RELATION_OBJECT_LABEL = 'object-label';
 export const RELATION_OBJECT = 'object';
 export const RELATION_EXTERNAL_REFERENCE = 'external-reference';
 export const RELATION_KILL_CHAIN_PHASE = 'kill-chain-phase';
-const STIX_META_RELATIONSHIPS = [
-  RELATION_CREATED_BY,
-  RELATION_OBJECT_MARKING,
+const STIX_META_RELATIONSHIPS = [RELATION_CREATED_BY, RELATION_OBJECT_MARKING, RELATION_OBJECT];
+const STIX_INTERNAL_META_RELATIONSHIPS = [
   RELATION_OBJECT_LABEL,
-  RELATION_OBJECT,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_KILL_CHAIN_PHASE,
 ];
-export const isStixMetaRelationship = (type) => includes(type, STIX_META_RELATIONSHIPS);
+export const isStixMetaRelationship = (type) =>
+  includes(type, STIX_META_RELATIONSHIPS) || includes(type, STIX_INTERNAL_META_RELATIONSHIPS);
+export const isStixInternalMetaRelationship = (type) => includes(type, STIX_INTERNAL_META_RELATIONSHIPS);
 // endregion
 
 // region STIX CYBER OBSERVABLE RELATIONSHIP

@@ -1,16 +1,12 @@
-import { assoc, dissoc, pick, map, pipe } from 'ramda';
+import { assoc, dissoc, pick, map, isNil, pipe } from 'ramda';
 import { FunctionalError } from '../config/errors';
 import {
   RELATION_CREATED_BY,
-  RELATION_EXTERNAL_REFERENCE,
-  RELATION_KILL_CHAIN_PHASE,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT,
-  RELATION_OBJECT_MARKING,
   isStixObject,
   isStixCoreRelationship,
   isStixMetaRelationship,
   isStixSightingRelationship,
+  isStixInternalMetaRelationship,
 } from '../utils/idGenerator';
 
 export const STIX_SPEC_VERSION = '2.1';
@@ -35,9 +31,6 @@ export const buildStixData = (entityData, onlyBase = false) => {
   }
   return finalData;
 };
-
-export const markingDefinitionsToStix = (markingDefinitionsEdges) =>
-  map((markingDefinition) => markingDefinition.node.standard_stix_id, markingDefinitionsEdges);
 
 export const labelsToStix = (labelsEdges) => map((label) => label.node.standard_stix_id, labelsEdges);
 
@@ -135,19 +128,17 @@ export const convertStixSightingRelationshipToStix = async (data, extra = null, 
 };
 
 export const convertStixMetaRelationshipToStix = (data, eventType, extra) => {
+  const entityType = data.entity_type;
   let finalData = convertStixObjectToStix(extra.from, true);
-  if (data.entity_type === RELATION_CREATED_BY) {
-    finalData = assoc(RELATION_CREATED_BY, extra.to ? extra.to.standard_stix_id : null, finalData);
-  } else if (data.entity_type === RELATION_OBJECT_MARKING) {
-    finalData = assoc(RELATION_OBJECT_MARKING, markingDefinitionsToStix([{ node: extra.to }]), finalData);
-  } else if (data.entity_type === RELATION_EXTERNAL_REFERENCE) {
-    finalData = assoc(RELATION_EXTERNAL_REFERENCE, externalReferencesToStix([{ node: extra.to }]), finalData);
-  } else if (data.entity_type === RELATION_KILL_CHAIN_PHASE) {
-    finalData = assoc(RELATION_KILL_CHAIN_PHASE, killChainPhasesToStix([{ node: extra.to }]), finalData);
-  } else if (data.entity_type === RELATION_OBJECT) {
-    finalData = assoc(RELATION_OBJECT, objectsToStix([{ node: extra.to }]), finalData);
-  } else if (data.entity_type === RELATION_OBJECT_LABEL) {
-    finalData = assoc('labels', labelsToStix([{ node: extra.to }]), finalData);
+  if (isStixInternalMetaRelationship(entityType)) {
+    // Internal Meta = _ref or _refs
+    finalData = assoc(
+      `${entityType.replace('-', '_')}_ref${data.entity_type !== RELATION_CREATED_BY ? 's' : ''}`,
+      isNil(extra.to) ? null : extra.to.standard_stix_id,
+      finalData
+    );
+  } else {
+    finalData = assoc(`${entityType.replace('-', '_')}s`, [convertStixObjectToStix(extra.to)], finalData);
   }
   return finalData;
 };

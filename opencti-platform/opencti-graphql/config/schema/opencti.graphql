@@ -3842,6 +3842,52 @@ interface StixCyberObservable {
   # StixCyberObservable
   indicators: IndicatorConnection
 }
+type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & StixCoreObject & StixCyberObservable {
+  # BasicObject
+  id: ID! # internal_id
+  entity_type: String!
+  # StixObject
+  standard_stix_id: String!
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  indicators: IndicatorConnection
+  # AutonomousSystem
+  number: Int
+  name: String
+  rir: String
+}
 input AutonomousSystemAddInput {
   stix_id: String
   number: Int
@@ -3854,25 +3900,53 @@ input AutonomousSystemAddInput {
   modified: DateTime
   clientMutationId: String
 }
-input CryptographicKeyddInput {
-  stix_id: String
-  value: String
-  createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
-  created: DateTime
-  modified: DateTime
-  clientMutationId: String
-}
-input CryptographicWalletddInput {
-  stix_id: String
-  value: String
-  createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
-  created: DateTime
-  modified: DateTime
-  clientMutationId: String
+type Directory implements BasicObject & StixObject & StixCoreObject & StixCoreObject & StixCyberObservable {
+  # BasicObject
+  id: ID! # internal_id
+  entity_type: String!
+  # StixObject
+  standard_stix_id: String!
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  indicators: IndicatorConnection
+  # Directory
+  path: String
+  path_enc: String
+  ctime: DateTime
+  mtime: DateTime
+  atime: DateTime
 }
 input DirectoryAddInput {
   stix_id: String
@@ -3888,6 +3962,50 @@ input DirectoryAddInput {
   modified: DateTime
   clientMutationId: String
 }
+type DomainName implements BasicObject & StixObject & StixCoreObject & StixCoreObject & StixCyberObservable {
+  # BasicObject
+  id: ID! # internal_id
+  entity_type: String!
+  # StixObject
+  standard_stix_id: String!
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  indicators: IndicatorConnection
+  # DomainName
+  value: String
+}
 input DomainNameAddInput {
   stix_id: String
   value: String
@@ -3898,13 +4016,128 @@ input DomainNameAddInput {
   modified: DateTime
   clientMutationId: String
 }
-union StixCyberObservableAddInput =
-    AutonomousSystemAddInput
-  | CryptographicKeyddInput
-  | CryptographicWalletddInput
-  | DirectoryAddInput
-  | DomainNameAddInput
-
+type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCoreObject & StixCyberObservable {
+  # BasicObject
+  id: ID! # internal_id
+  entity_type: String!
+  # StixObject
+  standard_stix_id: String!
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  indicators: IndicatorConnection
+  # EmailAddr
+  value: String
+  display_name: String
+}
+input EmailAddrAddInput {
+  stix_id: String
+  value: String
+  display_name: String
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCoreObject & StixCyberObservable {
+  # BasicObject
+  id: ID! # internal_id
+  entity_type: String!
+  # StixObject
+  standard_stix_id: String!
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  indicators: IndicatorConnection
+  # EmailMessage
+  is_multipart: Boolean
+  attribute_date: DateTime
+  content_type: String
+  message_id: String
+  subject: String
+  received_lines: [String]
+  body: String
+}
+input EmailMessageAddInput {
+  stix_id: String
+  is_multipart: Boolean
+  attribute_date: DateTime
+  content_type: String
+  message_id: String
+  subject: String
+  received_lines: [String]
+  body: String
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
 ############## HashedObservables
 interface HashedObservable {
   # BasicObject
@@ -3954,6 +4187,234 @@ interface HashedObservable {
   sha512: String
   jobs(first: Int): [Work]
 }
+
+type XOpenctiCryptographicKey implements BasicObject & StixObject & StixCoreObject & StixCoreObject & StixCyberObservable {
+  # BasicObject
+  id: ID! # internal_id
+  entity_type: String!
+  # StixObject
+  standard_stix_id: String!
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  indicators: IndicatorConnection
+  # CryptographicKey
+  value: String
+}
+input XOpenctiCryptographicKeyAddInput {
+  stix_id: String
+  value: String
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+type XOpenctiCryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject & StixCoreObject & StixCyberObservable {
+  # BasicObject
+  id: ID! # internal_id
+  entity_type: String!
+  # StixObject
+  standard_stix_id: String!
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  indicators: IndicatorConnection
+  # CryptocyrrencyWallet
+  value: String
+}
+input XOpenctiCryptocurrencyWalletAddInput {
+  stix_id: String
+  value: String
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+type XOpenctiText implements BasicObject & StixObject & StixCoreObject & StixCoreObject & StixCyberObservable {
+  # BasicObject
+  id: ID! # internal_id
+  entity_type: String!
+  # StixObject
+  standard_stix_id: String!
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  indicators: IndicatorConnection
+  # XOpenctiText
+  value: String
+}
+input XOpenctiTextAddInput {
+  stix_id: String
+  value: String
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+type XOpenctiUserAgent implements BasicObject & StixObject & StixCoreObject & StixCoreObject & StixCyberObservable {
+  # BasicObject
+  id: ID! # internal_id
+  entity_type: String!
+  # StixObject
+  standard_stix_id: String!
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationType: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  indicators: IndicatorConnection
+  # XOpenctiUserAgent
+  value: String
+}
+input XOpenctiUserAgentAddInput {
+  stix_id: String
+  value: String
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+
+union StixCyberObservableAddInput =
+    AutonomousSystemAddInput
+  | DirectoryAddInput
+  | DomainNameAddInput
+  | EmailAddrAddInput
+  | EmailMessageAddInput
+  | XOpenctiCryptographicKeyAddInput
+  | XOpenctiCryptocurrencyWalletAddInput
+  | XOpenctiTextAddInput
+  | XOpenctiUserAgentAddInput
 
 ###### RELATIONSHIPS
 
