@@ -8,13 +8,13 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { buildPagination } from '../database/utils';
-import { ENTITY_TYPE_ORGA } from '../utils/idGenerator';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../utils/idGenerator';
 
 export const findById = (organizationId) => {
-  return loadEntityById(organizationId, 'Organization');
+  return loadEntityById(organizationId, ENTITY_TYPE_IDENTITY_ORGANIZATION);
 };
 export const findAll = (args) => {
-  return listEntities(['Organization'], ['name', 'alias'], args);
+  return listEntities([ENTITY_TYPE_IDENTITY_ORGANIZATION], ['name', 'aliases'], args);
 };
 export const sectors = (organizationId) => {
   return findWithConnectedRelations(
@@ -24,8 +24,7 @@ export const sectors = (organizationId) => {
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
-
 export const addOrganization = async (user, organization) => {
-  const created = await createEntity(user, organization, ENTITY_TYPE_ORGA);
+  const created = await createEntity(user, organization, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };

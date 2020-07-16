@@ -14,7 +14,6 @@ define
   name sub attribute, datatype string;
   description sub attribute, datatype string;
   graph_data sub attribute, datatype string;
-  attribute_order sub attribute, datatype double;
   issuer sub attribute, datatype string;
 
   # Internal Common
@@ -39,6 +38,7 @@ define
   last_seen_day sub attribute, datatype string;
   last_seen_month sub attribute, datatype string;
   last_seen_year sub attribute, datatype string;
+
   # Internal Relationships
   grant sub attribute, datatype string;
 
@@ -75,6 +75,7 @@ define
   external sub attribute, datatype boolean;
   disabled sub attribute, datatype boolean;
   default_assignation sub attribute, datatype boolean;
+  attribute_order sub attribute, datatype double;
   connector_type sub attribute, datatype string;
   connector_scope sub attribute, datatype string;
   connector_state sub attribute, datatype string;
@@ -89,6 +90,8 @@ define
   # STIX Meta Objects
   definition_type sub attribute, datatype string;
   definition sub attribute, datatype string;
+  x_opencti_order  sub attribute, datatype long;
+  x_opencti_color sub attribute, datatype string;
   color sub attribute, datatype string;
   source_name sub attribute, datatype string;
   hash sub attribute, datatype string;
@@ -619,10 +622,6 @@ define
     relates object-marking_from,
     relates object-marking_to;
 
-  object-label sub stix-meta-relationship,
-    relates object-label_from,
-    relates object-label_to;
-
   object sub stix-meta-relationship,
     relates object_from,
     relates object_to;
@@ -630,6 +629,10 @@ define
   # STIX Internal Meta Relationships
   internal-meta-relationship sub stix-meta-relationship,
     abstract;
+
+  object-label sub stix-meta-relationship,
+    relates object-label_from,
+    relates object-label_to;
 
   external-reference sub internal-meta-relationship,
     relates external-reference_from,
@@ -901,8 +904,8 @@ define
   Marking-Definition sub Stix-Meta-Object,
     has definition_type,
     has definition,
-    has attribute_order,
-    has color,
+    has x_opencti_order,
+    has x_opencti_color,
     plays object-marking_to;
 
   Label sub Stix-Meta-Object,
@@ -921,7 +924,7 @@ define
   Kill-Chain-Phase sub Stix-Meta-Object,
     has kill_chain_name,
     has phase_name,
-    has attribute_order,
+    has x_opencti_order,
     plays kill-chain-phase_to;
 
   Stix-Core-Object sub Stix-Object,

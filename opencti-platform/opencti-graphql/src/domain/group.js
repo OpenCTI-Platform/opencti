@@ -14,30 +14,23 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { buildPagination } from '../database/utils';
-import { ENTITY_TYPE_GROUP } from '../utils/idGenerator';
+import { ENTITY_TYPE_GROUP, RELATION_MEMBER_OF } from '../utils/idGenerator';
 
 export const findById = (groupId) => {
   return loadEntityById(groupId, ENTITY_TYPE_GROUP);
 };
+
 export const findAll = (args) => {
   return listEntities([ENTITY_TYPE_GROUP], ['name'], args);
 };
 
 export const members = async (groupId) => {
   return findWithConnectedRelations(
-    `match $to isa User; $rel(member:$to, grouping:$from) isa membership;
-   $from isa Group, has internal_id "${escapeString(groupId)}";
-   get;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then((data) => buildPagination(0, 0, data, data.length));
-};
-export const permissions = async (groupId) => {
-  return findWithConnectedRelations(
-    `match $to isa Marking-Definition; $rel(allow:$to, allowed:$from) isa permission;
-   $from isa Group, has internal_id "${escapeString(groupId)}";
-   get;`,
-    'to',
+    `match $from isa User; 
+    $rel(${RELATION_MEMBER_OF}_from:$from, ${RELATION_MEMBER_OF}_to:$to) isa ${RELATION_MEMBER_OF};
+    $to isa Group, has internal_id "${escapeString(groupId)}";
+    get;`,
+    'from',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
@@ -46,6 +39,7 @@ export const addGroup = async (user, group) => {
   const created = await createEntity(user, group, ENTITY_TYPE_GROUP, { noLog: true });
   return notify(BUS_TOPICS.Group.ADDED_TOPIC, created, user);
 };
+
 export const groupDelete = (user, groupId) => deleteEntityById(user, groupId, ENTITY_TYPE_GROUP, { noLog: true });
 
 export const groupEditField = (user, groupId, input) => {
@@ -69,11 +63,12 @@ export const groupDeleteRelation = async (user, groupId, relationId) => {
   return notify(BUS_TOPICS.Group.EDIT_TOPIC, data, user);
 };
 
-export const groupCleanContext = (user, groupId) => {
-  delEditContext(user, groupId);
+export const groupCleanContext = async (user, groupId) => {
+  await delEditContext(user, groupId);
   return loadEntityById(groupId, ENTITY_TYPE_GROUP).then((group) => notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user));
 };
-export const groupEditContext = (user, groupId, input) => {
-  setEditContext(user, groupId, input);
+
+export const groupEditContext = async (user, groupId, input) => {
+  await setEditContext(user, groupId, input);
   return loadEntityById(groupId, ENTITY_TYPE_GROUP).then((group) => notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user));
 };

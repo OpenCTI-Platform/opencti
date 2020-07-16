@@ -13,6 +13,7 @@ import { ENTITY_TYPE_LABEL } from '../utils/idGenerator';
 export const findById = (tagId) => {
   return loadEntityById(tagId, ENTITY_TYPE_LABEL);
 };
+
 export const findAll = (args) => {
   return listEntities([ENTITY_TYPE_LABEL], ['value'], args);
 };
@@ -21,6 +22,7 @@ export const addLabel = async (user, tag) => {
   const created = await createEntity(user, tag, ENTITY_TYPE_LABEL, { noLog: true });
   return notify(BUS_TOPICS.Label.ADDED_TOPIC, created, user);
 };
+
 export const labelDelete = (user, tagId) => deleteEntityById(user, tagId, ENTITY_TYPE_LABEL, { noLog: true });
 
 export const labelEditField = (user, tagId, input) => {
@@ -36,6 +38,7 @@ export const labelCleanContext = (user, tagId) => {
   delEditContext(user, tagId);
   return loadEntityById(tagId, ENTITY_TYPE_LABEL).then((tag) => notify(BUS_TOPICS.Label.EDIT_TOPIC, tag, user));
 };
+
 export const labelEditContext = (user, tagId, input) => {
   setEditContext(user, tagId, input);
   return loadEntityById(tagId, ENTITY_TYPE_LABEL).then((tag) => notify(BUS_TOPICS.Label.EDIT_TOPIC, tag, user));

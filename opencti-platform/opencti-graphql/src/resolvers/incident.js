@@ -5,7 +5,7 @@ import {
   incidentsTimeSeries,
   incidentsTimeSeriesByEntity,
   observableRefs,
-} from '../domain/incident';
+} from '../domain/xOpenctiIncident';
 import {
   stixDomainEntityAddRelation,
   stixDomainEntityCleanContext,

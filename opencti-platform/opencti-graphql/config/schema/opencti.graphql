@@ -629,8 +629,8 @@ interface StixMetaObject {
 enum MarkingDefinitionsOrdering {
   definition_type
   definition
-  attribute_order
-  color
+  x_opencti_order
+  x_opencti_color
   created
   modified
   created_at
@@ -670,8 +670,8 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   # MarkingDefinition
   definition_type: String
   definition: String
-  attribute_order: Int
-  color: String
+  x_opencti_order: Int!
+  x_opencti_color: String
   # Technical
   toStix: String
   editContext: [EditUserContext]
@@ -680,8 +680,8 @@ input MarkingDefinitionAddInput {
   stix_id: String
   definition_type: String!
   definition: String!
-  attribute_order: Int!
-  color: String
+  x_opencti_order: Int!
+  x_opencti_color: String
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -847,7 +847,7 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
   # KillChainPhase
   kill_chain_name: String!
   phase_name: String!
-  attribute_order: Int
+  x_opencti_order: Int
   # Technical
   editContext: [EditUserContext]
 }

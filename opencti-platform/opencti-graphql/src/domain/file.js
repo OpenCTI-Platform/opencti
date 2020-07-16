@@ -45,6 +45,7 @@ export const askJobImport = async (user, filename, context) => {
   await uploadJobImport(file.id, file.metaData.mimetype, context, user.token.uuid);
   return file;
 };
+
 export const uploadImport = async (user, file) => {
   const up = await upload(user, 'import', file);
   await uploadJobImport(up.id, up.metaData.mimetype, user.token.uuid);

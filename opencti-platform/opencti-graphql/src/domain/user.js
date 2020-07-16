@@ -45,11 +45,10 @@ import {
   ENTITY_TYPE_USER,
   generateId,
   OPENCTI_ADMIN_UUID,
+  RELATION_AUTHORIZED_BY,
   RELATION_HAS_CAPABILITY,
-  RELATION_HAS_ROLE,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING,
-} from '../utils/idGenerator';
+  RELATION_HAS_ROLE, RELATION_MEMBER_OF
+} from "../utils/idGenerator";
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
 // region utils
@@ -80,47 +79,15 @@ export const SYSTEM_USER = { name: 'system' };
 export const ROLE_DEFAULT = 'Default';
 export const ROLE_ADMINISTRATOR = 'Administrator';
 
-export const findById = async (userId, options = { isUser: false }) => {
-  let data = await loadEntityById(userId, ENTITY_TYPE_USER, options);
-  if (!options.isUser) {
-    data = pipe(dissoc('user_email'), dissoc('password'))(data);
-  }
-  return data;
+export const findById = (individualId) => {
+  return loadEntityById(individualId, ENTITY_TYPE_USER);
 };
-export const findAll = async (args = {}, isUser = false) => {
-  const filters = propOr([], 'filters', args);
-  let data = await listEntities(
-    [ENTITY_TYPE_USER],
-    ['user_email', 'firstname', 'lastname'],
-    assoc('filters', isUser ? append({ key: 'external', values: ['EXISTS'] }, filters) : filters, args)
-  );
-  if (!isUser) {
-    data = assoc(
-      'edges',
-      map(
-        (n) => ({
-          cursor: n.cursor,
-          node: pipe(dissoc('user_email'), dissoc('password'))(n.node),
-          relation: n.relation,
-        }),
-        data.edges
-      ),
-      data
-    );
-  }
-  return data;
-};
-export const organizations = (userId) => {
-  return findWithConnectedRelations(
-    `match $to isa Organization; $rel(part_of:$from, gather:$to) isa gathering;
-     $from isa User, has internal_id "${escapeString(userId)}"; get;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then((data) => buildPagination(0, 0, data, data.length));
+export const findAll = (args) => {
+  return listEntities([ENTITY_TYPE_USER], ['name', 'aliases'], args);
 };
 export const groups = (userId) => {
   return findWithConnectedRelations(
-    `match $to isa Group; $rel(member:$from, grouping:$to) isa membership;
+    `match $to isa Group; $rel(${RELATION_MEMBER_OF}_from:$from, ${RELATION_MEMBER_OF}_to:$to) isa ${RELATION_MEMBER_OF};
    $from isa User, has internal_id "${escapeString(userId)}";
    get;`,
     'to',
@@ -134,7 +101,7 @@ export const token = (userId, args, context) => {
   }
   return loadWithConnectedRelations(
     `match $x isa Token;
-    $rel(authorization:$x, client:$client) isa authorize;
+    $rel(${RELATION_AUTHORIZED_BY}_from:$client, ${RELATION_AUTHORIZED_BY}_to:$x) isa ${RELATION_AUTHORIZED_BY};
     $client has internal_id "${escapeString(userId)}"; get; offset 0; limit 1;`,
     'x',
     { extraRelKey: 'rel' }
@@ -143,8 +110,10 @@ export const token = (userId, args, context) => {
 
 const internalGetToken = async (userId) => {
   const query = `match $x isa Token; $x has internal_id $x_id;
-  $rel(authorization:$x, client:$client) isa authorize; $rel has internal_id $rel_id;
-  $x has internal_id $rel_from_id; $client has internal_id $rel_to_id;
+  $rel(${RELATION_AUTHORIZED_BY}_from:$client, ${RELATION_AUTHORIZED_BY}_to:$x) isa ${RELATION_AUTHORIZED_BY};
+  $rel has internal_id $rel_id;
+  $x has internal_id $rel_from_id; 
+  $client has internal_id $rel_to_id;
   $client has internal_id "${escapeString(userId)}"; get; offset 0; limit 1;`;
   return loadWithConnectedRelations(query, 'x', { extraRelKey: 'rel' }).then((result) => result && result.node);
 };
@@ -162,7 +131,7 @@ const clearUserTokenCache = (userId) => {
 export const getRoles = async (userId) => {
   const data = await find(
     `match $client isa User, has internal_id "${escapeString(userId)}";
-            (client: $client, position: $role) isa ${RELATION_HAS_ROLE}; 
+            (${RELATION_HAS_ROLE}_from: $client, ${RELATION_HAS_ROLE}_to: $role) isa ${RELATION_HAS_ROLE}; 
             get;`,
     ['role']
   );
@@ -171,8 +140,8 @@ export const getRoles = async (userId) => {
 export const getCapabilities = async (userId) => {
   const data = await find(
     `match $client isa User, has internal_id "${escapeString(userId)}";
-            (client: $client, position: $role) isa ${RELATION_HAS_ROLE}; 
-            (position: $role, capability: $capability) isa ${RELATION_HAS_CAPABILITY}; 
+            (${RELATION_HAS_ROLE}_from: $client, ${RELATION_HAS_ROLE}_to: $role) isa ${RELATION_HAS_ROLE}; 
+            (${RELATION_HAS_CAPABILITY}_from: $role, ${RELATION_HAS_CAPABILITY}_to: $capability) isa ${RELATION_HAS_CAPABILITY}; 
             get;`,
     ['capability']
   );
@@ -186,7 +155,7 @@ export const getCapabilities = async (userId) => {
 export const getRoleCapabilities = async (roleId) => {
   const data = await find(
     `match $role isa Role, has internal_id "${escapeString(roleId)}";
-            (position: $role, capability: $capability) isa ${RELATION_HAS_CAPABILITY}; 
+            (${RELATION_HAS_CAPABILITY}_from: $role, ${RELATION_HAS_CAPABILITY}_to: $capability) isa ${RELATION_HAS_CAPABILITY}; 
             get;`,
     ['capability']
   );
@@ -206,7 +175,7 @@ export const findCapabilities = (args) => {
 
 export const removeRole = async (userId, roleName) => {
   await executeWrite(async (wTx) => {
-    const query = `match $rel(client: $from, position: $to) isa ${RELATION_USER_ROLE}; 
+    const query = `match $rel(${RELATION_HAS_ROLE}_from: $from, ${RELATION_HAS_ROLE}_to: $to) isa ${RELATION_HAS_ROLE}; 
             $from has internal_id "${escapeString(userId)}"; 
             $to has name "${escapeString(roleName)}"; 
             delete $rel;`;
@@ -217,7 +186,7 @@ export const removeRole = async (userId, roleName) => {
 };
 export const roleRemoveCapability = async (user, roleId, capabilityName) => {
   await executeWrite(async (wTx) => {
-    const query = `match $rel(position: $from, capability: $to) isa ${RELATION_ROLE_CAPABILITY}; 
+    const query = `match $rel(${RELATION_HAS_CAPABILITY}_from: $from, ${RELATION_HAS_CAPABILITY}_to: $to) isa ${RELATION_HAS_CAPABILITY}; 
             $from isa Role, has internal_id "${escapeString(roleId)}"; 
             $to isa Capability, has name $name; { $name contains "${escapeString(capabilityName)}";}; 
             delete $rel;`;
@@ -225,7 +194,7 @@ export const roleRemoveCapability = async (user, roleId, capabilityName) => {
   });
   // Clear cache of every user with this modified role
   const impactedUsers = await findAll({
-    filters: [{ key: `${REL_INDEX_PREFIX}${RELATION_USER_ROLE}.internal_id`, values: [roleId] }],
+    filters: [{ key: `${REL_INDEX_PREFIX}${RELATION_HAS_ROLE}.internal_id`, values: [roleId] }],
   });
   await Promise.all(map((e) => clearUserTokenCache(e.node.id), impactedUsers.edges));
   return loadEntityById(roleId, ENTITY_TYPE_ROLE);
@@ -233,7 +202,7 @@ export const roleRemoveCapability = async (user, roleId, capabilityName) => {
 export const roleDelete = async (user, roleId) => {
   // Clear cache of every user with this deleted role
   const impactedUsers = await findAll({
-    filters: [{ key: `${REL_INDEX_PREFIX}${RELATION_USER_ROLE}.internal_id`, values: [roleId] }],
+    filters: [{ key: `${REL_INDEX_PREFIX}${RELATION_HAS_ROLE}.internal_id`, values: [roleId] }],
   });
   await Promise.all(map((e) => clearUserTokenCache(e.node.id), impactedUsers.edges));
   return deleteEntityById(user, roleId, ENTITY_TYPE_ROLE, { noLog: true });
@@ -248,20 +217,11 @@ export const roleEditContext = (user, roleId, input) => {
 };
 // endregion
 
-export const addPerson = async (user, newUser) => {
-  const creatingUser = assoc('user_email', `${uuid()}@mail.com`, newUser);
-  const created = await createEntity(user, creatingUser, ENTITY_TYPE_USER);
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
-};
 export const assignRoleToUser = (user, userId, roleName) => {
   const assignInput = {
     fromId: userId,
-    fromType: ENTITY_TYPE_USER,
-    fromRole: 'client',
     toId: generateId(ENTITY_TYPE_ROLE, { name: roleName }),
-    toType: ENTITY_TYPE_ROLE,
-    toRole: 'position',
-    through: RELATION_USER_ROLE,
+    relationship_type: RELATION_HAS_ROLE,
   };
   return createRelation(user, assignInput, { noLog: true });
 };
@@ -327,18 +287,6 @@ export const userEditField = (user, userId, input) => {
     return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
   });
 };
-export const personEditField = async (user, userId, input) => {
-  const data = await loadEntityById(userId, ENTITY_TYPE_USER);
-  if (!isNil(data.external)) {
-    throw ForbiddenAccess();
-  }
-  return executeWrite((wTx) => {
-    return updateAttribute(user, userId, ENTITY_TYPE_USER, input, wTx);
-  }).then(async () => {
-    const userToEdit = await loadEntityById(userId, ENTITY_TYPE_USER);
-    return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
-  });
-};
 export const meEditField = (user, userId, input) => {
   return userEditField(user, userId, input);
 };
@@ -350,12 +298,6 @@ export const userDelete = async (user, userId) => {
   }
   await deleteEntityById(user, userId, ENTITY_TYPE_USER);
   return userId;
-};
-export const personDelete = async (user, personId) => {
-  const data = await loadEntityById(personId, ENTITY_TYPE_USER);
-  if (!isNil(data.external)) throw ForbiddenAccess();
-  await deleteEntityById(user, personId, ENTITY_TYPE_USER);
-  return personId;
 };
 export const userAddRelation = async (user, userId, input) => {
   const finalInput = pipe(assoc('fromId', userId), assoc('fromType', ENTITY_TYPE_USER))(input);
@@ -374,43 +316,6 @@ export const userDeleteRelation = async (user, userId, relationId = null, toId =
   await clearUserTokenCache(userId);
   const data = await loadEntityById(userId, 'Stix-Domain-Entity');
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
-};
-export const personAddRelation = async (user, userId, input) => {
-  if (![RELATION_OBJECT_LABEL, RELATION_CREATED_BY, RELATION_OBJECT_MARKING].includes(input.through)) {
-    throw ForbiddenAccess();
-  }
-  const finalInput = pipe(assoc('fromId', userId), assoc('fromType', ENTITY_TYPE_USER))(input);
-  const data = await createRelation(user, finalInput);
-  return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
-};
-export const personDeleteRelation = async (
-  user,
-  userId,
-  relationId = null,
-  toId = null,
-  relationType = 'stix_relation_embedded'
-) => {
-  if (relationId) {
-    await deleteRelationById(user, relationId, 'stix_relation_embedded');
-  } else if (toId) {
-    await deleteRelationsByFromAndTo(user, userId, toId, relationType, 'stix_relation_embedded');
-  } else {
-    throw FunctionalError('Cannot delete the relation, missing relationId or toId');
-  }
-  const data = await loadEntityById(userId, ENTITY_TYPE_USER);
-  return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
-};
-export const stixDomainEntityEditField = async (user, stixDomainEntityId, input) => {
-  const stixDomainEntity = await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
-  if (stixDomainEntity.entity_type === 'user' && !isNil(stixDomainEntity.external)) {
-    throw ForbiddenAccess();
-  }
-  return executeWrite((wTx) => {
-    return updateAttribute(user, stixDomainEntityId, 'Stix-Domain-Entity', input, wTx);
-  }).then(async () => {
-    const stixDomain = await loadEntityById(stixDomainEntityId, 'Stix-Domain-Entity');
-    return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, stixDomain, user);
-  });
 };
 export const loginFromProvider = async (email, name) => {
   const result = await load(

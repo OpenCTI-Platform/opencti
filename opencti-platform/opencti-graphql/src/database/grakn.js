@@ -77,25 +77,21 @@ import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE, EVENT_TYPE_UPD
 import {
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
-  ENTITY_TYPE_KILL_CHAIN,
   generateId,
   isStixMetaRelationship,
   isInternalObject,
   isStixCoreObject,
   isStixDomainObject,
   isStixId,
-  isStixCyberObservable,
   isStixCoreRelationship,
   RELATION_OBJECT_LABEL,
   RELATION_CREATED_BY,
   RELATION_OBJECT_MARKING,
   RELATION_OBJECT,
   RELATION_KILL_CHAIN_PHASE,
-  ENTITY_TYPE_LABEL,
   isStixObject,
   isStixMetaObject,
   isStixSightingRelationship,
-  isStixCyberObservableRelationship,
   isInternalRelationship,
   isStixRelationship,
 } from '../utils/idGenerator';
@@ -103,8 +99,8 @@ import { lockResource } from './redis';
 import { STIX_SPEC_VERSION } from './stix';
 
 // region global variables
-const FROM_START = 0; // "1970-01-01T00:00:00.000Z"
-const UNTIL_END = 100000000000000; // "5138-11-16T09:46:40.000Z"
+export const FROM_START = 0; // "1970-01-01T00:00:00.000Z"
+export const UNTIL_END = 100000000000000; // "5138-11-16T09:46:40.000Z"
 const dateFormat = 'YYYY-MM-DDTHH:mm:ss.SSS';
 const GraknString = 'String';
 const GraknDate = 'Date';
@@ -1623,7 +1619,8 @@ export const createEntity = async (user, entity, type, opts = {}) => {
   if (notResolvedElements.length > 0) {
     throw MissingReferenceError({ input: map((n) => n.ref, notResolvedElements) });
   }
-  const internalId = generateId(type, entity);
+  // Generate the internal id
+  const internalId = isNil(entity.internal_id) ? generateId(type, entity) : entity.internal_id;
   // Complete with identifiers
   const today = now();
   // Dissoc additional data

@@ -10,7 +10,7 @@ import {
   updateAttribute,
 } from '../database/grakn';
 import { connectorConfig, registerConnectorQueues, unregisterConnector } from '../database/rabbitmq';
-import {ENTITY_TYPE_CONNECTOR, generateId} from '../utils/idGenerator';
+import { ENTITY_TYPE_CONNECTOR, generateId } from '../utils/idGenerator';
 
 export const CONNECTOR_INTERNAL_IMPORT_FILE = 'INTERNAL_IMPORT_FILE'; // Files mime types to support (application/json, ...) -> import-
 export const CONNECTOR_INTERNAL_EXPORT_FILE = 'INTERNAL_EXPORT_FILE'; // Files mime types to generate (application/pdf, ...) -> export-
@@ -31,6 +31,7 @@ export const connectors = () => {
   const query = `match $c isa ${ENTITY_TYPE_CONNECTOR}; get;`;
   return find(query, ['c']).then((elements) => map((conn) => completeConnector(conn.c), elements));
 };
+
 export const connectorsFor = async (type, scope, onlyAlive = false) => {
   const connects = await connectors();
   return pipe(
@@ -47,8 +48,10 @@ export const connectorsFor = async (type, scope, onlyAlive = false) => {
     )
   )(connects);
 };
+
 export const connectorsForExport = async (scope, onlyAlive = false) =>
   connectorsFor(CONNECTOR_INTERNAL_EXPORT_FILE, scope, onlyAlive);
+
 export const connectorsForImport = async (scope, onlyAlive = false) =>
   connectorsFor(CONNECTOR_INTERNAL_IMPORT_FILE, scope, onlyAlive);
 // endregion
@@ -72,6 +75,7 @@ export const pingConnector = async (user, id, state) => {
   }
   return loadEntityById(id, 'Connector').then((data) => completeConnector(data));
 };
+
 export const resetStateConnector = async (user, id) => {
   await executeWrite(async (wTx) => {
     const stateInput = { key: 'connector_state', value: [''] };
@@ -81,6 +85,7 @@ export const resetStateConnector = async (user, id) => {
   });
   return loadEntityById(id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
 };
+
 export const registerConnector = async (user, connectorData) => {
   const { name, type, scope } = connectorData;
   const id = generateId(ENTITY_TYPE_CONNECTOR, connectorData);
@@ -107,6 +112,7 @@ export const registerConnector = async (user, connectorData) => {
   // Return the connector
   return completeConnector(createdConnector);
 };
+
 export const connectorDelete = async (user, connectorId) => {
   await unregisterConnector(connectorId);
   return deleteEntityById(user, connectorId, ENTITY_TYPE_CONNECTOR, { noLog: true });
