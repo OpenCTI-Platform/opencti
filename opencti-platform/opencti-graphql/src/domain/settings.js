@@ -20,7 +20,7 @@ export const getApplicationInfo = () => ({
 });
 
 export const getSettings = async () => {
-  const query = `match $settings isa ${ENTITY_TYPE_SETTINGS}; $settings has internal_id_key $settings_id; get;`;
+  const query = `match $settings isa ${ENTITY_TYPE_SETTINGS}; $settings has internal_id $settings_id; get;`;
   const data = await load(query, ['settings']);
   const settings = data && data.settings;
   if (settings == null) return null;

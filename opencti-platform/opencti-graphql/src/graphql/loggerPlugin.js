@@ -47,7 +47,7 @@ export default {
         if (isWrite) {
           const { input } = context.request.variables;
           if (input) {
-            if (!isNil(input.createdByRef) && !isEmpty(input.createdByRef)) innerRelationCount += 1;
+            if (!isNil(input.createdBy) && !isEmpty(input.createdBy)) innerRelationCount += 1;
             if (!isNil(input.markingDefinitions)) innerRelationCount += innerCompute(input.markingDefinitions);
             if (!isNil(input.labels)) innerRelationCount += innerCompute(input.labels);
             if (!isNil(input.killChainPhases)) innerRelationCount += innerCompute(input.killChainPhases);

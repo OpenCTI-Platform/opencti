@@ -24,8 +24,8 @@ class TestLocalWorker:
 
     def _process_message(self, channel, method, properties, body):
         data = json.loads(body)
-        data['internal_id_key'] = uuid.uuid4()
-        self.elasticsearch.index(index=self.elasticsearch_index, id=data['internal_id_key'], body=data)
+        data['internal_id'] = uuid.uuid4()
+        self.elasticsearch.index(index=self.elasticsearch_index, id=data['internal_id'], body=data)
         channel.basic_ack(method.delivery_tag)
 
     def consume(self):

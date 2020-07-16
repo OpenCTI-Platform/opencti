@@ -20,7 +20,7 @@ export const findAll = (args) => {
 export const parentRegions = (regionId) => {
   return findWithConnectedRelations(
     `match $to isa Region; $rel(localized:$from, location:$to) isa localization;
-     $from has internal_id_key "${escapeString(regionId)}"; get;`,
+     $from has internal_id "${escapeString(regionId)}"; get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
@@ -28,7 +28,7 @@ export const parentRegions = (regionId) => {
 export const subRegions = (regionId) => {
   return findWithConnectedRelations(
     `match $to isa Region; $rel(location:$from, localized:$to) isa localization;
-     $from has internal_id_key "${escapeString(regionId)}"; get;`,
+     $from has internal_id "${escapeString(regionId)}"; get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
@@ -38,7 +38,7 @@ export const isSubRegion = async (regionId, args) => {
   const numberOfParents = await getSingleValueNumber(
     `match $parent isa Region; 
     $rel(location:$parent, localized:$subregion) isa localization; 
-    $subregion has internal_id_key "${escapeString(regionId)}"; get; count;`,
+    $subregion has internal_id "${escapeString(regionId)}"; get; count;`,
     args
   );
   return numberOfParents > 0;

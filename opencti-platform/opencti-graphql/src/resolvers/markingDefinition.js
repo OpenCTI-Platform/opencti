@@ -21,7 +21,7 @@ const markingDefinitionResolvers = {
     markingDefinitions: (_, args) => findAll(args),
   },
   MarkingDefinitionsFilter: {
-    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id_key`,
+    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
   },
   MarkingDefinition: {
     toStix: (markingDefinition) => convertDataToStix(markingDefinition).then((stixData) => JSON.stringify(stixData)),

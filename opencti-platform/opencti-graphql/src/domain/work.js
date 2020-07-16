@@ -8,7 +8,7 @@ import { loadConnectorById } from './connector';
 // region utils
 export const workToExportFile = (work) => {
   return {
-    id: work.internal_id_key,
+    id: work.internal_id,
     name: work.work_file,
     size: 0,
     lastModified: moment(work.updated_at).toDate(),
@@ -100,7 +100,7 @@ export const deleteWork = async (workId) => {
 
 export const deleteWorkForFile = async (fileId) => {
   const works = await loadFileWorks(fileId);
-  await Promise.all(map((w) => deleteWork(w.internal_id_key), works));
+  await Promise.all(map((w) => deleteWork(w.internal_id), works));
   return true;
 };
 
@@ -108,7 +108,7 @@ export const initiateJob = (workId) => {
   const jobInternalId = uuid();
   return elIndex(INDEX_WORK_JOBS, {
     id: jobInternalId,
-    internal_id_key: jobInternalId,
+    internal_id: jobInternalId,
     messages: ['Initiate work'],
     work_id: workId,
     created_at: now(),
@@ -123,7 +123,7 @@ export const createWork = async (connector, entityType = null, entityId = null, 
   const workInternalId = uuid();
   const createdWork = await elIndex(INDEX_WORK_JOBS, {
     id: workInternalId,
-    internal_id_key: workInternalId,
+    internal_id: workInternalId,
     work_id: workInternalId,
     entity_type: 'Work',
     connector_id: connector.id,

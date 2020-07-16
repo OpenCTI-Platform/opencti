@@ -12,7 +12,7 @@ const labelResolvers = {
     labels: (_, args) => findAll(args),
   },
   LabelsFilter: {
-    labelsFor: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id_key`,
+    labelsFor: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
   },
   Label: {
     editContext: (label) => fetchEditContext(label.id),

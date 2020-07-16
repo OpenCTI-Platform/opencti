@@ -14,7 +14,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
 import { elCount } from '../database/elasticSearch';
 import { INDEX_STIX_RELATIONS } from '../database/utils';
-import { isStixId, isInternalId, isStixRelation } from '../utils/idGenerator';
+import { isStixId, isInternalId, isStixCoreRelationship } from '../utils/idGenerator';
 
 export const findAll = async (args) => {
   return listRelations(propOr('stix_relation', 'relationType', args), args);
@@ -43,8 +43,8 @@ export const stixRelationsNumber = (args) => {
 export const addStixRelation = async (user, stixRelation, reversedReturn = false) => {
   // We force the created by ref if not specified
   let input = stixRelation;
-  if (!stixRelation.createdByRef) {
-    input = assoc('createdByRef', user.id, stixRelation);
+  if (!stixRelation.createdBy) {
+    input = assoc('createdBy', user.id, stixRelation);
   }
   const created = await createRelation(user, input, { reversedReturn });
   return notify(BUS_TOPICS.StixRelation.ADDED_TOPIC, created, user);
@@ -62,7 +62,7 @@ export const stixRelationEditField = (user, stixRelationId, input) => {
 };
 export const stixRelationAddRelation = async (user, stixRelationId, input) => {
   const data = await internalLoadEntityById(stixRelationId);
-  if (!isStixRelation(data.type) || !input.through) {
+  if (!isStixCoreRelationship(data.type) || !input.through) {
     throw ForbiddenAccess();
   }
   const finalInput = assoc('fromId', stixRelationId, input);

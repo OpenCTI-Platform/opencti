@@ -36,12 +36,12 @@ export const stixSightingsNumber = (args) => ({
   count: getSingleValueNumber(
     `match $x($y, $z) isa ${ABSTRACT_STIX_SIGHTING_RELATIONSHIP}; ${
       args.endDate ? `$x has created_at $date; $date < ${prepareDate(args.endDate)};` : ''
-    } ${args.fromId ? `$y has internal_id_key "${escapeString(args.fromId)}";` : ''} get; count;`,
+    } ${args.fromId ? `$y has internal_id "${escapeString(args.fromId)}";` : ''} get; count;`,
     args.inferred ? args.inferred : false
   ),
   total: getSingleValueNumber(
     `match $x($y, $z) isa ${ABSTRACT_STIX_SIGHTING_RELATIONSHIP}; ${
-      args.fromId ? `$y has internal_id_key "${escapeString(args.fromId)}";` : ''
+      args.fromId ? `$y has internal_id "${escapeString(args.fromId)}";` : ''
     } get; count;`,
     args.inferred ? args.inferred : false
   ),

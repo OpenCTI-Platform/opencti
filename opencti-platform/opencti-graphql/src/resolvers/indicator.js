@@ -20,11 +20,11 @@ const indicatorResolvers = {
     labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
   },
   IndicatorsFilter: {
-    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id_key`,
-    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id_key`,
-    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id_key`,
-    observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`,
-    indicates: `${REL_INDEX_PREFIX}indicates.internal_id_key`,
+    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
+    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
+    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
+    observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id`,
+    indicates: `${REL_INDEX_PREFIX}indicates.internal_id`,
   },
   Indicator: {
     observables: (indicator) => observables(indicator.id),

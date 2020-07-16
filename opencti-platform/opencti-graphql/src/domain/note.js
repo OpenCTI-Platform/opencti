@@ -27,15 +27,15 @@ export const findAll = async (args) => {
 
 // Entities tab
 export const objectRefs = (noteId, args) => {
-  const key = `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id_key`;
+  const key = `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`;
   const finalArgs = assoc('filters', append({ key, values: [noteId] }, propOr([], 'filters', args)), args);
   return findAllStixDomainEntities(finalArgs);
 };
 export const noteContainsStixDomainEntity = async (noteId, objectId) => {
   const args = {
     filters: [
-      { key: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id_key`, values: [noteId] },
-      { key: 'internal_id_key', values: [objectId] },
+      { key: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`, values: [noteId] },
+      { key: 'internal_id', values: [objectId] },
     ],
   };
   const stixDomainEntities = await findAllStixDomainEntities(args);
@@ -60,15 +60,15 @@ export const noteContainsStixRelation = async (noteId, objectId) => {
 };
 // Observable refs
 export const observableRefs = (noteId, args) => {
-  const key = `${REL_INDEX_PREFIX}observable_refs.internal_id_key`;
+  const key = `${REL_INDEX_PREFIX}observable_refs.internal_id`;
   const finalArgs = assoc('filters', append({ key, values: [noteId] }, propOr([], 'filters', args)), args);
   return findAllStixObservables(finalArgs);
 };
 export const noteContainsStixObservable = async (noteId, objectId) => {
   const args = {
     filters: [
-      { key: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`, values: [noteId] },
-      { key: 'internal_id_key', values: [objectId] },
+      { key: `${REL_INDEX_PREFIX}observable_refs.internal_id`, values: [noteId] },
+      { key: 'internal_id', values: [objectId] },
     ],
   };
   const stixObservables = await findAllStixObservables(args);
@@ -99,7 +99,7 @@ export const notesNumberByEntity = (args) => ({
   count: getSingleValueNumber(
     `match $x isa ${ENTITY_TYPE_NOTE};
     $rel(knowledge_aggregation:$x, so:$so) isa ${RELATION_OBJECT}; 
-    $so has internal_id_key "${escapeString(args.objectId)}" ${
+    $so has internal_id "${escapeString(args.objectId)}" ${
       args.endDate ? `; $x has created_at $date; $date < ${prepareDate(args.endDate)};` : ''
     }
     get;
@@ -108,7 +108,7 @@ export const notesNumberByEntity = (args) => ({
   total: getSingleValueNumber(
     `match $x isa ${ENTITY_TYPE_NOTE};
     $rel(knowledge_aggregation:$x, so:$so) isa ${RELATION_OBJECT}; 
-    $so has internal_id_key "${escapeString(args.objectId)}";
+    $so has internal_id "${escapeString(args.objectId)}";
     get;
     count;`
   ),

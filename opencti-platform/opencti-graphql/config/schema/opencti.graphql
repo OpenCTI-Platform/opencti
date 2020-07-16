@@ -3857,6 +3857,9 @@ input AutonomousSystemAddInput {
 input CryptographicKeyddInput {
   stix_id: String
   value: String
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -3864,6 +3867,9 @@ input CryptographicKeyddInput {
 input CryptographicWalletddInput {
   stix_id: String
   value: String
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -3875,6 +3881,9 @@ input DirectoryAddInput {
   ctime: DateTime
   mtime: DateTime
   atime: DateTime
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -3882,6 +3891,9 @@ input DirectoryAddInput {
 input DomainNameAddInput {
   stix_id: String
   value: String
+  createdBy: String
+  markingDefinitions: [String]
+  labels: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String

@@ -42,11 +42,11 @@ const stixObservableResolvers = {
     labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
   },
   StixObservablesFilter: {
-    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id_key`,
-    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id_key`,
-    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id_key`,
-    relatedTo: `${REL_INDEX_PREFIX}related-to.internal_id_key`,
-    observablesContained: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`,
+    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
+    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
+    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
+    relatedTo: `${REL_INDEX_PREFIX}related-to.internal_id`,
+    observablesContained: `${REL_INDEX_PREFIX}observable_refs.internal_id`,
   },
   StixObservable: {
     indicators: (stixObservable) => indicators(stixObservable.id),

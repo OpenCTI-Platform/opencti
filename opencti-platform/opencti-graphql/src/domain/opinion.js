@@ -27,15 +27,15 @@ export const findAll = async (args) => {
 
 // Entities tab
 export const objectRefs = (opinionId, args) => {
-  const key = `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id_key`;
+  const key = `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`;
   const finalArgs = assoc('filters', append({ key, values: [opinionId] }, propOr([], 'filters', args)), args);
   return findAllStixDomainEntities(finalArgs);
 };
 export const opinionContainsStixDomainEntity = async (opinionId, objectId) => {
   const args = {
     filters: [
-      { key: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id_key`, values: [opinionId] },
-      { key: 'internal_id_key', values: [objectId] },
+      { key: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`, values: [opinionId] },
+      { key: 'internal_id', values: [objectId] },
     ],
   };
   const stixDomainEntities = await findAllStixDomainEntities(args);
@@ -60,15 +60,15 @@ export const opinionContainsStixRelation = async (opinionId, objectId) => {
 };
 // Observable refs
 export const observableRefs = (opinionId, args) => {
-  const key = `${REL_INDEX_PREFIX}observable_refs.internal_id_key`;
+  const key = `${REL_INDEX_PREFIX}observable_refs.internal_id`;
   const finalArgs = assoc('filters', append({ key, values: [opinionId] }, propOr([], 'filters', args)), args);
   return findAllStixObservables(finalArgs);
 };
 export const opinionContainsStixObservable = async (opinionId, objectId) => {
   const args = {
     filters: [
-      { key: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`, values: [opinionId] },
-      { key: 'internal_id_key', values: [objectId] },
+      { key: `${REL_INDEX_PREFIX}observable_refs.internal_id`, values: [opinionId] },
+      { key: 'internal_id', values: [objectId] },
     ],
   };
   const stixObservables = await findAllStixObservables(args);
@@ -99,7 +99,7 @@ export const opinionsNumberByEntity = (args) => ({
   count: getSingleValueNumber(
     `match $x isa ${ENTITY_TYPE_OPINION};
     $rel(knowledge_aggregation:$x, so:$so) isa ${RELATION_OBJECT}; 
-    $so has internal_id_key "${escapeString(args.objectId)}" ${
+    $so has internal_id "${escapeString(args.objectId)}" ${
       args.endDate ? `; $x has created_at $date; $date < ${prepareDate(args.endDate)};` : ''
     }
     get;
@@ -108,7 +108,7 @@ export const opinionsNumberByEntity = (args) => ({
   total: getSingleValueNumber(
     `match $x isa ${ENTITY_TYPE_OPINION};
     $rel(knowledge_aggregation:$x, so:$so) isa ${RELATION_OBJECT}; 
-    $so has internal_id_key "${escapeString(args.objectId)}";
+    $so has internal_id "${escapeString(args.objectId)}";
     get;
     count;`
   ),

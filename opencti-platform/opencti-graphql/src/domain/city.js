@@ -18,7 +18,7 @@ export const findAll = (args) => {
 export const country = (cityId) => {
   return loadWithConnectedRelations(
     `match $to isa ${ENTITY_TYPE_COUNTRY}; $rel(localized:$from, location:$to) isa localization;
-   $from has internal_id_key "${escapeString(cityId)}"; get; offset 0; limit 1;`,
+   $from has internal_id "${escapeString(cityId)}"; get; offset 0; limit 1;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => (data ? data.node : undefined));

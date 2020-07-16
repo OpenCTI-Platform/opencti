@@ -33,15 +33,15 @@ export const findAll = async (args) => {
 
 // Entities tab
 export const objectRefs = (reportId, args) => {
-  const key = `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id_key`;
+  const key = `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`;
   const finalArgs = assoc('filters', append({ key, values: [reportId] }, propOr([], 'filters', args)), args);
   return findAllStixDomainEntities(finalArgs);
 };
 export const reportContainsStixDomainEntity = async (reportId, objectId) => {
   const args = {
     filters: [
-      { key: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id_key`, values: [reportId] },
-      { key: 'internal_id_key', values: [objectId] },
+      { key: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`, values: [reportId] },
+      { key: 'internal_id', values: [objectId] },
     ],
   };
   const stixDomainEntities = await findAllStixDomainEntities(args);
@@ -66,15 +66,15 @@ export const reportContainsStixRelation = async (reportId, objectId) => {
 };
 // Observable refs
 export const observableRefs = (reportId, args) => {
-  const key = `${REL_INDEX_PREFIX}observable_refs.internal_id_key`;
+  const key = `${REL_INDEX_PREFIX}observable_refs.internal_id`;
   const finalArgs = assoc('filters', append({ key, values: [reportId] }, propOr([], 'filters', args)), args);
   return findAllStixObservables(finalArgs);
 };
 export const reportContainsStixObservable = async (reportId, objectId) => {
   const args = {
     filters: [
-      { key: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`, values: [reportId] },
-      { key: 'internal_id_key', values: [objectId] },
+      { key: `${REL_INDEX_PREFIX}observable_refs.internal_id`, values: [reportId] },
+      { key: 'internal_id', values: [objectId] },
     ],
   };
   const stixObservables = await findAllStixObservables(args);
@@ -111,7 +111,7 @@ export const reportsNumberByEntity = (args) => ({
   count: getSingleValueNumber(
     `match $x isa ${ENTITY_TYPE_REPORT};
     $rel(knowledge_aggregation:$x, so:$so) isa ${RELATION_OBJECT}; 
-    $so has internal_id_key "${escapeString(args.objectId)}" ${
+    $so has internal_id "${escapeString(args.objectId)}" ${
       args.reportClass
         ? `; 
     $x has report_class "${escapeString(args.reportClass)}"`
@@ -129,7 +129,7 @@ export const reportsNumberByEntity = (args) => ({
   total: getSingleValueNumber(
     `match $x isa ${ENTITY_TYPE_REPORT};
     $rel(knowledge_aggregation:$x, so:$so) isa ${RELATION_OBJECT}; 
-    $so has internal_id_key "${escapeString(args.objectId)}" ${
+    $so has internal_id "${escapeString(args.objectId)}" ${
       args.reportClass
         ? `; 
     $x has report_class "${escapeString(args.reportClass)}"`
@@ -160,8 +160,8 @@ export const reportsDistributionByEntity = async (args) => {
 export const addReport = async (user, report) => {
   // Get the reliability of the author
   let sourceConfidenceLevel = 1;
-  if (report.createdByRef) {
-    const identity = await findIdentityById(report.createdByRef);
+  if (report.createdBy) {
+    const identity = await findIdentityById(report.createdBy);
     if (identity.reliability) {
       switch (identity.reliability) {
         case 'A':

@@ -6,7 +6,11 @@ define
   internal_id sub attribute, datatype string;
   entity_type sub attribute, datatype string;
   created_at sub attribute, datatype date;
+  created_at_day sub attribute, datatype string;
+  created_at_month sub attribute, datatype string;
+  created_at_year sub attribute, datatype string;
   updated_at sub attribute, datatype date;
+
   name sub attribute, datatype string;
   description sub attribute, datatype string;
   graph_data sub attribute, datatype string;
@@ -28,15 +32,26 @@ define
 
   # STIX General
   first_seen sub attribute, datatype date;
+  first_seen_day sub attribute, datatype string;
+  first_seen_month sub attribute, datatype string;
+  first_seen_year sub attribute, datatype string;
   last_seen sub attribute, datatype date;
-
+  last_seen_day sub attribute, datatype string;
+  last_seen_month sub attribute, datatype string;
+  last_seen_year sub attribute, datatype string;
   # Internal Relationships
   grant sub attribute, datatype string;
 
   # STIX Core Relationship
   relationship_type sub attribute, datatype string;
   start_time sub attribute, datatype date;
+  start_time_day sub attribute, datatype string;
+  start_time_month sub attribute, datatype string;
+  start_time_year sub attribute, datatype string;
   stop_time sub attribute, datatype date;
+  stop_time_day sub attribute, datatype string;
+  stop_time_month sub attribute, datatype string;
+  stop_time_year sub attribute, datatype string;
 
   # STIX Sighting Relationship
   attribute_count sub attribute, datatype long;
@@ -108,7 +123,13 @@ define
   pattern sub attribute, datatype string;
   indicator_types sub attribute, datatype string;
   valid_from sub attribute, datatype date;
+  valid_from_day sub attribute, datatype string;
+  valid_from_month sub attribute, datatype string;
+  valid_from_year sub attribute, datatype string;
   valid_until sub attribute, datatype date;
+  valid_until_day sub attribute, datatype string;
+  valid_until_month sub attribute, datatype string;
+  valid_until_year sub attribute, datatype string;
   x_opencti_score sub attribute, datatype long;
   x_opencti_detection sub attribute, datatype boolean;
   x_opencti_main_observable_type sub attribute, datatype string;
@@ -135,6 +156,9 @@ define
   report_types sub attribute, datatype string;
   report_status sub attribute, datatype long;
   published sub attribute, datatype date;
+  published_day sub attribute, datatype string;
+  published_month sub attribute, datatype string;
+  published_year sub attribute, datatype string;
   threat_actor_types sub attribute, datatype string;
   sophistication sub attribute, datatype string;
   personal_motivations sub attribute, datatype string;
@@ -351,6 +375,9 @@ define
     key internal_id,
     has entity_type,
     has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
     has updated_at;
 
   # Internal relations
@@ -402,7 +429,13 @@ define
     has relationship_type,
     has description,
     has start_time,
+    has start_time_day,
+    has start_time_month,
+    has start_time_year,
     has stop_time,
+    has stop_time_day,
+    has stop_time_month,
+    has stop_time_year,
     plays created-by_from,
     plays object-marking_from,
     plays object-label_from,
@@ -586,6 +619,10 @@ define
     relates object-marking_from,
     relates object-marking_to;
 
+  object-label sub stix-meta-relationship,
+    relates object-label_from,
+    relates object-label_to;
+
   object sub stix-meta-relationship,
     relates object_from,
     relates object_to;
@@ -601,10 +638,6 @@ define
   kill-chain-phase sub internal-meta-relationship,
     relates kill-chain-phase_from,
     relates kill-chain-phase_to;
-
-  object-label sub internal-meta-relationship,
-    relates object-label_from,
-    relates object-label_to;
 
   # STIX Cyber Observable Relationships
   stix-cyber-observable-relationship sub stix-relationship,
@@ -745,6 +778,9 @@ define
     has platform_url,
     has platform_language,
     has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
     has updated_at;
 
   MigrationStatus sub Internal-Object,
@@ -762,6 +798,9 @@ define
     has issuer,
     has disabled,
     has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
     has updated_at,
     plays authorized-by_to;
 
@@ -769,6 +808,9 @@ define
     has name,
     has description,
     has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
     has updated_at,
     plays member-of_to;
 
@@ -781,6 +823,9 @@ define
     has language,
     has external,
     has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
     has updated_at,
     plays authorized-by_from,
     plays has-role_from,
@@ -792,6 +837,9 @@ define
     has default_assignation,
     has description,
     has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
     has updated_at,
     plays allowed-by_to,
     plays has-capability_from,
@@ -802,6 +850,9 @@ define
     has attribute_order,
     has description,
     has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
     has updated_at,
     plays has-capability_to;
 
@@ -812,6 +863,9 @@ define
     has connector_state,
     has connector_state_reset,
     has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
     has updated_at;
 
   Workspace sub Internal-Object,
@@ -821,6 +875,9 @@ define
     has graph_data,
     has workspace_data,
     has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
     has updated_at;
 
   # STIX Object Entities
@@ -830,6 +887,9 @@ define
     has stix_ids,
     has spec_version,
     has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
     has updated_at;
 
   # STIX Meta Object Entities
@@ -948,6 +1008,9 @@ define
     has report_types,
     has report_status,
     has published,
+    has published_day,
+    has published_year,
+    has published_month,
     has graph_data;
 
   Course-Of-Action sub Stix-Domain-Object,
@@ -989,7 +1052,13 @@ define
     has description,
     has indicator_types,
     has valid_from,
+    has valid_from_day,
+    has valid_from_month,
+    has valid_from_year,
     has valid_until,
+    has valid_until_day,
+    has valid_until_month,
+    has valid_until_year,
     has x_opencti_score,
     has x_opencti_detection,
     has x_opencti_main_observable_type,

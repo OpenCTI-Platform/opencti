@@ -20,9 +20,9 @@ const intrusionSetResolvers = {
     labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
   },
   IntrusionSetsFilter: {
-    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id_key`,
-    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id_key`,
-    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id_key`,
+    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
+    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
+    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
   },
   Mutation: {
     intrusionSetEdit: (_, { id }, { user }) => ({

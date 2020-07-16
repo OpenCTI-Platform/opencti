@@ -26,7 +26,7 @@ export const findAll = (args) => {
 export const members = async (groupId) => {
   return findWithConnectedRelations(
     `match $to isa User; $rel(member:$to, grouping:$from) isa membership;
-   $from isa Group, has internal_id_key "${escapeString(groupId)}";
+   $from isa Group, has internal_id "${escapeString(groupId)}";
    get;`,
     'to',
     { extraRelKey: 'rel' }
@@ -35,7 +35,7 @@ export const members = async (groupId) => {
 export const permissions = async (groupId) => {
   return findWithConnectedRelations(
     `match $to isa Marking-Definition; $rel(allow:$to, allowed:$from) isa permission;
-   $from isa Group, has internal_id_key "${escapeString(groupId)}";
+   $from isa Group, has internal_id "${escapeString(groupId)}";
    get;`,
     'to',
     { extraRelKey: 'rel' }

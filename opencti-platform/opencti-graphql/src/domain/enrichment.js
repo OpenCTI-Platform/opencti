@@ -24,7 +24,7 @@ export const askEnrich = async (observableId, scope) => {
   await Promise.all(
     map((data) => {
       const { connector, work, job } = data;
-      const message = { work_id: work.internal_id_key, job_id: job.internal_id_key, entity_id: observableId };
+      const message = { work_id: work.internal_id, job_id: job.internal_id, entity_id: observableId };
       return pushToConnector(connector, message);
     }, workList)
   );

@@ -72,11 +72,11 @@ const reportResolvers = {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.name`,
   },
   ReportsFilter: {
-    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id_key`,
-    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id_key`,
-    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id_key`,
-    knowledgeContains: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id_key`,
-    observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`,
+    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
+    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
+    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
+    knowledgeContains: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
+    observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id`,
   },
   Report: {
     objectRefs: (report, args) => objectRefs(report.id, args),

@@ -6,7 +6,7 @@ import {
   isInternalRelationship, isObservableRelation,
   isStixCoreObject,
   isStixCyberObservable,
-  isStixRelation,
+  isStixCoreRelationship,
 } from '../utils/idGenerator';
 import { DatabaseError } from '../config/errors';
 
@@ -89,7 +89,7 @@ export const inferIndexFromConceptType = (conceptType) => {
   if (isStixCyberObservable(conceptType)) return INDEX_STIX_OBSERVABLE;
   if (isInternalObject(conceptType)) return INDEX_INTERNAL_ENTITIES;
   // Relations
-  if (isStixRelation(conceptType)) return INDEX_STIX_RELATIONS;
+  if (isStixCoreRelationship(conceptType)) return INDEX_STIX_RELATIONS;
   if (isObservableRelation(conceptType)) return INDEX_STIX_RELATIONS;
   if (isInternalRelationship(conceptType)) return INDEX_INTERNAL_RELATIONS;
   throw DatabaseError(`Cant find index for type ${conceptType}`);
@@ -149,7 +149,7 @@ export const generateLogMessage = (eventType, eventUser, eventData, eventExtraDa
   } else if (eventType === 'delete') {
     message += 'deleted the ';
   }
-  if (isStixRelation(eventData.entity_type)) {
+  if (isStixCoreRelationship(eventData.entity_type)) {
     message += `relation \`${eventData.entity_type}\` from ${fromType} \`${fromValue}\` to ${toType} \`${toValue}\`.`;
   } else if (isInternalRelationship(eventData.entity_type)) {
     if (eventType === 'update') {

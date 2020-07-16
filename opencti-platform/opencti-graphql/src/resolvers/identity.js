@@ -7,7 +7,7 @@ import {
   stixDomainEntityDeleteRelation,
   stixDomainEntityDelete,
 } from '../domain/stixDomainEntity';
-import { createdByRef, markingDefinitions, reports, stixRelations, labels } from '../domain/stixEntity';
+import { createdBy, markingDefinitions, reports, stixRelations, labels } from '../domain/stixEntity';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
 
@@ -20,9 +20,9 @@ const identityResolvers = {
     labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
   },
   IdentitiesFilter: {
-    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id_key`,
-    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id_key`,
-    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id_key`,
+    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
+    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
+    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
   },
   Identity: {
     // eslint-disable-next-line no-underscore-dangle
@@ -32,7 +32,7 @@ const identityResolvers = {
       }
       return 'Unknown';
     },
-    createdByRef: (identity) => createdByRef(identity.id),
+    createdBy: (identity) => createdBy(identity.id),
     markingDefinitions: (identity) => markingDefinitions(identity.id),
     labels: (identity) => labels(identity.id),
     reports: (identity) => reports(identity.id),

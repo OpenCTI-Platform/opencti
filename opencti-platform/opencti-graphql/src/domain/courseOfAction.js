@@ -25,7 +25,7 @@ export const addCourseOfAction = async (user, courseOfAction) => {
 export const attackPatterns = async (courseOfActionId) => {
   return findWithConnectedRelations(
     `match $to isa Attack-Pattern; $rel(problem:$to, mitigation:$from) isa mitigates;
-    $from has internal_id_key "${escapeString(courseOfActionId)}"; get;`,
+    $from has internal_id "${escapeString(courseOfActionId)}"; get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));

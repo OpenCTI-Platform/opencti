@@ -32,10 +32,10 @@ export const findById = async (stixEntityId) => {
   return data;
 };
 
-export const createdByRef = (stixEntityId) => {
+export const createdBy = (stixEntityId) => {
   return loadWithConnectedRelations(
     `match $to isa Identity; $rel(creator:$to, so:$from) isa ${RELATION_CREATED_BY};
-   $from has internal_id_key "${escapeString(stixEntityId)}"; get; offset 0; limit 1;`,
+   $from has internal_id "${escapeString(stixEntityId)}"; get; offset 0; limit 1;`,
     'to',
     { extraRelKey: 'rel' }
   );
@@ -43,7 +43,7 @@ export const createdByRef = (stixEntityId) => {
 export const reports = (stixEntityId) => {
   return findWithConnectedRelations(
     `match $to isa Report; $rel(knowledge_aggregation:$to, so:$from) isa ${RELATION_OBJECT};
-   $from has internal_id_key "${escapeString(stixEntityId)}";
+   $from has internal_id "${escapeString(stixEntityId)}";
    get;`,
     'to',
     { extraRelKey: 'rel' }
@@ -52,7 +52,7 @@ export const reports = (stixEntityId) => {
 export const notes = (stixEntityId) => {
   return findWithConnectedRelations(
     `match $to isa Note; $rel(knowledge_aggregation:$to, so:$from) isa ${RELATION_OBJECT};
-   $from has internal_id_key "${escapeString(stixEntityId)}";
+   $from has internal_id "${escapeString(stixEntityId)}";
    get;`,
     'to',
     { extraRelKey: 'rel' }
@@ -61,7 +61,7 @@ export const notes = (stixEntityId) => {
 export const opinions = (stixEntityId) => {
   return findWithConnectedRelations(
     `match $to isa Opinion; $rel(knowledge_aggregation:$to, so:$from) isa ${RELATION_OBJECT};
-   $from has internal_id_key "${escapeString(stixEntityId)}";
+   $from has internal_id "${escapeString(stixEntityId)}";
    get;`,
     'to',
     { extraRelKey: 'rel' }
@@ -70,7 +70,7 @@ export const opinions = (stixEntityId) => {
 export const labels = (stixEntityId) => {
   return findWithConnectedRelations(
     `match $to isa ${ENTITY_TYPE_LABEL}; $rel(tagging:$to, so:$from) isa ${RELATION_OBJECT_LABEL};
-   $from has internal_id_key "${escapeString(stixEntityId)}";
+   $from has internal_id "${escapeString(stixEntityId)}";
    get;`,
     'to',
     { extraRelKey: 'rel' }
@@ -79,7 +79,7 @@ export const labels = (stixEntityId) => {
 export const markingDefinitions = (stixEntityId) => {
   return findWithConnectedRelations(
     `match $to isa Marking-Definition; $rel(marking:$to, so:$from) isa ${RELATION_OBJECT_MARKING};
-   $from has internal_id_key "${escapeString(stixEntityId)}"; get;`,
+   $from has internal_id "${escapeString(stixEntityId)}"; get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
@@ -87,7 +87,7 @@ export const markingDefinitions = (stixEntityId) => {
 export const killChainPhases = (stixDomainEntityId) => {
   return findWithConnectedRelations(
     `match $to isa Kill-Chain-Phase; $rel(kill_chain_phase:$to, phase_belonging:$from) isa ${RELATION_KILL_CHAIN_PHASE};
-    $from has internal_id_key "${escapeString(stixDomainEntityId)}"; get;`,
+    $from has internal_id "${escapeString(stixDomainEntityId)}"; get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
@@ -95,7 +95,7 @@ export const killChainPhases = (stixDomainEntityId) => {
 export const externalReferences = (stixDomainEntityId) => {
   return findWithConnectedRelations(
     `match $to isa External-Reference; $rel(external_reference:$to, so:$from) isa ${RELATION_EXTERNAL_REFERENCE};
-    $from has internal_id_key "${escapeString(stixDomainEntityId)}"; get;`,
+    $from has internal_id "${escapeString(stixDomainEntityId)}"; get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));

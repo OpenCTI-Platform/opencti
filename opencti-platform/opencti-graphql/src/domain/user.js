@@ -113,7 +113,7 @@ export const findAll = async (args = {}, isUser = false) => {
 export const organizations = (userId) => {
   return findWithConnectedRelations(
     `match $to isa Organization; $rel(part_of:$from, gather:$to) isa gathering;
-     $from isa User, has internal_id_key "${escapeString(userId)}"; get;`,
+     $from isa User, has internal_id "${escapeString(userId)}"; get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
@@ -121,7 +121,7 @@ export const organizations = (userId) => {
 export const groups = (userId) => {
   return findWithConnectedRelations(
     `match $to isa Group; $rel(member:$from, grouping:$to) isa membership;
-   $from isa User, has internal_id_key "${escapeString(userId)}";
+   $from isa User, has internal_id "${escapeString(userId)}";
    get;`,
     'to',
     { extraRelKey: 'rel' }
@@ -135,22 +135,22 @@ export const token = (userId, args, context) => {
   return loadWithConnectedRelations(
     `match $x isa Token;
     $rel(authorization:$x, client:$client) isa authorize;
-    $client has internal_id_key "${escapeString(userId)}"; get; offset 0; limit 1;`,
+    $client has internal_id "${escapeString(userId)}"; get; offset 0; limit 1;`,
     'x',
     { extraRelKey: 'rel' }
   ).then((result) => (result ? result.node.uuid : result));
 };
 
 const internalGetToken = async (userId) => {
-  const query = `match $x isa Token; $x has internal_id_key $x_id;
-  $rel(authorization:$x, client:$client) isa authorize; $rel has internal_id_key $rel_id;
-  $x has internal_id_key $rel_from_id; $client has internal_id_key $rel_to_id;
-  $client has internal_id_key "${escapeString(userId)}"; get; offset 0; limit 1;`;
+  const query = `match $x isa Token; $x has internal_id $x_id;
+  $rel(authorization:$x, client:$client) isa authorize; $rel has internal_id $rel_id;
+  $x has internal_id $rel_from_id; $client has internal_id $rel_to_id;
+  $client has internal_id "${escapeString(userId)}"; get; offset 0; limit 1;`;
   return loadWithConnectedRelations(query, 'x', { extraRelKey: 'rel' }).then((result) => result && result.node);
 };
 
 const internalGetTokenByUUID = async (tokenUUID) => {
-  const query = `match $token isa Token; $token has internal_id_key $token_id; $token has uuid "${escapeString(
+  const query = `match $token isa Token; $token has internal_id $token_id; $token has uuid "${escapeString(
     tokenUUID
   )}"; get;`;
   return load(query, ['token']).then((result) => result && result.token);
@@ -161,7 +161,7 @@ const clearUserTokenCache = (userId) => {
 };
 export const getRoles = async (userId) => {
   const data = await find(
-    `match $client isa User, has internal_id_key "${escapeString(userId)}";
+    `match $client isa User, has internal_id "${escapeString(userId)}";
             (client: $client, position: $role) isa ${RELATION_USER_ROLE}; 
             get;`,
     ['role']
@@ -170,7 +170,7 @@ export const getRoles = async (userId) => {
 };
 export const getCapabilities = async (userId) => {
   const data = await find(
-    `match $client isa User, has internal_id_key "${escapeString(userId)}";
+    `match $client isa User, has internal_id "${escapeString(userId)}";
             (client: $client, position: $role) isa ${RELATION_USER_ROLE}; 
             (position: $role, capability: $capability) isa ${RELATION_ROLE_CAPABILITY}; 
             get;`,
@@ -179,13 +179,13 @@ export const getCapabilities = async (userId) => {
   const capabilities = map((r) => r.capability, data);
   if (userId === OPENCTI_ADMIN_UUID && !rFind(propEq('name', BYPASS))(capabilities)) {
     const id = generateId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
-    capabilities.push({ id, internal_id_key: id, name: BYPASS });
+    capabilities.push({ id, internal_id: id, name: BYPASS });
   }
   return capabilities;
 };
 export const getRoleCapabilities = async (roleId) => {
   const data = await find(
-    `match $role isa Role, has internal_id_key "${escapeString(roleId)}";
+    `match $role isa Role, has internal_id "${escapeString(roleId)}";
             (position: $role, capability: $capability) isa ${RELATION_ROLE_CAPABILITY}; 
             get;`,
     ['capability']
@@ -207,7 +207,7 @@ export const findCapabilities = (args) => {
 export const removeRole = async (userId, roleName) => {
   await executeWrite(async (wTx) => {
     const query = `match $rel(client: $from, position: $to) isa ${RELATION_USER_ROLE}; 
-            $from has internal_id_key "${escapeString(userId)}"; 
+            $from has internal_id "${escapeString(userId)}"; 
             $to has name "${escapeString(roleName)}"; 
             delete $rel;`;
     await wTx.query(query, { infer: false });
@@ -218,14 +218,14 @@ export const removeRole = async (userId, roleName) => {
 export const roleRemoveCapability = async (user, roleId, capabilityName) => {
   await executeWrite(async (wTx) => {
     const query = `match $rel(position: $from, capability: $to) isa ${RELATION_ROLE_CAPABILITY}; 
-            $from isa Role, has internal_id_key "${escapeString(roleId)}"; 
+            $from isa Role, has internal_id "${escapeString(roleId)}"; 
             $to isa Capability, has name $name; { $name contains "${escapeString(capabilityName)}";}; 
             delete $rel;`;
     await wTx.query(query, { infer: false });
   });
   // Clear cache of every user with this modified role
   const impactedUsers = await findAll({
-    filters: [{ key: `${REL_INDEX_PREFIX}${RELATION_USER_ROLE}.internal_id_key`, values: [roleId] }],
+    filters: [{ key: `${REL_INDEX_PREFIX}${RELATION_USER_ROLE}.internal_id`, values: [roleId] }],
   });
   await Promise.all(map((e) => clearUserTokenCache(e.node.id), impactedUsers.edges));
   return loadEntityById(roleId, ENTITY_TYPE_ROLE);
@@ -233,7 +233,7 @@ export const roleRemoveCapability = async (user, roleId, capabilityName) => {
 export const roleDelete = async (user, roleId) => {
   // Clear cache of every user with this deleted role
   const impactedUsers = await findAll({
-    filters: [{ key: `${REL_INDEX_PREFIX}${RELATION_USER_ROLE}.internal_id_key`, values: [roleId] }],
+    filters: [{ key: `${REL_INDEX_PREFIX}${RELATION_USER_ROLE}.internal_id`, values: [roleId] }],
   });
   await Promise.all(map((e) => clearUserTokenCache(e.node.id), impactedUsers.edges));
   return deleteEntityById(user, roleId, ENTITY_TYPE_ROLE, { noLog: true });
@@ -318,7 +318,7 @@ export const roleAddRelation = async (user, roleId, input) => {
   const data = await createRelation(user, finalInput, { noLog: true });
   // Clear cache of every user with this modified role
   const impactedUsers = await findAll({
-    filters: [{ key: `${REL_INDEX_PREFIX}${RELATION_USER_ROLE}.internal_id_key`, values: [roleId] }],
+    filters: [{ key: `${REL_INDEX_PREFIX}${RELATION_USER_ROLE}.internal_id`, values: [roleId] }],
   });
   await Promise.all(map((e) => clearUserTokenCache(e.node.id), impactedUsers.edges));
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
@@ -439,9 +439,9 @@ export const loginFromProvider = async (email, name) => {
 };
 export const login = async (email, password) => {
   const query = `match $client isa User, has user_email "${escapeString(email)}";
-   $client has internal_id_key $client_id;
+   $client has internal_id $client_id;
    (authorization:$token, client:$client) isa authorize; 
-   $token has internal_id_key $token_id;
+   $token has internal_id $token_id;
    get;`;
   const result = await load(query, ['client', 'token']);
   if (isNil(result)) throw AuthenticationFailure();
@@ -493,10 +493,10 @@ export const findByTokenUUID = async (tokenValue) => {
   if (!user) {
     const data = await load(
       `match $token isa Token;
-            $token has internal_id_key $token_id;
+            $token has internal_id $token_id;
             $token has uuid "${escapeString(tokenValue)}", has revoked false;
             (authorization:$token, client:$client) isa authorize; 
-            $client has internal_id_key $client_id;
+            $client has internal_id $client_id;
             get;`,
       ['token', 'client']
     );
@@ -552,7 +552,7 @@ export const initAdmin = async (email, password, tokenValue) => {
     await userRenewToken(admin, admin.id, tokenAdmin);
   } else {
     const userToCreate = {
-      internal_id_key: OPENCTI_ADMIN_UUID,
+      internal_id: OPENCTI_ADMIN_UUID,
       external: true,
       user_email: email.toLowerCase(),
       name: 'admin',

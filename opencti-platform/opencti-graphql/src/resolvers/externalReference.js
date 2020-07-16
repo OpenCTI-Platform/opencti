@@ -22,7 +22,7 @@ const externalReferenceResolvers = {
     externalReferences: (_, args) => findAll(args),
   },
   ExternalReferencesFilter: {
-    usedBy: `${REL_INDEX_PREFIX}${RELATION_EXTERNAL_REFERENCE}.internal_id_key`,
+    usedBy: `${REL_INDEX_PREFIX}${RELATION_EXTERNAL_REFERENCE}.internal_id`,
   },
   ExternalReference: {
     editContext: (externalReference) => fetchEditContext(externalReference.id),

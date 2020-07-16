@@ -31,13 +31,13 @@ export const ownedBy = (workspaceId) => {
   return loadWithConnectedRelations(
     `match $x isa User; 
     $rel(owner:$x, so:$workspace) isa owned_by; 
-    $workspace has internal_id_key "${escapeString(workspaceId)}"; get; offset 0; limit 1;`,
+    $workspace has internal_id "${escapeString(workspaceId)}"; get; offset 0; limit 1;`,
     'x',
     { extraRelKey: 'rel' }
   );
 };
 export const objectRefs = (workspaceId, args) => {
-  const filter = { key: `${RELATION_OBJECT}.internal_id_key`, values: [workspaceId] };
+  const filter = { key: `${RELATION_OBJECT}.internal_id`, values: [workspaceId] };
   const filters = concat([filter], args.filters || []);
   const finalArgs = pipe(assoc('filters', filters), assoc('types', ['Stix-Domain-Entity']))(args);
   return findAllStixDomains(finalArgs);

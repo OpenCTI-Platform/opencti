@@ -146,7 +146,7 @@ export const addIndicator = async (user, indicator /* createObservables = true *
   //           );
   //           if (existingObservables.edges.length === 0) {
   //             const stixObservable = pipe(
-  //               dissoc('internal_id_key'),
+  //               dissoc('internal_id'),
   //               dissoc('stix_id'),
   //               dissoc('main_observable_type'),
   //               dissoc('confidence'),
@@ -196,7 +196,7 @@ export const observables = (indicatorId) => {
   return findWithConnectedRelations(
     `match $from isa Indicator; $rel(observables_aggregation:$from, soo:$to) isa ${RELATION_BASED_ON};
     $to isa Stix-Observable;
-    $from has internal_id_key "${escapeString(indicatorId)}"; get;`,
+    $from has internal_id "${escapeString(indicatorId)}"; get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));

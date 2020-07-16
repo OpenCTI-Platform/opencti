@@ -19,7 +19,7 @@ export const findAll = (args) => {
 export const sectors = (organizationId) => {
   return findWithConnectedRelations(
     `match $to isa Sector; $rel(part_of:$from, gather:$to) isa gathering;
-     $from has internal_id_key "${escapeString(organizationId)}"; get;`,
+     $from has internal_id "${escapeString(organizationId)}"; get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));

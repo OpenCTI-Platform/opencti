@@ -100,7 +100,7 @@ export const registerConnector = async (user, connectorData) => {
     return loadEntityById(id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
   }
   // Need to create the connector
-  const connectorToCreate = { internal_id_key: id, name, connector_type: type, connector_scope: scope.join(',') };
+  const connectorToCreate = { internal_id: id, name, connector_type: type, connector_scope: scope.join(',') };
   const createdConnector = await createEntity(user, connectorToCreate, ENTITY_TYPE_CONNECTOR, {
     noLog: true,
   });

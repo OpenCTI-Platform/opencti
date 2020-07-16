@@ -28,7 +28,7 @@ const retrieveMigrations = () => {
 const graknStateStorage = {
   async load(fn) {
     // Get current status of migrations in Grakn
-    const migration = await load(`match $status isa MigrationStatus; $status has internal_id_key $status_id; get;`, [
+    const migration = await load(`match $status isa MigrationStatus; $status has internal_id $status_id; get;`, [
       'status',
     ]);
     if (!migration) {
@@ -38,7 +38,7 @@ const graknStateStorage = {
       const [time] = lastExistingMigration.title.split('-');
       const lastRunInit = `${parseInt(time, 10) + 1}-init`;
       await internalDirectWrite(
-        `insert $x isa MigrationStatus, has lastRun "${lastRunInit}", has internal_id_key "${uuid()}";`
+        `insert $x isa MigrationStatus, has lastRun "${lastRunInit}", has internal_id "${uuid()}";`
       );
       return fn(null, { lastRun: lastRunInit, migrations: [] });
     }
@@ -72,7 +72,7 @@ const graknStateStorage = {
         await wTx.query(q2);
         // Insert the migration reference
         const q3 = `insert $x isa MigrationReference,
-          has internal_id_key "${uuid()}",
+          has internal_id "${uuid()}",
           has title "${mig.title}",
           has timestamp ${mig.timestamp};`;
         logger.debug(`[MIGRATION] step 3`, { query: q3 });
@@ -81,7 +81,7 @@ const graknStateStorage = {
         // Attach the reference to the migration status.
         const q4 = `match $status isa MigrationStatus; 
           $ref isa MigrationReference, has title "${mig.title}"; 
-          insert (status: $status, state: $ref) isa migrate, has internal_id_key "${uuid()}";`;
+          insert (status: $status, state: $ref) isa migrate, has internal_id "${uuid()}";`;
         logger.debug(`[MIGRATION] step 4`, { query: q4 });
         await wTx.query(q4);
         logger.info(`[MIGRATION] > Saving current configuration, ${mig.title}`);

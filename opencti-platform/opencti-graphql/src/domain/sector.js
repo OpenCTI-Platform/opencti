@@ -20,7 +20,7 @@ export const findAll = (args) => {
 export const parentSectors = (sectorId) => {
   return findWithConnectedRelations(
     `match $to isa Sector; $rel(part_of:$from, gather:$to) isa gathering;
-     $from has internal_id_key "${escapeString(sectorId)}"; get;`,
+     $from has internal_id "${escapeString(sectorId)}"; get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
@@ -28,7 +28,7 @@ export const parentSectors = (sectorId) => {
 export const subSectors = (sectorId) => {
   return findWithConnectedRelations(
     `match $to isa Sector; $rel(gather:$from, part_of:$to) isa gathering;
-     $from has internal_id_key "${escapeString(sectorId)}"; get;`,
+     $from has internal_id "${escapeString(sectorId)}"; get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
@@ -38,7 +38,7 @@ export const isSubSector = async (sectorId, args) => {
   const numberOfParents = await getSingleValueNumber(
     `match $parent isa Sector; 
     $rel(gather:$parent, part_of:$subsector) isa gathering; 
-    $subsector has internal_id_key "${escapeString(sectorId)}"; get; count;`,
+    $subsector has internal_id "${escapeString(sectorId)}"; get; count;`,
     args
   );
   return numberOfParents > 0;

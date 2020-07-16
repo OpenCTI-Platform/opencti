@@ -1,5 +1,5 @@
 import {
-  createdByRef,
+  createdBy,
   findById,
   markingDefinitions,
   reports,
@@ -31,7 +31,7 @@ const stixEntityResolvers = {
     },
     toStix: (stixEntity) => convertDataToStix(stixEntity).then((stixData) => JSON.stringify(stixData)),
     creator: (stixEntity) => creator(stixEntity.id),
-    createdByRef: (stixEntity) => createdByRef(stixEntity.id),
+    createdBy: (stixEntity) => createdBy(stixEntity.id),
     editContext: (stixEntity) => fetchEditContext(stixEntity.id),
     externalReferences: (stixEntity) => externalReferences(stixEntity.id),
     labels: (stixEntity) => labels(stixEntity.id),

@@ -69,8 +69,8 @@ export const stixObservableAskEnrichment = async (id, connectorId) => {
   const connector = await loadEntityById(connectorId, 'Connector');
   const { job, work } = await createWork(connector, 'Stix-Observable', id);
   const message = {
-    work_id: work.internal_id_key,
-    job_id: job.internal_id_key,
+    work_id: work.internal_id,
+    job_id: job.internal_id,
     entity_id: id,
   };
   await pushToConnector(connector, message);
@@ -80,7 +80,7 @@ export const indicators = (stixObservableId) => {
   return findWithConnectedRelations(
     `match $from isa Stix-Observable; $rel(soo:$from, observables_aggregation:$to) isa observable_refs;
     $to isa Indicator;
-    $from has internal_id_key "${escapeString(stixObservableId)}"; get;`,
+    $from has internal_id "${escapeString(stixObservableId)}"; get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
@@ -111,7 +111,7 @@ export const addStixObservable = async (user, stixObservable) => {
       const pattern = await createStixPattern(created.entity_type, created.observable_value);
       if (pattern) {
         const indicatorToCreate = pipe(
-          dissoc('internal_id_key'),
+          dissoc('internal_id'),
           dissoc('stix_id'),
           dissoc('observable_value'),
           assoc('name', stixObservable.observable_value),
@@ -183,7 +183,7 @@ export const stixObservableDeleteRelation = async (
   }
   if (relationId) {
     const data = await loadRelationById(relationId, 'relation');
-    if (data.fromId !== stixObservable.internal_id_key) {
+    if (data.fromId !== stixObservable.internal_id) {
       throw ForbiddenAccess();
     }
     await deleteRelationById(user, relationId, 'relation');
@@ -272,8 +272,8 @@ const askJobExports = async (
     map((data) => {
       const { connector, job, work } = data;
       const message = {
-        work_id: work.internal_id_key, // work(id)
-        job_id: job.internal_id_key, // job(id)
+        work_id: work.internal_id, // work(id)
+        job_id: job.internal_id, // job(id)
         max_marking_definition: maxMarkingDefinition && maxMarkingDefinition.length > 0 ? maxMarkingDefinition : null, // markingDefinition(id)
         export_type: exportType, // for entity, simple or full / for list, withArgs / withoutArgs
         entity_type: 'stix-observable',

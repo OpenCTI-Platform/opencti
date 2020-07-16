@@ -27,7 +27,7 @@ import { reportContainsStixDomainEntity } from './report';
 import { addStixRelation, findAll as findAllStixRelations } from './stixRelation';
 import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import { INDEX_STIX_ENTITIES } from '../database/utils';
-import { createdByRef, killChainPhases, markingDefinitions, reports, notes } from './stixEntity';
+import { createdBy, killChainPhases, markingDefinitions, reports, notes } from './stixEntity';
 import { addPerson } from './user';
 import { noteContainsStixDomainEntity } from './note';
 import {
@@ -151,8 +151,8 @@ const askJobExports = async (
     map((data) => {
       const { connector, job, work } = data;
       const message = {
-        work_id: work.internal_id_key, // work(id)
-        job_id: job.internal_id_key, // job(id)
+        work_id: work.internal_id, // work(id)
+        job_id: job.internal_id, // job(id)
         max_marking_definition: maxMarkingDefinition && maxMarkingDefinition.length > 0 ? maxMarkingDefinition : null, // markingDefinition(id)
         export_type: exportType, // for entity, simple or full / for list, withArgs / withoutArgs
         entity_type: entity ? entity.entity_type : type, // report, threat, ...
@@ -285,7 +285,7 @@ export const stixDomainEntityDeleteRelation = async (
   if (relationId) {
     const data = await loadRelationById(relationId, 'relation');
     if (
-      data.fromId !== stixDomainEntity.internal_id_key ||
+      data.fromId !== stixDomainEntity.internal_id ||
       (stixDomainEntity.entity_type === ENTITY_TYPE_USER &&
       !isNil(stixDomainEntity.external) && // TODO JRI ASK @SAM
         ![RELATION_OBJECT_LABEL, RELATION_CREATED_BY, RELATION_OBJECT_MARKING].includes(data.entity_type))
@@ -333,7 +333,7 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
       return Promise.all(
         relations.edges.map(async (relationEdge) => {
           const relation = relationEdge.node;
-          const relationCreatedByRef = await createdByRef(relation.id);
+          const relationCreatedBy = await createdBy(relation.id);
           const relationMarkingDefinitions = await markingDefinitions(relation.id);
           const relationkillChainPhases = await killChainPhases(relation.id);
           const relationReports = await reports(relation.id);
@@ -351,7 +351,7 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
             last_seen: relation.last_seen,
             created: relation.created,
             modified: relation.modified,
-            createdByRef: pathOr(null, ['node', 'id'], relationCreatedByRef),
+            createdBy: pathOr(null, ['node', 'id'], relationCreatedBy),
             markingDefinitions: map((n) => n.node.id, relationMarkingDefinitions.edges),
             killChainPhases: map((n) => n.node.id, relationkillChainPhases.edges),
           };
@@ -361,7 +361,7 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
               relationReports.edges.map((report) => {
                 return stixDomainEntityAddRelation(user, report.node.id, {
                   fromRole: 'knowledge_aggregation',
-                  toId: newRelation.internal_id_key,
+                  toId: newRelation.internal_id,
                   toRole: 'so',
                   through: RELATION_OBJECT,
                 });
@@ -371,7 +371,7 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
               relationNotes.edges.map((note) => {
                 return stixDomainEntityAddRelation(user, note.node.id, {
                   fromRole: 'knowledge_aggregation',
-                  toId: newRelation.internal_id_key,
+                  toId: newRelation.internal_id,
                   toRole: 'so',
                   through: RELATION_OBJECT,
                 });

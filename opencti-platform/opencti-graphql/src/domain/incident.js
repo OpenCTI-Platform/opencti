@@ -35,7 +35,7 @@ export const observableRefs = (reportId) => {
   return findWithConnectedRelations(
     `match $to isa Incident; $rel(relate_from:$from, relate_to:$to) isa related-to;
     $from isa Stix-Observable;
-    $to has internal_id_key "${escapeString(reportId)}"; get;`,
+    $to has internal_id "${escapeString(reportId)}"; get;`,
     'from',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
