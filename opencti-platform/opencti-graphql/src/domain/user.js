@@ -58,14 +58,14 @@ export const BYPASS = 'BYPASS';
 export const generateOpenCTIWebToken = (tokenValue = uuid()) => ({
   uuid: tokenValue,
   name: OPENCTI_WEB_TOKEN,
-  created: now(),
+  created_at: now(),
   issuer: OPENCTI_ISSUER,
   revoked: false,
   duration: OPENCTI_DEFAULT_DURATION, // 99 years per default
 });
 
 export const setAuthenticationCookie = (token, res) => {
-  const creation = moment(token.created);
+  const creation = moment(token.created_at);
   const maxDuration = moment.duration(token.duration);
   const expires = creation.add(maxDuration).toDate();
   if (res) {
@@ -401,12 +401,8 @@ export const userRenewToken = async (user, userId, newToken = generateOpenCTIWeb
   // 04. Associate new token to user.
   const input = {
     fromId: userId,
-    fromType: ENTITY_TYPE_USER,
-    fromRole: 'client',
     toId: defaultToken.id,
-    toType: ENTITY_TYPE_TOKEN,
-    toRole: 'authorization',
-    through: 'authorize',
+    relationship_type: RELATION_AUTHORIZED_BY,
   };
   await createRelation(user, input, { noLog: true });
   return loadEntityById(userId, ENTITY_TYPE_USER);
@@ -420,7 +416,7 @@ export const findByTokenUUID = async (tokenValue) => {
       `match $token isa Token;
             $token has internal_id $token_id;
             $token has uuid "${escapeString(tokenValue)}", has revoked false;
-            (authorization:$token, client:$client) isa authorize; 
+            (${RELATION_AUTHORIZED_BY}_from:$client, ${RELATION_AUTHORIZED_BY}_to:$token) isa authorize; 
             $client has internal_id $client_id;
             get;`,
       ['token', 'client']
@@ -434,9 +430,9 @@ export const findByTokenUUID = async (tokenValue) => {
     user = pipe(assoc('token', token), assoc('capabilities', capabilities))(client);
     await storeAccessCache(tokenValue, user);
   }
-  const { created } = user.token;
+  const { created_at: createdAt } = user.token;
   const maxDuration = moment.duration(user.token.duration);
-  const currentDuration = moment.duration(moment().diff(created));
+  const currentDuration = moment.duration(moment().diff(createdAt));
   if (currentDuration > maxDuration) return undefined;
   return user;
 };
