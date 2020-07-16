@@ -32,7 +32,7 @@ import courseOfActionResolvers from '../resolvers/courseOfAction';
 import threatActorResolvers from '../resolvers/threatActor';
 import intrusionSetResolvers from '../resolvers/intrusionSet';
 import campaignResolvers from '../resolvers/campaign';
-import incidentResolvers from '../resolvers/incident';
+import x from '../resolvers/xOpenctiIncident';
 import malwareResolvers from '../resolvers/malware';
 import toolResolvers from '../resolvers/tool';
 import vulnerabilityResolvers from '../resolvers/vulnerability';

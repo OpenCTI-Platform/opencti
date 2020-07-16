@@ -24,7 +24,7 @@ import { workForEntity } from '../domain/work';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { connectorsForEnrichment } from '../domain/enrichment';
 import { convertDataToStix } from '../database/stix';
-import { stixRelations } from '../domain/stixCoreObject';
+import { stixCoreRelationships } from '../domain/stixCoreObject';
 import { filesListing } from '../database/minio';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
 
@@ -53,8 +53,9 @@ const stixCyberObservableResolvers = {
     jobs: (stixCyberObservable, args) => workForEntity(stixCyberObservable.id, args),
     connectors: (stixCyberObservable, { onlyAlive = false }) =>
       connectorsForEnrichment(stixCyberObservable.entity_type, onlyAlive),
-    stixRelations: (rel, args) => stixRelations(rel.id, args),
-    toStix: (stixCyberObservable) => convertDataToStix(stixCyberObservable).then((stixData) => JSON.stringify(stixData)),
+    stixCoreRelationships: (rel, args) => stixCoreRelationships(rel.id, args),
+    toStix: (stixCyberObservable) =>
+      convertDataToStix(stixCyberObservable).then((stixData) => JSON.stringify(stixData)),
   },
   Mutation: {
     stixCyberObservableEdit: (_, { id }, { user }) => ({

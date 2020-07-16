@@ -816,6 +816,7 @@ define
     has user_email,
     has password,
     has name,
+    has description,
     has firstname,
     has lastname,
     has language,

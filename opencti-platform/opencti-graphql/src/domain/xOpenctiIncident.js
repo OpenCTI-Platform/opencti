@@ -1,8 +1,17 @@
 import { assoc, pipe } from 'ramda';
-import { createEntity, listEntities, loadEntityById, now, timeSeriesEntities } from '../database/grakn';
+import {
+  createEntity,
+  escapeString,
+  findWithConnectedRelations,
+  listEntities,
+  loadEntityById,
+  now,
+  timeSeriesEntities,
+} from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ENTITY_TYPE_X_OPENCTI_INCIDENT } from '../utils/idGenerator';
+import { buildPagination } from '../database/utils';
+import { ABSTRACT_CYBER_OBSERVABLE, ENTITY_TYPE_X_OPENCTI_INCIDENT, RELATION_RELATED_TO } from '../utils/idGenerator';
 
 export const findById = (incidentId) => {
   return loadEntityById(incidentId, 'Incident');
@@ -23,7 +32,18 @@ export const incidentsTimeSeries = (args) => {
 };
 // endregion
 
-export const addIncident = async (user, incident) => {
+export const observables = (reportId) => {
+  return findWithConnectedRelations(
+    `match $to isa ${ENTITY_TYPE_X_OPENCTI_INCIDENT}; 
+    $rel(${RELATION_RELATED_TO}_from:$from, ${RELATION_RELATED_TO}_to:$to) isa ${RELATION_RELATED_TO};
+    $from isa ${ABSTRACT_CYBER_OBSERVABLE};
+    $to has internal_id_key "${escapeString(reportId)}"; get;`,
+    'from',
+    { extraRelKey: 'rel' }
+  ).then((data) => buildPagination(0, 0, data, data.length));
+};
+
+export const addXOpenctiIncident = async (user, incident) => {
   const currentDate = now();
   const incidentToCreate = pipe(
     assoc('first_seen', incident.first_seen ? incident.first_seen : currentDate),

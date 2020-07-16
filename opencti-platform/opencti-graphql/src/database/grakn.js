@@ -94,6 +94,7 @@ import {
   isStixSightingRelationship,
   isStixRelationship,
   generateInternalId,
+  ABSTRACT_BASIC_RELATIONSHIP,
 } from '../utils/idGenerator';
 import { lockResource } from './redis';
 import { STIX_SPEC_VERSION } from './stix';
@@ -1626,7 +1627,7 @@ export const createEntity = async (user, entity, type, opts = {}) => {
   data = pipe(assoc('internal_id', internalId), assoc('entity_type', type))(data);
   // Internal-Object
   if (isInternalObject(type)) {
-    data = assoc('standard_id', standardId);
+    data = assoc('standard_id', standardId, data);
   }
   // Stix-Object
   if (isStixObject(type)) {
@@ -1860,7 +1861,7 @@ export const updateAttribute = async (user, id, type, input, wTx, options = {}) 
 const getElementsRelated = async (targetId, elements = [], options = {}) => {
   const eid = escapeString(targetId);
   const read = `match $from has internal_id "${eid}"; 
-    $rel($from, $to) isa opencti_relation; 
+    $rel($from, $to) isa ${ABSTRACT_BASIC_RELATIONSHIP}; 
     $from has internal_id $rel_from_id;
     $to has internal_id $rel_to_id;
     $rel has internal_id $rel_id; get;`;

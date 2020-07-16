@@ -4,7 +4,6 @@ import {
   findAll,
   findById,
   members,
-  permissions,
   groupEditField,
   groupDeleteRelation,
   groupAddRelation,
@@ -20,7 +19,6 @@ const groupResolvers = {
   },
   Group: {
     members: (group) => members(group.id),
-    permissions: (group) => permissions(group.id),
     editContext: (group) => fetchEditContext(group.id),
   },
   Mutation: {

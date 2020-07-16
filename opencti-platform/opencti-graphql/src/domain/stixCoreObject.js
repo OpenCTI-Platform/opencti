@@ -1,4 +1,4 @@
-import { assoc, dissoc, isNil, pipe } from 'ramda';
+import { assoc, dissoc, pipe } from 'ramda';
 import {
   createRelation,
   deleteRelationById,
@@ -23,6 +23,9 @@ import {
   RELATION_OBJECT_MARKING,
   ENTITY_TYPE_LABEL,
   ABSTRACT_STIX_META_OBJECT,
+  ENTITY_TYPE_IDENTITY,
+  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_CONTAINER_NOTE,
 } from '../utils/idGenerator';
 
 export const findById = async (stixCoreObjectId) => {
@@ -35,8 +38,9 @@ export const findById = async (stixCoreObjectId) => {
 
 export const createdBy = (stixCoreObjectId) => {
   return loadWithConnectedRelations(
-    `match $to isa Identity; $rel(creator:$to, so:$from) isa ${RELATION_CREATED_BY};
-   $from has internal_id "${escapeString(stixCoreObjectId)}"; get; offset 0; limit 1;`,
+    `match $to isa ${ENTITY_TYPE_IDENTITY}; 
+    $rel(${RELATION_OBJECT}_from:$from, ${RELATION_OBJECT}_to: $to) isa ${RELATION_CREATED_BY};
+    $from has internal_id "${escapeString(stixCoreObjectId)}"; get; offset 0; limit 1;`,
     'to',
     { extraRelKey: 'rel' }
   );
@@ -44,28 +48,31 @@ export const createdBy = (stixCoreObjectId) => {
 
 export const reports = (stixCoreObjectId) => {
   return findWithConnectedRelations(
-    `match $to isa Report; $rel(knowledge_aggregation:$to, so:$from) isa ${RELATION_OBJECT};
-   $from has internal_id "${escapeString(stixCoreObjectId)}";
-   get;`,
-    'to',
+    `match $from isa ${ENTITY_TYPE_CONTAINER_REPORT};
+    $rel(${RELATION_OBJECT}_from:$from ${RELATION_OBJECT}_to:$to) isa ${RELATION_OBJECT};
+    $to has internal_id "${escapeString(stixCoreObjectId)}";
+    get;`,
+    'from',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
 
 export const notes = (stixCoreObjectId) => {
   return findWithConnectedRelations(
-    `match $to isa Note; $rel(knowledge_aggregation:$to, so:$from) isa ${RELATION_OBJECT};
-   $from has internal_id "${escapeString(stixCoreObjectId)}";
-   get;`,
-    'to',
+    `match $from isa ${ENTITY_TYPE_CONTAINER_NOTE}; 
+    $rel(${RELATION_OBJECT}_from:$from, ${RELATION_OBJECT}_to:$to) isa ${RELATION_OBJECT};
+    $to has internal_id "${escapeString(stixCoreObjectId)}";
+    get;`,
+    'from',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
 
 export const opinions = (stixCoreObjectId) => {
   return findWithConnectedRelations(
-    `match $to isa Opinion; $rel(knowledge_aggregation:$to, so:$from) isa ${RELATION_OBJECT};
-   $from has internal_id "${escapeString(stixCoreObjectId)}";
+    `match $to isa Opinion; 
+    $rel(knowledge_aggregation:$to, so:$from) isa ${RELATION_OBJECT};
+    $from has internal_id "${escapeString(stixCoreObjectId)}";
    get;`,
     'to',
     { extraRelKey: 'rel' }

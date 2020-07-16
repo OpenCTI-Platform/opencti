@@ -25,7 +25,7 @@ import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { filesListing } from '../database/minio';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
-import { stixRelations } from '../domain/stixCoreObject';
+import { stixCoreRelationships } from '../domain/stixCoreObject';
 import {
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
@@ -64,7 +64,7 @@ const stixDomainObjectResolvers = {
       }
       return 'Unknown';
     },
-    stixRelations: (rel, args) => stixRelations(rel.id, args),
+    stixRelations: (rel, args) => stixCoreRelationships(rel.id, args),
     importFiles: (entity, { first }) => filesListing(first, 'import', entity.entity_type, entity),
     exportFiles: (entity, { first }) => filesListing(first, 'export', entity.entity_type, entity),
   },
@@ -81,8 +81,7 @@ const stixDomainObjectResolvers = {
       importPush: ({ file }) => stixDomainObjectImportPush(user, null, id, file),
       exportAsk: (args) => stixDomainObjectExportAsk(assoc('stixDomainObjectId', id, args)),
       exportPush: ({ file }) => stixDomainObjectExportPush(user, null, id, file),
-      mergeEntities: ({ stixDomainObjectsIds, alias }) =>
-        stixDomainObjectMerge(user, id, stixDomainObjectsIds, alias),
+      mergeEntities: ({ stixDomainObjectsIds, alias }) => stixDomainObjectMerge(user, id, stixDomainObjectsIds, alias),
     }),
     stixDomainObjectsDelete: (_, { id }, { user }) => stixDomainObjectsDelete(user, id),
     stixDomainObjectAdd: (_, { input }, { user }) => addstixDomainObject(user, input),

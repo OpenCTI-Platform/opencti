@@ -35,13 +35,15 @@ import {
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT,
   RELATION_OBJECT_MARKING,
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
 } from '../utils/idGenerator';
 
 export const findAll = async (args) => {
   const noTypes = !args.types || args.types.length === 0;
-  const entityTypes = noTypes ? ['Stix-Core-Object'] : args.types;
-  const finalArgs = assoc('parentType', 'Stix-Domain', args);
-  let data = await listEntities(entityTypes, ['name', 'alias'], finalArgs);
+  const entityTypes = noTypes ? [ABSTRACT_STIX_CORE_OBJECT] : args.types;
+  const finalArgs = assoc('parentType', ABSTRACT_STIX_DOMAIN_OBJECT, args);
+  let data = await listEntities(entityTypes, ['name', 'aliases'], finalArgs);
   data = assoc(
     'edges',
     map(
@@ -188,9 +190,11 @@ export const stixDomainObjectExportAsk = async (args) => {
   // Return the work list to do
   return map((w) => workToExportFile(w.work), workList);
 };
+
 export const stixDomainObjectImportPush = (user, entityType = null, entityId = null, file) => {
   return upload(user, 'import', file, entityType, entityId);
 };
+
 export const stixDomainObjectExportPush = async (
   user,
   entityType = null,
@@ -203,11 +207,13 @@ export const stixDomainObjectExportPush = async (
   await upload(user, 'export', file, entityType, entityId, context, listArgs);
   return true;
 };
+
 export const addstixDomainObject = async (user, stixDomainObject) => {
   const innerType = stixDomainObject.type;
   const created = await createEntity(user, dissoc('type', stixDomainObject), innerType);
   return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
 };
+
 export const stixDomainObjectDelete = async (user, stixDomainObjectId) => {
   const stixDomainObject = await loadEntityById(stixDomainObjectId, 'Stix-Domain-Entity');
   if (!stixDomainObject) {
@@ -218,6 +224,7 @@ export const stixDomainObjectDelete = async (user, stixDomainObjectId) => {
   }
   return deleteEntityById(user, stixDomainObjectId, 'Stix-Domain-Entity');
 };
+
 export const stixDomainObjectsDelete = async (user, stixDomainObjectsIds) => {
   // Relations cannot be created in parallel.
   for (let i = 0; i < stixDomainObjectsIds.length; i += 1) {
@@ -338,9 +345,8 @@ export const stixDomainObjectMerge = async (user, stixDomainObjectId, stixDomain
             toId: relation.toInternalId,
             toRole: relation.toRole,
             relationship_type: relation.entity_type,
-            weight: relation.weight,
+            confidence: relation.confidence,
             description: relation.description,
-            role_played: relation.role_played,
             first_seen: relation.first_seen,
             last_seen: relation.last_seen,
             created: relation.created,

@@ -12,15 +12,15 @@ export const BASE_TYPE_ENTITY = 'ENTITY';
 
 // region ABSTRACT TYPES
 // Relations
-const ABSTRACT_BASIC_RELATIONSHIP = 'basic-relationship';
+export const ABSTRACT_BASIC_RELATIONSHIP = 'basic-relationship';
 export const ABSTRACT_INTERNAL_RELATIONSHIP = 'internal-relationship';
 export const ABSTRACT_STIX_RELATIONSHIP = 'stix-relationship';
 export const ABSTRACT_STIX_CORE_RELATIONSHIP = 'stix-core-relationship';
 export const ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP = 'stix-cyber-observable-relationship';
 export const ABSTRACT_STIX_META_RELATIONSHIP = 'stix-meta-relationship';
 // Entities
-const ABSTRACT_BASIC_OBJECT = 'Basic-Object';
-const ABSTRACT_STIX_OBJECT = 'Stix-Object';
+export const ABSTRACT_BASIC_OBJECT = 'Basic-Object';
+export const ABSTRACT_STIX_OBJECT = 'Stix-Object';
 export const ABSTRACT_STIX_META_OBJECT = 'Stix-Meta-Object';
 export const ABSTRACT_STIX_CORE_OBJECT = 'Stix-Core-Object';
 export const ABSTRACT_STIX_DOMAIN_OBJECT = 'Stix-Domain-Object';
@@ -500,6 +500,8 @@ const generateInternalObjectId = (type, entity) => {
     case ENTITY_TYPE_ROLE:
     case ENTITY_TYPE_GROUP:
       return uuid({ type, name: entity.name });
+    case ENTITY_TYPE_USER:
+      return uuid({ type, user_email: entity.user_email });
     case ENTITY_TYPE_SETTINGS:
       return OPENCTI_PLATFORM_UUID;
     case ENTITY_TYPE_LABEL:
@@ -581,11 +583,11 @@ export const generateInternalId = () => {
 
 export const generateStandardId = (type, data) => {
   // Entities
-  if (isStixDomainObject(type)) return generateStixDomainObjectId(type, data);
-  if (isStixCyberObservable(type)) return generateStixCyberObservableId(type, data);
-  if (isInternalObject(type)) return generateInternalObjectId(type, data);
+  if (isStixDomainObject(type)) return `${type.toLowerCase()}-${generateStixDomainObjectId(type, data)}`;
+  if (isStixCyberObservable(type)) return `${type.toLowerCase()}-${generateStixCyberObservableId(type, data)}`;
+  if (isInternalObject(type)) return `${type.toLowerCase()}-${generateInternalObjectId(type, data)}`;
   // Relations
-  if (isStixCoreRelationship(type)) return 'TODO';
-  if (isInternalRelationship(type)) return 'TODO';
+  if (isStixCoreRelationship(type)) return `${type.toLowerCase()}-`;
+  if (isInternalRelationship(type)) return `${type.toLowerCase()}-`;
   throw DatabaseError(`Cant generate an id for ${type}`);
 };

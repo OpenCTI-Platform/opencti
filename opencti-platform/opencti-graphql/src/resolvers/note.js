@@ -2,18 +2,14 @@ import {
   addNote,
   findAll,
   findById,
-  objectRefs,
-  observableRefs,
-  relationRefs,
+  objects,
   notesDistributionByEntity,
   notesNumber,
   notesNumberByEntity,
   notesTimeSeries,
   notesTimeSeriesByAuthor,
   notesTimeSeriesByEntity,
-  noteContainsStixDomainObject,
-  noteContainsStixRelation,
-  noteContainsStixCyberObservable,
+  noteContainsStixCoreObjectOrStixRelationship,
 } from '../domain/note';
 import {
   stixDomainObjectAddRelation,
@@ -56,14 +52,8 @@ const noteResolvers = {
       }
       return [];
     },
-    noteContainsStixDomainObject: (_, args) => {
-      return noteContainsStixDomainObject(args.id, args.objectId);
-    },
-    noteContainsStixRelation: (_, args) => {
-      return noteContainsStixRelation(args.id, args.objectId);
-    },
     noteObjectContains: (_, args) => {
-      return noteContainsStixCyberObservable(args.id, args.objectId);
+      return noteContainsStixCoreObjectOrStixRelationship(args.id, args.objectId);
     },
   },
   NotesOrdering: {
@@ -79,9 +69,7 @@ const noteResolvers = {
     observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id`,
   },
   Note: {
-    objectRefs: (note, args) => objectRefs(note.id, args),
-    observableRefs: (note, args) => observableRefs(note.id, args),
-    relationRefs: (note, args) => relationRefs(note.id, args),
+    objects: (note, args) => objects(note.id, args),
   },
   Mutation: {
     noteEdit: (_, { id }, { user }) => ({
