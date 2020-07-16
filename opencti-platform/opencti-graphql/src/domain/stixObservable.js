@@ -149,11 +149,8 @@ export const stixObservableAddRelation = (user, stixObservableId, input) => {
 export const stixObservableAddRelations = async (user, stixObservableId, input) => {
   const finalInput = map(
     (n) => ({
-      fromType: 'Stix-Observable',
-      fromRole: input.fromRole,
       toId: n,
-      toRole: input.toRole,
-      through: input.through,
+      relationship_type: input.relationship_type,
     }),
     input.toIds
   );

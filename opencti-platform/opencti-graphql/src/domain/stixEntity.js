@@ -116,7 +116,7 @@ export const stixEntityAddRelation = async (user, stixEntityId, input) => {
       !isNil(data.external) &&
       ![RELATION_OBJECT_LABEL, RELATION_CREATED_BY, RELATION_OBJECT_MARKING].includes(input.through)) ||
     !stixElement ||
-    !input.through
+    !input.relationship_type
   ) {
     throw ForbiddenAccess();
   }

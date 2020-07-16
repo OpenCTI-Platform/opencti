@@ -237,12 +237,12 @@ export const stixDomainEntityAddRelation = async (user, stixDomainEntityId, inpu
   if (
     (isUserType &&
       !isNil(stixDomainEntity.external) &&
-      ![RELATION_OBJECT_LABEL, RELATION_CREATED_BY, RELATION_OBJECT_MARKING].includes(input.through)) ||
-    !input.through
+      ![RELATION_OBJECT_LABEL, RELATION_CREATED_BY, RELATION_OBJECT_MARKING].includes(input.relationship_type)) ||
+    !input.relationship_type
   ) {
     throw ForbiddenAccess();
   }
-  const finalInput = pipe(assoc('fromId', stixDomainEntityId), assoc('fromType', 'Stix-Domain-Entity'))(input);
+  const finalInput = assoc('fromId', stixDomainEntityId, input);
   const data = await createRelation(user, finalInput);
   return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
 };
@@ -251,18 +251,16 @@ export const stixDomainEntityAddRelations = async (user, stixDomainEntityId, inp
   if (
     (stixDomainEntity.entity_type === 'user' &&
       !isNil(stixDomainEntity.external) &&
-      ![RELATION_OBJECT_LABEL, RELATION_CREATED_BY, RELATION_OBJECT_MARKING].includes(input.through)) ||
-    !input.through
+      ![RELATION_OBJECT_LABEL, RELATION_CREATED_BY, RELATION_OBJECT_MARKING].includes(input.relationship_type)) ||
+    !input.relationship_type
   ) {
     throw ForbiddenAccess();
   }
   const finalInput = map(
     (n) => ({
       fromType: 'Stix-Domain-Entity',
-      fromRole: input.fromRole,
       toId: n,
-      toRole: input.toRole,
-      through: input.through,
+      relationship_type: input.relationship_type,
     }),
     input.toIds
   );
@@ -360,20 +358,15 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
             await Promise.all(
               relationReports.edges.map((report) => {
                 return stixDomainEntityAddRelation(user, report.node.id, {
-                  fromRole: 'knowledge_aggregation',
                   toId: newRelation.internal_id,
-                  toRole: 'so',
-                  through: RELATION_OBJECT,
+                  relationship_type: RELATION_OBJECT,
                 });
               })
             );
             await Promise.all(
               relationNotes.edges.map((note) => {
                 return stixDomainEntityAddRelation(user, note.node.id, {
-                  fromRole: 'knowledge_aggregation',
                   toId: newRelation.internal_id,
-                  toRole: 'so',
-                  through: RELATION_OBJECT,
                 });
               })
             );
@@ -394,10 +387,8 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
           const alreadyInReport = await reportContainsStixDomainEntity(report.id, stixDomainEntityId);
           if (!alreadyInReport) {
             return stixDomainEntityAddRelation(user, report.id, {
-              fromRole: 'knowledge_aggregation',
               toId: stixDomainEntityId,
-              toRole: 'so',
-              through: RELATION_OBJECT,
+              relationship_type: RELATION_OBJECT,
             });
           }
           return true;
@@ -416,10 +407,8 @@ export const stixDomainEntityMerge = async (user, stixDomainEntityId, stixDomain
           const alreadyInNote = await noteContainsStixDomainEntity(note.id, stixDomainEntityId);
           if (!alreadyInNote) {
             return stixDomainEntityAddRelation(user, note.id, {
-              fromRole: 'knowledge_aggregation',
               toId: stixDomainEntityId,
-              toRole: 'so',
-              through: RELATION_OBJECT,
+              relationship_type: RELATION_OBJECT,
             });
           }
           return true;

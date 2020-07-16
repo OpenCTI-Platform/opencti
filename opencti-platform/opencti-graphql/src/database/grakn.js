@@ -92,6 +92,12 @@ import {
   RELATION_OBJECT,
   RELATION_KILL_CHAIN_PHASE,
   ENTITY_TYPE_LABEL,
+  isStixObject,
+  isStixMetaObject,
+  isStixSightingRelationship,
+  isStixCyberObservableRelationship,
+  isInternalRelationship,
+  isStixRelationship,
 } from '../utils/idGenerator';
 import { lockResource } from './redis';
 import { STIX_SPEC_VERSION } from './stix';
@@ -1312,11 +1318,11 @@ const flatAttributesForObject = (data) => {
 
 // region mutation relation
 const createRelationRaw = async (user, input, opts = {}) => {
+  const { fromId, toId, relationship_type: relationshipType } = input;
   const { reversedReturn = false, noLog = false } = opts;
   // 01. First fix the direction of the relation
-  const relationshipType = input.relationship_type || input.through;
-  if (!input.fromId || !input.toId) throw FunctionalError(`Relation without from or to`, { input });
-  if (input.fromId === input.toId) {
+  if (!fromId || !toId) throw FunctionalError(`Relation without from or to`, { input });
+  if (fromId === toId) {
     /* istanbul ignore next */
     throw FunctionalError(`You cant create a relation with the same source and target`, {
       from: input.fromId,
@@ -1324,49 +1330,66 @@ const createRelationRaw = async (user, input, opts = {}) => {
     });
   }
   // Check dependencies
-  const fromPromise = internalLoadEntityById(input.fromId);
-  const toPromise = internalLoadEntityById(input.toId);
+  const fromRole = `${relationshipType}_from`;
+  const toRole = `${relationshipType}_to`;
+  const fromPromise = internalLoadEntityById(fromId);
+  const toPromise = internalLoadEntityById(toId);
   const [from, to] = await Promise.all([fromPromise, toPromise]);
   if (!from || !to) {
     throw MissingReferenceError({ input, from, to });
   }
-  // 03. Prepare the data to create or index
-  let relationId;
+  // 03. Generate the ID
+  // TODO @Julien check the generation of the ID
+  const inputId = mergeRight(input, { fromId: from.internal_id, toId: to.internal_id });
+  const internalId = generateId(relationshipType, inputId);
+
+  // 04. Prepare the relation to be created
   const today = now();
-  if (isStixCoreRelationship(relationshipType)) {
-    const inputId = mergeRight(input, { fromId: from.internal_id, toId: to.internal_id });
-    relationId = generateId(relationshipType, inputId);
-  } else {
-    relationId = generateId(relationshipType, { fromId: from.internal_id, toId: to.internal_id });
+  let relationAttributes = {};
+  // Default attributes
+  // basic-relationship
+  relationAttributes.internal_id = internalId;
+  relationAttributes.entity_type = relationshipType;
+  relationAttributes.created_at = today;
+  relationAttributes.updated_at = today;
+
+  // internal-relationship
+  if (isInternalRelationship(relationshipType)) {
+    // TODO @Julien check if standard_id === internal_id
+    relationAttributes.standard_id = internalId;
   }
-  let relationAttributes = { internal_id: relationId };
+  // stix-relationship
+  if (isStixRelationship(relationshipType)) {
+    // TODO @Julien check if standard_stix_id === internal_id
+    relationAttributes.standard_stix_id = internalId;
+    relationAttributes.stix_ids = isNil(input.stix_id) ? [] : [input.stix_id];
+    relationAttributes.spec_version = STIX_SPEC_VERSION;
+    relationAttributes.revoked = isNil(input.revoked) ? false : input.revoked;
+    relationAttributes.confidence = isNil(input.confidence) ? 0 : input.confidence;
+    relationAttributes.lang = isNil(input.lang) ? 0 : input.confidence;
+    relationAttributes.created = isNil(input.created) ? today : input.created;
+    relationAttributes.modified = isNil(input.modified) ? today : input.modified;
+  }
+  // stix-core-relationship
   if (isStixCoreRelationship(relationshipType)) {
-    const firstSeen = input.first_seen ? input.first_seen : new Date(FROM_START);
-    const lastSeen = input.last_seen ? input.last_seen : new Date(UNTIL_END);
-    relationAttributes.stix_ids = input.stix_id ? [input.stix_id] : [];
-    // Default attributes
-    relationAttributes.spec_version = input.spec_version ? input.spec_version : STIX_SPEC_VERSION;
-    relationAttributes.revoked = input.revoked ? input.revoked : false;
-    relationAttributes.confidence = input.confidence ? input.confidence : 0;
-
-    if (isStixSighting) {
-      relationAttributes.number = !isNil(input.number) ? input.number : 1;
-      relationAttributes.negative = !isNil(input.negative) ? input.negative : false;
+    relationAttributes.relationship_type = relationshipType;
+    relationAttributes.start_time = isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
+    relationAttributes.end_time = isNil(input.end_time) ? new Date(UNTIL_END) : input.end_time;
+    /* istanbul ignore if */
+    if (relationAttributes.start_time > relationAttributes.end_time) {
+      throw DatabaseError('You cant create a relation with a start_time less than the end_time', {
+        from: input.fromId,
+        input,
+      });
     }
-    relationAttributes.name = input.name ? input.name : ''; // Force name of the relation
-
-    relationAttributes.description = input.description ? input.description : '';
-    relationAttributes.confidence = !isNil(input.confidence) ? input.confidence : 15;
-    relationAttributes.entity_type = relationshipType;
-    relationAttributes.updated_at = today;
-    relationAttributes.created = input.created ? input.created : today;
-    relationAttributes.modified = input.modified ? input.modified : today;
-    relationAttributes.created_at = today;
-    relationAttributes.first_seen = firstSeen;
-    relationAttributes.last_seen = lastSeen;
+  }
+  // stix-sighting-relationship
+  if (isStixSightingRelationship(relationshipType)) {
+    relationAttributes.first_seen = isNil(input.first_seen) ? new Date(FROM_START) : input.first_seen;
+    relationAttributes.last_seen = isNil(input.last_seen) ? new Date(UNTIL_END) : input.last_seen;
     /* istanbul ignore if */
     if (relationAttributes.first_seen > relationAttributes.last_seen) {
-      throw DatabaseError('You cant create a relation with a first seen less than the last_seen', {
+      throw DatabaseError('You cant create a relation with a first_seen less than the last_seen', {
         from: input.fromId,
         input,
       });
@@ -1390,15 +1413,14 @@ const createRelationRaw = async (user, input, opts = {}) => {
   let lock;
   try {
     // Try to get the lock in redis
-    lock = await lockResource(relationId);
+    lock = await lockResource(internalId);
     // 04. Create the relation
     await executeWrite(async (wTx) => {
       // Build final query
       let query = `match $from isa ${input.fromType ? input.fromType : 'thing'}; 
       $from has internal_id "${from.internal_id}"; 
-      $to isa ${input.toType ? input.toType : 'thing'}; 
       $to has internal_id "${to.internal_id}";
-      insert $rel(${input.fromRole}: $from, ${input.toRole}: $to) isa ${relationshipType},`;
+      insert $rel(${fromRole}: $from, ${toRole}: $to) isa ${relationshipType},`;
       const queryElements = flatAttributesForObject(relationAttributes);
       const nbElements = queryElements.length;
       for (let index = 0; index < nbElements; index += 1) {
@@ -1417,20 +1439,20 @@ const createRelationRaw = async (user, input, opts = {}) => {
   } catch (err) {
     // Lock cant be acquired after 5 sec, assume relation already exists.
     if (err.name === 'LockError') {
-      throw DuplicateEntryError('Relation already exists (redis)', { id: relationId });
+      throw DuplicateEntryError('Relation already exists (redis)', { id: internalId });
     }
     throw err;
   } finally {
     if (lock) await lock.unlock();
   }
-  // 05. Prepare the final data with grakn IDS
+  // 05. Prepare the final data with Grakn IDs
   const createdRel = pipe(
-    assoc('id', relationId),
+    assoc('id', internalId),
     assoc('fromId', from.internal_id),
-    assoc('fromRole', input.fromRole),
+    assoc('fromRole', fromRole),
     assoc('fromType', from.entity_type),
     assoc('toId', to.internal_id),
-    assoc('toRole', input.toRole),
+    assoc('toRole', toRole),
     assoc('toType', to.entity_type),
     // Relation specific
     assoc('inferred', false),
@@ -1469,8 +1491,7 @@ const addCreatedBy = async (user, fromInternalId, createdById, opts = {}) => {
   const input = {
     fromId: fromInternalId,
     toId: createdById,
-    toType: 'Identity',
-    through: RELATION_CREATED_BY,
+    relationship_type: RELATION_CREATED_BY,
   };
   return createRelationRaw(user, input, opts);
 };
@@ -1479,8 +1500,7 @@ const addMarkingDef = async (user, fromInternalId, markingDefId, opts = {}) => {
   const input = {
     fromId: fromInternalId,
     toId: markingDefId,
-    toType: 'Marking-Definition',
-    through: RELATION_OBJECT_MARKING,
+    relationship_type: RELATION_OBJECT_MARKING,
   };
   return createRelationRaw(user, input, opts);
 };
@@ -1500,8 +1520,7 @@ const addLabel = async (user, fromInternalId, labelId, opts = {}) => {
   const input = {
     fromId: fromInternalId,
     toId: labelId,
-    toType: ENTITY_TYPE_LABEL,
-    through: RELATION_OBJECT_LABEL,
+    relationship_type: RELATION_OBJECT_LABEL,
   };
   return createRelationRaw(user, input, opts);
 };
@@ -1521,8 +1540,7 @@ const addKillChain = async (user, fromInternalId, killChainId, opts = {}) => {
   const input = {
     fromId: fromInternalId,
     toId: killChainId,
-    toType: ENTITY_TYPE_KILL_CHAIN,
-    through: RELATION_KILL_CHAIN_PHASE,
+    relationship_type: RELATION_KILL_CHAIN_PHASE,
   };
   return createRelationRaw(user, input, opts);
 };
@@ -1542,31 +1560,29 @@ const addObject = async (user, fromInternalId, stixObjectId, opts = {}) => {
   const input = {
     fromId: fromInternalId,
     toId: stixObjectId,
-    toType: 'Stix-Domain-Entity',
-    through: RELATION_OBJECT,
+    relationship_type: RELATION_OBJECT,
   };
   return createRelationRaw(user, input, opts);
 };
 const addObjects = async (user, internalId, stixObjectIds, opts = {}) => {
   if (!stixObjectIds || isEmpty(stixObjectIds)) return undefined;
-  const objectRefs = [];
+  const objects = [];
   // Relations cannot be created in parallel.
   for (let i = 0; i < stixObjectIds.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
-    const objectRef = await addObject(user, internalId, stixObjectIds[i], opts);
-    objectRefs.push(objectRef);
+    const object = await addObject(user, internalId, stixObjectIds[i], opts);
+    objects.push(object);
   }
-  return objectRefs;
+  return objects;
 };
 export const createRelation = async (user, input, opts = {}) => {
   let relation;
   try {
     relation = await createRelationRaw(user, input, opts);
   } catch (err) {
-    const relationshipType = input.relationship_type || input.through;
     if (err.name === TYPE_DUPLICATE_ENTRY) {
       logger.warn(err.message, { input, ...err.data });
-      return loadRelationById(err.data.id, relationshipType);
+      return loadRelationById(err.data.id, input.relationship_type);
     }
     throw err;
   }
@@ -1600,9 +1616,7 @@ export const createEntity = async (user, entity, type, opts = {}) => {
   const idsToResolve = [];
   if (entity.createdBy) idsToResolve.push({ id: entity.createdBy });
   forEach((marking) => idsToResolve.push({ id: marking }), entity.markingDefinitions || []);
-  forEach((object) => idsToResolve.push({ id: object }), entity.objectRefs || []);
-  forEach((observable) => idsToResolve.push({ id: observable }), entity.observableRefs || []);
-  forEach((relation) => idsToResolve.push({ id: relation }), entity.relationRefs || []);
+  forEach((object) => idsToResolve.push({ id: object }), entity.objects || []);
   const elemPromise = (ref) => internalLoadEntityById(ref.id).then((e) => ({ ref, available: e !== null }));
   const checkIds = await Promise.all(map(elemPromise, idsToResolve));
   const notResolvedElements = filter((c) => !c.available, checkIds);
@@ -1612,31 +1626,49 @@ export const createEntity = async (user, entity, type, opts = {}) => {
   const internalId = generateId(type, entity);
   // Complete with identifiers
   const today = now();
+  // Dissoc additional data
   let data = pipe(
-    assoc('internal_id', internalId),
-    assoc('entity_type', type),
-    assoc('created_at', today),
-    assoc('updated_at', today),
-    dissoc('createdByOwner'),
     dissoc('createdBy'),
     dissoc('markingDefinitions'),
     dissoc('labels'),
     dissoc('killChainPhases'),
-    dissoc('objectRefs'),
-    dissoc('relationRefs')
+    dissoc('objects')
   )(entity);
-  // Apply stix id when needed
-  if (isStixCoreObject(type)) {
-    const stixIds = entity.stix_id ? [entity.stix_id] : [];
-    data = assoc('stix_ids', stixIds, data);
+  // Default attributes
+  // Basic-Object
+  data = pipe(assoc('internal_id', internalId), assoc('entity_type', type))(data);
+  // Internal-Object
+  if (isInternalObject(type)) {
+    // TODO @Julien check if standard_id === internal_id
+    data = assoc('standard_id', internalId);
   }
+  // Stix-Object
+  if (isStixObject(type)) {
+    data = pipe(
+      // TODO @Julien check if standard_stix_id === internal_id
+      assoc('standard_stix_id', internalId),
+      assoc('stix_ids', isNil(entity.stix_id) ? [] : [entity.stix_id]),
+      assoc('spec_version', STIX_SPEC_VERSION),
+      assoc('created_at', today),
+      assoc('updated_at', today)
+    )(data);
+  }
+  // Stix-Meta-Object
+  if (isStixMetaObject(type)) {
+    data = pipe(
+      assoc('created', isNil(entity.created) ? today : entity.created),
+      assoc('modified', isNil(entity.modified) ? today : entity.modified)
+    )(data);
+  }
+  // STIX-Core-Object
+  // STIX-Domain-Object
   if (isStixDomainObject(type)) {
     data = pipe(
       assoc('revoked', false),
-      assoc('confidence', data.confidence ? data.confidence : 0),
-      assoc('lang', data.lang ? data.lang : 'en'),
-      assoc('created', entity.created ? entity.created : today),
-      assoc('modified', entity.modified ? entity.modified : today)
+      assoc('confidence', isNil(data.confidence) ? 0 : data.confidence),
+      assoc('lang', isNil(data.lang) ? 'en' : data.lang),
+      assoc('created', isNil(entity.created) ? today : entity.created),
+      assoc('modified', isNil(entity.modified) ? today : entity.modified)
     )(data);
   }
   // Add the additional fields for dates (day, month, year)
@@ -1701,14 +1733,13 @@ export const createEntity = async (user, entity, type, opts = {}) => {
   // Send creation log
   if (!noLog) postOperations.push(sendLog(EVENT_TYPE_CREATE, user, completedData));
   // Complete with eventual relations (will eventually update the index)
-  postOperations.push(addOwner(user, internalId, entity.createdByOwner, opts));
   if (isStixCoreObject(type)) {
     postOperations.push(
       addCreatedBy(user, internalId, entity.createdBy || user.id, opts),
       addMarkingDefs(user, internalId, entity.markingDefinitions, opts),
       addLabels(user, internalId, entity.labels, opts), // Embedded in same execution.
       addKillChains(user, internalId, entity.killChainPhases, opts), // Embedded in same execution.
-      addObjects(user, internalId, entity.objectRefs, opts),
+      addObjects(user, internalId, entity.objects, opts)
     );
   }
   await Promise.all(postOperations);

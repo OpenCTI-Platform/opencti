@@ -13,11 +13,10 @@ export const BASE_TYPE_ENTITY = 'ENTITY';
 // region ABSTRACT TYPES
 // Relations
 const ABSTRACT_BASIC_RELATIONSHIP = 'basic-relationship';
-const ABSTRACT_INTERNAL_RELATIONSHIP = 'internal-relationship';
-const ABSTRACT_STIX_RELATIONSHIP = 'stix-relationship';
-const ABSTRACT_STIX_KNOWLEDGE_RELATIONSHIP = 'stix-knowledge-relationship';
-const ABSTRACT_STIX_META_RELATIONSHIP = 'stix-meta-relationship';
-export const ABSTRACT_STIX_SIGHTING_RELATIONSHIP = 'stix-sighting-relationship';
+export const ABSTRACT_INTERNAL_RELATIONSHIP = 'internal-relationship';
+export const ABSTRACT_STIX_RELATIONSHIP = 'stix-relationship';
+export const ABSTRACT_STIX_KNOWLEDGE_RELATIONSHIP = 'stix-knowledge-relationship';
+export const ABSTRACT_STIX_META_RELATIONSHIP = 'stix-meta-relationship';
 // Entities
 const ABSTRACT_BASIC_OBJECT = 'Basic-Object';
 const ABSTRACT_STIX_OBJECT = 'Stix-Object';
@@ -206,6 +205,11 @@ const INTERNAL_RELATIONSHIPS = [
 ];
 export const isInternalRelationship = (type) => includes(type, INTERNAL_RELATIONSHIPS);
 // endregion
+export const isStixRelationship = (type) =>
+  isStixCoreRelationship(type) ||
+  isStixSightingRelationship(type) ||
+  isStixCyberObservableRelationship ||
+  isStixMetaRelationship;
 // ------------------------------------------------------
 
 // ENTITIES --------------------------------------------

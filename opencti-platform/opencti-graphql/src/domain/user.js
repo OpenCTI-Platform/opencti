@@ -45,10 +45,10 @@ import {
   ENTITY_TYPE_USER,
   generateId,
   OPENCTI_ADMIN_UUID,
+  RELATION_HAS_CAPABILITY,
+  RELATION_HAS_ROLE,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-  RELATION_ROLE_CAPABILITY,
-  RELATION_USER_ROLE,
 } from '../utils/idGenerator';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
@@ -162,7 +162,7 @@ const clearUserTokenCache = (userId) => {
 export const getRoles = async (userId) => {
   const data = await find(
     `match $client isa User, has internal_id "${escapeString(userId)}";
-            (client: $client, position: $role) isa ${RELATION_USER_ROLE}; 
+            (client: $client, position: $role) isa ${RELATION_HAS_ROLE}; 
             get;`,
     ['role']
   );
@@ -171,8 +171,8 @@ export const getRoles = async (userId) => {
 export const getCapabilities = async (userId) => {
   const data = await find(
     `match $client isa User, has internal_id "${escapeString(userId)}";
-            (client: $client, position: $role) isa ${RELATION_USER_ROLE}; 
-            (position: $role, capability: $capability) isa ${RELATION_ROLE_CAPABILITY}; 
+            (client: $client, position: $role) isa ${RELATION_HAS_ROLE}; 
+            (position: $role, capability: $capability) isa ${RELATION_HAS_CAPABILITY}; 
             get;`,
     ['capability']
   );
@@ -186,7 +186,7 @@ export const getCapabilities = async (userId) => {
 export const getRoleCapabilities = async (roleId) => {
   const data = await find(
     `match $role isa Role, has internal_id "${escapeString(roleId)}";
-            (position: $role, capability: $capability) isa ${RELATION_ROLE_CAPABILITY}; 
+            (position: $role, capability: $capability) isa ${RELATION_HAS_CAPABILITY}; 
             get;`,
     ['capability']
   );
@@ -289,12 +289,8 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
   const defaultToken = await createEntity(user, newToken, ENTITY_TYPE_TOKEN, tokenOptions);
   const input = {
     fromId: userCreated.id,
-    fromType: ENTITY_TYPE_USER,
-    fromRole: 'client',
     toId: defaultToken.id,
-    toType: ENTITY_TYPE_TOKEN,
-    toRole: 'authorization',
-    through: 'authorize',
+    relationship_type: 'authorized-by',
   };
   await createRelation(user, input, { noLog: true });
   // Link to the roles
@@ -310,11 +306,7 @@ export const roleEditField = (user, roleId, input) => {
   });
 };
 export const roleAddRelation = async (user, roleId, input) => {
-  const finalInput = pipe(
-    assoc('fromId', roleId),
-    assoc('through', RELATION_ROLE_CAPABILITY),
-    assoc('fromType', ENTITY_TYPE_ROLE)
-  )(input);
+  const finalInput = pipe(assoc('fromId', roleId), assoc('relationship_type', RELATION_HAS_CAPABILITY))(input);
   const data = await createRelation(user, finalInput, { noLog: true });
   // Clear cache of every user with this modified role
   const impactedUsers = await findAll({
