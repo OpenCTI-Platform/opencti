@@ -221,7 +221,7 @@ const stixRelationCreationFromEntityQuery = graphql`
 
 const stixRelationCreationFromEntityMutation = graphql`
   mutation StixRelationCreationFromEntityMutation(
-    $input: StixRelationAddInput!
+    $input: StixCoreRelationshipAddInput!
     $reversedReturn: Boolean
   ) {
     stixRelationAdd(input: $input, reversedReturn: $reversedReturn) {

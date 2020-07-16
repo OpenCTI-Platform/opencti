@@ -52,7 +52,7 @@ const styles = (theme) => ({
 export const indicatorMutationRelationAdd = graphql`
   mutation IndicatorAddObservableRefsLinesRelationAddMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: StixMetaRelationshipAddInput
   ) {
     indicatorEdit(id: $id) {
       relationAdd(input: $input) {

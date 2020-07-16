@@ -28,7 +28,7 @@ const styles = (theme) => ({
 
 const addAattackPatternsLinesMutationRelationAdd = graphql`
   mutation AddAttackPatternsLinesRelationAddMutation(
-    $input: StixRelationAddInput!
+    $input: StixStixMetaRelationshipAddInput
   ) {
     stixRelationAdd(input: $input) {
       from {

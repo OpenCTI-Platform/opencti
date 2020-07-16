@@ -73,7 +73,7 @@ export const userEditionOverviewRolesSearchQuery = graphql`
 const userEditionOverviewAddRole = graphql`
   mutation UserEditionOverviewAddRoleMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: StixMetaRelationshipAddInput
   ) {
     userEdit(id: $id) {
       relationAdd(input: $input) {

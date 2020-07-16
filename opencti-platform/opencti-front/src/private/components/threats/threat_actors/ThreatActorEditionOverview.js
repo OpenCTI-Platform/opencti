@@ -76,7 +76,7 @@ export const threatActorEditionOverviewFocus = graphql`
 const threatActorMutationRelationAdd = graphql`
   mutation ThreatActorEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: StixMetaRelationshipAddInput
   ) {
     threatActorEdit(id: $id) {
       relationAdd(input: $input) {

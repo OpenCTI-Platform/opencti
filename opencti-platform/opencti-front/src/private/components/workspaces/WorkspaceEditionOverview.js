@@ -75,7 +75,7 @@ export const workspaceEditionOverviewFocus = graphql`
 const workspaceMutationRelationAdd = graphql`
   mutation WorkspaceEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: StixMetaRelationshipAddInput
   ) {
     workspaceEdit(id: $id) {
       relationAdd(input: $input) {

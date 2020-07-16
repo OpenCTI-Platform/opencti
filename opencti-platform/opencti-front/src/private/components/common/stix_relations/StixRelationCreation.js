@@ -156,7 +156,7 @@ export const stixRelationCreationQuery = graphql`
 `;
 
 const stixRelationCreationMutation = graphql`
-  mutation StixRelationCreationMutation($input: StixRelationAddInput!) {
+  mutation StixRelationCreationMutation($input: StixCoreRelationshiupAddInput!) {
     stixRelationAdd(input: $input) {
       id
       relationship_type

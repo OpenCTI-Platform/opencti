@@ -67,7 +67,7 @@ const styles = (theme) => ({
 export const reportMutationRelationAdd = graphql`
   mutation ReportAddObjectRefsLinesRelationAddMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: StixMetaRelationshipAddInput
   ) {
     reportEdit(id: $id) {
       relationAdd(input: $input) {

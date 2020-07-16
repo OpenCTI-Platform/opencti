@@ -69,7 +69,7 @@ const roleEditionOverviewFocus = graphql`
 const roleEditionAddCapability = graphql`
   mutation RoleEditionOverviewAddCapabilityMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: StixMetaRelationshipAddInput
   ) {
     roleEdit(id: $id) {
       relationAdd(input: $input) {

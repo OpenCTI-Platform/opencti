@@ -78,7 +78,7 @@ export const indicatorEditionOverviewFocus = graphql`
 const indicatorMutationRelationAdd = graphql`
   mutation IndicatorEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: StixMetaRelationshipAddInput
   ) {
     indicatorEdit(id: $id) {
       relationAdd(input: $input) {

@@ -4614,7 +4614,7 @@ type StixCoreRelationshipEdge {
   node: StixCoreRelationship!
 }
 type StixCoreRelationship implements BasicRelationship & StixRelationship {
-  # BasicRelationship
+  # BasicRelationship²
   id: ID! # internal_id
   entity_type: String!
   fromRole: String
