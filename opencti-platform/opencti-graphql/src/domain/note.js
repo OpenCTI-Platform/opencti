@@ -116,6 +116,6 @@ export const notesDistributionByEntity = async (args) => {
 // region mutations
 export const addNote = async (user, note) => {
   const created = await createEntity(user, note, ENTITY_TYPE_CONTAINER_NOTE);
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
 };
 // endregion

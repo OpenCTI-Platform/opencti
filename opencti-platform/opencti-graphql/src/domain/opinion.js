@@ -121,6 +121,6 @@ export const opinionsDistributionByEntity = async (args) => {
 // region mutations
 export const addOpinion = async (user, opinion) => {
   const created = await createEntity(user, opinion, ENTITY_TYPE_CONTAINER_OPINION);
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
 };
 // endregion

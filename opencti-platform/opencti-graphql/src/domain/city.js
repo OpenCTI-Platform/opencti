@@ -29,5 +29,5 @@ export const country = (cityId) => {
 
 export const addCity = async (user, city) => {
   const created = await createEntity(user, city, ENTITY_TYPE_LOCATION_CITY);
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
 };

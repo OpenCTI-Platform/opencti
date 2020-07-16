@@ -13,5 +13,5 @@ export const findAll = (args) => {
 
 export const addTool = async (user, tool) => {
   const created = await createEntity(user, tool, ENTITY_TYPE_TOOL);
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
 };

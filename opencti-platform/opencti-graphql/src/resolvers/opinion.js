@@ -11,17 +11,17 @@ import {
   opinionsTimeSeries,
   opinionsTimeSeriesByAuthor,
   opinionsTimeSeriesByEntity,
-  opinionContainsStixDomainEntity,
+  opinionContainsStixDomainObject,
   opinionContainsStixRelation,
   opinionContainsStixObservable,
 } from '../domain/opinion';
 import {
-  stixDomainEntityAddRelation,
-  stixDomainEntityCleanContext,
-  stixDomainEntityDelete,
-  stixDomainEntityDeleteRelation,
-  stixDomainEntityEditContext,
-  stixDomainEntityEditField,
+  stixDomainObjectAddRelation,
+  stixDomainObjectCleanContext,
+  stixDomainObjectDelete,
+  stixDomainObjectDeleteRelation,
+  stixDomainObjectEditContext,
+  stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import {
@@ -56,8 +56,8 @@ const opinionResolvers = {
       }
       return [];
     },
-    opinionContainsStixDomainEntity: (_, args) => {
-      return opinionContainsStixDomainEntity(args.id, args.objectId);
+    opinionContainsStixDomainObject: (_, args) => {
+      return opinionContainsStixDomainObject(args.id, args.objectId);
     },
     opinionContainsStixRelation: (_, args) => {
       return opinionContainsStixRelation(args.id, args.objectId);
@@ -85,13 +85,13 @@ const opinionResolvers = {
   },
   Mutation: {
     opinionEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainEntityDelete(user, id),
-      fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
-      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
-      contextClean: () => stixDomainEntityCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
+      delete: () => stixDomainObjectDelete(user, id),
+      fieldPatch: ({ input }) => stixDomainObjectEditField(user, id, input),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
       relationDelete: ({ relationId, toId, relationType }) =>
-        stixDomainEntityDeleteRelation(user, id, relationId, toId, relationType),
+        stixDomainObjectDeleteRelation(user, id, relationId, toId, relationType),
     }),
     opinionAdd: (_, { input }, { user }) => addOpinion(user, input),
   },

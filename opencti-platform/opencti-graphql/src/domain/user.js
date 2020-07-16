@@ -271,7 +271,7 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
   await createRelation(user, input, { noLog: true });
   // Link to the roles
   await Promise.all(map((role) => assignRoleToUser(user, userCreated.id, role), userRoles));
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, userCreated, user);
+  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, userCreated, user);
 };
 
 export const roleEditField = (user, roleId, input) => {
@@ -279,7 +279,7 @@ export const roleEditField = (user, roleId, input) => {
     return updateAttribute(user, roleId, ENTITY_TYPE_ROLE, input, wTx, { noLog: true });
   }).then(async () => {
     const userToEdit = await loadEntityById(roleId, ENTITY_TYPE_ROLE);
-    return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
+    return notify(BUS_TOPICS.stixDomainObject.EDIT_TOPIC, userToEdit, user);
   });
 };
 
@@ -291,7 +291,7 @@ export const roleAddRelation = async (user, roleId, input) => {
     filters: [{ key: `${REL_INDEX_PREFIX}${RELATION_HAS_ROLE}.internal_id`, values: [roleId] }],
   });
   await Promise.all(map((e) => clearUserTokenCache(e.node.id), impactedUsers.edges));
-  return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
+  return notify(BUS_TOPICS.stixDomainObject.EDIT_TOPIC, data, user);
 };
 
 // User related
@@ -303,7 +303,7 @@ export const userEditField = (user, userId, input) => {
     return updateAttribute(user, userId, ENTITY_TYPE_USER, finalInput, wTx, { noLog: key === 'password' });
   }).then(async () => {
     const userToEdit = await loadEntityById(userId, ENTITY_TYPE_USER);
-    return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, userToEdit, user);
+    return notify(BUS_TOPICS.stixDomainObject.EDIT_TOPIC, userToEdit, user);
   });
 };
 
@@ -325,7 +325,7 @@ export const userAddRelation = async (user, userId, input) => {
   const finalInput = pipe(assoc('fromId', userId), assoc('fromType', ENTITY_TYPE_USER))(input);
   const data = await createRelation(user, finalInput);
   await clearUserTokenCache(userId);
-  return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
+  return notify(BUS_TOPICS.stixDomainObject.EDIT_TOPIC, data, user);
 };
 
 export const userDeleteRelation = async (user, userId, relationId = null, toId = null, relationType = 'relation') => {
@@ -338,7 +338,7 @@ export const userDeleteRelation = async (user, userId, relationId = null, toId =
   }
   await clearUserTokenCache(userId);
   const data = await loadEntityById(userId, 'Stix-Domain-Entity');
-  return notify(BUS_TOPICS.StixDomainEntity.EDIT_TOPIC, data, user);
+  return notify(BUS_TOPICS.stixDomainObject.EDIT_TOPIC, data, user);
 };
 
 export const loginFromProvider = async (email, name) => {

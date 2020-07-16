@@ -30,5 +30,5 @@ export const sectors = (organizationId) => {
 
 export const addOrganization = async (user, organization) => {
   const created = await createEntity(user, organization, ENTITY_TYPE_IDENTITY_ORGANIZATION);
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
 };

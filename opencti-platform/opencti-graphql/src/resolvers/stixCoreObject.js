@@ -6,23 +6,20 @@ import {
   notes,
   labels,
   externalReferences,
-  stixEntityAddRelation,
-  stixEntityDeleteRelation,
+  stixCoreObjectAddRelation,
+  stixCoreObjectDeleteRelation,
 } from '../domain/stixCoreObject';
 import { creator } from '../domain/log';
 import { fetchEditContext } from '../database/redis';
 import { convertDataToStix } from '../database/stix';
 
-const stixEntityResolvers = {
+const stixCoreObjectResolvers = {
   Query: {
-    stixEntity: (_, { id }) => findById(id),
+    stixCoreObject: (_, { id }) => findById(id),
   },
-  StixEntity: {
+  StixCoreObject: {
     // eslint-disable-next-line
     __resolveType(obj) {
-      if (obj.observable_value) {
-        return 'StixObservable';
-      }
       if (obj.entity_type) {
         return obj.entity_type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
       }
@@ -40,11 +37,11 @@ const stixEntityResolvers = {
     markingDefinitions: (stixEntity) => markingDefinitions(stixEntity.id),
   },
   Mutation: {
-    stixEntityEdit: (_, { id }, { user }) => ({
-      relationAdd: ({ input }) => stixEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixEntityDeleteRelation(user, id, relationId),
+    stixCoreObjectEdit: (_, { id }, { user }) => ({
+      relationAdd: ({ input }) => stixCoreObjectAddRelation(user, id, input),
+      relationDelete: ({ relationId }) => stixCoreObjectDeleteRelation(user, id, relationId),
     }),
   },
 };
 
-export default stixEntityResolvers;
+export default stixCoreObjectResolvers;

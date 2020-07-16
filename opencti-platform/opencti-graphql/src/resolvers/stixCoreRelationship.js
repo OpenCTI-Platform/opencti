@@ -1,87 +1,87 @@
 import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
-  addStixRelation,
+  addStixCoreRelationship,
   findAll,
   findById,
-  stixRelationAddRelation,
-  stixRelationCleanContext,
-  stixRelationDelete,
-  stixRelationDeleteRelation,
-  stixRelationEditContext,
-  stixRelationEditField,
-  stixRelationsNumber,
+  stixCoreRelationshipAddRelation,
+  stixCoreRelationshipCleanContext,
+  stixCoreRelationshipDelete,
+  stixCoreRelationshipDeleteRelation,
+  stixCoreRelationshipEditContext,
+  stixCoreRelationshipEditField,
+  stixCoreRelationshipsNumber,
 } from '../domain/stixCoreRelationship';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { killChainPhases, stixRelations } from '../domain/stixCoreObject';
+import { killChainPhases, stixCoreRelationships } from '../domain/stixCoreObject';
 import { distributionRelations, loadById, timeSeriesRelations, REL_CONNECTED_SUFFIX } from '../database/grakn';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { convertDataToStix } from '../database/stix';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
 
-const stixRelationResolvers = {
+const stixCoreRelationshipResolvers = {
   Query: {
-    stixRelation: (_, { id }) => findById(id),
-    stixRelations: (_, args) => findAll(args),
-    stixRelationsTimeSeries: (_, args) => timeSeriesRelations(args),
-    stixRelationsDistribution: async (_, args) => distributionRelations(args),
-    stixRelationsNumber: (_, args) => stixRelationsNumber(args),
+    stixCoreRelationship: (_, { id }) => findById(id),
+    stixCoreRelationships: (_, args) => findAll(args),
+    stixCoreRelationshipsTimeSeries: (_, args) => timeSeriesRelations(args),
+    stixCoreRelationshipsDistribution: async (_, args) => distributionRelations(args),
+    stixCoreRelationshipsNumber: (_, args) => stixCoreRelationshipsNumber(args),
   },
-  StixRelationsFilter: {
+  StixCoreRelationshipsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
     markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
     labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
     toPatternType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.pattern_type`,
     toMainObservableType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.main_observable_type`,
   },
-  StixRelationsOrdering: {
+  StixCoreRelationshipsOrdering: {
     toName: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.name`,
     toValidFrom: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.valid_from`,
     toValidUntil: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.valid_until`,
     toPatternType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.pattern_type`,
     toCreatedAt: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.created_at`,
   },
-  StixRelation: {
+  StixCoreRelationship: {
     killChainPhases: (rel) => killChainPhases(rel.id),
     from: (rel) => loadById(rel.fromId, rel.fromType),
     to: (rel) => loadById(rel.toId, rel.toType),
     toStix: (rel) => convertDataToStix(rel).then((stixData) => JSON.stringify(stixData)),
-    stixRelations: (rel, args) => stixRelations(rel.id, args),
+    stixCoreRelationships: (rel, args) => stixCoreRelationships(rel.id, args),
   },
   RelationEmbedded: {
     from: (rel) => loadById(rel.fromId, rel.fromType),
     to: (rel) => loadById(rel.toId, rel.toType),
   },
   Mutation: {
-    stixRelationEdit: (_, { id }, { user }) => ({
-      delete: () => stixRelationDelete(user, id),
-      fieldPatch: ({ input }) => stixRelationEditField(user, id, input),
-      contextPatch: ({ input }) => stixRelationEditContext(user, id, input),
-      contextClean: () => stixRelationCleanContext(user, id),
-      relationAdd: ({ input }) => stixRelationAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixRelationDeleteRelation(user, id, relationId),
+    stixCoreRelationshipEdit: (_, { id }, { user }) => ({
+      delete: () => stixCoreRelationshipDelete(user, id),
+      fieldPatch: ({ input }) => stixCoreRelationshipEditField(user, id, input),
+      contextPatch: ({ input }) => stixCoreRelationshipEditContext(user, id, input),
+      contextClean: () => stixCoreRelationshipCleanContext(user, id),
+      relationAdd: ({ input }) => stixCoreRelationshipAddRelation(user, id, input),
+      relationDelete: ({ relationId }) => stixCoreRelationshipDeleteRelation(user, id, relationId),
     }),
-    stixRelationAdd: (_, { input, reversedReturn }, { user }) => addStixRelation(user, input, reversedReturn),
+    stixCoreRelationshipAdd: (_, { input, reversedReturn }, { user }) => addStixCoreRelationship(user, input, reversedReturn),
   },
   Subscription: {
-    stixRelation: {
+    stixCoreRelationship: {
       resolve: /* istanbul ignore next */ (payload) => payload.instance,
       subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
-        stixRelationEditContext(user, id);
+        stixCoreRelationshipEditContext(user, id);
         const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.StixRelation.EDIT_TOPIC),
+          () => pubsub.asyncIterator(BUS_TOPICS.StixCoreRelationship.EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== user.id && payload.instance.id === id;
           }
         )(_, { id }, { user });
         return withCancel(filtering, () => {
-          stixRelationCleanContext(user, id);
+          stixCoreRelationshipCleanContext(user, id);
         });
       },
     },
   },
 };
 
-export default stixRelationResolvers;
+export default stixCoreRelationshipResolvers;

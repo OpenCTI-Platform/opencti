@@ -1,11 +1,11 @@
 import { addTool, findAll, findById } from '../domain/tool';
 import {
-  stixDomainEntityAddRelation,
-  stixDomainEntityCleanContext,
-  stixDomainEntityDelete,
-  stixDomainEntityDeleteRelation,
-  stixDomainEntityEditContext,
-  stixDomainEntityEditField,
+  stixDomainObjectAddRelation,
+  stixDomainObjectCleanContext,
+  stixDomainObjectDelete,
+  stixDomainObjectDeleteRelation,
+  stixDomainObjectEditContext,
+  stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
 import { killChainPhases } from '../domain/stixCoreObject';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
@@ -30,12 +30,12 @@ const toolResolvers = {
   },
   Mutation: {
     toolEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainEntityDelete(user, id),
-      fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
-      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
-      contextClean: () => stixDomainEntityCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId),
+      delete: () => stixDomainObjectDelete(user, id),
+      fieldPatch: ({ input }) => stixDomainObjectEditField(user, id, input),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
+      relationDelete: ({ relationId }) => stixDomainObjectDeleteRelation(user, id, relationId),
     }),
     toolAdd: (_, { input }, { user }) => addTool(user, input),
   },

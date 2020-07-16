@@ -30,5 +30,5 @@ export const addIncident = async (user, incident) => {
     assoc('last_seen', incident.first_seen ? incident.first_seen : currentDate)
   )(incident);
   const created = await createEntity(user, incidentToCreate, ENTITY_TYPE_X_OPENCTI_INCIDENT);
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
 };

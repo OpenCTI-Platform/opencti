@@ -18,5 +18,5 @@ export const findAll = async (args) => {
 export const addIdentity = async (user, identity) => {
   const identityToCreate = dissoc('type', identity);
   const created = await createEntity(user, identityToCreate, identity.type);
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
 };

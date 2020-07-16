@@ -51,5 +51,5 @@ export const isSubRegion = async (regionId, args) => {
 
 export const addRegion = async (user, region) => {
   const created = await createEntity(user, region, ENTITY_TYPE_LOCATION_REGION);
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
 };

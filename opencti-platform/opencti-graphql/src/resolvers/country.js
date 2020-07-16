@@ -1,11 +1,11 @@
 import { addCountry, findAll, findById, region } from '../domain/country';
 import {
-  stixDomainEntityEditContext,
-  stixDomainEntityCleanContext,
-  stixDomainEntityEditField,
-  stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation,
-  stixDomainEntityDelete,
+  stixDomainObjectEditContext,
+  stixDomainObjectCleanContext,
+  stixDomainObjectEditField,
+  stixDomainObjectAddRelation,
+  stixDomainObjectDeleteRelation,
+  stixDomainObjectDelete,
 } from '../domain/stixDomainObject';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
@@ -25,12 +25,12 @@ const countryResolvers = {
   },
   Mutation: {
     countryEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainEntityDelete(user, id),
-      fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
-      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
-      contextClean: () => stixDomainEntityCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId),
+      delete: () => stixDomainObjectDelete(user, id),
+      fieldPatch: ({ input }) => stixDomainObjectEditField(user, id, input),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
+      relationDelete: ({ relationId }) => stixDomainObjectDeleteRelation(user, id, relationId),
     }),
     countryAdd: (_, { input }, { user }) => addCountry(user, input),
   },

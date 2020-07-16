@@ -18,5 +18,5 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     assoc('last_seen', isNil(intrusionSet.first_seen) ? new Date(UNTIL_END) : intrusionSet.first_seen)
   )(intrusionSet);
   const created = await createEntity(user, intrusionSetToCreate, ENTITY_TYPE_INTRUSION_SET);
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
 };

@@ -101,18 +101,18 @@ export const markingDefinitions = (stixCoreObjectId) => {
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
-export const killChainPhases = (stixDomainEntityId) => {
+export const killChainPhases = (stixDomainObjectId) => {
   return findWithConnectedRelations(
     `match $to isa Kill-Chain-Phase; $rel(kill_chain_phase:$to, phase_belonging:$from) isa ${RELATION_KILL_CHAIN_PHASE};
-    $from has internal_id "${escapeString(stixDomainEntityId)}"; get;`,
+    $from has internal_id "${escapeString(stixDomainObjectId)}"; get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
-export const externalReferences = (stixDomainEntityId) => {
+export const externalReferences = (stixDomainObjectId) => {
   return findWithConnectedRelations(
     `match $to isa External-Reference; $rel(external_reference:$to, so:$from) isa ${RELATION_EXTERNAL_REFERENCE};
-    $from has internal_id "${escapeString(stixDomainEntityId)}"; get;`,
+    $from has internal_id "${escapeString(stixDomainObjectId)}"; get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));

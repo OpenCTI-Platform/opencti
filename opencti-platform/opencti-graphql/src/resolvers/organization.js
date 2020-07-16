@@ -1,11 +1,11 @@
 import { addOrganization, findAll, findById, sectors } from '../domain/organization';
 import {
-  stixDomainEntityAddRelation,
-  stixDomainEntityCleanContext,
-  stixDomainEntityDelete,
-  stixDomainEntityDeleteRelation,
-  stixDomainEntityEditContext,
-  stixDomainEntityEditField,
+  stixDomainObjectAddRelation,
+  stixDomainObjectCleanContext,
+  stixDomainObjectDelete,
+  stixDomainObjectDeleteRelation,
+  stixDomainObjectEditContext,
+  stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
@@ -29,12 +29,12 @@ const organizationResolvers = {
   },
   Mutation: {
     organizationEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainEntityDelete(user, id),
-      fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
-      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
-      contextClean: () => stixDomainEntityCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId),
+      delete: () => stixDomainObjectDelete(user, id),
+      fieldPatch: ({ input }) => stixDomainObjectEditField(user, id, input),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
+      relationDelete: ({ relationId }) => stixDomainObjectDeleteRelation(user, id, relationId),
     }),
     organizationAdd: (_, { input }, { user }) => addOrganization(user, input),
   },

@@ -13,5 +13,5 @@ export const findAll = (args) => {
 
 export const addThreatActor = async (user, threatActor) => {
   const created = await createEntity(user, threatActor, ENTITY_TYPE_THREAT_ACTOR);
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
 };

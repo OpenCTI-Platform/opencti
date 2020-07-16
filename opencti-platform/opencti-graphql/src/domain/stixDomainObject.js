@@ -23,8 +23,9 @@ import { connectorsForExport } from './connector';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import stixDomainObjectResolvers from '../resolvers/stixDomainObject';
-import { reportContainsstixDomainObject } from './report';
-import { addStixRelation, findAll as findAllStixRelations } from './stixCoreRelationship';
+import { noteContainsStixCoreObjectOrStixRelationship } from './note';
+import { reportContainsStixCoreObjectOrStixRelationship } from './report';
+import { addStixCoreRelationship, findAll as findAllStixRelations } from './stixCoreRelationship';
 import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import { INDEX_STIX_ENTITIES } from '../database/utils';
 import { createdBy, killChainPhases, markingDefinitions, reports, notes } from './stixCoreObject';
@@ -204,11 +205,7 @@ export const stixDomainObjectExportPush = async (
 };
 export const addstixDomainObject = async (user, stixDomainObject) => {
   const innerType = stixDomainObject.type;
-  const domainToCreate = dissoc('type', stixDomainObject);
-  if (innerType === ENTITY_TYPE_USER) {
-    return addPerson(user, domainToCreate);
-  }
-  const created = await createEntity(user, domainToCreate, innerType);
+  const created = await createEntity(user, dissoc('type', stixDomainObject), innerType);
   return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
 };
 export const stixDomainObjectDelete = async (user, stixDomainObjectId) => {
@@ -353,7 +350,7 @@ export const stixDomainObjectMerge = async (user, stixDomainObjectId, stixDomain
             killChainPhases: map((n) => n.node.id, relationkillChainPhases.edges),
           };
           if (relationToCreate.fromId !== relationToCreate.toId) {
-            const newRelation = await addStixRelation(user, relationToCreate);
+            const newRelation = await addStixCoreRelationship(user, relationToCreate);
             await Promise.all(
               relationReports.edges.map((report) => {
                 return stixDomainObjectAddRelation(user, report.node.id, {
@@ -383,7 +380,7 @@ export const stixDomainObjectMerge = async (user, stixDomainObjectId, stixDomain
       return Promise.all(
         stixDomainObjectReports.edges.map(async (reportEdge) => {
           const report = reportEdge.node;
-          const alreadyInReport = await reportContainsstixDomainObject(report.id, stixDomainObjectId);
+          const alreadyInReport = await reportContainsStixCoreObjectOrStixRelationship(report.id, stixDomainObjectId);
           if (!alreadyInReport) {
             return stixDomainObjectAddRelation(user, report.id, {
               toId: stixDomainObjectId,
@@ -403,7 +400,7 @@ export const stixDomainObjectMerge = async (user, stixDomainObjectId, stixDomain
       return Promise.all(
         stixDomainObjectNotes.edges.map(async (noteEdge) => {
           const note = noteEdge.node;
-          const alreadyInNote = await noteContainsstixDomainObject(note.id, stixDomainObjectId);
+          const alreadyInNote = await noteContainsStixCoreObjectOrStixRelationship(note.id, stixDomainObjectId);
           if (!alreadyInNote) {
             return stixDomainObjectAddRelation(user, note.id, {
               toId: stixDomainObjectId,

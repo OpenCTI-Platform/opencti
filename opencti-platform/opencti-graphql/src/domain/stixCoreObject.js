@@ -84,24 +84,24 @@ export const markingDefinitions = (stixCoreObjectId) => {
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
-export const killChainPhases = (stixDomainEntityId) => {
+export const killChainPhases = (stixDomainObjectId) => {
   return findWithConnectedRelations(
     `match $to isa Kill-Chain-Phase; $rel(kill_chain_phase:$to, phase_belonging:$from) isa ${RELATION_KILL_CHAIN_PHASE};
-    $from has internal_id "${escapeString(stixDomainEntityId)}"; get;`,
+    $from has internal_id "${escapeString(stixDomainObjectId)}"; get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
-export const externalReferences = (stixDomainEntityId) => {
+export const externalReferences = (stixDomainObjectId) => {
   return findWithConnectedRelations(
     `match $to isa External-Reference; $rel(external_reference:$to, so:$from) isa ${RELATION_EXTERNAL_REFERENCE};
-    $from has internal_id "${escapeString(stixDomainEntityId)}"; get;`,
+    $from has internal_id "${escapeString(stixDomainObjectId)}"; get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
 
-export const stixRelations = (stixCoreObjectId, args) => {
+export const stixCoreRelationships = (stixCoreObjectId, args) => {
   const finalArgs = assoc('fromId', stixCoreObjectId, args);
   return relationFindAll(finalArgs);
 };
@@ -125,8 +125,8 @@ export const stixCoreObjectAddRelation = async (user, stixCoreObjectId, input) =
 };
 
 export const stixCoreObjectDeleteRelation = async (user, stixCoreObjectId, relationId) => {
-  const stixDomainEntity = await internalLoadEntityById(stixCoreObjectId);
-  const entityType = stixDomainEntity.entity_type;
+  const stixDomainObject = await internalLoadEntityById(stixCoreObjectId);
+  const entityType = stixDomainObject.entity_type;
   // Check if entity is a real stix domain
   if (!isStixCoreObject(entityType)) {
     throw ForbiddenAccess();
@@ -135,12 +135,12 @@ export const stixCoreObjectDeleteRelation = async (user, stixCoreObjectId, relat
   // TODO JRI @SAM CHECK
   if (
     (data.entity_type !== 'stix_relation' && data.entity_type !== 'relation_embedded') ||
-    (stixDomainEntity.entity_type === ENTITY_TYPE_USER &&
-      !isNil(stixDomainEntity.external) &&
+    (stixDomainObject.entity_type === ENTITY_TYPE_USER &&
+      !isNil(stixDomainObject.external) &&
       ![RELATION_OBJECT_LABEL, RELATION_CREATED_BY, RELATION_OBJECT_MARKING].includes(data.entity_type))
   ) {
     throw ForbiddenAccess();
   }
   await deleteRelationById(user, relationId, 'stix_relation_embedded');
-  return notify(BUS_TOPICS.stixCoreObject.EDIT_TOPIC, stixDomainEntity, user);
+  return notify(BUS_TOPICS.stixCoreObject.EDIT_TOPIC, stixDomainObject, user);
 };

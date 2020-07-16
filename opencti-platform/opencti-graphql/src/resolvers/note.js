@@ -11,17 +11,17 @@ import {
   notesTimeSeries,
   notesTimeSeriesByAuthor,
   notesTimeSeriesByEntity,
-  noteContainsStixDomainEntity,
+  noteContainsStixDomainObject,
   noteContainsStixRelation,
   noteContainsStixObservable,
 } from '../domain/note';
 import {
-  stixDomainEntityAddRelation,
-  stixDomainEntityCleanContext,
-  stixDomainEntityDelete,
-  stixDomainEntityDeleteRelation,
-  stixDomainEntityEditContext,
-  stixDomainEntityEditField,
+  stixDomainObjectAddRelation,
+  stixDomainObjectCleanContext,
+  stixDomainObjectDelete,
+  stixDomainObjectDeleteRelation,
+  stixDomainObjectEditContext,
+  stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import {
@@ -56,8 +56,8 @@ const noteResolvers = {
       }
       return [];
     },
-    noteContainsStixDomainEntity: (_, args) => {
-      return noteContainsStixDomainEntity(args.id, args.objectId);
+    noteContainsStixDomainObject: (_, args) => {
+      return noteContainsStixDomainObject(args.id, args.objectId);
     },
     noteContainsStixRelation: (_, args) => {
       return noteContainsStixRelation(args.id, args.objectId);
@@ -85,13 +85,13 @@ const noteResolvers = {
   },
   Mutation: {
     noteEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainEntityDelete(user, id),
-      fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
-      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
-      contextClean: () => stixDomainEntityCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
+      delete: () => stixDomainObjectDelete(user, id),
+      fieldPatch: ({ input }) => stixDomainObjectEditField(user, id, input),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
       relationDelete: ({ relationId, toId, relationType }) =>
-        stixDomainEntityDeleteRelation(user, id, relationId, toId, relationType),
+        stixDomainObjectDeleteRelation(user, id, relationId, toId, relationType),
     }),
     noteAdd: (_, { input }, { user }) => addNote(user, input),
   },

@@ -20,7 +20,7 @@ export const findAll = (args) => {
 
 export const addCourseOfAction = async (user, courseOfAction) => {
   const created = await createEntity(user, courseOfAction, ENTITY_TYPE_COURSE_OF_ACTION);
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
 };
 
 export const attackPatterns = async (courseOfActionId) => {

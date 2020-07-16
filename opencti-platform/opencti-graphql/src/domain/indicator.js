@@ -192,7 +192,7 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
       return askEnrich(observableToEnrich.id, observableToEnrich.type);
     })
   );
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
 };
 
 export const observables = (indicatorId) => {

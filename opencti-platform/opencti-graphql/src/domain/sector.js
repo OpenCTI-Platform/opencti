@@ -51,5 +51,5 @@ export const isSubSector = async (sectorId, args) => {
 
 export const addSector = async (user, sector) => {
   const created = await createEntity(user, sector, ENTITY_TYPE_IDENTITY_SECTOR);
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
 };

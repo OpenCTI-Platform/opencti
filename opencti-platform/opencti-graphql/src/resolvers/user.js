@@ -34,7 +34,7 @@ import {
   roleCleanContext,
 } from '../domain/user';
 import { logger } from '../config/conf';
-import { stixDomainEntityCleanContext, stixDomainEntityEditContext } from '../domain/stixDomainObject';
+import { stixDomainObjectCleanContext, stixDomainObjectEditContext } from '../domain/stixDomainObject';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import passport, { PROVIDERS } from '../config/providers';
 import { AuthenticationFailure } from '../config/errors';
@@ -111,8 +111,8 @@ const userResolvers = {
     userEdit: (_, { id }, { user }) => ({
       delete: () => userDelete(user, id),
       fieldPatch: ({ input }) => userEditField(user, id, input),
-      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
-      contextClean: () => stixDomainEntityCleanContext(user, id),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(user, id),
       tokenRenew: () => userRenewToken(user, id),
       removeRole: ({ name }) => removeRole(id, name),
       relationAdd: ({ input }) => userAddRelation(user, id, input),
@@ -121,8 +121,8 @@ const userResolvers = {
     personEdit: (_, { id }, { user }) => ({
       delete: () => personDelete(user, id),
       fieldPatch: ({ input }) => personEditField(user, id, input),
-      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
-      contextClean: () => stixDomainEntityCleanContext(user, id),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(user, id),
       relationAdd: ({ input }) => personAddRelation(user, id, input),
       relationDelete: ({ relationId }) => personDeleteRelation(user, id, relationId),
     }),

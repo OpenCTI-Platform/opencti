@@ -9,11 +9,10 @@ import attributeResolvers from '../resolvers/attribute';
 import subTypeResolvers from '../resolvers/subType';
 import labelResolvers from '../resolvers/label';
 import rabbitmqMetricsResolvers from '../resolvers/rabbitmqMetrics';
-import globalObjectResolvers from '../resolvers/globalObject';
-import stixEntityResolvers from '../resolvers/stixCoreObject';
-import stixDomainEntityResolvers from '../resolvers/stixDomainObject';
-import stixObservableResolvers from '../resolvers/stixCyberObservable';
-import stixRelationResolvers from '../resolvers/stixRelation';
+import stixCoreObjectResolvers from '../resolvers/stixCoreObject';
+import stixDomainObjectResolvers from '../resolvers/stixDomainObject';
+import stixCyberObservableResolvers from '../resolvers/stixCyberObservable';
+import stixCoreRelationshipResolvers from '../resolvers/stixCoreRelationship';
 import stixSightingResolvers from '../resolvers/stixSighting';
 import stixObservableRelationResolvers from '../resolvers/stixObservableRelation';
 import workspaceResolvers from '../resolvers/workspace';
@@ -62,11 +61,10 @@ const createSchema = () => {
     rabbitmqMetricsResolvers,
     connectorResolvers,
     fileResolvers,
-    globalObjectResolvers,
-    stixEntityResolvers,
-    stixDomainEntityResolvers,
-    stixObservableResolvers,
-    stixRelationResolvers,
+    stixCoreObjectResolvers,
+    stixDomainObjectResolvers,
+    stixCyberObservableResolvers,
+    stixCoreRelationshipResolvers,
     stixSightingResolvers,
     stixObservableRelationResolvers,
     workspaceResolvers,

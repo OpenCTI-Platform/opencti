@@ -158,6 +158,6 @@ export const addReport = async (user, report) => {
     assoc('source_confidence_level', propOr(sourceConfidenceLevel, 'source_confidence_level', report))
   )(report);
   const created = await createEntity(user, finalReport, ENTITY_TYPE_CONTAINER_REPORT);
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
 };
 // endregion
