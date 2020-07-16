@@ -802,7 +802,7 @@ export const elLoadById = (id, relationsMap = null, indices = KNOWLEDGE_INDICES)
   return elInternalLoadById(id, ['internal_id'], relationsMap, indices);
 };
 export const elLoadByStixId = (id, relationsMap = null, indices = KNOWLEDGE_INDICES) => {
-  return elInternalLoadById(id, ['standard_stix_id', 'stix_ids'], relationsMap, indices);
+  return elInternalLoadById(id, ['standard_id', 'stix_ids'], relationsMap, indices);
 };
 export const elBulk = async (args) => {
   return el.bulk(args);

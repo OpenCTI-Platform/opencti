@@ -1,5 +1,5 @@
 import { pipe, assoc } from 'ramda';
-import { findAll as stixRelationFindAll, stixRelationCleanContext, stixRelationEditContext } from './stixRelation';
+import { findAll as stixRelationFindAll, stixRelationCleanContext, stixRelationEditContext } from './stixCoreRelationship';
 import {
   createRelation,
   deleteRelationById,

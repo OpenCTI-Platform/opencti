@@ -16,7 +16,7 @@ import {
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { findAll as findAllStixDomains } from './stixDomainEntity';
+import { findAll as findAllStixDomains } from './stixDomainObject';
 import { ForbiddenAccess } from '../config/errors';
 import { ENTITY_TYPE_WORKSPACE, RELATION_OBJECT } from '../utils/idGenerator';
 

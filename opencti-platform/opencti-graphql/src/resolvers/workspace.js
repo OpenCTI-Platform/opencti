@@ -17,7 +17,7 @@ import {
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { BUS_TOPICS } from '../config/conf';
-import { markingDefinitions, labels } from '../domain/stixEntity';
+import { markingDefinitions, labels } from '../domain/stixCoreObject';
 
 const workspaceResolvers = {
   Query: {

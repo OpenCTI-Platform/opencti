@@ -21,8 +21,9 @@ export const findAll = (args) => {
 
 export const parentRegions = (regionId) => {
   return findWithConnectedRelations(
-    `match $to isa Region; $rel(${RELATION_LOCATED_AT}_from:$from, ${RELATION_LOCATED_AT}_to:$to) isa ${RELATION_LOCATED_AT};
-     $from has internal_id "${escapeString(regionId)}"; get;`,
+    `match $to isa Region; 
+    $rel(${RELATION_LOCATED_AT}_from:$from, ${RELATION_LOCATED_AT}_to:$to) isa ${RELATION_LOCATED_AT};
+    $from has internal_id "${escapeString(regionId)}"; get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
@@ -30,8 +31,9 @@ export const parentRegions = (regionId) => {
 
 export const subRegions = (regionId) => {
   return findWithConnectedRelations(
-    `match $to isa Region; $rel(${RELATION_LOCATED_AT}_from:$from, ${RELATION_LOCATED_AT}_to:$to) isa localization;
-     $from has internal_id "${escapeString(regionId)}"; get;`,
+    `match $to isa Region; 
+    $rel(${RELATION_LOCATED_AT}_from:$from, ${RELATION_LOCATED_AT}_to:$to) isa ${RELATION_LOCATED_AT};
+    $from has internal_id "${escapeString(regionId)}"; get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
@@ -40,7 +42,7 @@ export const subRegions = (regionId) => {
 export const isSubRegion = async (regionId, args) => {
   const numberOfParents = await getSingleValueNumber(
     `match $parent isa Region; 
-    $rel(${RELATION_LOCATED_AT}_from:$subregion, ${RELATION_LOCATED_AT}_to:$parent) isa localization; 
+    $rel(${RELATION_LOCATED_AT}_from:$subregion, ${RELATION_LOCATED_AT}_to:$parent) isa ${RELATION_LOCATED_AT}; 
     $subregion has internal_id "${escapeString(regionId)}"; get; count;`,
     args
   );

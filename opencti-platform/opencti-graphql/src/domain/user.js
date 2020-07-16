@@ -359,6 +359,7 @@ export const loginFromProvider = async (email, name) => {
   await clearAccessCache(result.token.id);
   return result.token;
 };
+
 export const login = async (email, password) => {
   const query = `match $client isa User, has user_email "${escapeString(email)}";
    $client has internal_id $client_id;

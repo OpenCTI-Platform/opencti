@@ -11,10 +11,10 @@ import {
   stixRelationEditContext,
   stixRelationEditField,
   stixRelationsNumber,
-} from '../domain/stixRelation';
+} from '../domain/stixCoreRelationship';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { killChainPhases, stixRelations } from '../domain/stixEntity';
+import { killChainPhases, stixRelations } from '../domain/stixCoreObject';
 import { distributionRelations, loadById, timeSeriesRelations, REL_CONNECTED_SUFFIX } from '../database/grakn';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { convertDataToStix } from '../database/stix';

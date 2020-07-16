@@ -11,7 +11,7 @@ import {
   stixSightingEditContext,
   stixSightingEditField,
   stixSightingsNumber,
-} from '../domain/stixSighting';
+} from '../domain/stixSightingRelationship';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { distributionRelations, loadById, timeSeriesRelations, REL_CONNECTED_SUFFIX } from '../database/grakn';

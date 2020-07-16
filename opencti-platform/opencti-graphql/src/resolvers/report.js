@@ -2,18 +2,14 @@ import {
   addReport,
   findAll,
   findById,
-  objectRefs,
-  observableRefs,
-  relationRefs,
+  objects,
   reportsDistributionByEntity,
   reportsNumber,
   reportsNumberByEntity,
   reportsTimeSeries,
   reportsTimeSeriesByAuthor,
   reportsTimeSeriesByEntity,
-  reportContainsStixDomainEntity,
-  reportContainsStixRelation,
-  reportContainsStixObservable,
+  reportContainsStixCoreObjectOrStixRelationship,
 } from '../domain/report';
 import {
   stixDomainEntityAddRelation,
@@ -22,7 +18,7 @@ import {
   stixDomainEntityDeleteRelation,
   stixDomainEntityEditContext,
   stixDomainEntityEditField,
-} from '../domain/stixDomainEntity';
+} from '../domain/stixDomainObject';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import {
   RELATION_CREATED_BY,
@@ -56,14 +52,8 @@ const reportResolvers = {
       }
       return [];
     },
-    reportContainsStixDomainEntity: (_, args) => {
-      return reportContainsStixDomainEntity(args.id, args.objectId);
-    },
-    reportContainsStixRelation: (_, args) => {
-      return reportContainsStixRelation(args.id, args.objectId);
-    },
-    reportContainsStixObservable: (_, args) => {
-      return reportContainsStixObservable(args.id, args.objectId);
+    reportContainsStixCoreObjectOrStixRelationship: (_, args) => {
+      return reportContainsStixCoreObjectOrStixRelationship(args.id, args.objectId);
     },
   },
   ReportsOrdering: {
@@ -79,9 +69,7 @@ const reportResolvers = {
     observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id`,
   },
   Report: {
-    objectRefs: (report, args) => objectRefs(report.id, args),
-    observableRefs: (report, args) => observableRefs(report.id, args),
-    relationRefs: (report, args) => relationRefs(report.id, args),
+    objects: (report, args) => objects(report.id, args),
   },
   Mutation: {
     reportEdit: (_, { id }, { user }) => ({

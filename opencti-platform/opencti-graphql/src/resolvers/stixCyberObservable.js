@@ -17,14 +17,14 @@ import {
   stixObservablesTimeSeries,
   stixObservableExportAsk,
   stixObservableExportPush,
-} from '../domain/stixObservable';
+} from '../domain/stixCyberObservable';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { workForEntity } from '../domain/work';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { connectorsForEnrichment } from '../domain/enrichment';
 import { convertDataToStix } from '../database/stix';
-import { stixRelations } from '../domain/stixEntity';
+import { stixRelations } from '../domain/stixCoreObject';
 import { filesListing } from '../database/minio';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
 

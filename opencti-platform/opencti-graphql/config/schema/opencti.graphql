@@ -309,14 +309,14 @@ type FileConnection {
 
 interface BasicObject {
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
 }
 
 ######## INTERNAL OBJECT ENTITIES
 interface InternalObject {
   # BasicObject
-  id: ID! # internal_id
-  standard_id: String!
+  id: ID! # internal_id!
   entity_type: String!
 }
 
@@ -856,7 +856,7 @@ input KillChainPhaseAddInput {
 ######## STIX CORE OBJECT ENTITIES
 
 union OrganizationOrIndividual = Organization | Individual
-interface StixCoreObject {
+interface StixCoreObject implements BasicObject & StixObject {
   # BasicObject
   id: ID! # internal_id
   standard_id: String!
@@ -4412,6 +4412,7 @@ union StixCyberObservableAddInput =
 
 interface BasicRelationship {
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   fromRole: String
   toRole: String

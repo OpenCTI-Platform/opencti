@@ -13,9 +13,9 @@ export const STIX_SPEC_VERSION = '2.1';
 
 export const buildStixData = (entityData, onlyBase = false) => {
   const finalData = pipe(
-    dissoc('standard_stix_id'),
+    dissoc('standard_id'),
     dissoc('internal_id'),
-    assoc('id', entityData.standard_stix_id),
+    assoc('id', entityData.standard_id),
     dissoc('entity_type'),
     assoc('type', entityData.entity_type.toLowerCase()),
     // Reserved keywords in Grakn
@@ -32,7 +32,7 @@ export const buildStixData = (entityData, onlyBase = false) => {
   return finalData;
 };
 
-export const labelsToStix = (labelsEdges) => map((label) => label.node.standard_stix_id, labelsEdges);
+export const labelsToStix = (labelsEdges) => map((label) => label.node.standard_id, labelsEdges);
 
 export const externalReferencesToStix = (externalReferencesEdges) =>
   map(
@@ -48,11 +48,11 @@ export const killChainPhasesToStix = (killChainPhasesEdges) =>
     killChainPhasesEdges
   );
 
-export const objectsToStix = (objectRefsEdges) => map((objectRef) => objectRef.node.standard_stix_id, objectRefsEdges);
+export const objectsToStix = (objectRefsEdges) => map((objectRef) => objectRef.node.standard_id, objectRefsEdges);
 
 export const markingDefinitionToStix = (markingDefinition, onlyBase = false) => {
   const baseData = {
-    id: markingDefinition.standard_stix_id,
+    id: markingDefinition.standard_id,
     type: 'marking-definition',
     spec_version: STIX_SPEC_VERSION,
   };
@@ -71,9 +71,9 @@ export const markingDefinitionToStix = (markingDefinition, onlyBase = false) => 
 
 const convertStixObjectToStix = (data, onlyBase) => {
   const finalData = pipe(
-    dissoc('standard_stix_id'),
+    dissoc('standard_id'),
     dissoc('internal_id'),
-    assoc('id', data.standard_stix_id),
+    assoc('id', data.standard_id),
     dissoc('entity_type'),
     assoc('type', data.entity_type.toLowerCase()),
     // Reserved keywords in Grakn
@@ -92,14 +92,14 @@ const convertStixObjectToStix = (data, onlyBase) => {
 
 export const convertStixCoreRelationshipToStix = (data, extra = null, onlyBase = true) => {
   const finalData = pipe(
-    dissoc('standard_stix_id'),
+    dissoc('standard_id'),
     dissoc('internal_id'),
-    assoc('id', data.standard_stix_id),
+    assoc('id', data.standard_id),
     dissoc('entity_type'),
     assoc('type', 'relationship'),
     // Relation IDs
-    assoc('source_ref', extra.from.standard_stix_id),
-    assoc('target_ref', extra.to.standard_stix_id)
+    assoc('source_ref', extra.from.standard_id),
+    assoc('target_ref', extra.to.standard_id)
   )(data);
   if (onlyBase) {
     return pick(['id', 'type', 'spec_version'], data);
@@ -109,17 +109,17 @@ export const convertStixCoreRelationshipToStix = (data, extra = null, onlyBase =
 
 export const convertStixSightingRelationshipToStix = async (data, extra = null, onlyBase = true) => {
   const finalData = pipe(
-    dissoc('standard_stix_id'),
+    dissoc('standard_id'),
     dissoc('internal_id'),
-    assoc('id', data.standard_stix_id),
+    assoc('id', data.standard_id),
     dissoc('entity_type'),
     assoc('type', 'relationship'),
     // Reserved keywords in Grakn
     dissoc('attribute_count'),
     assoc('count', data.attribute_count),
     // Relation IDs
-    assoc('sighting_of_ref', extra.from.standard_stix_id),
-    assoc('where_sighted_refs', [extra.to.standard_stix_id])
+    assoc('sighting_of_ref', extra.from.standard_id),
+    assoc('where_sighted_refs', [extra.to.standard_id])
   )(data);
   if (onlyBase) {
     return pick(['id', 'type', 'spec_version'], data);
@@ -134,7 +134,7 @@ export const convertStixMetaRelationshipToStix = (data, eventType, extra) => {
     // Internal Meta = _ref or _refs
     finalData = assoc(
       `${entityType.replace('-', '_')}_ref${data.entity_type !== RELATION_CREATED_BY ? 's' : ''}`,
-      isNil(extra.to) ? null : extra.to.standard_stix_id,
+      isNil(extra.to) ? null : extra.to.standard_id,
       finalData
     );
   } else {

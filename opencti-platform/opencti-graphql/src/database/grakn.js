@@ -92,7 +92,6 @@ import {
   isStixObject,
   isStixMetaObject,
   isStixSightingRelationship,
-  isInternalRelationship,
   isStixRelationship,
   generateInternalId,
 } from '../utils/idGenerator';
@@ -1060,16 +1059,12 @@ export const load = async (query, entities, options) => {
   }
   return head(data);
 };
-
 const internalLoadEntityByStixId = async (id, args = {}) => {
   const { type } = args;
   if (useCache(args)) return elLoadByStixId(id);
   const queryType = type || 'thing';
   const stixId = `${escapeString(id)}`;
-  const query = `match $x isa ${queryType}; { $x has internal_id "${stixId}";} 
-    or { $x has standard_stix_id "${stixId}";}
-    or { $x has stix_ids "${stixId}";}; 
-    get;`;
+  const query = `match $x isa ${queryType}; { $x has standard_id "${stixId}";} or { $x has stix_ids "${stixId}";}; get;`;
   const element = await load(query, ['x'], args);
   return element ? element.x : null;
 };
@@ -1091,7 +1086,7 @@ const loadRelationByStixId = async (id, type, args = {}) => {
   if (!useCache()) return elLoadByStixId(id, type);
   const eid = escapeString(id);
   const query = `match $rel($from, $to) isa ${type}; { $rel has internal_id "${eid}"; } 
-    or { $rel has standard_stix_id "${eid}"; }
+    or { $rel has standard_id "${eid}"; }
     or { $x has stix_ids "${eid}";}; get;`;
   const element = await load(query, ['rel'], args);
   return element ? element.rel : null;

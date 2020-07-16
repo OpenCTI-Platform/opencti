@@ -6,7 +6,7 @@ import {
   stixDomainEntityDeleteRelation,
   stixDomainEntityEditContext,
   stixDomainEntityEditField,
-} from '../domain/stixDomainEntity';
+} from '../domain/stixDomainObject';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
 

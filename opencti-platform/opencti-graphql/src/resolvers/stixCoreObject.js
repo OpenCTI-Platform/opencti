@@ -8,7 +8,7 @@ import {
   externalReferences,
   stixEntityAddRelation,
   stixEntityDeleteRelation,
-} from '../domain/stixEntity';
+} from '../domain/stixCoreObject';
 import { creator } from '../domain/log';
 import { fetchEditContext } from '../database/redis';
 import { convertDataToStix } from '../database/stix';

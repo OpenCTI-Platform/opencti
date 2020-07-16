@@ -34,7 +34,7 @@ import {
   roleCleanContext,
 } from '../domain/user';
 import { logger } from '../config/conf';
-import { stixDomainEntityCleanContext, stixDomainEntityEditContext } from '../domain/stixDomainEntity';
+import { stixDomainEntityCleanContext, stixDomainEntityEditContext } from '../domain/stixDomainObject';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import passport, { PROVIDERS } from '../config/providers';
 import { AuthenticationFailure } from '../config/errors';

@@ -32,7 +32,7 @@ import { checkObservableSyntax } from '../utils/syntax';
 import { connectorsForExport } from './connector';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { generateFileExportName, upload } from '../database/minio';
-import stixObservableResolvers from '../resolvers/stixObservable';
+import stixObservableResolvers from '../resolvers/stixCyberObservable';
 import { RELATION_OBJECT } from '../utils/idGenerator';
 
 export const findById = (stixObservableId) => {

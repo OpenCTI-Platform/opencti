@@ -15,7 +15,7 @@ import { notify } from '../database/redis';
 import { buildPagination } from '../database/utils';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { findById as findKillChainPhaseById } from './killChainPhase';
-import { findById as findStixObservableById } from './stixObservable';
+import { findById as findStixObservableById } from './stixCyberObservable';
 import { checkIndicatorSyntax, extractObservables } from '../python/pythonBridge';
 import { FunctionalError } from '../config/errors';
 import { isStixCyberObservable, generateStandardId, ENTITY_TYPE_INDICATOR, RELATION_BASED_ON } from '../utils/idGenerator';
@@ -146,7 +146,7 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
             if (isNil(checkObservable)) {
               const stixObservable = pipe(
                 dissoc('internal_id'),
-                dissoc('standard_stix_id'),
+                dissoc('standard_id'),
                 dissoc('stix_ids'),
                 dissoc('confidence'),
                 dissoc('x_opencti_main_observable_type'),

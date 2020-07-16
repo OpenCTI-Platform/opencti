@@ -7,7 +7,7 @@ import {
   internalLoadEntityById,
   loadWithConnectedRelations,
 } from '../database/grakn';
-import { findAll as relationFindAll } from './stixRelation';
+import { findAll as relationFindAll } from './stixCoreRelationship';
 import { buildPagination } from '../database/utils';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
@@ -24,62 +24,62 @@ import {
   ENTITY_TYPE_LABEL,
 } from '../utils/idGenerator';
 
-export const findById = async (stixEntityId) => {
-  let data = await internalLoadEntityById(stixEntityId);
+export const findById = async (stixCoreObjectId) => {
+  let data = await internalLoadEntityById(stixCoreObjectId);
   if (!data) return data;
   if (!isStixCoreObject(data.type)) throw ForbiddenAccess();
   data = pipe(dissoc('user_email'), dissoc('password'))(data);
   return data;
 };
 
-export const createdBy = (stixEntityId) => {
+export const createdBy = (stixCoreObjectId) => {
   return loadWithConnectedRelations(
     `match $to isa Identity; $rel(creator:$to, so:$from) isa ${RELATION_CREATED_BY};
-   $from has internal_id "${escapeString(stixEntityId)}"; get; offset 0; limit 1;`,
+   $from has internal_id "${escapeString(stixCoreObjectId)}"; get; offset 0; limit 1;`,
     'to',
     { extraRelKey: 'rel' }
   );
 };
-export const reports = (stixEntityId) => {
+export const reports = (stixCoreObjectId) => {
   return findWithConnectedRelations(
     `match $to isa Report; $rel(knowledge_aggregation:$to, so:$from) isa ${RELATION_OBJECT};
-   $from has internal_id "${escapeString(stixEntityId)}";
+   $from has internal_id "${escapeString(stixCoreObjectId)}";
    get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
-export const notes = (stixEntityId) => {
+export const notes = (stixCoreObjectId) => {
   return findWithConnectedRelations(
     `match $to isa Note; $rel(knowledge_aggregation:$to, so:$from) isa ${RELATION_OBJECT};
-   $from has internal_id "${escapeString(stixEntityId)}";
+   $from has internal_id "${escapeString(stixCoreObjectId)}";
    get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
-export const opinions = (stixEntityId) => {
+export const opinions = (stixCoreObjectId) => {
   return findWithConnectedRelations(
     `match $to isa Opinion; $rel(knowledge_aggregation:$to, so:$from) isa ${RELATION_OBJECT};
-   $from has internal_id "${escapeString(stixEntityId)}";
+   $from has internal_id "${escapeString(stixCoreObjectId)}";
    get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
-export const labels = (stixEntityId) => {
+export const labels = (stixCoreObjectId) => {
   return findWithConnectedRelations(
     `match $to isa ${ENTITY_TYPE_LABEL}; $rel(tagging:$to, so:$from) isa ${RELATION_OBJECT_LABEL};
-   $from has internal_id "${escapeString(stixEntityId)}";
+   $from has internal_id "${escapeString(stixCoreObjectId)}";
    get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
-export const markingDefinitions = (stixEntityId) => {
+export const markingDefinitions = (stixCoreObjectId) => {
   return findWithConnectedRelations(
     `match $to isa Marking-Definition; $rel(marking:$to, so:$from) isa ${RELATION_OBJECT_MARKING};
-   $from has internal_id "${escapeString(stixEntityId)}"; get;`,
+   $from has internal_id "${escapeString(stixCoreObjectId)}"; get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
@@ -101,13 +101,13 @@ export const externalReferences = (stixDomainEntityId) => {
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
 
-export const stixRelations = (stixEntityId, args) => {
-  const finalArgs = assoc('fromId', stixEntityId, args);
+export const stixRelations = (stixCoreObjectId, args) => {
+  const finalArgs = assoc('fromId', stixCoreObjectId, args);
   return relationFindAll(finalArgs);
 };
 
-export const stixEntityAddRelation = async (user, stixEntityId, input) => {
-  const data = await internalLoadEntityById(stixEntityId);
+export const stixCoreObjectAddRelation = async (user, stixCoreObjectId, input) => {
+  const data = await internalLoadEntityById(stixCoreObjectId);
   const isUser = data.entity_type === 'user';
   const stixElement = isStixCoreObject(data.type);
   // TODO @JRI NEED EXPLANATION
@@ -120,12 +120,12 @@ export const stixEntityAddRelation = async (user, stixEntityId, input) => {
   ) {
     throw ForbiddenAccess();
   }
-  const finalInput = assoc('fromId', stixEntityId, input);
+  const finalInput = assoc('fromId', stixCoreObjectId, input);
   return createRelation(user, finalInput);
 };
 
-export const stixEntityDeleteRelation = async (user, stixEntityId, relationId) => {
-  const stixDomainEntity = await internalLoadEntityById(stixEntityId);
+export const stixCoreObjectDeleteRelation = async (user, stixCoreObjectId, relationId) => {
+  const stixDomainEntity = await internalLoadEntityById(stixCoreObjectId);
   const entityType = stixDomainEntity.entity_type;
   // Check if entity is a real stix domain
   if (!isStixCoreObject(entityType)) {
@@ -142,5 +142,5 @@ export const stixEntityDeleteRelation = async (user, stixEntityId, relationId) =
     throw ForbiddenAccess();
   }
   await deleteRelationById(user, relationId, 'stix_relation_embedded');
-  return notify(BUS_TOPICS.StixEntity.EDIT_TOPIC, stixDomainEntity, user);
+  return notify(BUS_TOPICS.stixCoreObject.EDIT_TOPIC, stixDomainEntity, user);
 };
