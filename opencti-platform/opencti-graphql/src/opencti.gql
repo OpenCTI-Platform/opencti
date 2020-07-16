@@ -4,24 +4,20 @@ define
 
   # Common
   internal_id sub attribute, datatype string;
+  standard_id sub attribute, datatype string;
   entity_type sub attribute, datatype string;
   created_at sub attribute, datatype date;
   created_at_day sub attribute, datatype string;
   created_at_month sub attribute, datatype string;
   created_at_year sub attribute, datatype string;
   updated_at sub attribute, datatype date;
-
   name sub attribute, datatype string;
   description sub attribute, datatype string;
   graph_data sub attribute, datatype string;
   issuer sub attribute, datatype string;
 
-  # Internal Common
-  standard_id sub attribute, datatype string;
-
   # STIX Common
   spec_version sub attribute, datatype string;
-  standard_stix_id sub attribute, datatype string;
   stix_ids sub attribute, datatype string;
   created sub attribute, datatype date;
   modified sub attribute, datatype date;
@@ -376,6 +372,7 @@ define
   basic-relationship sub relation,
     abstract,
     key internal_id,
+    key standard_id,
     has entity_type,
     has created_at,
     has created_at_day,
@@ -385,8 +382,7 @@ define
 
   # Internal relations
   internal-relationship sub basic-relationship,
-    abstract,
-    key standard_id;
+    abstract;
 
   authorized-by sub internal-relationship,
     relates authorized-by_from,
@@ -416,7 +412,6 @@ define
   # STIX relations
   stix-relationship sub basic-relationship,
     abstract,
-    key standard_stix_id,
     has stix_ids,
     has spec_version,
     has revoked,
@@ -768,12 +763,12 @@ define
   Basic-Object sub entity,
     abstract,
     key internal_id,
+    key standard_id,
     has entity_type;
 
   # Internal entities
   Internal-Object sub Basic-Object,
-    abstract,
-    key standard_id;
+    abstract;
 
   Settings sub Internal-Object,
     has platform_title,
@@ -886,7 +881,6 @@ define
   # STIX Object Entities
   Stix-Object sub Basic-Object,
     abstract,
-    key standard_stix_id,
     has stix_ids,
     has spec_version,
     has created_at,

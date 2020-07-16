@@ -77,7 +77,7 @@ import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE, EVENT_TYPE_UPD
 import {
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
-  generateId,
+  generateStandardId,
   isStixMetaRelationship,
   isInternalObject,
   isStixCoreObject,
@@ -94,6 +94,7 @@ import {
   isStixSightingRelationship,
   isInternalRelationship,
   isStixRelationship,
+  generateInternalId,
 } from '../utils/idGenerator';
 import { lockResource } from './redis';
 import { STIX_SPEC_VERSION } from './stix';
@@ -1335,9 +1336,8 @@ const createRelationRaw = async (user, input, opts = {}) => {
     throw MissingReferenceError({ input, from, to });
   }
   // 03. Generate the ID
-  // TODO @Julien check the generation of the ID
-  const inputId = mergeRight(input, { fromId: from.internal_id, toId: to.internal_id });
-  const internalId = generateId(relationshipType, inputId);
+  const internalId = generateInternalId();
+  const standardId = generateStandardId(relationshipType, input);
 
   // 04. Prepare the relation to be created
   const today = now();
@@ -1345,19 +1345,13 @@ const createRelationRaw = async (user, input, opts = {}) => {
   // Default attributes
   // basic-relationship
   relationAttributes.internal_id = internalId;
+  relationAttributes.standard_id = standardId;
   relationAttributes.entity_type = relationshipType;
   relationAttributes.created_at = today;
   relationAttributes.updated_at = today;
 
-  // internal-relationship
-  if (isInternalRelationship(relationshipType)) {
-    // TODO @Julien check if standard_id === internal_id
-    relationAttributes.standard_id = internalId;
-  }
   // stix-relationship
   if (isStixRelationship(relationshipType)) {
-    // TODO @Julien check if standard_stix_id === internal_id
-    relationAttributes.standard_stix_id = internalId;
     relationAttributes.stix_ids = isNil(input.stix_id) ? [] : [input.stix_id];
     relationAttributes.spec_version = STIX_SPEC_VERSION;
     relationAttributes.revoked = isNil(input.revoked) ? false : input.revoked;
@@ -1620,7 +1614,8 @@ export const createEntity = async (user, entity, type, opts = {}) => {
     throw MissingReferenceError({ input: map((n) => n.ref, notResolvedElements) });
   }
   // Generate the internal id
-  const internalId = isNil(entity.internal_id) ? generateId(type, entity) : entity.internal_id;
+  const internalId = generateInternalId();
+  const standardId = generateStandardId(type, entity);
   // Complete with identifiers
   const today = now();
   // Dissoc additional data
@@ -1636,14 +1631,12 @@ export const createEntity = async (user, entity, type, opts = {}) => {
   data = pipe(assoc('internal_id', internalId), assoc('entity_type', type))(data);
   // Internal-Object
   if (isInternalObject(type)) {
-    // TODO @Julien check if standard_id === internal_id
-    data = assoc('standard_id', internalId);
+    data = assoc('standard_id', standardId);
   }
   // Stix-Object
   if (isStixObject(type)) {
     data = pipe(
-      // TODO @Julien check if standard_stix_id === internal_id
-      assoc('standard_stix_id', internalId),
+      assoc('standard_id', standardId),
       assoc('stix_ids', isNil(entity.stix_id) ? [] : [entity.stix_id]),
       assoc('spec_version', STIX_SPEC_VERSION),
       assoc('created_at', today),

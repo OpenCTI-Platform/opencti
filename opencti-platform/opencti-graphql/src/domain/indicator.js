@@ -18,7 +18,7 @@ import { findById as findKillChainPhaseById } from './killChainPhase';
 import { findById as findStixObservableById } from './stixObservable';
 import { checkIndicatorSyntax, extractObservables } from '../python/pythonBridge';
 import { FunctionalError } from '../config/errors';
-import { isStixCyberObservable, generateId, ENTITY_TYPE_INDICATOR, RELATION_BASED_ON } from '../utils/idGenerator';
+import { isStixCyberObservable, generateStandardId, ENTITY_TYPE_INDICATOR, RELATION_BASED_ON } from '../utils/idGenerator';
 import { askEnrich } from './enrichment';
 
 const OpenCTITimeToLive = {
@@ -141,7 +141,7 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
         observablesToLink = await Promise.all(
           observables.map(async (observable) => {
             // TODO GENERATE THE ID
-            const internalId = generateId(indicator.main_observable_type, observable);
+            const internalId = generateStandardId(indicator.main_observable_type, observable);
             const checkObservable = findStixObservableById(internalId);
             if (isNil(checkObservable)) {
               const stixObservable = pipe(

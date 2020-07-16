@@ -48,7 +48,7 @@ import {
   RELATION_HAS_CAPABILITY,
   RELATION_HAS_ROLE,
   RELATION_MEMBER_OF,
-  generateId,
+  generateStandardId,
 } from '../utils/idGenerator';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
@@ -155,7 +155,7 @@ export const getCapabilities = async (userId) => {
   );
   const capabilities = map((r) => r.capability, data);
   if (userId === OPENCTI_ADMIN_UUID && !rFind(propEq('name', BYPASS))(capabilities)) {
-    const id = generateId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
+    const id = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
     capabilities.push({ id, internal_id: id, name: BYPASS });
   }
   return capabilities;
@@ -235,7 +235,7 @@ export const roleEditContext = async (user, roleId, input) => {
 export const assignRoleToUser = (user, userId, roleName) => {
   const assignInput = {
     fromId: userId,
-    toId: generateId(ENTITY_TYPE_ROLE, { name: roleName }),
+    toId: generateStandardId(ENTITY_TYPE_ROLE, { name: roleName }),
     relationship_type: RELATION_HAS_ROLE,
   };
   return createRelation(user, assignInput, { noLog: true });

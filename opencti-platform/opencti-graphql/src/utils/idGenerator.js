@@ -1,4 +1,4 @@
-import { v5 as uuidv5 } from 'uuid';
+import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
 import validator from 'validator';
 import { includes } from 'ramda';
 import { DatabaseError } from '../config/errors';
@@ -557,7 +557,11 @@ const generateStixObservableId = (type, data) => {
   }
 };
 
-export const generateId = (type, data) => {
+export const generateInternalId = () => {
+  return uuidv4();
+};
+
+export const generateStandardId = (type, data) => {
   // Entities
   if (isStixDomainObject(type)) return generateStixDomainObjectId(type, data);
   if (isStixCyberObservable(type)) return generateStixObservableId(type, data);

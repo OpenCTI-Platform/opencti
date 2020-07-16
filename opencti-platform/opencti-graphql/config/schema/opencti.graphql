@@ -316,9 +316,8 @@ interface BasicObject {
 interface InternalObject {
   # BasicObject
   id: ID! # internal_id
-  entity_type: String!
-  # InternalObject
   standard_id: String!
+  entity_type: String!
 }
 
 ############## Settings
@@ -330,9 +329,8 @@ type Provider {
 type Settings implements InternalObject & BasicObject {
   # BasicObject
   id: ID! # internal_id
-  entity_type: String!
-  # InternalObject
   standard_id: String!
+  entity_type: String!
   # Settings
   platform_title: String
   platform_email: String
@@ -363,9 +361,8 @@ type GroupEdge {
 type Group implements InternalObject & BasicObject {
   # BasicObject
   id: ID! # internal_id
-  entity_type: String!
-  # InternalObject
   standard_id: String!
+  entity_type: String!
   # Group
   name: String!
   description: String
@@ -420,9 +417,8 @@ type UserEdge {
 type User implements BasicObject & InternalObject {
   # BasicObject
   id: ID! # internal_id
-  entity_type: String!
-  # InternalObject
   standard_id: String!
+  entity_type: String!
   # User
   user_email: String!
   name: String!
@@ -468,9 +464,8 @@ type RoleEdge {
 type Role implements BasicObject & InternalObject {
   # BasicObject
   id: ID! # internal_id
-  entity_type: String!
-  # InternalObject
   standard_id: String!
+  entity_type: String!
   # Role
   name: String!
   default_assignation: Boolean
@@ -498,9 +493,8 @@ type CapabilityEdge {
 type Capability implements BasicObject & InternalObject {
   # BasicObject
   id: ID! # internal_id
-  entity_type: String!
-  # InternalObject
   standard_id: String!
+  entity_type: String!
   # Capability
   name: String!
   description: String
@@ -534,9 +528,8 @@ type ConnectorConfig {
 type Connector implements BasicObject & InternalObject {
   # BasicObject
   id: ID! # internal_id
-  entity_type: String!
-  # InternalObject
   standard_id: String!
+  entity_type: String!
   # Connector
   name: String!
   connector_type: String
@@ -573,9 +566,8 @@ type WorkspaceEdge {
 type Workspace implements BasicObject & InternalObject {
   # BasicObject
   id: ID! # internal_id
-  entity_type: String!
-  # InternalObject
   standard_id: String!
+  entity_type: String!
   # Workspace
   workspace_type: String!
   name: String!
@@ -599,9 +591,9 @@ input WorkspaceAddInput {
 interface StixObject {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -613,9 +605,9 @@ interface StixObject {
 interface StixMetaObject {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -657,9 +649,9 @@ type MarkingDefinitionEdge {
 type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -716,9 +708,9 @@ type LabelEdge {
 type Label implements BasicObject & StixObject & StixMetaObject {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -773,9 +765,9 @@ type ExternalReferenceEdge {
 type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -834,9 +826,9 @@ type KillChainPhaseEdge {
 type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -867,9 +859,9 @@ union OrganizationOrIndividual = Organization | Individual
 interface StixCoreObject {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -952,9 +944,9 @@ type StixDomainObjectEdge {
 interface StixDomainObject {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -1051,9 +1043,9 @@ type AttackPatternEdge {
 type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -1168,9 +1160,9 @@ type CampaignEdge {
 type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -1242,12 +1234,12 @@ input CampaignAddInput {
 }
 
 ############## Containers
-interface Container {
+interface Container implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -1339,9 +1331,9 @@ type NoteEdge {
 type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -1459,9 +1451,9 @@ type ObservedDataEdge {
 type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -1576,9 +1568,9 @@ type OpinionEdge {
 type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -1699,9 +1691,9 @@ type ReportEdge {
 type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -1811,9 +1803,9 @@ type CourseOfActionEdge {
 type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -1920,9 +1912,9 @@ enum IdentityType {
 interface Identity {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -2022,9 +2014,9 @@ type IndividualEdge {
 type Individual implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -2143,9 +2135,9 @@ enum OrganizationReliability {
 type Organization implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -2257,9 +2249,9 @@ type SectorEdge {
 type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -2382,9 +2374,9 @@ type IndicatorEdge {
 type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -2507,9 +2499,9 @@ type InfrastructureEdge {
 type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -2615,9 +2607,9 @@ type IntrusionSetEdge {
 type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -2698,9 +2690,9 @@ input IntrusionSetAddInput {
 interface Location {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -2784,9 +2776,9 @@ type PositionEdge {
 type Position implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Location {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -2898,9 +2890,9 @@ type CityEdge {
 type City implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Location {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -3004,9 +2996,9 @@ type CountryEdge {
 type Country implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Location {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -3110,9 +3102,9 @@ type RegionEdge {
 type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Location {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -3228,9 +3220,9 @@ type MalwareEdge {
 type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -3345,9 +3337,9 @@ type ThreatActorEdge {
 type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -3467,9 +3459,9 @@ type ToolEdge {
 type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObject {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -3580,9 +3572,9 @@ type VulnerabilityEdge {
 type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & BasicObject {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -3693,9 +3685,9 @@ type XOpenctiIncidentEdge {
 type XOpenctiIncident implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -3803,9 +3795,9 @@ type StixCyberObservableEdge {
 interface StixCyberObservable {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -3845,9 +3837,9 @@ interface StixCyberObservable {
 type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & StixCoreObject & StixCyberObservable {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -3903,9 +3895,9 @@ input AutonomousSystemAddInput {
 type Directory implements BasicObject & StixObject & StixCoreObject & StixCoreObject & StixCyberObservable {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -3965,9 +3957,9 @@ input DirectoryAddInput {
 type DomainName implements BasicObject & StixObject & StixCoreObject & StixCoreObject & StixCyberObservable {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -4019,9 +4011,9 @@ input DomainNameAddInput {
 type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCoreObject & StixCyberObservable {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -4075,9 +4067,9 @@ input EmailAddrAddInput {
 type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCoreObject & StixCyberObservable {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -4142,9 +4134,9 @@ input EmailMessageAddInput {
 interface HashedObservable {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -4191,9 +4183,9 @@ interface HashedObservable {
 type XOpenctiCryptographicKey implements BasicObject & StixObject & StixCoreObject & StixCoreObject & StixCyberObservable {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -4245,9 +4237,9 @@ input XOpenctiCryptographicKeyAddInput {
 type XOpenctiCryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject & StixCoreObject & StixCyberObservable {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -4299,9 +4291,9 @@ input XOpenctiCryptocurrencyWalletAddInput {
 type XOpenctiText implements BasicObject & StixObject & StixCoreObject & StixCoreObject & StixCyberObservable {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -4353,9 +4345,9 @@ input XOpenctiTextAddInput {
 type XOpenctiUserAgent implements BasicObject & StixObject & StixCoreObject & StixCoreObject & StixCyberObservable {
   # BasicObject
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   # StixObject
-  standard_stix_id: String!
   stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
@@ -4430,11 +4422,11 @@ interface BasicRelationship {
 type InternalRelationship implements BasicRelationship {
   # BasicRelationship
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   fromRole: String
   toRole: String
   # InternalRelationship
-  standard_id: String!
   from: InternalObject
   to: InternalObject
 }
@@ -4453,7 +4445,7 @@ interface StixRelationship {
   fromRole: String
   toRole: String
   # StixRelationship
-  standard_stix_id: String!
+  standard_id: String!
   stix_ids: [String]
   from: StixCoreObjectOrStixRelationship
   to: StixCoreObjectOrStixRelationship
@@ -4507,7 +4499,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   fromRole: String
   toRole: String
   # StixRelationship
-  standard_stix_id: String!
+  standard_id: String!
   stix_ids: [String]
   from: StixCoreObjectOrStixRelationship
   to: StixCoreObjectOrStixRelationship
@@ -4614,7 +4606,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   fromRole: String
   toRole: String
   # StixRelationship
-  standard_stix_id: String!
+  standard_id: String!
   stix_ids: [String]
   from: StixCoreObjectOrStixRelationship
   to: StixCoreObjectOrStixRelationship
@@ -4658,7 +4650,7 @@ type StixMetaRelationship implements BasicRelationship & StixRelationship {
   fromRole: String
   toRole: String
   # StixRelationship
-  standard_stix_id: String!
+  standard_id: String!
   stix_ids: [String]
   from: StixCoreObjectOrStixRelationship
   to: StixCoreObjectOrStixRelationship
