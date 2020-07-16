@@ -1,32 +1,13 @@
 import { filter } from 'ramda';
+import { addIndividual, findAll, findById, organizations } from '../domain/individual';
 import {
-  addUser,
-  findAll,
-  findById,
-  findCapabilities,
-  findRoles,
-  findRoleById,
-  getCapabilities,
-  getRoleCapabilities,
-  getRoles,
-  logout,
-  meEditField,
-  removeRole,
-  roleRemoveCapability,
-  setAuthenticationCookie,
-  token,
-  roleEditField,
-  roleDelete,
-  userDelete,
-  userEditField,
-  roleAddRelation,
-  userAddRelation,
-  userDeleteRelation,
-  userRenewToken,
-  groups,
-  roleEditContext,
-  roleCleanContext,
-} from '../domain/user';
+  stixDomainObjectAddRelation,
+  stixDomainObjectCleanContext,
+  stixDomainObjectDelete,
+  stixDomainObjectDeleteRelation,
+  stixDomainObjectEditContext,
+  stixDomainObjectEditField,
+} from '../domain/stixDomainObject';
 import { logger } from '../config/conf';
 import { stixDomainObjectCleanContext, stixDomainObjectEditContext } from '../domain/stixDomainObject';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
@@ -40,6 +21,8 @@ const userResolvers = {
   Query: {
     user: (_, { id }) => findById(id, { isUser: true }),
     users: (_, args) => findAll(args, true),
+    individual: (_, { id }) => findById(id),
+    individuals: (_, args) => findAll(args),
     role: (_, { id }) => findRoleById(id),
     roles: (_, args) => findRoles(args),
     capabilities: (_, args) => findCapabilities(args),
@@ -55,6 +38,7 @@ const userResolvers = {
     labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
   },
   User: {
+    organizations: (user) => organizations(user.id),
     groups: (user) => groups(user.id),
     roles: (user) => getRoles(user.id),
     capabilities: (user) => getCapabilities(user.id),
@@ -109,7 +93,16 @@ const userResolvers = {
       relationAdd: ({ input }) => userAddRelation(user, id, input),
       relationDelete: ({ relationId }) => userDeleteRelation(user, id, relationId),
     }),
+    individualEdit: (_, { id }, { user }) => ({
+      delete: () => individualDelete(user, id),
+      fieldPatch: ({ input }) => individualEditField(user, id, input),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(user, id),
+      relationAdd: ({ input }) => individualAddRelation(user, id, input),
+      relationDelete: ({ relationId }) => individualDeleteRelation(user, id, relationId),
+    }),
     meEdit: (_, { input }, { user }) => meEditField(user, user.id, input),
+    individualAdd: (_, { input }, { user }) => addIndividual(user, input),
     userAdd: (_, { input }, { user }) => addUser(user, input),
   },
 };

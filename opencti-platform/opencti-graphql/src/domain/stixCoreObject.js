@@ -13,8 +13,8 @@ import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
 import {
-  ENTITY_TYPE_USER,
   isStixCoreObject,
+  isStixRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_KILL_CHAIN_PHASE,
@@ -22,6 +22,7 @@ import {
   RELATION_OBJECT,
   RELATION_OBJECT_MARKING,
   ENTITY_TYPE_LABEL,
+  ABSTRACT_STIX_META_OBJECT,
 } from '../utils/idGenerator';
 
 export const findById = async (stixCoreObjectId) => {
@@ -40,6 +41,7 @@ export const createdBy = (stixCoreObjectId) => {
     { extraRelKey: 'rel' }
   );
 };
+
 export const reports = (stixCoreObjectId) => {
   return findWithConnectedRelations(
     `match $to isa Report; $rel(knowledge_aggregation:$to, so:$from) isa ${RELATION_OBJECT};
@@ -49,6 +51,7 @@ export const reports = (stixCoreObjectId) => {
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
+
 export const notes = (stixCoreObjectId) => {
   return findWithConnectedRelations(
     `match $to isa Note; $rel(knowledge_aggregation:$to, so:$from) isa ${RELATION_OBJECT};
@@ -58,6 +61,7 @@ export const notes = (stixCoreObjectId) => {
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
+
 export const opinions = (stixCoreObjectId) => {
   return findWithConnectedRelations(
     `match $to isa Opinion; $rel(knowledge_aggregation:$to, so:$from) isa ${RELATION_OBJECT};
@@ -67,6 +71,7 @@ export const opinions = (stixCoreObjectId) => {
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
+
 export const labels = (stixCoreObjectId) => {
   return findWithConnectedRelations(
     `match $to isa ${ENTITY_TYPE_LABEL}; $rel(tagging:$to, so:$from) isa ${RELATION_OBJECT_LABEL};
@@ -76,6 +81,7 @@ export const labels = (stixCoreObjectId) => {
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
+
 export const markingDefinitions = (stixCoreObjectId) => {
   return findWithConnectedRelations(
     `match $to isa Marking-Definition; $rel(marking:$to, so:$from) isa ${RELATION_OBJECT_MARKING};
@@ -84,6 +90,7 @@ export const markingDefinitions = (stixCoreObjectId) => {
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
+
 export const killChainPhases = (stixDomainObjectId) => {
   return findWithConnectedRelations(
     `match $to isa Kill-Chain-Phase; $rel(kill_chain_phase:$to, phase_belonging:$from) isa ${RELATION_KILL_CHAIN_PHASE};
@@ -92,6 +99,7 @@ export const killChainPhases = (stixDomainObjectId) => {
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
+
 export const externalReferences = (stixDomainObjectId) => {
   return findWithConnectedRelations(
     `match $to isa External-Reference; $rel(external_reference:$to, so:$from) isa ${RELATION_EXTERNAL_REFERENCE};
@@ -108,16 +116,7 @@ export const stixCoreRelationships = (stixCoreObjectId, args) => {
 
 export const stixCoreObjectAddRelation = async (user, stixCoreObjectId, input) => {
   const data = await internalLoadEntityById(stixCoreObjectId);
-  const isUser = data.entity_type === 'user';
-  const stixElement = isStixCoreObject(data.type);
-  // TODO @JRI NEED EXPLANATION
-  if (
-    (isUser &&
-      !isNil(data.external) &&
-      ![RELATION_OBJECT_LABEL, RELATION_CREATED_BY, RELATION_OBJECT_MARKING].includes(input.through)) ||
-    !stixElement ||
-    !input.relationship_type
-  ) {
+  if (!isStixCoreObject(data.type) || !isStixRelationship(input.relationship_type)) {
     throw ForbiddenAccess();
   }
   const finalInput = assoc('fromId', stixCoreObjectId, input);
@@ -126,21 +125,10 @@ export const stixCoreObjectAddRelation = async (user, stixCoreObjectId, input) =
 
 export const stixCoreObjectDeleteRelation = async (user, stixCoreObjectId, relationId) => {
   const stixDomainObject = await internalLoadEntityById(stixCoreObjectId);
-  const entityType = stixDomainObject.entity_type;
   // Check if entity is a real stix domain
-  if (!isStixCoreObject(entityType)) {
+  if (!isStixCoreObject(stixDomainObject.entity_type)) {
     throw ForbiddenAccess();
   }
-  const data = await internalLoadEntityById(relationId);
-  // TODO JRI @SAM CHECK
-  if (
-    (data.entity_type !== 'stix_relation' && data.entity_type !== 'relation_embedded') ||
-    (stixDomainObject.entity_type === ENTITY_TYPE_USER &&
-      !isNil(stixDomainObject.external) &&
-      ![RELATION_OBJECT_LABEL, RELATION_CREATED_BY, RELATION_OBJECT_MARKING].includes(data.entity_type))
-  ) {
-    throw ForbiddenAccess();
-  }
-  await deleteRelationById(user, relationId, 'stix_relation_embedded');
+  await deleteRelationById(user, relationId, ABSTRACT_STIX_META_OBJECT);
   return notify(BUS_TOPICS.stixCoreObject.EDIT_TOPIC, stixDomainObject, user);
 };

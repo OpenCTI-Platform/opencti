@@ -52,7 +52,7 @@ const reportResolvers = {
       }
       return [];
     },
-    reportContainsStixCoreObjectOrStixRelationship: (_, args) => {
+    reportObjectContains: (_, args) => {
       return reportContainsStixCoreObjectOrStixRelationship(args.id, args.objectId);
     },
   },

@@ -2,18 +2,21 @@ import { assoc, dissoc, propOr } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createRelation,
-  deleteRelationById, escapeString,
-  executeWrite, findWithConnectedRelations,
+  deleteRelationById,
+  escapeString,
+  executeWrite,
+  findWithConnectedRelations,
   getRelationInferredById,
   internalLoadEntityById,
   listRelations,
-  loadRelationById, loadWithConnectedRelations,
-  updateAttribute
-} from "../database/grakn";
+  loadRelationById,
+  loadWithConnectedRelations,
+  updateAttribute,
+} from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
 import { elCount } from '../database/elasticSearch';
-import { buildPagination, INDEX_STIX_RELATIONS } from "../database/utils";
+import { buildPagination, INDEX_STIX_RELATIONS } from '../database/utils';
 import {
   isStixId,
   isInternalId,
@@ -23,8 +26,9 @@ import {
   ENTITY_TYPE_LABEL,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-  RELATION_KILL_CHAIN_PHASE, RELATION_EXTERNAL_REFERENCE
-} from "../utils/idGenerator";
+  RELATION_KILL_CHAIN_PHASE,
+  RELATION_EXTERNAL_REFERENCE,
+} from '../utils/idGenerator';
 
 export const findAll = async (args) => {
   return listRelations(propOr('stix_relation', 'relationType', args), args);

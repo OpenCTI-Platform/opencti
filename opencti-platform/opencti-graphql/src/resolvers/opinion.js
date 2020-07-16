@@ -2,18 +2,14 @@ import {
   addOpinion,
   findAll,
   findById,
-  objectRefs,
-  observableRefs,
-  relationRefs,
+  objects,
   opinionsDistributionByEntity,
   opinionsNumber,
   opinionsNumberByEntity,
   opinionsTimeSeries,
   opinionsTimeSeriesByAuthor,
   opinionsTimeSeriesByEntity,
-  opinionContainsStixDomainObject,
-  opinionContainsStixRelation,
-  opinionContainsStixObservable,
+  opinionContainsStixCoreObjectOrStixRelationship,
 } from '../domain/opinion';
 import {
   stixDomainObjectAddRelation,
@@ -56,14 +52,8 @@ const opinionResolvers = {
       }
       return [];
     },
-    opinionContainsStixDomainObject: (_, args) => {
-      return opinionContainsStixDomainObject(args.id, args.objectId);
-    },
-    opinionContainsStixRelation: (_, args) => {
-      return opinionContainsStixRelation(args.id, args.objectId);
-    },
-    opinionContainsStixObservable: (_, args) => {
-      return opinionContainsStixObservable(args.id, args.objectId);
+    opinionObjectContains: (_, args) => {
+      return opinionContainsStixCoreObjectOrStixRelationship(args.id, args.objectId);
     },
   },
   OpinionsOrdering: {
@@ -79,9 +69,7 @@ const opinionResolvers = {
     observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id`,
   },
   Opinion: {
-    objectRefs: (opinion, args) => objectRefs(opinion.id, args),
-    observableRefs: (opinion, args) => observableRefs(opinion.id, args),
-    relationRefs: (opinion, args) => relationRefs(opinion.id, args),
+    objects: (opinion, args) => objects(opinion.id, args),
   },
   Mutation: {
     opinionEdit: (_, { id }, { user }) => ({

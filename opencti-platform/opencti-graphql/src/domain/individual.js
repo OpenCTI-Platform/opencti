@@ -1,4 +1,12 @@
-import { escapeString, findWithConnectedRelations, listEntities, loadEntityById } from '../database/grakn';
+import {
+  createEntity,
+  escapeString,
+  findWithConnectedRelations,
+  listEntities,
+  loadEntityById,
+} from '../database/grakn';
+import { BUS_TOPICS } from '../config/conf';
+import { notify } from '../database/redis';
 import { buildPagination } from '../database/utils';
 import {
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
@@ -12,6 +20,11 @@ export const findById = (individualId) => {
 
 export const findAll = (args) => {
   return listEntities([ENTITY_TYPE_IDENTITY_INDIVIDUAL], ['name', 'description', 'aliases'], args);
+};
+
+export const addIndividual = async (user, individual) => {
+  const created = await createEntity(user, individual, ENTITY_TYPE_IDENTITY_INDIVIDUAL);
+  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
 };
 
 export const organizations = (userId) => {

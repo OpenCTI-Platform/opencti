@@ -13,7 +13,7 @@ import {
   notesTimeSeriesByEntity,
   noteContainsStixDomainObject,
   noteContainsStixRelation,
-  noteContainsStixObservable,
+  noteContainsStixCyberObservable,
 } from '../domain/note';
 import {
   stixDomainObjectAddRelation,
@@ -62,8 +62,8 @@ const noteResolvers = {
     noteContainsStixRelation: (_, args) => {
       return noteContainsStixRelation(args.id, args.objectId);
     },
-    noteContainsStixObservable: (_, args) => {
-      return noteContainsStixObservable(args.id, args.objectId);
+    noteObjectContains: (_, args) => {
+      return noteContainsStixCyberObservable(args.id, args.objectId);
     },
   },
   NotesOrdering: {

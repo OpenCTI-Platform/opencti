@@ -41,11 +41,11 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: 'STIX_SIGHTING_EDIT_TOPIC',
     ADDED_TOPIC: 'STIX_SIGHTING_ADDED_TOPIC',
   },
-  StixObservableRelation: {
+  StixCyberObservableRelation: {
     EDIT_TOPIC: 'STIX_OBSERVABLE_RELATION_EDIT_TOPIC',
     ADDED_TOPIC: 'STIX_OBSERVABLE_RELATION_ADDED_TOPIC',
   },
-  StixObservable: {
+  StixCyberObservable: {
     EDIT_TOPIC: 'STIX_OBSERVABLE_EDIT_TOPIC',
     ADDED_TOPIC: 'STIX_OBSERVABLE_ADDED_TOPIC',
   },

@@ -15,7 +15,7 @@ import { notify } from '../database/redis';
 import { buildPagination } from '../database/utils';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { findById as findKillChainPhaseById } from './killChainPhase';
-import { findById as findStixObservableById } from './stixCyberObservable';
+import { findById as findStixCyberObservableById } from './stixCyberObservable';
 import { checkIndicatorSyntax, extractObservables } from '../python/pythonBridge';
 import { FunctionalError } from '../config/errors';
 import { isStixCyberObservable, generateStandardId, ENTITY_TYPE_INDICATOR, RELATION_BASED_ON } from '../utils/idGenerator';
@@ -142,9 +142,9 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
           observables.map(async (observable) => {
             // TODO GENERATE THE ID
             const internalId = generateStandardId(indicator.main_observable_type, observable);
-            const checkObservable = findStixObservableById(internalId);
+            const checkObservable = findStixCyberObservableById(internalId);
             if (isNil(checkObservable)) {
-              const stixObservable = pipe(
+              const stixCyberObservable = pipe(
                 dissoc('internal_id'),
                 dissoc('standard_id'),
                 dissoc('stix_ids'),
@@ -162,10 +162,10 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
               )(indicatorToCreate);
               // CREATE THE OBSERVABLE
               // TODO MAP THE DATA
-              // concat(stixObservable, observable.data)
-              const createdStixObservable = await createEntity(user, stixObservable, observable.type);
-              observablesToEnrich.push({ id: createdStixObservable.id, type: observable.type });
-              return createdStixObservable.id;
+              // concat(stixCyberObservable, observable.data)
+              const createdStixCyberObservable = await createEntity(user, stixCyberObservable, observable.type);
+              observablesToEnrich.push({ id: createdStixCyberObservable.id, type: observable.type });
+              return createdStixCyberObservable.id;
             }
             return internalId;
           })

@@ -15,7 +15,8 @@ export const BASE_TYPE_ENTITY = 'ENTITY';
 const ABSTRACT_BASIC_RELATIONSHIP = 'basic-relationship';
 export const ABSTRACT_INTERNAL_RELATIONSHIP = 'internal-relationship';
 export const ABSTRACT_STIX_RELATIONSHIP = 'stix-relationship';
-export const ABSTRACT_STIX_KNOWLEDGE_RELATIONSHIP = 'stix-knowledge-relationship';
+export const ABSTRACT_STIX_CORE_RELATIONSHIP = 'stix-core-relationship';
+export const ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP = 'stix-cyber-observable-relationship';
 export const ABSTRACT_STIX_META_RELATIONSHIP = 'stix-meta-relationship';
 // Entities
 const ABSTRACT_BASIC_OBJECT = 'Basic-Object';
@@ -412,17 +413,34 @@ const convertEntityTypeToStixType = (type) => {
   }
 };
 export const parents = (type) => {
+  // ENTITIES
   if (isStixDomainObject(type)) {
     return [ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT, ABSTRACT_BASIC_OBJECT];
   }
   if (isStixCyberObservable(type)) {
     return [ABSTRACT_CYBER_OBSERVABLE, ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT, ABSTRACT_BASIC_OBJECT];
   }
+  if (isStixMetaObject(type)) {
+    return [ABSTRACT_STIX_META_OBJECT, ABSTRACT_STIX_OBJECT, ABSTRACT_BASIC_OBJECT];
+  }
   if (isInternalObject(type)) {
     return [ABSTRACT_INTERNAL_OBJECT, ABSTRACT_BASIC_OBJECT];
   }
-  if (isStixMetaObject(type)) {
-    return [ABSTRACT_STIX_META_OBJECT, ABSTRACT_STIX_OBJECT, ABSTRACT_BASIC_OBJECT];
+  // RELATIONS
+  if (isStixCoreRelationship(type)) {
+    return [ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP, ABSTRACT_BASIC_RELATIONSHIP];
+  }
+  if (isStixCyberObservableRelationship(type)) {
+    return [ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP, ABSTRACT_BASIC_RELATIONSHIP];
+  }
+  if (isStixMetaRelationship(type)) {
+    return [ABSTRACT_STIX_META_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP, ABSTRACT_BASIC_RELATIONSHIP];
+  }
+  if (isStixRelationship(type)) {
+    return [ABSTRACT_STIX_RELATIONSHIP, ABSTRACT_BASIC_RELATIONSHIP];
+  }
+  if (isInternalRelationship(type)) {
+    return [ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_BASIC_RELATIONSHIP];
   }
   throw DatabaseError(`Cant resolve nature of ${type}`);
 };
@@ -524,7 +542,7 @@ const generateStixDomainObjectId = (type, data) => {
   // // default - just the name
   // return `${type}--${uuid({ type, name: data.name })}`;
 };
-const generateStixObservableId = (type, data) => {
+const generateStixCyberObservableId = (type, data) => {
   switch (type) {
     case ENTITY_AUTONOMOUS_SYSTEM:
     case ENTITY_CRYPTOGRAPHIC_KEY:
@@ -564,7 +582,7 @@ export const generateInternalId = () => {
 export const generateStandardId = (type, data) => {
   // Entities
   if (isStixDomainObject(type)) return generateStixDomainObjectId(type, data);
-  if (isStixCyberObservable(type)) return generateStixObservableId(type, data);
+  if (isStixCyberObservable(type)) return generateStixCyberObservableId(type, data);
   if (isInternalObject(type)) return generateInternalObjectId(type, data);
   // Relations
   if (isStixCoreRelationship(type)) return 'TODO';
