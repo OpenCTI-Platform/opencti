@@ -26,7 +26,7 @@ import { connectorsForEnrichment } from '../domain/enrichment';
 import { convertDataToStix } from '../database/stix';
 import { stixCoreRelationships } from '../domain/stixCoreObject';
 import { filesListing } from '../database/minio';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
+import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING, RELATION_RELATED_TO } from "../utils/idGenerator";
 
 const stixCyberObservableResolvers = {
   Query: {
@@ -45,8 +45,8 @@ const stixCyberObservableResolvers = {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
     markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
     labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
-    relatedTo: `${REL_INDEX_PREFIX}related-to.internal_id`,
-    observablesContained: `${REL_INDEX_PREFIX}observable_refs.internal_id`,
+    relatedTo: `${REL_INDEX_PREFIX}${RELATION_RELATED_TO}.internal_id`,
+    objectContained: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
   },
   StixCyberObservable: {
     indicators: (stixCyberObservable) => indicators(stixCyberObservable.id),

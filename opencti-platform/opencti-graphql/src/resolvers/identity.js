@@ -7,7 +7,6 @@ import {
   stixDomainObjectDeleteRelation,
   stixDomainObjectDelete,
 } from '../domain/stixDomainObject';
-import { createdBy, markingDefinitions, reports, stixCoreRelationships, labels } from '../domain/stixCoreObject';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
 
@@ -32,11 +31,6 @@ const identityResolvers = {
       }
       return 'Unknown';
     },
-    createdBy: (identity) => createdBy(identity.id),
-    markingDefinitions: (identity) => markingDefinitions(identity.id),
-    labels: (identity) => labels(identity.id),
-    reports: (identity) => reports(identity.id),
-    stixCoreRelationships: (identity, args) => stixCoreRelationships(identity.id, args),
   },
   Mutation: {
     identityEdit: (_, { id }, { user }) => ({

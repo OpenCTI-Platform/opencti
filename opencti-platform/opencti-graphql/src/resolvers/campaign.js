@@ -22,8 +22,8 @@ const campaignResolvers = {
     },
   },
   CampaignsOrdering: {
-    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
+    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
+    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
   },
   CampaignsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

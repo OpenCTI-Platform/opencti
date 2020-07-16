@@ -22,12 +22,12 @@ export const findAll = (args) => {
 };
 
 // region time series
-export const incidentsTimeSeriesByEntity = async (args) => {
+export const xOpenctiIncidentsTimeSeriesByEntity = async (args) => {
   const filters = [{ isRelation: true, type: args.relationType, value: args.objectId }];
   return timeSeriesEntities(ENTITY_TYPE_X_OPENCTI_INCIDENT, filters, args);
 };
 
-export const incidentsTimeSeries = (args) => {
+export const xOpenctiIncidentsTimeSeries = (args) => {
   return timeSeriesEntities(ENTITY_TYPE_X_OPENCTI_INCIDENT, [], args);
 };
 // endregion

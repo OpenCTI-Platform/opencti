@@ -8,7 +8,7 @@ import {
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
+import { RELATION_BASED_ON, RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from "../utils/idGenerator";
 
 const indicatorResolvers = {
   Query: {
@@ -23,7 +23,7 @@ const indicatorResolvers = {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
     markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
     labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
-    observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id`,
+    basedOn: `${REL_INDEX_PREFIX}${RELATION_BASED_ON}.internal_id`,
     indicates: `${REL_INDEX_PREFIX}indicates.internal_id`,
   },
   Indicator: {

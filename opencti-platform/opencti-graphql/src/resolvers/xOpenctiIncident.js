@@ -2,8 +2,8 @@ import {
   addXOpenctiIncident,
   findAll,
   findById,
-  incidentsTimeSeries,
-  incidentsTimeSeriesByEntity,
+  xOpenctiIncidentsTimeSeries,
+  xOpenctiIncidentsTimeSeriesByEntity,
   observables,
 } from '../domain/xOpenctiIncident';
 import {
@@ -19,13 +19,13 @@ import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } f
 
 const xOpenctiIncidentResolvers = {
   Query: {
-    incident: (_, { id }) => findById(id),
-    incidents: (_, args) => findAll(args),
-    incidentsTimeSeries: (_, args) => {
+    xOpenctiIncident: (_, { id }) => findById(id),
+    xOpenctiIncidents: (_, args) => findAll(args),
+    xOpenctiIncidentsTimeSeries: (_, args) => {
       if (args.objectId && args.objectId.length > 0) {
-        return incidentsTimeSeriesByEntity(args);
+        return xOpenctiIncidentsTimeSeriesByEntity(args);
       }
-      return incidentsTimeSeries(args);
+      return xOpenctiIncidentsTimeSeries(args);
     },
   },
   XOpenctiIncidentsOrdering: {

@@ -65,8 +65,7 @@ const opinionResolvers = {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
     markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
     labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
-    knowledgeContains: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
-    observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id`,
+    objectContains: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
   },
   Opinion: {
     objects: (opinion, args) => objects(opinion.id, args),

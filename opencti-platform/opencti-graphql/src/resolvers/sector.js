@@ -8,7 +8,12 @@ import {
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
+import {
+  RELATION_CREATED_BY,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING,
+  RELATION_PART_OF,
+} from '../utils/idGenerator';
 
 const sectorResolvers = {
   Query: {
@@ -24,7 +29,7 @@ const sectorResolvers = {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
     markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
     labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
-    gatheredBy: `${REL_INDEX_PREFIX}gathering.internal_id`,
+    partOf: `${REL_INDEX_PREFIX}${RELATION_PART_OF}.internal_id`,
   },
   Mutation: {
     sectorEdit: (_, { id }, { user }) => ({

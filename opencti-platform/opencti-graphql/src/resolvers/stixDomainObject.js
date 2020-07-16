@@ -4,7 +4,6 @@ import { BUS_TOPICS } from '../config/conf';
 import {
   addstixDomainObject,
   findAll,
-  findAllDuplicates,
   findById,
   stixDomainObjectsNumber,
   stixDomainObjectsTimeSeries,
@@ -25,7 +24,6 @@ import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { filesListing } from '../database/minio';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
-import { stixCoreRelationships } from '../domain/stixCoreObject';
 import {
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
@@ -38,7 +36,6 @@ const stixDomainObjectResolvers = {
   Query: {
     stixDomainObject: (_, { id }) => findById(id),
     stixDomainObjects: (_, args) => findAll(args),
-    duplicatestixDomainObjects: (_, args) => findAllDuplicates(args),
     stixDomainObjectsTimeSeries: (_, args) => stixDomainObjectsTimeSeries(args),
     stixDomainObjectsNumber: (_, args) => stixDomainObjectsNumber(args),
     stixDomainObjectsExportFiles: (_, { type, first, context }) => filesListing(first, 'export', type, null, context),
@@ -51,8 +48,7 @@ const stixDomainObjectResolvers = {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
     markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
     labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
-    knowledgeContains: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
-    observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id`,
+    objectContains: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
     hasExternalReference: `${REL_INDEX_PREFIX}${RELATION_EXTERNAL_REFERENCE}.internal_id`,
     indicates: `${REL_INDEX_PREFIX}indicates.internal_id`,
   },
