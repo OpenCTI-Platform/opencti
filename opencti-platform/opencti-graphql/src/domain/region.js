@@ -21,7 +21,7 @@ export const findAll = (args) => {
 
 export const parentRegions = (regionId) => {
   return findWithConnectedRelations(
-    `match $to isa Region; 
+    `match $to isa ${ENTITY_TYPE_LOCATION_REGION}; 
     $rel(${RELATION_LOCATED_AT}_from:$from, ${RELATION_LOCATED_AT}_to:$to) isa ${RELATION_LOCATED_AT};
     $from has internal_id "${escapeString(regionId)}"; get;`,
     'to',
@@ -31,7 +31,7 @@ export const parentRegions = (regionId) => {
 
 export const subRegions = (regionId) => {
   return findWithConnectedRelations(
-    `match $to isa Region; 
+    `match $to isa ${ENTITY_TYPE_LOCATION_REGION}; 
     $rel(${RELATION_LOCATED_AT}_from:$from, ${RELATION_LOCATED_AT}_to:$to) isa ${RELATION_LOCATED_AT};
     $from has internal_id "${escapeString(regionId)}"; get;`,
     'to',

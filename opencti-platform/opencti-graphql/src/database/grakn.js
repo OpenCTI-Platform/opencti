@@ -1333,7 +1333,10 @@ const createRelationRaw = async (user, input, opts = {}) => {
   }
   // 03. Generate the ID
   const internalId = generateInternalId();
-  const standardId = generateStandardId(relationshipType, input);
+  const standardId = generateStandardId(
+    relationshipType,
+    pipe(assoc('fromId', from.standard_id), assoc('toId', to.standard_id))(input)
+  );
 
   // 04. Prepare the relation to be created
   const today = now();

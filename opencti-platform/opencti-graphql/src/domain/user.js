@@ -364,7 +364,7 @@ export const loginFromProvider = async (email, name) => {
 export const login = async (email, password) => {
   const query = `match $client isa User, has user_email "${escapeString(email)}";
    $client has internal_id $client_id;
-   (authorization:$token, client:$client) isa authorize; 
+   (${RELATION_AUTHORIZED_BY}_from:$client, ${RELATION_AUTHORIZED_BY}_to:$token) isa ${RELATION_AUTHORIZED_BY}; 
    $token has internal_id $token_id;
    get;`;
   const result = await load(query, ['client', 'token']);

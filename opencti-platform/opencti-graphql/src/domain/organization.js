@@ -8,7 +8,7 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { buildPagination } from '../database/utils';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION, RELATION_PART_OF } from '../utils/idGenerator';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_IDENTITY_SECTOR, RELATION_PART_OF } from '../utils/idGenerator';
 
 export const findById = (organizationId) => {
   return loadEntityById(organizationId, ENTITY_TYPE_IDENTITY_ORGANIZATION);
@@ -20,7 +20,7 @@ export const findAll = (args) => {
 
 export const sectors = (organizationId) => {
   return findWithConnectedRelations(
-    `match $to isa Sector; 
+    `match $to isa ${ENTITY_TYPE_IDENTITY_SECTOR}; 
     $rel(${RELATION_PART_OF}_from:$from, ${RELATION_PART_OF}_to:$to) isa ${RELATION_PART_OF};
     $from has internal_id "${escapeString(organizationId)}"; get;`,
     'to',
