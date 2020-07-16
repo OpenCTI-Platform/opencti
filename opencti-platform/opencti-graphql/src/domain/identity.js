@@ -2,15 +2,16 @@ import { assoc, dissoc } from 'ramda';
 import { createEntity, listEntities, loadEntityById } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
+import { ENTITY_TYPE_IDENTITY } from '../utils/idGenerator';
 
 export const findById = async (identityId) => {
-  return loadEntityById(identityId, 'Identity');
+  return loadEntityById(identityId, ENTITY_TYPE_IDENTITY);
 };
 
 export const findAll = async (args) => {
   const noTypes = !args.types || args.types.length === 0;
-  const entityTypes = noTypes ? ['Identity'] : args.types;
-  const finalArgs = assoc('parentType', 'Stix-Domain-Entity', args);
+  const entityTypes = noTypes ? [ENTITY_TYPE_IDENTITY] : args.types;
+  const finalArgs = assoc('parentType', 'Stix-Object', args);
   return listEntities(entityTypes, ['name', 'description', 'aliases'], finalArgs);
 };
 

@@ -33,22 +33,24 @@ export const addKillChainPhase = async (user, killChainPhase) => {
 export const killChainPhaseDelete = (user, killChainPhaseId) => {
   return deleteEntityById(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE, { noLog: true });
 };
+
 export const killChainPhaseAddRelation = (user, killChainPhaseId, input) => {
   const finalInput = pipe(
-    assoc('fromId', killChainPhaseId),
-    assoc('through', RELATION_KILL_CHAIN_PHASE),
-    assoc('toType', ENTITY_TYPE_KILL_CHAIN_PHASE) // TODO @SAM CHECK?
+    assoc('toId', killChainPhaseId),
+    assoc('relationship_type', RELATION_KILL_CHAIN_PHASE)
   )(input);
   return createRelation(user, finalInput).then((relationData) => {
     notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
+
 export const killChainPhaseDeleteRelation = async (user, killChainPhaseId, relationId) => {
-  await deleteRelationById(user, relationId, 'stix_relation_embedded');
+  await deleteRelationById(user, relationId, RELATION_KILL_CHAIN_PHASE);
   const data = await loadEntityById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
   return notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, data, user);
 };
+
 export const killChainPhaseEditField = (user, killChainPhaseId, input) => {
   return executeWrite((wTx) => {
     return updateAttribute(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE, input, wTx, { noLog: true });
@@ -58,14 +60,15 @@ export const killChainPhaseEditField = (user, killChainPhaseId, input) => {
   });
 };
 
-export const killChainPhaseCleanContext = (user, killChainPhaseId) => {
-  delEditContext(user, killChainPhaseId);
+export const killChainPhaseCleanContext = async (user, killChainPhaseId) => {
+  await delEditContext(user, killChainPhaseId);
   return loadEntityById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE).then((killChainPhase) =>
     notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase, user)
   );
 };
-export const killChainPhaseEditContext = (user, killChainPhaseId, input) => {
-  setEditContext(user, killChainPhaseId, input);
+
+export const killChainPhaseEditContext = async (user, killChainPhaseId, input) => {
+  await setEditContext(user, killChainPhaseId, input);
   return loadEntityById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE).then((killChainPhase) =>
     notify(BUS_TOPICS.KillChainPhase.EDIT_TOPIC, killChainPhase, user)
   );

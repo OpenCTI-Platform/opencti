@@ -24,7 +24,7 @@ export const findAll = async (args) => {
   return listEntities([ENTITY_TYPE_CONTAINER_NOTE], ['name', 'attribute_abstract', 'content'], args);
 };
 
-// Entities tab
+// All entities
 export const objects = (noteId, args) => {
   const key = `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`;
   const finalArgs = assoc('filters', append({ key, values: [noteId] }, propOr([], 'filters', args)), args);

@@ -1,5 +1,5 @@
 import { assoc, pipe, isNil } from 'ramda';
-import { createEntity, listEntities, loadEntityById, now, FROM_START, UNTIL_END } from '../database/grakn';
+import { createEntity, listEntities, loadEntityById, FROM_START, UNTIL_END } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_INTRUSION_SET } from '../utils/idGenerator';
