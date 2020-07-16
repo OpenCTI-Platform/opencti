@@ -6,6 +6,7 @@ import { ENTITY_TYPE_TOOL } from '../utils/idGenerator';
 export const findById = (toolId) => {
   return loadEntityById(toolId, ENTITY_TYPE_TOOL);
 };
+
 export const findAll = (args) => {
   return listEntities([ENTITY_TYPE_TOOL], ['name', 'alias'], args);
 };

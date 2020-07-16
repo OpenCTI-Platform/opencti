@@ -24,9 +24,11 @@ import { ENTITY_TYPE_WORKSPACE, RELATION_OBJECT } from '../utils/idGenerator';
 export const findById = (workspaceId) => {
   return loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE);
 };
+
 export const findAll = (args) => {
   return listEntities([ENTITY_TYPE_WORKSPACE], ['name', 'description'], args);
 };
+
 export const ownedBy = (workspaceId) => {
   return loadWithConnectedRelations(
     `match $x isa User; 
@@ -36,6 +38,7 @@ export const ownedBy = (workspaceId) => {
     { extraRelKey: 'rel' }
   );
 };
+
 export const objectRefs = (workspaceId, args) => {
   const filter = { key: `${RELATION_OBJECT}.internal_id`, values: [workspaceId] };
   const filters = concat([filter], args.filters || []);
@@ -65,8 +68,10 @@ export const addWorkspace = async (user, workspace) => {
   });
   return notify(BUS_TOPICS.Workspace.ADDED_TOPIC, created, user);
 };
+
 export const workspaceDelete = (user, workspaceId) =>
   deleteEntityById(user, workspaceId, ENTITY_TYPE_WORKSPACE, { noLog: true });
+
 export const workspaceAddRelation = (user, workspaceId, input) => {
   if (!input.through) throw ForbiddenAccess();
   const finalInput = pipe(assoc('fromId', workspaceId), assoc('fromType', ENTITY_TYPE_WORKSPACE))(input);
@@ -94,6 +99,7 @@ export const workspaceAddRelations = async (user, workspaceId, input) => {
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
   );
 };
+
 export const workspaceEditField = (user, workspaceId, input) => {
   return executeWrite((wTx) => {
     return updateAttribute(user, workspaceId, ENTITY_TYPE_WORKSPACE, input, wTx, { noLog: true });
@@ -102,6 +108,7 @@ export const workspaceEditField = (user, workspaceId, input) => {
     return notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user);
   });
 };
+
 export const workspaceDeleteRelation = async (user, workspaceId, relationId) => {
   await deleteRelationById(user, relationId, 'stix_relation');
   const data = await loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE);
@@ -116,6 +123,7 @@ export const workspaceCleanContext = (user, workspaceId) => {
     notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
   );
 };
+
 export const workspaceEditContext = (user, workspaceId, input) => {
   setEditContext(user, workspaceId, input);
   return loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE).then((workspace) =>

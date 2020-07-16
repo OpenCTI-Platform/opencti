@@ -6,6 +6,7 @@ import { ENTITY_TYPE_THREAT_ACTOR } from '../utils/idGenerator';
 export const findById = (threatActorId) => {
   return loadEntityById(threatActorId, ENTITY_TYPE_THREAT_ACTOR);
 };
+
 export const findAll = (args) => {
   return listEntities([ENTITY_TYPE_THREAT_ACTOR], ['name', 'alias'], args);
 };

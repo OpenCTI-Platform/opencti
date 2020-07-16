@@ -34,12 +34,12 @@ export const labelEditField = (user, tagId, input) => {
   });
 };
 
-export const labelCleanContext = (user, tagId) => {
+export const labelCleanContext = async (user, tagId) => {
   delEditContext(user, tagId);
   return loadEntityById(tagId, ENTITY_TYPE_LABEL).then((tag) => notify(BUS_TOPICS.Label.EDIT_TOPIC, tag, user));
 };
 
-export const labelEditContext = (user, tagId, input) => {
-  setEditContext(user, tagId, input);
+export const labelEditContext = async (user, tagId, input) => {
+  await setEditContext(user, tagId, input);
   return loadEntityById(tagId, ENTITY_TYPE_LABEL).then((tag) => notify(BUS_TOPICS.Label.EDIT_TOPIC, tag, user));
 };
