@@ -20,14 +20,14 @@ import { isInternalId, isStixId, STIX_SIGHTING_RELATIONSHIP } from '../utils/idG
 export const findAll = async (args) => {
   return listRelations(STIX_SIGHTING_RELATIONSHIP, args);
 };
-export const findById = (stixSightingId) => {
-  if (!isStixId(stixSightingId) && !isInternalId(stixSightingId)) {
-    return getRelationInferredById(stixSightingId);
+export const findById = (stixSightingRelationshipId) => {
+  if (!isStixId(stixSightingRelationshipId) && !isInternalId(stixSightingRelationshipId)) {
+    return getRelationInferredById(stixSightingRelationshipId);
   }
-  return loadRelationById(stixSightingId, STIX_SIGHTING_RELATIONSHIP);
+  return loadRelationById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
 };
 
-export const stixSightingsNumber = (args) => ({
+export const stixSightingRelationshipsNumber = (args) => ({
   count: getSingleValueNumber(
     `match $x($y, $z) isa ${STIX_SIGHTING_RELATIONSHIP}; ${
       args.endDate ? `$x has created_at $date; $date < ${prepareDate(args.endDate)};` : ''
@@ -43,50 +43,50 @@ export const stixSightingsNumber = (args) => ({
 });
 
 // region mutations
-export const addstixSighting = async (user, stixSighting, reversedReturn = false) => {
-  const created = await createRelation(user, stixSighting, { reversedReturn });
-  return notify(BUS_TOPICS.StixSighting.ADDED_TOPIC, created, user);
+export const addstixSightingRelationship = async (user, stixSightingRelationship, reversedReturn = false) => {
+  const created = await createRelation(user, stixSightingRelationship, { reversedReturn });
+  return notify(BUS_TOPICS.StixSightingRelationship.ADDED_TOPIC, created, user);
 };
-export const stixSightingDelete = async (user, stixSightingId) => {
-  return deleteRelationById(user, stixSightingId, STIX_SIGHTING_RELATIONSHIP);
+export const stixSightingRelationshipDelete = async (user, stixSightingRelationshipId) => {
+  return deleteRelationById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
 };
-export const stixSightingEditField = (user, stixSightingId, input) => {
+export const stixSightingRelationshipEditField = (user, stixSightingRelationshipId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(user, stixSightingId, STIX_SIGHTING_RELATIONSHIP, input, wTx);
+    return updateAttribute(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP, input, wTx);
   }).then(async () => {
-    const stixSighting = await loadRelationById(stixSightingId, STIX_SIGHTING_RELATIONSHIP);
-    return notify(BUS_TOPICS.StixSighting.EDIT_TOPIC, stixSighting, user);
+    const stixSightingRelationship = await loadRelationById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
+    return notify(BUS_TOPICS.StixSightingRelationship.EDIT_TOPIC, stixSightingRelationship, user);
   });
 };
-export const stixSightingAddRelation = async (user, stixSightingId, input) => {
-  const data = await loadEntityById(stixSightingId, STIX_SIGHTING_RELATIONSHIP);
+export const stixSightingRelationshipAddRelation = async (user, stixSightingRelationshipId, input) => {
+  const data = await loadEntityById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
   if (data.type !== STIX_SIGHTING_RELATIONSHIP || !input.relationship_type) {
     throw ForbiddenAccess();
   }
-  const finalInput = assoc('fromId', stixSightingId, input);
+  const finalInput = assoc('fromId', stixSightingRelationshipId, input);
   return createRelation(user, finalInput).then((relationData) => {
-    notify(BUS_TOPICS.StixSighting.EDIT_TOPIC, relationData, user);
+    notify(BUS_TOPICS.StixSightingRelationship.EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
-export const stixSightingDeleteRelation = async (user, stixSightingId, relationId) => {
+export const stixSightingRelationshipDeleteRelation = async (user, stixSightingRelationshipId, relationId) => {
   await deleteRelationById(user, relationId, STIX_SIGHTING_RELATIONSHIP);
-  const data = await loadRelationById(stixSightingId, STIX_SIGHTING_RELATIONSHIP);
-  return notify(BUS_TOPICS.StixSighting.EDIT_TOPIC, data, user);
+  const data = await loadRelationById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
+  return notify(BUS_TOPICS.StixSightingRelationship.EDIT_TOPIC, data, user);
 };
 // endregion
 
 // region context
-export const stixSightingCleanContext = (user, stixSightingId) => {
-  delEditContext(user, stixSightingId);
-  return loadRelationById(stixSightingId, STIX_SIGHTING_RELATIONSHIP).then((stixSighting) =>
-    notify(BUS_TOPICS.StixSighting.EDIT_TOPIC, stixSighting, user)
+export const stixSightingRelationshipCleanContext = (user, stixSightingRelationshipId) => {
+  delEditContext(user, stixSightingRelationshipId);
+  return loadRelationById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) =>
+    notify(BUS_TOPICS.StixSightingRelationship.EDIT_TOPIC, stixSightingRelationship, user)
   );
 };
-export const stixSightingEditContext = (user, stixSightingId, input) => {
-  setEditContext(user, stixSightingId, input);
-  return loadRelationById(stixSightingId, STIX_SIGHTING_RELATIONSHIP).then((stixSighting) =>
-    notify(BUS_TOPICS.StixSighting.EDIT_TOPIC, stixSighting, user)
+export const stixSightingRelationshipEditContext = (user, stixSightingRelationshipId, input) => {
+  setEditContext(user, stixSightingRelationshipId, input);
+  return loadRelationById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) =>
+    notify(BUS_TOPICS.StixSightingRelationship.EDIT_TOPIC, stixSightingRelationship, user)
   );
 };
 // endregion

@@ -1610,7 +1610,7 @@ export const createEntity = async (user, entity, type, opts = {}) => {
     throw MissingReferenceError({ input: map((n) => n.ref, notResolvedElements) });
   }
   // Generate the internal id
-  const internalId = generateInternalId();
+  const internalId = entity.internal_id || generateInternalId();
   const standardId = generateStandardId(type, entity);
   // Complete with identifiers
   const today = now();

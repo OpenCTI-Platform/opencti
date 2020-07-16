@@ -60,7 +60,7 @@ define
   platform_url sub attribute, datatype string;
   title sub attribute, datatype string;
   timestamp sub attribute, datatype long;
-  last_run sub attribute, datatype string;
+  lastRun sub attribute, datatype string;
   uuid sub attribute, datatype string;
   duration sub attribute, datatype string;
   firstname sub attribute, datatype string;
@@ -781,7 +781,7 @@ define
     has updated_at;
 
   MigrationStatus sub Internal-Object,
-    has last_run,
+    has lastRun,
     plays migrates_from;
 
   MigrationReference sub Internal-Object,

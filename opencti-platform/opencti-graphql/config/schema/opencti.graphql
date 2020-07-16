@@ -856,7 +856,7 @@ input KillChainPhaseAddInput {
 ######## STIX CORE OBJECT ENTITIES
 
 union OrganizationOrIndividual = Organization | Individual
-interface StixCoreObject implements BasicObject & StixObject {
+interface StixCoreObject {
   # BasicObject
   id: ID! # internal_id
   standard_id: String!
@@ -1234,7 +1234,7 @@ input CampaignAddInput {
 }
 
 ############## Containers
-interface Container implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+interface Container {
   # BasicObject
   id: ID! # internal_id
   standard_id: String!

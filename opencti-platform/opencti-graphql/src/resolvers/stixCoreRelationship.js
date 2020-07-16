@@ -11,14 +11,21 @@ import {
   stixCoreRelationshipEditContext,
   stixCoreRelationshipEditField,
   stixCoreRelationshipsNumber,
+  createdBy,
+  externalReferences,
+  killChainPhases,
+  labels,
+  markingDefinitions,
+  notes,
+  reports,
 } from '../domain/stixCoreRelationship';
-import { pubsub } from '../database/redis';
+import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { killChainPhases, stixCoreRelationships } from '../domain/stixCoreObject';
 import { distributionRelations, loadById, timeSeriesRelations, REL_CONNECTED_SUFFIX } from '../database/grakn';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { convertDataToStix } from '../database/stix';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
+import { creator } from '../domain/log';
 
 const stixCoreRelationshipResolvers = {
   Query: {
@@ -43,15 +50,18 @@ const stixCoreRelationshipResolvers = {
     toCreatedAt: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.created_at`,
   },
   StixCoreRelationship: {
-    killChainPhases: (rel) => killChainPhases(rel.id),
     from: (rel) => loadById(rel.fromId, rel.fromType),
     to: (rel) => loadById(rel.toId, rel.toType),
     toStix: (rel) => convertDataToStix(rel).then((stixData) => JSON.stringify(stixData)),
-    stixCoreRelationships: (rel, args) => stixCoreRelationships(rel.id, args),
-  },
-  RelationEmbedded: {
-    from: (rel) => loadById(rel.fromId, rel.fromType),
-    to: (rel) => loadById(rel.toId, rel.toType),
+    creator: (rel) => creator(rel.id),
+    createdBy: (rel) => createdBy(rel.id),
+    editContext: (rel) => fetchEditContext(rel.id),
+    externalReferences: (rel) => externalReferences(rel.id),
+    killChainPhases: (rel) => killChainPhases(rel.id),
+    labels: (rel) => labels(rel.id),
+    reports: (rel) => reports(rel.id),
+    notes: (rel) => notes(rel.id),
+    markingDefinitions: (rel) => markingDefinitions(rel.id),
   },
   Mutation: {
     stixCoreRelationshipEdit: (_, { id }, { user }) => ({
@@ -62,7 +72,8 @@ const stixCoreRelationshipResolvers = {
       relationAdd: ({ input }) => stixCoreRelationshipAddRelation(user, id, input),
       relationDelete: ({ relationId }) => stixCoreRelationshipDeleteRelation(user, id, relationId),
     }),
-    stixCoreRelationshipAdd: (_, { input, reversedReturn }, { user }) => addStixCoreRelationship(user, input, reversedReturn),
+    stixCoreRelationshipAdd: (_, { input, reversedReturn }, { user }) =>
+      addStixCoreRelationship(user, input, reversedReturn),
   },
   Subscription: {
     stixCoreRelationship: {
