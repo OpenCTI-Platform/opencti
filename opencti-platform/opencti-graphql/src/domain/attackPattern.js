@@ -11,11 +11,11 @@ import { buildPagination } from '../database/utils';
 import { ENTITY_TYPE_ATTACK_PATTERN, RELATION_MITIGATES } from '../utils/idGenerator';
 
 export const findById = (attackPatternId) => {
-  return loadEntityById(attackPatternId, 'Attack-Pattern');
+  return loadEntityById(attackPatternId, ENTITY_TYPE_ATTACK_PATTERN);
 };
 
 export const findAll = (args) => {
-  return listEntities(['Attack-Pattern'], ['name', 'description', 'aliases'], args);
+  return listEntities([ENTITY_TYPE_ATTACK_PATTERN], ['name', 'description', 'aliases'], args);
 };
 
 export const addAttackPattern = async (user, attackPattern) => {
@@ -27,7 +27,7 @@ export const coursesOfAction = async (attackPatternId) => {
   return findWithConnectedRelations(
     `match $from isa Course-Of-Action; 
     $rel(${RELATION_MITIGATES}_from:$from, ${RELATION_MITIGATES}_to:$to) isa ${RELATION_MITIGATES};
-    $to isa Attack-Pattern, has internal_id "${escapeString(attackPatternId)}"; get;`,
+    $to isa ${ENTITY_TYPE_ATTACK_PATTERN}, has internal_id "${escapeString(attackPatternId)}"; get;`,
     'from',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));

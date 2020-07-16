@@ -6,7 +6,6 @@ import {
   escapeString,
   getSingleValueNumber,
   listEntities,
-  listRelations,
   loadEntityById,
   prepareDate,
   timeSeriesEntities,
@@ -14,10 +13,9 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { notify } from '../database/redis';
-import { findAll as findAllStixObservables } from './stixObservable';
 import { findAll as findAllStixDomainEntities } from './stixDomainEntity';
 import { findById as findIdentityById } from './identity';
-import { ENTITY_TYPE_REPORT, RELATION_CREATED_BY, RELATION_OBJECT } from '../utils/idGenerator';
+import { ENTITY_TYPE_CONTAINER_REPORT, RELATION_CREATED_BY, RELATION_OBJECT } from '../utils/idGenerator';
 
 export const STATUS_STATUS_NEW = 0;
 export const STATUS_STATUS_PROGRESS = 1;
@@ -25,91 +23,67 @@ export const STATUS_STATUS_ANALYZED = 2;
 export const STATUS_STATUS_CLOSED = 3;
 
 export const findById = (reportId) => {
-  return loadEntityById(reportId, ENTITY_TYPE_REPORT);
+  return loadEntityById(reportId, ENTITY_TYPE_CONTAINER_REPORT);
 };
+
 export const findAll = async (args) => {
-  return listEntities([ENTITY_TYPE_REPORT], ['name', 'description'], args);
+  return listEntities([ENTITY_TYPE_CONTAINER_REPORT], ['name', 'description'], args);
 };
 
 // Entities tab
-export const objectRefs = (reportId, args) => {
+export const objects = (reportId, args) => {
   const key = `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`;
   const finalArgs = assoc('filters', append({ key, values: [reportId] }, propOr([], 'filters', args)), args);
+  // TODO @Julien : possible to have a method findAllStixCoreObjectOrStixRelationship?
   return findAllStixDomainEntities(finalArgs);
 };
-export const reportContainsStixDomainEntity = async (reportId, objectId) => {
+
+export const reportContainsStixCoreObjectOrStixRelationship = async (reportId, objectId) => {
   const args = {
     filters: [
       { key: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`, values: [reportId] },
       { key: 'internal_id', values: [objectId] },
     ],
   };
-  const stixDomainEntities = await findAllStixDomainEntities(args);
-  return stixDomainEntities.edges.length > 0;
+  // TODO @Julien : possible to have a method findAllStixCoreObjectOrStixRelationship?
+  const stixCoreObjectsOrStixRelationships = await findAllStixDomainEntities(args);
+  return stixCoreObjectsOrStixRelationships.edges.length > 0;
 };
-// Relation refs
-export const relationRefs = (reportId, args) => {
-  const relationFilter = { relation: RELATION_OBJECT, fromRole: 'so', toRole: 'knowledge_aggregation', id: reportId };
-  const finalArgs = assoc('relationFilter', relationFilter, args);
-  return listRelations(args.relationType, finalArgs);
-};
-export const reportContainsStixRelation = async (reportId, objectId) => {
-  const relationFilter = {
-    relation: RELATION_OBJECT,
-    fromRole: 'so',
-    toRole: 'knowledge_aggregation',
-    id: reportId,
-    relationId: objectId,
-  };
-  const stixRelations = await listRelations(null, { relationFilter });
-  return stixRelations.edges.length > 0;
-};
-// Observable refs
-export const observableRefs = (reportId, args) => {
-  const key = `${REL_INDEX_PREFIX}observable_refs.internal_id`;
-  const finalArgs = assoc('filters', append({ key, values: [reportId] }, propOr([], 'filters', args)), args);
-  return findAllStixObservables(finalArgs);
-};
-export const reportContainsStixObservable = async (reportId, objectId) => {
-  const args = {
-    filters: [
-      { key: `${REL_INDEX_PREFIX}observable_refs.internal_id`, values: [reportId] },
-      { key: 'internal_id', values: [objectId] },
-    ],
-  };
-  const stixObservables = await findAllStixObservables(args);
-  return stixObservables.edges.length > 0;
-};
+
 // region series
 export const reportsTimeSeries = (args) => {
   const { reportClass } = args;
   const filters = reportClass ? [{ isRelation: false, type: 'report_class', value: args.reportClass }] : [];
-  return timeSeriesEntities(ENTITY_TYPE_REPORT, filters, args);
+  return timeSeriesEntities(ENTITY_TYPE_CONTAINER_REPORT, filters, args);
 };
+
 // TODO Migrate to ElasticSearch
 export const reportsNumber = (args) => ({
-  count: getSingleValueNumber(`match $x isa ${ENTITY_TYPE_REPORT};
+  count: getSingleValueNumber(`match $x isa ${ENTITY_TYPE_CONTAINER_REPORT};
    ${args.reportClass ? `; $x has report_class "${escapeString(args.reportClass)}"` : ''} 
    ${args.endDate ? `$x has created_at $date; $date < ${prepareDate(args.endDate)};` : ''}
    get; count;`),
-  total: getSingleValueNumber(`match $x isa ${ENTITY_TYPE_REPORT};
+  total: getSingleValueNumber(`match $x isa ${ENTITY_TYPE_CONTAINER_REPORT};
     ${args.reportClass ? `; $x has report_class "${escapeString(args.reportClass)}"` : ''}
     get; count;`),
 });
+
 export const reportsTimeSeriesByEntity = (args) => {
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: args.objectId }];
-  return timeSeriesEntities(ENTITY_TYPE_REPORT, filters, args);
+  return timeSeriesEntities(ENTITY_TYPE_CONTAINER_REPORT, filters, args);
 };
+
 export const reportsTimeSeriesByAuthor = async (args) => {
   const { authorId, reportClass } = args;
   const filters = [{ isRelation: true, from: 'so', to: 'creator', type: RELATION_CREATED_BY, value: authorId }];
   if (reportClass) filters.push({ isRelation: false, type: 'report_class', value: reportClass });
-  return timeSeriesEntities(ENTITY_TYPE_REPORT, filters, args);
+  return timeSeriesEntities(ENTITY_TYPE_CONTAINER_REPORT, filters, args);
 };
+
 // TODO Migrate to ElasticSearch
 export const reportsNumberByEntity = (args) => ({
   count: getSingleValueNumber(
-    `match $x isa ${ENTITY_TYPE_REPORT};
+    `match $x isa ${ENTITY_TYPE_CONTAINER_REPORT};
     $rel(knowledge_aggregation:$x, so:$so) isa ${RELATION_OBJECT}; 
     $so has internal_id "${escapeString(args.objectId)}" ${
       args.reportClass
@@ -127,7 +101,7 @@ export const reportsNumberByEntity = (args) => ({
     count;`
   ),
   total: getSingleValueNumber(
-    `match $x isa ${ENTITY_TYPE_REPORT};
+    `match $x isa ${ENTITY_TYPE_CONTAINER_REPORT};
     $rel(knowledge_aggregation:$x, so:$so) isa ${RELATION_OBJECT}; 
     $so has internal_id "${escapeString(args.objectId)}" ${
       args.reportClass
@@ -139,12 +113,13 @@ export const reportsNumberByEntity = (args) => ({
     count;`
   ),
 });
+
 export const reportsDistributionByEntity = async (args) => {
   const { objectId, field } = args;
   if (field.includes('.')) {
     const options = pipe(
       assoc('relationType', RELATION_OBJECT),
-      assoc('toType', ENTITY_TYPE_REPORT),
+      assoc('toType', ENTITY_TYPE_CONTAINER_REPORT),
       assoc('field', field.split('.')[1]),
       assoc('remoteRelationType', field.split('.')[0]),
       assoc('fromId', objectId)
@@ -152,7 +127,7 @@ export const reportsDistributionByEntity = async (args) => {
     return distributionEntitiesThroughRelations(options);
   }
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];
-  return distributionEntities(ENTITY_TYPE_REPORT, filters, args);
+  return distributionEntities(ENTITY_TYPE_CONTAINER_REPORT, filters, args);
 };
 // endregion
 
@@ -182,7 +157,7 @@ export const addReport = async (user, report) => {
     assoc('object_status', propOr(STATUS_STATUS_NEW, 'object_status', report)),
     assoc('source_confidence_level', propOr(sourceConfidenceLevel, 'source_confidence_level', report))
   )(report);
-  const created = await createEntity(user, finalReport, ENTITY_TYPE_REPORT);
+  const created = await createEntity(user, finalReport, ENTITY_TYPE_CONTAINER_REPORT);
   return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
 };
 // endregion

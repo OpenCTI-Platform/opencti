@@ -12,21 +12,21 @@ import { notify } from '../database/redis';
 import { ENTITY_TYPE_CAMPAIGN } from '../utils/idGenerator';
 
 export const findById = (campaignId) => {
-  return loadEntityById(campaignId, 'Campaign');
+  return loadEntityById(campaignId, ENTITY_TYPE_CAMPAIGN);
 };
 
 export const findAll = (args) => {
-  return listEntities(['Campaign'], ['name', 'description', 'aliases'], args);
+  return listEntities([ENTITY_TYPE_CAMPAIGN], ['name', 'description', 'aliases'], args);
 };
 
 // region time series
 export const campaignsTimeSeries = (args) => {
-  return timeSeriesEntities('Campaign', [], args);
+  return timeSeriesEntities(ENTITY_TYPE_CAMPAIGN, [], args);
 };
 
 export const campaignsTimeSeriesByEntity = (args) => {
   const filters = [{ isRelation: true, type: args.relationType, value: args.objectId }];
-  return timeSeriesEntities('Campaign', filters, args);
+  return timeSeriesEntities(ENTITY_TYPE_CAMPAIGN, filters, args);
 };
 // endregion
 

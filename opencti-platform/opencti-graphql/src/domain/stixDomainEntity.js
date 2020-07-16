@@ -28,8 +28,6 @@ import { addStixRelation, findAll as findAllStixRelations } from './stixRelation
 import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import { INDEX_STIX_ENTITIES } from '../database/utils';
 import { createdBy, killChainPhases, markingDefinitions, reports, notes } from './stixEntity';
-import { addPerson } from './user';
-import { noteContainsStixDomainEntity } from './note';
 import {
   ENTITY_TYPE_USER,
   RELATION_CREATED_BY,

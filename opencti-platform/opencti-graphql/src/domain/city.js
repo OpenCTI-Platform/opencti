@@ -14,7 +14,7 @@ export const findById = (cityId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_LOCATION_CITY], ['name', 'description', 'aliases'], args);
+  return listEntities([ENTITY_TYPE_LOCATION_CITY], ['name', 'description', 'x_opencti_aliases'], args);
 };
 
 export const country = (cityId) => {

@@ -8,7 +8,7 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { buildPagination } from '../database/utils';
-import { ENTITY_TYPE_COURSE_OF_ACTION, RELATION_MITIGATES } from "../utils/idGenerator";
+import { ENTITY_TYPE_COURSE_OF_ACTION, RELATION_MITIGATES } from '../utils/idGenerator';
 
 export const findById = (courseOfActionId) => {
   return loadEntityById(courseOfActionId, ENTITY_TYPE_COURSE_OF_ACTION);

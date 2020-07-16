@@ -35,7 +35,7 @@ export const labelEditField = (user, tagId, input) => {
 };
 
 export const labelCleanContext = async (user, tagId) => {
-  delEditContext(user, tagId);
+  await delEditContext(user, tagId);
   return loadEntityById(tagId, ENTITY_TYPE_LABEL).then((tag) => notify(BUS_TOPICS.Label.EDIT_TOPIC, tag, user));
 };
 
