@@ -1352,7 +1352,7 @@ const createRelationRaw = async (user, input, opts = {}) => {
     relationAttributes.spec_version = STIX_SPEC_VERSION;
     relationAttributes.revoked = isNil(input.revoked) ? false : input.revoked;
     relationAttributes.confidence = isNil(input.confidence) ? 0 : input.confidence;
-    relationAttributes.lang = isNil(input.lang) ? 0 : input.confidence;
+    relationAttributes.lang = isNil(input.lang) ? 'en' : input.lang;
     relationAttributes.created = isNil(input.created) ? today : input.created;
     relationAttributes.modified = isNil(input.modified) ? today : input.modified;
   }
@@ -1634,6 +1634,7 @@ export const createEntity = async (user, entity, type, opts = {}) => {
     data = pipe(
       assoc('standard_id', standardId),
       assoc('stix_ids', isNil(entity.stix_id) ? [] : [entity.stix_id]),
+      dissoc('stix_id'),
       assoc('spec_version', STIX_SPEC_VERSION),
       assoc('created_at', today),
       assoc('updated_at', today)

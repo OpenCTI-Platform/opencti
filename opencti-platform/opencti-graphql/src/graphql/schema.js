@@ -32,7 +32,6 @@ import courseOfActionResolvers from '../resolvers/courseOfAction';
 import threatActorResolvers from '../resolvers/threatActor';
 import intrusionSetResolvers from '../resolvers/intrusionSet';
 import campaignResolvers from '../resolvers/campaign';
-import x from '../resolvers/xOpenctiIncident';
 import malwareResolvers from '../resolvers/malware';
 import toolResolvers from '../resolvers/tool';
 import vulnerabilityResolvers from '../resolvers/vulnerability';
@@ -40,6 +39,7 @@ import reportResolvers from '../resolvers/report';
 import noteResolvers from '../resolvers/note';
 import opinionResolvers from '../resolvers/opinion';
 import indicatorResolvers from '../resolvers/indicator';
+import xOpenctiIncidentResolvers from '../resolvers/xOpenctiIncident';
 import AuthDirectives, { AUTH_DIRECTIVE } from './authDirective';
 import connectorResolvers from '../resolvers/connector';
 import fileResolvers from '../resolvers/file';
@@ -84,7 +84,6 @@ const createSchema = () => {
     threatActorResolvers,
     intrusionSetResolvers,
     campaignResolvers,
-    incidentResolvers,
     malwareResolvers,
     toolResolvers,
     vulnerabilityResolvers,
@@ -92,6 +91,7 @@ const createSchema = () => {
     noteResolvers,
     opinionResolvers,
     indicatorResolvers,
+    xOpenctiIncidentResolvers,
   ]);
 
   return makeExecutableSchema({

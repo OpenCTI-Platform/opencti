@@ -209,8 +209,8 @@ export const isInternalRelationship = (type) => includes(type, INTERNAL_RELATION
 export const isStixRelationship = (type) =>
   isStixCoreRelationship(type) ||
   isStixSightingRelationship(type) ||
-  isStixCyberObservableRelationship ||
-  isStixMetaRelationship;
+  isStixCyberObservableRelationship(type) ||
+  isStixMetaRelationship(type);
 // ------------------------------------------------------
 
 // ENTITIES --------------------------------------------
@@ -524,17 +524,17 @@ const generateStixCyberObservableUUID = (type, data) => {
 }
 const generateInternalObjectId = (type, data) => {
   const prefix = convertEntityTypeToStixType(type);
-  const id = generateInternalObjectUUID(prefix, data);
+  const id = generateInternalObjectUUID(type, data);
   return `${prefix}--${id}`;
 };
 const generateStixDomainObjectId = (type, data) => {
   const prefix = convertEntityTypeToStixType(type);
-  const id = generateStixDomainObjectUUID(prefix, data);
+  const id = generateStixDomainObjectUUID(type, data);
   return `${prefix}--${id}`;
 };
 const generateStixCyberObservableId = (type, data) => {
   const prefix = convertEntityTypeToStixType(type);
-  const id = generateStixCyberObservableUUID(prefix, data);
+  const id = generateStixCyberObservableUUID(type, data);
   switch (type) {
     case ENTITY_AUTONOMOUS_SYSTEM:
     case ENTITY_CRYPTOGRAPHIC_KEY:
@@ -574,8 +574,7 @@ const generateInternalRelationshipUUID = (prefix, data) => {
   return uuidv4();
 };
 const generateInternalRelationshipId = (type, data) => {
-  const prefix = convertEntityTypeToStixType(type);
-  const id = generateInternalRelationshipUUID(prefix, data);
+  const id = generateInternalRelationshipUUID(type, data);
   return `internal-relationship--${id}`;
 };
 const generateStixCoreRelationshipUUID = (prefix, data) => {
@@ -584,8 +583,7 @@ const generateStixCoreRelationshipUUID = (prefix, data) => {
   return uuid({ prefix, fromId, toId, relationship_type, start_time, stop_time });
 };
 const generateStixCoreRelationshipId = (type, data) => {
-  const prefix = convertEntityTypeToStixType(type);
-  const id = generateStixCoreRelationshipUUID(prefix, data);
+  const id = generateStixCoreRelationshipUUID(type, data);
   return `relationship--${id}`;
 };
 const generateStixMetaRelationshipUUID = (prefix, data) => {
@@ -594,8 +592,7 @@ const generateStixMetaRelationshipUUID = (prefix, data) => {
   return uuid({ from: fromId, to: toId });
 };
 const generateStixMetaRelationshipId = (type, data) => {
-  const prefix = convertEntityTypeToStixType(type);
-  const id = generateStixMetaRelationshipUUID(prefix, data);
+  const id = generateStixMetaRelationshipUUID(type, data);
   return `relationship-meta--${id}`;
 };
 // endregion

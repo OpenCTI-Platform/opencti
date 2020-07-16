@@ -20,61 +20,61 @@ const fs = require('fs');
 // Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
 export const CAPABILITIES = [
-  { name: BYPASS, description: 'Bypass all capabilities', ordering: 1 },
+  { name: BYPASS, description: 'Bypass all capabilities', attribute_order: 1 },
   {
     name: KNOWLEDGE_CAPABILITY,
     description: 'Access knowledge',
-    ordering: 100,
+    attribute_order: 100,
     dependencies: [
       {
         name: 'KNUPDATE',
         description: 'Create / Update knowledge',
-        ordering: 200,
-        dependencies: [{ name: 'KNDELETE', description: 'Delete knowledge', ordering: 300 }],
+        attribute_order: 200,
+        dependencies: [{ name: 'KNDELETE', description: 'Delete knowledge', attribute_order: 300 }],
       },
-      { name: 'KNUPLOAD', description: 'Upload knowledge files', ordering: 400 },
-      { name: 'KNASKIMPORT', description: 'Import knowledge', ordering: 500 },
+      { name: 'KNUPLOAD', description: 'Upload knowledge files', attribute_order: 400 },
+      { name: 'KNASKIMPORT', description: 'Import knowledge', attribute_order: 500 },
       {
         name: 'KNGETEXPORT',
         description: 'Download knowledge export',
-        ordering: 700,
-        dependencies: [{ name: 'KNASKEXPORT', description: 'Generate knowledge export', ordering: 710 }],
+        attribute_order: 700,
+        dependencies: [{ name: 'KNASKEXPORT', description: 'Generate knowledge export', attribute_order: 710 }],
       },
-      { name: 'KNENRICHMENT', description: 'Ask for knowledge enrichment', ordering: 800 },
+      { name: 'KNENRICHMENT', description: 'Ask for knowledge enrichment', attribute_order: 800 },
     ],
   },
   {
     name: 'EXPLORE',
     description: 'Access exploration',
-    ordering: 1000,
+    attribute_order: 1000,
     dependencies: [
       {
         name: 'EXUPDATE',
         description: 'Create  / Update exploration',
-        ordering: 1100,
-        dependencies: [{ name: 'EXDELETE', description: 'Delete exploration', ordering: 1200 }],
+        attribute_order: 1100,
+        dependencies: [{ name: 'EXDELETE', description: 'Delete exploration', attribute_order: 1200 }],
       },
     ],
   },
   {
     name: 'MODULES',
     description: 'Access connectors',
-    ordering: 2000,
-    dependencies: [{ name: 'MODMANAGE', description: 'Manage connector state', ordering: 2100 }],
+    attribute_order: 2000,
+    dependencies: [{ name: 'MODMANAGE', description: 'Manage connector state', attribute_order: 2100 }],
   },
   {
     name: 'SETTINGS',
     description: 'Access administration',
-    ordering: 3000,
+    attribute_order: 3000,
     dependencies: [
-      { name: 'SETINFERENCES', description: 'Manage inference rules', ordering: 3100 },
-      { name: 'SETACCESSES', description: 'Manage credentials', ordering: 3200 },
-      { name: 'SETMARKINGS', description: 'Manage marking definitions', ordering: 3300 },
+      { name: 'SETINFERENCES', description: 'Manage inference rules', attribute_order: 3100 },
+      { name: 'SETACCESSES', description: 'Manage credentials', attribute_order: 3200 },
+      { name: 'SETMARKINGS', description: 'Manage marking definitions', attribute_order: 3300 },
     ],
   },
   {
     name: 'CONNECTORAPI',
-    ordering: 4000,
+    attribute_order: 4000,
     description: 'Connectors API usage: register, ping, export push ...',
   },
 ];
@@ -180,10 +180,10 @@ const createMarkingDefinitions = async () => {
 export const createCapabilities = async (capabilities, parentName = '') => {
   for (let i = 0; i < capabilities.length; i += 1) {
     const capability = capabilities[i];
-    const { name, description, ordering } = capability;
+    const { name, description, attribute_order: AttributeOrder } = capability;
     const capabilityName = `${parentName}${name}`;
     // eslint-disable-next-line no-await-in-loop
-    await addCapability(SYSTEM_USER, { name: capabilityName, description, ordering });
+    await addCapability(SYSTEM_USER, { name: capabilityName, description, attribute_order: AttributeOrder });
     if (capability.dependencies && capability.dependencies.length > 0) {
       // eslint-disable-next-line no-await-in-loop
       await createCapabilities(capability.dependencies, `${capabilityName}_`);

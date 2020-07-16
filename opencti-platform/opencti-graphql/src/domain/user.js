@@ -180,7 +180,7 @@ export const findRoles = (args) => {
 };
 
 export const findCapabilities = (args) => {
-  const finalArgs = assoc('orderBy', 'ordering', args);
+  const finalArgs = assoc('orderBy', 'attribute_order', args);
   return listEntities([ENTITY_TYPE_CAPABILITY], ['description'], finalArgs);
 };
 
