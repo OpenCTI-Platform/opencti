@@ -104,7 +104,7 @@ const CityKnowledge = createFragmentContainer(CityKnowledgeComponent, {
     fragment CityKnowledge_city on City {
       id
       name
-      alias
+      aliases
     }
   `,
 });

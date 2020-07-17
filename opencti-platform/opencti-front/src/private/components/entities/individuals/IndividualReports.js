@@ -76,7 +76,7 @@ const IndividualReports = createFragmentContainer(IndividualReportsComponent, {
     fragment IndividualReports_individual on User {
       id
       name
-      alias
+      aliases
     }
   `,
 });

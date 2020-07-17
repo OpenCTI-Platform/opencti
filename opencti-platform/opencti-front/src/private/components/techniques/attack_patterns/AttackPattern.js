@@ -88,7 +88,7 @@ const AttackPattern = createFragmentContainer(AttackPatternComponent, {
     fragment AttackPattern_attackPattern on AttackPattern {
       id
       name
-      alias
+      aliases
       ...AttackPatternOverview_attackPattern
       ...AttackPatternDetails_attackPattern
       ...AttackPatternCoursesOfAction_attackPattern

@@ -104,7 +104,7 @@ const OrganizationReports = createFragmentContainer(
         id
         organization_class
         name
-        alias
+        aliases
       }
     `,
   },

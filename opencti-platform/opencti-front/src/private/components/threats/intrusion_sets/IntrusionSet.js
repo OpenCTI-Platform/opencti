@@ -95,7 +95,7 @@ const IntrusionSet = createFragmentContainer(IntrusionSetComponent, {
     fragment IntrusionSet_intrusionSet on IntrusionSet {
       id
       name
-      alias
+      aliases
       ...IntrusionSetOverview_intrusionSet
       ...IntrusionSetDetails_intrusionSet
     }

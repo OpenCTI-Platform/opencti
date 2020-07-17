@@ -36,7 +36,7 @@ import {
   yearFormat,
 } from '../../../src/database/grakn';
 import { attributeUpdate, findAll as findAllAttributes } from '../../../src/domain/attribute';
-import { INDEX_STIX_ENTITIES, utcDate } from '../../../src/database/utils';
+import { INDEX_STIX_OBJECTS, utcDate } from '../../../src/database/utils';
 import { GATHERING_TARGETS_RULE, inferenceDisable, inferenceEnable } from '../../../src/domain/inference';
 import { elLoadById, useCache, REL_INDEX_PREFIX } from '../../../src/database/elasticSearch';
 import { ADMIN_USER } from '../../utils/testQuery';
@@ -326,7 +326,7 @@ describe('Grakn entities listing', () => {
     expect(malware.name).toEqual('Paradise Ransomware');
     expect(malware.alias.length).toEqual(0);
     // eslint-disable-next-line
-    expect(malware._index).toEqual(INDEX_STIX_ENTITIES);
+    expect(malware._index).toEqual(INDEX_STIX_OBJECTS);
   });
   it.each(noCacheCases)('should list multiple entities (noCache = %s)', async (noCache) => {
     const entities = await listEntities(['Malware', 'Organization'], ['name'], { noCache });

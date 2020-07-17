@@ -179,7 +179,7 @@ const ThreatActorKnowledge = createFragmentContainer(
       fragment ThreatActorKnowledge_threatActor on ThreatActor {
         id
         name
-        alias
+        aliases
       }
     `,
   },

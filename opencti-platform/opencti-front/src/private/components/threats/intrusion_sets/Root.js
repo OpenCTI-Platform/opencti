@@ -35,7 +35,7 @@ const intrusionSetQuery = graphql`
     intrusionSet(id: $id) {
       id
       name
-      alias
+      aliases
       ...IntrusionSet_intrusionSet
       ...IntrusionSetReports_intrusionSet
       ...IntrusionSetKnowledge_intrusionSet

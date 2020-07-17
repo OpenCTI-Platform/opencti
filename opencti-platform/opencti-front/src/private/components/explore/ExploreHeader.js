@@ -13,12 +13,12 @@ const styles = () => ({
     float: 'left',
     textTransform: 'uppercase',
   },
-  aliases: {
+  aliaseses: {
     float: 'right',
     overflowX: 'hidden',
     marginTop: '-5px',
   },
-  alias: {
+  aliases: {
     marginRight: 7,
   },
 });
@@ -35,11 +35,11 @@ class ExploreHeaderComponent extends Component {
         >
           {stixDomainObject.name}
         </Typography>
-        <div className={classes.aliases}>
-          {propOr([], 'alias', stixDomainObject).map((label) => (label.length > 0 ? (
+        <div className={classes.aliaseses}>
+          {propOr([], 'aliases', stixDomainObject).map((label) => (label.length > 0 ? (
               <Chip
                 key={label}
-                classes={{ root: classes.alias }}
+                classes={{ root: classes.aliases }}
                 label={label}
               />
           ) : (
@@ -64,7 +64,7 @@ const ExploreHeader = createFragmentContainer(ExploreHeaderComponent, {
     fragment ExploreHeader_stixDomainObject on StixDomainObject {
       id
       name
-      alias
+      aliases
     }
   `,
 });

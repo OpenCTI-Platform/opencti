@@ -152,7 +152,7 @@ const AttackPatternKnowledge = createFragmentContainer(
       fragment AttackPatternKnowledge_attackPattern on AttackPattern {
         id
         name
-        alias
+        aliases
       }
     `,
   },

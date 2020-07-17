@@ -22,13 +22,13 @@ import {
   elVersion,
   specialElasticCharsEscape,
 } from '../../../src/database/elasticSearch';
-import { INDEX_STIX_ENTITIES, INDEX_STIX_RELATIONS, utcDate } from '../../../src/database/utils';
+import { INDEX_STIX_OBJECTS, INDEX_STIX_RELATIONSHIPS, utcDate } from '../../../src/database/utils';
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', () => {
     expect(elIsAlive()).resolves.toBeTruthy();
     expect(elVersion()).resolves.toContain('7.8');
-    expect(elIndexExists(INDEX_STIX_ENTITIES)).toBeTruthy();
+    expect(elIndexExists(INDEX_STIX_OBJECTS)).toBeTruthy();
   });
   it('should manage index', async () => {
     // Create index
@@ -80,12 +80,12 @@ describe('Elasticsearch document loader', () => {
 describe('Elasticsearch computation', () => {
   it('should count accurate', async () => {
     // const { endDate = null, type = null, types = null } = options;
-    const malwaresCount = await elCount(INDEX_STIX_ENTITIES, { types: ['Malware'] });
+    const malwaresCount = await elCount(INDEX_STIX_OBJECTS, { types: ['Malware'] });
     expect(malwaresCount).toEqual(2);
   });
   it('should count accurate with date filter', async () => {
     const mostRecentMalware = await elLoadByStixId('malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
-    const malwaresCount = await elCount(INDEX_STIX_ENTITIES, {
+    const malwaresCount = await elCount(INDEX_STIX_OBJECTS, {
       types: ['Malware'],
       endDate: mostRecentMalware.created_at,
     });
@@ -377,7 +377,7 @@ describe('Elasticsearch pagination', () => {
     expect(escape).toEqual('Looking All\\* \\+ Everything\\| \\- \\\\with');
   });
   it('should entity paginate everything', async () => {
-    const data = await elPaginate(INDEX_STIX_ENTITIES);
+    const data = await elPaginate(INDEX_STIX_OBJECTS);
     expect(data).not.toBeNull();
     expect(data.edges.length).toEqual(68);
     const filterBaseTypes = uniq(map((e) => e.node.base_type, data.edges));
@@ -385,14 +385,14 @@ describe('Elasticsearch pagination', () => {
     expect(head(filterBaseTypes)).toEqual('entity');
   });
   it('should entity search with trailing slash', async () => {
-    const data = await elPaginate(INDEX_STIX_ENTITIES, { search: 'groups/G0096' });
+    const data = await elPaginate(INDEX_STIX_OBJECTS, { search: 'groups/G0096' });
     expect(data).not.toBeNull();
     // external-reference--d1b50d16-2c9c-45f2-8ae0-d5b554e0fbf5 | url
     // intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7 | description
     expect(data.edges.length).toEqual(2);
   });
   it('should entity paginate everything after', async () => {
-    const data = await elPaginate(INDEX_STIX_ENTITIES, { after: offsetToCursor(30) });
+    const data = await elPaginate(INDEX_STIX_OBJECTS, { after: offsetToCursor(30) });
     expect(data).not.toBeNull();
     expect(data.edges.length).toEqual(38);
   });
@@ -401,90 +401,90 @@ describe('Elasticsearch pagination', () => {
     // orderBy = null, orderMode = 'asc',
     // relationsMap = null, forceNatural = false,
     // connectionFormat = true
-    const data = await elPaginate(INDEX_STIX_ENTITIES, { types: ['Malware'] });
+    const data = await elPaginate(INDEX_STIX_OBJECTS, { types: ['Malware'] });
     expect(data).not.toBeNull();
     expect(data.edges.length).toEqual(2);
     const nodes = map((e) => e.node, data.edges);
     const malware = find(propEq('external_stix_id', ['malware--faa5b705-cf44-4e50-8472-29e5fec43c3c']))(nodes);
     expect(malware.internal_id_key).not.toBeNull();
     expect(malware.name).toEqual('Paradise Ransomware');
-    expect(malware._index).toEqual(INDEX_STIX_ENTITIES);
+    expect(malware._index).toEqual(INDEX_STIX_OBJECTS);
     expect(malware.parent_types).toEqual(expect.arrayContaining(['Malware', 'Stix-Domain-Entity', 'Stix-Domain']));
   });
   it('should entity paginate with classic search', async () => {
-    let data = await elPaginate(INDEX_STIX_ENTITIES, { search: 'malicious' });
+    let data = await elPaginate(INDEX_STIX_OBJECTS, { search: 'malicious' });
     expect(data.edges.length).toEqual(2);
-    data = await elPaginate(INDEX_STIX_ENTITIES, { search: 'with malicious' });
+    data = await elPaginate(INDEX_STIX_OBJECTS, { search: 'with malicious' });
     expect(data.edges.length).toEqual(5);
-    data = await elPaginate(INDEX_STIX_ENTITIES, { search: '"with malicious"' });
+    data = await elPaginate(INDEX_STIX_OBJECTS, { search: '"with malicious"' });
     expect(data.edges.length).toEqual(1);
   });
   it('should entity paginate with escaped search', async () => {
-    let data = await elPaginate(INDEX_STIX_ENTITIES, { search: '(Citation:' });
+    let data = await elPaginate(INDEX_STIX_OBJECTS, { search: '(Citation:' });
     expect(data.edges.length).toEqual(3);
-    data = await elPaginate(INDEX_STIX_ENTITIES, { search: '[APT41]' });
+    data = await elPaginate(INDEX_STIX_OBJECTS, { search: '[APT41]' });
     expect(data.edges.length).toEqual(1);
-    data = await elPaginate(INDEX_STIX_ENTITIES, { search: '%5BAPT41%5D' });
+    data = await elPaginate(INDEX_STIX_OBJECTS, { search: '%5BAPT41%5D' });
     expect(data.edges.length).toEqual(1);
   });
   it('should entity paginate with http and https', async () => {
-    let data = await elPaginate(INDEX_STIX_ENTITIES, { search: 'http://attack.mitre.org/groups/G0096' });
+    let data = await elPaginate(INDEX_STIX_OBJECTS, { search: 'http://attack.mitre.org/groups/G0096' });
     expect(data.edges.length).toEqual(2);
-    data = await elPaginate(INDEX_STIX_ENTITIES, { search: 'https://attack.mitre.org/groups/G0096' });
+    data = await elPaginate(INDEX_STIX_OBJECTS, { search: 'https://attack.mitre.org/groups/G0096' });
     expect(data.edges.length).toEqual(2);
   });
   it('should entity paginate with incorrect encoding', async () => {
-    const data = await elPaginate(INDEX_STIX_ENTITIES, { search: 'ATT%' });
+    const data = await elPaginate(INDEX_STIX_OBJECTS, { search: 'ATT%' });
     expect(data.edges.length).toEqual(0);
   });
   it('should entity paginate with field not exist filter', async () => {
     const filters = [{ key: 'color', operator: undefined, values: [null] }];
-    const data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    const data = await elPaginate(INDEX_STIX_OBJECTS, { filters });
     expect(data.edges.length).toEqual(61); // The 4 Default TLP Marking definitions + 1
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = [{ key: 'color', operator: undefined, values: ['EXISTS'] }];
-    const data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    const data = await elPaginate(INDEX_STIX_OBJECTS, { filters });
     expect(data.edges.length).toEqual(7); // The 4 Default TLP Marking definitions
   });
   it('should entity paginate with equality filter', async () => {
     // eq operation will use the field.keyword to do an exact field equality
     let filters = [{ key: 'color', operator: 'eq', values: ['#c62828'] }];
-    let data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    let data = await elPaginate(INDEX_STIX_OBJECTS, { filters });
     expect(data.edges.length).toEqual(1);
     // Special case when operator = eq + the field key is a dateFields => use a match
     filters = [{ key: 'published', operator: 'eq', values: ['2020-03-01'] }];
-    data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    data = await elPaginate(INDEX_STIX_OBJECTS, { filters });
     expect(data.edges.length).toEqual(1);
   });
   it('should entity paginate with match filter', async () => {
     let filters = [{ key: 'entity_type', operator: 'match', values: ['marking'] }];
-    let data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    let data = await elPaginate(INDEX_STIX_OBJECTS, { filters });
     expect(data.edges.length).toEqual(6); // The 4 Default TLP + MITRE Corporation
     // Verify that nothing is found in this case if using the eq operator
     filters = [{ key: 'entity_type', operator: 'eq', values: ['marking'] }];
-    data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    data = await elPaginate(INDEX_STIX_OBJECTS, { filters });
     expect(data.edges.length).toEqual(0);
   });
   it('should entity paginate with dates filter', async () => {
     let filters = [{ key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] }];
-    let data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    let data = await elPaginate(INDEX_STIX_OBJECTS, { filters });
     expect(data.edges.length).toEqual(2); // The 4 Default TLP + MITRE Corporation
     filters = [
       { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
       { key: 'color', operator: undefined, values: [null] },
     ];
-    data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    data = await elPaginate(INDEX_STIX_OBJECTS, { filters });
     expect(data.edges.length).toEqual(5);
     filters = [
       { key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] },
       { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
     ];
-    data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    data = await elPaginate(INDEX_STIX_OBJECTS, { filters });
     expect(data.edges.length).toEqual(0);
   });
   it('should entity paginate with date ordering', async () => {
-    const data = await elPaginate(INDEX_STIX_ENTITIES, { orderBy: 'created', orderMode: 'asc' });
+    const data = await elPaginate(INDEX_STIX_OBJECTS, { orderBy: 'created', orderMode: 'asc' });
     expect(data.edges.length).toEqual(43);
     const createdDates = map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
@@ -503,7 +503,7 @@ describe('Elasticsearch pagination', () => {
   });
   it('should entity paginate with keyword ordering', async () => {
     const filters = [{ key: 'color', operator: undefined, values: ['EXISTS'] }];
-    const data = await elPaginate(INDEX_STIX_ENTITIES, { filters, orderBy: 'definition', orderMode: 'desc' });
+    const data = await elPaginate(INDEX_STIX_OBJECTS, { filters, orderBy: 'definition', orderMode: 'desc' });
     expect(data.edges.length).toEqual(4);
     const markings = map((e) => e.node.definition, data.edges);
     expect(markings[0]).toEqual('TLP:WHITE');
@@ -512,14 +512,14 @@ describe('Elasticsearch pagination', () => {
     expect(markings[3]).toEqual('TLP:AMBER');
   });
   it('should relation paginate everything', async () => {
-    let data = await elPaginate(INDEX_STIX_RELATIONS);
+    let data = await elPaginate(INDEX_STIX_RELATIONSHIPS);
     expect(data).not.toBeNull();
     expect(data.edges.length).toEqual(174);
     let filterBaseTypes = uniq(map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('relation');
     // Same query with no pagination
-    data = await elPaginate(INDEX_STIX_RELATIONS, { connectionFormat: false });
+    data = await elPaginate(INDEX_STIX_RELATIONSHIPS, { connectionFormat: false });
     expect(data).not.toBeNull();
     expect(data.length).toEqual(174);
     filterBaseTypes = uniq(map((e) => e.base_type, data));

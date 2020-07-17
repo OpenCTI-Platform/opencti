@@ -35,7 +35,7 @@ const incidentQuery = graphql`
     incident(id: $id) {
       id
       name
-      alias
+      aliases
       ...Incident_incident
       ...IncidentReports_incident
       ...IncidentKnowledge_incident

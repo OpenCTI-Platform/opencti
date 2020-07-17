@@ -76,7 +76,7 @@ const CampaignReports = createFragmentContainer(CampaignReportsComponent, {
     fragment CampaignReports_campaign on Campaign {
       id
       name
-      alias
+      aliases
     }
   `,
 });

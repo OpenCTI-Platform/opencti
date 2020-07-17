@@ -33,7 +33,7 @@ const indicatorQuery = graphql`
     indicator(id: $id) {
       id
       name
-      alias
+      aliases
       ...Indicator_indicator
       ...IndicatorHeader_indicator
       ...IndicatorOverview_indicator

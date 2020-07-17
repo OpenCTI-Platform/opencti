@@ -78,7 +78,7 @@ const IntrusionSetReports = createFragmentContainer(
       fragment IntrusionSetReports_intrusionSet on IntrusionSet {
         id
         name
-        alias
+        aliases
       }
     `,
   },

@@ -112,7 +112,7 @@ const ToolIndicators = createFragmentContainer(ToolIndicatorsComponent, {
     fragment ToolIndicators_tool on Tool {
       id
       name
-      alias
+      aliases
     }
   `,
 });

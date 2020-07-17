@@ -11,7 +11,7 @@ import ThreatActorDetails from './ThreatActorDetails';
 import ThreatActorEdition from './ThreatActorEdition';
 import ThreatActorPopover from './ThreatActorPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
-import EntityIncidentsChart from '../incidents/EntityIncidentsChart';
+import EntityIncidentsChart from '../x_opencti_incidents/EntityIncidentsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityCampaignsChart from '../campaigns/EntityCampaignsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -91,7 +91,7 @@ const ThreatActor = createFragmentContainer(ThreatActorComponent, {
     fragment ThreatActor_threatActor on ThreatActor {
       id
       name
-      alias
+      aliases
       ...ThreatActorOverview_threatActor
       ...ThreatActorDetails_threatActor
     }

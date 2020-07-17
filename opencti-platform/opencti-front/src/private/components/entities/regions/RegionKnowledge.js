@@ -104,7 +104,7 @@ const RegionKnowledge = createFragmentContainer(RegionKnowledgeComponent, {
     fragment RegionKnowledge_region on Region {
       id
       name
-      alias
+      aliases
     }
   `,
 });

@@ -112,7 +112,7 @@ const CampaignIndicators = createFragmentContainer(
       fragment CampaignIndicators_campaign on Campaign {
         id
         name
-        alias
+        aliases
       }
     `,
   },

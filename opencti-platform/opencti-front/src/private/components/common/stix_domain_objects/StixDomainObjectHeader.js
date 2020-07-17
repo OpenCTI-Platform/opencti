@@ -45,14 +45,14 @@ const styles = () => ({
     float: 'left',
     marginTop: '-13px',
   },
-  aliases: {
+  aliaseses: {
     float: 'right',
     marginTop: '-5px',
   },
-  alias: {
+  aliases: {
     marginRight: 7,
   },
-  aliasInput: {
+  aliasesInput: {
     margin: '4px 15px 0 10px',
     float: 'right',
   },
@@ -71,7 +71,7 @@ const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation($id: ID!, $input: EditInput!) {
     stixDomainObjectEdit(id: $id) {
       fieldPatch(input: $input) {
-        alias
+        aliases
       }
     }
   }
@@ -97,36 +97,36 @@ class StixDomainObjectHeader extends Component {
 
   onSubmitCreateAlias(element, data, { resetForm }) {
     if (
-      (this.props.stixDomainObject.alias === null
-        || !this.props.stixDomainObject.alias.includes(data.new_alias))
-      && data.new_alias !== ''
+      (this.props.stixDomainObject.aliases === null
+        || !this.props.stixDomainObject.aliases.includes(data.new_aliases))
+      && data.new_aliases !== ''
     ) {
       commitMutation({
         mutation: stixDomainObjectMutation,
         variables: {
           id: this.props.stixDomainObject.id,
           input: {
-            key: 'alias',
-            value: append(data.new_alias, this.props.stixDomainObject.alias),
+            key: 'aliases',
+            value: append(data.new_aliases, this.props.stixDomainObject.aliases),
           },
         },
-        onCompleted: () => MESSAGING$.notifySuccess(this.props.t('The alias has been added')),
+        onCompleted: () => MESSAGING$.notifySuccess(this.props.t('The aliases has been added')),
       });
     }
     this.setState({ openAlias: false });
     resetForm();
   }
 
-  deleteAlias(alias) {
-    const aliases = filter(
-      (a) => a !== alias,
-      this.props.stixDomainObject.alias,
+  deleteAlias(aliases) {
+    const aliaseses = filter(
+      (a) => a !== aliases,
+      this.props.stixDomainObject.aliases,
     );
     commitMutation({
       mutation: stixDomainObjectMutation,
       variables: {
         id: this.props.stixDomainObject.id,
-        input: { key: 'alias', value: aliases },
+        input: { key: 'aliases', value: aliaseses },
       },
     });
   }
@@ -142,7 +142,7 @@ class StixDomainObjectHeader extends Component {
       onViewAs,
       disablePopover,
     } = this.props;
-    const alias = propOr([], 'alias', stixDomainObject);
+    const aliases = propOr([], 'aliases', stixDomainObject);
     return (
       <div>
         <Typography
@@ -183,12 +183,12 @@ class StixDomainObjectHeader extends Component {
         ) : (
           ''
         )}
-        {variant !== 'noalias' ? (
-          <div className={classes.aliases}>
-            {take(5, alias).map((label) => (label.length > 0 ? (
+        {variant !== 'noaliases' ? (
+          <div className={classes.aliaseses}>
+            {take(5, aliases).map((label) => (label.length > 0 ? (
                 <Chip
                   key={label}
-                  classes={{ root: classes.alias }}
+                  classes={{ root: classes.aliases }}
                   label={label}
                   onDelete={this.deleteAlias.bind(this, label)}
                 />
@@ -196,7 +196,7 @@ class StixDomainObjectHeader extends Component {
               ''
             )))}
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              {alias.length > 5 ? (
+              {aliases.length > 5 ? (
                 <IconButton
                   color="primary"
                   aria-label="More"
@@ -227,16 +227,16 @@ class StixDomainObjectHeader extends Component {
             >
               <div style={{ float: 'left', marginTop: -5 }}>
                 <Formik
-                  initialValues={{ new_alias: '' }}
+                  initialValues={{ new_aliases: '' }}
                   onSubmit={this.onSubmitCreateAlias.bind(this, 'main')}
                 >
                   <Form style={{ float: 'right' }}>
                     <Field
                       component={TextField}
-                      name="new_alias"
+                      name="new_aliases"
                       autoFocus={true}
-                      placeholder={t('New alias')}
-                      className={classes.aliasInput}
+                      placeholder={t('New aliases')}
+                      className={classes.aliasesInput}
                     />
                   </Form>
                 </Formik>
@@ -254,19 +254,19 @@ class StixDomainObjectHeader extends Component {
           fullWidth={true}
         >
           <DialogTitle>
-            {t('Entity aliases')}
+            {t('Entity aliaseses')}
             <Formik
-              initialValues={{ new_alias: '' }}
+              initialValues={{ new_aliases: '' }}
               onSubmit={this.onSubmitCreateAlias.bind(this, 'dialog')}
             >
               {() => (
                 <Form style={{ float: 'right' }}>
                   <Field
                     component={TextField}
-                    name="new_alias"
+                    name="new_aliases"
                     autoFocus={true}
-                    placeholder={t('New alias')}
-                    className={classes.aliasInput}
+                    placeholder={t('New aliases')}
+                    className={classes.aliasesInput}
                   />
                 </Form>
               )}
@@ -274,7 +274,7 @@ class StixDomainObjectHeader extends Component {
           </DialogTitle>
           <DialogContent dividers={true}>
             <List>
-              {propOr([], 'alias', stixDomainObject).map((label) => (label.length > 0 ? (
+              {propOr([], 'aliases', stixDomainObject).map((label) => (label.length > 0 ? (
                   <ListItem key={label} disableGutters={true} dense={true}>
                     <ListItemText primary={label} />
                     <ListItemSecondaryAction>
@@ -297,18 +297,18 @@ class StixDomainObjectHeader extends Component {
               }}
             >
               <Formik
-                initialValues={{ new_alias: '' }}
+                initialValues={{ new_aliases: '' }}
                 onSubmit={this.onSubmitCreateAlias.bind(this, 'dialog')}
               >
                 {() => (
                   <Form>
                     <Field
                       component={TextField}
-                      name="new_alias"
+                      name="new_aliases"
                       autoFocus={true}
                       fullWidth={true}
-                      placeholder={t('New alias')}
-                      className={classes.aliasInput}
+                      placeholder={t('New aliases')}
+                      className={classes.aliasesInput}
                     />
                   </Form>
                 )}

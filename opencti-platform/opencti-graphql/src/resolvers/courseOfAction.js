@@ -19,8 +19,8 @@ const courseOfActionResolvers = {
     attackPatterns: (courseOfAction) => attackPatterns(courseOfAction.id),
   },
   CoursesOfActionOrdering: {
-    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
-    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
+    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
+    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
   },
   CoursesOfActionFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

@@ -113,7 +113,7 @@ const ThreatActorIndicators = createFragmentContainer(
       fragment ThreatActorIndicators_threatActor on ThreatActor {
         id
         name
-        alias
+        aliases
       }
     `,
   },

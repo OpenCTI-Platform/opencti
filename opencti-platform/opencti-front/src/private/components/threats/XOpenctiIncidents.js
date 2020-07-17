@@ -15,20 +15,20 @@ import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
 import IncidentsCards, {
   incidentsCardsQuery,
-} from './incidents/IncidentsCards';
+} from './x_opencti_incidents/IncidentsCards';
 import IncidentsLines, {
   incidentsLinesQuery,
-} from './incidents/IncidentsLines';
-import IncidentCreation from './incidents/IncidentCreation';
+} from './x_opencti_incidents/IncidentsLines';
+import IncidentCreation from './x_opencti_incidents/IncidentCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
-class Incidents extends Component {
+class XOpenctiIncidents extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-incidents',
+      'view-x_opencti_incidents',
     );
     this.state = {
       sortBy: propOr('created', 'sortBy', params),
@@ -45,7 +45,7 @@ class Incidents extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-incidents',
+      'view-x_opencti_incidents',
       dissoc('filters', this.state),
     );
   }
@@ -246,10 +246,10 @@ class Incidents extends Component {
   }
 }
 
-Incidents.propTypes = {
+XOpenctiIncidents.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter)(Incidents);
+export default compose(inject18n, withRouter)(XOpenctiIncidents);

@@ -24,7 +24,7 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { distributionRelations, loadById, timeSeriesRelations, REL_CONNECTED_SUFFIX } from '../database/grakn';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { convertDataToStix } from '../database/stix';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
+import { RELATION_CREATED_BY, RELATION_KILL_CHAIN_PHASE, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from "../utils/idGenerator";
 import { creator } from '../domain/log';
 
 const stixCoreRelationshipResolvers = {
@@ -35,19 +35,22 @@ const stixCoreRelationshipResolvers = {
     stixCoreRelationshipsDistribution: async (_, args) => distributionRelations(args),
     stixCoreRelationshipsNumber: (_, args) => stixCoreRelationshipsNumber(args),
   },
+  StixCoreRelationshipsOrdering: {
+    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
+    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
+    killChainPhase: `${REL_INDEX_PREFIX}${RELATION_KILL_CHAIN_PHASE}.phase_name`,
+    toName: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.name`,
+    toValidFrom: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.valid_from`,
+    toValidUntil: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.valid_until`,
+    toPatternType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.pattern_type`,
+    toCreatedAt: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.created_at`,
+  },
   StixCoreRelationshipsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
     markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
     labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
     toPatternType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.pattern_type`,
     toMainObservableType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.main_observable_type`,
-  },
-  StixCoreRelationshipsOrdering: {
-    toName: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.name`,
-    toValidFrom: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.valid_from`,
-    toValidUntil: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.valid_until`,
-    toPatternType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.pattern_type`,
-    toCreatedAt: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.created_at`,
   },
   StixCoreRelationship: {
     from: (rel) => loadById(rel.fromId, rel.fromType),

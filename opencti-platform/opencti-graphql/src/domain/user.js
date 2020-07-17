@@ -338,7 +338,7 @@ export const userDeleteRelation = async (user, userId, relationId = null, toId =
     throw FunctionalError('Cannot delete the relation, missing relationId or toId');
   }
   await clearUserTokenCache(userId);
-  const data = await loadEntityById(userId, 'Stix-Domain-Entity');
+  const data = await loadEntityById(userId, 'Stix-Domain-Object');
   return notify(BUS_TOPICS.stixDomainObject.EDIT_TOPIC, data, user);
 };
 

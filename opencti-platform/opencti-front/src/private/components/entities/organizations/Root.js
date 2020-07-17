@@ -35,7 +35,7 @@ const organizationQuery = graphql`
     organization(id: $id) {
       id
       name
-      alias
+      aliases
       ...Organization_organization
       ...OrganizationReports_organization
       ...OrganizationKnowledge_organization

@@ -35,7 +35,7 @@ const campaignQuery = graphql`
     campaign(id: $id) {
       id
       name
-      alias
+      aliases
       ...Campaign_campaign
       ...CampaignReports_campaign
       ...CampaignKnowledge_campaign

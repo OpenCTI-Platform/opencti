@@ -35,7 +35,7 @@ const regionQuery = graphql`
     region(id: $id) {
       id
       name
-      alias
+      aliases
       ...Region_region
       ...RegionReports_region
       ...RegionKnowledge_region

@@ -9,7 +9,7 @@ import {
 } from '../domain/stixDomainObject';
 import { killChainPhases } from '../domain/stixCoreObject';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
+import { RELATION_CREATED_BY, RELATION_KILL_CHAIN_PHASE, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from "../utils/idGenerator";
 
 const toolResolvers = {
   Query: {
@@ -17,8 +17,9 @@ const toolResolvers = {
     tools: (_, args) => findAll(args),
   },
   ToolsOrdering: {
-    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
+    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
+    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
+    killChainPhase: `${REL_INDEX_PREFIX}${RELATION_KILL_CHAIN_PHASE}.phase_name`,
   },
   ToolsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

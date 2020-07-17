@@ -26,6 +26,10 @@ import {
   ENTITY_TYPE_IDENTITY,
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_CONTAINER_NOTE,
+  ENTITY_TYPE_CONTAINER_OPINION,
+  ENTITY_TYPE_MARKING_DEFINITION,
+  ENTITY_TYPE_KILL_CHAIN_PHASE,
+  ENTITY_TYPE_EXTERNAL_REFERENCE,
 } from '../utils/idGenerator';
 
 export const findById = async (stixCoreObjectId) => {
@@ -40,7 +44,8 @@ export const createdBy = (stixCoreObjectId) => {
   return loadWithConnectedRelations(
     `match $to isa ${ENTITY_TYPE_IDENTITY}; 
     $rel(${RELATION_OBJECT}_from:$from, ${RELATION_OBJECT}_to: $to) isa ${RELATION_CREATED_BY};
-    $from has internal_id "${escapeString(stixCoreObjectId)}"; get; offset 0; limit 1;`,
+    $from has internal_id "${escapeString(stixCoreObjectId)}"; 
+    get; offset 0; limit 1;`,
     'to',
     { extraRelKey: 'rel' }
   );
@@ -70,20 +75,21 @@ export const notes = (stixCoreObjectId) => {
 
 export const opinions = (stixCoreObjectId) => {
   return findWithConnectedRelations(
-    `match $to isa Opinion; 
-    $rel(knowledge_aggregation:$to, so:$from) isa ${RELATION_OBJECT};
-    $from has internal_id "${escapeString(stixCoreObjectId)}";
-   get;`,
-    'to',
+    `match $from isa ${ENTITY_TYPE_CONTAINER_OPINION};
+    $rel(${RELATION_OBJECT}_from:$from, ${RELATION_OBJECT}_to:$to) isa ${RELATION_OBJECT};
+    $to has internal_id "${escapeString(stixCoreObjectId)}";
+    get;`,
+    'from',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
 
 export const labels = (stixCoreObjectId) => {
   return findWithConnectedRelations(
-    `match $to isa ${ENTITY_TYPE_LABEL}; $rel(tagging:$to, so:$from) isa ${RELATION_OBJECT_LABEL};
-   $from has internal_id "${escapeString(stixCoreObjectId)}";
-   get;`,
+    `match $to isa ${ENTITY_TYPE_LABEL}; 
+    $rel(${RELATION_OBJECT_LABEL}_from:$from, ${RELATION_OBJECT_LABEL}_to:$to) isa ${RELATION_OBJECT_LABEL};
+    $from has internal_id "${escapeString(stixCoreObjectId)}";
+    get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
@@ -91,8 +97,10 @@ export const labels = (stixCoreObjectId) => {
 
 export const markingDefinitions = (stixCoreObjectId) => {
   return findWithConnectedRelations(
-    `match $to isa Marking-Definition; $rel(marking:$to, so:$from) isa ${RELATION_OBJECT_MARKING};
-   $from has internal_id "${escapeString(stixCoreObjectId)}"; get;`,
+    `match $to isa ${ENTITY_TYPE_MARKING_DEFINITION};
+    $rel(${RELATION_OBJECT_MARKING}_from:$from, ${RELATION_OBJECT_MARKING}_to:$to) isa ${RELATION_OBJECT_MARKING};
+    $from has internal_id "${escapeString(stixCoreObjectId)}"; 
+    get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
@@ -100,8 +108,10 @@ export const markingDefinitions = (stixCoreObjectId) => {
 
 export const killChainPhases = (stixDomainObjectId) => {
   return findWithConnectedRelations(
-    `match $to isa Kill-Chain-Phase; $rel(kill_chain_phase:$to, phase_belonging:$from) isa ${RELATION_KILL_CHAIN_PHASE};
-    $from has internal_id "${escapeString(stixDomainObjectId)}"; get;`,
+    `match $to isa ${ENTITY_TYPE_KILL_CHAIN_PHASE}; 
+    $rel(${RELATION_KILL_CHAIN_PHASE}_from:$from, ${RELATION_KILL_CHAIN_PHASE}_to:$to) isa ${RELATION_KILL_CHAIN_PHASE};
+    $from has internal_id "${escapeString(stixDomainObjectId)}";
+    get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
@@ -109,8 +119,10 @@ export const killChainPhases = (stixDomainObjectId) => {
 
 export const externalReferences = (stixDomainObjectId) => {
   return findWithConnectedRelations(
-    `match $to isa External-Reference; $rel(external_reference:$to, so:$from) isa ${RELATION_EXTERNAL_REFERENCE};
-    $from has internal_id "${escapeString(stixDomainObjectId)}"; get;`,
+    `match $to isa ${ENTITY_TYPE_EXTERNAL_REFERENCE};
+    $rel(${RELATION_EXTERNAL_REFERENCE}_from:$from, ${RELATION_EXTERNAL_REFERENCE}_to:$to) isa ${RELATION_EXTERNAL_REFERENCE};
+    $from has internal_id "${escapeString(stixDomainObjectId)}";
+    get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));

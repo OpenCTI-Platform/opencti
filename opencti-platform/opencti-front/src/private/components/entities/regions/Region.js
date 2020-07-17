@@ -12,7 +12,7 @@ import RegionPopover from './RegionPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityIncidentsChart from '../../threats/incidents/EntityIncidentsChart';
+import EntityIncidentsChart from '../../threats/x_opencti_incidents/EntityIncidentsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
@@ -100,7 +100,7 @@ const Region = createFragmentContainer(RegionComponent, {
         }
       }
       name
-      alias
+      aliases
       ...RegionOverview_region
       ...RegionSubRegions_region
       ...RegionParentRegions_region

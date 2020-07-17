@@ -52,8 +52,8 @@ import conf, { logger } from '../config/conf';
 import {
   buildPagination,
   fillTimeSeries,
-  INDEX_STIX_ENTITIES,
-  INDEX_STIX_RELATIONS,
+  INDEX_STIX_OBJECTS,
+  INDEX_STIX_RELATIONSHIPS,
   inferIndexFromConceptType,
   utcDate,
 } from './utils';
@@ -781,7 +781,7 @@ export const listEntities = async (entityTypes, searchFields, args = {}) => {
   const unsupportedOrdering = isRelationOrderBy && last(orderBy.split('.')) !== 'internal_id';
   const supportedByCache = !unsupportedOrdering && !unSupportedRelations;
   if (useCache(args) && supportedByCache) {
-    return elPaginate(INDEX_STIX_ENTITIES, assoc('types', entityTypes, args));
+    return elPaginate(INDEX_STIX_OBJECTS, assoc('types', entityTypes, args));
   }
   logger.debug(`[GRAKN] ListEntities on Grakn, supportedByCache: ${supportedByCache}`);
 
@@ -927,7 +927,7 @@ export const listRelations = async (relationType, args) => {
       assoc('filters', finalFilters),
       assoc('relationsMap', relationsMap)
     )(args);
-    return elPaginate(INDEX_STIX_RELATIONS, paginateArgs);
+    return elPaginate(INDEX_STIX_RELATIONSHIPS, paginateArgs);
   }
   // 1- If not, use Grakn
   const queryFromTypes = fromTypesFilter
@@ -1112,7 +1112,7 @@ export const loadById = async (id, type, args = {}) => {
 
 // region Indexer
 const reindexAttributeValue = async (queryType, type, value) => {
-  const index = queryType === 'relation' ? INDEX_STIX_RELATIONS : INDEX_STIX_ENTITIES;
+  const index = queryType === 'relation' ? INDEX_STIX_RELATIONSHIPS : INDEX_STIX_OBJECTS;
   const readQuery = `match $x isa ${queryType}, has ${escape(type)} $a; $a "${escapeString(value)}"; get;`;
   logger.debug(`[GRAKN - infer: false] attributeUpdate`, { query: readQuery });
   const elementIds = await executeRead(async (rTx) => {

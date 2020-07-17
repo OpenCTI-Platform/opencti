@@ -334,24 +334,16 @@ const CourseOfActionEditionOverview = createFragmentContainer(
         name
         description
         createdBy {
-          node {
-            id
-            name
-            entity_type
-          }
-          relation {
-            id
-          }
+          id
+          name
+          entity_type
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
               definition
               definition_type
-            }
-            relation {
-              id
             }
           }
         }

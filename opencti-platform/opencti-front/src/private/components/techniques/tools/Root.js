@@ -35,7 +35,7 @@ const toolQuery = graphql`
     tool(id: $id) {
       id
       name
-      alias
+      aliases
       ...Tool_tool
       ...ToolReports_tool
       ...ToolKnowledge_tool

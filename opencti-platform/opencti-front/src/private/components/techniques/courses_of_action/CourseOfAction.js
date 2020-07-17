@@ -94,7 +94,7 @@ const CourseOfAction = createFragmentContainer(CourseOfActionComponent, {
     fragment CourseOfAction_courseOfAction on CourseOfAction {
       id
       name
-      alias
+      aliases
       ...CourseOfActionOverview_courseOfAction
       ...CourseOfActionDetails_courseOfAction
     }

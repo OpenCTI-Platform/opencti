@@ -8,8 +8,8 @@ import IntrusionSets from './IntrusionSets';
 import RootIntrusionSet from './intrusion_sets/Root';
 import Campaigns from './Campaigns';
 import RootCampaign from './campaigns/Root';
-import Incidents from './Incidents';
-import RootIncident from './incidents/Root';
+import Incidents from './XOpenctiIncidents';
+import RootIncident from './x_opencti_incidents/Root';
 import Malwares from './Malwares';
 import RootMalware from './malwares/Root';
 

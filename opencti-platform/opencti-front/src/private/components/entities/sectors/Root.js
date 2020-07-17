@@ -39,7 +39,7 @@ const sectorQuery = graphql`
       ...FileExportViewer_entity
       id
       name
-      alias
+      aliases
     }
     connectorsForExport {
       ...FileManager_connectorsExport

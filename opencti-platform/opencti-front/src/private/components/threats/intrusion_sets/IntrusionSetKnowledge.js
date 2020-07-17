@@ -179,7 +179,7 @@ const IntrusionSetKnowledge = createFragmentContainer(
       fragment IntrusionSetKnowledge_intrusionSet on IntrusionSet {
         id
         name
-        alias
+        aliases
       }
     `,
   },

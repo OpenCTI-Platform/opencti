@@ -139,7 +139,7 @@ const SectorKnowledge = createFragmentContainer(SectorKnowledgeComponent, {
     fragment SectorKnowledge_sector on Sector {
       id
       name
-      alias
+      aliases
     }
   `,
 });

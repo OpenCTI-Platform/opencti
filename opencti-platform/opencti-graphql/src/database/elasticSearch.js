@@ -12,7 +12,6 @@ import {
   groupBy,
   head,
   includes,
-  invertObj,
   join,
   last,
   map,
@@ -20,20 +19,27 @@ import {
   pipe,
   toPairs,
   uniq,
-  isNil,
 } from 'ramda';
 import {
   buildPagination,
-  INDEX_INTERNAL_ENTITIES,
-  INDEX_INTERNAL_RELATIONS,
-  INDEX_STIX_ENTITIES,
-  INDEX_STIX_OBSERVABLE,
-  INDEX_STIX_RELATIONS,
+  INDEX_INTERNAL_OBJECTS,
+  INDEX_STIX_OBJECTS,
+  INDEX_STIX_CYBER_OBSERVABLES,
+  INDEX_INTERNAL_RELATIONSHIPS,
+  INDEX_STIX_RELATIONSHIPS,
+  INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
+  INDEX_STIX_META_RELATIONSHIPS,
   inferIndexFromConceptType,
 } from './utils';
 import conf, { logger } from '../config/conf';
 import { ConfigurationError, DatabaseError, FunctionalError } from '../config/errors';
-import { BASE_TYPE_RELATION } from '../utils/idGenerator';
+import {
+  BASE_TYPE_RELATION,
+  RELATION_CREATED_BY,
+  RELATION_KILL_CHAIN_PHASE,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING,
+} from '../utils/idGenerator';
 
 const dateFields = [
   'created',
@@ -80,7 +86,7 @@ export const virtualTypes = [
   'File',
   'Windows-Service',
   'X509-Certificate',
-  'Stix-Domain-Entity',
+  'Stix-Domain-Object',
   'Stix-Domain',
   'Stix-Observable',
 ];
@@ -88,22 +94,31 @@ export const virtualTypes = [
 export const REL_INDEX_PREFIX = 'rel_';
 export const INDEX_WORK_JOBS = 'work_jobs_index';
 export const INDEX_LOGS = 'opencti_logs';
-const UNIMPACTED_ENTITIES_ROLE = ['tagging', 'marking', 'kill_chain_phase', 'creator'];
+const UNIMPACTED_ENTITIES_ROLE = [
+  `${RELATION_CREATED_BY}_to`,
+  `${RELATION_OBJECT_MARKING}_to`,
+  `${RELATION_OBJECT_LABEL}_to`,
+  `${RELATION_KILL_CHAIN_PHASE}_to`,
+];
 export const PLATFORM_INDICES = [
-  INDEX_STIX_ENTITIES,
-  INDEX_STIX_RELATIONS,
-  INDEX_STIX_OBSERVABLE,
-  INDEX_INTERNAL_ENTITIES,
-  INDEX_INTERNAL_RELATIONS,
+  INDEX_INTERNAL_OBJECTS,
+  INDEX_STIX_OBJECTS,
+  INDEX_STIX_CYBER_OBSERVABLES,
+  INDEX_INTERNAL_RELATIONSHIPS,
+  INDEX_STIX_RELATIONSHIPS,
+  INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
+  INDEX_STIX_META_RELATIONSHIPS,
   INDEX_WORK_JOBS,
   INDEX_LOGS,
 ];
-export const KNOWLEDGE_INDICES = [
-  INDEX_STIX_ENTITIES,
-  INDEX_STIX_RELATIONS,
-  INDEX_STIX_OBSERVABLE,
-  INDEX_INTERNAL_ENTITIES,
-  INDEX_INTERNAL_RELATIONS,
+export const DATA_INDICES = [
+  INDEX_INTERNAL_OBJECTS,
+  INDEX_STIX_OBJECTS,
+  INDEX_STIX_CYBER_OBSERVABLES,
+  INDEX_INTERNAL_RELATIONSHIPS,
+  INDEX_STIX_RELATIONSHIPS,
+  INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
+  INDEX_STIX_META_RELATIONSHIPS,
   INDEX_WORK_JOBS,
 ];
 
@@ -233,7 +248,7 @@ export const elCreateIndexes = async (indexesToCreate = PLATFORM_INDICES) => {
     })
   );
 };
-export const elDeleteIndexes = async (indexesToDelete = KNOWLEDGE_INDICES) => {
+export const elDeleteIndexes = async (indexesToDelete = DATA_INDICES) => {
   return Promise.all(
     indexesToDelete.map((index) => {
       return el.indices.delete({ index }).catch((err) => {
@@ -393,7 +408,7 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) =
     });
   }
   const query = {
-    index: INDEX_STIX_RELATIONS,
+    index: INDEX_STIX_RELATIONSHIPS,
     body: {
       size: 10000,
       query: {
@@ -731,7 +746,7 @@ export const elPaginate = async (indexName, options = {}) => {
       }
     );
 };
-export const elLoadByTerms = async (terms, relationsMap, indices = KNOWLEDGE_INDICES) => {
+export const elLoadByTerms = async (terms, relationsMap, indices = DATA_INDICES) => {
   const query = {
     index: indices,
     _source_excludes: `${REL_INDEX_PREFIX}*`,
@@ -762,7 +777,7 @@ const elInternalLoadById = async (
   id,
   elementTypes = ['internal_id'],
   relationsMap = null,
-  indices = KNOWLEDGE_INDICES
+  indices = DATA_INDICES
 ) => {
   //       must = append({ bool: { should: valuesFiltering, minimum_should_match: 1 } }, must);
   const mustTerms = [];
@@ -799,10 +814,10 @@ const elInternalLoadById = async (
 };
 // endregion
 
-export const elLoadById = (id, relationsMap = null, indices = KNOWLEDGE_INDICES) => {
+export const elLoadById = (id, relationsMap = null, indices = DATA_INDICES) => {
   return elInternalLoadById(id, ['internal_id'], relationsMap, indices);
 };
-export const elLoadByStixId = (id, relationsMap = null, indices = KNOWLEDGE_INDICES) => {
+export const elLoadByStixId = (id, relationsMap = null, indices = DATA_INDICES) => {
   return elInternalLoadById(id, ['standard_id', 'stix_ids'], relationsMap, indices);
 };
 export const elBulk = async (args) => {
@@ -871,7 +886,7 @@ export const elDeleteByField = async (indexName, fieldName, value) => {
   });
   return value;
 };
-export const elDeleteInstanceIds = async (ids, indexesToHandle = KNOWLEDGE_INDICES) => {
+export const elDeleteInstanceIds = async (ids, indexesToHandle = DATA_INDICES) => {
   logger.debug(`[ELASTICSEARCH] elDeleteInstanceIds`, { ids });
   const terms = map((id) => ({ term: { 'internal_id.keyword': id } }), ids);
   return el.deleteByQuery({

@@ -23,10 +23,10 @@ const styles = () => ({
     float: 'right',
     overflowX: 'hidden',
   },
-  alias: {
+  aliases: {
     marginRight: 7,
   },
-  aliasInput: {
+  aliasesInput: {
     margin: '4px 0 0 10px',
     float: 'right',
   },

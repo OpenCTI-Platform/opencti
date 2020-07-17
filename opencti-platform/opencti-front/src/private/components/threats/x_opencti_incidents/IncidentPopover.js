@@ -93,7 +93,7 @@ class IncidentPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/threats/incidents');
+        this.props.history.push('/dashboard/threats/x_opencti_incidents');
       },
     });
   }

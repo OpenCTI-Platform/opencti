@@ -141,7 +141,7 @@ export default createPaginationContainer(
               id
               entity_type
               name
-              alias
+              aliases
               created_at
               createdBy {
                 node {

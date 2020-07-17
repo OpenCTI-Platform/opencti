@@ -163,7 +163,7 @@ const CampaignKnowledge = createFragmentContainer(CampaignKnowledgeComponent, {
     fragment CampaignKnowledge_campaign on Campaign {
       id
       name
-      alias
+      aliases
     }
   `,
 });

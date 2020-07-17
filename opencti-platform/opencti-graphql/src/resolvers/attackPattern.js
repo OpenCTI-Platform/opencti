@@ -27,9 +27,9 @@ const attackPatternResolvers = {
     coursesOfAction: (attackPattern) => coursesOfAction(attackPattern.id),
   },
   AttackPatternsOrdering: {
-    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
-    killChainPhases: `${REL_INDEX_PREFIX}${RELATION_KILL_CHAIN_PHASE}.phase_name`,
+    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
+    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
+    killChainPhase: `${REL_INDEX_PREFIX}${RELATION_KILL_CHAIN_PHASE}.phase_name`,
   },
   AttackPatternsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

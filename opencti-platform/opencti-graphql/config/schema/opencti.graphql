@@ -399,8 +399,8 @@ enum UsersFilter {
   modified
   created_at
   createdBy
-  markingDefinitions
-  labels
+  objectMarking
+  objectLabel
 }
 input UsersFiltering {
   key: UsersFilter!
@@ -911,13 +911,13 @@ enum StixDomainObjectsOrdering {
   modified
   created_at
   updated_at
-  labels
-  markingDefinitions
   published
   object_status
   valid_from
   valid_to
   indicator_pattern
+  objectMarking
+  objectLabel
 }
 enum StixDomainObjectsFilter {
   name
@@ -1005,8 +1005,8 @@ input StixDomainObjectAddInput {
   alias: [String]
   type: String!
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   clientMutationId: String
   created: DateTime
   modified: DateTime
@@ -1020,9 +1020,9 @@ enum AttackPatternsOrdering {
   modified
   created_at
   updated_at
-  markingDefinitions
-  labels
-  killChainPhases
+  objectMarking
+  objectLabel
+  killChainPhase
 }
 enum AttackPatternsFilter {
   name
@@ -1123,9 +1123,9 @@ input AttackPatternAddInput {
   x_mitre_detection: String
   x_mitre_id: String
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
-  killChainPhases: [String]
+  objectMarking: [String]
+  objectLabel: [String]
+  killChainPhase: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -1141,8 +1141,8 @@ enum CampaignsOrdering {
   modified
   created_at
   updated_at
-  markingDefinitions
-  labels
+  objectMarking
+  objectLabel
 }
 enum CampaignsFilter {
   name
@@ -1237,8 +1237,8 @@ input CampaignAddInput {
   last_seen: DateTime
   objective: String
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -1310,8 +1310,8 @@ enum NotesOrdering {
   created_at
   updated_at
   createdBy
-  markingDefinitions
-  labels
+  objectMarking
+  objectLabel
 }
 enum NotesFilter {
   attribute_abstract
@@ -1413,8 +1413,8 @@ input NoteAddInput {
   authors: [String]
   confidence: Int
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -1430,8 +1430,8 @@ enum ObservedDatasOrdering {
   created_at
   updated_at
   createdBy
-  markingDefinitions
-  labels
+  objectMarking
+  objectLabel
 }
 enum ObservedDatasFilter {
   first_observed
@@ -1533,8 +1533,8 @@ input ObservedDataAddInput {
   number_observed: Int
   confidence: Int
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -1547,8 +1547,8 @@ enum OpinionsOrdering {
   created_at
   updated_at
   createdBy
-  markingDefinitions
-  labels
+  objectMarking
+  objectLabel
 }
 enum OpinionsFilter {
   explanation
@@ -1652,8 +1652,8 @@ input OpinionAddInput {
   graph_data: String
   confidence: Int
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -1669,8 +1669,8 @@ enum ReportsOrdering {
   created_at
   updated_at
   createdBy
-  markingDefinitions
-  labels
+  objectMarking
+  objectLabel
 }
 enum ReportsFilter {
   name
@@ -1680,7 +1680,7 @@ enum ReportsFilter {
   created_at
   report_class
   object_status
-  labels
+  objectLabel
   createdBy
   markedBy
   labelledBy
@@ -1776,8 +1776,8 @@ input ReportAddInput {
   report_types: [String]
   report_status: Int
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -1790,8 +1790,8 @@ enum CoursesOfActionOrdering {
   modified
   created_at
   updated_at
-  labels
-  markingDefinitions
+  objectMarking
+  objectLabel
 }
 enum CoursesOfActionFilter {
   name
@@ -1879,8 +1879,8 @@ input CourseOfActionAddInput {
   description: String!
   confidence: Int
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -1893,8 +1893,8 @@ enum IdentitiesOrdering {
   modified
   created_at
   updated_at
-  markingDefinitions
-  labels
+  objectMarking
+  objectLabel
 }
 enum IdentitiesFilter {
   entity_type
@@ -1993,8 +1993,8 @@ input IdentityAddInput {
   alias: [String]
   type: IdentityType!
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   clientMutationId: String
   created: DateTime
   modified: DateTime
@@ -2008,8 +2008,8 @@ enum IndividualsOrdering {
   lastname
   created
   modified
-  labels
-  markingDefinitions
+  objectMarking
+  objectLabel
 }
 enum IndividualsFilter {
   name
@@ -2105,8 +2105,8 @@ input IndividualAddInput {
   x_opencti_lastname: String
   confidence: Int
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -2118,8 +2118,8 @@ enum OrganizationsOrdering {
   confidence
   created
   modified
-  labels
-  markingDefinitions
+  objectMarking
+  objectLabel
 }
 enum OrganizationsFilter {
   name
@@ -2227,8 +2227,8 @@ input OrganizationAddInput {
   x_opencti_organization_type: String
   x_opencti_reliability: OrganizationReliability
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -2243,8 +2243,8 @@ enum SectorsOrdering {
   modified
   created_at
   updated_at
-  labels
-  markingDefinitions
+  objectMarking
+  objectLabel
 }
 enum SectorsFilter {
   name
@@ -2340,8 +2340,8 @@ input SectorAddInput {
   contact_information: String
   confidence: Int
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -2363,8 +2363,8 @@ enum IndicatorsOrdering {
   modified
   created_at
   updated_at
-  labels
-  markingDefinitions
+  objectMarking
+  objectLabel
 }
 enum IndicatorsFilter {
   name
@@ -2476,8 +2476,8 @@ input IndicatorAddInput {
   x_opencti_detection: Boolean
   x_opencti_main_observable_type: String!
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -2493,8 +2493,8 @@ enum InfrastructuresOrdering {
   modified
   created_at
   updated_at
-  labels
-  markingDefinitions
+  objectMarking
+  objectLabel
 }
 enum InfrastructuresFilter {
   name
@@ -2590,8 +2590,8 @@ input InfrastructureAddInput {
   last_seen: DateTime
   confidence: Int
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -2604,8 +2604,8 @@ enum IntrusionSetsOrdering {
   modified
   created_at
   updated_at
-  labels
-  markingDefinitions
+  objectMarking
+  objectLabel
 }
 enum IntrusionSetsFilter {
   name
@@ -2706,8 +2706,8 @@ input IntrusionSetAddInput {
   secondary_motivations: [String]
   confidence: Int
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -2775,8 +2775,8 @@ enum PositionsOrdering {
   modified
   created_at
   updated_at
-  labels
-  markingDefinitions
+  objectMarking
+  objectLabel
 }
 enum PositionsFilter {
   created
@@ -2872,8 +2872,8 @@ input PositionAddInput {
   postal_code: String
   confidence: Int
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -2888,8 +2888,8 @@ enum CitiesOrdering {
   modified
   created_at
   updated_at
-  markingDefinitions
-  labels
+  objectMarking
+  objectLabel
 }
 enum CitiesFilter {
   name
@@ -2983,8 +2983,8 @@ input CityAddInput {
   precision: Float
   confidence: Int
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -2998,8 +2998,8 @@ enum CountriesOrdering {
   modified
   created_at
   updated_at
-  labels
-  markingDefinitions
+  objectMarking
+  objectLabel
 }
 enum CountriesFilter {
   created
@@ -3089,8 +3089,8 @@ input CountryAddInput {
   aliases: [String]
   confidence: Int
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -3104,8 +3104,8 @@ enum RegionsOrdering {
   modified
   created_at
   updated_at
-  labels
-  markingDefinitions
+  objectMarking
+  objectLabel
 }
 enum RegionsFilter {
   created
@@ -3198,8 +3198,8 @@ input RegionAddInput {
   confidence: Int
   alias: [String]
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -3215,8 +3215,8 @@ enum MalwaresOrdering {
   modified
   created_at
   updated_at
-  markingDefinitions
-  labels
+  objectMarking
+  objectLabel
 }
 enum MalwaresFilter {
   name
@@ -3321,9 +3321,9 @@ input MalwareAddInput {
   is_family: Boolean
   confidence: Int
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
-  killChainPhases: [String]
+  objectMarking: [String]
+  objectLabel: [String]
+  killChainPhase: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -3336,8 +3336,8 @@ enum ThreatActorsOrdering {
   modified
   created_at
   updated_at
-  labels
-  markingDefinitions
+  objectMarking
+  objectLabel
 }
 enum ThreatActorsFilter {
   name
@@ -3445,8 +3445,8 @@ input ThreatActorAddInput {
   personal_motivations: [String]
   confidence: Int
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -3459,8 +3459,9 @@ enum ToolsOrdering {
   modified
   created_at
   updated_at
-  labels
-  markingDefinitions
+  objectMarking
+  objectLabel
+  killChainPhase
 }
 enum ToolsFilter {
   name
@@ -3552,9 +3553,9 @@ input ToolAddInput {
   tool_version: String
   confidence: Int
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
-  killChainPhases: [String]
+  objectMarking: [String]
+  objectLabel: [String]
+  killChainPhase: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -3570,8 +3571,8 @@ enum VulnerabilitiesOrdering {
   modified
   created_at
   updated_at
-  labels
-  markingDefinitions
+  objectMarking
+  objectLabel
 }
 enum VulnerabilitiesFilter {
   name
@@ -3670,8 +3671,8 @@ input VulnerabilityAddInput {
   x_opencti_availability_impact: String
   confidence: Int
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -3686,8 +3687,8 @@ enum XOpenctiIncidentsOrdering {
   modified
   created_at
   updated_at
-  labels
-  markingDefinitions
+  objectMarking
+  objectLabel
 }
 enum XOpenctiIncidentsFilter {
   name
@@ -3779,8 +3780,8 @@ input XOpenctiIncidentAddInput {
   last_seen: DateTime
   alias: [String]
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -3795,8 +3796,8 @@ enum StixCyberObservablesOrdering {
   value
   created_at
   updated_at
-  labels
-  markingDefinitions
+  objectMarking
+  objectLabel
 }
 enum StixCyberObservablesFilter {
   entity_type
@@ -3929,8 +3930,8 @@ input AutonomousSystemAddInput {
   name: String
   rir: String
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -3997,8 +3998,8 @@ input DirectoryAddInput {
   mtime: DateTime
   atime: DateTime
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -4057,8 +4058,8 @@ input DomainNameAddInput {
   stix_id: String
   value: String
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -4119,8 +4120,8 @@ input EmailAddrAddInput {
   value: String
   display_name: String
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -4191,8 +4192,8 @@ input EmailMessageAddInput {
   received_lines: [String]
   body: String
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -4306,8 +4307,8 @@ input XOpenctiCryptographicKeyAddInput {
   stix_id: String
   value: String
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -4366,8 +4367,8 @@ input XOpenctiCryptocurrencyWalletAddInput {
   stix_id: String
   value: String
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -4426,8 +4427,8 @@ input XOpenctiTextAddInput {
   stix_id: String
   value: String
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -4486,8 +4487,8 @@ input XOpenctiUserAgentAddInput {
   stix_id: String
   value: String
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -4584,6 +4585,9 @@ enum StixCoreRelationshipsOrdering {
   modified
   created_at
   updated_at
+  objectMarking
+  objectLabel
+  killChainPhase
   toName
   toValidFrom
   toValidUntil
@@ -4677,8 +4681,8 @@ input StixCoreRelationshipAddInput {
   stop_time: DateTime
   confidence: Int
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -4695,6 +4699,8 @@ enum StixSightingRelationshipsOrdering {
   modified
   created_at
   updated_at
+  objectMarking
+  objectLabel
   toName
   toValidFrom
   toValidUntil
@@ -4768,7 +4774,7 @@ input StixSightingRelationshipAddInput {
   attribute_count: Int!
   x_opencti_negative: Boolean
   createdBy: String
-  markingDefinitions: [String]
+  objectMarking: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -4829,8 +4835,8 @@ input StixCyberObservableRelationshipAddInput {
   relationship_type: String!
   confidence: Int
   createdBy: String
-  markingDefinitions: [String]
-  labels: [String]
+  objectMarking: [String]
+  objectLabel: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String

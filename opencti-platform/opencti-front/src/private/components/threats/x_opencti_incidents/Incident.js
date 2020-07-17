@@ -88,7 +88,7 @@ const Incident = createFragmentContainer(IncidentComponent, {
     fragment Incident_incident on Incident {
       id
       name
-      alias
+      aliases
       ...IncidentOverview_incident
       ...IncidentDetails_incident
     }

@@ -21,8 +21,8 @@ const indicatorResolvers = {
     indicators: (_, args) => findAll(args),
   },
   IndicatorsOrdering: {
-    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
+    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
+    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
   },
   IndicatorsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

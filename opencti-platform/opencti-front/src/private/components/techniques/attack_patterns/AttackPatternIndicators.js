@@ -114,7 +114,7 @@ const AttackPatternIndicators = createFragmentContainer(
       fragment AttackPatternIndicators_attackPattern on AttackPattern {
         id
         name
-        alias
+        aliases
       }
     `,
   },

@@ -76,7 +76,7 @@ const IncidentReports = createFragmentContainer(IncidentReportsComponent, {
     fragment IncidentReports_incident on Incident {
       id
       name
-      alias
+      aliases
     }
   `,
 });

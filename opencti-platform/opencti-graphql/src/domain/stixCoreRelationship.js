@@ -16,7 +16,7 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
 import { elCount } from '../database/elasticSearch';
-import { buildPagination, INDEX_STIX_RELATIONS } from '../database/utils';
+import { buildPagination, INDEX_STIX_RELATIONSHIPS } from '../database/utils';
 import {
   isStixId,
   isInternalId,
@@ -48,8 +48,8 @@ export const stixCoreRelationshipsNumber = (args) => {
     finalArgs = args.type ? assoc('types', [args.type], args) : assoc('types', ['stix_relation'], args);
   }
   return {
-    count: elCount(INDEX_STIX_RELATIONS, finalArgs),
-    total: elCount(INDEX_STIX_RELATIONS, dissoc('endDate', finalArgs)),
+    count: elCount(INDEX_STIX_RELATIONSHIPS, finalArgs),
+    total: elCount(INDEX_STIX_RELATIONSHIPS, dissoc('endDate', finalArgs)),
   };
 };
 

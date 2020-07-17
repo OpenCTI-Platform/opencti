@@ -88,7 +88,7 @@ const styles = (theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
-  alias: {
+  aliases: {
     margin: '0 7px 7px 0',
   },
 });
@@ -108,12 +108,12 @@ const curationToolBarMergeMutation = graphql`
   mutation CurationToolBarMergeMutation(
     $id: ID!
     $stixDomainObjectsIds: [String]!
-    $alias: [String]
+    $aliases: [String]
   ) {
     stixDomainObjectEdit(id: $id) {
       mergeEntities(
         stixDomainObjectsIds: $stixDomainObjectsIds
-        alias: $alias
+        aliases: $aliases
       ) {
         id
       }
@@ -189,10 +189,10 @@ class CurationToolBar extends Component {
       ? head(filter((n) => n.id === keptEntityId, selectedElementsList))
       : head(selectedElementsList);
     const names = pluck('name', selectedElementsList);
-    const aliases = flatten(pluck('alias', selectedElementsList));
+    const aliaseses = flatten(pluck('aliases', selectedElementsList));
     const newAliases = filter(
       (n) => n.length > 0,
-      uniq(concat(names, aliases)),
+      uniq(concat(names, aliaseses)),
     );
     const filteredStixDomainObjectsIds = keptEntityId
       ? filter((n) => n !== keptEntityId, stixDomainObjectsIds)
@@ -202,7 +202,7 @@ class CurationToolBar extends Component {
       variables: {
         id: keptElement.id,
         stixDomainObjectsIds: filteredStixDomainObjectsIds,
-        alias: newAliases,
+        aliases: newAliases,
       },
       updater: (store) => {
         const container = store.getRoot();
@@ -232,10 +232,10 @@ class CurationToolBar extends Component {
       ? head(filter((n) => n.id === keptEntityId, selectedElementsList))
       : head(selectedElementsList);
     const names = pluck('name', selectedElementsList);
-    const aliases = flatten(pluck('alias', selectedElementsList));
+    const aliaseses = flatten(pluck('aliases', selectedElementsList));
     const newAliases = filter(
       (n) => n.length > 0,
-      uniq(concat(names, aliases)),
+      uniq(concat(names, aliaseses)),
     );
     return (
       <Drawer
@@ -374,7 +374,7 @@ class CurationToolBar extends Component {
             {newAliases.map((label) => (label.length > 0 ? (
                 <Chip
                   key={label}
-                  classes={{ root: classes.alias }}
+                  classes={{ root: classes.aliases }}
                   label={label}
                 />
             ) : (

@@ -86,7 +86,7 @@ const CityObservables = createFragmentContainer(CityObservablesComponent, {
     fragment CityObservables_city on City {
       id
       name
-      alias
+      aliases
     }
   `,
 });

@@ -155,7 +155,7 @@ const IncidentKnowledge = createFragmentContainer(IncidentKnowledgeComponent, {
     fragment IncidentKnowledge_incident on Incident {
       id
       name
-      alias
+      aliases
     }
   `,
 });

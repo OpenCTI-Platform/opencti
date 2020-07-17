@@ -14,7 +14,7 @@ import SectorPopover from './SectorPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityIncidentsChart from '../../threats/incidents/EntityIncidentsChart';
+import EntityIncidentsChart from '../../threats/x_opencti_incidents/EntityIncidentsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
@@ -100,7 +100,7 @@ const Sector = createFragmentContainer(SectorComponent, {
         }
       }
       name
-      alias
+      aliases
       ...SectorOverview_sector
       ...SectorSubSectors_sector
       ...SectorParentSectors_sector

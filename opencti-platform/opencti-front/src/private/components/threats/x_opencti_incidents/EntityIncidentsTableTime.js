@@ -134,7 +134,7 @@ class EntityIncidentsTableTime extends Component {
                       )}
                     </TableCell>
                     <TableCell align="right">
-                      {t('Number of incidents')}
+                      {t('Number of x_opencti_incidents')}
                     </TableCell>
                   </TableRow>
                 </TableHead>

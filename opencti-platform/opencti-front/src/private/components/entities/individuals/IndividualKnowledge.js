@@ -140,7 +140,7 @@ const IndividualKnowledge = createFragmentContainer(
       fragment IndividualKnowledge_individual on User {
         id
         name
-        alias
+        aliases
       }
     `,
   },

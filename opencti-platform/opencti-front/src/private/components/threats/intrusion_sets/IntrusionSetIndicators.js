@@ -110,7 +110,7 @@ const IntrusionSetIndicators = createFragmentContainer(
       fragment IntrusionSetIndicators_intrusionSet on IntrusionSet {
         id
         name
-        alias
+        aliases
       }
     `,
   },

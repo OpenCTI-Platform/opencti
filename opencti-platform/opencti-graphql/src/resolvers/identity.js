@@ -16,7 +16,8 @@ const identityResolvers = {
     identities: (_, args) => findAll(args),
   },
   IdentitiesOrdering: {
-    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
+    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
+    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
   },
   IdentitiesFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

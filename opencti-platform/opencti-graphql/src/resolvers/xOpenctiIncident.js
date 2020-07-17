@@ -29,8 +29,8 @@ const xOpenctiIncidentResolvers = {
     },
   },
   XOpenctiIncidentsOrdering: {
-    markingDefinitions: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    labels: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
+    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
+    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
   },
   XOpenctiIncidentsFilter: {
     // eslint-disable-next-line no-undef

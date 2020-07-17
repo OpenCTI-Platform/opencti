@@ -13,7 +13,7 @@ import CampaignPopover from './CampaignPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityIncidentsChart from '../incidents/EntityIncidentsChart';
+import EntityIncidentsChart from '../x_opencti_incidents/EntityIncidentsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
@@ -95,7 +95,7 @@ const Campaign = createFragmentContainer(CampaignComponent, {
     fragment Campaign_campaign on Campaign {
       id
       name
-      alias
+      aliases
       ...CampaignOverview_campaign
       ...CampaignDetails_campaign
     }

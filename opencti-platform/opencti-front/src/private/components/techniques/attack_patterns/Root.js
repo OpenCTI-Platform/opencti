@@ -35,7 +35,7 @@ const attackPatternQuery = graphql`
     attackPattern(id: $id) {
       id
       name
-      alias
+      aliases
       ...AttackPattern_attackPattern
       ...AttackPatternReports_attackPattern
       ...AttackPatternKnowledge_attackPattern

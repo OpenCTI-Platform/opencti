@@ -138,7 +138,7 @@ const stixDomainObjectMutationRelationDelete = graphql`
 
 const stixDomainObjectValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  alias: Yup.string(),
+  aliases: Yup.string(),
   description: Yup.string(),
 });
 
@@ -265,7 +265,7 @@ class StixDomainObjectEditionContainer extends Component {
             id: this.props.stixDomainObject.id,
             input: {
               key: name,
-              value: name === 'alias' ? split(',', value) : value,
+              value: name === 'aliases' ? split(',', value) : value,
             },
           },
         });
@@ -302,10 +302,10 @@ class StixDomainObjectEditionContainer extends Component {
       })),
     )(stixDomainObject);
     const initialValues = pipe(
-      assoc('alias', join(',', stixDomainObject.alias)),
+      assoc('aliases', join(',', stixDomainObject.aliases)),
       assoc('createdBy', createdBy),
       assoc('markingDefinitions', markingDefinitions),
-      pick(['name', 'alias', 'description', 'createdBy', 'markingDefinitions']),
+      pick(['name', 'aliases', 'description', 'createdBy', 'markingDefinitions']),
     )(stixDomainObject);
     return (
       <div>
@@ -347,7 +347,7 @@ class StixDomainObjectEditionContainer extends Component {
                 />
                 <Field
                   component={TextField}
-                  name="alias"
+                  name="aliases"
                   label={t('Aliases separated by commas')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
@@ -356,7 +356,7 @@ class StixDomainObjectEditionContainer extends Component {
                   helperText={
                     <SubscriptionFocus
                       context={editContext}
-                      fieldName="alias"
+                      fieldName="aliases"
                     />
                   }
                 />
@@ -426,7 +426,7 @@ const StixDomainObjectEditionFragment = createFragmentContainer(
         entity_type
         name
         description
-        alias
+        aliases
         createdBy {
           node {
             id

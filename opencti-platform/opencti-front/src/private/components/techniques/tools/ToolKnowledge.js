@@ -125,7 +125,7 @@ const ToolKnowledge = createFragmentContainer(ToolKnowledgeComponent, {
     fragment ToolKnowledge_tool on Tool {
       id
       name
-      alias
+      aliases
     }
   `,
 });

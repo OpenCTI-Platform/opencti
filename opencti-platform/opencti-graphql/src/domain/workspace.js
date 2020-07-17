@@ -42,7 +42,7 @@ export const ownedBy = (workspaceId) => {
 export const objectRefs = (workspaceId, args) => {
   const filter = { key: `${RELATION_OBJECT}.internal_id`, values: [workspaceId] };
   const filters = concat([filter], args.filters || []);
-  const finalArgs = pipe(assoc('filters', filters), assoc('types', ['Stix-Domain-Entity']))(args);
+  const finalArgs = pipe(assoc('filters', filters), assoc('types', ['Stix-Domain-Object']))(args);
   return findAllStixDomains(finalArgs);
 };
 // endregion

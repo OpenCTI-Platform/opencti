@@ -88,7 +88,7 @@ const IncidentObservables = createFragmentContainer(
       fragment IncidentObservables_incident on Incident {
         id
         name
-        alias
+        aliases
       }
     `,
   },

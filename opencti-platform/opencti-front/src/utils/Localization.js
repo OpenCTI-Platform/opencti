@@ -188,10 +188,10 @@ const i18n = {
       'Update an incident': 'Modifier un incident',
       'Create a malware': 'Créer un code malveillant',
       'Update a malware': 'Modifier un code malveillant',
-      'New alias': 'Nouvel alias',
+      'New aliases': 'Nouvel aliases',
       'Aliases separated by commas': 'Alias séparés par des virgules',
       Aliases: 'Alias',
-      'Entity aliases': "Alias de l'entité",
+      'Entity aliaseses': "Alias de l'entité",
       'Create a marking definition': 'Créer un marquage',
       'Update a marking definition': 'Modifier un marquage',
       'Max marking definition level': 'Niveau de marquage maximum',
@@ -248,7 +248,7 @@ const i18n = {
       'Add observables': 'Ajouter des observables',
       'Add observable': 'Ajouter un observable',
       'The password has been updated': 'Le mot de passe a été modifié',
-      'The alias has been added': "L'alias a bien été ajouté",
+      'The aliases has been added': "L'aliases a bien été ajouté",
       'Settings have been updated': 'Les paramètres ont été mis à jour',
       'Export the entity': "Exporter l'entité",
       'Cards view': 'Vue cartes',
@@ -738,7 +738,7 @@ const i18n = {
       'Explore the techniques, tactics and procedures of the dataset through time and entities who used its.':
         'Explorer les techniques, tactiques et procédures des données à travers le temps et les entités qui les utilisent.',
       'Explore the kill chains of entities through time and other contextual information like campaigns or incidents.':
-        "Explorer les kill chains des entités à travers le temps et d'autres informations contextuelles comme les campagnes ou les incidents.",
+        "Explorer les kill chains des entités à travers le temps et d'autres informations contextuelles comme les campagnes ou les x_opencti_incidents.",
       'Explore the vulnerabilities used by entities through time and kill chain phases.':
         'Explorer les vulnérabilités utilisées par les entités à travers le temps et les phases de la kill chain.',
       'Explore the observables of the dataset though time to visualize clusters and correlations.':

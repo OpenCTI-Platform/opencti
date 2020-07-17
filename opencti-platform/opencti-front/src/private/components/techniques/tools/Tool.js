@@ -86,7 +86,7 @@ const Tool = createFragmentContainer(ToolComponent, {
     fragment Tool_tool on Tool {
       id
       name
-      alias
+      aliases
       ...ToolOverview_tool
       ...ToolDetails_tool
     }

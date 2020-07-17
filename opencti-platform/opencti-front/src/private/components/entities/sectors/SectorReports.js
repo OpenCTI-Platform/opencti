@@ -76,7 +76,7 @@ const SectorReports = createFragmentContainer(SectorReportsComponent, {
     fragment SectorReports_sector on Sector {
       id
       name
-      alias
+      aliases
     }
   `,
 });

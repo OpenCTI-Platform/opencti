@@ -35,7 +35,7 @@ const threatActorQuery = graphql`
     threatActor(id: $id) {
       id
       name
-      alias
+      aliases
       ...ThreatActor_threatActor
       ...ThreatActorReports_threatActor
       ...ThreatActorKnowledge_threatActor

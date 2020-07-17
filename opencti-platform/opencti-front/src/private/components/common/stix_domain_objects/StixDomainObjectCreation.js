@@ -115,7 +115,7 @@ class StixDomainObjectCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = pipe(
-      assoc('alias', split(',', values.alias)),
+      assoc('aliases', split(',', values.aliases)),
       assoc('createdBy', values.createdBy.value),
       assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
       assoc('labels', pluck('value', values.labels)),
@@ -297,7 +297,7 @@ class StixDomainObjectCreation extends Component {
                 type: '',
                 name: '',
                 description: '',
-                alias: '',
+                aliases: '',
                 createdBy: '',
                 labels: [],
                 markingDefinitions: [],
@@ -325,7 +325,7 @@ class StixDomainObjectCreation extends Component {
                   />
                   <Field
                     component={TextField}
-                    name="alias"
+                    name="aliases"
                     label={t('Aliases separated by commas')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
@@ -408,7 +408,7 @@ class StixDomainObjectCreation extends Component {
             type: '',
             name: inputValue,
             description: '',
-            alias: '',
+            aliases: '',
             createdBy: defaultCreatedBy
               ? {
                 label: defaultCreatedBy.name,
@@ -457,7 +457,7 @@ class StixDomainObjectCreation extends Component {
                   />
                   <Field
                     component={TextField}
-                    name="alias"
+                    name="aliases"
                     label={t('Aliases separated by commas')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}

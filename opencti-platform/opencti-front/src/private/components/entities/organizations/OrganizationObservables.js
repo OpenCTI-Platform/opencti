@@ -88,7 +88,7 @@ const OrganizationObservables = createFragmentContainer(
       fragment OrganizationObservables_organization on Organization {
         id
         name
-        alias
+        aliases
       }
     `,
   },

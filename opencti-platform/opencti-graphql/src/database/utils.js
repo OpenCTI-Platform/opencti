@@ -4,19 +4,24 @@ import moment from 'moment';
 import {
   isInternalObject,
   isInternalRelationship,
-  isStixCoreObject,
   isStixCyberObservable,
   isStixCoreRelationship,
   isStixRelationship,
-  isStixMetaObject,
+  isStixObject,
+  isStixCyberObservableRelationship,
+  isStixMetaRelationship,
 } from '../utils/idGenerator';
 import { DatabaseError } from '../config/errors';
 
-export const INDEX_STIX_OBSERVABLE = 'opencti_stix_observables';
-export const INDEX_STIX_ENTITIES = 'opencti_stix_entities';
-export const INDEX_STIX_RELATIONS = 'opencti_stix_relations';
-export const INDEX_INTERNAL_ENTITIES = 'opencti_internal_entities';
-export const INDEX_INTERNAL_RELATIONS = 'opencti_internal_relations';
+// Entities
+export const INDEX_INTERNAL_OBJECTS = 'opencti_internal_objects';
+export const INDEX_STIX_OBJECTS = 'opencti_stix_objects';
+export const INDEX_STIX_CYBER_OBSERVABLES = 'opencti_stix_cyber_observables';
+// Relations
+export const INDEX_INTERNAL_RELATIONSHIPS = 'opencti_internal_relationships';
+export const INDEX_STIX_RELATIONSHIPS = 'opencti_stix_relationships';
+export const INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS = 'opencti_stix_cyber_observable_relationships';
+export const INDEX_STIX_META_RELATIONSHIPS = 'opencti_stix_meta_relationships';
 
 export const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -87,13 +92,15 @@ export const buildPagination = (first, offset, instances, globalCount) => {
 
 export const inferIndexFromConceptType = (conceptType) => {
   // Entities
-  if (isStixCoreObject(conceptType)) return INDEX_STIX_ENTITIES;
-  if (isStixMetaObject(conceptType)) return INDEX_STIX_ENTITIES;
-  if (isStixCyberObservable(conceptType)) return INDEX_STIX_OBSERVABLE;
-  if (isInternalObject(conceptType)) return INDEX_INTERNAL_ENTITIES;
+  if (isInternalObject(conceptType)) return INDEX_INTERNAL_OBJECTS;
+  if (isStixCyberObservable(conceptType)) return INDEX_STIX_CYBER_OBSERVABLES;
+  if (isStixObject(conceptType)) return INDEX_STIX_OBJECTS;
   // Relations
-  if (isStixRelationship(conceptType)) return INDEX_STIX_RELATIONS;
-  if (isInternalRelationship(conceptType)) return INDEX_INTERNAL_RELATIONS;
+  if (isInternalRelationship(conceptType)) return INDEX_INTERNAL_RELATIONSHIPS;
+  if (isStixCyberObservableRelationship(conceptType)) return INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS;
+  if (isStixMetaRelationship(conceptType)) return INDEX_STIX_META_RELATIONSHIPS;
+  if (isStixRelationship(conceptType)) return INDEX_STIX_RELATIONSHIPS;
+
   throw DatabaseError(`Cant find index for type ${conceptType}`);
 };
 

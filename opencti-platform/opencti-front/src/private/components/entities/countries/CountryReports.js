@@ -76,7 +76,7 @@ const CountryReports = createFragmentContainer(CountryReportsComponent, {
     fragment CountryReports_country on Country {
       id
       name
-      alias
+      aliases
     }
   `,
 });

@@ -78,7 +78,7 @@ const ThreatActorReports = createFragmentContainer(
       fragment ThreatActorReports_threatActor on ThreatActor {
         id
         name
-        alias
+        aliases
       }
     `,
   },
