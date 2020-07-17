@@ -21,7 +21,7 @@ import TextField from '../../../../components/TextField';
 import DatePickerField from '../../../../components/DatePickerField';
 import SelectField from '../../../../components/SelectField';
 import CreatedByField from '../../common/form/CreatedByField';
-import TagsField from '../../common/form/TagsField';
+import LabelsField from '../../common/form/LabelsField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 import TypesField from '../TypesField';
 import SwitchField from '../../../../components/SwitchField';
@@ -128,7 +128,7 @@ class IndicatorCreation extends Component {
       {
         createdBy: path(['value']),
         markingDefinitions: pluck('value'),
-        tags: pluck('value'),
+        labels: pluck('value'),
       },
       values,
     );
@@ -203,7 +203,7 @@ class IndicatorCreation extends Component {
                 description: '',
                 createdBy: '',
                 markingDefinitions: [],
-                tags: [],
+                labels: [],
                 detection: false,
               }}
               validationSchema={indicatorValidation(t)}
@@ -287,11 +287,11 @@ class IndicatorCreation extends Component {
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />
-                  <TagsField
-                    name="tags"
+                  <LabelsField
+                    name="labels"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
-                    values={values.tags}
+                    values={values.labels}
                   />
                   <MarkingDefinitionsField
                     name="markingDefinitions"

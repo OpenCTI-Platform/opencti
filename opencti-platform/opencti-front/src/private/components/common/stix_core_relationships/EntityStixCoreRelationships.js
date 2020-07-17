@@ -13,10 +13,10 @@ import Switch from '@material-ui/core/Switch';
 import { QueryRenderer } from '../../../../relay/environment';
 import ListLines from '../../../../components/list_lines/ListLines';
 import inject18n from '../../../../components/i18n';
-import EntityStixRelationsLines, {
-  entityStixRelationsLinesQuery,
-} from './EntityStixRelationsLines';
-import StixRelationCreationFromEntity from './StixRelationCreationFromEntity';
+import EntityStixCoreRelationshipsLines, {
+  entityStixCoreRelationshipsLinesQuery,
+} from './EntityStixCoreRelationshipsLines';
+import StixCoreRelationshipCreationFromEntity from './StixCoreRelationshipCreationFromEntity';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
@@ -129,10 +129,10 @@ class EntityStixCoreRelationships extends Component {
         secondaryAction={true}
       >
         <QueryRenderer
-          query={entityStixRelationsLinesQuery}
+          query={entityStixCoreRelationshipsLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
-            <EntityStixRelationsLines
+            <EntityStixCoreRelationshipsLines
               data={props}
               paginationOptions={paginationOptions}
               entityLink={entityLink}
@@ -329,7 +329,7 @@ class EntityStixCoreRelationships extends Component {
         )}
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixRelationCreationFromEntity
+          <StixCoreRelationshipCreationFromEntity
             entityId={entityId}
             isFrom={creationIsFrom}
             paddingRight={true}

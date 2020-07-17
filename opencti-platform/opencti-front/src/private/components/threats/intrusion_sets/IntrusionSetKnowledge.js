@@ -8,9 +8,9 @@ import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
 import IntrusionSetPopover from './IntrusionSetPopover';
 import IntrusionSetKnowledgeBar from './IntrusionSetKnowledgeBar';
-import EntityStixRelations from '../../common/stix_core_relationships/EntityStixCoreRelationships';
+import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
-import StixRelation from '../../common/stix_core_relationships/StixRelation';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectKillChain from '../../common/stix_domain_objects/StixDomainObjectKillChain';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
@@ -37,7 +37,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
+            <StixCoreRelationship
               entityId={intrusionSet.id}
               paddingRight={true}
               {...routeProps}
@@ -59,7 +59,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/attribution"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={intrusionSet.id}
               relationType="attributed-to"
               targetEntityTypes={['Threat-Actor', 'Organization', 'User']}
@@ -84,7 +84,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/campaigns"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={intrusionSet.id}
               relationType="attributed-to"
               targetEntityTypes={['Campaign']}
@@ -98,7 +98,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/incidents"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={intrusionSet.id}
               relationType="attributed-to"
               targetEntityTypes={['Incident']}
@@ -112,7 +112,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/malwares"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={intrusionSet.id}
               relationType="uses"
               targetEntityTypes={['Malware']}
@@ -137,7 +137,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/tools"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={intrusionSet.id}
               relationType="uses"
               targetEntityTypes={['Tool']}
@@ -151,7 +151,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/vulnerabilities"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={intrusionSet.id}
               relationType="targets"
               targetEntityTypes={['Vulnerability']}

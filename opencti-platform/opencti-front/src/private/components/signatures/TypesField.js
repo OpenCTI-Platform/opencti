@@ -9,7 +9,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../../components/i18n';
 import SelectField from '../../../components/SelectField';
 import { QueryRenderer } from '../../../relay/environment';
-import { stixObservablesLinesSubTypesQuery } from './stix_observables/StixObservablesLines';
+import { stixCyberObservablesLinesSubTypesQuery } from './stix_observables/StixCyberObservablesLines';
 
 const styles = () => ({
   container: {
@@ -24,7 +24,7 @@ class TypesField extends Component {
     } = this.props;
     return (
       <QueryRenderer
-        query={stixObservablesLinesSubTypesQuery}
+        query={stixCyberObservablesLinesSubTypesQuery}
         variables={{ type: 'Stix-Observable' }}
         render={({ props }) => {
           if (props && props.subTypes) {

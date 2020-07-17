@@ -73,10 +73,10 @@ class ReportAddObservableRefsLinesContainer extends Component {
     this.state = { expandedPanels: {}, addedObservables: [] };
   }
 
-  toggleStixObservable(stixObservable) {
+  toggleStixCyberObservable(stixCyberObservable) {
     const { reportId, paginationOptions } = this.props;
     const alreadyAdded = this.state.addedObservables.includes(
-      stixObservable.id,
+      stixCyberObservable.id,
     );
 
     if (alreadyAdded) {
@@ -84,7 +84,7 @@ class ReportAddObservableRefsLinesContainer extends Component {
         mutation: reportRefPopoverDeletionMutation,
         variables: {
           id: reportId,
-          toId: stixObservable.id,
+          toId: stixCyberObservable.id,
           relationType: 'observable_refs',
         },
         updater: (store) => {
@@ -93,12 +93,12 @@ class ReportAddObservableRefsLinesContainer extends Component {
             'Pagination_observableRefs',
             paginationOptions,
           );
-          ConnectionHandler.deleteNode(conn, stixObservable.id);
+          ConnectionHandler.deleteNode(conn, stixCyberObservable.id);
         },
         onCompleted: () => {
           this.setState({
             addedObservables: filter(
-              (n) => n !== stixObservable.id,
+              (n) => n !== stixCyberObservable.id,
               this.state.addedObservables,
             ),
           });
@@ -107,7 +107,7 @@ class ReportAddObservableRefsLinesContainer extends Component {
     } else {
       const input = {
         fromRole: 'observables_aggregation',
-        toId: stixObservable.id,
+        toId: stixCyberObservable.id,
         toRole: 'soo',
         through: 'observable_refs',
       };
@@ -133,7 +133,7 @@ class ReportAddObservableRefsLinesContainer extends Component {
         onCompleted: () => {
           this.setState({
             addedObservables: append(
-              stixObservable.id,
+              stixCyberObservable.id,
               this.state.addedObservables,
             ),
           });
@@ -161,21 +161,21 @@ class ReportAddObservableRefsLinesContainer extends Component {
   render() {
     const { t, classes, data } = this.props;
     const { addedObservables } = this.state;
-    const stixObservablesNodes = map((n) => n.node, data.stixObservables.edges);
-    const byType = groupBy((stixObservable) => stixObservable.entity_type);
-    const stixObservables = byType(stixObservablesNodes);
-    const stixObservablesTypes = keys(stixObservables);
+    const stixCyberObservablesNodes = map((n) => n.node, data.stixCyberObservables.edges);
+    const byType = groupBy((stixCyberObservable) => stixCyberObservable.entity_type);
+    const stixCyberObservables = byType(stixCyberObservablesNodes);
+    const stixCyberObservablesTypes = keys(stixCyberObservables);
 
     return (
       <div className={classes.container}>
-        {stixObservablesTypes.length > 0 ? (
-          stixObservablesTypes.map((type) => (
+        {stixCyberObservablesTypes.length > 0 ? (
+          stixCyberObservablesTypes.map((type) => (
             <ExpansionPanel
               key={type}
               expanded={this.isExpanded(
                 type,
-                stixObservables[type].length,
-                stixObservablesTypes.length,
+                stixCyberObservables[type].length,
+                stixCyberObservablesTypes.length,
               )}
               onChange={this.handleChangePanel.bind(this, type)}
               classes={{ root: classes.expansionPanel }}
@@ -185,26 +185,26 @@ class ReportAddObservableRefsLinesContainer extends Component {
                   {t(`observable_${type}`)}
                 </Typography>
                 <Typography className={classes.secondaryHeading}>
-                  {stixObservables[type].length} {t('entitie(s)')}
+                  {stixCyberObservables[type].length} {t('entitie(s)')}
                 </Typography>
               </ExpansionPanelSummary>
               <ExpansionPanelDetails
                 classes={{ root: classes.expansionPanelContent }}
               >
                 <List classes={{ root: classes.list }}>
-                  {stixObservables[type].map((stixObservable) => {
+                  {stixCyberObservables[type].map((stixCyberObservable) => {
                     const alreadyAdded = addedObservables.includes(
-                      stixObservable.id,
+                      stixCyberObservable.id,
                     );
                     return (
                       <ListItem
-                        key={stixObservable.id}
+                        key={stixCyberObservable.id}
                         classes={{ root: classes.menuItem }}
                         divider={true}
                         button={true}
-                        onClick={this.toggleStixObservable.bind(
+                        onClick={this.toggleStixCyberObservable.bind(
                           this,
-                          stixObservable,
+                          stixCyberObservable,
                         )}
                       >
                         <ListItemIcon>
@@ -215,7 +215,7 @@ class ReportAddObservableRefsLinesContainer extends Component {
                           )}
                         </ListItemIcon>
                         <ListItemText
-                          primary={stixObservable.observable_value}
+                          primary={stixCyberObservable.observable_value}
                         />
                       </ListItem>
                     );
@@ -275,13 +275,13 @@ const ReportAddObservableRefsLines = createPaginationContainer(
           orderBy: { type: "StixCyberObservablesOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
-        stixObservables(
+        stixCyberObservables(
           search: $search
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
-        ) @connection(key: "Pagination_stixObservables") {
+        ) @connection(key: "Pagination_stixCyberObservables") {
           edges {
             node {
               id
@@ -296,7 +296,7 @@ const ReportAddObservableRefsLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.stixObservables;
+      return props.data && props.data.stixCyberObservables;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {

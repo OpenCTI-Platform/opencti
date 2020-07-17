@@ -11,9 +11,9 @@ import LoaderWithParticles from '../../components/LoaderWithParticles';
 import StixDomainObjectsLines, {
   stixDomainObjectsLinesQuery,
 } from './common/stix_domain_objects/StixDomainObjectsLines';
-import StixObservableSearchLines, {
-  stixObservablesSearchLinesQuery,
-} from './signatures/stix_observables/StixObservablesSearchLines';
+import StixCyberObservableSearchLines, {
+  stixCyberObservablesSearchLinesQuery,
+} from './signatures/stix_observables/StixCyberObservablesSearchLines';
 
 const styles = () => ({
   linesContainer: {
@@ -63,7 +63,7 @@ class Search extends Component {
           }}
         />
         <QueryRenderer
-          query={stixObservablesSearchLinesQuery}
+          query={stixCyberObservablesSearchLinesQuery}
           variables={{
             search: keyword,
             count: 100,
@@ -72,7 +72,7 @@ class Search extends Component {
           }}
           render={({ props }) => {
             if (props) {
-              return <StixObservableSearchLines data={props} />;
+              return <StixCyberObservableSearchLines data={props} />;
             }
             return <div />;
           }}

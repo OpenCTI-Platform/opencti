@@ -7,15 +7,15 @@ import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
-import StixObservableHeader from './StixObservableHeader';
-import StixObservableRelationCreationFromEntity from '../../common/stix_observable_relations/StixObservableRelationCreationFromEntity';
-import StixObservableObservablesLines, {
-  stixObservableObservablesLinesQuery,
-} from './StixObservableObservablesLines';
+import StixCyberObservableHeader from './StixCyberObservableHeader';
+import StixCyberObservableRelationCreationFromEntity from '../../common/stix_observable_relations/StixCyberObservableRelationCreationFromEntity';
+import StixCyberObservableObservablesLines, {
+  stixCyberObservableObservablesLinesQuery,
+} from './StixCyberObservableObservablesLines';
 import ListLines from '../../../../components/list_lines/ListLines';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixObservableEnrichment from './StixObservableEnrichment';
+import StixCyberObservableEnrichment from './StixCyberObservableEnrichment';
 
 const styles = () => ({
   paper: {
@@ -27,15 +27,15 @@ const styles = () => ({
   },
 });
 
-const StixObservableLinksQuery = graphql`
-  query StixObservableLinksQuery($id: String!) {
-    stixObservable(id: $id) {
-      ...StixObservableLinks_stixObservable
+const StixCyberObservableLinksQuery = graphql`
+  query StixCyberObservableLinksQuery($id: String!) {
+    stixCyberObservable(id: $id) {
+      ...StixCyberObservableLinks_stixCyberObservable
     }
   }
 `;
 
-class StixObservableLinks extends Component {
+class StixCyberObservableLinks extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -99,10 +99,10 @@ class StixObservableLinks extends Component {
         secondaryAction={true}
       >
         <QueryRenderer
-          query={stixObservableObservablesLinesQuery}
+          query={stixCyberObservableObservablesLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
-            <StixObservableObservablesLines
+            <StixCyberObservableObservablesLines
               data={props}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
@@ -119,16 +119,16 @@ class StixObservableLinks extends Component {
     const {
       view, sortBy, orderAsc, searchTerm,
     } = this.state;
-    const { classes, stixObservable, t } = this.props;
+    const { classes, stixCyberObservable, t } = this.props;
     const paginationOptions = {
-      fromId: stixObservable.id,
+      fromId: stixCyberObservable.id,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
       <div>
-        <StixObservableHeader stixObservable={stixObservable} />
+        <StixCyberObservableHeader stixCyberObservable={stixCyberObservable} />
         <Grid
           container={true}
           spacing={3}
@@ -142,9 +142,9 @@ class StixObservableLinks extends Component {
             >
               {t('Relations')}
             </Typography>
-            <StixObservableRelationCreationFromEntity
+            <StixCyberObservableRelationCreationFromEntity
               paginationOptions={paginationOptions}
-              entityId={stixObservable.id}
+              entityId={stixCyberObservable.id}
               isFrom={true}
               variant="inLine"
             />
@@ -157,7 +157,7 @@ class StixObservableLinks extends Component {
             <Typography variant="h4" gutterBottom={true}>
               {t('Enrichment connectors')}
             </Typography>
-            <StixObservableEnrichment stixObservable={stixObservable} />
+            <StixCyberObservableEnrichment stixCyberObservable={stixCyberObservable} />
           </Grid>
         </Grid>
       </div>
@@ -165,29 +165,29 @@ class StixObservableLinks extends Component {
   }
 }
 
-StixObservableLinks.propTypes = {
-  stixObservable: PropTypes.object,
+StixCyberObservableLinks.propTypes = {
+  stixCyberObservable: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
 };
 
-const StixObservableLinksFragment = createRefetchContainer(
-  StixObservableLinks,
+const StixCyberObservableLinksFragment = createRefetchContainer(
+  StixCyberObservableLinks,
   {
-    stixObservable: graphql`
-      fragment StixObservableLinks_stixObservable on StixObservable {
+    stixCyberObservable: graphql`
+      fragment StixCyberObservableLinks_stixCyberObservable on StixCyberObservable {
         id
         entity_type
-        ...StixObservableEnrichment_stixObservable
-        ...StixObservableHeader_stixObservable
+        ...StixCyberObservableEnrichment_stixCyberObservable
+        ...StixCyberObservableHeader_stixCyberObservable
       }
     `,
   },
-  StixObservableLinksQuery,
+  StixCyberObservableLinksQuery,
 );
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixObservableLinksFragment);
+)(StixCyberObservableLinksFragment);

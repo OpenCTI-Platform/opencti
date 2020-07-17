@@ -17,7 +17,7 @@ class EntityIndicatorsLines extends Component {
     setNumberOfElements(
       prevProps,
       this.props,
-      'stixRelations',
+      'stixCoreRelationships',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -36,10 +36,10 @@ class EntityIndicatorsLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['stixRelations', 'edges'], this.props.data)}
+        dataList={pathOr([], ['stixCoreRelationships', 'edges'], this.props.data)}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['stixRelations', 'pageInfo', 'globalCount'],
+          ['stixCoreRelationships', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
         LineComponent={<EntityIndicatorLine />}
@@ -59,7 +59,7 @@ EntityIndicatorsLines.propTypes = {
   dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,
   relay: PropTypes.object,
-  stixRelations: PropTypes.object,
+  stixCoreRelationships: PropTypes.object,
   initialLoading: PropTypes.bool,
   entityLink: PropTypes.string,
   setNumberOfElements: PropTypes.func,
@@ -126,7 +126,7 @@ export default createPaginationContainer(
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
           filters: { type: "[StixCoreRelationshipsFiltering]" }
         ) {
-        stixRelations(
+        stixCoreRelationships(
           search: $search
           inferred: $inferred
           fromId: $fromId
@@ -142,7 +142,7 @@ export default createPaginationContainer(
           orderBy: $orderBy
           orderMode: $orderMode
           filters: $filters
-        ) @connection(key: "Pagination_stixRelations") {
+        ) @connection(key: "Pagination_stixCoreRelationships") {
           edges {
             node {
               ...EntityIndicatorLine_node
@@ -160,7 +160,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.stixRelations;
+      return props.data && props.data.stixCoreRelationships;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {

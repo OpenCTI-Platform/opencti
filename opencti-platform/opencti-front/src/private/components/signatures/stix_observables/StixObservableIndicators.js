@@ -140,7 +140,7 @@ const inlineStyles = {
   },
 };
 
-class StixObservableIndicatorsComponent extends Component {
+class StixCyberObservableIndicatorsComponent extends Component {
   constructor(props) {
     super(props);
     this.state = { sortBy: 'name', orderAsc: false };
@@ -177,9 +177,9 @@ class StixObservableIndicatorsComponent extends Component {
 
   render() {
     const {
-      t, fd, classes, stixObservable,
+      t, fd, classes, stixCyberObservable,
     } = this.props;
-    const indicators = map((n) => n.node, stixObservable.indicators.edges);
+    const indicators = map((n) => n.node, stixCyberObservable.indicators.edges);
     const sort = sortWith(
       this.state.orderAsc
         ? [ascend(prop(this.state.sortBy))]
@@ -282,19 +282,19 @@ class StixObservableIndicatorsComponent extends Component {
   }
 }
 
-StixObservableIndicatorsComponent.propTypes = {
-  stixObservable: PropTypes.object,
+StixCyberObservableIndicatorsComponent.propTypes = {
+  stixCyberObservable: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fd: PropTypes.func,
   history: PropTypes.object,
 };
 
-const StixObservableIndicators = createFragmentContainer(
-  StixObservableIndicatorsComponent,
+const StixCyberObservableIndicators = createFragmentContainer(
+  StixCyberObservableIndicatorsComponent,
   {
-    stixObservable: graphql`
-      fragment StixObservableIndicators_stixObservable on StixObservable {
+    stixCyberObservable: graphql`
+      fragment StixCyberObservableIndicators_stixCyberObservable on StixCyberObservable {
         id
         indicators {
           edges {
@@ -314,4 +314,4 @@ const StixObservableIndicators = createFragmentContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(StixObservableIndicators);
+export default compose(inject18n, withStyles(styles))(StixCyberObservableIndicators);

@@ -8,7 +8,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
-import StixDomainObjectTags from '../../common/stix_domain_objects/StixDomainObjectLabels';
+import StixDomainObjectLabels from '../../common/stix_domain_objects/StixDomainObjectLabels';
 import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
@@ -32,7 +32,7 @@ class IncidentDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixDomainObjectTags tags={incident.tags} id={incident.id} />
+          <StixDomainObjectLabels labels={incident.labels} id={incident.id} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -89,11 +89,11 @@ const IncidentDetails = createFragmentContainer(IncidentDetailsComponent, {
           id
           name
         }
-      tags {
+      labels {
         edges {
           node {
             id
-            tag_type
+            label_type
             value
             color
           }

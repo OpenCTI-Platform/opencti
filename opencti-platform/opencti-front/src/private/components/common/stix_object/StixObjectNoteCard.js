@@ -138,11 +138,11 @@ const StixObjectNoteCard = createFragmentContainer(
             name
           }
         }
-        tags {
+        labels {
           edges {
             node {
               id
-              tag_type
+              label_type
               value
               color
             }

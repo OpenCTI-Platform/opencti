@@ -6,9 +6,9 @@ import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core';
 import inject18n from '../../../../components/i18n';
-import StixObservableHeader from './StixObservableHeader';
-import StixObservableKnowledgeEntities from './StixObservableKnowledgeEntities';
-import StixObservableEnrichment from './StixObservableEnrichment';
+import StixCyberObservableHeader from './StixCyberObservableHeader';
+import StixCyberObservableKnowledgeEntities from './StixCyberObservableKnowledgeEntities';
+import StixCyberObservableEnrichment from './StixCyberObservableEnrichment';
 
 const styles = () => ({
   container: {
@@ -19,39 +19,39 @@ const styles = () => ({
   },
 });
 
-const StixObservableKnowledge = (props) => {
-  const { stixObservable, classes, t } = props;
+const StixCyberObservableKnowledge = (props) => {
+  const { stixCyberObservable, classes, t } = props;
   return (
     <div className={classes.container}>
-      <StixObservableHeader stixObservable={stixObservable} />
+      <StixCyberObservableHeader stixCyberObservable={stixCyberObservable} />
       <Grid
         container={true}
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
         <Grid item={true} xs={9}>
-          <StixObservableKnowledgeEntities entityId={stixObservable.id} />
+          <StixCyberObservableKnowledgeEntities entityId={stixCyberObservable.id} />
         </Grid>
         <Grid item={true} xs={3}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Enrichment connectors')}
           </Typography>
-          <StixObservableEnrichment stixObservable={stixObservable} />
+          <StixCyberObservableEnrichment stixCyberObservable={stixCyberObservable} />
         </Grid>
       </Grid>
     </div>
   );
 };
 
-const StixObservableKnowledgeFragment = createFragmentContainer(
-  StixObservableKnowledge,
+const StixCyberObservableKnowledgeFragment = createFragmentContainer(
+  StixCyberObservableKnowledge,
   {
-    stixObservable: graphql`
-      fragment StixObservableKnowledge_stixObservable on StixObservable {
+    stixCyberObservable: graphql`
+      fragment StixCyberObservableKnowledge_stixCyberObservable on StixCyberObservable {
         id
         entity_type
-        ...StixObservableEnrichment_stixObservable
-        ...StixObservableHeader_stixObservable
+        ...StixCyberObservableEnrichment_stixCyberObservable
+        ...StixCyberObservableHeader_stixCyberObservable
       }
     `,
   },
@@ -60,4 +60,4 @@ const StixObservableKnowledgeFragment = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixObservableKnowledgeFragment);
+)(StixCyberObservableKnowledgeFragment);

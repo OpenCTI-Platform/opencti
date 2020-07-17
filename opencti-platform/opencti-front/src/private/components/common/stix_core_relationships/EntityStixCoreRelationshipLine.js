@@ -13,7 +13,7 @@ import { MoreVertOutlined, HelpOutlined } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidenceLevel from '../../../../components/ItemConfidenceLevel';
-import StixRelationPopover from './StixRelationPopover';
+import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 
 const styles = (theme) => ({
   item: {
@@ -41,7 +41,7 @@ const styles = (theme) => ({
   },
 });
 
-class EntityStixRelationLineComponent extends Component {
+class EntityStixCoreRelationshipLineComponent extends Component {
   render() {
     const {
       nsd,
@@ -104,8 +104,8 @@ class EntityStixRelationLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <StixRelationPopover
-            stixRelationId={node.id}
+          <StixCoreRelationshipPopover
+            stixCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
             disabled={node.inferred}
           />
@@ -115,7 +115,7 @@ class EntityStixRelationLineComponent extends Component {
   }
 }
 
-EntityStixRelationLineComponent.propTypes = {
+EntityStixCoreRelationshipLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   entityLink: PropTypes.string,
   paginationOptions: PropTypes.object,
@@ -125,11 +125,11 @@ EntityStixRelationLineComponent.propTypes = {
   nsd: PropTypes.func,
 };
 
-const EntityStixRelationLineFragment = createFragmentContainer(
-  EntityStixRelationLineComponent,
+const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
+  EntityStixCoreRelationshipLineComponent,
   {
     node: graphql`
-      fragment EntityStixRelationLine_node on StixRelation {
+      fragment EntityStixCoreRelationshipLine_node on StixCoreRelationship {
         id
         entity_type
         parent_types
@@ -149,11 +149,11 @@ const EntityStixRelationLineFragment = createFragmentContainer(
             description
             created_at
             updated_at
-            tags {
+            labels {
               edges {
                 node {
                   id
-                  tag_type
+                  label_type
                   value
                   color
                 }
@@ -182,11 +182,11 @@ const EntityStixRelationLineFragment = createFragmentContainer(
                 }
               }
             }
-            tags {
+            labels {
               edges {
                 node {
                   id
-                  tag_type
+                  label_type
                   value
                   color
                 }
@@ -196,7 +196,7 @@ const EntityStixRelationLineFragment = createFragmentContainer(
               }
             }
           }
-          ... on StixObservable {
+          ... on StixCyberObservable {
             id
             entity_type
             parent_types
@@ -209,11 +209,11 @@ const EntityStixRelationLineFragment = createFragmentContainer(
                 }
               }
             }
-            tags {
+            labels {
               edges {
                 node {
                   id
-                  tag_type
+                  label_type
                   value
                   color
                 }
@@ -241,11 +241,11 @@ const EntityStixRelationLineFragment = createFragmentContainer(
                 }
               }
             }
-            tags {
+            labels {
               edges {
                 node {
                   id
-                  tag_type
+                  label_type
                   value
                   color
                 }
@@ -273,9 +273,9 @@ const EntityStixRelationLineFragment = createFragmentContainer(
 export const EntityStixCoreRelationshipLine = compose(
   inject18n,
   withStyles(styles),
-)(EntityStixRelationLineFragment);
+)(EntityStixCoreRelationshipLineFragment);
 
-class EntityStixRelationLineDummyComponent extends Component {
+class EntityStixCoreRelationshipLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -327,12 +327,12 @@ class EntityStixRelationLineDummyComponent extends Component {
   }
 }
 
-EntityStixRelationLineDummyComponent.propTypes = {
+EntityStixCoreRelationshipLineDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export const EntityStixRelationLineDummy = compose(
+export const EntityStixCoreRelationshipLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(EntityStixRelationLineDummyComponent);
+)(EntityStixCoreRelationshipLineDummyComponent);

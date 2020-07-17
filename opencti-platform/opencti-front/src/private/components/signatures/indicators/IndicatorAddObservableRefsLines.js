@@ -84,29 +84,29 @@ class IndicatorAddObservableRefsLinesContainer extends Component {
     this.state = { expandedPanels: {} };
   }
 
-  toggleStixObservable(stixObservable) {
+  toggleStixCyberObservable(stixCyberObservable) {
     const { indicatorId, indicatorObservableRefs } = this.props;
     const indicatorObservableRefsIds = map(
       (n) => n.node.id,
       indicatorObservableRefs,
     );
-    const alreadyAdded = indicatorObservableRefsIds.includes(stixObservable.id);
+    const alreadyAdded = indicatorObservableRefsIds.includes(stixCyberObservable.id);
 
     if (alreadyAdded) {
-      const existingStixObservable = head(
-        filter((n) => n.node.id === stixObservable.id, indicatorObservableRefs),
+      const existingStixCyberObservable = head(
+        filter((n) => n.node.id === stixCyberObservable.id, indicatorObservableRefs),
       );
       commitMutation({
         mutation: indicatorMutationRelationDelete,
         variables: {
           id: indicatorId,
-          relationId: existingStixObservable.relation.id,
+          relationId: existingStixCyberObservable.relation.id,
         },
       });
     } else {
       const input = {
         fromRole: 'observables_aggregation',
-        toId: stixObservable.id,
+        toId: stixCyberObservable.id,
         toRole: 'soo',
         through: 'observable_refs',
       };
@@ -144,21 +144,21 @@ class IndicatorAddObservableRefsLinesContainer extends Component {
       (n) => n.node.id,
       indicatorObservableRefs,
     );
-    const stixObservablesNodes = map((n) => n.node, data.stixObservables.edges);
-    const byType = groupBy((stixObservable) => stixObservable.entity_type);
-    const stixObservables = byType(stixObservablesNodes);
-    const stixObservablesTypes = keys(stixObservables);
+    const stixCyberObservablesNodes = map((n) => n.node, data.stixCyberObservables.edges);
+    const byType = groupBy((stixCyberObservable) => stixCyberObservable.entity_type);
+    const stixCyberObservables = byType(stixCyberObservablesNodes);
+    const stixCyberObservablesTypes = keys(stixCyberObservables);
 
     return (
       <div className={classes.container}>
-        {stixObservablesTypes.length > 0 ? (
-          stixObservablesTypes.map((type) => (
+        {stixCyberObservablesTypes.length > 0 ? (
+          stixCyberObservablesTypes.map((type) => (
             <ExpansionPanel
               key={type}
               expanded={this.isExpanded(
                 type,
-                stixObservables[type].length,
-                stixObservablesTypes.length,
+                stixCyberObservables[type].length,
+                stixCyberObservablesTypes.length,
               )}
               onChange={this.handleChangePanel.bind(this, type)}
               classes={{ root: classes.expansionPanel }}
@@ -168,26 +168,26 @@ class IndicatorAddObservableRefsLinesContainer extends Component {
                   {t(`observable_${type}`)}
                 </Typography>
                 <Typography className={classes.secondaryHeading}>
-                  {stixObservables[type].length} {t('entitie(s)')}
+                  {stixCyberObservables[type].length} {t('entitie(s)')}
                 </Typography>
               </ExpansionPanelSummary>
               <ExpansionPanelDetails
                 classes={{ root: classes.expansionPanelContent }}
               >
                 <List classes={{ root: classes.list }}>
-                  {stixObservables[type].map((stixObservable) => {
+                  {stixCyberObservables[type].map((stixCyberObservable) => {
                     const alreadyAdded = indicatorObservableRefsIds.includes(
-                      stixObservable.id,
+                      stixCyberObservable.id,
                     );
                     return (
                       <ListItem
-                        key={stixObservable.id}
+                        key={stixCyberObservable.id}
                         classes={{ root: classes.menuItem }}
                         divider={true}
                         button={true}
-                        onClick={this.toggleStixObservable.bind(
+                        onClick={this.toggleStixCyberObservable.bind(
                           this,
-                          stixObservable,
+                          stixCyberObservable,
                         )}
                       >
                         <ListItemIcon>
@@ -198,7 +198,7 @@ class IndicatorAddObservableRefsLinesContainer extends Component {
                           )}
                         </ListItemIcon>
                         <ListItemText
-                          primary={stixObservable.observable_value}
+                          primary={stixCyberObservable.observable_value}
                         />
                       </ListItem>
                     );
@@ -259,13 +259,13 @@ const IndicatorAddObservableRefsLines = createPaginationContainer(
           orderBy: { type: "StixCyberObservablesOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
-        stixObservables(
+        stixCyberObservables(
           search: $search
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
-        ) @connection(key: "Pagination_stixObservables") {
+        ) @connection(key: "Pagination_stixCyberObservables") {
           edges {
             node {
               id
@@ -280,7 +280,7 @@ const IndicatorAddObservableRefsLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.stixObservables;
+      return props.data && props.data.stixCyberObservables;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {

@@ -9,7 +9,7 @@ import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
-import StixObservableEditionOverview from './StixObservableEditionOverview';
+import StixCyberObservableEditionOverview from './StixCyberObservableEditionOverview';
 
 const styles = (theme) => ({
   header: {
@@ -41,12 +41,12 @@ const styles = (theme) => ({
   },
 });
 
-class StixObservableEditionContainer extends Component {
+class StixCyberObservableEditionContainer extends Component {
   render() {
     const {
-      t, classes, handleClose, stixObservable,
+      t, classes, handleClose, stixCyberObservable,
     } = this.props;
-    const { editContext } = stixObservable;
+    const { editContext } = stixCyberObservable;
     return (
       <div>
         <div className={classes.header}>
@@ -63,7 +63,7 @@ class StixObservableEditionContainer extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <StixObservableEditionOverview stixObservable={this.props.stixObservable}
+          <StixCyberObservableEditionOverview stixCyberObservable={this.props.stixCyberObservable}
             context={editContext}/>
         </div>
       </div>
@@ -71,21 +71,21 @@ class StixObservableEditionContainer extends Component {
   }
 }
 
-StixObservableEditionContainer.propTypes = {
+StixCyberObservableEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
-  stixObservable: PropTypes.object,
+  stixCyberObservable: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
 
-const StixObservableEditionFragment = createFragmentContainer(
-  StixObservableEditionContainer,
+const StixCyberObservableEditionFragment = createFragmentContainer(
+  StixCyberObservableEditionContainer,
   {
-    stixObservable: graphql`
-      fragment StixObservableEditionContainer_stixObservable on StixObservable {
+    stixCyberObservable: graphql`
+      fragment StixCyberObservableEditionContainer_stixCyberObservable on StixCyberObservable {
         id
-        ...StixObservableEditionOverview_stixObservable
+        ...StixCyberObservableEditionOverview_stixCyberObservable
         editContext {
           name
           focusOn
@@ -98,4 +98,4 @@ const StixObservableEditionFragment = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(StixObservableEditionFragment);
+)(StixCyberObservableEditionFragment);

@@ -12,7 +12,7 @@ import { HexagonOutline } from 'mdi-material-ui';
 import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
-import StixObjectTags from '../../common/stix_object/StixObjectTags';
+import StixObjectLabels from '../../common/stix_object/StixObjectLabels';
 
 const styles = (theme) => ({
   item: {
@@ -44,10 +44,10 @@ const styles = (theme) => ({
   },
 });
 
-class StixObservableLineComponent extends Component {
+class StixCyberObservableLineComponent extends Component {
   render() {
     const {
-      t, nsdt, classes, dataColumns, node, onTagClick,
+      t, nsdt, classes, dataColumns, node, onLabelClick,
     } = this.props;
     return (
       <ListItem
@@ -77,12 +77,12 @@ class StixObservableLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.labels.width }}
               >
-                <StixObjectTags
+                <StixObjectLabels
                   variant="inList"
-                  tags={node.tags}
-                  onClick={onTagClick.bind(this)}
+                  labels={node.labels}
+                  onClick={onLabelClick.bind(this)}
                 />
               </div>
               <div
@@ -116,20 +116,20 @@ class StixObservableLineComponent extends Component {
   }
 }
 
-StixObservableLineComponent.propTypes = {
+StixCyberObservableLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
   nsdt: PropTypes.func,
   t: PropTypes.func,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
 };
 
-const StixObservableLineFragment = createFragmentContainer(
-  StixObservableLineComponent,
+const StixCyberObservableLineFragment = createFragmentContainer(
+  StixCyberObservableLineComponent,
   {
     node: graphql`
-      fragment StixObservableLine_node on StixObservable {
+      fragment StixCyberObservableLine_node on StixCyberObservable {
         id
         entity_type
         observable_value
@@ -144,11 +144,11 @@ const StixObservableLineFragment = createFragmentContainer(
             }
           }
         }
-        tags {
+        labels {
           edges {
             node {
               id
-              tag_type
+              label_type
               value
               color
             }
@@ -162,12 +162,12 @@ const StixObservableLineFragment = createFragmentContainer(
   },
 );
 
-export const StixObservableLine = compose(
+export const StixCyberObservableLine = compose(
   inject18n,
   withStyles(styles),
-)(StixObservableLineFragment);
+)(StixCyberObservableLineFragment);
 
-class StixObservableLineDummyComponent extends Component {
+class StixCyberObservableLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -192,7 +192,7 @@ class StixObservableLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.labels.width }}
               >
                 <div className="fakeItem" style={{ width: '90%' }} />
               </div>
@@ -219,12 +219,12 @@ class StixObservableLineDummyComponent extends Component {
   }
 }
 
-StixObservableLineDummyComponent.propTypes = {
+StixCyberObservableLineDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export const StixObservableLineDummy = compose(
+export const StixCyberObservableLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(StixObservableLineDummyComponent);
+)(StixCyberObservableLineDummyComponent);

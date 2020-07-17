@@ -11,7 +11,6 @@ import {
   killChainPhaseEditContext,
   killChainPhaseEditField,
 } from '../domain/killChainPhase';
-import { markingDefinitions } from '../domain/stixCoreObject';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 

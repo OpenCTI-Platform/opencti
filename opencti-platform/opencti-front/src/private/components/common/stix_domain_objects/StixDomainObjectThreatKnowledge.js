@@ -20,12 +20,12 @@ import inject18n from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { resolveLink } from '../../../../utils/Entity';
 import EntityReportsPie from '../../reports/EntityReportsPie';
-import EntityStixRelationsRadar from '../stix_core_relationships/EntityStixRelationsRadar';
+import EntityStixCoreRelationshipsRadar from '../stix_core_relationships/EntityStixCoreRelationshipsRadar';
 import StixDomainObjectGlobalKillChain, {
-  stixDomainObjectGlobalKillChainStixRelationsQuery,
+  stixDomainObjectGlobalKillChainStixCoreRelationshipsQuery,
 } from './StixDomainObjectGlobalKillChain';
 import Loader from '../../../../components/Loader';
-import SimpleEntityStixRelations from '../stix_core_relationships/SimpleEntityStixRelations';
+import SimpleEntityStixCoreRelationships from '../stix_core_relationships/SimpleEntityStixCoreRelationships';
 
 const styles = (theme) => ({
   card: {
@@ -83,14 +83,14 @@ const stixDomainObjectThreatKnowledgeReportsNumberQuery = graphql`
   }
 `;
 
-const stixDomainObjectThreatKnowledgeStixRelationsNumberQuery = graphql`
-  query StixDomainObjectThreatKnowledgeStixRelationsNumberQuery(
+const stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery = graphql`
+  query StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery(
     $type: String
     $fromId: String
     $endDate: DateTime
     $inferred: Boolean
   ) {
-    stixRelationsNumber(
+    stixCoreRelationshipsNumber(
       type: $type
       fromId: $fromId
       endDate: $endDate
@@ -207,7 +207,7 @@ class StixDomainObjectThreatKnowledge extends Component {
               style={{ height: 120 }}
             >
               <QueryRenderer
-                query={stixDomainObjectThreatKnowledgeStixRelationsNumberQuery}
+                query={stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery}
                 variables={{
                   fromId: stixDomainObjectId,
                   type: 'indicates',
@@ -215,9 +215,9 @@ class StixDomainObjectThreatKnowledge extends Component {
                   inferred,
                 }}
                 render={({ props }) => {
-                  if (props && props.stixRelationsNumber) {
-                    const { total } = props.stixRelationsNumber;
-                    const difference = total - props.stixRelationsNumber.count;
+                  if (props && props.stixCoreRelationshipsNumber) {
+                    const { total } = props.stixCoreRelationshipsNumber;
+                    const difference = total - props.stixCoreRelationshipsNumber.count;
                     return (
                       <CardContent>
                         <div className={classes.number}>{total}</div>
@@ -251,16 +251,16 @@ class StixDomainObjectThreatKnowledge extends Component {
               style={{ height: 120 }}
             >
               <QueryRenderer
-                query={stixDomainObjectThreatKnowledgeStixRelationsNumberQuery}
+                query={stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery}
                 variables={{
                   fromId: stixDomainObjectId,
                   endDate: monthsAgo(1),
                   inferred: false,
                 }}
                 render={({ props }) => {
-                  if (props && props.stixRelationsNumber) {
-                    const { total } = props.stixRelationsNumber;
-                    const difference = total - props.stixRelationsNumber.count;
+                  if (props && props.stixCoreRelationshipsNumber) {
+                    const { total } = props.stixCoreRelationshipsNumber;
+                    const difference = total - props.stixCoreRelationshipsNumber.count;
                     return (
                       <CardContent>
                         <div className={classes.number}>{total}</div>
@@ -296,7 +296,7 @@ class StixDomainObjectThreatKnowledge extends Component {
             />
           </Grid>
           <Grid item={true} xs={4} style={{ marginBottom: 50 }}>
-            <EntityStixRelationsRadar
+            <EntityStixCoreRelationshipsRadar
               entityId={stixDomainObjectId}
               entityType="Stix-Domain-Entity"
               title={t('Distribution of relations')}
@@ -305,7 +305,7 @@ class StixDomainObjectThreatKnowledge extends Component {
             />
           </Grid>
           <Grid item={true} xs={4} style={{ marginBottom: 50 }}>
-            <SimpleEntityStixRelations
+            <SimpleEntityStixCoreRelationships
               entityId={stixDomainObjectId}
               relationType="related-to"
               targetEntityTypes={['Stix-Domain-Entity']}
@@ -318,7 +318,7 @@ class StixDomainObjectThreatKnowledge extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
-            query={stixDomainObjectGlobalKillChainStixRelationsQuery}
+            query={stixDomainObjectGlobalKillChainStixCoreRelationshipsQuery}
             variables={{ first: 500, ...killChainPaginationOptions }}
             render={({ props }) => {
               if (props) {

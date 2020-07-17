@@ -17,8 +17,8 @@ import MoreVert from '@material-ui/icons/MoreVert';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
-import { stixObservableEditionQuery } from './StixObservableEdition';
-import StixObservableEditionContainer from './StixObservableEditionContainer';
+import { stixCyberObservableEditionQuery } from './StixCyberObservableEdition';
+import StixCyberObservableEditionContainer from './StixCyberObservableEditionContainer';
 import Loader from '../../../../components/Loader';
 import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
 
@@ -45,15 +45,15 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const StixObservablePopoverDeletionMutation = graphql`
-  mutation StixObservablePopoverDeletionMutation($id: ID!) {
-    stixObservableEdit(id: $id) {
+const StixCyberObservablePopoverDeletionMutation = graphql`
+  mutation StixCyberObservablePopoverDeletionMutation($id: ID!) {
+    stixCyberObservableEdit(id: $id) {
       delete
     }
   }
 `;
 
-class StixObservablePopover extends Component {
+class StixCyberObservablePopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -84,9 +84,9 @@ class StixObservablePopover extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
-      mutation: StixObservablePopoverDeletionMutation,
+      mutation: StixCyberObservablePopoverDeletionMutation,
       variables: {
-        id: this.props.stixObservableId,
+        id: this.props.stixCyberObservableId,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -106,7 +106,7 @@ class StixObservablePopover extends Component {
   }
 
   render() {
-    const { classes, t, stixObservableId } = this.props;
+    const { classes, t, stixCyberObservableId } = this.props;
     return (
       <div className={classes.container}>
         <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
@@ -162,12 +162,12 @@ class StixObservablePopover extends Component {
           onClose={this.handleCloseEdit.bind(this)}
         >
           <QueryRenderer
-            query={stixObservableEditionQuery}
-            variables={{ id: stixObservableId }}
+            query={stixCyberObservableEditionQuery}
+            variables={{ id: stixCyberObservableId }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixObservableEditionContainer stixObservable={props.stixObservable}
+                  <StixCyberObservableEditionContainer stixCyberObservable={props.stixCyberObservable}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );
@@ -181,8 +181,8 @@ class StixObservablePopover extends Component {
   }
 }
 
-StixObservablePopover.propTypes = {
-  stixObservableId: PropTypes.string,
+StixCyberObservablePopover.propTypes = {
+  stixCyberObservableId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
@@ -192,4 +192,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(StixObservablePopover);
+)(StixCyberObservablePopover);

@@ -89,8 +89,8 @@ class Tools extends Component {
         width: '35%',
         isSortable: true,
       },
-      tags: {
-        label: 'Tags',
+      labels: {
+        label: 'Labels',
         width: '25%',
         isSortable: true,
       },
@@ -122,7 +122,7 @@ class Tools extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'tags',
+          'labels',
           'markingDefinitions',
           'created_start_date',
           'created_end_date',
@@ -138,7 +138,7 @@ class Tools extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
-              onTagClick={this.handleAddFilter.bind(this)}
+              onLabelClick={this.handleAddFilter.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}

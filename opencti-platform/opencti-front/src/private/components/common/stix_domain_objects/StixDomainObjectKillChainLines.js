@@ -37,8 +37,8 @@ import { createRefetchContainer } from 'react-relay';
 import Tooltip from '@material-ui/core/Tooltip';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
-import StixRelationPopover from '../stix_core_relationships/StixRelationPopover';
-import StixRelationCreationFromEntity from '../stix_core_relationships/StixRelationCreationFromEntity';
+import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
+import StixCoreRelationshipCreationFromEntity from '../stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import ItemYears from '../../../../components/ItemYears';
 import SearchInput from '../../../../components/SearchInput';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
@@ -86,7 +86,7 @@ class StixDomainObjectKillChainLinesComponent extends Component {
       'stroke',
       'font',
     ];
-    const svgElems = Array.from(targetElem.getElementsByTagName('svg'));
+    const svgElems = Array.from(targetElem.getElementsByLabelName('svg'));
     function recurseElementChildren(node) {
       if (!node.style) return;
       const inlineStyles = getComputedStyle(node);
@@ -145,8 +145,8 @@ class StixDomainObjectKillChainLinesComponent extends Component {
           : { id: 'unknown', phase_name: t('Unknown'), phase_order: 99 })),
       uniq,
       indexBy(prop('id')),
-    )(data.stixRelations.edges);
-    const stixRelations = pipe(
+    )(data.stixCoreRelationships.edges);
+    const stixCoreRelationships = pipe(
       map((n) => n.node),
       map((n) => assoc('firstSeenYear', yearFormat(n.first_seen), n)),
       map((n) => assoc('lastSeenYear', yearFormat(n.last_seen), n)),
@@ -172,7 +172,7 @@ class StixDomainObjectKillChainLinesComponent extends Component {
       mapObjIndexed((value, key) => assoc('attackPatterns', value, killChainPhases[key])),
       values,
       sortWith([ascend(prop('phase_order'))]),
-    )(data.stixRelations.edges);
+    )(data.stixCoreRelationships.edges);
     return (
       <div>
         <div style={{ float: 'left' }}>
@@ -191,26 +191,26 @@ class StixDomainObjectKillChainLinesComponent extends Component {
         <div className="clearfix" />
         <div className={classes.container} id="container">
           <List id="test">
-            {stixRelations.map((stixRelation) => (
-              <div key={stixRelation.id}>
+            {stixCoreRelationships.map((stixCoreRelationship) => (
+              <div key={stixCoreRelationship.id}>
                 <ListItem
                   button={true}
                   divider={true}
-                  onClick={this.handleToggleLine.bind(this, stixRelation.id)}
+                  onClick={this.handleToggleLine.bind(this, stixCoreRelationship.id)}
                 >
                   <ListItemIcon>
                     <Launch color="primary" role="img" />
                   </ListItemIcon>
-                  <ListItemText primary={stixRelation.phase_name} />
+                  <ListItemText primary={stixCoreRelationship.phase_name} />
                   <ListItemSecondaryAction>
                     <IconButton
                       onClick={this.handleToggleLine.bind(
                         this,
-                        stixRelation.id,
+                        stixCoreRelationship.id,
                       )}
                       aria-haspopup="true"
                     >
-                      {this.state.expandedLines[stixRelation.id] === false ? (
+                      {this.state.expandedLines[stixCoreRelationship.id] === false ? (
                         <ExpandMore />
                       ) : (
                         <ExpandLess />
@@ -219,10 +219,10 @@ class StixDomainObjectKillChainLinesComponent extends Component {
                   </ListItemSecondaryAction>
                 </ListItem>
                 <Collapse
-                  in={this.state.expandedLines[stixRelation.id] !== false}
+                  in={this.state.expandedLines[stixCoreRelationship.id] !== false}
                 >
                   <List>
-                    {stixRelation.attackPatterns.map((attackPattern) => {
+                    {stixCoreRelationship.attackPatterns.map((attackPattern) => {
                       const link = `${entityLink}/relations/${attackPattern.id}`;
                       return (
                         <ListItem
@@ -284,8 +284,8 @@ class StixDomainObjectKillChainLinesComponent extends Component {
                             disabled={attackPattern.inferred}
                           />
                           <ListItemSecondaryAction>
-                            <StixRelationPopover
-                              stixRelationId={attackPattern.id}
+                            <StixCoreRelationshipPopover
+                              stixCoreRelationshipId={attackPattern.id}
                               paginationOptions={paginationOptions}
                               onDelete={this.props.relay.refetch.bind(this)}
                             />
@@ -300,7 +300,7 @@ class StixDomainObjectKillChainLinesComponent extends Component {
           </List>
         </div>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixRelationCreationFromEntity
+          <StixCoreRelationshipCreationFromEntity
             entityId={stixDomainObjectId}
             isFrom={true}
             paddingRight={true}
@@ -323,8 +323,8 @@ StixDomainObjectKillChainLinesComponent.propTypes = {
   t: PropTypes.func,
 };
 
-export const stixDomainObjectKillChainLinesStixRelationsQuery = graphql`
-  query StixDomainObjectKillChainLinesStixRelationsQuery(
+export const stixDomainObjectKillChainLinesStixCoreRelationshipsQuery = graphql`
+  query StixDomainObjectKillChainLinesStixCoreRelationshipsQuery(
     $fromId: String
     $toTypes: [String]
     $relationType: String
@@ -340,7 +340,7 @@ const StixDomainObjectKillChainLines = createRefetchContainer(
   {
     data: graphql`
       fragment StixDomainObjectKillChainLines_data on Query {
-        stixRelations(
+        stixCoreRelationships(
           fromId: $fromId
           toTypes: $toTypes
           relationType: $relationType
@@ -394,7 +394,7 @@ const StixDomainObjectKillChainLines = createRefetchContainer(
       }
     `,
   },
-  stixDomainObjectKillChainLinesStixRelationsQuery,
+  stixDomainObjectKillChainLinesStixCoreRelationshipsQuery,
 );
 
 export default compose(

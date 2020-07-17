@@ -27,7 +27,7 @@ class CurationStixDomainObjectsLines extends Component {
       initialLoading,
       dataColumns,
       relay,
-      onTagClick,
+      onLabelClick,
       onToggleEntity,
       selectedElements,
     } = this.props;
@@ -47,7 +47,7 @@ class CurationStixDomainObjectsLines extends Component {
         DummyLineComponent={<CurationStixDomainObjectLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
-        onTagClick={onTagClick.bind(this)}
+        onLabelClick={onLabelClick.bind(this)}
         selectedElements={selectedElements}
         onToggleEntity={onToggleEntity.bind(this)}
       />
@@ -63,7 +63,7 @@ CurationStixDomainObjectsLines.propTypes = {
   relay: PropTypes.object,
   stixDomainObjects: PropTypes.object,
   initialLoading: PropTypes.bool,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
   onToggleEntity: PropTypes.func,
   selectedElements: PropTypes.object,

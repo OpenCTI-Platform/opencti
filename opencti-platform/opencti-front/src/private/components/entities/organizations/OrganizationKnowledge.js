@@ -6,9 +6,9 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
-import EntityStixRelations from '../../common/stix_core_relationships/EntityStixCoreRelationships';
+import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
-import StixRelation from '../../common/stix_core_relationships/StixRelation';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import OrganizationPopover from './OrganizationPopover';
 import OrganizationKnowledgeBar from './OrganizationKnowledgeBar';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -35,7 +35,7 @@ class OrganizationKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
+            <StixCoreRelationship
               entityId={organization.id}
               paddingRight={true}
               {...routeProps}
@@ -57,7 +57,7 @@ class OrganizationKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/sectors"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={organization.id}
               relationType="gathering"
               targetEntityTypes={['Sector']}
@@ -71,7 +71,7 @@ class OrganizationKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/locations"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={organization.id}
               relationType="localization"
               targetEntityTypes={['Region', 'Country', 'City']}
@@ -85,7 +85,7 @@ class OrganizationKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/organizations"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={organization.id}
               role='gather'
               relationType="gathering"
@@ -100,7 +100,7 @@ class OrganizationKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/individuals"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={organization.id}
               relationType="gathering"
               targetEntityTypes={['User']}
@@ -114,7 +114,7 @@ class OrganizationKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/threats"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={organization.id}
               relationType="targets"
               targetEntityTypes={[
@@ -135,7 +135,7 @@ class OrganizationKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/attribution"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={organization.id}
               relationType="attributed-to"
               targetEntityTypes={[

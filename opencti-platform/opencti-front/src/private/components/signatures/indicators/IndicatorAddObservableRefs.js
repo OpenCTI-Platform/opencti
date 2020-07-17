@@ -18,7 +18,7 @@ import SearchInput from '../../../../components/SearchInput';
 import IndicatorAddObservableRefsLines, {
   indicatorAddObservableRefsLinesQuery,
 } from './IndicatorAddObservableRefsLines';
-import StixObservableCreation from '../stix_observables/StixObservableCreation';
+import StixCyberObservableCreation from '../stix_observables/StixCyberObservableCreation';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -180,7 +180,7 @@ class IndicatorAddObservableRefs extends Component {
             />
           </div>
         </Drawer>
-        <StixObservableCreation
+        <StixCyberObservableCreation
           display={this.state.open}
           contextual={true}
           inputValue={this.state.search}

@@ -11,7 +11,7 @@ import CampaignDetails from './CampaignDetails';
 import CampaignEdition from './CampaignEdition';
 import CampaignPopover from './CampaignPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
-import EntityStixRelationsDonut from '../../common/stix_core_relationships/EntityStixRelationsDonut';
+import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityIncidentsChart from '../incidents/EntityIncidentsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -65,7 +65,7 @@ class CampaignComponent extends Component {
             />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityStixRelationsDonut
+            <EntityStixCoreRelationshipsDonut
               entityId={campaign.id}
               entityType="Indicator"
               relationType="indicates"

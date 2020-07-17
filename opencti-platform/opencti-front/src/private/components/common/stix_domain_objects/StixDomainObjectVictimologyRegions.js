@@ -39,8 +39,8 @@ import { createRefetchContainer } from 'react-relay';
 import Tooltip from '@material-ui/core/Tooltip';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
-import StixRelationPopover from '../stix_core_relationships/StixRelationPopover';
-import StixRelationCreationFromEntity from '../stix_core_relationships/StixRelationCreationFromEntity';
+import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
+import StixCoreRelationshipCreationFromEntity from '../stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import ItemYears from '../../../../components/ItemYears';
 import SearchInput from '../../../../components/SearchInput';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
@@ -92,7 +92,7 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
       'stroke',
       'font',
     ];
-    const svgElems = Array.from(targetElem.getElementsByTagName('svg'));
+    const svgElems = Array.from(targetElem.getElementsByLabelName('svg'));
     function recurseElementChildren(node) {
       if (!node.style) return;
       const inlineStyles = getComputedStyle(node);
@@ -154,7 +154,7 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
         countries: {},
         relations: [],
       })),
-    )(data.stixRelations.edges);
+    )(data.stixCoreRelationships.edges);
     const countries = pipe(
       filter((n) => n.node.to.entity_type === 'country'),
       map((n) => ({
@@ -171,7 +171,7 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
           : null,
         relations: [],
       })),
-    )(data.stixRelations.edges);
+    )(data.stixCoreRelationships.edges);
     const countriesRegions = filter(
       (n) => n !== null,
       pluck('region', countries),
@@ -198,7 +198,7 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
           : null,
         relations: [],
       })),
-    )(data.stixRelations.edges);
+    )(data.stixCoreRelationships.edges);
     const citiesCountries = filter((n) => n !== null, pluck('country', cities));
     const citiesCountriesRegions = filter(
       (n) => n !== null,
@@ -229,33 +229,33 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
         }
       }
     }
-    for (const stixRelationEdge of data.stixRelations.edges) {
-      let stixRelation = stixRelationEdge.node;
-      stixRelation = assoc(
+    for (const stixCoreRelationshipEdge of data.stixCoreRelationships.edges) {
+      let stixCoreRelationship = stixCoreRelationshipEdge.node;
+      stixCoreRelationship = assoc(
         'firstSeenYear',
-        yearFormat(stixRelation.first_seen),
-        stixRelation,
+        yearFormat(stixCoreRelationship.first_seen),
+        stixCoreRelationship,
       );
-      stixRelation = assoc(
+      stixCoreRelationship = assoc(
         'lastSeenYear',
-        yearFormat(stixRelation.last_seen),
-        stixRelation,
+        yearFormat(stixCoreRelationship.last_seen),
+        stixCoreRelationship,
       );
-      stixRelation = assoc(
+      stixCoreRelationship = assoc(
         'years',
-        stixRelation.firstSeenYear === stixRelation.lastSeenYear
-          ? stixRelation.firstSeenYear
-          : `${stixRelation.firstSeenYear} - ${stixRelation.lastSeenYear}`,
-        stixRelation,
+        stixCoreRelationship.firstSeenYear === stixCoreRelationship.lastSeenYear
+          ? stixCoreRelationship.firstSeenYear
+          : `${stixCoreRelationship.firstSeenYear} - ${stixCoreRelationship.lastSeenYear}`,
+        stixCoreRelationship,
       );
-      if (stixRelation.to.entity_type === 'region') {
-        finalRegions[stixRelation.to.id].relations.push(stixRelation);
+      if (stixCoreRelationship.to.entity_type === 'region') {
+        finalRegions[stixCoreRelationship.to.id].relations.push(stixCoreRelationship);
       }
-      if (stixRelation.to.entity_type === 'country') {
-        if (stixRelation.to.region) {
-          finalRegions[stixRelation.to.region.id].countries[
-            stixRelation.to.id
-          ].relations.push(stixRelation);
+      if (stixCoreRelationship.to.entity_type === 'country') {
+        if (stixCoreRelationship.to.region) {
+          finalRegions[stixCoreRelationship.to.region.id].countries[
+            stixCoreRelationship.to.id
+          ].relations.push(stixCoreRelationship);
         } else {
           if (!(unknownRegionId in finalRegions)) {
             finalRegions[unknownRegionId] = {
@@ -265,15 +265,15 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
               relations: [],
             };
           }
-          finalRegions[unknownRegionId].relations.push(stixRelation);
+          finalRegions[unknownRegionId].relations.push(stixCoreRelationship);
         }
       }
-      if (stixRelation.to.entity_type === 'city') {
-        if (stixRelation.to.country) {
-          if (stixRelation.to.country.region) {
-            finalRegions[stixRelation.to.country.region.id].countries[
-              stixRelation.to.country.id
-            ].cities[stixRelation.to.id].relations.push(stixRelation);
+      if (stixCoreRelationship.to.entity_type === 'city') {
+        if (stixCoreRelationship.to.country) {
+          if (stixCoreRelationship.to.country.region) {
+            finalRegions[stixCoreRelationship.to.country.region.id].countries[
+              stixCoreRelationship.to.country.id
+            ].cities[stixCoreRelationship.to.id].relations.push(stixCoreRelationship);
           } else {
             if (!(unknownRegionId in finalRegions)) {
               finalRegions[unknownRegionId] = {
@@ -284,20 +284,20 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
               };
             }
             if (
-              !(stixRelation.to.country.id in finalRegions[unknownRegionId])
+              !(stixCoreRelationship.to.country.id in finalRegions[unknownRegionId])
             ) {
               finalRegions[unknownRegionId].countries[
-                stixRelation.to.country.id
+                stixCoreRelationship.to.country.id
               ] = {
-                id: stixRelation.to.country.id,
-                name: stixRelation.to.country.name,
+                id: stixCoreRelationship.to.country.id,
+                name: stixCoreRelationship.to.country.name,
                 cities: {},
                 relations: [],
               };
             }
             finalRegions[unknownRegionId].countries[
-              stixRelation.to.country.id
-            ].relations.push(stixRelation);
+              stixCoreRelationship.to.country.id
+            ].relations.push(stixCoreRelationship);
           }
         } else {
           if (!(unknownRegionId in finalRegions)) {
@@ -318,7 +318,7 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
           }
           finalRegions[unknownRegionId].countries[
             unknownCountryId
-          ].relations.push(stixRelation);
+          ].relations.push(stixCoreRelationship);
         }
       }
     }
@@ -380,11 +380,11 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
                   </ListItem>
                   <Collapse in={this.state.expandedLines[region.id] === true}>
                     <List>
-                      {orderedRelations.map((stixRelation) => {
-                        const link = `${entityLink}/relations/${stixRelation.id}`;
+                      {orderedRelations.map((stixCoreRelationship) => {
+                        const link = `${entityLink}/relations/${stixCoreRelationship.id}`;
                         return (
                           <ListItem
-                            key={stixRelation.id}
+                            key={stixCoreRelationship.id}
                             classes={{ root: classes.nested }}
                             divider={true}
                             button={true}
@@ -393,27 +393,27 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
                             to={link}
                           >
                             <ListItemIcon className={classes.itemIcon}>
-                              <ItemIcon type={stixRelation.to.entity_type} />
+                              <ItemIcon type={stixCoreRelationship.to.entity_type} />
                             </ListItemIcon>
                             <ListItemText
                               primary={
-                                stixRelation.to.id === region.id ? (
+                                stixCoreRelationship.to.id === region.id ? (
                                   <em>
                                     {t('Direct targeting of this region')}
                                   </em>
                                 ) : (
-                                  stixRelation.to.name
+                                  stixCoreRelationship.to.name
                                 )
                               }
                               secondary={
                                 // eslint-disable-next-line no-nested-ternary
-                                stixRelation.description
-                                && stixRelation.description.length > 0 ? (
+                                stixCoreRelationship.description
+                                && stixCoreRelationship.description.length > 0 ? (
                                   <Markdown
                                     className="markdown"
-                                    source={stixRelation.description}
+                                    source={stixCoreRelationship.description}
                                   />
-                                  ) : stixRelation.inferred ? (
+                                  ) : stixCoreRelationship.inferred ? (
                                   <i>{t('This relation is inferred')}</i>
                                   ) : (
                                     t('No description of this targeting')
@@ -425,7 +425,7 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
                               pathOr(
                                 [],
                                 ['markingDefinitions', 'edges'],
-                                stixRelation,
+                                stixCoreRelationship,
                               ),
                             ).map((markingDefinition) => (
                               <ItemMarking
@@ -438,15 +438,15 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
                             <ItemYears
                               variant="inList"
                               years={
-                                stixRelation.inferred
+                                stixCoreRelationship.inferred
                                   ? t('Inferred')
-                                  : stixRelation.years
+                                  : stixCoreRelationship.years
                               }country
-                              disabled={stixRelation.inferred}
+                              disabled={stixCoreRelationship.inferred}
                             />
                             <ListItemSecondaryAction>
-                              <StixRelationPopover
-                                stixRelationId={stixRelation.id}
+                              <StixCoreRelationshipPopover
+                                stixCoreRelationshipId={stixCoreRelationship.id}
                                 paginationOptions={paginationOptions}
                                 onDelete={this.props.relay.refetch.bind(this)}
                               />
@@ -499,11 +499,11 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
                               in={this.state.expandedLines[country.id] === true}
                             >
                               <List>
-                                {orderedSubRelations.map((stixRelation) => {
-                                  const link = `${entityLink}/relations/${stixRelation.id}`;
+                                {orderedSubRelations.map((stixCoreRelationship) => {
+                                  const link = `${entityLink}/relations/${stixCoreRelationship.id}`;
                                   return (
                                     <ListItem
-                                      key={stixRelation.id}
+                                      key={stixCoreRelationship.id}
                                       classes={{ root: classes.subnested }}
                                       divider={true}
                                       button={true}
@@ -515,31 +515,31 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
                                         className={classes.itemIcon}
                                       >
                                         <ItemIcon
-                                          type={stixRelation.to.entity_type}
+                                          type={stixCoreRelationship.to.entity_type}
                                         />
                                       </ListItemIcon>
                                       <ListItemText
                                         primary={
-                                          stixRelation.to.id === country.id ? (
+                                          stixCoreRelationship.to.id === country.id ? (
                                             <em>
                                               {t(
                                                 'Direct targeting of this country',
                                               )}
                                             </em>
                                           ) : (
-                                            stixRelation.to.name
+                                            stixCoreRelationship.to.name
                                           )
                                         }
                                         secondary={
                                           // eslint-disable-next-line no-nested-ternary
-                                          stixRelation.description
-                                          && stixRelation.description.length
+                                          stixCoreRelationship.description
+                                          && stixCoreRelationship.description.length
                                             > 0 ? (
                                             <Markdown
                                               className="markdown"
-                                              source={stixRelation.description}
+                                              source={stixCoreRelationship.description}
                                             />
-                                            ) : stixRelation.inferred ? (
+                                            ) : stixCoreRelationship.inferred ? (
                                             <i>
                                               {t('This relation is inferred')}
                                             </i>
@@ -555,7 +555,7 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
                                         pathOr(
                                           [],
                                           ['markingDefinitions', 'edges'],
-                                          stixRelation,
+                                          stixCoreRelationship,
                                         ),
                                       ).map((markingDefinition) => (
                                         <ItemMarking
@@ -570,15 +570,15 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
                                       <ItemYears
                                         variant="inList"
                                         years={
-                                          stixRelation.inferred
+                                          stixCoreRelationship.inferred
                                             ? t('Inferred')
-                                            : stixRelation.years
+                                            : stixCoreRelationship.years
                                         }
-                                        disabled={stixRelation.inferred}
+                                        disabled={stixCoreRelationship.inferred}
                                       />
                                       <ListItemSecondaryAction>
-                                        <StixRelationPopover
-                                          stixRelationId={stixRelation.id}
+                                        <StixCoreRelationshipPopover
+                                          stixCoreRelationshipId={stixCoreRelationship.id}
                                           paginationOptions={paginationOptions}
                                           onDelete={this.props.relay.refetch.bind(
                                             this,
@@ -596,11 +596,11 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
                                   return (
                                     <div key={city.id}>
                                       {orderedSubSubRelations.map(
-                                        (stixRelation) => {
-                                          const link = `${entityLink}/relations/${stixRelation.id}`;
+                                        (stixCoreRelationship) => {
+                                          const link = `${entityLink}/relations/${stixCoreRelationship.id}`;
                                           return (
                                             <ListItem
-                                              key={stixRelation.id}
+                                              key={stixCoreRelationship.id}
                                               classes={{
                                                 root: classes.subnested,
                                               }}
@@ -615,13 +615,13 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
                                               >
                                                 <ItemIcon
                                                   type={
-                                                    stixRelation.to.entity_type
+                                                    stixCoreRelationship.to.entity_type
                                                   }
                                                 />
                                               </ListItemIcon>
                                               <ListItemText
                                                 primary={
-                                                  stixRelation.to.id
+                                                  stixCoreRelationship.to.id
                                                   === country.id ? (
                                                     <em>
                                                       {t(
@@ -629,21 +629,21 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
                                                       )}
                                                     </em>
                                                     ) : (
-                                                      stixRelation.to.name
+                                                      stixCoreRelationship.to.name
                                                     )
                                                 }
                                                 secondary={
                                                   // eslint-disable-next-line no-nested-ternary
-                                                  stixRelation.description
-                                                  && stixRelation.description
+                                                  stixCoreRelationship.description
+                                                  && stixCoreRelationship.description
                                                     .length > 0 ? (
                                                     <Markdown
                                                       className="markdown"
                                                       source={
-                                                        stixRelation.description
+                                                        stixCoreRelationship.description
                                                       }
                                                     />
-                                                    ) : stixRelation.inferred ? (
+                                                    ) : stixCoreRelationship.inferred ? (
                                                     <i>
                                                       {t(
                                                         'This relation is inferred',
@@ -664,7 +664,7 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
                                                     'markingDefinitions',
                                                     'edges',
                                                   ],
-                                                  stixRelation,
+                                                  stixCoreRelationship,
                                                 ),
                                               ).map((markingDefinition) => (
                                                 <ItemMarking
@@ -684,16 +684,16 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
                                               <ItemYears
                                                 variant="inList"
                                                 years={
-                                                  stixRelation.inferred
+                                                  stixCoreRelationship.inferred
                                                     ? t('Inferred')
-                                                    : stixRelation.years
+                                                    : stixCoreRelationship.years
                                                 }
-                                                disabled={stixRelation.inferred}
+                                                disabled={stixCoreRelationship.inferred}
                                               />
                                               <ListItemSecondaryAction>
-                                                <StixRelationPopover
-                                                  stixRelationId={
-                                                    stixRelation.id
+                                                <StixCoreRelationshipPopover
+                                                  stixCoreRelationshipId={
+                                                    stixCoreRelationship.id
                                                   }
                                                   paginationOptions={
                                                     paginationOptions
@@ -723,7 +723,7 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
           </List>
         </div>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixRelationCreationFromEntity
+          <StixCoreRelationshipCreationFromEntity
             entityId={stixDomainObjectId}
             isFrom={true}
             paddingRight={true}
@@ -746,8 +746,8 @@ StixDomainObjectVictimologyRegionsComponent.propTypes = {
   t: PropTypes.func,
 };
 
-export const stixDomainObjectVictimologyRegionsStixRelationsQuery = graphql`
-  query StixDomainObjectVictimologyRegionsStixRelationsQuery(
+export const stixDomainObjectVictimologyRegionsStixCoreRelationshipsQuery = graphql`
+  query StixDomainObjectVictimologyRegionsStixCoreRelationshipsQuery(
     $fromId: String
     $toTypes: [String]
     $relationType: String
@@ -763,7 +763,7 @@ const StixDomainObjectVictimologyRegionsSectorLines = createRefetchContainer(
   {
     data: graphql`
       fragment StixDomainObjectVictimologyRegions_data on Query {
-        stixRelations(
+        stixCoreRelationships(
           fromId: $fromId
           toTypes: $toTypes
           relationType: $relationType
@@ -817,7 +817,7 @@ const StixDomainObjectVictimologyRegionsSectorLines = createRefetchContainer(
       }
     `,
   },
-  stixDomainObjectVictimologyRegionsStixRelationsQuery,
+  stixDomainObjectVictimologyRegionsStixCoreRelationshipsQuery,
 );
 
 export default compose(

@@ -6,9 +6,9 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
-import EntityStixRelations from '../../common/stix_core_relationships/EntityStixCoreRelationships';
+import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
-import StixRelation from '../../common/stix_core_relationships/StixRelation';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import ToolPopover from './ToolPopover';
 import ToolKnowledgeBar from './ToolKnowledgeBar';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -35,7 +35,7 @@ class ToolKnowledgeComponent extends Component {
           exact
           path="/dashboard/techniques/tools/:toolId/knowledge/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
+            <StixCoreRelationship
               entityId={tool.id}
               paddingRight={true}
               {...routeProps}
@@ -57,7 +57,7 @@ class ToolKnowledgeComponent extends Component {
           exact
           path="/dashboard/techniques/tools/:toolId/knowledge/intrusion_sets"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={tool.id}
               relationType="uses"
               targetEntityTypes={['Intrusion-Set']}
@@ -71,7 +71,7 @@ class ToolKnowledgeComponent extends Component {
           exact
           path="/dashboard/techniques/tools/:toolId/knowledge/campaigns"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={tool.id}
               relationType="uses"
               targetEntityTypes={['Campaign']}
@@ -85,7 +85,7 @@ class ToolKnowledgeComponent extends Component {
           exact
           path="/dashboard/techniques/tools/:toolId/knowledge/incidents"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={tool.id}
               relationType="uses"
               targetEntityTypes={['Incident']}
@@ -99,7 +99,7 @@ class ToolKnowledgeComponent extends Component {
           exact
           path="/dashboard/techniques/tools/:toolId/knowledge/malwares"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={tool.id}
               relationType="uses"
               targetEntityTypes={['Malware']}

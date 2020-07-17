@@ -11,7 +11,7 @@ import ToolDetails from './ToolDetails';
 import ToolEdition from './ToolEdition';
 import ToolPopover from './ToolPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
-import EntityStixRelationsChart from '../../common/stix_core_relationships/EntityStixRelationsChart';
+import EntityStixCoreRelationshipsChart from '../../common/stix_core_relationships/EntityStixCoreRelationshipsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
@@ -58,7 +58,7 @@ class ToolComponent extends Component {
           style={{ marginTop: 15 }}
         >
           <Grid item={true} xs={6}>
-            <EntityStixRelationsChart entityId={tool.id} relationType="uses" />
+            <EntityStixCoreRelationshipsChart entityId={tool.id} relationType="uses" />
           </Grid>
           <Grid item={true} xs={6}>
             <EntityReportsChart entityId={tool.id} />

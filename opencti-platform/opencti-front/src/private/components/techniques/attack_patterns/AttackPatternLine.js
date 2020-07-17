@@ -11,7 +11,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight } from '@material-ui/icons';
 import { LockPattern } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
-import StixObjectTags from '../../common/stix_object/StixObjectTags';
+import StixObjectLabels from '../../common/stix_object/StixObjectLabels';
 
 const styles = (theme) => ({
   item: {
@@ -46,7 +46,7 @@ const styles = (theme) => ({
 class AttackPatternLineComponent extends Component {
   render() {
     const {
-      fd, classes, node, dataColumns, onTagClick,
+      fd, classes, node, dataColumns, onLabelClick,
     } = this.props;
     return (
       <ListItem
@@ -76,12 +76,12 @@ class AttackPatternLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.labels.width }}
               >
-                <StixObjectTags
+                <StixObjectLabels
                   variant="inList"
-                  tags={node.tags}
-                  onClick={onTagClick.bind(this)}
+                  labels={node.labels}
+                  onClick={onLabelClick.bind(this)}
                 />
               </div>
               <div
@@ -113,7 +113,7 @@ AttackPatternLineComponent.propTypes = {
   classes: PropTypes.object,
   fd: PropTypes.func,
   orderAsc: PropTypes.bool,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
 };
 
 const AttackPatternLineFragment = createFragmentContainer(
@@ -126,11 +126,11 @@ const AttackPatternLineFragment = createFragmentContainer(
         name
         created
         modified
-        tags {
+        labels {
           edges {
             node {
               id
-              tag_type
+              label_type
               value
               color
             }
@@ -174,7 +174,7 @@ class AttackPatternLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.labels.width }}
               >
                 <div className="fakeItem" style={{ width: '90%' }} />
               </div>

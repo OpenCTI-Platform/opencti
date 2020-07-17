@@ -20,7 +20,7 @@ class IncidentsCards extends Component {
   }
 
   render() {
-    const { initialLoading, relay, onTagClick } = this.props;
+    const { initialLoading, relay, onLabelClick } = this.props;
     return (
       <ListCardsContent
         initialLoading={initialLoading}
@@ -36,7 +36,7 @@ class IncidentsCards extends Component {
         CardComponent={<IncidentCard />}
         DummyCardComponent={<IncidentCardDummy />}
         nbOfCardsToLoad={nbOfCardsToLoad}
-        onTagClick={onTagClick.bind(this)}
+        onLabelClick={onLabelClick.bind(this)}
       />
     );
   }
@@ -50,7 +50,7 @@ IncidentsCards.propTypes = {
   incidents: PropTypes.object,
   initialLoading: PropTypes.bool,
   searchTerm: PropTypes.string,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
 };
 

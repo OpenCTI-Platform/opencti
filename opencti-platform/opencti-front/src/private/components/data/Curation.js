@@ -25,7 +25,7 @@ const styles = () => ({
   },
 });
 
-class StixObservables extends Component {
+class StixCyberObservables extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
@@ -149,8 +149,8 @@ class StixObservables extends Component {
         width: '15%',
         isSortable: false,
       },
-      tags: {
-        label: 'Tags',
+      labels: {
+        label: 'Labels',
         width: '20%',
         isSortable: false,
       },
@@ -181,7 +181,7 @@ class StixObservables extends Component {
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}
           availableFilterKeys={[
-            'tags',
+            'labels',
             'markingDefinitions',
             'created_start_date',
             'created_end_date',
@@ -197,7 +197,7 @@ class StixObservables extends Component {
                 paginationOptions={paginationOptions}
                 dataColumns={dataColumns}
                 initialLoading={props === null}
-                onTagClick={this.handleAddFilter.bind(this)}
+                onLabelClick={this.handleAddFilter.bind(this)}
                 selectedElements={selectedElements}
                 onToggleEntity={this.handleToggleSelectEntity.bind(this)}
                 setNumberOfElements={this.setNumberOfElements.bind(this)}
@@ -247,7 +247,7 @@ class StixObservables extends Component {
   }
 }
 
-StixObservables.propTypes = {
+StixCyberObservables.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
@@ -258,4 +258,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(StixObservables);
+)(StixCyberObservables);

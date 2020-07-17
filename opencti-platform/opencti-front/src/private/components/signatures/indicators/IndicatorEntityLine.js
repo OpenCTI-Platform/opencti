@@ -12,7 +12,7 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { Help, MoreVert } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import ItemConfidenceLevel from '../../../../components/ItemConfidenceLevel';
-import StixRelationPopover from '../../common/stix_core_relationships/StixRelationPopover';
+import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
 
@@ -147,8 +147,8 @@ class IndicatorEntityLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <StixRelationPopover
-            stixRelationId={node.id}
+          <StixCoreRelationshipPopover
+            stixCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
             disabled={node.inferred}
           />
@@ -173,7 +173,7 @@ const IndicatorEntityLineFragment = createFragmentContainer(
   IndicatorEntityLineComponent,
   {
     node: graphql`
-      fragment IndicatorEntityLine_node on StixRelation {
+      fragment IndicatorEntityLine_node on StixCoreRelationship {
         id
         relationship_type
         weight
@@ -190,7 +190,7 @@ const IndicatorEntityLineFragment = createFragmentContainer(
           entity_type
           created_at
           updated_at
-          ... on StixRelation {
+          ... on StixCoreRelationship {
             from {
               name
             }

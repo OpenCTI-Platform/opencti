@@ -20,10 +20,10 @@ const styles = () => ({
   },
 });
 
-class StixObservableOverviewComponent extends Component {
+class StixCyberObservableOverviewComponent extends Component {
   render() {
     const {
-      t, fldt, classes, stixObservable,
+      t, fldt, classes, stixCyberObservable,
     } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
@@ -34,7 +34,7 @@ class StixObservableOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Observable type')}
           </Typography>
-          {t(`observable_${stixObservable.entity_type}`)}
+          {t(`observable_${stixCyberObservable.entity_type}`)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -42,7 +42,7 @@ class StixObservableOverviewComponent extends Component {
           >
             {t('Creation date')}
           </Typography>
-          {fldt(stixObservable.created_at)}
+          {fldt(stixCyberObservable.created_at)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -50,7 +50,7 @@ class StixObservableOverviewComponent extends Component {
           >
             {t('Modification date')}
           </Typography>
-          {fldt(stixObservable.updated_at)}
+          {fldt(stixCyberObservable.updated_at)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -62,7 +62,7 @@ class StixObservableOverviewComponent extends Component {
             createdBy={pathOr(
               null,
               ['createdBy', 'node'],
-              stixObservable,
+              stixCyberObservable,
             )}
           />
           <Typography
@@ -72,25 +72,25 @@ class StixObservableOverviewComponent extends Component {
           >
             {t('Description')}
           </Typography>
-          <Markdown className="markdown" source={stixObservable.description} />
+          <Markdown className="markdown" source={stixCyberObservable.description} />
         </Paper>
       </div>
     );
   }
 }
 
-StixObservableOverviewComponent.propTypes = {
-  stixObservable: PropTypes.object,
+StixCyberObservableOverviewComponent.propTypes = {
+  stixCyberObservable: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fldt: PropTypes.func,
 };
 
-const StixObservableOverview = createFragmentContainer(
-  StixObservableOverviewComponent,
+const StixCyberObservableOverview = createFragmentContainer(
+  StixCyberObservableOverviewComponent,
   {
-    stixObservable: graphql`
-      fragment StixObservableOverview_stixObservable on StixObservable {
+    stixCyberObservable: graphql`
+      fragment StixCyberObservableOverview_stixCyberObservable on StixCyberObservable {
         id
         name
         entity_type
@@ -109,4 +109,4 @@ const StixObservableOverview = createFragmentContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(StixObservableOverview);
+export default compose(inject18n, withStyles(styles))(StixCyberObservableOverview);

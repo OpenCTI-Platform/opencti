@@ -30,7 +30,7 @@ const addCoursesOfActionLinesMutationRelationAdd = graphql`
   mutation AddCoursesOfActionLinesRelationAddMutation(
     $input: StixMetaRelationshipAddInput
   ) {
-    stixRelationAdd(input: $input) {
+    stixCoreRelationshipAdd(input: $input) {
       to {
         ...AttackPatternCoursesOfAction_attackPattern
       }
@@ -40,7 +40,7 @@ const addCoursesOfActionLinesMutationRelationAdd = graphql`
 
 export const addCoursesOfActionMutationRelationDelete = graphql`
   mutation AddCoursesOfActionLinesRelationDeleteMutation($id: ID!) {
-    stixRelationEdit(id: $id) {
+    stixCoreRelationshipEdit(id: $id) {
       delete
     }
   }

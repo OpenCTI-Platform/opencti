@@ -9,7 +9,7 @@ import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../components/i18n';
 import ItemStatus from '../../../components/ItemStatus';
 import ItemConfidenceLevel from '../../../components/ItemConfidenceLevel';
-import StixDomainObjectTags from '../common/stix_domain_objects/StixDomainObjectLabels';
+import StixDomainObjectLabels from '../common/stix_domain_objects/StixDomainObjectLabels';
 import ItemCreator from '../../../components/ItemCreator';
 
 const styles = () => ({
@@ -31,7 +31,7 @@ class ReportDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixDomainObjectTags tags={report.tags} id={report.id} />
+          <StixDomainObjectLabels labels={report.labels} id={report.id} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -88,11 +88,11 @@ const ReportDetails = createFragmentContainer(ReportDetailsComponent, {
           id
           name
         }
-      tags {
+      labels {
         edges {
           node {
             id
-            tag_type
+            label_type
             value
             color
           }

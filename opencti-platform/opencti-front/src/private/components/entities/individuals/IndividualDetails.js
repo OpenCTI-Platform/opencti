@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Markdown from 'react-markdown';
-import StixDomainObjectTags from '../../common/stix_domain_objects/StixDomainObjectLabels';
+import StixDomainObjectLabels from '../../common/stix_domain_objects/StixDomainObjectLabels';
 import inject18n from '../../../../components/i18n';
 import ItemCreator from '../../../../components/ItemCreator';
 
@@ -37,7 +37,7 @@ class IndividualDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixDomainObjectTags tags={individual.tags} id={individual.id} />
+          <StixDomainObjectLabels labels={individual.labels} id={individual.id} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -76,11 +76,11 @@ const IndividualDetails = createFragmentContainer(IndividualDetailsComponent, {
         id
         name
       }
-      tags {
+      labels {
         edges {
           node {
             id
-            tag_type
+            label_type
             value
             color
           }

@@ -21,7 +21,7 @@ import { truncate } from '../../../../utils/String';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
-import StixObjectTags from '../stix_object/StixObjectTags';
+import StixObjectLabels from '../stix_object/StixObjectLabels';
 
 const styles = (theme) => ({
   container: {
@@ -152,8 +152,8 @@ class StixDomainObjectsContainer extends Component {
                             )}
                           />
                           <ListItemSecondaryAction>
-                            <StixObjectTags
-                              tags={stixDomainObject.tags}
+                            <StixObjectLabels
+                              labels={stixDomainObject.labels}
                               variant="inSearch"
                             />
                           </ListItemSecondaryAction>
@@ -177,8 +177,8 @@ class StixDomainObjectsContainer extends Component {
                           )}
                         />
                         <ListItemSecondaryAction>
-                          <StixObjectTags
-                            tags={stixDomainObject.tags}
+                          <StixObjectLabels
+                            labels={stixDomainObject.labels}
                             variant="inSearch"
                           />
                         </ListItemSecondaryAction>
@@ -283,11 +283,11 @@ const StixDomainObjectsLines = createPaginationContainer(
               name
               description
               ... on StixEntity {
-                tags {
+                labels {
                   edges {
                     node {
                       id
-                      tag_type
+                      label_type
                       value
                       color
                     }

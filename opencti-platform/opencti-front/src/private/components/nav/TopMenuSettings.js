@@ -112,7 +112,7 @@ class TopMenuSettings extends Component {
           }
           classes={{ root: classes.button }}
         >
-          {t('Tags & Attributes')}
+          {t('Labels & Attributes')}
         </Button>
       </div>
     );

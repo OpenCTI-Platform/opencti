@@ -22,7 +22,7 @@ import {
   Application,
   Fire,
   CityVariantOutline,
-  TagOutline,
+  LabelOutline,
   ProgressWrench,
   HexagonOutline,
   VectorRadius,
@@ -88,8 +88,8 @@ const iconSelector = (type, variant, fontSize, color) => {
       );
     case 'indicator':
       return <ShieldSearch style={style} fontSize={fontSize} role="img" />;
-    case 'tag':
-      return <TagOutline style={style} fontSize={fontSize} role="img" />;
+    case 'label':
+      return <LabelOutline style={style} fontSize={fontSize} role="img" />;
     case 'note':
       return <WorkOutline style={style} fontSize={fontSize} role="img" />;
     case 'attribute':

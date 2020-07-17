@@ -25,7 +25,7 @@ class OrganizationsLines extends Component {
       dataColumns,
       relay,
       paginationOptions,
-      onTagClick,
+      onLabelClick,
     } = this.props;
     return (
       <ListLinesContent
@@ -44,7 +44,7 @@ class OrganizationsLines extends Component {
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         paginationOptions={paginationOptions}
-        onTagClick={onTagClick.bind(this)}
+        onLabelClick={onLabelClick.bind(this)}
       />
     );
   }
@@ -57,7 +57,7 @@ OrganizationsLines.propTypes = {
   data: PropTypes.object,
   relay: PropTypes.object,
   initialLoading: PropTypes.bool,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
 };
 

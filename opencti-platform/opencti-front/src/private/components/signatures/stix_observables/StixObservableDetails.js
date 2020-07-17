@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
-import StixObservableTags from '../../common/stix_observables/StixObservableTags';
+import StixCyberObservableLabels from '../../common/stix_cyber_observables/StixCyberObservableLabels';
 import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
@@ -20,9 +20,9 @@ const styles = () => ({
   },
 });
 
-class StixObservableDetailsComponent extends Component {
+class StixCyberObservableDetailsComponent extends Component {
   render() {
-    const { t, classes, stixObservable } = this.props;
+    const { t, classes, stixCyberObservable } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -32,11 +32,11 @@ class StixObservableDetailsComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Observable value')}
           </Typography>
-          <pre>{stixObservable.observable_value}</pre>
+          <pre>{stixCyberObservable.observable_value}</pre>
           <div style={{ marginTop: 20 }}>
-            <StixObservableTags
-              tags={stixObservable.tags}
-              id={stixObservable.id}
+            <StixCyberObservableLabels
+              labels={stixCyberObservable.labels}
+              id={stixCyberObservable.id}
             />
           </div>
           <Typography
@@ -46,35 +46,35 @@ class StixObservableDetailsComponent extends Component {
           >
             {t('Creator')}
           </Typography>
-          <ItemCreator creator={stixObservable.creator} />
+          <ItemCreator creator={stixCyberObservable.creator} />
         </Paper>
       </div>
     );
   }
 }
 
-StixObservableDetailsComponent.propTypes = {
-  stixObservable: PropTypes.object,
+StixCyberObservableDetailsComponent.propTypes = {
+  stixCyberObservable: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-const StixObservableDetails = createFragmentContainer(
-  StixObservableDetailsComponent,
+const StixCyberObservableDetails = createFragmentContainer(
+  StixCyberObservableDetailsComponent,
   {
-    stixObservable: graphql`
-      fragment StixObservableDetails_stixObservable on StixObservable {
+    stixCyberObservable: graphql`
+      fragment StixCyberObservableDetails_stixCyberObservable on StixCyberObservable {
         id
         observable_value
         creator {
           id
           name
         }
-        tags {
+        labels {
           edges {
             node {
               id
-              tag_type
+              label_type
               value
               color
             }
@@ -88,4 +88,4 @@ const StixObservableDetails = createFragmentContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(StixObservableDetails);
+export default compose(inject18n, withStyles(styles))(StixCyberObservableDetails);

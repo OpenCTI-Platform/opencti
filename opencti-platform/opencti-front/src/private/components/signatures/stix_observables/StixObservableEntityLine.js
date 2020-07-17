@@ -12,7 +12,7 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { Help, MoreVert } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import ItemConfidenceLevel from '../../../../components/ItemConfidenceLevel';
-import StixRelationPopover from '../../common/stix_core_relationships/StixRelationPopover';
+import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
 
@@ -42,7 +42,7 @@ const styles = (theme) => ({
   },
 });
 
-class StixObservableEntityLineComponent extends Component {
+class StixCyberObservableEntityLineComponent extends Component {
   render() {
     const {
       nsd,
@@ -147,8 +147,8 @@ class StixObservableEntityLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <StixRelationPopover
-            stixRelationId={node.id}
+          <StixCoreRelationshipPopover
+            stixCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
             disabled={node.inferred}
           />
@@ -158,7 +158,7 @@ class StixObservableEntityLineComponent extends Component {
   }
 }
 
-StixObservableEntityLineComponent.propTypes = {
+StixCyberObservableEntityLineComponent.propTypes = {
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object,
   node: PropTypes.object,
@@ -169,11 +169,11 @@ StixObservableEntityLineComponent.propTypes = {
   entityId: PropTypes.string,
 };
 
-const StixObservableEntityLineFragment = createFragmentContainer(
-  StixObservableEntityLineComponent,
+const StixCyberObservableEntityLineFragment = createFragmentContainer(
+  StixCyberObservableEntityLineComponent,
   {
     node: graphql`
-      fragment StixObservableEntityLine_node on StixRelation {
+      fragment StixCyberObservableEntityLine_node on StixCoreRelationship {
         id
         relationship_type
         weight
@@ -190,7 +190,7 @@ const StixObservableEntityLineFragment = createFragmentContainer(
           description
           created_at
           updated_at
-          ... on StixRelation {
+          ... on StixCoreRelationship {
             from {
               name
             }
@@ -204,12 +204,12 @@ const StixObservableEntityLineFragment = createFragmentContainer(
   },
 );
 
-export const StixObservableEntityLine = compose(
+export const StixCyberObservableEntityLine = compose(
   inject18n,
   withStyles(styles),
-)(StixObservableEntityLineFragment);
+)(StixCyberObservableEntityLineFragment);
 
-class StixObservableEntityLineDummyComponent extends Component {
+class StixCyberObservableEntityLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns, displayRelation } = this.props;
     return (
@@ -281,13 +281,13 @@ class StixObservableEntityLineDummyComponent extends Component {
   }
 }
 
-StixObservableEntityLineDummyComponent.propTypes = {
+StixCyberObservableEntityLineDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
   displayRelation: PropTypes.bool,
 };
 
-export const StixObservableEntityLineDummy = compose(
+export const StixCyberObservableEntityLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(StixObservableEntityLineDummyComponent);
+)(StixCyberObservableEntityLineDummyComponent);

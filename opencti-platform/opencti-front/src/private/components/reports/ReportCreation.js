@@ -24,7 +24,7 @@ import SelectField from '../../../components/SelectField';
 import MarkingDefinitionsField from '../common/form/MarkingDefinitionsField';
 import { attributesQuery } from '../settings/attributes/AttributesLines';
 import Loader from '../../../components/Loader';
-import TagsField from '../common/form/TagsField';
+import LabelsField from '../common/form/LabelsField';
 import CreatedByField from '../common/form/CreatedByField';
 
 const styles = (theme) => ({
@@ -118,7 +118,7 @@ class ReportCreation extends Component {
         published: parse(values.published).format(),
         createdBy: path(['value']),
         markingDefinitions: pluck('value'),
-        tags: pluck('value'),
+        labels: pluck('value'),
       },
       values,
     );
@@ -198,7 +198,7 @@ class ReportCreation extends Component {
                           report_class: '',
                           createdBy: '',
                           markingDefinitions: [],
-                          tags: [],
+                          labels: [],
                         }}
                         validationSchema={reportValidation(t)}
                         onSubmit={this.onSubmit.bind(this)}
@@ -261,11 +261,11 @@ class ReportCreation extends Component {
                               style={{ marginTop: 20, width: '100%' }}
                               setFieldValue={setFieldValue}
                             />
-                            <TagsField
-                              name="tags"
+                            <LabelsField
+                              name="labels"
                               style={{ marginTop: 20, width: '100%' }}
                               setFieldValue={setFieldValue}
-                              values={values.tags}
+                              values={values.labels}
                             />
                             <MarkingDefinitionsField
                               name="markingDefinitions"

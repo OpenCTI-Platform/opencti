@@ -18,7 +18,7 @@ import {
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ReportAddObservableRefs from './ReportAddObservableRefs';
-import StixObservablesRightBar from '../signatures/stix_observables/StixObservablesRightBar';
+import StixCyberObservablesRightBar from '../signatures/stix_observables/StixCyberObservablesRightBar';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 const styles = () => ({
@@ -154,7 +154,7 @@ class ReportObservablesComponent extends Component {
             paginationOptions={paginationOptions}
           />
         </Security>
-        <StixObservablesRightBar
+        <StixCyberObservablesRightBar
           types={types}
           handleToggle={this.handleToggle.bind(this)}
           openExports={openExports}

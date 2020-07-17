@@ -12,9 +12,9 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
 import { ShieldSearch } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
-import StixRelationPopover from '../../common/stix_core_relationships/StixRelationPopover';
+import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 import ItemPatternType from '../../../../components/ItemPatternType';
-import StixObjectTags from '../../common/stix_object/StixObjectTags';
+import StixObjectLabels from '../../common/stix_object/StixObjectLabels';
 import ItemMarking from '../../../../components/ItemMarking';
 
 const styles = (theme) => ({
@@ -85,9 +85,9 @@ class EntityIndicatorLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.labels.width }}
               >
-                <StixObjectTags variant="inList" tags={node.to.tags} />
+                <StixObjectLabels variant="inList" labels={node.to.labels} />
               </div>
               <div
                 className={classes.bodyItem}
@@ -120,8 +120,8 @@ class EntityIndicatorLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <StixRelationPopover
-            stixRelationId={node.id}
+          <StixCoreRelationshipPopover
+            stixCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
             disabled={node.inferred}
           />
@@ -145,7 +145,7 @@ const EntityIndicatorLineFragment = createFragmentContainer(
   EntityIndicatorLineComponent,
   {
     node: graphql`
-      fragment EntityIndicatorLine_node on StixRelation {
+      fragment EntityIndicatorLine_node on StixCoreRelationship {
         id
         weight
         first_seen
@@ -172,11 +172,11 @@ const EntityIndicatorLineFragment = createFragmentContainer(
                 }
               }
             }
-            tags {
+            labels {
               edges {
                 node {
                   id
-                  tag_type
+                  label_type
                   value
                   color
                 }
@@ -222,7 +222,7 @@ class EntityIndicatorLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.labels.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>

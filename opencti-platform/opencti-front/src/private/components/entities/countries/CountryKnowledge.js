@@ -6,9 +6,9 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
-import EntityStixRelations from '../../common/stix_core_relationships/EntityStixCoreRelationships';
+import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
-import StixRelation from '../../common/stix_core_relationships/StixRelation';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import CountryPopover from './CountryPopover';
 import CountryKnowledgeBar from './CountryKnowledgeBar';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -35,7 +35,7 @@ class CountryKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/countries/:countryId/knowledge/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
+            <StixCoreRelationship
               entityId={country.id}
               paddingRight={true}
               {...routeProps}
@@ -57,7 +57,7 @@ class CountryKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/countries/:countryId/knowledge/cities"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={country.id}
               relationType="localization"
               targetEntityTypes={['City']}
@@ -71,7 +71,7 @@ class CountryKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/countries/:countryId/knowledge/organizations"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={country.id}
               relationType="localization"
               targetEntityTypes={['Organization']}
@@ -85,7 +85,7 @@ class CountryKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/countries/:countryId/knowledge/threats"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={country.id}
               relationType="targets"
               targetEntityTypes={[

@@ -6,7 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixObservableRelationEditionOverview from './StixObservableRelationEditionOverview';
+import StixCyberObservableRelationEditionOverview from './StixCyberObservableRelationEditionOverview';
 import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
@@ -24,27 +24,27 @@ const styles = (theme) => ({
   },
 });
 
-const stixObservableRelationEditionQuery = graphql`
-  query StixObservableRelationEditionQuery($id: String!) {
-    stixObservableRelation(id: $id) {
-      ...StixObservableRelationEditionOverview_stixObservableRelation
+const stixCyberObservableRelationEditionQuery = graphql`
+  query StixCyberObservableRelationEditionQuery($id: String!) {
+    stixCyberObservableRelation(id: $id) {
+      ...StixCyberObservableRelationEditionOverview_stixCyberObservableRelation
     }
   }
 `;
 
-export const stixObservableRelationEditionDeleteMutation = graphql`
-  mutation StixObservableRelationEditionDeleteMutation($id: ID!) {
-    stixObservableRelationEdit(id: $id) {
+export const stixCyberObservableRelationEditionDeleteMutation = graphql`
+  mutation StixCyberObservableRelationEditionDeleteMutation($id: ID!) {
+    stixCyberObservableRelationEdit(id: $id) {
       delete
     }
   }
 `;
 
-class StixObservableRelationEdition extends Component {
+class StixCyberObservableRelationEdition extends Component {
   render() {
     const {
       classes,
-      stixObservableRelationId,
+      stixCyberObservableRelationId,
       stixDomainObject,
       open,
       handleClose,
@@ -55,16 +55,16 @@ class StixObservableRelationEdition extends Component {
         anchor="right"
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose.bind(this)}>
-        {stixObservableRelationId ? (
+        {stixCyberObservableRelationId ? (
           <QueryRenderer
-            query={stixObservableRelationEditionQuery}
-            variables={{ id: stixObservableRelationId }}
+            query={stixCyberObservableRelationEditionQuery}
+            variables={{ id: stixCyberObservableRelationId }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixObservableRelationEditionOverview
+                  <StixCyberObservableRelationEditionOverview
                     stixDomainObject={stixDomainObject}
-                    stixObservableRelation={props.stixObservableRelation}
+                    stixCyberObservableRelation={props.stixCyberObservableRelation}
                     handleClose={handleClose.bind(this)}
                     handleDelete={
                       typeof handleDelete === 'function'
@@ -85,8 +85,8 @@ class StixObservableRelationEdition extends Component {
   }
 }
 
-StixObservableRelationEdition.propTypes = {
-  stixObservableRelationId: PropTypes.string,
+StixCyberObservableRelationEdition.propTypes = {
+  stixCyberObservableRelationId: PropTypes.string,
   stixDomainObject: PropTypes.object,
   open: PropTypes.bool,
   handleClose: PropTypes.func,
@@ -99,4 +99,4 @@ StixObservableRelationEdition.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixObservableRelationEdition);
+)(StixCyberObservableRelationEdition);

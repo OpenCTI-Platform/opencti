@@ -11,10 +11,10 @@ import Drawer from '@material-ui/core/Drawer';
 import { DomainOutlined, MapOutlined, GroupOutlined } from '@material-ui/icons';
 import Loader from '../../../../components/Loader';
 import StixDomainObjectVictimologySectors, {
-  stixDomainObjectVictimologySectorsStixRelationsQuery,
+  stixDomainObjectVictimologySectorsStixCoreRelationshipsQuery,
 } from './StixDomainObjectVictimologySectors';
 import StixDomainObjectVictimologyRegions, {
-  stixDomainObjectVictimologyRegionsStixRelationsQuery,
+  stixDomainObjectVictimologyRegionsStixCoreRelationshipsQuery,
 } from './StixDomainObjectVictimologyRegions';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -22,7 +22,7 @@ import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
 } from '../../../../utils/ListParameters';
-import EntityStixRelations from '../stix_core_relationships/EntityStixCoreRelationships';
+import EntityStixCoreRelationships from '../stix_core_relationships/EntityStixCoreRelationships';
 
 const styles = (theme) => ({
   container: {
@@ -150,7 +150,7 @@ class StixDomainObjectVictimology extends Component {
         </Drawer>
         {type === 'sectors' ? (
           <QueryRenderer
-            query={stixDomainObjectVictimologySectorsStixRelationsQuery}
+            query={stixDomainObjectVictimologySectorsStixCoreRelationshipsQuery}
             variables={{ first: 500, ...paginationOptions }}
             render={({ props }) => {
               if (props) {
@@ -172,7 +172,7 @@ class StixDomainObjectVictimology extends Component {
         )}
         {type === 'regions' ? (
           <QueryRenderer
-            query={stixDomainObjectVictimologyRegionsStixRelationsQuery}
+            query={stixDomainObjectVictimologyRegionsStixCoreRelationshipsQuery}
             variables={{ first: 500, ...paginationOptions }}
             render={({ props }) => {
               if (props) {
@@ -193,7 +193,7 @@ class StixDomainObjectVictimology extends Component {
           ''
         )}
         {type === 'individuals' ? (
-          <EntityStixRelations
+          <EntityStixCoreRelationships
             entityId={stixDomainObjectId}
             targetEntityTypes={types}
             relationType="targets"

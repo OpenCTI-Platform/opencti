@@ -14,7 +14,7 @@ import * as PropTypes from 'prop-types';
 import { fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { identityCreationIdentitiesSearchQuery } from '../identities/IdentityCreation';
-import { tagsSearchQuery } from '../../settings/Tags';
+import { labelsSearchQuery } from '../../settings/Labels';
 import { attributesSearchQuery } from '../../settings/Attributes';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -62,22 +62,22 @@ class Filters extends Component {
   searchEntities(filterKey, event) {
     const { t } = this.props;
     switch (filterKey) {
-      case 'tags':
-        fetchQuery(tagsSearchQuery, {
+      case 'labels':
+        fetchQuery(labelsSearchQuery, {
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         }).then((data) => {
           const entities = pipe(
-            pathOr([], ['tags', 'edges']),
+            pathOr([], ['labels', 'edges']),
             map((n) => ({
               label: n.node.value,
               value: n.node.id,
-              type: 'tag',
+              type: 'label',
               color: n.node.color,
             })),
           )(data);
           this.setState({
-            entities: { tags: union(this.state.entities, entities) },
+            entities: { labels: union(this.state.entities, entities) },
           });
         });
         break;

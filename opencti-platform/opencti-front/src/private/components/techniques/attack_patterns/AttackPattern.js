@@ -13,7 +13,7 @@ import AttackPatternPopover from './AttackPatternPopover';
 import EntityExternalReferences from '../../common/external_references/EntityExternalReferences';
 import AttackPatternCoursesOfAction from './AttackPatternCoursesOfAction';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityStixRelationsChart from '../../common/stix_core_relationships/EntityStixRelationsChart';
+import EntityStixCoreRelationshipsChart from '../../common/stix_core_relationships/EntityStixCoreRelationshipsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
@@ -60,7 +60,7 @@ class AttackPatternComponent extends Component {
             <AttackPatternCoursesOfAction attackPattern={attackPattern} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityStixRelationsChart
+            <EntityStixCoreRelationshipsChart
               entityId={attackPattern.id}
               relationType="uses"
             />

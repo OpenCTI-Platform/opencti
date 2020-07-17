@@ -12,7 +12,7 @@ import IntrusionSetEdition from './IntrusionSetEdition';
 import IntrusionSetPopover from './IntrusionSetPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import EntityStixRelationsDonut from '../../common/stix_core_relationships/EntityStixRelationsDonut';
+import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityCampaignsChart from '../campaigns/EntityCampaignsChart';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
@@ -65,7 +65,7 @@ class IntrusionSetComponent extends Component {
             />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityStixRelationsDonut
+            <EntityStixCoreRelationshipsDonut
               entityId={intrusionSet.id}
               entityType="Indicator"
               relationType="indicates"

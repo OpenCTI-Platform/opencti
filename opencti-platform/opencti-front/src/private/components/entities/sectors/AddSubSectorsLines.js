@@ -29,7 +29,7 @@ const addSubSectorsLinesMutationRelationAdd = graphql`
   mutation AddSubSectorsLinesRelationAddMutation(
     $input: StixMetaRelationshipAddInput
   ) {
-    stixRelationAdd(input: $input) {
+    stixCoreRelationshipAdd(input: $input) {
       to {
         ...SectorSubSectors_sector
       }
@@ -39,7 +39,7 @@ const addSubSectorsLinesMutationRelationAdd = graphql`
 
 export const addSubSectorsMutationRelationDelete = graphql`
   mutation AddSubSectorsLinesRelationDeleteMutation($id: ID!) {
-    stixRelationEdit(id: $id) {
+    stixCoreRelationshipEdit(id: $id) {
       delete
     }
   }

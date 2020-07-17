@@ -20,7 +20,7 @@ class ThreatActorsCards extends Component {
   }
 
   render() {
-    const { initialLoading, relay, onTagClick } = this.props;
+    const { initialLoading, relay, onLabelClick } = this.props;
     return (
       <ListCardsContent
         initialLoading={initialLoading}
@@ -36,7 +36,7 @@ class ThreatActorsCards extends Component {
         CardComponent={<ThreatActorCard />}
         DummyCardComponent={<ThreatActorCardDummy />}
         nbOfCardsToLoad={nbOfCardsToLoad}
-        onTagClick={onTagClick.bind(this)}
+        onLabelClick={onLabelClick.bind(this)}
       />
     );
   }
@@ -47,7 +47,7 @@ ThreatActorsCards.propTypes = {
   connectorsExport: PropTypes.array,
   relay: PropTypes.object,
   initialLoading: PropTypes.bool,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
 };
 

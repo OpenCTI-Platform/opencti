@@ -8,8 +8,8 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import CountryPopover from './CountryPopover';
-import StixRelation from '../../common/stix_core_relationships/StixRelation';
-import EntityStixObservables from '../../signatures/stix_observables/EntityStixObservables';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
+import EntityStixCyberObservables from '../../signatures/stix_observables/EntityStixCyberObservables';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = () => ({
@@ -52,7 +52,7 @@ class CountryObservablesComponent extends Component {
           exact
           path="/dashboard/entities/countries/:countryId/observables/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
+            <StixCoreRelationship
               entityId={country.id}
               {...routeProps}
             />
@@ -63,7 +63,7 @@ class CountryObservablesComponent extends Component {
           path="/dashboard/entities/countries/:countryId/observables"
           render={(routeProps) => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
-              <EntityStixObservables
+              <EntityStixCyberObservables
                 entityId={country.id}
                 relationType="localization"
                 entityLink={link}

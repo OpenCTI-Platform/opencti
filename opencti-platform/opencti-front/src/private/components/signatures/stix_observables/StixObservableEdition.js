@@ -11,8 +11,8 @@ import {
   QueryRenderer,
 } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import StixObservableEditionContainer from './StixObservableEditionContainer';
-import { stixObservableEditionOverviewFocus } from './StixObservableEditionOverview';
+import StixCyberObservableEditionContainer from './StixCyberObservableEditionContainer';
+import { stixCyberObservableEditionOverviewFocus } from './StixCyberObservableEditionOverview';
 import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
@@ -35,15 +35,15 @@ const styles = (theme) => ({
   },
 });
 
-export const stixObservableEditionQuery = graphql`
-  query StixObservableEditionContainerQuery($id: String!) {
-    stixObservable(id: $id) {
-      ...StixObservableEditionContainer_stixObservable
+export const stixCyberObservableEditionQuery = graphql`
+  query StixCyberObservableEditionContainerQuery($id: String!) {
+    stixCyberObservable(id: $id) {
+      ...StixCyberObservableEditionContainer_stixCyberObservable
     }
   }
 `;
 
-class StixObservableEdition extends Component {
+class StixCyberObservableEdition extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false };
@@ -55,9 +55,9 @@ class StixObservableEdition extends Component {
 
   handleClose() {
     commitMutation({
-      mutation: stixObservableEditionOverviewFocus,
+      mutation: stixCyberObservableEditionOverviewFocus,
       variables: {
-        id: this.props.stixObservableId,
+        id: this.props.stixCyberObservableId,
         input: { focusOn: '' },
       },
     });
@@ -65,7 +65,7 @@ class StixObservableEdition extends Component {
   }
 
   render() {
-    const { classes, stixObservableId } = this.props;
+    const { classes, stixCyberObservableId } = this.props;
     return (
       <div>
         <Fab
@@ -81,13 +81,13 @@ class StixObservableEdition extends Component {
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}>
           <QueryRenderer
-            query={stixObservableEditionQuery}
-            variables={{ id: stixObservableId }}
+            query={stixCyberObservableEditionQuery}
+            variables={{ id: stixCyberObservableId }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixObservableEditionContainer
-                    stixObservable={props.stixObservable}
+                  <StixCyberObservableEditionContainer
+                    stixCyberObservable={props.stixCyberObservable}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );
@@ -101,8 +101,8 @@ class StixObservableEdition extends Component {
   }
 }
 
-StixObservableEdition.propTypes = {
-  stixObservableId: PropTypes.string,
+StixCyberObservableEdition.propTypes = {
+  stixCyberObservableId: PropTypes.string,
   me: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
@@ -112,4 +112,4 @@ StixObservableEdition.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(StixObservableEdition);
+)(StixCyberObservableEdition);

@@ -4,13 +4,13 @@ import { compose, filter, append } from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ListLines from '../../../../components/list_lines/ListLines';
-import EntityStixObservablesLines, {
-  entityStixObservablesLinesQuery,
-} from './EntityStixObservablesLines';
-import StixObservablesRightBar from './StixObservablesRightBar';
-import StixRelationCreationFromEntity from '../../common/stix_core_relationships/StixRelationCreationFromEntity';
+import EntityStixCyberObservablesLines, {
+  entityStixCyberObservablesLinesQuery,
+} from './EntityStixCyberObservablesLines';
+import StixCyberObservablesRightBar from './StixCyberObservablesRightBar';
+import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 
-class EntityStixObservables extends Component {
+class EntityStixCyberObservables extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -82,10 +82,10 @@ class EntityStixObservables extends Component {
         secondaryAction={true}
       >
         <QueryRenderer
-          query={entityStixObservablesLinesQuery}
+          query={entityStixCyberObservablesLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
-            <EntityStixObservablesLines
+            <EntityStixCyberObservablesLines
               data={props}
               paginationOptions={paginationOptions}
               entityLink={entityLink}
@@ -114,7 +114,7 @@ class EntityStixObservables extends Component {
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <StixRelationCreationFromEntity
+        <StixCoreRelationshipCreationFromEntity
           entityId={entityId}
           targetEntityTypes={['Stix-Observable']}
           allowedRelationshipTypes={[relationType]}
@@ -123,7 +123,7 @@ class EntityStixObservables extends Component {
           paddingRight={true}
           paginationOptions={paginationOptions}
         />
-        <StixObservablesRightBar
+        <StixCyberObservablesRightBar
           types={targetEntityTypes}
           handleToggle={this.handleToggle.bind(this)}
         />
@@ -132,7 +132,7 @@ class EntityStixObservables extends Component {
   }
 }
 
-EntityStixObservables.propTypes = {
+EntityStixCyberObservables.propTypes = {
   entityId: PropTypes.string,
   relationType: PropTypes.string,
   entityLink: PropTypes.string,
@@ -141,4 +141,4 @@ EntityStixObservables.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(inject18n)(EntityStixObservables);
+export default compose(inject18n)(EntityStixCyberObservables);

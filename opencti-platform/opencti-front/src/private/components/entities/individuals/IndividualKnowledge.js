@@ -6,9 +6,9 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
-import EntityStixRelations from '../../common/stix_core_relationships/EntityStixCoreRelationships';
+import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
-import StixRelation from '../../common/stix_core_relationships/StixRelation';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import IndividualPopover from './IndividualPopover';
 import IndividualKnowledgeBar from './IndividualKnowledgeBar';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -35,7 +35,7 @@ class IndividualKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/individuals/:individualId/knowledge/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
+            <StixCoreRelationship
               entityId={individual.id}
               paddingRight={true}
               {...routeProps}
@@ -57,7 +57,7 @@ class IndividualKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/individuals/:individualId/knowledge/organizations"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={individual.id}
               relationType="gathering"
               targetEntityTypes={['Organization']}
@@ -71,7 +71,7 @@ class IndividualKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/individuals/:individualId/knowledge/locations"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={individual.id}
               relationType="localization"
               targetEntityTypes={['City', 'Country', 'Region']}
@@ -85,7 +85,7 @@ class IndividualKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/individuals/:individualId/knowledge/threats"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={individual.id}
               relationType="targets"
               targetEntityTypes={[
@@ -106,7 +106,7 @@ class IndividualKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/individuals/:organizationId/knowledge/attribution"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={individual.id}
               relationType="attributed-to"
               targetEntityTypes={[

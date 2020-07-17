@@ -113,13 +113,13 @@ class EntityLastReports extends Component {
       nsd,
       classes,
       entityId,
-      stixObservableId,
+      stixCyberObservableId,
       authorId,
     } = this.props;
     const filters = [];
     if (authorId) filters.push({ key: 'createdBy', values: [authorId] });
     if (entityId) filters.push({ key: 'knowledgeContains', values: [entityId] });
-    if (stixObservableId) filters.push({ key: 'observablesContains', values: [stixObservableId] });
+    if (stixCyberObservableId) filters.push({ key: 'observablesContains', values: [stixCyberObservableId] });
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -228,7 +228,7 @@ class EntityLastReports extends Component {
 
 EntityLastReports.propTypes = {
   entityId: PropTypes.string,
-  stixObservableId: PropTypes.string,
+  stixCyberObservableId: PropTypes.string,
   authorId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,

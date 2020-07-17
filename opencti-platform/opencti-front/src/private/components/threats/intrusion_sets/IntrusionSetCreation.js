@@ -18,7 +18,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
-import TagsField from '../../common/form/TagsField';
+import LabelsField from '../../common/form/LabelsField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
 const styles = (theme) => ({
@@ -109,7 +109,7 @@ class IntrusionSetCreation extends Component {
       {
         createdBy: path(['value']),
         markingDefinitions: pluck('value'),
-        tags: pluck('value'),
+        labels: pluck('value'),
       },
       values,
     );
@@ -177,7 +177,7 @@ class IntrusionSetCreation extends Component {
                 description: '',
                 createdBy: '',
                 markingDefinitions: [],
-                tags: [],
+                labels: [],
               }}
               validationSchema={intrusionSetValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -217,11 +217,11 @@ class IntrusionSetCreation extends Component {
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />
-                  <TagsField
-                    name="tags"
+                  <LabelsField
+                    name="labels"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
-                    values={values.tags}
+                    values={values.labels}
                   />
                   <MarkingDefinitionsField
                     name="markingDefinitions"

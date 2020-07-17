@@ -7,41 +7,41 @@ import {
   requestSubscription,
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
-import StixRelation from '../../common/stix_core_relationships/StixRelation';
-import StixObservable from './StixObservable';
-import StixObservableLinks from './StixObservableLinks';
-import StixObservableKnowledge from './StixObservableKnowledge';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
+import StixCyberObservable from './StixCyberObservable';
+import StixCyberObservableLinks from './StixCyberObservableLinks';
+import StixCyberObservableKnowledge from './StixCyberObservableKnowledge';
 import Loader from '../../../../components/Loader';
 import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
-import StixObservableHeader from './StixObservableHeader';
+import StixCyberObservableHeader from './StixCyberObservableHeader';
 import EntityStixSightings from '../../common/stix_sightings/EntityStixSightings';
 
 const subscription = graphql`
-  subscription RootStixObservableSubscription($id: ID!) {
-    stixObservable(id: $id) {
-      ...StixObservable_stixObservable
-      ...StixObservableEditionContainer_stixObservable
-      ...StixObservableKnowledge_stixObservable
-      ...StixObservableLinks_stixObservable
+  subscription RootStixCyberObservableSubscription($id: ID!) {
+    stixCyberObservable(id: $id) {
+      ...StixCyberObservable_stixCyberObservable
+      ...StixCyberObservableEditionContainer_stixCyberObservable
+      ...StixCyberObservableKnowledge_stixCyberObservable
+      ...StixCyberObservableLinks_stixCyberObservable
     }
   }
 `;
 
-const stixObservableQuery = graphql`
-  query RootStixObservableQuery($id: String!) {
-    stixObservable(id: $id) {
-      ...StixObservable_stixObservable
-      ...StixObservableHeader_stixObservable
-      ...StixObservableOverview_stixObservable
-      ...StixObservableDetails_stixObservable
-      ...StixObservableIndicators_stixObservable
-      ...StixObservableKnowledge_stixObservable
-      ...StixObservableLinks_stixObservable
+const stixCyberObservableQuery = graphql`
+  query RootStixCyberObservableQuery($id: String!) {
+    stixCyberObservable(id: $id) {
+      ...StixCyberObservable_stixCyberObservable
+      ...StixCyberObservableHeader_stixCyberObservable
+      ...StixCyberObservableOverview_stixCyberObservable
+      ...StixCyberObservableDetails_stixCyberObservable
+      ...StixCyberObservableIndicators_stixCyberObservable
+      ...StixCyberObservableKnowledge_stixCyberObservable
+      ...StixCyberObservableLinks_stixCyberObservable
     }
   }
 `;
 
-class RootStixObservable extends Component {
+class RootStixCyberObservable extends Component {
   componentDidMount() {
     const {
       match: {
@@ -70,19 +70,19 @@ class RootStixObservable extends Component {
       <div>
         <TopBar me={me || null} />
         <QueryRenderer
-          query={stixObservableQuery}
+          query={stixCyberObservableQuery}
           variables={{ id: observableId, relationType: 'indicates' }}
           render={({ props }) => {
-            if (props && props.stixObservable) {
+            if (props && props.stixCyberObservable) {
               return (
                 <div>
                   <Route
                     exact
                     path="/dashboard/signatures/observables/:observableId"
                     render={(routeProps) => (
-                      <StixObservable
+                      <StixCyberObservable
                         {...routeProps}
-                        stixObservable={props.stixObservable}
+                        stixCyberObservable={props.stixCyberObservable}
                       />
                     )}
                   />
@@ -90,9 +90,9 @@ class RootStixObservable extends Component {
                     exact
                     path="/dashboard/signatures/observables/:observableId/links"
                     render={(routeProps) => (
-                      <StixObservableLinks
+                      <StixCyberObservableLinks
                         {...routeProps}
-                        stixObservable={props.stixObservable}
+                        stixCyberObservable={props.stixCyberObservable}
                       />
                     )}
                   />
@@ -100,9 +100,9 @@ class RootStixObservable extends Component {
                     exact
                     path="/dashboard/signatures/observables/:observableId/knowledge"
                     render={(routeProps) => (
-                      <StixObservableKnowledge
+                      <StixCyberObservableKnowledge
                         {...routeProps}
-                        stixObservable={props.stixObservable}
+                        stixCyberObservable={props.stixCyberObservable}
                       />
                     )}
                   />
@@ -111,8 +111,8 @@ class RootStixObservable extends Component {
                     path="/dashboard/signatures/observables/:observableId/sightings"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixObservableHeader
-                          stixObservable={props.stixObservable}
+                        <StixCyberObservableHeader
+                          stixCyberObservable={props.stixCyberObservable}
                         />
                         <EntityStixSightings
                           {...routeProps}
@@ -133,8 +133,8 @@ class RootStixObservable extends Component {
                     path="/dashboard/signatures/observables/:observableId/history"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixObservableHeader
-                          stixObservable={props.stixObservable}
+                        <StixCyberObservableHeader
+                          stixCyberObservable={props.stixCyberObservable}
                         />
                         <StixObjectHistory
                           {...routeProps}
@@ -147,7 +147,7 @@ class RootStixObservable extends Component {
                     exact
                     path="/dashboard/signatures/observables/:observableId/knowledge/relations/:relationId"
                     render={(routeProps) => (
-                      <StixRelation entityId={observableId} {...routeProps} />
+                      <StixCoreRelationship entityId={observableId} {...routeProps} />
                     )}
                   />
                 </div>
@@ -161,10 +161,10 @@ class RootStixObservable extends Component {
   }
 }
 
-RootStixObservable.propTypes = {
+RootStixCyberObservable.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
   me: PropTypes.object,
 };
 
-export default withRouter(RootStixObservable);
+export default withRouter(RootStixCyberObservable);

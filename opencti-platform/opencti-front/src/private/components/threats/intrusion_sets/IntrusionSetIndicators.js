@@ -7,7 +7,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import IntrusionSetPopover from './IntrusionSetPopover';
-import StixRelation from '../../common/stix_core_relationships/StixRelation';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import EntityIndicators from '../../signatures/indicators/EntityIndicators';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
@@ -73,7 +73,7 @@ class IntrusionSetIndicatorsComponent extends Component {
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/indicators/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation entityId={intrusionSet.id} {...routeProps} />
+            <StixCoreRelationship entityId={intrusionSet.id} {...routeProps} />
           )}
         />
         <Route

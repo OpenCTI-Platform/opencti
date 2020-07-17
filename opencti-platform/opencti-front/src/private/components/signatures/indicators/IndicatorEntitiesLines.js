@@ -42,10 +42,10 @@ class IndicatorEntitiesLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['stixRelations', 'edges'], this.props.data)}
+        dataList={pathOr([], ['stixCoreRelationships', 'edges'], this.props.data)}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['stixRelations', 'pageInfo', 'globalCount'],
+          ['stixCoreRelationships', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
         LineComponent={
@@ -73,7 +73,7 @@ IndicatorEntitiesLines.propTypes = {
   entityId: PropTypes.string,
   data: PropTypes.object,
   relay: PropTypes.object,
-  stixRelations: PropTypes.object,
+  stixCoreRelationships: PropTypes.object,
   initialLoading: PropTypes.bool,
   entityLink: PropTypes.string,
   displayRelation: PropTypes.bool,
@@ -134,7 +134,7 @@ export default createPaginationContainer(
           orderBy: { type: "StixCoreRelationshipsOrdering", defaultValue: "start_time" }
           orderMode: { type: "OrderingMode" }
         ) {
-        stixRelations(
+        stixCoreRelationships(
           fromId: $fromId
           inferred: $inferred
           relationType: $relationType
@@ -148,7 +148,7 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
-        ) @connection(key: "Pagination_stixRelations") {
+        ) @connection(key: "Pagination_stixCoreRelationships") {
           edges {
             node {
               ...IndicatorEntityLine_node
@@ -166,7 +166,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.stixRelations;
+      return props.data && props.data.stixCoreRelationships;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {

@@ -49,7 +49,7 @@ const styles = (theme) => ({
   },
 });
 
-class StixObservableRelationCreationFromEntityLinesContainer extends Component {
+class StixCyberObservableRelationCreationFromEntityLinesContainer extends Component {
   constructor(props) {
     super(props);
     this.state = { expandedPanels: {} };
@@ -75,21 +75,21 @@ class StixObservableRelationCreationFromEntityLinesContainer extends Component {
     const {
       t, classes, data, handleSelect,
     } = this.props;
-    const stixObservablesNodes = map((n) => n.node, data.stixObservables.edges);
-    const byType = groupBy((stixObservable) => stixObservable.entity_type);
-    const stixObservables = byType(stixObservablesNodes);
-    const stixObservablesTypes = keys(stixObservables);
+    const stixCyberObservablesNodes = map((n) => n.node, data.stixCyberObservables.edges);
+    const byType = groupBy((stixCyberObservable) => stixCyberObservable.entity_type);
+    const stixCyberObservables = byType(stixCyberObservablesNodes);
+    const stixCyberObservablesTypes = keys(stixCyberObservables);
 
     return (
       <div className={classes.container}>
-        {stixObservablesTypes.length > 0 ? (
-          stixObservablesTypes.map((type) => (
+        {stixCyberObservablesTypes.length > 0 ? (
+          stixCyberObservablesTypes.map((type) => (
             <ExpansionPanel
               key={type}
               expanded={this.isExpanded(
                 type,
-                stixObservables[type].length,
-                stixObservablesTypes.length,
+                stixCyberObservables[type].length,
+                stixCyberObservablesTypes.length,
               )}
               onChange={this.handleChangePanel.bind(this, type)}
               classes={{ root: classes.expansionPanel }}
@@ -99,26 +99,26 @@ class StixObservableRelationCreationFromEntityLinesContainer extends Component {
                   {t(`observable_${type}`)}
                 </Typography>
                 <Typography className={classes.secondaryHeading}>
-                  {stixObservables[type].length} {t('entitie(s)')}
+                  {stixCyberObservables[type].length} {t('entitie(s)')}
                 </Typography>
               </ExpansionPanelSummary>
               <ExpansionPanelDetails
                 classes={{ root: classes.expansionPanelContent }}
               >
                 <List classes={{ root: classes.list }}>
-                  {stixObservables[type].map((stixObservable) => (
+                  {stixCyberObservables[type].map((stixCyberObservable) => (
                     <ListItem
-                      key={stixObservable.id}
+                      key={stixCyberObservable.id}
                       classes={{ root: classes.menuItem }}
                       divider={true}
                       button={true}
-                      onClick={handleSelect.bind(this, stixObservable)}
+                      onClick={handleSelect.bind(this, stixCyberObservable)}
                     >
                       <ListItemIcon>
                         <ItemIcon type={type} />
                       </ListItemIcon>
                       <ListItemText
-                        primary={truncate(stixObservable.observable_value, 100)}
+                        primary={truncate(stixCyberObservable.observable_value, 100)}
                       />
                     </ListItem>
                   ))}
@@ -136,7 +136,7 @@ class StixObservableRelationCreationFromEntityLinesContainer extends Component {
   }
 }
 
-StixObservableRelationCreationFromEntityLinesContainer.propTypes = {
+StixCyberObservableRelationCreationFromEntityLinesContainer.propTypes = {
   handleSelect: PropTypes.func,
   data: PropTypes.object,
   limit: PropTypes.number,
@@ -145,8 +145,8 @@ StixObservableRelationCreationFromEntityLinesContainer.propTypes = {
   fld: PropTypes.func,
 };
 
-export const stixObservableRelationCreationFromEntityLinesQuery = graphql`
-  query StixObservableRelationCreationFromEntityLinesQuery(
+export const stixCyberObservableRelationCreationFromEntityLinesQuery = graphql`
+  query StixCyberObservableRelationCreationFromEntityLinesQuery(
     $search: String
     $types: [String]
     $count: Int!
@@ -154,7 +154,7 @@ export const stixObservableRelationCreationFromEntityLinesQuery = graphql`
     $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode
   ) {
-    ...StixObservableRelationCreationFromEntityLines_data
+    ...StixCyberObservableRelationCreationFromEntityLines_data
       @arguments(
         search: $search
         types: $types
@@ -166,11 +166,11 @@ export const stixObservableRelationCreationFromEntityLinesQuery = graphql`
   }
 `;
 
-const StixObservableRelationCreationFromEntityLines = createPaginationContainer(
-  StixObservableRelationCreationFromEntityLinesContainer,
+const StixCyberObservableRelationCreationFromEntityLines = createPaginationContainer(
+  StixCyberObservableRelationCreationFromEntityLinesContainer,
   {
     data: graphql`
-      fragment StixObservableRelationCreationFromEntityLines_data on Query
+      fragment StixCyberObservableRelationCreationFromEntityLines_data on Query
         @argumentDefinitions(
           search: { type: "String" }
           types: { type: "[String]" }
@@ -179,14 +179,14 @@ const StixObservableRelationCreationFromEntityLines = createPaginationContainer(
           orderBy: { type: "StixCyberObservablesOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
-        stixObservables(
+        stixCyberObservables(
           search: $search
           types: $types
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
-        ) @connection(key: "Pagination_stixObservables") {
+        ) @connection(key: "Pagination_stixCyberObservables") {
           edges {
             node {
               id
@@ -201,7 +201,7 @@ const StixObservableRelationCreationFromEntityLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.stixObservables;
+      return props.data && props.data.stixCyberObservables;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -219,11 +219,11 @@ const StixObservableRelationCreationFromEntityLines = createPaginationContainer(
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: stixObservableRelationCreationFromEntityLinesQuery,
+    query: stixCyberObservableRelationCreationFromEntityLinesQuery,
   },
 );
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixObservableRelationCreationFromEntityLines);
+)(StixCyberObservableRelationCreationFromEntityLines);

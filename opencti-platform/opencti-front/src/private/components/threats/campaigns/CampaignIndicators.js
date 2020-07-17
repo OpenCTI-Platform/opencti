@@ -8,7 +8,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import CampaignPopover from './CampaignPopover';
-import StixRelation from '../../common/stix_core_relationships/StixRelation';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import EntityIndicators from '../../signatures/indicators/EntityIndicators';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
@@ -74,7 +74,7 @@ class CampaignIndicatorsComponent extends Component {
           exact
           path="/dashboard/threats/campaigns/:campaignId/indicators/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation entityId={campaign.id} {...routeProps} />
+            <StixCoreRelationship entityId={campaign.id} {...routeProps} />
           )}
         />
         <Route

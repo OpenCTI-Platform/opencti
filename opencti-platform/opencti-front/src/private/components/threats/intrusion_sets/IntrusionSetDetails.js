@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
-import StixDomainObjectTags from '../../common/stix_domain_objects/StixDomainObjectLabels';
+import StixDomainObjectLabels from '../../common/stix_domain_objects/StixDomainObjectLabels';
 import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
@@ -31,7 +31,7 @@ class IntrusionSetDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixDomainObjectTags tags={intrusionSet.tags} id={intrusionSet.id} />
+          <StixDomainObjectLabels labels={intrusionSet.labels} id={intrusionSet.id} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -141,11 +141,11 @@ const IntrusionSetDetails = createFragmentContainer(
           id
           name
         }
-        tags {
+        labels {
           edges {
             node {
               id
-              tag_type
+              label_type
               value
               color
             }

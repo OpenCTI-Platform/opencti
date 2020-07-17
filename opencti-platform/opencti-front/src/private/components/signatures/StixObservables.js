@@ -7,12 +7,12 @@ import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
-import StixObservablesLines, {
-  stixObservablesLinesQuery,
-} from './stix_observables/StixObservablesLines';
+import StixCyberObservablesLines, {
+  stixCyberObservablesLinesQuery,
+} from './stix_observables/StixCyberObservablesLines';
 import inject18n from '../../../components/i18n';
-import StixObservableCreation from './stix_observables/StixObservableCreation';
-import StixObservablesRightBar from './stix_observables/StixObservablesRightBar';
+import StixCyberObservableCreation from './stix_observables/StixCyberObservableCreation';
+import StixCyberObservablesRightBar from './stix_observables/StixCyberObservablesRightBar';
 import {
   buildViewParamsFromUrlAndStorage,
   convertFilters,
@@ -26,13 +26,13 @@ const styles = () => ({
   },
 });
 
-class StixObservables extends Component {
+class StixCyberObservables extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-stix_observables',
+      'view-stix_cyber_observables',
     );
     this.state = {
       sortBy: propOr('created_at', 'sortBy', params),
@@ -50,7 +50,7 @@ class StixObservables extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-stix_observables',
+      'view-stix_cyber_observables',
       dissoc('filters', this.state),
     );
   }
@@ -124,8 +124,8 @@ class StixObservables extends Component {
         width: '35%',
         isSortable: true,
       },
-      tags: {
-        label: 'Tags',
+      labels: {
+        label: 'Labels',
         width: '20%',
         isSortable: false,
       },
@@ -157,7 +157,7 @@ class StixObservables extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'tags',
+          'labels',
           'markingDefinitions',
           'created_at_start_date',
           'created_at_end_date',
@@ -165,15 +165,15 @@ class StixObservables extends Component {
         ]}
       >
         <QueryRenderer
-          query={stixObservablesLinesQuery}
+          query={stixCyberObservablesLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
-            <StixObservablesLines
+            <StixCyberObservablesLines
               data={props}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
-              onTagClick={this.handleAddFilter.bind(this)}
+              onLabelClick={this.handleAddFilter.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
@@ -205,12 +205,12 @@ class StixObservables extends Component {
       <div className={classes.container}>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixObservableCreation
+          <StixCyberObservableCreation
             paginationOptions={paginationOptions}
             openExports={openExports}
           />
         </Security>
-        <StixObservablesRightBar
+        <StixCyberObservablesRightBar
           types={observableTypes}
           handleToggle={this.handleToggle.bind(this)}
           openExports={openExports}
@@ -220,7 +220,7 @@ class StixObservables extends Component {
   }
 }
 
-StixObservables.propTypes = {
+StixCyberObservables.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
@@ -231,4 +231,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(StixObservables);
+)(StixCyberObservables);

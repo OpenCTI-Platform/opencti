@@ -20,7 +20,7 @@ class CampaignsCards extends Component {
   }
 
   render() {
-    const { initialLoading, relay, onTagClick } = this.props;
+    const { initialLoading, relay, onLabelClick } = this.props;
     return (
       <ListCardsContent
         initialLoading={initialLoading}
@@ -36,7 +36,7 @@ class CampaignsCards extends Component {
         CardComponent={<CampaignCard />}
         DummyCardComponent={<CampaignCardDummy />}
         nbOfCardsToLoad={nbOfCardsToLoad}
-        onTagClick={onTagClick.bind(this)}
+        onLabelClick={onLabelClick.bind(this)}
       />
     );
   }
@@ -46,7 +46,7 @@ CampaignsCards.propTypes = {
   data: PropTypes.object,
   relay: PropTypes.object,
   initialLoading: PropTypes.bool,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
 };
 

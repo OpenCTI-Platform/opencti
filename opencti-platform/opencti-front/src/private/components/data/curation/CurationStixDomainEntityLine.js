@@ -10,7 +10,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
-import StixObjectTags from '../../common/stix_object/StixObjectTags';
+import StixObjectLabels from '../../common/stix_object/StixObjectLabels';
 
 const styles = (theme) => ({
   item: {
@@ -50,7 +50,7 @@ class CurationStixDomainObjectLineComponent extends Component {
       classes,
       dataColumns,
       node,
-      onTagClick,
+      onLabelClick,
       onToggleEntity,
       selectedElements,
     } = this.props;
@@ -93,12 +93,12 @@ class CurationStixDomainObjectLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.labels.width }}
               >
-                <StixObjectTags
+                <StixObjectLabels
                   variant="inList"
-                  tags={node.tags}
-                  onClick={onTagClick.bind(this)}
+                  labels={node.labels}
+                  onClick={onLabelClick.bind(this)}
                 />
               </div>
               <div
@@ -135,7 +135,7 @@ CurationStixDomainObjectLineComponent.propTypes = {
   classes: PropTypes.object,
   fd: PropTypes.func,
   t: PropTypes.func,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
   onToggleEntity: PropTypes.func,
   selectedElements: PropTypes.object,
 };
@@ -164,11 +164,11 @@ const CurationStixDomainObjectLineFragment = createFragmentContainer(
             }
           }
         }
-        tags {
+        labels {
           edges {
             node {
               id
-              tag_type
+              label_type
               value
               color
             }
@@ -218,7 +218,7 @@ class CurationStixDomainObjectLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.labels.width }}
               >
                 <div className="fakeItem" style={{ width: '90%' }} />
               </div>

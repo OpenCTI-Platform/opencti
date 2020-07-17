@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { compose, propOr, pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../components/i18n';
-import EntityStixRelationsTable from '../common/stix_core_relationships/EntityStixRelationsTable';
+import EntityStixCoreRelationshipsTable from '../common/stix_core_relationships/EntityStixCoreRelationshipsTable';
 
 const styles = () => ({
   container: {
@@ -23,7 +23,7 @@ class AttackPatternsDistribution extends Component {
     switch (configuration.graph_type) {
       case 'table':
         return (
-          <EntityStixRelationsTable
+          <EntityStixCoreRelationshipsTable
             variant="explore"
             configuration={configuration}
             handleOpenConfig={handleOpenConfig.bind(this)}
@@ -39,7 +39,7 @@ class AttackPatternsDistribution extends Component {
         );
       default:
         return (
-          <EntityStixRelationsTable
+          <EntityStixCoreRelationshipsTable
             variant="explore"
             configuration={configuration}
             handleOpenConfig={handleOpenConfig.bind(this)}

@@ -30,9 +30,9 @@ import DatePickerField from '../../../../components/DatePickerField';
 import StixSightingCreationFromEntityStixDomainObjectsLines, {
   stixSightingCreationFromEntityStixDomainObjectsLinesQuery,
 } from './StixSightingCreationFromEntityStixDomainObjectsLines';
-import StixSightingCreationFromEntityStixObservablesLines, {
-  stixSightingCreationFromEntityStixObservablesLinesQuery,
-} from './StixSightingCreationFromEntityStixObservablesLines';
+import StixSightingCreationFromEntityStixCyberObservablesLines, {
+  stixSightingCreationFromEntityStixCyberObservablesLinesQuery,
+} from './StixSightingCreationFromEntityStixCyberObservablesLines';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import SearchInput from '../../../../components/SearchInput';
 import { truncate } from '../../../../utils/String';
@@ -185,7 +185,7 @@ const stixSightingCreationFromEntityQuery = graphql`
       parent_types
       name
       description
-      ... on StixObservable {
+      ... on StixCyberObservable {
         observable_value
       }
       ... on StixSighting {
@@ -393,7 +393,7 @@ class StixSightingCreationFromEntity extends Component {
             ''
           )}
           <QueryRenderer
-            query={stixSightingCreationFromEntityStixObservablesLinesQuery}
+            query={stixSightingCreationFromEntityStixCyberObservablesLinesQuery}
             variables={{
               search: this.state.search,
               types: targetEntityTypes,
@@ -404,7 +404,7 @@ class StixSightingCreationFromEntity extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixSightingCreationFromEntityStixObservablesLines
+                  <StixSightingCreationFromEntityStixCyberObservablesLines
                     handleSelect={this.handleSelectEntity.bind(this)}
                     data={props}
                   />
@@ -699,7 +699,7 @@ class StixSightingCreationFromEntity extends Component {
         {variant === 'inLine' ? (
           <IconButton
             color="secondary"
-            aria-label="Tag"
+            aria-label="Label"
             onClick={this.handleOpen.bind(this)}
             style={{ float: 'left', margin: '-15px 0 0 -2px' }}
           >

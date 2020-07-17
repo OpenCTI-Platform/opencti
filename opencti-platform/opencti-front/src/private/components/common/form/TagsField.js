@@ -4,12 +4,12 @@ import {
 } from 'ramda';
 import { Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
-import { Tag } from 'mdi-material-ui';
+import { Label } from 'mdi-material-ui';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
-import { tagsSearchQuery } from '../../settings/Tags';
-import TagCreation from '../../settings/tags/TagCreation';
+import { labelsSearchQuery } from '../../settings/Labels';
+import LabelCreation from '../../settings/labels/LabelCreation';
 
 const styles = () => ({
   icon: {
@@ -26,33 +26,33 @@ const styles = () => ({
   },
 });
 
-class TagsField extends Component {
+class LabelsField extends Component {
   constructor(props) {
     super(props);
-    this.state = { tagCreation: false, tagInput: '', tags: [] };
+    this.state = { labelCreation: false, labelInput: '', labels: [] };
   }
 
-  handleOpenTagCreation() {
-    this.setState({ tagCreation: true });
+  handleOpenLabelCreation() {
+    this.setState({ labelCreation: true });
   }
 
-  handleCloseTagCreation() {
-    this.setState({ tagCreation: false });
+  handleCloseLabelCreation() {
+    this.setState({ labelCreation: false });
   }
 
-  searchTags(event) {
+  searchLabels(event) {
     this.setState({
-      tagInput: event && event.target.value !== 0 ? event.target.value : '',
+      labelInput: event && event.target.value !== 0 ? event.target.value : '',
     });
-    fetchQuery(tagsSearchQuery, {
+    fetchQuery(labelsSearchQuery, {
       search: event && event.target.value !== 0 ? event.target.value : '',
     }).then((data) => {
-      const tags = pipe(
-        pathOr([], ['tags', 'edges']),
+      const labels = pipe(
+        pathOr([], ['labels', 'edges']),
         map((n) => ({ label: n.node.value, value: n.node.id, color: n.node.color })),
       )(data);
       this.setState({
-        tags: union(this.state.tags, tags),
+        labels: union(this.state.labels, labels),
       });
     });
   }
@@ -75,36 +75,36 @@ class TagsField extends Component {
           name={name}
           multiple={true}
           textfieldprops={{
-            label: t('Tags'),
+            label: t('Labels'),
             helperText: helpertext,
-            onFocus: this.searchTags.bind(this),
+            onFocus: this.searchLabels.bind(this),
           }}
           noOptionsText={t('No available options')}
-          options={this.state.tags}
-          onInputChange={this.searchTags.bind(this)}
-          openCreate={this.handleOpenTagCreation.bind(this)}
+          options={this.state.labels}
+          onInputChange={this.searchLabels.bind(this)}
+          openCreate={this.handleOpenLabelCreation.bind(this)}
           renderOption={(option) => (
             <React.Fragment>
               <div className={classes.icon} style={{ color: option.color }}>
-                <Tag />
+                <Label />
               </div>
               <div className={classes.text}>{option.label}</div>
             </React.Fragment>
           )}
           classes={{ clearIndicator: classes.autoCompleteIndicator }}
         />
-        <TagCreation
+        <LabelCreation
           contextual={true}
-          inputValue={this.state.tagInput}
-          open={this.state.tagCreation}
-          handleClose={this.handleCloseTagCreation.bind(this)}
+          inputValue={this.state.labelInput}
+          open={this.state.labelCreation}
+          handleClose={this.handleCloseLabelCreation.bind(this)}
           creationCallback={(data) => {
             setFieldValue(
               name,
               append(
                 {
-                  label: data.tagAdd.value,
-                  value: data.tagAdd.id,
+                  label: data.labelAdd.value,
+                  value: data.labelAdd.id,
                 },
                 values,
               ),
@@ -116,4 +116,4 @@ class TagsField extends Component {
   }
 }
 
-export default compose(inject18n, withStyles(styles))(TagsField);
+export default compose(inject18n, withStyles(styles))(LabelsField);

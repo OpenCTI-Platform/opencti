@@ -13,7 +13,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { Launch, SettingsApplications, PermIdentity } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
-import StixDomainObjectTags from '../../common/stix_domain_objects/StixDomainObjectLabels';
+import StixDomainObjectLabels from '../../common/stix_domain_objects/StixDomainObjectLabels';
 import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
@@ -44,8 +44,8 @@ class AttackPatternDetailsComponent extends Component {
             color="primary"
             style={{ marginBottom: 20 }}
           />
-          <StixDomainObjectTags
-            tags={attackPattern.tags}
+          <StixDomainObjectLabels
+            labels={attackPattern.labels}
             id={attackPattern.id}
           />
           <Typography
@@ -142,11 +142,11 @@ const AttackPatternDetails = createFragmentContainer(
           id
           name
         }
-        tags {
+        labels {
           edges {
             node {
               id
-              tag_type
+              label_type
               value
               color
             }

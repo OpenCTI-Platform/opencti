@@ -14,9 +14,9 @@ import inject18n from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { resolveLink } from '../../../../utils/Entity';
 import EntityReportsPie from '../../reports/EntityReportsPie';
-import EntityStixRelationsDonut from '../stix_core_relationships/EntityStixRelationsDonut';
-import EntityStixRelationsChart from '../stix_core_relationships/EntityStixRelationsChart';
-import SimpleEntityStixRelations from '../stix_core_relationships/SimpleEntityStixRelations';
+import EntityStixCoreRelationshipsDonut from '../stix_core_relationships/EntityStixCoreRelationshipsDonut';
+import EntityStixCoreRelationshipsChart from '../stix_core_relationships/EntityStixCoreRelationshipsChart';
+import SimpleEntityStixCoreRelationships from '../stix_core_relationships/SimpleEntityStixCoreRelationships';
 
 const styles = (theme) => ({
   card: {
@@ -65,14 +65,14 @@ const stixDomainObjectKnowledgeReportsNumberQuery = graphql`
   }
 `;
 
-const stixDomainObjectKnowledgeStixRelationsNumberQuery = graphql`
-  query StixDomainObjectKnowledgeStixRelationsNumberQuery(
+const stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery = graphql`
+  query StixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery(
     $type: String
     $fromId: String
     $endDate: DateTime
     $inferred: Boolean
   ) {
-    stixRelationsNumber(
+    stixCoreRelationshipsNumber(
       type: $type
       fromId: $fromId
       endDate: $endDate
@@ -144,16 +144,16 @@ class StixDomainObjectKnowledge extends Component {
               style={{ height: 120 }}
             >
               <QueryRenderer
-                query={stixDomainObjectKnowledgeStixRelationsNumberQuery}
+                query={stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery}
                 variables={{
                   fromId: stixDomainObjectId,
                   endDate: monthsAgo(1),
                   inferred: false,
                 }}
                 render={({ props }) => {
-                  if (props && props.stixRelationsNumber) {
-                    const { total } = props.stixRelationsNumber;
-                    const difference = total - props.stixRelationsNumber.count;
+                  if (props && props.stixCoreRelationshipsNumber) {
+                    const { total } = props.stixCoreRelationshipsNumber;
+                    const difference = total - props.stixCoreRelationshipsNumber.count;
                     return (
                       <CardContent>
                         <div className={classes.number}>{total}</div>
@@ -186,7 +186,7 @@ class StixDomainObjectKnowledge extends Component {
             <EntityReportsPie entityId={stixDomainObjectId} />
           </Grid>
           <Grid item={true} xs={6} style={{ marginBottom: 50 }}>
-            <EntityStixRelationsDonut
+            <EntityStixCoreRelationshipsDonut
               entityId={stixDomainObjectId}
               entityType="Stix-Domain-Entity"
               title={t('Distribution of relations (including inferred)')}
@@ -197,14 +197,14 @@ class StixDomainObjectKnowledge extends Component {
         </Grid>
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={6} style={{ marginBottom: 50 }}>
-            <EntityStixRelationsChart
+            <EntityStixCoreRelationshipsChart
               entityId={stixDomainObjectId}
               title={t('Direct relations creations')}
               field="created_at"
             />
           </Grid>
           <Grid item={true} xs={6} style={{ marginBottom: 50 }}>
-            <SimpleEntityStixRelations
+            <SimpleEntityStixCoreRelationships
               entityId={stixDomainObjectId}
               relationType="related-to"
               targetEntityTypes={['Stix-Domain-Entity']}

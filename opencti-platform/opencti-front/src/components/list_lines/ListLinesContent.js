@@ -93,7 +93,7 @@ class ListLinesContent extends Component {
       paginationOptions,
       entityLink,
       me,
-      onTagClick,
+      onLabelClick,
       selectedElements,
       onToggleEntity,
     } = this.props;
@@ -116,7 +116,7 @@ class ListLinesContent extends Component {
           paginationOptions,
           entityLink,
           me,
-          onTagClick,
+          onLabelClick,
           selectedElements,
           onToggleEntity,
         })}
@@ -195,7 +195,7 @@ ListLinesContent.propTypes = {
   dataColumns: PropTypes.object.isRequired,
   paginationOptions: PropTypes.object,
   entityLink: PropTypes.string,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
   selectedElements: PropTypes.object,
   onToggleEntity: PropTypes.func,
 };

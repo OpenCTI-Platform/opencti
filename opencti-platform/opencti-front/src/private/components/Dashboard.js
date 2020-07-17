@@ -283,7 +283,7 @@ const dashboardLastObservablesQuery = graphql`
     $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode
   ) {
-    stixObservables(first: $first, orderBy: $orderBy, orderMode: $orderMode) {
+    stixCyberObservables(first: $first, orderBy: $orderBy, orderMode: $orderMode) {
       edges {
         node {
           id
@@ -316,21 +316,21 @@ const dashboardStixDomainObjectsNumberQuery = graphql`
   }
 `;
 
-const dashboardStixRelationsNumberQuery = graphql`
-  query DashboardStixRelationsNumberQuery($type: String, $endDate: DateTime) {
-    stixRelationsNumber(type: $type, endDate: $endDate) {
+const dashboardStixCoreRelationshipsNumberQuery = graphql`
+  query DashboardStixCoreRelationshipsNumberQuery($type: String, $endDate: DateTime) {
+    stixCoreRelationshipsNumber(type: $type, endDate: $endDate) {
       total
       count
     }
   }
 `;
 
-const dashboardStixObservablesNumberQuery = graphql`
-  query DashboardStixObservablesNumberQuery(
+const dashboardStixCyberObservablesNumberQuery = graphql`
+  query DashboardStixCyberObservablesNumberQuery(
     $types: [String]
     $endDate: DateTime
   ) {
-    stixObservablesNumber(types: $types, endDate: $endDate) {
+    stixCyberObservablesNumber(types: $types, endDate: $endDate) {
       total
       count
     }
@@ -386,12 +386,12 @@ class Dashboard extends Component {
               </Card>
               <Card classes={{ root: classes.card }} style={{ height: 110 }}>
                 <QueryRenderer
-                  query={dashboardStixObservablesNumberQuery}
+                  query={dashboardStixCyberObservablesNumberQuery}
                   variables={{ endDate: dayAgo() }}
                   render={({ props }) => {
-                    if (props && props.stixObservablesNumber) {
-                      const { total } = props.stixObservablesNumber;
-                      const difference = total - props.stixObservablesNumber.count;
+                    if (props && props.stixCyberObservablesNumber) {
+                      const { total } = props.stixCyberObservablesNumber;
+                      const difference = total - props.stixCyberObservablesNumber.count;
                       return (
                         <CardContent>
                           <div className={classes.title}>
@@ -413,12 +413,12 @@ class Dashboard extends Component {
             <Grid item={true} lg={3} xs={6}>
               <Card classes={{ root: classes.card }} style={{ height: 110 }}>
                 <QueryRenderer
-                  query={dashboardStixRelationsNumberQuery}
+                  query={dashboardStixCoreRelationshipsNumberQuery}
                   variables={{ type: 'stix_relation', endDate: dayAgo() }}
                   render={({ props }) => {
-                    if (props && props.stixRelationsNumber) {
-                      const { total } = props.stixRelationsNumber;
-                      const difference = total - props.stixRelationsNumber.count;
+                    if (props && props.stixCoreRelationshipsNumber) {
+                      const { total } = props.stixCoreRelationshipsNumber;
+                      const difference = total - props.stixCoreRelationshipsNumber.count;
                       return (
                         <CardContent>
                           <div className={classes.title}>
@@ -830,28 +830,28 @@ class Dashboard extends Component {
                     orderMode: 'desc',
                   }}
                   render={({ props }) => {
-                    if (props && props.stixObservables) {
+                    if (props && props.stixCyberObservables) {
                       return (
                         <List>
-                          {props.stixObservables.edges.map(
-                            (stixObservableEdge) => {
-                              const stixObservable = stixObservableEdge.node;
+                          {props.stixCyberObservables.edges.map(
+                            (stixCyberObservableEdge) => {
+                              const stixCyberObservable = stixCyberObservableEdge.node;
                               const markingDefinition = head(
                                 pathOr(
                                   [],
                                   ['markingDefinitions', 'edges'],
-                                  stixObservable,
+                                  stixCyberObservable,
                                 ),
                               );
                               return (
                                 <ListItem
-                                  key={stixObservable.id}
+                                  key={stixCyberObservable.id}
                                   dense={true}
                                   button={true}
                                   classes={{ root: classes.item }}
                                   divider={true}
                                   component={Link}
-                                  to={`/dashboard/signatures/observables/${stixObservable.id}`}
+                                  to={`/dashboard/signatures/observables/${stixCyberObservable.id}`}
                                 >
                                   <ListItemIcon>
                                     <HexagonOutline color="primary" />
@@ -859,17 +859,17 @@ class Dashboard extends Component {
                                   <ListItemText
                                     primary={
                                       <div className={classes.itemText}>
-                                        {stixObservable.observable_value}
+                                        {stixCyberObservable.observable_value}
                                       </div>
                                     }
                                   />
                                   <div style={inlineStyles.itemType}>
                                     {t(
-                                      `observable_${stixObservable.entity_type}`,
+                                      `observable_${stixCyberObservable.entity_type}`,
                                     )}
                                   </div>
                                   <div style={inlineStyles.itemDate}>
-                                    {nsd(stixObservable.created_at)}
+                                    {nsd(stixCyberObservable.created_at)}
                                   </div>
                                   <div
                                     style={{

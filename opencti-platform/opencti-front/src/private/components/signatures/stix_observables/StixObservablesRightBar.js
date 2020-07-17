@@ -12,7 +12,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Drawer from '@material-ui/core/Drawer';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import { stixObservablesLinesSubTypesQuery } from './StixObservablesLines';
+import { stixCyberObservablesLinesSubTypesQuery } from './StixCyberObservablesLines';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -49,7 +49,7 @@ const styles = (theme) => ({
   toolbar: theme.mixins.toolbar,
 });
 
-class StixObservablesRightBar extends Component {
+class StixCyberObservablesRightBar extends Component {
   render() {
     const {
       classes, t, types = [], handleToggle, openExports,
@@ -64,7 +64,7 @@ class StixObservablesRightBar extends Component {
       >
         <div className={classes.toolbar} />
         <QueryRenderer
-          query={stixObservablesLinesSubTypesQuery}
+          query={stixCyberObservablesLinesSubTypesQuery}
           variables={{ type: 'Stix-Observable' }}
           render={({ props }) => {
             if (props && props.subTypes) {
@@ -110,7 +110,7 @@ class StixObservablesRightBar extends Component {
   }
 }
 
-StixObservablesRightBar.propTypes = {
+StixCyberObservablesRightBar.propTypes = {
   types: PropTypes.array,
   handleToggle: PropTypes.func,
   classes: PropTypes.object,
@@ -118,4 +118,4 @@ StixObservablesRightBar.propTypes = {
   openExports: PropTypes.bool,
 };
 
-export default compose(inject18n, withStyles(styles))(StixObservablesRightBar);
+export default compose(inject18n, withStyles(styles))(StixCyberObservablesRightBar);

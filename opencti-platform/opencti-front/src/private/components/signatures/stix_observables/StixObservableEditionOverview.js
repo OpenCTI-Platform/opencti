@@ -47,25 +47,25 @@ const styles = (theme) => ({
   },
 });
 
-const stixObservableMutationFieldPatch = graphql`
-  mutation StixObservableEditionOverviewFieldPatchMutation(
+const stixCyberObservableMutationFieldPatch = graphql`
+  mutation StixCyberObservableEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: EditInput!
   ) {
-    stixObservableEdit(id: $id) {
+    stixCyberObservableEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...StixObservableEditionOverview_stixObservable
+        ...StixCyberObservableEditionOverview_stixCyberObservable
       }
     }
   }
 `;
 
-export const stixObservableEditionOverviewFocus = graphql`
-  mutation StixObservableEditionOverviewFocusMutation(
+export const stixCyberObservableEditionOverviewFocus = graphql`
+  mutation StixCyberObservableEditionOverviewFocusMutation(
     $id: ID!
     $input: EditContext!
   ) {
-    stixObservableEdit(id: $id) {
+    stixCyberObservableEdit(id: $id) {
       contextPatch(input: $input) {
         id
       }
@@ -73,47 +73,47 @@ export const stixObservableEditionOverviewFocus = graphql`
   }
 `;
 
-const stixObservableMutationRelationAdd = graphql`
-  mutation StixObservableEditionOverviewRelationAddMutation(
+const stixCyberObservableMutationRelationAdd = graphql`
+  mutation StixCyberObservableEditionOverviewRelationAddMutation(
     $id: ID!
     $input: StixMetaRelationshipAddInput
   ) {
-    stixObservableEdit(id: $id) {
+    stixCyberObservableEdit(id: $id) {
       relationAdd(input: $input) {
         from {
-          ...StixObservableEditionOverview_stixObservable
+          ...StixCyberObservableEditionOverview_stixCyberObservable
         }
       }
     }
   }
 `;
 
-const stixObservableMutationRelationDelete = graphql`
-  mutation StixObservableEditionOverviewRelationDeleteMutation(
+const stixCyberObservableMutationRelationDelete = graphql`
+  mutation StixCyberObservableEditionOverviewRelationDeleteMutation(
     $id: ID!
     $relationId: ID!
   ) {
-    stixObservableEdit(id: $id) {
+    stixCyberObservableEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        ...StixObservableEditionOverview_stixObservable
+        ...StixCyberObservableEditionOverview_stixCyberObservable
       }
     }
   }
 `;
 
-const stixObservableValidation = (t) => Yup.object().shape({
+const stixCyberObservableValidation = (t) => Yup.object().shape({
   description: Yup.string()
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
 });
 
-class StixObservableEditionOverviewComponent extends Component {
+class StixCyberObservableEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
     commitMutation({
-      mutation: stixObservableEditionOverviewFocus,
+      mutation: stixCyberObservableEditionOverviewFocus,
       variables: {
-        id: this.props.stixObservable.id,
+        id: this.props.stixCyberObservable.id,
         input: {
           focusOn: name,
         },
@@ -122,13 +122,13 @@ class StixObservableEditionOverviewComponent extends Component {
   }
 
   handleSubmitField(name, value) {
-    stixObservableValidation(this.props.t)
+    stixCyberObservableValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
-          mutation: stixObservableMutationFieldPatch,
+          mutation: stixCyberObservableMutationFieldPatch,
           variables: {
-            id: this.props.stixObservable.id,
+            id: this.props.stixCyberObservable.id,
             input: { key: name, value },
           },
         });
@@ -137,22 +137,22 @@ class StixObservableEditionOverviewComponent extends Component {
   }
 
   handleChangeCreatedBy(name, value) {
-    const { stixObservable } = this.props;
+    const { stixCyberObservable } = this.props;
     const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'node', 'name'], stixObservable),
-      value: pathOr(null, ['createdBy', 'node', 'id'], stixObservable),
+      label: pathOr(null, ['createdBy', 'node', 'name'], stixCyberObservable),
+      value: pathOr(null, ['createdBy', 'node', 'id'], stixCyberObservable),
       relation: pathOr(
         null,
         ['createdBy', 'relation', 'id'],
-        stixObservable,
+        stixCyberObservable,
       ),
     };
 
     if (currentCreatedBy.value === null) {
       commitMutation({
-        mutation: stixObservableMutationRelationAdd,
+        mutation: stixCyberObservableMutationRelationAdd,
         variables: {
-          id: this.props.stixObservable.id,
+          id: this.props.stixCyberObservable.id,
           input: {
             fromRole: 'so',
             toId: value.value,
@@ -163,17 +163,17 @@ class StixObservableEditionOverviewComponent extends Component {
       });
     } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
-        mutation: stixObservableMutationRelationDelete,
+        mutation: stixCyberObservableMutationRelationDelete,
         variables: {
-          id: this.props.stixObservable.id,
+          id: this.props.stixCyberObservable.id,
           relationId: currentCreatedBy.relation,
         },
       });
       if (value.value) {
         commitMutation({
-          mutation: stixObservableMutationRelationAdd,
+          mutation: stixCyberObservableMutationRelationAdd,
           variables: {
-            id: this.props.stixObservable.id,
+            id: this.props.stixCyberObservable.id,
             input: {
               fromRole: 'so',
               toId: value.value,
@@ -187,7 +187,7 @@ class StixObservableEditionOverviewComponent extends Component {
   }
 
   handleChangeMarkingDefinitions(name, values) {
-    const { stixObservable } = this.props;
+    const { stixCyberObservable } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
       map((n) => ({
@@ -195,16 +195,16 @@ class StixObservableEditionOverviewComponent extends Component {
         value: n.node.id,
         relationId: n.relation.id,
       })),
-    )(stixObservable);
+    )(stixCyberObservable);
 
     const added = difference(values, currentMarkingDefinitions);
     const removed = difference(currentMarkingDefinitions, values);
 
     if (added.length > 0) {
       commitMutation({
-        mutation: stixObservableMutationRelationAdd,
+        mutation: stixCyberObservableMutationRelationAdd,
         variables: {
-          id: this.props.stixObservable.id,
+          id: this.props.stixCyberObservable.id,
           input: {
             fromRole: 'so',
             toId: head(added).value,
@@ -217,9 +217,9 @@ class StixObservableEditionOverviewComponent extends Component {
 
     if (removed.length > 0) {
       commitMutation({
-        mutation: stixObservableMutationRelationDelete,
+        mutation: stixCyberObservableMutationRelationDelete,
         variables: {
-          id: this.props.stixObservable.id,
+          id: this.props.stixCyberObservable.id,
           relationId: head(removed).relationId,
         },
       });
@@ -227,20 +227,20 @@ class StixObservableEditionOverviewComponent extends Component {
   }
 
   render() {
-    const { t, stixObservable, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], stixObservable) === null
+    const { t, stixCyberObservable, context } = this.props;
+    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], stixCyberObservable) === null
       ? ''
       : {
         label: pathOr(
           null,
           ['createdBy', 'node', 'name'],
-          stixObservable,
+          stixCyberObservable,
         ),
-        value: pathOr(null, ['createdBy', 'node', 'id'], stixObservable),
+        value: pathOr(null, ['createdBy', 'node', 'id'], stixCyberObservable),
         relation: pathOr(
           null,
           ['createdBy', 'relation', 'id'],
-          stixObservable,
+          stixCyberObservable,
         ),
       };
     const markingDefinitions = pipe(
@@ -250,7 +250,7 @@ class StixObservableEditionOverviewComponent extends Component {
         value: n.node.id,
         relationId: n.relation.id,
       })),
-    )(stixObservable);
+    )(stixCyberObservable);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
       assoc('markingDefinitions', markingDefinitions),
@@ -261,12 +261,12 @@ class StixObservableEditionOverviewComponent extends Component {
         'killChainPhases',
         'markingDefinitions',
       ]),
-    )(stixObservable);
+    )(stixCyberObservable);
     return (
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={stixObservableValidation(t)}
+        validationSchema={stixCyberObservableValidation(t)}
         onSubmit={() => true}
       >
         {({ setFieldValue }) => (
@@ -329,19 +329,19 @@ class StixObservableEditionOverviewComponent extends Component {
   }
 }
 
-StixObservableEditionOverviewComponent.propTypes = {
+StixCyberObservableEditionOverviewComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  stixObservable: PropTypes.object,
+  stixCyberObservable: PropTypes.object,
   context: PropTypes.array,
 };
 
-const StixObservableEditionOverview = createFragmentContainer(
-  StixObservableEditionOverviewComponent,
+const StixCyberObservableEditionOverview = createFragmentContainer(
+  StixCyberObservableEditionOverviewComponent,
   {
-    stixObservable: graphql`
-      fragment StixObservableEditionOverview_stixObservable on StixObservable {
+    stixCyberObservable: graphql`
+      fragment StixCyberObservableEditionOverview_stixCyberObservable on StixCyberObservable {
         id
         observable_value
         description
@@ -374,4 +374,4 @@ const StixObservableEditionOverview = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(StixObservableEditionOverview);
+)(StixCyberObservableEditionOverview);

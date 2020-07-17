@@ -13,7 +13,7 @@ import { MoreVert } from '@material-ui/icons';
 import { HexagonOutline } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import ItemConfidenceLevel from '../../../../components/ItemConfidenceLevel';
-import StixRelationPopover from '../../common/stix_core_relationships/StixRelationPopover';
+import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 
 const styles = (theme) => ({
   item: {
@@ -41,7 +41,7 @@ const styles = (theme) => ({
   },
 });
 
-class EntityStixObservableLineComponent extends Component {
+class EntityStixCyberObservableLineComponent extends Component {
   render() {
     const {
       nsd,
@@ -104,8 +104,8 @@ class EntityStixObservableLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <StixRelationPopover
-            stixRelationId={node.id}
+          <StixCoreRelationshipPopover
+            stixCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
             disabled={node.inferred}
           />
@@ -115,7 +115,7 @@ class EntityStixObservableLineComponent extends Component {
   }
 }
 
-EntityStixObservableLineComponent.propTypes = {
+EntityStixCyberObservableLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   entityLink: PropTypes.string,
   paginationOptions: PropTypes.object,
@@ -125,11 +125,11 @@ EntityStixObservableLineComponent.propTypes = {
   nsd: PropTypes.func,
 };
 
-const EntityStixObservableLineFragment = createFragmentContainer(
-  EntityStixObservableLineComponent,
+const EntityStixCyberObservableLineFragment = createFragmentContainer(
+  EntityStixCyberObservableLineComponent,
   {
     node: graphql`
-      fragment EntityStixObservableLine_node on StixRelation {
+      fragment EntityStixCyberObservableLine_node on StixCoreRelationship {
         id
         weight
         first_seen
@@ -137,7 +137,7 @@ const EntityStixObservableLineFragment = createFragmentContainer(
         description
         inferred
         to {
-          ... on StixObservable {
+          ... on StixCyberObservable {
             id
             entity_type
             observable_value
@@ -151,12 +151,12 @@ const EntityStixObservableLineFragment = createFragmentContainer(
   },
 );
 
-export const EntityStixObservableLine = compose(
+export const EntityStixCyberObservableLine = compose(
   inject18n,
   withStyles(styles),
-)(EntityStixObservableLineFragment);
+)(EntityStixCyberObservableLineFragment);
 
-class EntityStixObservableLineDummyComponent extends Component {
+class EntityStixCyberObservableLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -208,12 +208,12 @@ class EntityStixObservableLineDummyComponent extends Component {
   }
 }
 
-EntityStixObservableLineDummyComponent.propTypes = {
+EntityStixCyberObservableLineDummyComponent.propTypes = {
   classes: PropTypes.object,
   dataColumns: PropTypes.object,
 };
 
-export const EntityStixObservableLineDummy = compose(
+export const EntityStixCyberObservableLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(EntityStixObservableLineDummyComponent);
+)(EntityStixCyberObservableLineDummyComponent);

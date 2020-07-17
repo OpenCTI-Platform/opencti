@@ -11,9 +11,9 @@ import CourseOfActionDetails from './CourseOfActionDetails';
 import CourseOfActionEdition from './CourseOfActionEdition';
 import CourseOfActionPopover from './CourseOfActionPopover';
 import EntityExternalReferences from '../../common/external_references/EntityExternalReferences';
-import EntityStixRelationsPie from '../../common/stix_core_relationships/EntityStixRelationsPie';
+import EntityStixCoreRelationshipsPie from '../../common/stix_core_relationships/EntityStixCoreRelationshipsPie';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityStixRelationsChart from '../../common/stix_core_relationships/EntityStixRelationsChart';
+import EntityStixCoreRelationshipsChart from '../../common/stix_core_relationships/EntityStixCoreRelationshipsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
@@ -59,13 +59,13 @@ class CourseOfActionComponent extends Component {
           style={{ marginTop: 15 }}
         >
           <Grid item={true} xs={4}>
-            <EntityStixRelationsChart
+            <EntityStixCoreRelationshipsChart
               entityId={courseOfAction.id}
               relationType="uses"
             />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityStixRelationsPie
+            <EntityStixCoreRelationshipsPie
               entityId={courseOfAction.id}
               entityType="Stix-Domain-Entity"
               field="entity_type"

@@ -11,7 +11,7 @@ import ReportOverview from './ReportOverview';
 import ReportIdentity from './ReportDetails';
 import ReportEdition from './ReportEdition';
 import EntityExternalReferences from '../common/external_references/EntityExternalReferences';
-import EntityStixRelationsDonut from '../common/stix_core_relationships/EntityStixRelationsDonut';
+import EntityStixCoreRelationshipsDonut from '../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import StixObjectNotes from '../common/stix_object/StixObjectNotes';
 
@@ -53,7 +53,7 @@ class ReportComponent extends Component {
           style={{ marginTop: 15 }}
         >
           <Grid item={true} xs={6}>
-            <EntityStixRelationsDonut
+            <EntityStixCoreRelationshipsDonut
               entityId={report.id}
               entityType="Stix-Observable"
               relationType="observable_refs"
@@ -62,7 +62,7 @@ class ReportComponent extends Component {
             />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityStixRelationsDonut
+            <EntityStixCoreRelationshipsDonut
               entityId={report.id}
               entityType="Stix-Domain-Entity"
               relationType="object_refs"

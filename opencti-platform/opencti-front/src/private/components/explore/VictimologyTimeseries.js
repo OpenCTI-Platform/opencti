@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { compose, propOr, pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../components/i18n';
-import EntityStixRelationsChart from '../common/stix_core_relationships/EntityStixRelationsChart';
-import EntityStixRelationsTableTime from '../common/stix_core_relationships/EntityStixRelationsTableTime';
+import EntityStixCoreRelationshipsChart from '../common/stix_core_relationships/EntityStixCoreRelationshipsChart';
+import EntityStixCoreRelationshipsTableTime from '../common/stix_core_relationships/EntityStixCoreRelationshipsTableTime';
 
 const styles = () => ({
   container: {
@@ -24,7 +24,7 @@ class VictimologyDistribution extends Component {
     switch (configuration.graph_type) {
       case 'table':
         return (
-          <EntityStixRelationsTableTime
+          <EntityStixCoreRelationshipsTableTime
             variant="explore"
             configuration={configuration}
             handleOpenConfig={handleOpenConfig.bind(this)}
@@ -39,7 +39,7 @@ class VictimologyDistribution extends Component {
         );
       case 'line':
         return (
-          <EntityStixRelationsChart
+          <EntityStixCoreRelationshipsChart
             variant="explore"
             configuration={configuration}
             handleOpenConfig={handleOpenConfig.bind(this)}
@@ -53,7 +53,7 @@ class VictimologyDistribution extends Component {
         );
       default:
         return (
-          <EntityStixRelationsChart
+          <EntityStixCoreRelationshipsChart
             variant="explore"
             configuration={configuration}
             handleOpenConfig={handleOpenConfig.bind(this)}

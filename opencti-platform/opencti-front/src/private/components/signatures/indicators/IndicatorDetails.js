@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
-import StixDomainObjectTags from '../../common/stix_domain_objects/StixDomainObjectLabels';
+import StixDomainObjectLabels from '../../common/stix_domain_objects/StixDomainObjectLabels';
 import ItemScore from '../../../../components/ItemScore';
 import ItemCreator from '../../../../components/ItemCreator';
 
@@ -37,7 +37,7 @@ class IndicatorDetailsComponent extends Component {
           </Typography>
           <pre>{indicator.indicator_pattern}</pre>
           <div style={{ marginTop: 20 }}>
-            <StixDomainObjectTags tags={indicator.tags} id={indicator.id} />
+            <StixDomainObjectLabels labels={indicator.labels} id={indicator.id} />
           </div>
           <Typography
             variant="h3"
@@ -97,11 +97,11 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
           id
           name
         }
-      tags {
+      labels {
         edges {
           node {
             id
-            tag_type
+            label_type
             value
             color
           }

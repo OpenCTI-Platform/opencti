@@ -96,8 +96,8 @@ class AttackPatterns extends Component {
         width: '30%',
         isSortable: true,
       },
-      tags: {
-        label: 'Tags',
+      labels: {
+        label: 'Labels',
         width: '20%',
         isSortable: true,
       },
@@ -129,7 +129,7 @@ class AttackPatterns extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'tags',
+          'labels',
           'markingDefinitions',
           'created_start_date',
           'created_end_date',
@@ -145,7 +145,7 @@ class AttackPatterns extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
-              onTagClick={this.handleAddFilter.bind(this)}
+              onLabelClick={this.handleAddFilter.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}

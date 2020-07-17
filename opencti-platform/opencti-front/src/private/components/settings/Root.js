@@ -8,7 +8,7 @@ import Roles from './Roles';
 import MarkingDefinitions from './MarkingDefinitions';
 import KillChainPhases from './KillChainPhases';
 import Attributes from './Attributes';
-import Tags from './Tags';
+import Labels from './Labels';
 import { BoundaryRoute } from '../Error';
 
 const Root = () => (
@@ -52,12 +52,12 @@ const Root = () => (
     <BoundaryRoute
       exact
       path="/dashboard/settings/attributes"
-      render={() => <Redirect to="/dashboard/settings/attributes/tags" />}
+      render={() => <Redirect to="/dashboard/settings/attributes/labels" />}
     />
     <BoundaryRoute
       exact
-      path="/dashboard/settings/attributes/tags"
-      component={Tags}
+      path="/dashboard/settings/attributes/labels"
+      component={Labels}
     />
     <BoundaryRoute
       exact

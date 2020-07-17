@@ -105,8 +105,8 @@ class Reports extends Component {
         width: '15%',
         isSortable: false,
       },
-      tags: {
-        label: 'Tags',
+      labels: {
+        label: 'Labels',
         width: '20%',
         isSortable: false,
       },
@@ -146,7 +146,7 @@ class Reports extends Component {
         numberOfElements={numberOfElements}
         availableFilterKeys={[
           'object_status',
-          'tags',
+          'labels',
           'createdBy',
           'markingDefinitions',
           'published_start_date',
@@ -162,7 +162,7 @@ class Reports extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
-              onTagClick={this.handleAddFilter.bind(this)}
+              onLabelClick={this.handleAddFilter.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}

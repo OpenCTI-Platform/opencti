@@ -18,7 +18,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
-import TagsField from '../../common/form/TagsField';
+import LabelsField from '../../common/form/LabelsField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
 const styles = (theme) => ({
@@ -110,7 +110,7 @@ class IndividualCreation extends Component {
     const finalValues = pipe(
       assoc('createdBy', values.createdBy.value),
       assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
-      assoc('tags', pluck('value', values.tags)),
+      assoc('labels', pluck('value', values.labels)),
     )(values);
     commitMutation({
       mutation: individualMutation,
@@ -176,7 +176,7 @@ class IndividualCreation extends Component {
                 description: '',
                 createdBy: '',
                 markingDefinitions: [],
-                tags: [],
+                labels: [],
               }}
               validationSchema={individualValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -211,11 +211,11 @@ class IndividualCreation extends Component {
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />
-                  <TagsField
-                    name="tags"
+                  <LabelsField
+                    name="labels"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
-                    values={values.tags}
+                    values={values.labels}
                   />
                   <MarkingDefinitionsField
                     name="markingDefinitions"

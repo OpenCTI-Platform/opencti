@@ -25,7 +25,7 @@ import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import CreatedByField from '../form/CreatedByField';
 import MarkingDefinitionsField from '../form/MarkingDefinitionsField';
-import TagsField from '../form/TagsField';
+import LabelsField from '../form/LabelsField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -118,7 +118,7 @@ class StixDomainObjectCreation extends Component {
       assoc('alias', split(',', values.alias)),
       assoc('createdBy', values.createdBy.value),
       assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
-      assoc('tags', pluck('value', values.tags)),
+      assoc('labels', pluck('value', values.labels)),
     )(values);
     commitMutation({
       mutation: stixDomainObjectCreationMutation,
@@ -299,7 +299,7 @@ class StixDomainObjectCreation extends Component {
                 description: '',
                 alias: '',
                 createdBy: '',
-                tags: [],
+                labels: [],
                 markingDefinitions: [],
               }}
               validationSchema={stixDomainObjectValidation(t)}
@@ -344,11 +344,11 @@ class StixDomainObjectCreation extends Component {
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />
-                  <TagsField
-                    name="tags"
+                  <LabelsField
+                    name="labels"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
-                    values={values.tags}
+                    values={values.labels}
                   />
                   <MarkingDefinitionsField
                     name="markingDefinitions"
@@ -416,7 +416,7 @@ class StixDomainObjectCreation extends Component {
                 type: defaultCreatedBy.entity_type,
               }
               : '',
-            tags: [],
+            labels: [],
             markingDefinitions: defaultMarkingDefinition
               ? [
                 {
@@ -477,11 +477,11 @@ class StixDomainObjectCreation extends Component {
                     setFieldValue={setFieldValue}
                     defaultCreatedBy={defaultCreatedBy}
                   />
-                  <TagsField
-                    name="tags"
+                  <LabelsField
+                    name="labels"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
-                    values={values.tags}
+                    values={values.labels}
                   />
                   <MarkingDefinitionsField
                     name="markingDefinitions"

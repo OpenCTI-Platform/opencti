@@ -23,7 +23,7 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import CreatedByField from '../../common/form/CreatedByField';
-import TagsField from '../../common/form/TagsField';
+import LabelsField from '../../common/form/LabelsField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 import TypesField from '../TypesField';
 
@@ -89,8 +89,8 @@ const styles = (theme) => ({
   },
 });
 
-const stixObservableMutation = graphql`
-  mutation StixObservableCreationMutation(
+const stixCyberObservableMutation = graphql`
+  mutation StixCyberObservableCreationMutation(
     $type: String!
     $AutonomousSystem: AutonomousSystemAddInput
     $Directory: DirectoryAddInput
@@ -102,7 +102,7 @@ const stixObservableMutation = graphql`
     $XOpenctiText: XOpenctiTextAddInput
     $XOpenctiUserAgent: XOpenctiUserAgentAddInput
   ) {
-    stixObservableAdd(
+    stixCyberObservableAdd(
       type: $type
       AutonomousSystem: $AutonomousSystem
       Directory: $Directory
@@ -114,12 +114,12 @@ const stixObservableMutation = graphql`
       XOpenctiText: $XOpenctiText
       XOpenctiUserAgent: $XOpenctiUserAgent
     ) {
-      ...StixObservableLine_node
+      ...StixCyberObservableLine_node
     }
   }
 `;
 
-const stixObservableValidation = (t) => Yup.object().shape({
+const stixCyberObservableValidation = (t) => Yup.object().shape({
   type: Yup.string().required(t('This field is required')),
   observable_value: Yup.string().required(t('This field is required')),
   description: Yup.string(),
@@ -130,13 +130,13 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
-    'Pagination_stixObservables',
+    'Pagination_stixCyberObservables',
     paginationOptions,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class StixObservableCreation extends Component {
+class StixCyberObservableCreation extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false };
@@ -155,17 +155,17 @@ class StixObservableCreation extends Component {
       {
         createdBy: path(['value']),
         markingDefinitions: pluck('value'),
-        tags: pluck('value'),
+        labels: pluck('value'),
       },
       values,
     );
     commitMutation({
-      mutation: stixObservableMutation,
+      mutation: stixCyberObservableMutation,
       variables: {
         input: adaptedValues,
       },
       updater: (store) => {
-        const payload = store.getRootField('stixObservableAdd');
+        const payload = store.getRootField('stixCyberObservableAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
         sharedUpdater(
@@ -226,10 +226,10 @@ class StixObservableCreation extends Component {
                 description: '',
                 createdBy: '',
                 markingDefinitions: [],
-                tags: [],
+                labels: [],
                 createIndicator: false,
               }}
-              validationSchema={stixObservableValidation(t)}
+              validationSchema={stixCyberObservableValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
             >
@@ -269,11 +269,11 @@ class StixObservableCreation extends Component {
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />
-                  <TagsField
-                    name="tags"
+                  <LabelsField
+                    name="labels"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
-                    values={values.tags}
+                    values={values.labels}
                   />
                   <MarkingDefinitionsField
                     name="markingDefinitions"
@@ -336,7 +336,7 @@ class StixObservableCreation extends Component {
             createdBy: '',
             markingDefinitions: [],
           }}
-          validationSchema={stixObservableValidation(t)}
+          validationSchema={stixCyberObservableValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onReset.bind(this)}
         >
@@ -383,11 +383,11 @@ class StixObservableCreation extends Component {
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />
-                  <TagsField
-                    name="tags"
+                  <LabelsField
+                    name="labels"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
-                    values={values.tags}
+                    values={values.labels}
                   />
                   <MarkingDefinitionsField
                     name="markingDefinitions"
@@ -423,7 +423,7 @@ class StixObservableCreation extends Component {
   }
 }
 
-StixObservableCreation.propTypes = {
+StixCyberObservableCreation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
@@ -437,4 +437,4 @@ StixObservableCreation.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(StixObservableCreation);
+)(StixCyberObservableCreation);

@@ -19,7 +19,7 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import CreatedByField from '../../common/form/CreatedByField';
-import TagsField from '../../common/form/TagsField';
+import LabelsField from '../../common/form/LabelsField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
 const styles = (theme) => ({
@@ -110,7 +110,7 @@ class ToolCreation extends Component {
       assoc('createdBy', values.createdBy.value),
       assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
       assoc('killChainPhases', pluck('value', values.killChainPhases)),
-      assoc('tags', pluck('value', values.tags)),
+      assoc('labels', pluck('value', values.labels)),
     )(values);
     commitMutation({
       mutation: toolMutation,
@@ -177,7 +177,7 @@ class ToolCreation extends Component {
                 createdBy: '',
                 markingDefinitions: [],
                 killChainPhases: [],
-                tags: [],
+                labels: [],
               }}
               validationSchema={toolValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -216,11 +216,11 @@ class ToolCreation extends Component {
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />
-                  <TagsField
-                    name="tags"
+                  <LabelsField
+                    name="labels"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
-                    values={values.tags}
+                    values={values.labels}
                   />
                   <MarkingDefinitionsField
                     name="markingDefinitions"

@@ -97,8 +97,8 @@ class IntrusionSets extends Component {
       name: {
         label: 'Name',
       },
-      tags: {
-        label: 'Tags',
+      labels: {
+        label: 'Labels',
       },
       created: {
         label: 'Creation date',
@@ -125,7 +125,7 @@ class IntrusionSets extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'tags',
+          'labels',
           'markingDefinitions',
           'created_start_date',
           'created_end_date',
@@ -140,7 +140,7 @@ class IntrusionSets extends Component {
               data={props}
               paginationOptions={paginationOptions}
               initialLoading={props === null}
-              onTagClick={this.handleAddFilter.bind(this)}
+              onLabelClick={this.handleAddFilter.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
@@ -164,8 +164,8 @@ class IntrusionSets extends Component {
         width: '35%',
         isSortable: true,
       },
-      tags: {
-        label: 'Tags',
+      labels: {
+        label: 'Labels',
         width: '25%',
         isSortable: true,
       },
@@ -198,7 +198,7 @@ class IntrusionSets extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'tags',
+          'labels',
           'markingDefinitions',
           'created_start_date',
           'created_end_date',
@@ -214,7 +214,7 @@ class IntrusionSets extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
-              onTagClick={this.handleAddFilter.bind(this)}
+              onLabelClick={this.handleAddFilter.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}

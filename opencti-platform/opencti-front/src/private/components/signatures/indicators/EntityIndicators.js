@@ -17,7 +17,7 @@ import EntityIndicatorsLines, {
 } from './EntityIndicatorsLines';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixRelationCreationFromEntity from '../../common/stix_core_relationships/StixRelationCreationFromEntity';
+import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
@@ -132,8 +132,8 @@ class EntityIndicators extends Component {
         width: '30%',
         isSortable: true,
       },
-      tags: {
-        label: 'Tags',
+      labels: {
+        label: 'Labels',
         width: '15%',
         isSortable: false,
       },
@@ -256,7 +256,7 @@ class EntityIndicators extends Component {
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixRelationCreationFromEntity
+          <StixCoreRelationshipCreationFromEntity
             entityId={entityId}
             isFrom={false}
             targetEntityTypes={['Indicator']}

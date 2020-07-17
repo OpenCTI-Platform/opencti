@@ -10,7 +10,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRightOutlined, IndividualOutlined } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
-import StixObjectTags from '../../common/stix_object/StixObjectTags';
+import StixObjectLabels from '../../common/stix_object/StixObjectLabels';
 
 const styles = (theme) => ({
   item: {
@@ -45,7 +45,7 @@ const styles = (theme) => ({
 class IndividualLineComponent extends Component {
   render() {
     const {
-      fd, classes, dataColumns, node, onTagClick,
+      fd, classes, dataColumns, node, onLabelClick,
     } = this.props;
     return (
       <ListItem
@@ -69,12 +69,12 @@ class IndividualLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.labels.width }}
               >
-                <StixObjectTags
+                <StixObjectLabels
                   variant="inList"
-                  tags={node.tags}
-                  onClick={onTagClick.bind(this)}
+                  labels={node.labels}
+                  onClick={onLabelClick.bind(this)}
                 />
               </div>
               <div
@@ -105,7 +105,7 @@ IndividualLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
 };
 
 const IndividualLineFragment = createFragmentContainer(IndividualLineComponent, {
@@ -115,11 +115,11 @@ const IndividualLineFragment = createFragmentContainer(IndividualLineComponent, 
       name
       created
       modified
-      tags {
+      labels {
         edges {
           node {
             id
-            tag_type
+            label_type
             value
             color
           }
@@ -156,7 +156,7 @@ class IndividualLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.labels.width }}
               >
                 <div className="fakeItem" style={{ width: '90%' }} />
               </div>

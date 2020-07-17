@@ -6,7 +6,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import ItemMarking from '../../../../components/ItemMarking';
-import StixObservablePopover from './StixObservablePopover';
+import StixCyberObservablePopover from './StixCyberObservablePopover';
 import { truncate } from '../../../../utils/String';
 
 const styles = () => ({
@@ -24,9 +24,9 @@ const styles = () => ({
   },
 });
 
-class StixObservableHeaderComponent extends Component {
+class StixCyberObservableHeaderComponent extends Component {
   render() {
-    const { classes, variant, stixObservable } = this.props;
+    const { classes, variant, stixCyberObservable } = this.props;
     return (
       <div>
         <Typography
@@ -34,14 +34,14 @@ class StixObservableHeaderComponent extends Component {
           gutterBottom={true}
           classes={{ root: classes.title }}
         >
-          {truncate(stixObservable.observable_value, 50)}
+          {truncate(stixCyberObservable.observable_value, 50)}
         </Typography>
         <div className={classes.popover}>
-          <StixObservablePopover stixObservableId={stixObservable.id} />
+          <StixCyberObservablePopover stixCyberObservableId={stixCyberObservable.id} />
         </div>
         {variant !== 'noMarking' ? (
           <div className={classes.marking}>
-            {pathOr([], ['markingDefinitions', 'edges'], stixObservable).map(
+            {pathOr([], ['markingDefinitions', 'edges'], stixCyberObservable).map(
               (markingDefinition) => (
                 <ItemMarking
                   key={markingDefinition.node.id}
@@ -59,17 +59,17 @@ class StixObservableHeaderComponent extends Component {
   }
 }
 
-StixObservableHeaderComponent.propTypes = {
-  stixObservable: PropTypes.object,
+StixCyberObservableHeaderComponent.propTypes = {
+  stixCyberObservable: PropTypes.object,
   variant: PropTypes.string,
   classes: PropTypes.object,
 };
 
-const StixObservableHeader = createFragmentContainer(
-  StixObservableHeaderComponent,
+const StixCyberObservableHeader = createFragmentContainer(
+  StixCyberObservableHeaderComponent,
   {
-    stixObservable: graphql`
-      fragment StixObservableHeader_stixObservable on StixObservable {
+    stixCyberObservable: graphql`
+      fragment StixCyberObservableHeader_stixCyberObservable on StixCyberObservable {
         id
         entity_type
         observable_value
@@ -86,4 +86,4 @@ const StixObservableHeader = createFragmentContainer(
   },
 );
 
-export default compose(withStyles(styles))(StixObservableHeader);
+export default compose(withStyles(styles))(StixCyberObservableHeader);

@@ -20,7 +20,7 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
-import StixObjectTags from '../../common/stix_object/StixObjectTags';
+import StixObjectLabels from '../../common/stix_object/StixObjectLabels';
 
 const styles = (theme) => ({
   container: {
@@ -55,7 +55,7 @@ const styles = (theme) => ({
   },
 });
 
-class StixObservablesContainer extends Component {
+class StixCyberObservablesContainer extends Component {
   constructor(props) {
     super(props);
     this.state = { expandedPanels: {} };
@@ -82,19 +82,19 @@ class StixObservablesContainer extends Component {
 
   render() {
     const { t, classes, data } = this.props;
-    const stixObservablesNodes = map((n) => n.node, data.stixObservables.edges);
-    const byType = groupBy((stixObservable) => stixObservable.entity_type);
-    const stixObservables = byType(stixObservablesNodes);
-    const stixObservablesTypes = keys(stixObservables);
+    const stixCyberObservablesNodes = map((n) => n.node, data.stixCyberObservables.edges);
+    const byType = groupBy((stixCyberObservable) => stixCyberObservable.entity_type);
+    const stixCyberObservables = byType(stixCyberObservablesNodes);
+    const stixCyberObservablesTypes = keys(stixCyberObservables);
     return (
       <div className={classes.container}>
-        {stixObservablesTypes.map((type) => (
+        {stixCyberObservablesTypes.map((type) => (
           <ExpansionPanel
             key={type}
             expanded={this.isExpanded(
               type,
-              stixObservables[type].length,
-              stixObservablesTypes.length,
+              stixCyberObservables[type].length,
+              stixCyberObservablesTypes.length,
             )}
             onChange={this.handleChangePanel.bind(this, type)}
             classes={{ root: classes.expansionPanel }}
@@ -107,32 +107,32 @@ class StixObservablesContainer extends Component {
                 {t(`observable_${type}`)}
               </Typography>
               <Typography classes={{ root: classes.secondaryHeading }}>
-                {stixObservables[type].length} {t('observable(s)')}
+                {stixCyberObservables[type].length} {t('observable(s)')}
               </Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails
               classes={{ root: classes.expansionPanelContent }}
             >
               <List classes={{ root: classes.list }}>
-                {stixObservables[type].map((stixObservable) => (
+                {stixCyberObservables[type].map((stixCyberObservable) => (
                   <ListItem
-                    key={stixObservable.id}
+                    key={stixCyberObservable.id}
                     classes={{ root: classes.menuItem }}
                     divider={true}
                     button={true}
                     component={Link}
-                    to={`/dashboard/signatures/observables/${stixObservable.id}`}
+                    to={`/dashboard/signatures/observables/${stixCyberObservable.id}`}
                   >
                     <ListItemIcon classes={{ root: classes.itemIcon }}>
                       <ItemIcon type={type} />
                     </ListItemIcon>
                     <ListItemText
-                      primary={stixObservable.observable_value}
-                      secondary={truncate(stixObservable.description, 200)}
+                      primary={stixCyberObservable.observable_value}
+                      secondary={truncate(stixCyberObservable.description, 200)}
                     />
                     <ListItemSecondaryAction>
-                      <StixObjectTags
-                        tags={stixObservable.tags}
+                      <StixObjectLabels
+                        labels={stixCyberObservable.labels}
                         variant="inSearch"
                       />
                     </ListItemSecondaryAction>
@@ -147,7 +147,7 @@ class StixObservablesContainer extends Component {
   }
 }
 
-StixObservablesContainer.propTypes = {
+StixCyberObservablesContainer.propTypes = {
   reportId: PropTypes.string,
   reportObjectRefs: PropTypes.array,
   data: PropTypes.object,
@@ -157,15 +157,15 @@ StixObservablesContainer.propTypes = {
   fld: PropTypes.func,
 };
 
-export const stixObservablesSearchLinesQuery = graphql`
-  query StixObservablesSearchLinesQuery(
+export const stixCyberObservablesSearchLinesQuery = graphql`
+  query StixCyberObservablesSearchLinesQuery(
     $search: String
     $count: Int!
     $cursor: ID
     $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode
   ) {
-    ...StixObservablesSearchLines_data
+    ...StixCyberObservablesSearchLines_data
       @arguments(
         search: $search
         count: $count
@@ -176,11 +176,11 @@ export const stixObservablesSearchLinesQuery = graphql`
   }
 `;
 
-const StixObservablesSearchLines = createPaginationContainer(
-  StixObservablesContainer,
+const StixCyberObservablesSearchLines = createPaginationContainer(
+  StixCyberObservablesContainer,
   {
     data: graphql`
-      fragment StixObservablesSearchLines_data on Query
+      fragment StixCyberObservablesSearchLines_data on Query
         @argumentDefinitions(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
@@ -188,23 +188,23 @@ const StixObservablesSearchLines = createPaginationContainer(
           orderBy: { type: "StixCyberObservablesOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
-        stixObservables(
+        stixCyberObservables(
           search: $search
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
-        ) @connection(key: "Pagination_stixObservables") {
+        ) @connection(key: "Pagination_stixCyberObservables") {
           edges {
             node {
               id
               entity_type
               observable_value
-              tags {
+              labels {
                 edges {
                   node {
                     id
-                    tag_type
+                    label_type
                     value
                     color
                   }
@@ -222,7 +222,7 @@ const StixObservablesSearchLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.stixObservables;
+      return props.data && props.data.stixCyberObservables;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -238,11 +238,11 @@ const StixObservablesSearchLines = createPaginationContainer(
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: stixObservablesSearchLinesQuery,
+    query: stixCyberObservablesSearchLinesQuery,
   },
 );
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixObservablesSearchLines);
+)(StixCyberObservablesSearchLines);

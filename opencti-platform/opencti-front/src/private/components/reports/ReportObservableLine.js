@@ -140,7 +140,7 @@ const ReportObservableLineFragment = createFragmentContainer(
   ReportObservableLineComponent,
   {
     node: graphql`
-      fragment ReportObservableLine_node on StixObservable {
+      fragment ReportObservableLine_node on StixCyberObservable {
         id
         observable_value
         entity_type

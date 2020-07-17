@@ -38,11 +38,11 @@ import { serializeGraph } from '../../../utils/GraphHelper';
 import { dateFormat } from '../../../utils/Time';
 import { reportMutationFieldPatch } from './ReportEditionOverview';
 import ReportAddObjectRefs from './ReportAddObjectRefs';
-import StixRelationCreation from '../common/stix_core_relationships/StixRelationCreation';
+import StixCoreRelationshipCreation from '../common/stix_core_relationships/StixCoreRelationshipCreation';
 import StixDomainObjectEdition from '../common/stix_domain_objects/StixDomainObjectEdition';
-import StixRelationEdition, {
-  stixRelationEditionDeleteMutation,
-} from '../common/stix_core_relationships/StixRelationEdition';
+import StixCoreRelationshipEdition, {
+  stixCoreRelationshipEditionDeleteMutation,
+} from '../common/stix_core_relationships/StixCoreRelationshipEdition';
 
 const styles = () => ({
   container: {
@@ -75,7 +75,7 @@ export const reportKnowledgeGraphQuery = graphql`
 
 const reportKnowledgeGraphRelationQuery = graphql`
   query ReportKnowledgeGraphRelationQuery($id: String!) {
-    stixRelation(id: $id) {
+    stixCoreRelationship(id: $id) {
       id
       first_seen
       last_seen
@@ -85,7 +85,7 @@ const reportKnowledgeGraphRelationQuery = graphql`
 `;
 
 const reportKnowledgeGraphStixEntityQuery = graphql`
-  query ReportKnowledgeGraphStixRelationQuery($id: String!) {
+  query ReportKnowledgeGraphStixCoreRelationshipQuery($id: String!) {
     stixEntity(id: $id) {
       id
       name
@@ -132,7 +132,7 @@ export const reportKnowledgeGraphtMutationRelationDelete = graphql`
 
 const reportKnowledgeGraphCheckRelationQuery = graphql`
   query ReportKnowledgeGraphCheckRelationQuery($id: String!) {
-    stixRelation(id: $id) {
+    stixCoreRelationship(id: $id) {
       id
       reports {
         edges {
@@ -473,9 +473,9 @@ class ReportKnowledgeGraphComponent extends Component {
           fetchQuery(reportKnowledgeGraphCheckRelationQuery, {
             id: node.extras.id,
           }).then((data) => {
-            if (data.stixRelation.reports.edges.length === 1) {
+            if (data.stixCoreRelationship.reports.edges.length === 1) {
               commitMutation({
-                mutation: stixRelationEditionDeleteMutation,
+                mutation: stixCoreRelationshipEditionDeleteMutation,
                 variables: {
                   id: node.extras.id,
                 },
@@ -683,14 +683,14 @@ class ReportKnowledgeGraphComponent extends Component {
       fetchQuery(reportKnowledgeGraphRelationQuery, {
         id: editRelationId,
       }).then((data) => {
-        const { stixRelation } = data;
+        const { stixCoreRelationship } = data;
         const model = this.props.engine.getDiagramModel();
         const nodeObject = model.getNode(currentNode);
         nodeObject.setExtras({
           id: currentNode.extras.id,
-          type: stixRelation.relationship_type,
-          first_seen: stixRelation.first_seen,
-          last_seen: stixRelation.last_seen,
+          type: stixCoreRelationship.relationship_type,
+          first_seen: stixCoreRelationship.first_seen,
+          last_seen: stixCoreRelationship.last_seen,
         });
         this.props.engine.repaintCanvas();
       });
@@ -819,7 +819,7 @@ class ReportKnowledgeGraphComponent extends Component {
               : null
           }
         />
-        <StixRelationCreation
+        <StixCoreRelationshipCreation
           open={openCreateRelation}
           from={createRelationFrom}
           to={createRelationTo}
@@ -835,9 +835,9 @@ class ReportKnowledgeGraphComponent extends Component {
               : null
           }
         />
-        <StixRelationEdition
+        <StixCoreRelationshipEdition
           open={openEditRelation}
-          stixRelationId={editRelationId}
+          stixCoreRelationshipId={editRelationId}
           handleClose={this.handleCloseRelationEdition.bind(this)}
         />
         <StixDomainObjectEdition

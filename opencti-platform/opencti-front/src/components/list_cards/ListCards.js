@@ -165,7 +165,7 @@ class ListCards extends Component {
                       key={filter[0]}
                       classes={{ root: classes.filter }}
                       label={`${t(`filter_${filter[0]}`)}: ${
-                        f.value === null ? t('No tag') : f.value
+                        f.value === null ? t('No label') : f.value
                       }`}
                       onDelete={handleRemoveFilter.bind(this, filter[0])}
                     />

@@ -13,7 +13,7 @@ import CardContent from '@material-ui/core/CardContent';
 import Avatar from '@material-ui/core/Avatar';
 import { Fire } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
-import StixObjectTags from '../../common/stix_object/StixObjectTags';
+import StixObjectLabels from '../../common/stix_object/StixObjectLabels';
 
 const styles = (theme) => ({
   card: {
@@ -55,7 +55,7 @@ const styles = (theme) => ({
     height: 70,
     overflow: 'hidden',
   },
-  tags: {
+  labels: {
     height: 45,
     paddingTop: 7,
   },
@@ -85,7 +85,7 @@ const styles = (theme) => ({
 class IncidentCardComponent extends Component {
   render() {
     const {
-      t, fsd, classes, node, onTagClick,
+      t, fsd, classes, node, onLabelClick,
     } = this.props;
     return (
       <Card classes={{ root: classes.card }} raised={true}>
@@ -111,10 +111,10 @@ class IncidentCardComponent extends Component {
                 unwrapDisallowed={true}
               />
             </div>
-            <div className={classes.tags}>
-              <StixObjectTags
-                tags={node.tags}
-                onClick={onTagClick.bind(this)}
+            <div className={classes.labels}>
+              <StixObjectLabels
+                labels={node.labels}
+                onClick={onLabelClick.bind(this)}
               />
             </div>
           </CardContent>
@@ -129,7 +129,7 @@ IncidentCardComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fsd: PropTypes.func,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
 };
 
 const IncidentCardFragment = createFragmentContainer(IncidentCardComponent, {
@@ -140,11 +140,11 @@ const IncidentCardFragment = createFragmentContainer(IncidentCardComponent, {
       description
       created
       modified
-      tags {
+      labels {
         edges {
           node {
             id
-            tag_type
+            label_type
             value
             color
           }

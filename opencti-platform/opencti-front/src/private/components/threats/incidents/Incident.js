@@ -12,7 +12,7 @@ import IncidentEdition from './IncidentEdition';
 import IncidentPopover from './IncidentPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityStixRelationsDonut from '../../common/stix_core_relationships/EntityStixRelationsDonut';
+import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
@@ -58,7 +58,7 @@ class IncidentComponent extends Component {
           style={{ marginTop: 15 }}
         >
           <Grid item={true} xs={6}>
-            <EntityStixRelationsDonut
+            <EntityStixCoreRelationshipsDonut
               entityId={incident.id}
               entityType="Stix-Observable"
               relationType="related-to"

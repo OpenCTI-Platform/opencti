@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 import { compose, propOr, pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../components/i18n';
-import EntityStixRelationsPie from '../common/stix_core_relationships/EntityStixRelationsPie';
-import EntityStixRelationsRadar from '../common/stix_core_relationships/EntityStixRelationsRadar';
-import EntityStixRelationsDonut from '../common/stix_core_relationships/EntityStixRelationsDonut';
-import EntityStixRelationsTable from '../common/stix_core_relationships/EntityStixRelationsTable';
+import EntityStixCoreRelationshipsPie from '../common/stix_core_relationships/EntityStixCoreRelationshipsPie';
+import EntityStixCoreRelationshipsRadar from '../common/stix_core_relationships/EntityStixCoreRelationshipsRadar';
+import EntityStixCoreRelationshipsDonut from '../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
+import EntityStixCoreRelationshipsTable from '../common/stix_core_relationships/EntityStixCoreRelationshipsTable';
 
 const styles = () => ({
   container: {
@@ -26,7 +26,7 @@ class VictimologyDistribution extends Component {
     switch (configuration.graph_type) {
       case 'table':
         return (
-          <EntityStixRelationsTable
+          <EntityStixCoreRelationshipsTable
             variant="explore"
             configuration={configuration}
             handleOpenConfig={handleOpenConfig.bind(this)}
@@ -42,7 +42,7 @@ class VictimologyDistribution extends Component {
         );
       case 'radar':
         return (
-          <EntityStixRelationsRadar
+          <EntityStixCoreRelationshipsRadar
             variant="explore"
             configuration={configuration}
             handleOpenConfig={handleOpenConfig.bind(this)}
@@ -58,7 +58,7 @@ class VictimologyDistribution extends Component {
         );
       case 'donut':
         return (
-          <EntityStixRelationsDonut
+          <EntityStixCoreRelationshipsDonut
             variant="explore"
             configuration={configuration}
             handleOpenConfig={handleOpenConfig.bind(this)}
@@ -74,7 +74,7 @@ class VictimologyDistribution extends Component {
         );
       default:
         return (
-          <EntityStixRelationsPie
+          <EntityStixCoreRelationshipsPie
             variant="explore"
             configuration={configuration}
             handleOpenConfig={handleOpenConfig.bind(this)}

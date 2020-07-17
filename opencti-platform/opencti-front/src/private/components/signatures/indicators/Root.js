@@ -7,7 +7,7 @@ import {
   requestSubscription,
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
-import StixRelation from '../../common/stix_core_relationships/StixRelation';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import Indicator from './Indicator';
 import IndicatorObservables from './IndicatorObservables';
 import Loader from '../../../../components/Loader';
@@ -138,7 +138,7 @@ class RootIndicator extends Component {
                     exact
                     path="/dashboard/signatures/indicators/:indicatorId/knowledge/relations/:relationId"
                     render={(routeProps) => (
-                      <StixRelation entityId={indicatorId} {...routeProps} />
+                      <StixCoreRelationship entityId={indicatorId} {...routeProps} />
                     )}
                   />
                 </div>

@@ -11,7 +11,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { Help, MoreVert } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
-import StixObservableRelationPopover from '../../common/stix_observable_relations/StixObservableRelationPopover';
+import StixCyberObservableRelationPopover from '../../common/stix_observable_relations/StixCyberObservableRelationPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
 
@@ -45,7 +45,7 @@ const styles = (theme) => ({
   },
 });
 
-class StixObservableObservableLineComponent extends Component {
+class StixCyberObservableObservableLineComponent extends Component {
   render() {
     const {
       nsd,
@@ -115,8 +115,8 @@ class StixObservableObservableLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <StixObservableRelationPopover
-            stixObservableRelationId={node.id}
+          <StixCyberObservableRelationPopover
+            stixCyberObservableRelationId={node.id}
             paginationOptions={paginationOptions}
             disabled={node.inferred}
           />
@@ -126,7 +126,7 @@ class StixObservableObservableLineComponent extends Component {
   }
 }
 
-StixObservableObservableLineComponent.propTypes = {
+StixCyberObservableObservableLineComponent.propTypes = {
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object,
   node: PropTypes.object,
@@ -136,11 +136,11 @@ StixObservableObservableLineComponent.propTypes = {
   displayRelation: PropTypes.bool,
 };
 
-const StixObservableObservableLineFragment = createFragmentContainer(
-  StixObservableObservableLineComponent,
+const StixCyberObservableObservableLineFragment = createFragmentContainer(
+  StixCyberObservableObservableLineComponent,
   {
     node: graphql`
-      fragment StixObservableObservableLine_node on StixObservableRelation {
+      fragment StixCyberObservableObservableLine_node on StixCyberObservableRelation {
         id
         relationship_type
         role_played
@@ -158,12 +158,12 @@ const StixObservableObservableLineFragment = createFragmentContainer(
   },
 );
 
-export const StixObservableObservableLine = compose(
+export const StixCyberObservableObservableLine = compose(
   inject18n,
   withStyles(styles),
-)(StixObservableObservableLineFragment);
+)(StixCyberObservableObservableLineFragment);
 
-class StixObservableObservableLineDummyComponent extends Component {
+class StixCyberObservableObservableLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns, displayRelation } = this.props;
     return (
@@ -225,13 +225,13 @@ class StixObservableObservableLineDummyComponent extends Component {
   }
 }
 
-StixObservableObservableLineDummyComponent.propTypes = {
+StixCyberObservableObservableLineDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
   displayRelation: PropTypes.bool,
 };
 
-export const StixObservableObservableLineDummy = compose(
+export const StixCyberObservableObservableLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(StixObservableObservableLineDummyComponent);
+)(StixCyberObservableObservableLineDummyComponent);

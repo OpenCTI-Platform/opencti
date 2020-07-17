@@ -6,9 +6,9 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
-import EntityStixRelations from '../../common/stix_core_relationships/EntityStixCoreRelationships';
+import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
-import StixRelation from '../../common/stix_core_relationships/StixRelation';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import RegionPopover from './RegionPopover';
 import RegionKnowledgeBar from './RegionKnowledgeBar';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -35,7 +35,7 @@ class RegionKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/regions/:regionId/knowledge/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
+            <StixCoreRelationship
               entityId={region.id}
               paddingRight={true}
               {...routeProps}
@@ -57,7 +57,7 @@ class RegionKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/regions/:regionId/knowledge/countries"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={region.id}
               relationType="localization"
               targetEntityTypes={['Country']}
@@ -71,7 +71,7 @@ class RegionKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/regions/:regionId/knowledge/threats"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={region.id}
               relationType="targets"
               targetEntityTypes={[

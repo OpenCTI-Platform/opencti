@@ -6,9 +6,9 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
-import EntityStixRelations from '../../common/stix_core_relationships/EntityStixCoreRelationships';
+import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
-import StixRelation from '../../common/stix_core_relationships/StixRelation';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import IncidentPopover from './IncidentPopover';
 import IncidentKnowledgeBar from './IncidentKnowledgeBar';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -37,7 +37,7 @@ class IncidentKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/incidents/:incidentId/knowledge/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
+            <StixCoreRelationship
               entityId={incident.id}
               paddingRight={true}
               {...routeProps}
@@ -59,7 +59,7 @@ class IncidentKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/incidents/:incidentId/knowledge/attribution"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={incident.id}
               relationType="attributed-to"
               targetEntityTypes={[
@@ -79,7 +79,7 @@ class IncidentKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/incidents/:incidentId/knowledge/malwares"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={incident.id}
               relationType="uses"
               targetEntityTypes={['Malware']}
@@ -115,7 +115,7 @@ class IncidentKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/incidents/:incidentId/knowledge/tools"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={incident.id}
               relationType="uses"
               targetEntityTypes={['Tool']}
@@ -129,7 +129,7 @@ class IncidentKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/incidents/:incidentId/knowledge/vulnerabilities"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={incident.id}
               relationType="targets"
               targetEntityTypes={['Vulnerability']}

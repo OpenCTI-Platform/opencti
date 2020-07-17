@@ -10,7 +10,7 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import IndicatorEntitiesLines, {
   indicatorEntitiesLinesQuery,
 } from './IndicatorEntitiesLines';
-import StixRelationCreationFromEntity from '../../common/stix_core_relationships/StixRelationCreationFromEntity';
+import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 
 const styles = () => ({
   paper: {
@@ -123,7 +123,7 @@ class IndicatorEntities extends Component {
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Relations to threats')}
         </Typography>
-        <StixRelationCreationFromEntity
+        <StixCoreRelationshipCreationFromEntity
           paginationOptions={paginationOptions}
           entityId={entityId}
           variant="inLine"

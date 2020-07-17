@@ -8,7 +8,7 @@ import Switch from '@material-ui/core/Switch';
 import Drawer from '@material-ui/core/Drawer';
 import Loader from '../../../../components/Loader';
 import StixDomainObjectKillChainLines, {
-  stixDomainObjectKillChainLinesStixRelationsQuery,
+  stixDomainObjectKillChainLinesStixCoreRelationshipsQuery,
 } from './StixDomainObjectKillChainLines';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -80,7 +80,7 @@ class StixDomainObjectKillChain extends Component {
           </Grid>
         </Drawer>
         <QueryRenderer
-          query={stixDomainObjectKillChainLinesStixRelationsQuery}
+          query={stixDomainObjectKillChainLinesStixCoreRelationshipsQuery}
           variables={{ first: 500, ...paginationOptions }}
           render={({ props }) => {
             if (props) {

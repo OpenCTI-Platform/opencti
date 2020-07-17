@@ -12,7 +12,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { Launch } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
-import StixDomainObjectTags from '../../common/stix_domain_objects/StixDomainObjectLabels';
+import StixDomainObjectLabels from '../../common/stix_domain_objects/StixDomainObjectLabels';
 import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
@@ -34,7 +34,7 @@ class ToolDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixDomainObjectTags tags={tool.tags} id={tool.id} />
+          <StixDomainObjectLabels labels={tool.labels} id={tool.id} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -88,11 +88,11 @@ const ToolDetails = createFragmentContainer(ToolDetailsComponent, {
           id
           name
         }
-      tags {
+      labels {
         edges {
           node {
             id
-            tag_type
+            label_type
             value
             color
           }

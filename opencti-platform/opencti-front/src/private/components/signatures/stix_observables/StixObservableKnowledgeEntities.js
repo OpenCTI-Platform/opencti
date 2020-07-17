@@ -11,10 +11,10 @@ import Switch from '@material-ui/core/Switch';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ListLines from '../../../../components/list_lines/ListLines';
-import StixObservableEntitiesLines, {
-  stixObservableEntitiesLinesQuery,
-} from './StixObservableEntitiesLines';
-import StixRelationCreationFromEntity from '../../common/stix_core_relationships/StixRelationCreationFromEntity';
+import StixCyberObservableEntitiesLines, {
+  stixCyberObservableEntitiesLinesQuery,
+} from './StixCyberObservableEntitiesLines';
+import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 
 const styles = (theme) => ({
   paper: {
@@ -32,7 +32,7 @@ const styles = (theme) => ({
   },
 });
 
-class StixObservableKnowledgeEntities extends Component {
+class StixCyberObservableKnowledgeEntities extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -104,10 +104,10 @@ class StixObservableKnowledgeEntities extends Component {
         secondaryAction={true}
       >
         <QueryRenderer
-          query={stixObservableEntitiesLinesQuery}
+          query={stixCyberObservableEntitiesLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
-            <StixObservableEntitiesLines
+            <StixCyberObservableEntitiesLines
               data={props}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
@@ -161,7 +161,7 @@ class StixObservableKnowledgeEntities extends Component {
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Relations')}
         </Typography>
-        <StixRelationCreationFromEntity
+        <StixCoreRelationshipCreationFromEntity
           paginationOptions={paginationOptions}
           entityId={entityId}
           variant="inLine"
@@ -184,7 +184,7 @@ class StixObservableKnowledgeEntities extends Component {
   }
 }
 
-StixObservableKnowledgeEntities.propTypes = {
+StixCyberObservableKnowledgeEntities.propTypes = {
   entityId: PropTypes.string,
   relationType: PropTypes.string,
   classes: PropTypes.object,
@@ -195,4 +195,4 @@ StixObservableKnowledgeEntities.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixObservableKnowledgeEntities);
+)(StixCyberObservableKnowledgeEntities);
