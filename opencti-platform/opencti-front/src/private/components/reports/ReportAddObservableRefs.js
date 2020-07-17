@@ -18,7 +18,7 @@ import SearchInput from '../../../components/SearchInput';
 import ReportAddObservableRefsLines, {
   reportAddObservableRefsLinesQuery,
 } from './ReportAddObservableRefsLines';
-import StixCyberObservableCreation from '../signatures/stix_observables/StixCyberObservableCreation';
+import StixCyberObservableCreation from '../signatures/stix_cyber_observables/StixCyberObservableCreation';
 
 const styles = (theme) => ({
   drawerPaper: {

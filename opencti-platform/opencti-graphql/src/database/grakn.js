@@ -94,8 +94,8 @@ import {
   isStixSightingRelationship,
   isStixRelationship,
   generateInternalId,
-  ABSTRACT_BASIC_RELATIONSHIP,
-} from '../utils/idGenerator';
+  ABSTRACT_BASIC_RELATIONSHIP, isStixCyberObservableRelationship
+} from "../utils/idGenerator";
 import { lockResource } from './redis';
 import { STIX_SPEC_VERSION } from './stix';
 
@@ -1363,10 +1363,23 @@ const createRelationRaw = async (user, input, opts = {}) => {
   if (isStixCoreRelationship(relationshipType)) {
     relationAttributes.relationship_type = relationshipType;
     relationAttributes.start_time = isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
-    relationAttributes.end_time = isNil(input.end_time) ? new Date(UNTIL_END) : input.end_time;
+    relationAttributes.stop_time = isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
     /* istanbul ignore if */
-    if (relationAttributes.start_time > relationAttributes.end_time) {
-      throw DatabaseError('You cant create a relation with a start_time less than the end_time', {
+    if (relationAttributes.start_time > relationAttributes.stop_time) {
+      throw DatabaseError('You cant create a relation with a start_time less than the stop_time', {
+        from: input.fromId,
+        input,
+      });
+    }
+  }
+  // stix-observable-relationship
+  if (isStixCyberObservableRelationship(relationshipType)) {
+    relationAttributes.relationship_type = relationshipType;
+    relationAttributes.start_time = isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
+    relationAttributes.stop_time = isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
+    /* istanbul ignore if */
+    if (relationAttributes.start_time > relationAttributes.stop_time) {
+      throw DatabaseError('You cant create a relation with a start_time less than the stop_time', {
         from: input.fromId,
         input,
       });

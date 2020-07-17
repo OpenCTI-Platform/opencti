@@ -27,12 +27,12 @@ import { dayStartDate, parse } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
 import DatePickerField from '../../../../components/DatePickerField';
-import StixSightingCreationFromEntityStixDomainObjectsLines, {
-  stixSightingCreationFromEntityStixDomainObjectsLinesQuery,
-} from './StixSightingCreationFromEntityStixDomainObjectsLines';
-import StixSightingCreationFromEntityStixCyberObservablesLines, {
-  stixSightingCreationFromEntityStixCyberObservablesLinesQuery,
-} from './StixSightingCreationFromEntityStixCyberObservablesLines';
+import StixSightingRelationshipCreationFromEntityStixDomainObjectsLines, {
+  stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery,
+} from './StixSightingRelationshipCreationFromEntityStixDomainObjectsLines';
+import StixSightingRelationshipCreationFromEntityStixCyberObservablesLines, {
+  stixSightingRelationshipCreationFromEntityStixCyberObservablesLinesQuery,
+} from './StixSightingRelationshipCreationFromEntityStixCyberObservablesLines';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import SearchInput from '../../../../components/SearchInput';
 import { truncate } from '../../../../utils/String';
@@ -177,8 +177,8 @@ const styles = (theme) => ({
   },
 });
 
-const stixSightingCreationFromEntityQuery = graphql`
-  query StixSightingCreationFromEntityQuery($id: String) {
+const stixSightingRelationshipCreationFromEntityQuery = graphql`
+  query StixSightingRelationshipCreationFromEntityQuery($id: String) {
     stixEntity(id: $id) {
       id
       entity_type
@@ -188,7 +188,7 @@ const stixSightingCreationFromEntityQuery = graphql`
       ... on StixCyberObservable {
         observable_value
       }
-      ... on StixSighting {
+      ... on StixSightingRelationship {
         from {
           id
           entity_type
@@ -204,18 +204,18 @@ const stixSightingCreationFromEntityQuery = graphql`
   }
 `;
 
-const stixSightingCreationFromEntityMutation = graphql`
-  mutation StixSightingCreationFromEntityMutation(
+const stixSightingRelationshipCreationFromEntityMutation = graphql`
+  mutation StixSightingRelationshipCreationFromEntityMutation(
     $input: StixSightingRelationshipAddInput!
     $reversedReturn: Boolean
   ) {
-    stixSightingAdd(input: $input, reversedReturn: $reversedReturn) {
-      ...EntityStixSightingLine_node
+    stixSightingRelationshipAdd(input: $input, reversedReturn: $reversedReturn) {
+      ...EntityStixSightingRelationshipLine_node
     }
   }
 `;
 
-const stixSightingValidation = (t) => Yup.object().shape({
+const stixSightingRelationshipValidation = (t) => Yup.object().shape({
   number: Yup.number()
     .typeError(t('The value must be a number'))
     .integer(t('The value must be a number'))
@@ -238,13 +238,13 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
-    'Pagination_stixSightings',
+    'Pagination_stixSightingRelationships',
     paginationOptions,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class StixSightingCreationFromEntity extends Component {
+class StixSightingRelationshipCreationFromEntity extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -278,14 +278,14 @@ class StixSightingCreationFromEntity extends Component {
       assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
     )(values);
     commitMutation({
-      mutation: stixSightingCreationFromEntityMutation,
+      mutation: stixSightingRelationshipCreationFromEntityMutation,
       variables: {
         input: finalValues,
         reversedReturn: !this.props.isFrom,
       },
       updater: (store) => {
         if (typeof this.props.onCreate !== 'function') {
-          const payload = store.getRootField('stixSightingAdd');
+          const payload = store.getRootField('stixSightingRelationshipAdd');
           const newEdge = payload.setLinkedRecord(payload, 'node');
           const container = store.getRoot();
           sharedUpdater(
@@ -375,12 +375,12 @@ class StixSightingCreationFromEntity extends Component {
         <div className={classes.containerList}>
           {!onlyObservables ? (
             <QueryRenderer
-              query={stixSightingCreationFromEntityStixDomainObjectsLinesQuery}
+              query={stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery}
               variables={{ count: 25, ...stixDomainObjectsPaginationOptions }}
               render={({ props }) => {
                 if (props) {
                   return (
-                    <StixSightingCreationFromEntityStixDomainObjectsLines
+                    <StixSightingRelationshipCreationFromEntityStixDomainObjectsLines
                       handleSelect={this.handleSelectEntity.bind(this)}
                       data={props}
                     />
@@ -393,7 +393,7 @@ class StixSightingCreationFromEntity extends Component {
             ''
           )}
           <QueryRenderer
-            query={stixSightingCreationFromEntityStixCyberObservablesLinesQuery}
+            query={stixSightingRelationshipCreationFromEntityStixCyberObservablesLinesQuery}
             variables={{
               search: this.state.search,
               types: targetEntityTypes,
@@ -404,7 +404,7 @@ class StixSightingCreationFromEntity extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixSightingCreationFromEntityStixCyberObservablesLines
+                  <StixSightingRelationshipCreationFromEntityStixCyberObservablesLines
                     handleSelect={this.handleSelectEntity.bind(this)}
                     data={props}
                   />
@@ -452,7 +452,7 @@ class StixSightingCreationFromEntity extends Component {
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={stixSightingValidation(t)}
+        validationSchema={stixSightingRelationshipValidation(t)}
         onSubmit={this.onSubmit.bind(this)}
         onReset={this.handleClose.bind(this)}
       >
@@ -726,7 +726,7 @@ class StixSightingCreationFromEntity extends Component {
           onClose={this.handleClose.bind(this)}
         >
           <QueryRenderer
-            query={stixSightingCreationFromEntityQuery}
+            query={stixSightingRelationshipCreationFromEntityQuery}
             variables={{ id: entityId }}
             render={({ props }) => {
               if (props && props.stixEntity) {
@@ -746,7 +746,7 @@ class StixSightingCreationFromEntity extends Component {
   }
 }
 
-StixSightingCreationFromEntity.propTypes = {
+StixSightingRelationshipCreationFromEntity.propTypes = {
   entityId: PropTypes.string,
   isFrom: PropTypes.bool,
   targetEntityTypes: PropTypes.array,
@@ -762,4 +762,4 @@ StixSightingCreationFromEntity.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixSightingCreationFromEntity);
+)(StixSightingRelationshipCreationFromEntity);

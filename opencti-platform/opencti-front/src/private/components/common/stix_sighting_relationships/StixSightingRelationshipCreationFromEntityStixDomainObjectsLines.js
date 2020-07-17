@@ -59,7 +59,7 @@ const styles = (theme) => ({
   },
 });
 
-class StixSightingCreationFromEntityLinesContainer extends Component {
+class StixSightingRelationshipCreationFromEntityLinesContainer extends Component {
   constructor(props) {
     super(props);
     this.state = { expandedPanels: {} };
@@ -168,7 +168,7 @@ class StixSightingCreationFromEntityLinesContainer extends Component {
   }
 }
 
-StixSightingCreationFromEntityLinesContainer.propTypes = {
+StixSightingRelationshipCreationFromEntityLinesContainer.propTypes = {
   handleSelect: PropTypes.func,
   data: PropTypes.object,
   limit: PropTypes.number,
@@ -177,8 +177,8 @@ StixSightingCreationFromEntityLinesContainer.propTypes = {
   fld: PropTypes.func,
 };
 
-export const stixSightingCreationFromEntityStixDomainObjectsLinesQuery = graphql`
-  query StixSightingCreationFromEntityStixDomainObjectsLinesQuery(
+export const stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery = graphql`
+  query StixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery(
     $search: String
     $types: [String]
     $count: Int!
@@ -186,7 +186,7 @@ export const stixSightingCreationFromEntityStixDomainObjectsLinesQuery = graphql
     $orderBy: StixDomainObjectsOrdering
     $orderMode: OrderingMode
   ) {
-    ...StixSightingCreationFromEntityStixDomainObjectsLines_data
+    ...StixSightingRelationshipCreationFromEntityStixDomainObjectsLines_data
       @arguments(
         search: $search
         types: $types
@@ -198,11 +198,11 @@ export const stixSightingCreationFromEntityStixDomainObjectsLinesQuery = graphql
   }
 `;
 
-const StixSightingCreationFromEntityStixDomainObjectsLines = createPaginationContainer(
-  StixSightingCreationFromEntityLinesContainer,
+const StixSightingRelationshipCreationFromEntityStixDomainObjectsLines = createPaginationContainer(
+  StixSightingRelationshipCreationFromEntityLinesContainer,
   {
     data: graphql`
-      fragment StixSightingCreationFromEntityStixDomainObjectsLines_data on Query
+      fragment StixSightingRelationshipCreationFromEntityStixDomainObjectsLines_data on Query
         @argumentDefinitions(
           search: { type: "String" }
           types: { type: "[String]" }
@@ -253,11 +253,11 @@ const StixSightingCreationFromEntityStixDomainObjectsLines = createPaginationCon
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: stixSightingCreationFromEntityStixDomainObjectsLinesQuery,
+    query: stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery,
   },
 );
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixSightingCreationFromEntityStixDomainObjectsLines);
+)(StixSightingRelationshipCreationFromEntityStixDomainObjectsLines);

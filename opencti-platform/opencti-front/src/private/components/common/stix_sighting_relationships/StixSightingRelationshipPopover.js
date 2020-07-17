@@ -16,7 +16,7 @@ import { MoreVertOutlined } from '@material-ui/icons';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
-import StixCyberObservableRelationEdition from './StixCyberObservableRelationEdition';
+import StixSightingRelationshipEdition from './StixSightingRelationshipRelationshipEdition';
 
 const styles = (theme) => ({
   container: {
@@ -41,15 +41,15 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const stixCyberObservableRelationPopoverDeletionMutation = graphql`
-  mutation StixCyberObservableRelationPopoverDeletionMutation($id: ID!) {
-    stixCyberObservableRelationEdit(id: $id) {
+const stixSightingRelationshipPopoverDeletionMutation = graphql`
+  mutation StixSightingRelationshipPopoverDeletionMutation($id: ID!) {
+    stixSightingRelationshipEdit(id: $id) {
       delete
     }
   }
 `;
 
-class StixCyberObservableRelationPopover extends Component {
+class StixSightingRelationshipPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -90,31 +90,36 @@ class StixCyberObservableRelationPopover extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
-      mutation: stixCyberObservableRelationPopoverDeletionMutation,
+      mutation: stixSightingRelationshipPopoverDeletionMutation,
       variables: {
-        id: this.props.stixCyberObservableRelationId,
+        id: this.props.stixSightingRelationshipId,
       },
       updater: (store) => {
-        const container = store.getRoot();
-        const payload = store.getRootField('stixCyberObservableRelationEdit');
-        const userProxy = store.get(container.getDataID());
-        const conn = ConnectionHandler.getConnection(
-          userProxy,
-          'Pagination_stixCyberObservableRelations',
-          this.props.paginationOptions,
-        );
-        ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
+        if (typeof this.props.onDelete !== 'function') {
+          const container = store.getRoot();
+          const payload = store.getRootField('stixSightingRelationshipEdit');
+          const userProxy = store.get(container.getDataID());
+          const conn = ConnectionHandler.getConnection(
+            userProxy,
+            'Pagination_stixSightingRelationships',
+            this.props.paginationOptions,
+          );
+          ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
+        }
       },
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleCloseDelete();
+        if (typeof this.props.onDelete === 'function') {
+          this.props.onDelete();
+        }
       },
     });
   }
 
   render() {
     const {
-      classes, t, stixCyberObservableRelationId, disabled,
+      classes, t, stixSightingRelationshipId, disabled,
     } = this.props;
     return (
       <div className={classes.container}>
@@ -138,9 +143,9 @@ class StixCyberObservableRelationPopover extends Component {
             {t('Delete')}
           </MenuItem>
         </Menu>
-        <StixCyberObservableRelationEdition
+        <StixSightingRelationshipEdition
           variant="noGraph"
-          stixCyberObservableRelationId={stixCyberObservableRelationId}
+          stixSightingRelationshipId={stixSightingRelationshipId}
           open={this.state.displayUpdate}
           handleClose={this.handleCloseUpdate.bind(this)}
           handleDelete={() => true}
@@ -153,7 +158,7 @@ class StixCyberObservableRelationPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this relation?')}
+              {t('Do you want to delete this sighting?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -178,15 +183,13 @@ class StixCyberObservableRelationPopover extends Component {
   }
 }
 
-StixCyberObservableRelationPopover.propTypes = {
-  stixCyberObservableRelationId: PropTypes.string,
+StixSightingRelationshipPopover.propTypes = {
+  stixSightingRelationshipId: PropTypes.string,
   disabled: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  onDelete: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCyberObservableRelationPopover);
+export default compose(inject18n, withStyles(styles))(StixSightingRelationshipPopover);

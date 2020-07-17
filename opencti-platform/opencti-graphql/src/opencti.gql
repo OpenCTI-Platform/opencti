@@ -638,7 +638,10 @@ define
 
   # STIX Cyber Observable Relationships
   stix-cyber-observable-relationship sub stix-relationship,
-    abstract;
+    abstract,
+    has relationship_type,
+    has start_time,
+    has stop_time;
 
   operating-system sub stix-cyber-observable-relationship,
     relates operating-system_from,

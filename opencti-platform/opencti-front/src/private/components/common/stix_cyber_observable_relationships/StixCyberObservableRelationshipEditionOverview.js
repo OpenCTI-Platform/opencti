@@ -76,32 +76,32 @@ const styles = (theme) => ({
 });
 
 const subscription = graphql`
-  subscription StixCyberObservableRelationEditionOverviewSubscription($id: ID!) {
-    stixCyberObservableRelation(id: $id) {
-      ...StixCyberObservableRelationEditionOverview_stixCyberObservableRelation
+  subscription StixCyberObservableRelationshipEditionOverviewSubscription($id: ID!) {
+    stixCyberObservableRelationship(id: $id) {
+      ...StixCyberObservableRelationshipEditionOverview_stixCyberObservableRelationship
     }
   }
 `;
 
-const stixCyberObservableRelationMutationFieldPatch = graphql`
-  mutation StixCyberObservableRelationEditionOverviewFieldPatchMutation(
+const stixCyberObservableRelationshipMutationFieldPatch = graphql`
+  mutation StixCyberObservableRelationshipEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: EditInput!
   ) {
-    stixCyberObservableRelationEdit(id: $id) {
+    stixCyberObservableRelationshipEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...StixCyberObservableRelationEditionOverview_stixCyberObservableRelation
+        ...StixCyberObservableRelationshipEditionOverview_stixCyberObservableRelationship
       }
     }
   }
 `;
 
-export const stixCyberObservableRelationEditionFocus = graphql`
-  mutation StixCyberObservableRelationEditionOverviewFocusMutation(
+export const stixCyberObservableRelationshipEditionFocus = graphql`
+  mutation StixCyberObservableRelationshipEditionOverviewFocusMutation(
     $id: ID!
     $input: EditContext!
   ) {
-    stixCyberObservableRelationEdit(id: $id) {
+    stixCyberObservableRelationshipEdit(id: $id) {
       contextPatch(input: $input) {
         id
       }
@@ -109,7 +109,7 @@ export const stixCyberObservableRelationEditionFocus = graphql`
   }
 `;
 
-const stixCyberObservableRelationValidation = (t) => Yup.object().shape({
+const stixCyberObservableRelationshipValidation = (t) => Yup.object().shape({
   first_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
@@ -125,7 +125,7 @@ class StixCyberObservableRelationEditionContainer extends Component {
       subscription,
       variables: {
         // eslint-disable-next-line
-        id: this.props.stixCyberObservableRelation.id,
+        id: this.props.stixCyberObservableRelationship.id,
       },
     });
     this.setState({ sub });
@@ -137,9 +137,9 @@ class StixCyberObservableRelationEditionContainer extends Component {
 
   handleChangeFocus(name) {
     commitMutation({
-      mutation: stixCyberObservableRelationEditionFocus,
+      mutation: stixCyberObservableRelationshipEditionFocus,
       variables: {
-        id: this.props.stixCyberObservableRelation.id,
+        id: this.props.stixCyberObservableRelationship.id,
         input: {
           focusOn: name,
         },
@@ -148,13 +148,13 @@ class StixCyberObservableRelationEditionContainer extends Component {
   }
 
   handleSubmitField(name, value) {
-    stixCyberObservableRelationValidation(this.props.t)
+    stixCyberObservableRelationshipValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
-          mutation: stixCyberObservableRelationMutationFieldPatch,
+          mutation: stixCyberObservableRelationshipMutationFieldPatch,
           variables: {
-            id: this.props.stixCyberObservableRelation.id,
+            id: this.props.stixCyberObservableRelationship.id,
             input: { key: name, value },
           },
         });
@@ -168,10 +168,10 @@ class StixCyberObservableRelationEditionContainer extends Component {
       classes,
       handleClose,
       handleDelete,
-      stixCyberObservableRelation,
+      stixCyberObservableRelationship,
       stixDomainObject,
     } = this.props;
-    const { editContext } = stixCyberObservableRelation;
+    const { editContext } = stixCyberObservableRelationship;
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
       map((n) => ({
@@ -179,7 +179,7 @@ class StixCyberObservableRelationEditionContainer extends Component {
         value: n.node.id,
         relationId: n.relation.id,
       })),
-    )(stixCyberObservableRelation);
+    )(stixCyberObservableRelationship);
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
       map((n) => ({
@@ -187,10 +187,10 @@ class StixCyberObservableRelationEditionContainer extends Component {
         value: n.node.id,
         relationId: n.relation.id,
       })),
-    )(stixCyberObservableRelation);
+    )(stixCyberObservableRelationship);
     const initialValues = pipe(
-      assoc('first_seen', dateFormat(stixCyberObservableRelation.first_seen)),
-      assoc('last_seen', dateFormat(stixCyberObservableRelation.last_seen)),
+      assoc('first_seen', dateFormat(stixCyberObservableRelationship.first_seen)),
+      assoc('last_seen', dateFormat(stixCyberObservableRelationship.last_seen)),
       assoc('killChainPhases', killChainPhases),
       assoc('markingDefinitions', markingDefinitions),
       pick([
@@ -202,7 +202,7 @@ class StixCyberObservableRelationEditionContainer extends Component {
         'killChainPhases',
         'markingDefinitions',
       ]),
-    )(stixCyberObservableRelation);
+    )(stixCyberObservableRelationship);
     const link = stixDomainObject
       ? resolveLink(stixDomainObject.entity_type)
       : '';
@@ -233,7 +233,7 @@ class StixCyberObservableRelationEditionContainer extends Component {
                   <Formik
                     enableReinitialize={true}
                     initialValues={initialValues}
-                    validationSchema={stixCyberObservableRelationValidation(t)}
+                    validationSchema={stixCyberObservableRelationshipValidation(t)}
                     render={() => (
                       <Form style={{ margin: '20px 0 20px 0' }}>
                         <Field
@@ -326,7 +326,7 @@ class StixCyberObservableRelationEditionContainer extends Component {
               variant="contained"
               color="primary"
               component={Link}
-              to={`${link}/${stixDomainObject.id}/knowledge/relations/${stixCyberObservableRelation.id}`}
+              to={`${link}/${stixDomainObject.id}/knowledge/relations/${stixCyberObservableRelationship.id}`}
               classes={{ root: classes.buttonLeft }}
             >
               {t('Details')}
@@ -351,21 +351,21 @@ class StixCyberObservableRelationEditionContainer extends Component {
   }
 }
 
-StixCyberObservableRelationEditionContainer.propTypes = {
+StixCyberObservableRelationshipEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   handleDelete: PropTypes.func,
   classes: PropTypes.object,
   stixDomainObject: PropTypes.object,
-  stixCyberObservableRelation: PropTypes.object,
+  stixCyberObservableRelationship: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
 
-const StixCyberObservableRelationEditionFragment = createFragmentContainer(
+const StixCyberObservableRelationshipEditionFragment = createFragmentContainer(
   StixCyberObservableRelationEditionContainer,
   {
-    stixCyberObservableRelation: graphql`
-      fragment StixCyberObservableRelationEditionOverview_stixCyberObservableRelation on StixCyberObservableRelation {
+    stixCyberObservableRelationship: graphql`
+      fragment StixCyberObservableRelationshipEditionOverview_stixCyberObservableRelationship on StixCyberObservableRelationship {
         id
         weight
         first_seen
@@ -397,4 +397,4 @@ const StixCyberObservableRelationEditionFragment = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(StixCyberObservableRelationEditionFragment);
+)(StixCyberObservableRelationshipEditionFragment);

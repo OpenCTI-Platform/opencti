@@ -9,10 +9,10 @@ import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
 import StixCyberObservablesLines, {
   stixCyberObservablesLinesQuery,
-} from './stix_observables/StixCyberObservablesLines';
+} from './stix_cyber_observables/StixCyberObservablesLines';
 import inject18n from '../../../components/i18n';
-import StixCyberObservableCreation from './stix_observables/StixCyberObservableCreation';
-import StixCyberObservablesRightBar from './stix_observables/StixCyberObservablesRightBar';
+import StixCyberObservableCreation from './stix_cyber_observables/StixCyberObservableCreation';
+import StixCyberObservablesRightBar from './stix_cyber_observables/StixCyberObservablesRightBar';
 import {
   buildViewParamsFromUrlAndStorage,
   convertFilters,

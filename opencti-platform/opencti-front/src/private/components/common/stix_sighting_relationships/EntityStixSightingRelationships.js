@@ -11,10 +11,10 @@ import MenuItem from '@material-ui/core/MenuItem';
 import { QueryRenderer } from '../../../../relay/environment';
 import ListLines from '../../../../components/list_lines/ListLines';
 import inject18n from '../../../../components/i18n';
-import EntityStixSightingsLines, {
-  entityStixSightingsLinesQuery,
-} from './EntityStixSightingsLines';
-import StixSightingCreationFromEntity from './StixSightingCreationFromEntity';
+import EntityStixSightingRelationshipsLines, {
+  entityStixSightingRelationshipsLinesQuery,
+} from './EntityStixSightingRelationshipsLines';
+import StixSightingRelationshipCreationFromEntity from './StixSightingRelationshipCreationFromEntity';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
@@ -37,7 +37,7 @@ const styles = (theme) => ({
   },
 });
 
-class EntityStixSightings extends Component {
+class EntityStixSightingRelationships extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -130,10 +130,10 @@ class EntityStixSightings extends Component {
         secondaryAction={true}
       >
         <QueryRenderer
-          query={entityStixSightingsLinesQuery}
+          query={entityStixSightingRelationshipsLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
-            <EntityStixSightingsLines
+            <EntityStixSightingRelationshipsLines
               data={props}
               paginationOptions={paginationOptions}
               entityLink={entityLink}
@@ -243,7 +243,7 @@ class EntityStixSightings extends Component {
         </Drawer>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixSightingCreationFromEntity
+          <StixSightingRelationshipCreationFromEntity
             entityId={entityId}
             isFrom={true}
             paddingRight={false}
@@ -256,7 +256,7 @@ class EntityStixSightings extends Component {
   }
 }
 
-EntityStixSightings.propTypes = {
+EntityStixSightingRelationshipRelationships.propTypes = {
   entityId: PropTypes.string,
   targetEntityTypes: PropTypes.array,
   entityLink: PropTypes.string,
@@ -267,4 +267,4 @@ EntityStixSightings.propTypes = {
   exploreLink: PropTypes.string,
 };
 
-export default compose(inject18n, withStyles(styles))(EntityStixSightings);
+export default compose(inject18n, withStyles(styles))(EntityStixSightingRelationships);

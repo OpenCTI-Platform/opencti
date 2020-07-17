@@ -9,7 +9,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../../components/i18n';
 import SelectField from '../../../components/SelectField';
 import { QueryRenderer } from '../../../relay/environment';
-import { stixCyberObservablesLinesSubTypesQuery } from './stix_observables/StixCyberObservablesLines';
+import { stixCyberObservablesLinesSubTypesQuery } from './stix_cyber_observables/StixCyberObservablesLines';
 
 const styles = () => ({
   container: {

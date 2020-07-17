@@ -85,32 +85,32 @@ const styles = (theme) => ({
 });
 
 const subscription = graphql`
-  subscription StixSightingEditionOverviewSubscription($id: ID!) {
-    stixSighting(id: $id) {
-      ...StixSightingEditionOverview_stixSighting
+  subscription StixSightingRelationshipEditionOverviewSubscription($id: ID!) {
+    stixSightingRelationship(id: $id) {
+      ...StixSightingRelationshipEditionOverview_stixSightingRelationship
     }
   }
 `;
 
-const stixSightingMutationFieldPatch = graphql`
-  mutation StixSightingEditionOverviewFieldPatchMutation(
+const stixSightingRelationshipMutationFieldPatch = graphql`
+  mutation StixSightingRelationshipEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: EditInput!
   ) {
-    stixSightingEdit(id: $id) {
+    stixSightingRelationshipEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...StixSightingEditionOverview_stixSighting
+        ...StixSightingRelationshipEditionOverview_stixSightingRelationship
       }
     }
   }
 `;
 
-export const stixSightingEditionFocus = graphql`
-  mutation StixSightingEditionOverviewFocusMutation(
+export const stixSightingRelationshipEditionFocus = graphql`
+  mutation StixSightingRelationshipEditionOverviewFocusMutation(
     $id: ID!
     $input: EditContext!
   ) {
-    stixSightingEdit(id: $id) {
+    stixSightingRelationshipEdit(id: $id) {
       contextPatch(input: $input) {
         id
       }
@@ -118,35 +118,35 @@ export const stixSightingEditionFocus = graphql`
   }
 `;
 
-const stixSightingMutationRelationAdd = graphql`
-  mutation StixSightingEditionOverviewRelationAddMutation(
+const stixSightingRelationshipMutationRelationAdd = graphql`
+  mutation StixSightingRelationshipEditionOverviewRelationAddMutation(
     $id: ID!
     $input: StixMetaRelationshipAddInput!
   ) {
-    stixSightingEdit(id: $id) {
+    stixSightingRelationshipEdit(id: $id) {
       relationAdd(input: $input) {
         from {
-          ...StixSightingEditionOverview_stixSighting
+          ...StixSightingRelationshipEditionOverview_stixSightingRelationship
         }
       }
     }
   }
 `;
 
-const stixSightingMutationRelationDelete = graphql`
-  mutation StixSightingEditionOverviewRelationDeleteMutation(
+const stixSightingRelationshipMutationRelationDelete = graphql`
+  mutation StixSightingRelationshipEditionOverviewRelationDeleteMutation(
     $id: ID!
     $relationId: ID!
   ) {
-    stixSightingEdit(id: $id) {
+    stixSightingRelationshipEdit(id: $id) {
       relationDelete(relationId: $relationId) {
-        ...StixSightingEditionOverview_stixSighting
+        ...StixSightingRelationshipEditionOverview_stixSightingRelationship
       }
     }
   }
 `;
 
-const stixSightingValidation = (t) => Yup.object().shape({
+const stixSightingRelationshipValidation = (t) => Yup.object().shape({
   number: Yup.number()
     .typeError(t('The value must be a number'))
     .integer(t('The value must be a number'))
@@ -165,20 +165,20 @@ const stixSightingValidation = (t) => Yup.object().shape({
   negative: Yup.boolean(),
 });
 
-const StixSightingEditionContainer = ({
+const StixSightingRelationshipEditionContainer = ({
   t,
   classes,
   handleClose,
   handleDelete,
-  stixSighting,
+  stixSightingRelationship,
   stixDomainObject,
 }) => {
-  const { editContext } = stixSighting;
+  const { editContext } = stixSightingRelationship;
   useEffect(() => {
     const sub = requestSubscription({
       subscription,
       variables: {
-        id: stixSighting.id,
+        id: stixSightingRelationship.id,
       },
     });
     return () => {
@@ -193,16 +193,16 @@ const StixSightingEditionContainer = ({
         value: n.node.id,
         relationId: n.relation.id,
       })),
-    )(stixSighting);
+    )(stixSightingRelationship);
 
     const added = difference(values, currentMarkingDefinitions);
     const removed = difference(currentMarkingDefinitions, values);
 
     if (added.length > 0) {
       commitMutation({
-        mutation: stixSightingMutationRelationAdd,
+        mutation: stixSightingRelationshipMutationRelationAdd,
         variables: {
-          id: stixSighting.id,
+          id: stixSightingRelationship.id,
           input: {
             fromRole: 'so',
             toId: head(added).value,
@@ -215,9 +215,9 @@ const StixSightingEditionContainer = ({
 
     if (removed.length > 0) {
       commitMutation({
-        mutation: stixSightingMutationRelationDelete,
+        mutation: stixSightingRelationshipMutationRelationDelete,
         variables: {
-          id: stixSighting.id,
+          id: stixSightingRelationship.id,
           relationId: head(removed).relationId,
         },
       });
@@ -225,15 +225,15 @@ const StixSightingEditionContainer = ({
   };
   const handleChangeCreatedBy = (name, value) => {
     const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'node', 'name'], stixSighting),
-      value: pathOr(null, ['createdBy', 'node', 'id'], stixSighting),
-      relation: pathOr(null, ['createdBy', 'relation', 'id'], stixSighting),
+      label: pathOr(null, ['createdBy', 'node', 'name'], stixSightingRelationship),
+      value: pathOr(null, ['createdBy', 'node', 'id'], stixSightingRelationship),
+      relation: pathOr(null, ['createdBy', 'relation', 'id'], stixSightingRelationship),
     };
     if (currentCreatedBy.value === null) {
       commitMutation({
-        mutation: stixSightingMutationRelationAdd,
+        mutation: stixSightingRelationshipMutationRelationAdd,
         variables: {
-          id: stixSighting.id,
+          id: stixSightingRelationship.id,
           input: {
             fromRole: 'so',
             toId: value.value,
@@ -244,17 +244,17 @@ const StixSightingEditionContainer = ({
       });
     } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
-        mutation: stixSightingMutationRelationDelete,
+        mutation: stixSightingRelationshipMutationRelationDelete,
         variables: {
-          id: stixSighting.id,
+          id: stixSightingRelationship.id,
           relationId: currentCreatedBy.relation,
         },
       });
       if (value.value) {
         commitMutation({
-          mutation: stixSightingMutationRelationAdd,
+          mutation: stixSightingRelationshipMutationRelationAdd,
           variables: {
-            id: stixSighting.id,
+            id: stixSightingRelationship.id,
             input: {
               fromRole: 'so',
               toId: value.value,
@@ -268,9 +268,9 @@ const StixSightingEditionContainer = ({
   };
   const handleChangeFocus = (name) => {
     commitMutation({
-      mutation: stixSightingEditionFocus,
+      mutation: stixSightingRelationshipEditionFocus,
       variables: {
-        id: stixSighting.id,
+        id: stixSightingRelationship.id,
         input: {
           focusOn: name,
         },
@@ -278,28 +278,28 @@ const StixSightingEditionContainer = ({
     });
   };
   const handleSubmitField = (name, value) => {
-    stixSightingValidation(t)
+    stixSightingRelationshipValidation(t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
-          mutation: stixSightingMutationFieldPatch,
+          mutation: stixSightingRelationshipMutationFieldPatch,
           variables: {
-            id: stixSighting.id,
+            id: stixSightingRelationship.id,
             input: { key: name, value },
           },
         });
       })
       .catch(() => false);
   };
-  const createdBy = pathOr(null, ['createdBy', 'node', 'name'], stixSighting) === null
+  const createdBy = pathOr(null, ['createdBy', 'node', 'name'], stixSightingRelationship) === null
     ? ''
     : {
-      label: pathOr(null, ['createdBy', 'node', 'name'], stixSighting),
-      value: pathOr(null, ['createdBy', 'node', 'id'], stixSighting),
+      label: pathOr(null, ['createdBy', 'node', 'name'], stixSightingRelationship),
+      value: pathOr(null, ['createdBy', 'node', 'id'], stixSightingRelationship),
       relation: pathOr(
         null,
         ['createdBy', 'relation', 'id'],
-        stixSighting,
+        stixSightingRelationship,
       ),
     };
   const markingDefinitions = pipe(
@@ -309,10 +309,10 @@ const StixSightingEditionContainer = ({
       value: n.node.id,
       relationId: n.relation.id,
     })),
-  )(stixSighting);
+  )(stixSightingRelationship);
   const initialValues = pipe(
-    assoc('first_seen', dateFormat(stixSighting.first_seen)),
-    assoc('last_seen', dateFormat(stixSighting.last_seen)),
+    assoc('first_seen', dateFormat(stixSightingRelationship.first_seen)),
+    assoc('last_seen', dateFormat(stixSightingRelationship.last_seen)),
     assoc('createdBy', createdBy),
     assoc('markingDefinitions', markingDefinitions),
     pick([
@@ -325,7 +325,7 @@ const StixSightingEditionContainer = ({
       'createdBy',
       'markingDefinitions',
     ]),
-  )(stixSighting);
+  )(stixSightingRelationship);
   const link = stixDomainObject
     ? resolveLink(stixDomainObject.entity_type)
     : '';
@@ -355,7 +355,7 @@ const StixSightingEditionContainer = ({
                 <Formik
                   enableReinitialize={true}
                   initialValues={initialValues}
-                  validationSchema={stixSightingValidation(t)}
+                  validationSchema={stixSightingRelationshipValidation(t)}
                 >
                   {(setFieldValue) => (
                     <Form style={{ margin: '20px 0 20px 0' }}>
@@ -487,7 +487,7 @@ const StixSightingEditionContainer = ({
             variant="contained"
             color="primary"
             component={Link}
-            to={`${link}/${stixDomainObject.id}/knowledge/relations/${stixSighting.id}`}
+            to={`${link}/${stixDomainObject.id}/knowledge/relations/${stixSightingRelationship.id}`}
             classes={{ root: classes.buttonLeft }}
           >
             {t('Details')}
@@ -511,21 +511,21 @@ const StixSightingEditionContainer = ({
   );
 };
 
-StixSightingEditionContainer.propTypes = {
+StixSightingRelationshipEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   handleDelete: PropTypes.func,
   classes: PropTypes.object,
   stixDomainObject: PropTypes.object,
-  stixSighting: PropTypes.object,
+  stixSightingRelationship: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
 
-const StixSightingEditionFragment = createFragmentContainer(
-  StixSightingEditionContainer,
+const StixSightingRelationshipEditionFragment = createFragmentContainer(
+  StixSightingRelationshipEditionContainer,
   {
-    stixSighting: graphql`
-      fragment StixSightingEditionOverview_stixSighting on StixSighting {
+    stixSightingRelationship: graphql`
+      fragment StixSightingRelationshipEditionOverview_stixSightingRelationship on StixSightingRelationship {
         id
         number
         negative
@@ -567,4 +567,4 @@ const StixSightingEditionFragment = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(StixSightingEditionFragment);
+)(StixSightingRelationshipEditionFragment);

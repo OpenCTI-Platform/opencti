@@ -11,7 +11,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { Help, MoreVert } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
-import StixCyberObservableRelationPopover from '../../common/stix_observable_relations/StixCyberObservableRelationPopover';
+import StixCyberObservableRelationPopover from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
 
@@ -140,16 +140,16 @@ const StixCyberObservableObservableLineFragment = createFragmentContainer(
   StixCyberObservableObservableLineComponent,
   {
     node: graphql`
-      fragment StixCyberObservableObservableLine_node on StixCyberObservableRelation {
+      fragment StixCyberObservableObservableLine_node on StixCyberObservableRelationship {
         id
         relationship_type
         role_played
-        first_seen
-        last_seen
+        start_time
+        stop_time
         to {
           id
           entity_type
-          observable_value
+          value
           created_at
           updated_at
         }

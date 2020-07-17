@@ -33,9 +33,9 @@ import ItemIcon from '../../../../components/ItemIcon';
 import SelectField from '../../../../components/SelectField';
 import DatePickerField from '../../../../components/DatePickerField';
 import StixCyberObservableRelationCreationFromEntityLines, {
-  stixCyberObservableRelationCreationFromEntityLinesQuery,
-} from './StixCyberObservableRelationCreationFromEntityLines';
-import StixCyberObservableCreation from '../../signatures/stix_observables/StixCyberObservableCreation';
+  stixCyberObservableRelationshipCreationFromEntityLinesQuery,
+} from './StixCyberObservableRelationshipCreationFromEntityLines';
+import StixCyberObservableCreation from '../../signatures/stix_cyber_observables/StixCyberObservableCreation';
 import SearchInput from '../../../../components/SearchInput';
 import { truncate } from '../../../../utils/String';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
@@ -171,32 +171,31 @@ const styles = (theme) => ({
   },
 });
 
-const stixCyberObservableRelationCreationFromEntityQuery = graphql`
-  query StixCyberObservableRelationCreationFromEntityQuery($id: String) {
+const stixCyberObservableRelationshipCreationFromEntityQuery = graphql`
+  query StixCyberObservableRelationshipCreationFromEntityQuery($id: String) {
     stixEntity(id: $id) {
       id
       entity_type
-      parent_types
       name
       description
       ... on StixCyberObservable {
-        observable_value
+        value
       }
     }
   }
 `;
 
-const stixCyberObservableRelationCreationFromEntityMutation = graphql`
-  mutation StixCyberObservableRelationCreationFromEntityMutation(
+const stixCyberObservableRelationshipCreationFromEntityMutation = graphql`
+  mutation StixCyberObservableRelationshipCreationFromEntityMutation(
     $input: StixCyberObservableRelationshipAddInput!
   ) {
-    stixCyberObservableRelationAdd(input: $input) {
+    stixCyberObservableRelationshipAdd(input: $input) {
       ...StixCyberObservableObservableLine_node
     }
   }
 `;
 
-const stixCyberObservableRelationValidation = (t) => Yup.object().shape({
+const stixCyberObservableRelationshipValidation = (t) => Yup.object().shape({
   relationship_type: Yup.string().required(t('This field is required')),
   first_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
@@ -216,7 +215,7 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class StixCyberObservableRelationCreationFromEntity extends Component {
+class StixCyberObservableRelationshipCreationFromEntity extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -248,7 +247,7 @@ class StixCyberObservableRelationCreationFromEntity extends Component {
       assoc('last_seen', parse(values.last_seen).format()),
     )(values);
     commitMutation({
-      mutation: stixCyberObservableRelationCreationFromEntityMutation,
+      mutation: stixCyberObservableRelationshipCreationFromEntityMutation,
       variables: {
         input: finalValues,
       },
@@ -316,7 +315,7 @@ class StixCyberObservableRelationCreationFromEntity extends Component {
         </div>
         <div className={classes.containerList}>
           <QueryRenderer
-            query={stixCyberObservableRelationCreationFromEntityLinesQuery}
+            query={stixCyberObservableRelationshipCreationFromEntityLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
             render={({ props }) => {
               if (props) {
@@ -394,7 +393,7 @@ class StixCyberObservableRelationCreationFromEntity extends Component {
               <Formik
                 enableReinitialize={true}
                 initialValues={initialValues}
-                validationSchema={stixCyberObservableRelationValidation(t)}
+                validationSchema={stixCyberObservableRelationshipValidation(t)}
                 onSubmit={this.onSubmit.bind(this)}
                 onReset={this.handleClose.bind(this)}
               >
@@ -634,7 +633,7 @@ class StixCyberObservableRelationCreationFromEntity extends Component {
           onClose={this.handleClose.bind(this)}
         >
           <QueryRenderer
-            query={stixCyberObservableRelationCreationFromEntityQuery}
+            query={stixCyberObservableRelationshipCreationFromEntityQuery}
             variables={{ id: entityId }}
             render={({ props }) => {
               if (props && props.stixEntity) {
@@ -654,7 +653,7 @@ class StixCyberObservableRelationCreationFromEntity extends Component {
   }
 }
 
-StixCyberObservableRelationCreationFromEntity.propTypes = {
+StixCyberObservableRelationshipCreationFromEntity.propTypes = {
   entityId: PropTypes.string,
   isFrom: PropTypes.bool,
   targetEntityTypes: PropTypes.array,
@@ -668,4 +667,4 @@ StixCyberObservableRelationCreationFromEntity.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixCyberObservableRelationCreationFromEntity);
+)(StixCyberObservableRelationshipCreationFromEntity);

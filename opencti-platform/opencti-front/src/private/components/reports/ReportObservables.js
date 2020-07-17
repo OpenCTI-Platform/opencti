@@ -18,7 +18,7 @@ import {
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ReportAddObservableRefs from './ReportAddObservableRefs';
-import StixCyberObservablesRightBar from '../signatures/stix_observables/StixCyberObservablesRightBar';
+import StixCyberObservablesRightBar from '../signatures/stix_cyber_observables/StixCyberObservablesRightBar';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 const styles = () => ({

@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
 import StixCyberObservables from './StixCyberObservables';
-import RootStixCyberObservable from './stix_observables/Root';
+import RootStixCyberObservable from './stix_cyber_observables/Root';
 import Indicators from './Indicators';
 import RootIndicator from './indicators/Root';
 

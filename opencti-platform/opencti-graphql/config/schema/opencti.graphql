@@ -4817,6 +4817,9 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
   from: StixCoreObjectOrStixCoreRelationship
   to: StixCoreObjectOrStixCoreRelationship
   inferred: Boolean
+  # StixCyberObservableRelationship
+  start_time: DateTime
+  end_time: DateTime
 }
 input StixCyberObservableRelationshipAddInput {
   stix_id: String

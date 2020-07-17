@@ -12,7 +12,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Drawer from '@material-ui/core/Drawer';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import { stixCyberObservablesLinesSubTypesQuery } from '../stix_observables/StixCyberObservablesLines';
+import { stixCyberObservablesLinesSubTypesQuery } from '../stix_cyber_observables/StixCyberObservablesLines';
 
 const styles = (theme) => ({
   drawerPaper: {

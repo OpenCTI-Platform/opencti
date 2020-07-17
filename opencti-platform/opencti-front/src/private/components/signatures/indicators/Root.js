@@ -14,7 +14,7 @@ import Loader from '../../../../components/Loader';
 import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
 import IndicatorHeader from './IndicatorHeader';
 import IndicatorPopover from './IndicatorPopover';
-import EntityStixSightings from '../../common/stix_sightings/EntityStixSightings';
+import EntityStixSightingRelationships from '../../common/stix_sighting_relationships/EntityStixSightingRelationships';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
@@ -104,7 +104,7 @@ class RootIndicator extends Component {
                           indicator={props.indicator}
                           PopoverComponent={<IndicatorPopover />}
                         />
-                        <EntityStixSightings
+                        <EntityStixSightingRelationships
                           {...routeProps}
                           entityId={indicatorId}
                           targetEntityTypes={[

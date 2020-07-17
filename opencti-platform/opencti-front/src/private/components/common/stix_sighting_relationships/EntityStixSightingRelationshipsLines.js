@@ -1,31 +1,17 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { interval } from 'rxjs';
-import { pathOr } from 'ramda';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
+import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {
-  StixCyberObservableObservableLine,
-  StixCyberObservableObservableLineDummy,
-} from './StixCyberObservableObservableLine';
-import { TEN_SECONDS } from '../../../../utils/Time';
-
-const interval$ = interval(TEN_SECONDS);
+  EntityStixSightingRelationshipLine,
+  EntityStixSightingRelationshipLineDummy,
+} from './EntityStixSightingRelationshipLine';
 
 const nbOfRowsToLoad = 50;
 
-class StixCyberObservableObservablesLines extends Component {
-  componentDidMount() {
-    this.subscription = interval$.subscribe(() => {
-      this.props.relay.refetchConnection(25);
-    });
-  }
-
-  componentWillUnmount() {
-    this.subscription.unsubscribe();
-  }
-
+class EntityStixSightingRelationshipsLines extends Component {
   render() {
     const {
       initialLoading,
@@ -33,7 +19,6 @@ class StixCyberObservableObservablesLines extends Component {
       relay,
       entityLink,
       paginationOptions,
-      displayRelation,
     } = this.props;
     return (
       <ListLinesContent
@@ -41,24 +26,14 @@ class StixCyberObservableObservablesLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr(
-          [],
-          ['stixCyberObservableRelations', 'edges'],
-          this.props.data,
-        )}
+        dataList={pathOr([], ['stixSightingRelationships', 'edges'], this.props.data)}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['stixCyberObservableRelations', 'pageInfo', 'globalCount'],
+          ['stixSightingRelationships', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
-        LineComponent={
-          <StixCyberObservableObservableLine displayRelation={displayRelation} />
-        }
-        DummyLineComponent={
-          <StixCyberObservableObservableLineDummy
-            displayRelation={displayRelation}
-          />
-        }
+        LineComponent={<EntityStixSightingRelationshipLine />}
+        DummyLineComponent={<EntityStixSightingRelationshipLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         paginationOptions={paginationOptions}
@@ -68,63 +43,74 @@ class StixCyberObservableObservablesLines extends Component {
   }
 }
 
-StixCyberObservableObservablesLines.propTypes = {
+EntityStixSightingRelationshipsLines.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,
   relay: PropTypes.object,
-  stixCoreRelationships: PropTypes.object,
+  stixSightingRelationships: PropTypes.object,
   initialLoading: PropTypes.bool,
   entityLink: PropTypes.string,
-  displayRelation: PropTypes.bool,
 };
 
-export const stixCyberObservableObservablesLinesQuery = graphql`
-  query StixCyberObservableObservablesLinesPaginationQuery(
+export const entityStixSightingRelationshipsLinesQuery = graphql`
+  query EntityStixSightingRelationshipsLinesPaginationQuery(
     $fromId: String
+    $toTypes: [String]
+    $inferred: Boolean
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: StixCyberObservableRelationshipsOrdering
+    $orderBy: StixSightingRelationshipsOrdering
     $orderMode: OrderingMode
+    $forceNatural: Boolean
   ) {
-    ...StixCyberObservableObservablesLines_data
+    ...EntityStixSightingRelationshipsLines_data
       @arguments(
         fromId: $fromId
+        toTypes: $toTypes
+        inferred: $inferred
         search: $search
         count: $count
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        forceNatural: $forceNatural
       )
   }
 `;
 
 export default createPaginationContainer(
-  StixCyberObservableObservablesLines,
+  EntityStixSightingRelationshipsLines,
   {
     data: graphql`
-      fragment StixCyberObservableObservablesLines_data on Query
+      fragment EntityStixSightingRelationshipsLines_data on Query
         @argumentDefinitions(
           fromId: { type: "String" }
+          toTypes: { type: "[String]" }
+          inferred: { type: "Boolean" }
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixCyberObservableRelationshipsOrdering" }
-          orderMode: { type: "OrderingMode" }
+          orderBy: { type: "StixSightingRelationshipsOrdering", defaultValue: "first_seen" }
+          orderMode: { type: "OrderingMode", defaultValue: "desc" }
+          forceNatural: { type: "Boolean", defaultValue: false }
         ) {
-        stixCyberObservableRelations(
+        stixSightingRelationships(
           fromId: $fromId
+          toTypes: $toTypes
+          inferred: $inferred
           search: $search
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
-        ) @connection(key: "Pagination_stixCyberObservableRelations") {
+          forceNatural: $forceNatural
+        ) @connection(key: "Pagination_stixSightingRelationships") {
           edges {
             node {
-              ...StixCyberObservableObservableLine_node
+              ...EntityStixSightingRelationshipLine_node
             }
           }
           pageInfo {
@@ -139,7 +125,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.stixCyberObservableRelations;
+      return props.data && props.data.stixSightingRelationships;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -150,13 +136,16 @@ export default createPaginationContainer(
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         fromId: fragmentVariables.fromId,
+        toTypes: fragmentVariables.toTypes,
+        inferred: fragmentVariables.inferred,
         search: fragmentVariables.search,
         count,
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        forceNatural: fragmentVariables.forceNatural,
       };
     },
-    query: stixCyberObservableObservablesLinesQuery,
+    query: entityStixSightingRelationshipsLinesQuery,
   },
 );

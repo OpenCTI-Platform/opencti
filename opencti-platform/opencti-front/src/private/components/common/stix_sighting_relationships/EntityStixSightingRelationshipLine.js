@@ -13,7 +13,7 @@ import Chip from '@material-ui/core/Chip';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
-import StixSightingPopover from './StixSightingPopover';
+import StixSightingRelationshipPopover from './StixSightingRelationshipPopover';
 
 const styles = (theme) => ({
   item: {
@@ -59,7 +59,7 @@ const styles = (theme) => ({
   },
 });
 
-class EntityStixSightingLineComponent extends Component {
+class EntityStixSightingRelationshipLineComponent extends Component {
   render() {
     const {
       nsd,
@@ -131,8 +131,8 @@ class EntityStixSightingLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <StixSightingPopover
-            stixSightingId={node.id}
+          <StixSightingRelationshipPopover
+            stixSightingRelationshipId={node.id}
             paginationOptions={paginationOptions}
             disabled={node.inferred}
           />
@@ -142,7 +142,7 @@ class EntityStixSightingLineComponent extends Component {
   }
 }
 
-EntityStixSightingLineComponent.propTypes = {
+EntityStixSightingRelationshipLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   paginationOptions: PropTypes.object,
   node: PropTypes.object,
@@ -151,11 +151,11 @@ EntityStixSightingLineComponent.propTypes = {
   nsd: PropTypes.func,
 };
 
-const EntityStixSightingLineFragment = createFragmentContainer(
-  EntityStixSightingLineComponent,
+const EntityStixSightingRelationshipLineFragment = createFragmentContainer(
+  EntityStixSightingRelationshipLineComponent,
   {
     node: graphql`
-      fragment EntityStixSightingLine_node on StixSighting {
+      fragment EntityStixSightingRelationshipLine_node on StixSightingRelationship {
         id
         entity_type
         parent_types
@@ -194,12 +194,12 @@ const EntityStixSightingLineFragment = createFragmentContainer(
   },
 );
 
-export const EntityStixSightingLine = compose(
+export const EntityStixSightingRelationshipRelationshipLine = compose(
   inject18n,
   withStyles(styles),
-)(EntityStixSightingLineFragment);
+)(EntityStixSightingRelationshipLineFragment);
 
-class EntityStixSightingLineDummyComponent extends Component {
+class EntityStixSightingRelationshipLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -263,12 +263,12 @@ class EntityStixSightingLineDummyComponent extends Component {
   }
 }
 
-EntityStixSightingLineDummyComponent.propTypes = {
+EntityStixSightingRelationshipLineDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export const EntityStixSightingLineDummy = compose(
+export const EntityStixSightingRelationshipLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(EntityStixSightingLineDummyComponent);
+)(EntityStixSightingRelationshipLineDummyComponent);
