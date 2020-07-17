@@ -63,10 +63,10 @@ class StixObjectNoteCardComponent extends Component {
           classes={{ root: classes.header }}
           avatar={
             <Avatar className={classes.avatar}>
-              {node.createdByRef.node.name.charAt(0)}
+              {node.createdBy.node.name.charAt(0)}
             </Avatar>
           }
-          title={node.createdByRef.node.name}
+          title={node.createdBy.node.name}
           subheader={
             <span>
               <ClockOutline
@@ -132,7 +132,7 @@ const StixObjectNoteCard = createFragmentContainer(
         content
         created
         modified
-        createdByRef {
+        createdBy {
           node {
             id
             name

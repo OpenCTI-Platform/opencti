@@ -83,7 +83,7 @@ export const reportMutationRelationAdd = graphql`
 class ReportAddObjectRefsLinesContainer extends Component {
   constructor(props) {
     super(props);
-    this.state = { expandedPanels: {}, addedStixDomainEntities: [] };
+    this.state = { expandedPanels: {}, addedStixDomainObjects: [] };
   }
 
   toggleStixDomain(stixDomain) {
@@ -93,9 +93,9 @@ class ReportAddObjectRefsLinesContainer extends Component {
       knowledgeGraph,
       reportObjectRefs,
     } = this.props;
-    const { addedStixDomainEntities } = this.state;
+    const { addedStixDomainObjects } = this.state;
     const reportObjectRefsIds = map((n) => n.node.id, reportObjectRefs);
-    const alreadyAdded = addedStixDomainEntities.includes(stixDomain.id)
+    const alreadyAdded = addedStixDomainObjects.includes(stixDomain.id)
       || reportObjectRefsIds.includes(stixDomain.id);
 
     if (alreadyAdded) {
@@ -109,9 +109,9 @@ class ReportAddObjectRefsLinesContainer extends Component {
           },
           onCompleted: () => {
             this.setState({
-              addedStixDomainEntities: filter(
+              addedStixDomainObjects: filter(
                 (n) => n !== stixDomain.id,
-                this.state.addedStixDomainEntities,
+                this.state.addedStixDomainObjects,
               ),
             });
           },
@@ -134,9 +134,9 @@ class ReportAddObjectRefsLinesContainer extends Component {
           },
           onCompleted: () => {
             this.setState({
-              addedStixDomainEntities: filter(
+              addedStixDomainObjects: filter(
                 (n) => n !== stixDomain.id,
-                this.state.addedStixDomainEntities,
+                this.state.addedStixDomainObjects,
               ),
             });
           },
@@ -158,9 +158,9 @@ class ReportAddObjectRefsLinesContainer extends Component {
           },
           onCompleted: () => {
             this.setState({
-              addedStixDomainEntities: append(
+              addedStixDomainObjects: append(
                 stixDomain.id,
-                this.state.addedStixDomainEntities,
+                this.state.addedStixDomainObjects,
               ),
             });
           },
@@ -187,9 +187,9 @@ class ReportAddObjectRefsLinesContainer extends Component {
           },
           onCompleted: () => {
             this.setState({
-              addedStixDomainEntities: append(
+              addedStixDomainObjects: append(
                 stixDomain.id,
-                this.state.addedStixDomainEntities,
+                this.state.addedStixDomainObjects,
               ),
             });
           },
@@ -218,25 +218,25 @@ class ReportAddObjectRefsLinesContainer extends Component {
     const {
       t, classes, data, reportObjectRefs,
     } = this.props;
-    const { addedStixDomainEntities } = this.state;
-    const stixDomainEntitiesNodes = map(
+    const { addedStixDomainObjects } = this.state;
+    const stixDomainObjectsNodes = map(
       (n) => n.node,
-      data.stixDomainEntities.edges,
+      data.stixDomainObjects.edges,
     );
-    const byType = groupBy((stixDomainEntity) => stixDomainEntity.entity_type);
-    const stixDomainEntities = byType(stixDomainEntitiesNodes);
-    const stixDomainEntitiesTypes = keys(stixDomainEntities);
+    const byType = groupBy((stixDomainObject) => stixDomainObject.entity_type);
+    const stixDomainObjects = byType(stixDomainObjectsNodes);
+    const stixDomainObjectsTypes = keys(stixDomainObjects);
     const reportObjectRefsIds = map((n) => n.node.id, reportObjectRefs);
     return (
       <div className={classes.container}>
-        {stixDomainEntitiesTypes.length > 0 ? (
-          stixDomainEntitiesTypes.map((type) => (
+        {stixDomainObjectsTypes.length > 0 ? (
+          stixDomainObjectsTypes.map((type) => (
             <ExpansionPanel
               key={type}
               expanded={this.isExpanded(
                 type,
-                stixDomainEntities[type].length,
-                stixDomainEntitiesTypes.length,
+                stixDomainObjects[type].length,
+                stixDomainObjectsTypes.length,
               )}
               onChange={this.handleChangePanel.bind(this, type)}
               classes={{ root: classes.expansionPanel }}
@@ -246,23 +246,23 @@ class ReportAddObjectRefsLinesContainer extends Component {
                   {t(`entity_${type}`)}
                 </Typography>
                 <Typography className={classes.secondaryHeading}>
-                  {stixDomainEntities[type].length} {t('entitie(s)')}
+                  {stixDomainObjects[type].length} {t('entitie(s)')}
                 </Typography>
               </ExpansionPanelSummary>
               <ExpansionPanelDetails
                 classes={{ root: classes.expansionPanelContent }}
               >
                 <List classes={{ root: classes.list }}>
-                  {stixDomainEntities[type].map((stixDomainEntity) => {
-                    const alreadyAdded = addedStixDomainEntities.includes(stixDomainEntity.id)
-                      || reportObjectRefsIds.includes(stixDomainEntity.id);
+                  {stixDomainObjects[type].map((stixDomainObject) => {
+                    const alreadyAdded = addedStixDomainObjects.includes(stixDomainObject.id)
+                      || reportObjectRefsIds.includes(stixDomainObject.id);
                     return (
                       <Tooltip
                         classes={{ tooltip: classes.tooltip }}
                         title={
-                          <Markdown source={stixDomainEntity.description} />
+                          <Markdown source={stixDomainObject.description} />
                         }
-                        key={stixDomainEntity.id}
+                        key={stixDomainObject.id}
                       >
                         <ListItem
                           classes={{ root: classes.menuItem }}
@@ -270,7 +270,7 @@ class ReportAddObjectRefsLinesContainer extends Component {
                           button={true}
                           onClick={this.toggleStixDomain.bind(
                             this,
-                            stixDomainEntity,
+                            stixDomainObject,
                           )}
                         >
                           <ListItemIcon>
@@ -281,12 +281,12 @@ class ReportAddObjectRefsLinesContainer extends Component {
                             )}
                           </ListItemIcon>
                           <ListItemText
-                            primary={stixDomainEntity.name}
+                            primary={stixDomainObject.name}
                             secondary={
                               <Markdown
                                 className="markdown"
                                 source={truncate(
-                                  stixDomainEntity.description,
+                                  stixDomainObject.description,
                                   200,
                                 )}
                               />
@@ -327,7 +327,7 @@ export const reportAddObjectRefsLinesQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: StixDomainEntitiesOrdering
+    $orderBy: StixDomainObjectsOrdering
     $orderMode: OrderingMode
   ) {
     ...ReportAddObjectRefsLines_data
@@ -351,16 +351,16 @@ const ReportAddObjectRefsLines = createPaginationContainer(
 
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixDomainEntitiesOrdering", defaultValue: "name" }
+          orderBy: { type: "StixDomainObjectsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
-        stixDomainEntities(
+        stixDomainObjects(
           search: $search
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
-        ) @connection(key: "Pagination_stixDomainEntities") {
+        ) @connection(key: "Pagination_stixDomainObjects") {
           edges {
             node {
               id
@@ -376,7 +376,7 @@ const ReportAddObjectRefsLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.stixDomainEntities;
+      return props.data && props.data.stixDomainObjects;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {

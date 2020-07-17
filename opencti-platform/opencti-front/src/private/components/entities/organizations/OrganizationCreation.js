@@ -19,7 +19,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
+import CreatedByField from '../../common/form/CreatedByField';
 import TagsField from '../../common/form/TagsField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
@@ -110,7 +110,7 @@ class OrganizationCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = pipe(
-      assoc('createdByRef', values.createdByRef.value),
+      assoc('createdBy', values.createdBy.value),
       assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
       assoc('tags', pluck('value', values.tags)),
     )(values);
@@ -178,7 +178,7 @@ class OrganizationCreation extends Component {
                 description: '',
                 reliability: '',
                 organization_class: 'other',
-                createdByRef: '',
+                createdBy: '',
                 markingDefinitions: [],
                 tags: [],
               }}
@@ -237,8 +237,8 @@ class OrganizationCreation extends Component {
                     <MenuItem value="E">{t('reliability_E')}</MenuItem>
                     <MenuItem value="F">{t('reliability_F')}</MenuItem>
                   </Field>
-                  <CreatedByRefField
-                    name="createdByRef"
+                  <CreatedByField
+                    name="createdBy"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />

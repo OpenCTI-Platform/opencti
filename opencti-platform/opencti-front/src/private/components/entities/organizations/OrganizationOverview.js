@@ -72,7 +72,7 @@ class OrganizationOverviewComponent extends Component {
             {t('Author')}
           </Typography>
           <ItemAuthor
-            createdByRef={pathOr(null, ['createdByRef', 'node'], organization)}
+            createdBy={pathOr(null, ['createdBy', 'node'], organization)}
           />
           <Typography
             variant="h3"
@@ -113,7 +113,7 @@ const OrganizationOverview = createFragmentContainer(
             }
           }
         }
-        createdByRef {
+        createdBy {
           node {
             id
             name

@@ -19,7 +19,7 @@ import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
+import CreatedByField from '../../common/form/CreatedByField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
 const styles = (theme) => ({
@@ -137,15 +137,15 @@ class ThreatActorEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedByRef(name, value) {
+  handleChangeCreatedBy(name, value) {
     const { threatActor } = this.props;
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], threatActor),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], threatActor),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], threatActor),
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'node', 'name'], threatActor),
+      value: pathOr(null, ['createdBy', 'node', 'id'], threatActor),
+      relation: pathOr(null, ['createdBy', 'relation', 'id'], threatActor),
     };
 
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: threatActorMutationRelationAdd,
         variables: {
@@ -158,12 +158,12 @@ class ThreatActorEditionOverviewComponent extends Component {
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: threatActorMutationRelationDelete,
         variables: {
           id: this.props.threatActor.id,
-          relationId: currentCreatedByRef.relation,
+          relationId: currentCreatedBy.relation,
         },
       });
       if (value.value) {
@@ -225,14 +225,14 @@ class ThreatActorEditionOverviewComponent extends Component {
 
   render() {
     const { t, threatActor, context } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], threatActor) === null
+    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], threatActor) === null
       ? ''
       : {
-        label: pathOr(null, ['createdByRef', 'node', 'name'], threatActor),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], threatActor),
+        label: pathOr(null, ['createdBy', 'node', 'name'], threatActor),
+        value: pathOr(null, ['createdBy', 'node', 'id'], threatActor),
         relation: pathOr(
           null,
-          ['createdByRef', 'relation', 'id'],
+          ['createdBy', 'relation', 'id'],
           threatActor,
         ),
       };
@@ -253,13 +253,13 @@ class ThreatActorEditionOverviewComponent extends Component {
       })),
     )(threatActor);
     const initialValues = pipe(
-      assoc('createdByRef', createdByRef),
+      assoc('createdBy', createdBy),
       assoc('killChainPhases', killChainPhases),
       assoc('markingDefinitions', markingDefinitions),
       pick([
         'name',
         'description',
-        'createdByRef',
+        'createdBy',
         'killChainPhases',
         'markingDefinitions',
       ]),
@@ -298,14 +298,14 @@ class ThreatActorEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
-            <CreatedByRefField
-              name="createdByRef"
+            <CreatedByField
+              name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdByRef" />
+                <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedByRef.bind(this)}
+              onChange={this.handleChangeCreatedBy.bind(this)}
             />
             <MarkingDefinitionsField
               name="markingDefinitions"
@@ -341,7 +341,7 @@ const ThreatActorEditionOverview = createFragmentContainer(
         id
         name
         description
-        createdByRef {
+        createdBy {
           node {
             id
             name

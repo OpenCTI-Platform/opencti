@@ -85,37 +85,37 @@ class StixSightingCreationFromEntityLinesContainer extends Component {
     const {
       t, classes, data, handleSelect,
     } = this.props;
-    const stixDomainEntitiesNodes = map(
+    const stixDomainObjectsNodes = map(
       (n) => n.node,
-      data.stixDomainEntities.edges,
+      data.stixDomainObjects.edges,
     );
-    const byType = groupBy((stixDomainEntity) => stixDomainEntity.entity_type);
-    const stixDomainEntities = byType(stixDomainEntitiesNodes);
-    const stixDomainEntitiesTypes = keys(stixDomainEntities);
+    const byType = groupBy((stixDomainObject) => stixDomainObject.entity_type);
+    const stixDomainObjects = byType(stixDomainObjectsNodes);
+    const stixDomainObjectsTypes = keys(stixDomainObjects);
     let increment = 0;
 
     return (
       <div className={classes.container}>
-        {stixDomainEntitiesTypes.length > 0 ? (
-          stixDomainEntitiesTypes.map((type) => {
+        {stixDomainObjectsTypes.length > 0 ? (
+          stixDomainObjectsTypes.map((type) => {
             increment += 1;
             return (
               <ExpansionPanel
                 key={type}
                 expanded={this.isExpanded(
                   type,
-                  stixDomainEntities[type].length,
-                  stixDomainEntitiesTypes.length,
+                  stixDomainObjects[type].length,
+                  stixDomainObjectsTypes.length,
                 )}
                 onChange={this.handleChangePanel.bind(this, type)}
                 classes={{ root: classes.expansionPanel }}
                 style={{
                   marginBottom:
-                    increment === stixDomainEntitiesTypes.length
+                    increment === stixDomainObjectsTypes.length
                     && this.isExpanded(
                       type,
-                      stixDomainEntities[type].length,
-                      stixDomainEntitiesTypes.length,
+                      stixDomainObjects[type].length,
+                      stixDomainObjectsTypes.length,
                     )
                       ? 16
                       : 0,
@@ -126,28 +126,28 @@ class StixSightingCreationFromEntityLinesContainer extends Component {
                     {t(`entity_${type}`)}
                   </Typography>
                   <Typography className={classes.secondaryHeading}>
-                    {stixDomainEntities[type].length} {t('entitie(s)')}
+                    {stixDomainObjects[type].length} {t('entitie(s)')}
                   </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails
                   classes={{ root: classes.expansionPanelContent }}
                 >
                   <List classes={{ root: classes.list }}>
-                    {stixDomainEntities[type].map((stixDomainEntity) => (
+                    {stixDomainObjects[type].map((stixDomainObject) => (
                       <ListItem
-                        key={stixDomainEntity.id}
+                        key={stixDomainObject.id}
                         classes={{ root: classes.menuItem }}
                         divider={true}
                         button={true}
-                        onClick={handleSelect.bind(this, stixDomainEntity)}
+                        onClick={handleSelect.bind(this, stixDomainObject)}
                       >
                         <ListItemIcon>
                           <ItemIcon type={type} />
                         </ListItemIcon>
                         <ListItemText
-                          primary={stixDomainEntity.name}
+                          primary={stixDomainObject.name}
                           secondary={truncate(
-                            stixDomainEntity.description,
+                            stixDomainObject.description,
                             100,
                           )}
                         />
@@ -177,16 +177,16 @@ StixSightingCreationFromEntityLinesContainer.propTypes = {
   fld: PropTypes.func,
 };
 
-export const stixSightingCreationFromEntityStixDomainEntitiesLinesQuery = graphql`
-  query StixSightingCreationFromEntityStixDomainEntitiesLinesQuery(
+export const stixSightingCreationFromEntityStixDomainObjectsLinesQuery = graphql`
+  query StixSightingCreationFromEntityStixDomainObjectsLinesQuery(
     $search: String
     $types: [String]
     $count: Int!
     $cursor: ID
-    $orderBy: StixDomainEntitiesOrdering
+    $orderBy: StixDomainObjectsOrdering
     $orderMode: OrderingMode
   ) {
-    ...StixSightingCreationFromEntityStixDomainEntitiesLines_data
+    ...StixSightingCreationFromEntityStixDomainObjectsLines_data
       @arguments(
         search: $search
         types: $types
@@ -198,27 +198,27 @@ export const stixSightingCreationFromEntityStixDomainEntitiesLinesQuery = graphq
   }
 `;
 
-const StixSightingCreationFromEntityStixDomainEntitiesLines = createPaginationContainer(
+const StixSightingCreationFromEntityStixDomainObjectsLines = createPaginationContainer(
   StixSightingCreationFromEntityLinesContainer,
   {
     data: graphql`
-      fragment StixSightingCreationFromEntityStixDomainEntitiesLines_data on Query
+      fragment StixSightingCreationFromEntityStixDomainObjectsLines_data on Query
         @argumentDefinitions(
           search: { type: "String" }
           types: { type: "[String]" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixDomainEntitiesOrdering", defaultValue: "name" }
+          orderBy: { type: "StixDomainObjectsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
-        stixDomainEntities(
+        stixDomainObjects(
           search: $search
           types: $types
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
-        ) @connection(key: "Pagination_stixDomainEntities") {
+        ) @connection(key: "Pagination_stixDomainObjects") {
           edges {
             node {
               id
@@ -235,7 +235,7 @@ const StixSightingCreationFromEntityStixDomainEntitiesLines = createPaginationCo
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.stixDomainEntities;
+      return props.data && props.data.stixDomainObjects;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -253,11 +253,11 @@ const StixSightingCreationFromEntityStixDomainEntitiesLines = createPaginationCo
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: stixSightingCreationFromEntityStixDomainEntitiesLinesQuery,
+    query: stixSightingCreationFromEntityStixDomainObjectsLinesQuery,
   },
 );
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixSightingCreationFromEntityStixDomainEntitiesLines);
+)(StixSightingCreationFromEntityStixDomainObjectsLines);

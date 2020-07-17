@@ -105,7 +105,7 @@ export default createPaginationContainer(
               id
               name
               published
-              createdByRef {
+              createdBy {
                 node {
                   name
                 }

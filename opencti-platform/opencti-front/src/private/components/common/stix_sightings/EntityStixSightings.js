@@ -230,7 +230,7 @@ class EntityStixSightings extends Component {
                     )}
                   {includes('User', targetEntityTypes)
                   || includes('Identity', targetEntityTypes) ? (
-                    <MenuItem value="User">{t('Person')}</MenuItem>
+                    <MenuItem value="User">{t('Individual')}</MenuItem>
                     ) : (
                       ''
                     )}

@@ -214,7 +214,7 @@ class IdentityCreation extends Component {
                     <MenuItem value="Region">{t('Region')}</MenuItem>
                     <MenuItem value="Country">{t('Country')}</MenuItem>
                     <MenuItem value="City">{t('City')}</MenuItem>
-                    <MenuItem value="User">{t('Person')}</MenuItem>
+                    <MenuItem value="User">{t('Individual')}</MenuItem>
                   </Field>
                   <div className={classes.buttons}>
                     <Button
@@ -316,7 +316,7 @@ class IdentityCreation extends Component {
                     ) : (
                       ''
                     )}
-                    <MenuItem value="User">{t('Person')}</MenuItem>
+                    <MenuItem value="User">{t('Individual')}</MenuItem>
                   </Field>
                 </DialogContent>
                 <DialogActions>

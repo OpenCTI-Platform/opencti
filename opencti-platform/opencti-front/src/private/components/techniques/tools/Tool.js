@@ -11,9 +11,9 @@ import ToolDetails from './ToolDetails';
 import ToolEdition from './ToolEdition';
 import ToolPopover from './ToolPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
-import EntityStixRelationsChart from '../../common/stix_relations/EntityStixRelationsChart';
+import EntityStixRelationsChart from '../../common/stix_core_relationships/EntityStixRelationsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
 
@@ -31,8 +31,8 @@ class ToolComponent extends Component {
     const { classes, tool } = this.props;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={tool}
+        <StixDomainObjectHeader
+          stixDomainObject={tool}
           PopoverComponent={<ToolPopover />}
         />
         <Grid

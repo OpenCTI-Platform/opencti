@@ -13,8 +13,8 @@ import AttackPatternPopover from './AttackPatternPopover';
 import EntityExternalReferences from '../../common/external_references/EntityExternalReferences';
 import AttackPatternCoursesOfAction from './AttackPatternCoursesOfAction';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityStixRelationsChart from '../../common/stix_relations/EntityStixRelationsChart';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import EntityStixRelationsChart from '../../common/stix_core_relationships/EntityStixRelationsChart';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
@@ -31,8 +31,8 @@ class AttackPatternComponent extends Component {
     const { classes, attackPattern } = this.props;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={attackPattern}
+        <StixDomainObjectHeader
+          stixDomainObject={attackPattern}
           PopoverComponent={<AttackPatternPopover />}
         />
         <Grid

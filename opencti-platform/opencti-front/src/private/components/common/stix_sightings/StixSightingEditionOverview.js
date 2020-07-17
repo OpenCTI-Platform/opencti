@@ -37,7 +37,7 @@ import DatePickerField from '../../../../components/DatePickerField';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
 import Loader from '../../../../components/Loader';
 import MarkingDefinitionsField from '../form/MarkingDefinitionsField';
-import CreatedByRefField from '../form/CreatedByRefField';
+import CreatedByField from '../form/CreatedByField';
 import ConfidenceField from '../form/ConfidenceField';
 import SwitchField from '../../../../components/SwitchField';
 
@@ -171,7 +171,7 @@ const StixSightingEditionContainer = ({
   handleClose,
   handleDelete,
   stixSighting,
-  stixDomainEntity,
+  stixDomainObject,
 }) => {
   const { editContext } = stixSighting;
   useEffect(() => {
@@ -223,13 +223,13 @@ const StixSightingEditionContainer = ({
       });
     }
   };
-  const handleChangeCreatedByRef = (name, value) => {
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], stixSighting),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], stixSighting),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], stixSighting),
+  const handleChangeCreatedBy = (name, value) => {
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'node', 'name'], stixSighting),
+      value: pathOr(null, ['createdBy', 'node', 'id'], stixSighting),
+      relation: pathOr(null, ['createdBy', 'relation', 'id'], stixSighting),
     };
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: stixSightingMutationRelationAdd,
         variables: {
@@ -242,12 +242,12 @@ const StixSightingEditionContainer = ({
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: stixSightingMutationRelationDelete,
         variables: {
           id: stixSighting.id,
-          relationId: currentCreatedByRef.relation,
+          relationId: currentCreatedBy.relation,
         },
       });
       if (value.value) {
@@ -291,14 +291,14 @@ const StixSightingEditionContainer = ({
       })
       .catch(() => false);
   };
-  const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], stixSighting) === null
+  const createdBy = pathOr(null, ['createdBy', 'node', 'name'], stixSighting) === null
     ? ''
     : {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], stixSighting),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], stixSighting),
+      label: pathOr(null, ['createdBy', 'node', 'name'], stixSighting),
+      value: pathOr(null, ['createdBy', 'node', 'id'], stixSighting),
       relation: pathOr(
         null,
-        ['createdByRef', 'relation', 'id'],
+        ['createdBy', 'relation', 'id'],
         stixSighting,
       ),
     };
@@ -313,7 +313,7 @@ const StixSightingEditionContainer = ({
   const initialValues = pipe(
     assoc('first_seen', dateFormat(stixSighting.first_seen)),
     assoc('last_seen', dateFormat(stixSighting.last_seen)),
-    assoc('createdByRef', createdByRef),
+    assoc('createdBy', createdBy),
     assoc('markingDefinitions', markingDefinitions),
     pick([
       'number',
@@ -322,12 +322,12 @@ const StixSightingEditionContainer = ({
       'last_seen',
       'description',
       'negative',
-      'createdByRef',
+      'createdBy',
       'markingDefinitions',
     ]),
   )(stixSighting);
-  const link = stixDomainEntity
-    ? resolveLink(stixDomainEntity.entity_type)
+  const link = stixDomainObject
+    ? resolveLink(stixDomainObject.entity_type)
     : '';
   return (
     <div>
@@ -435,17 +435,17 @@ const StixSightingEditionContainer = ({
                           />
                         }
                       />
-                      <CreatedByRefField
-                        name="createdByRef"
+                      <CreatedByField
+                        name="createdBy"
                         style={{ marginTop: 20, width: '100%' }}
                         setFieldValue={setFieldValue}
                         helpertext={
                           <SubscriptionFocus
                             context={editContext}
-                            fieldName="createdByRef"
+                            fieldName="createdBy"
                           />
                         }
-                        onChange={handleChangeCreatedByRef}
+                        onChange={handleChangeCreatedBy}
                       />
                       <MarkingDefinitionsField
                         name="markingDefinitions"
@@ -482,12 +482,12 @@ const StixSightingEditionContainer = ({
             return <Loader variant="inElement" />;
           }}
         />
-        {stixDomainEntity ? (
+        {stixDomainObject ? (
           <Button
             variant="contained"
             color="primary"
             component={Link}
-            to={`${link}/${stixDomainEntity.id}/knowledge/relations/${stixSighting.id}`}
+            to={`${link}/${stixDomainObject.id}/knowledge/relations/${stixSighting.id}`}
             classes={{ root: classes.buttonLeft }}
           >
             {t('Details')}
@@ -515,7 +515,7 @@ StixSightingEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   handleDelete: PropTypes.func,
   classes: PropTypes.object,
-  stixDomainEntity: PropTypes.object,
+  stixDomainObject: PropTypes.object,
   stixSighting: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
@@ -533,7 +533,7 @@ const StixSightingEditionFragment = createFragmentContainer(
         first_seen
         last_seen
         description
-        createdByRef {
+        createdBy {
           node {
             id
             name

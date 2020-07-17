@@ -17,7 +17,7 @@ import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
+import CreatedByField from '../../common/form/CreatedByField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
 const styles = (theme) => ({
@@ -117,7 +117,7 @@ class RegionCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = pipe(
-      assoc('createdByRef', values.createdByRef.value),
+      assoc('createdBy', values.createdBy.value),
       assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
     )(values);
     commitMutation({
@@ -182,7 +182,7 @@ class RegionCreation extends Component {
               initialValues={{
                 name: '',
                 description: '',
-                createdByRef: '',
+                createdBy: '',
                 markingDefinitions: [],
               }}
               validationSchema={regionValidation(t)}
@@ -209,8 +209,8 @@ class RegionCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <CreatedByRefField
-                    name="createdByRef"
+                  <CreatedByField
+                    name="createdBy"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />

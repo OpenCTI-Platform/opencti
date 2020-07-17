@@ -6,12 +6,12 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
-import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
-import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
-import StixRelation from '../../common/stix_relations/StixRelation';
+import EntityStixRelations from '../../common/stix_core_relationships/EntityStixCoreRelationships';
+import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
+import StixRelation from '../../common/stix_core_relationships/StixRelation';
 import CityPopover from './CityPopover';
 import CityKnowledgeBar from './CityKnowledgeBar';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = () => ({
   container: {
@@ -26,8 +26,8 @@ class CityKnowledgeComponent extends Component {
     const link = `/dashboard/entities/cities/${city.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={city}
+        <StixDomainObjectHeader
+          stixDomainObject={city}
           PopoverComponent={<CityPopover />}
         />
         <CityKnowledgeBar cityId={city.id} />
@@ -46,9 +46,9 @@ class CityKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/cities/:cityId/knowledge/overview"
           render={(routeProps) => (
-            <StixDomainEntityKnowledge
-              stixDomainEntityId={city.id}
-              stixDomainEntityType="city"
+            <StixDomainObjectKnowledge
+              stixDomainObjectId={city.id}
+              stixDomainObjectType="city"
               {...routeProps}
             />
           )}

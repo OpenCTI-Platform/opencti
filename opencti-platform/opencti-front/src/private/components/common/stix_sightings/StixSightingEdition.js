@@ -45,7 +45,7 @@ class StixSightingEdition extends Component {
     const {
       classes,
       stixSightingId,
-      stixDomainEntity,
+      stixDomainObject,
       open,
       handleClose,
       handleDelete,
@@ -65,7 +65,7 @@ class StixSightingEdition extends Component {
               if (props) {
                 return (
                   <StixSightingEditionOverview
-                    stixDomainEntity={stixDomainEntity}
+                    stixDomainObject={stixDomainObject}
                     stixSighting={props.stixSighting}
                     handleClose={handleClose.bind(this)}
                     handleDelete={
@@ -89,7 +89,7 @@ class StixSightingEdition extends Component {
 
 StixSightingEdition.propTypes = {
   stixSightingId: PropTypes.string,
-  stixDomainEntity: PropTypes.object,
+  stixDomainObject: PropTypes.object,
   open: PropTypes.bool,
   handleClose: PropTypes.func,
   handleDelete: PropTypes.func,

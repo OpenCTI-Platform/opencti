@@ -12,8 +12,8 @@ import IncidentEdition from './IncidentEdition';
 import IncidentPopover from './IncidentPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityStixRelationsDonut from '../../common/stix_relations/EntityStixRelationsDonut';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import EntityStixRelationsDonut from '../../common/stix_core_relationships/EntityStixRelationsDonut';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
 
@@ -31,8 +31,8 @@ class IncidentComponent extends Component {
     const { classes, incident } = this.props;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={incident}
+        <StixDomainObjectHeader
+          stixDomainObject={incident}
           PopoverComponent={<IncidentPopover />}
         />
         <Grid

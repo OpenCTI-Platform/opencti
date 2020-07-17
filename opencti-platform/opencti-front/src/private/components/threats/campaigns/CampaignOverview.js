@@ -72,7 +72,7 @@ class CampaignOverviewComponent extends Component {
             {t('Author')}
           </Typography>
           <ItemAuthor
-            createdByRef={pathOr(null, ['createdByRef', 'node'], campaign)}
+            createdBy={pathOr(null, ['createdBy', 'node'], campaign)}
           />
           <Typography
             variant="h3"
@@ -115,7 +115,7 @@ const CampaignOverview = createFragmentContainer(CampaignOverviewComponent, {
           }
         }
       }
-      createdByRef {
+      createdBy {
         node {
           id
           name

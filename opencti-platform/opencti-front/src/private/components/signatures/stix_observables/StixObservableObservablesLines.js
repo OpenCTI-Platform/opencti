@@ -86,7 +86,7 @@ export const stixObservableObservablesLinesQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: StixObservableRelationsOrdering
+    $orderBy: StixCyberObservableRelationshipsOrdering
     $orderMode: OrderingMode
   ) {
     ...StixObservableObservablesLines_data
@@ -111,7 +111,7 @@ export default createPaginationContainer(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixObservableRelationsOrdering" }
+          orderBy: { type: "StixCyberObservableRelationshipsOrdering" }
           orderMode: { type: "OrderingMode" }
         ) {
         stixObservableRelations(

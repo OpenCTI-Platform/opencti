@@ -13,7 +13,7 @@ import EntityLastReports from '../../reports/EntityLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityIncidentsChart from '../../threats/incidents/EntityIncidentsChart';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
 
@@ -31,8 +31,8 @@ class CountryComponent extends Component {
     const { classes, country } = this.props;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={country}
+        <StixDomainObjectHeader
+          stixDomainObject={country}
           PopoverComponent={<CountryPopover />}
         />
         <Grid

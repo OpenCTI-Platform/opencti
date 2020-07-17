@@ -7,9 +7,9 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import IntrusionSetPopover from './IntrusionSetPopover';
-import StixRelation from '../../common/stix_relations/StixRelation';
+import StixRelation from '../../common/stix_core_relationships/StixRelation';
 import EntityIndicators from '../../signatures/indicators/EntityIndicators';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = (theme) => ({
   container: {
@@ -65,8 +65,8 @@ class IntrusionSetIndicatorsComponent extends Component {
     }
     return (
       <div className={className}>
-        <StixDomainEntityHeader
-          stixDomainEntity={intrusionSet}
+        <StixDomainObjectHeader
+          stixDomainObject={intrusionSet}
           PopoverComponent={<IntrusionSetPopover />}
         />
         <Route

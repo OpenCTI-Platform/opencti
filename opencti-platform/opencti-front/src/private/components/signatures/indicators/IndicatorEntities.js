@@ -10,7 +10,7 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import IndicatorEntitiesLines, {
   indicatorEntitiesLinesQuery,
 } from './IndicatorEntitiesLines';
-import StixRelationCreationFromEntity from '../../common/stix_relations/StixRelationCreationFromEntity';
+import StixRelationCreationFromEntity from '../../common/stix_core_relationships/StixRelationCreationFromEntity';
 
 const styles = () => ({
   paper: {

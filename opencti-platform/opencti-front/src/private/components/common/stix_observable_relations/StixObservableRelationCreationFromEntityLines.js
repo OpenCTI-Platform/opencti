@@ -151,7 +151,7 @@ export const stixObservableRelationCreationFromEntityLinesQuery = graphql`
     $types: [String]
     $count: Int!
     $cursor: ID
-    $orderBy: StixObservablesOrdering
+    $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode
   ) {
     ...StixObservableRelationCreationFromEntityLines_data
@@ -176,7 +176,7 @@ const StixObservableRelationCreationFromEntityLines = createPaginationContainer(
           types: { type: "[String]" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixObservablesOrdering", defaultValue: "name" }
+          orderBy: { type: "StixCyberObservablesOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
         stixObservables(

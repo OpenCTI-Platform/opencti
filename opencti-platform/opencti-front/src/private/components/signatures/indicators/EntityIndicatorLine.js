@@ -12,7 +12,7 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
 import { ShieldSearch } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
-import StixRelationPopover from '../../common/stix_relations/StixRelationPopover';
+import StixRelationPopover from '../../common/stix_core_relationships/StixRelationPopover';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import StixObjectTags from '../../common/stix_object/StixObjectTags';
 import ItemMarking from '../../../../components/ItemMarking';

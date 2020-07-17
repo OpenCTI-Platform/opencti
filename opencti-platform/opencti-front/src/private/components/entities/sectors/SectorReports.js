@@ -8,7 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import SectorPopover from './SectorPopover';
 import Reports from '../../reports/Reports';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = (theme) => ({
   container: {
@@ -49,8 +49,8 @@ class SectorReportsComponent extends Component {
           withPadding ? classes.containerWithPadding : classes.container
         }
       >
-        <StixDomainEntityHeader
-          stixDomainEntity={sector}
+        <StixDomainObjectHeader
+          stixDomainObject={sector}
           PopoverComponent={<SectorPopover />}
         />
         <Paper classes={{ root: classes.paper }} elevation={2}>

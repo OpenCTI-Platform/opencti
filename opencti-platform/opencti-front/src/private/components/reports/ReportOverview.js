@@ -71,7 +71,7 @@ class ReportOverviewComponent extends Component {
             {t('Author')}
           </Typography>
           <ItemAuthor
-            createdByRef={pathOr(null, ['createdByRef', 'node'], report)}
+            createdBy={pathOr(null, ['createdBy', 'node'], report)}
           />
           <Typography
             variant="h3"
@@ -107,7 +107,7 @@ const ReportOverview = createFragmentContainer(ReportOverviewComponent, {
       published
       modified
       report_class
-      createdByRef {
+      createdBy {
         node {
           id
           name

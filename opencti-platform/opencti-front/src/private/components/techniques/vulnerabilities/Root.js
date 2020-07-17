@@ -10,7 +10,7 @@ import TopBar from '../../nav/TopBar';
 import Vulnerability from './Vulnerability';
 import VulnerabilityReports from './VulnerabilityReports';
 import VulnerabilityKnowledge from './VulnerabilityKnowledge';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import VulnerabilityPopover from './VulnerabilityPopover';
 import Loader from '../../../../components/Loader';
@@ -19,7 +19,7 @@ import VulnerabilityIndicators from './VulnerabilityIndicators';
 
 const subscription = graphql`
   subscription RootVulnerabilitySubscription($id: ID!) {
-    stixDomainEntity(id: $id) {
+    stixDomainObject(id: $id) {
       ... on Vulnerability {
         ...Vulnerability_vulnerability
         ...VulnerabilityEditionContainer_vulnerability
@@ -135,8 +135,8 @@ class RootVulnerability extends Component {
                     path="/dashboard/techniques/vulnerabilities/:vulnerabilityId/files"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.vulnerability}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.vulnerability}
                           PopoverComponent={<VulnerabilityPopover />}
                         />
                         <FileManager
@@ -153,8 +153,8 @@ class RootVulnerability extends Component {
                     path="/dashboard/techniques/vulnerabilities/:vulnerabilityId/history"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.vulnerability}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.vulnerability}
                           PopoverComponent={<VulnerabilityPopover />}
                         />
                         <StixObjectHistory

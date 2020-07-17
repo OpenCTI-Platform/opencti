@@ -8,7 +8,7 @@ import EntityStixObservablesLines, {
   entityStixObservablesLinesQuery,
 } from './EntityStixObservablesLines';
 import StixObservablesRightBar from './StixObservablesRightBar';
-import StixRelationCreationFromEntity from '../../common/stix_relations/StixRelationCreationFromEntity';
+import StixRelationCreationFromEntity from '../../common/stix_core_relationships/StixRelationCreationFromEntity';
 
 class EntityStixObservables extends Component {
   constructor(props) {

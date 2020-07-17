@@ -88,7 +88,7 @@ const entityLastReportsQuery = graphql`
           name
           description
           published
-          createdByRef {
+          createdBy {
             node {
               name
             }
@@ -168,7 +168,7 @@ class EntityLastReports extends Component {
                           <div style={inlineStyles.itemAuthor}>
                             {pathOr(
                               '',
-                              ['createdByRef', 'node', 'name'],
+                              ['createdBy', 'node', 'name'],
                               report,
                             )}
                           </div>

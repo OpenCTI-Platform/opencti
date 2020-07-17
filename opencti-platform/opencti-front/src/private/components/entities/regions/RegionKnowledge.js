@@ -6,12 +6,12 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
-import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
-import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
-import StixRelation from '../../common/stix_relations/StixRelation';
+import EntityStixRelations from '../../common/stix_core_relationships/EntityStixCoreRelationships';
+import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
+import StixRelation from '../../common/stix_core_relationships/StixRelation';
 import RegionPopover from './RegionPopover';
 import RegionKnowledgeBar from './RegionKnowledgeBar';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = () => ({
   container: {
@@ -26,8 +26,8 @@ class RegionKnowledgeComponent extends Component {
     const link = `/dashboard/entities/regions/${region.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={region}
+        <StixDomainObjectHeader
+          stixDomainObject={region}
           PopoverComponent={<RegionPopover />}
         />
         <RegionKnowledgeBar regionId={region.id} />
@@ -46,9 +46,9 @@ class RegionKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/regions/:regionId/knowledge/overview"
           render={(routeProps) => (
-            <StixDomainEntityKnowledge
-              stixDomainEntityId={region.id}
-              stixDomainEntityType="region"
+            <StixDomainObjectKnowledge
+              stixDomainObjectId={region.id}
+              stixDomainObjectType="region"
               {...routeProps}
             />
           )}

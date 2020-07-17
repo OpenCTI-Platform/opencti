@@ -8,7 +8,7 @@ import {
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import CourseOfAction from './CourseOfAction';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import CourseOfActionPopover from './CourseOfActionPopover';
 import Loader from '../../../../components/Loader';
@@ -16,7 +16,7 @@ import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
 
 const subscription = graphql`
   subscription RootCoursesOfActionSubscription($id: ID!) {
-    stixDomainEntity(id: $id) {
+    stixDomainObject(id: $id) {
       ... on CourseOfAction {
         ...CourseOfAction_courseOfAction
         ...CourseOfActionEditionContainer_courseOfAction
@@ -93,8 +93,8 @@ class RootCourseOfAction extends Component {
                     path="/dashboard/techniques/courses_of_action/:courseOfActionId/files"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.courseOfAction}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.courseOfAction}
                           PopoverComponent={<CourseOfActionPopover />}
                         />
                         <FileManager
@@ -111,8 +111,8 @@ class RootCourseOfAction extends Component {
                     path="/dashboard/techniques/courses_of_action/:courseOfActionId/history"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.courseOfAction}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.courseOfAction}
                           PopoverComponent={<CourseOfActionPopover />}
                         />
                         <StixObjectHistory

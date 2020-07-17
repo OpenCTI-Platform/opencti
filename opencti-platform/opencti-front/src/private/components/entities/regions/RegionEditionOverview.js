@@ -19,7 +19,7 @@ import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
+import CreatedByField from '../../common/form/CreatedByField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
 const styles = (theme) => ({
@@ -131,15 +131,15 @@ class RegionEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedByRef(name, value) {
+  handleChangeCreatedBy(name, value) {
     const { region } = this.props;
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], region),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], region),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], region),
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'node', 'name'], region),
+      value: pathOr(null, ['createdBy', 'node', 'id'], region),
+      relation: pathOr(null, ['createdBy', 'relation', 'id'], region),
     };
 
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: regionMutationRelationAdd,
         variables: {
@@ -152,12 +152,12 @@ class RegionEditionOverviewComponent extends Component {
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: regionMutationRelationDelete,
         variables: {
           id: this.props.region.id,
-          relationId: currentCreatedByRef.relation,
+          relationId: currentCreatedBy.relation,
         },
       });
       if (value.value) {
@@ -219,12 +219,12 @@ class RegionEditionOverviewComponent extends Component {
 
   render() {
     const { t, region, context } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], region) === null
+    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], region) === null
       ? ''
       : {
-        label: pathOr(null, ['createdByRef', 'node', 'name'], region),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], region),
-        relation: pathOr(null, ['createdByRef', 'relation', 'id'], region),
+        label: pathOr(null, ['createdBy', 'node', 'name'], region),
+        value: pathOr(null, ['createdBy', 'node', 'id'], region),
+        relation: pathOr(null, ['createdBy', 'relation', 'id'], region),
       };
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
@@ -235,9 +235,9 @@ class RegionEditionOverviewComponent extends Component {
       })),
     )(region);
     const initialValues = pipe(
-      assoc('createdByRef', createdByRef),
+      assoc('createdBy', createdBy),
       assoc('markingDefinitions', markingDefinitions),
-      pick(['name', 'description', 'createdByRef', 'markingDefinitions']),
+      pick(['name', 'description', 'createdBy', 'markingDefinitions']),
     )(region);
     return (
       <div>
@@ -277,17 +277,17 @@ class RegionEditionOverviewComponent extends Component {
                   />
                 }
               />
-              <CreatedByRefField
-                name="createdByRef"
+              <CreatedByField
+                name="createdBy"
                 style={{ marginTop: 20, width: '100%' }}
                 setFieldValue={setFieldValue}
                 helpertext={
                   <SubscriptionFocus
                     context={context}
-                    fieldName="createdByRef"
+                    fieldName="createdBy"
                   />
                 }
-                onChange={this.handleChangeCreatedByRef.bind(this)}
+                onChange={this.handleChangeCreatedBy.bind(this)}
               />
               <MarkingDefinitionsField
                 name="markingDefinitions"
@@ -324,7 +324,7 @@ const RegionEditionOverview = createFragmentContainer(
         id
         name
         description
-        createdByRef {
+        createdBy {
           node {
             id
             name

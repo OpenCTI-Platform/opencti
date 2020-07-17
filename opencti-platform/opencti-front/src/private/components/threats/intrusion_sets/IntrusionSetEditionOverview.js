@@ -19,7 +19,7 @@ import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
+import CreatedByField from '../../common/form/CreatedByField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
 const styles = (theme) => ({
@@ -137,15 +137,15 @@ class IntrusionSetEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedByRef(name, value) {
+  handleChangeCreatedBy(name, value) {
     const { intrusionSet } = this.props;
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], intrusionSet),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], intrusionSet),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], intrusionSet),
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'node', 'name'], intrusionSet),
+      value: pathOr(null, ['createdBy', 'node', 'id'], intrusionSet),
+      relation: pathOr(null, ['createdBy', 'relation', 'id'], intrusionSet),
     };
 
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: intrusionSetMutationRelationAdd,
         variables: {
@@ -158,12 +158,12 @@ class IntrusionSetEditionOverviewComponent extends Component {
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: intrusionSetMutationRelationDelete,
         variables: {
           id: this.props.intrusionSet.id,
-          relationId: currentCreatedByRef.relation,
+          relationId: currentCreatedBy.relation,
         },
       });
       if (value.value) {
@@ -224,14 +224,14 @@ class IntrusionSetEditionOverviewComponent extends Component {
 
   render() {
     const { t, intrusionSet, context } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], intrusionSet) === null
+    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], intrusionSet) === null
       ? ''
       : {
-        label: pathOr(null, ['createdByRef', 'node', 'name'], intrusionSet),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], intrusionSet),
+        label: pathOr(null, ['createdBy', 'node', 'name'], intrusionSet),
+        value: pathOr(null, ['createdBy', 'node', 'id'], intrusionSet),
         relation: pathOr(
           null,
-          ['createdByRef', 'relation', 'id'],
+          ['createdBy', 'relation', 'id'],
           intrusionSet,
         ),
       };
@@ -252,13 +252,13 @@ class IntrusionSetEditionOverviewComponent extends Component {
       })),
     )(intrusionSet);
     const initialValues = pipe(
-      assoc('createdByRef', createdByRef),
+      assoc('createdBy', createdBy),
       assoc('killChainPhases', killChainPhases),
       assoc('markingDefinitions', markingDefinitions),
       pick([
         'name',
         'description',
-        'createdByRef',
+        'createdBy',
         'killChainPhases',
         'markingDefinitions',
       ]),
@@ -297,14 +297,14 @@ class IntrusionSetEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
-            <CreatedByRefField
-              name="createdByRef"
+            <CreatedByField
+              name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdByRef" />
+                <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedByRef.bind(this)}
+              onChange={this.handleChangeCreatedBy.bind(this)}
             />
             <MarkingDefinitionsField
               name="markingDefinitions"
@@ -340,7 +340,7 @@ const IntrusionSetEditionOverview = createFragmentContainer(
         id
         name
         description
-        createdByRef {
+        createdBy {
           node {
             id
             name

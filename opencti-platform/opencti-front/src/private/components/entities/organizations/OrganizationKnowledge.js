@@ -6,12 +6,12 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
-import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
-import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
-import StixRelation from '../../common/stix_relations/StixRelation';
+import EntityStixRelations from '../../common/stix_core_relationships/EntityStixCoreRelationships';
+import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
+import StixRelation from '../../common/stix_core_relationships/StixRelation';
 import OrganizationPopover from './OrganizationPopover';
 import OrganizationKnowledgeBar from './OrganizationKnowledgeBar';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = () => ({
   container: {
@@ -26,8 +26,8 @@ class OrganizationKnowledgeComponent extends Component {
     const link = `/dashboard/entities/organizations/${organization.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={organization}
+        <StixDomainObjectHeader
+          stixDomainObject={organization}
           PopoverComponent={<OrganizationPopover />}
         />
         <OrganizationKnowledgeBar organizationId={organization.id} />
@@ -46,9 +46,9 @@ class OrganizationKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/overview"
           render={(routeProps) => (
-            <StixDomainEntityKnowledge
-              stixDomainEntityId={organization.id}
-              stixDomainEntityType="organization"
+            <StixDomainObjectKnowledge
+              stixDomainObjectId={organization.id}
+              stixDomainObjectType="organization"
               {...routeProps}
             />
           )}
@@ -98,7 +98,7 @@ class OrganizationKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/entities/organizations/:organizationId/knowledge/persons"
+          path="/dashboard/entities/organizations/:organizationId/knowledge/individuals"
           render={(routeProps) => (
             <EntityStixRelations
               entityId={organization.id}

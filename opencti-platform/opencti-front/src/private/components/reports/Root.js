@@ -15,7 +15,7 @@ import Loader from '../../../components/Loader';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
-    stixDomainEntity(id: $id) {
+    stixDomainObject(id: $id) {
       ... on Report {
         ...Report_report
         ...ReportKnowledgeGraph_report

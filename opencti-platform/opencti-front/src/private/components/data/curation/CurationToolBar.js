@@ -100,19 +100,19 @@ Transition.displayName = 'TransitionSlide';
 
 const curationToolBarDeletionMutation = graphql`
   mutation CurationToolBarDeletionMutation($id: [ID]!) {
-    stixDomainEntitiesDelete(id: $id)
+    stixDomainObjectsDelete(id: $id)
   }
 `;
 
 const curationToolBarMergeMutation = graphql`
   mutation CurationToolBarMergeMutation(
     $id: ID!
-    $stixDomainEntitiesIds: [String]!
+    $stixDomainObjectsIds: [String]!
     $alias: [String]
   ) {
-    stixDomainEntityEdit(id: $id) {
+    stixDomainObjectEdit(id: $id) {
       mergeEntities(
-        stixDomainEntitiesIds: $stixDomainEntitiesIds
+        stixDomainObjectsIds: $stixDomainObjectsIds
         alias: $alias
       ) {
         id
@@ -151,21 +151,21 @@ class CurationToolBar extends Component {
 
   submitDelete() {
     this.setState({ deleting: true });
-    const stixDomainEntitiesIds = Object.keys(this.props.selectedElements);
+    const stixDomainObjectsIds = Object.keys(this.props.selectedElements);
     commitMutation({
       mutation: curationToolBarDeletionMutation,
       variables: {
-        id: stixDomainEntitiesIds,
+        id: stixDomainObjectsIds,
       },
       updater: (store) => {
         const container = store.getRoot();
         const userProxy = store.get(container.getDataID());
         const conn = ConnectionHandler.getConnection(
           userProxy,
-          'Pagination_stixDomainEntities',
+          'Pagination_stixDomainObjects',
           this.props.paginationOptions,
         );
-        stixDomainEntitiesIds.map((id) => ConnectionHandler.deleteNode(conn, id));
+        stixDomainObjectsIds.map((id) => ConnectionHandler.deleteNode(conn, id));
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -183,7 +183,7 @@ class CurationToolBar extends Component {
     this.setState({ merging: true });
     const { selectedElements } = this.props;
     const { keptEntityId } = this.state;
-    const stixDomainEntitiesIds = Object.keys(selectedElements);
+    const stixDomainObjectsIds = Object.keys(selectedElements);
     const selectedElementsList = values(selectedElements);
     const keptElement = keptEntityId
       ? head(filter((n) => n.id === keptEntityId, selectedElementsList))
@@ -194,14 +194,14 @@ class CurationToolBar extends Component {
       (n) => n.length > 0,
       uniq(concat(names, aliases)),
     );
-    const filteredStixDomainEntitiesIds = keptEntityId
-      ? filter((n) => n !== keptEntityId, stixDomainEntitiesIds)
-      : tail(stixDomainEntitiesIds);
+    const filteredStixDomainObjectsIds = keptEntityId
+      ? filter((n) => n !== keptEntityId, stixDomainObjectsIds)
+      : tail(stixDomainObjectsIds);
     commitMutation({
       mutation: curationToolBarMergeMutation,
       variables: {
         id: keptElement.id,
-        stixDomainEntitiesIds: filteredStixDomainEntitiesIds,
+        stixDomainObjectsIds: filteredStixDomainObjectsIds,
         alias: newAliases,
       },
       updater: (store) => {
@@ -209,10 +209,10 @@ class CurationToolBar extends Component {
         const userProxy = store.get(container.getDataID());
         const conn = ConnectionHandler.getConnection(
           userProxy,
-          'Pagination_stixDomainEntities',
+          'Pagination_stixDomainObjects',
           this.props.paginationOptions,
         );
-        filteredStixDomainEntitiesIds.map((id) => ConnectionHandler.deleteNode(conn, id));
+        filteredStixDomainObjectsIds.map((id) => ConnectionHandler.deleteNode(conn, id));
       },
       onCompleted: () => {
         this.setState({ merging: false });
@@ -311,7 +311,7 @@ class CurationToolBar extends Component {
                     secondary={truncate(element.description, 60)}
                   />
                   <div style={{ marginRight: 50 }}>
-                    {pathOr('', ['createdByRef', 'node', 'name'], element)}
+                    {pathOr('', ['createdBy', 'node', 'name'], element)}
                   </div>
                   <div style={{ marginRight: 50 }}>
                     {pathOr([], ['markingDefinitions', 'edges'], element)
@@ -387,7 +387,7 @@ class CurationToolBar extends Component {
             >
               {t('Author')}
             </Typography>
-            {pathOr('', ['createdByRef', 'node', 'name'], keptElement)}
+            {pathOr('', ['createdBy', 'node', 'name'], keptElement)}
             <Typography
               variant="h3"
               gutterBottom={true}

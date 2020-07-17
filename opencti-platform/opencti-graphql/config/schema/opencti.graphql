@@ -4847,6 +4847,11 @@ type StixMetaRelationship implements BasicRelationship & StixRelationship {
   inferred: Boolean
 }
 input StixMetaRelationshipAddInput {
+  relationship_type: String!
+  toId: ID!
+}
+
+input StixMetaRelationshipsAddInput {
   relationship_type: String! # Will be check by code
   toIds: [ID]!
 }
@@ -5630,7 +5635,8 @@ type StixDomainObjectEditMutations {
   contextPatch(input: EditContext): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(relationId: ID, toId: String, relationType: String): StixObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationsAdd(input: StixMetaRelationshipsAddInput): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(relationId: ID, toId: String, relationType: String): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   importPush(file: Upload!): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
     @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
@@ -5833,6 +5839,7 @@ type StixCyberObservableEditMutations {
   contextPatch(input: EditContext): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationsAdd(input: StixMetaRelationshipsAddInput): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: String, relationType: String!): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
 }

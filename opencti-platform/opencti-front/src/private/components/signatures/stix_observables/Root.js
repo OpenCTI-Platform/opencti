@@ -7,7 +7,7 @@ import {
   requestSubscription,
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
-import StixRelation from '../../common/stix_relations/StixRelation';
+import StixRelation from '../../common/stix_core_relationships/StixRelation';
 import StixObservable from './StixObservable';
 import StixObservableLinks from './StixObservableLinks';
 import StixObservableKnowledge from './StixObservableKnowledge';

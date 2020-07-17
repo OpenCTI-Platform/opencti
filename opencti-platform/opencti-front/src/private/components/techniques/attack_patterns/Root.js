@@ -10,7 +10,7 @@ import TopBar from '../../nav/TopBar';
 import AttackPattern from './AttackPattern';
 import AttackPatternReports from './AttackPatternReports';
 import AttackPatternKnowledge from './AttackPatternKnowledge';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import AttackPatternPopover from './AttackPatternPopover';
 import Loader from '../../../../components/Loader';
@@ -19,7 +19,7 @@ import AttackPatternIndicators from './AttackPatternIndicators';
 
 const subscription = graphql`
   subscription RootAttackPatternSubscription($id: ID!) {
-    stixDomainEntity(id: $id) {
+    stixDomainObject(id: $id) {
       ... on AttackPattern {
         ...AttackPattern_attackPattern
         ...AttackPatternEditionContainer_attackPattern
@@ -135,8 +135,8 @@ class RootAttackPattern extends Component {
                     path="/dashboard/techniques/attack_patterns/:attackPatternId/files"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.attackPattern}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.attackPattern}
                           PopoverComponent={<AttackPatternPopover />}
                         />
                         <FileManager
@@ -153,8 +153,8 @@ class RootAttackPattern extends Component {
                     path="/dashboard/techniques/attack_patterns/:attackPatternId/history"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.attackPattern}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.attackPattern}
                           PopoverComponent={<AttackPatternPopover />}
                         />
                         <StixObjectHistory

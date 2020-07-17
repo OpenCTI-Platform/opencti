@@ -62,7 +62,7 @@ export const entityStixSightingsLinesQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: StixSightingsOrdering
+    $orderBy: StixSightingRelationshipsOrdering
     $orderMode: OrderingMode
     $forceNatural: Boolean
   ) {
@@ -93,7 +93,7 @@ export default createPaginationContainer(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixSightingsOrdering", defaultValue: "first_seen" }
+          orderBy: { type: "StixSightingRelationshipsOrdering", defaultValue: "first_seen" }
           orderMode: { type: "OrderingMode", defaultValue: "desc" }
           forceNatural: { type: "Boolean", defaultValue: false }
         ) {

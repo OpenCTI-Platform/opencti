@@ -79,9 +79,9 @@ export const entityIndicatorsLinesQuery = graphql`
     $weights: [Int]
     $count: Int!
     $cursor: ID
-    $orderBy: StixRelationsOrdering
+    $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode
-    $filters: [StixRelationsFiltering]
+    $filters: [StixCoreRelationshipsFiltering]
   ) {
     ...EntityIndicatorsLines_data
       @arguments(
@@ -122,9 +122,9 @@ export default createPaginationContainer(
           weights: { type: "[Int]" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixRelationsOrdering", defaultValue: "first_seen" }
+          orderBy: { type: "StixCoreRelationshipsOrdering", defaultValue: "start_time" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[StixRelationsFiltering]" }
+          filters: { type: "[StixCoreRelationshipsFiltering]" }
         ) {
         stixRelations(
           search: $search

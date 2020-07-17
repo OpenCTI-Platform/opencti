@@ -12,7 +12,7 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { Help, MoreVert } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import ItemConfidenceLevel from '../../../../components/ItemConfidenceLevel';
-import StixRelationPopover from '../../common/stix_relations/StixRelationPopover';
+import StixRelationPopover from '../../common/stix_core_relationships/StixRelationPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
 

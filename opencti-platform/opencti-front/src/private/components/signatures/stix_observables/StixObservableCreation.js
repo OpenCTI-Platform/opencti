@@ -22,7 +22,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
+import CreatedByField from '../../common/form/CreatedByField';
 import TagsField from '../../common/form/TagsField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 import TypesField from '../TypesField';
@@ -90,8 +90,30 @@ const styles = (theme) => ({
 });
 
 const stixObservableMutation = graphql`
-  mutation StixObservableCreationMutation($input: StixObservableAddInput!) {
-    stixObservableAdd(input: $input) {
+  mutation StixObservableCreationMutation(
+    $type: String!
+    $AutonomousSystem: AutonomousSystemAddInput
+    $Directory: DirectoryAddInput
+    $DomainName: DomainNameAddInput
+    $EmailAddr: EmailAddrAddInput
+    $EmailMessage: EmailMessageAddInput
+    $XOpenctiCryptographicKey: XOpenctiCryptographicKeyAddInput
+    $XOpenctiCryptocurrencyWallet: XOpenctiCryptocurrencyWalletAddInput
+    $XOpenctiText: XOpenctiTextAddInput
+    $XOpenctiUserAgent: XOpenctiUserAgentAddInput
+  ) {
+    stixObservableAdd(
+      type: $type
+      AutonomousSystem: $AutonomousSystem
+      Directory: $Directory
+      DomainName: $DomainName
+      EmailAddr: $EmailAddr
+      EmailMessage: $EmailMessage
+      XOpenctiCryptographicKey: $XOpenctiCryptographicKey
+      XOpenctiCryptocurrencyWallet: $XOpenctiCryptocurrencyWallet
+      XOpenctiText: $XOpenctiText
+      XOpenctiUserAgent: $XOpenctiUserAgent
+    ) {
       ...StixObservableLine_node
     }
   }
@@ -131,7 +153,7 @@ class StixObservableCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const adaptedValues = evolve(
       {
-        createdByRef: path(['value']),
+        createdBy: path(['value']),
         markingDefinitions: pluck('value'),
         tags: pluck('value'),
       },
@@ -202,7 +224,7 @@ class StixObservableCreation extends Component {
                 type: '',
                 observable_value: '',
                 description: '',
-                createdByRef: '',
+                createdBy: '',
                 markingDefinitions: [],
                 tags: [],
                 createIndicator: false,
@@ -242,8 +264,8 @@ class StixObservableCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <CreatedByRefField
-                    name="createdByRef"
+                  <CreatedByField
+                    name="createdBy"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />
@@ -311,7 +333,7 @@ class StixObservableCreation extends Component {
             type: '',
             observable_value: inputValue,
             description: '',
-            createdByRef: '',
+            createdBy: '',
             markingDefinitions: [],
           }}
           validationSchema={stixObservableValidation(t)}
@@ -356,8 +378,8 @@ class StixObservableCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <CreatedByRefField
-                    name="createdByRef"
+                  <CreatedByField
+                    name="createdBy"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />

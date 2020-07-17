@@ -38,11 +38,11 @@ import { serializeGraph } from '../../../utils/GraphHelper';
 import { dateFormat } from '../../../utils/Time';
 import { reportMutationFieldPatch } from './ReportEditionOverview';
 import ReportAddObjectRefs from './ReportAddObjectRefs';
-import StixRelationCreation from '../common/stix_relations/StixRelationCreation';
-import StixDomainEntityEdition from '../common/stix_domain_entities/StixDomainEntityEdition';
+import StixRelationCreation from '../common/stix_core_relationships/StixRelationCreation';
+import StixDomainObjectEdition from '../common/stix_domain_objects/StixDomainObjectEdition';
 import StixRelationEdition, {
   stixRelationEditionDeleteMutation,
-} from '../common/stix_relations/StixRelationEdition';
+} from '../common/stix_core_relationships/StixRelationEdition';
 
 const styles = () => ({
   container: {
@@ -812,7 +812,7 @@ class ReportKnowledgeGraphComponent extends Component {
           reportId={report.id}
           reportObjectRefs={report.objectRefs.edges}
           knowledgeGraph={true}
-          defaultCreatedByRef={pathOr(null, ['createdByRef', 'node'], report)}
+          defaultCreatedBy={pathOr(null, ['createdBy', 'node'], report)}
           defaultMarkingDefinition={
             pathOr([], ['markingDefinitions', 'edges'], report).length > 0
               ? pathOr([], ['markingDefinitions', 'edges'], report)[0].node
@@ -828,7 +828,7 @@ class ReportKnowledgeGraphComponent extends Component {
           weight={report.source_confidence_level}
           handleClose={this.handleCloseRelationCreation.bind(this)}
           handleResult={this.handleResultRelationCreation.bind(this)}
-          defaultCreatedByRef={pathOr(null, ['createdByRef', 'node'], report)}
+          defaultCreatedBy={pathOr(null, ['createdBy', 'node'], report)}
           defaultMarkingDefinition={
             pathOr([], ['markingDefinitions', 'edges'], report).length > 0
               ? pathOr([], ['markingDefinitions', 'edges'], report)[0].node
@@ -840,9 +840,9 @@ class ReportKnowledgeGraphComponent extends Component {
           stixRelationId={editRelationId}
           handleClose={this.handleCloseRelationEdition.bind(this)}
         />
-        <StixDomainEntityEdition
+        <StixDomainObjectEdition
           open={openEditEntity}
-          stixDomainEntityId={editEntityId}
+          stixDomainObjectId={editEntityId}
           handleClose={this.handleCloseEntityEdition.bind(this)}
         />
       </div>
@@ -867,7 +867,7 @@ const ReportKnowledgeGraph = createFragmentContainer(
         graph_data
         published
         source_confidence_level
-        createdByRef {
+        createdBy {
           node {
             id
             name

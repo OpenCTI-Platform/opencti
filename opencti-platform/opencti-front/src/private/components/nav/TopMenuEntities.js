@@ -5,7 +5,7 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import {
-  PersonOutlined,
+  IndividualOutlined,
   AccountBalanceOutlined,
   FlagOutlined,
   DomainOutlined,
@@ -129,22 +129,22 @@ class TopMenuTechniques extends Component {
         </Button>
         <Button
           component={Link}
-          to="/dashboard/entities/persons"
+          to="/dashboard/entities/individuals"
           variant={
-            location.pathname === '/dashboard/entities/persons'
+            location.pathname === '/dashboard/entities/individuals'
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/entities/persons'
+            location.pathname === '/dashboard/entities/individuals'
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          <PersonOutlined className={classes.icon} fontSize="small" />
-          {t('Persons')}
+          <IndividualOutlined className={classes.icon} fontSize="small" />
+          {t('Individuals')}
         </Button>
       </div>
     );

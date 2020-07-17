@@ -7,7 +7,7 @@ import {
   requestSubscription,
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
-import StixRelation from '../../common/stix_relations/StixRelation';
+import StixRelation from '../../common/stix_core_relationships/StixRelation';
 import Indicator from './Indicator';
 import IndicatorObservables from './IndicatorObservables';
 import Loader from '../../../../components/Loader';
@@ -18,7 +18,7 @@ import EntityStixSightings from '../../common/stix_sightings/EntityStixSightings
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
-    stixDomainEntity(id: $id) {
+    stixDomainObject(id: $id) {
       ... on Indicator {
         ...Indicator_indicator
         ...IndicatorEditionContainer_indicator

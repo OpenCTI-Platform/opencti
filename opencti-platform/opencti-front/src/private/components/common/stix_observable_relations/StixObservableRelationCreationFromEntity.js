@@ -188,7 +188,7 @@ const stixObservableRelationCreationFromEntityQuery = graphql`
 
 const stixObservableRelationCreationFromEntityMutation = graphql`
   mutation StixObservableRelationCreationFromEntityMutation(
-    $input: StixObservableRelationAddInput!
+    $input: StixCyberObservableRelationshipAddInput!
   ) {
     stixObservableRelationAdd(input: $input) {
       ...StixObservableObservableLine_node
@@ -280,8 +280,8 @@ class StixObservableRelationCreationFromEntity extends Component {
     this.setState({ search: keyword });
   }
 
-  handleSelectEntity(stixDomainEntity) {
-    this.setState({ step: 1, targetEntity: stixDomainEntity });
+  handleSelectEntity(stixDomainObject) {
+    this.setState({ step: 1, targetEntity: stixDomainObject });
   }
 
   renderSelectEntity() {

@@ -99,7 +99,7 @@ const FileExportViewerComponent = compose(
 
 const FileExportViewerRefetchQuery = graphql`
   query FileExportViewerRefetchQuery($id: String!) {
-    stixDomainEntity(id: $id) {
+    stixDomainObject(id: $id) {
       ...FileExportViewer_entity
     }
   }
@@ -109,7 +109,7 @@ const FileExportViewer = createRefetchContainer(
   FileExportViewerComponent,
   {
     entity: graphql`
-      fragment FileExportViewer_entity on StixDomainEntity {
+      fragment FileExportViewer_entity on StixDomainObject {
         id
         exportFiles(first: 1000) @connection(key: "Pagination_exportFiles") {
           edges {

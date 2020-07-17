@@ -48,16 +48,16 @@ export const buildViewParamsFromUrlAndStorage = (
   if (finalParams.orderAsc) {
     finalParams.orderAsc = finalParams.orderAsc.toString() === 'true';
   }
-  if (typeof finalParams.stixDomainEntitiesTypes === 'string') {
-    finalParams.stixDomainEntitiesTypes = finalParams.stixDomainEntitiesTypes
-      ? (finalParams.stixDomainEntitiesTypes = split(
+  if (typeof finalParams.stixDomainObjectsTypes === 'string') {
+    finalParams.stixDomainObjectsTypes = finalParams.stixDomainObjectsTypes
+      ? (finalParams.stixDomainObjectsTypes = split(
         ',',
-        finalParams.stixDomainEntitiesTypes,
+        finalParams.stixDomainObjectsTypes,
       ))
       : [];
   }
   if (typeof finalParams.indicatorTypes === 'string') {
-    finalParams.indicatorTypes = finalParams.stixDomainEntitiesTypes
+    finalParams.indicatorTypes = finalParams.stixDomainObjectsTypes
       ? split(',', finalParams.indicatorTypes)
       : [];
   }

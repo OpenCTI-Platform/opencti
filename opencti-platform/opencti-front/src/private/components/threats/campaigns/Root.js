@@ -11,7 +11,7 @@ import Campaign from './Campaign';
 import CampaignReports from './CampaignReports';
 import CampaignKnowledge from './CampaignKnowledge';
 import CampaignIndicators from './CampaignIndicators';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import CampaignPopover from './CampaignPopover';
 import Loader from '../../../../components/Loader';
@@ -19,7 +19,7 @@ import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
 
 const subscription = graphql`
   subscription RootCampaignSubscription($id: ID!) {
-    stixDomainEntity(id: $id) {
+    stixDomainObject(id: $id) {
       ... on Campaign {
         ...Campaign_campaign
         ...CampaignEditionContainer_campaign
@@ -133,8 +133,8 @@ class RootCampaign extends Component {
                     path="/dashboard/threats/campaigns/:campaignId/files"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.campaign}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.campaign}
                           PopoverComponent={<CampaignPopover />}
                         />
                         <FileManager
@@ -151,8 +151,8 @@ class RootCampaign extends Component {
                     path="/dashboard/threats/campaigns/:campaignId/history"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.campaign}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.campaign}
                           PopoverComponent={<CampaignPopover />}
                         />
                         <StixObjectHistory

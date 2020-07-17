@@ -72,9 +72,9 @@ class CourseOfActionOverviewComponent extends Component {
             {t('Author')}
           </Typography>
           <ItemAuthor
-            createdByRef={pathOr(
+            createdBy={pathOr(
               null,
-              ['createdByRef', 'node'],
+              ['createdBy', 'node'],
               courseOfAction,
             )}
           />
@@ -121,7 +121,7 @@ const CourseOfActionOverview = createFragmentContainer(
             }
           }
         }
-        createdByRef {
+        createdBy {
           node {
             id
             name

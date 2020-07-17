@@ -19,7 +19,7 @@ import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
+import CreatedByField from '../../common/form/CreatedByField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
 const styles = (theme) => ({
@@ -137,19 +137,19 @@ class CourseOfActionEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedByRef(name, value) {
+  handleChangeCreatedBy(name, value) {
     const { courseOfAction } = this.props;
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], courseOfAction),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], courseOfAction),
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'node', 'name'], courseOfAction),
+      value: pathOr(null, ['createdBy', 'node', 'id'], courseOfAction),
       relation: pathOr(
         null,
-        ['createdByRef', 'relation', 'id'],
+        ['createdBy', 'relation', 'id'],
         courseOfAction,
       ),
     };
 
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: courseOfActionMutationRelationAdd,
         variables: {
@@ -162,12 +162,12 @@ class CourseOfActionEditionOverviewComponent extends Component {
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: courseOfActionMutationRelationDelete,
         variables: {
           id: this.props.courseOfAction.id,
-          relationId: currentCreatedByRef.relation,
+          relationId: currentCreatedBy.relation,
         },
       });
       if (value.value) {
@@ -229,18 +229,18 @@ class CourseOfActionEditionOverviewComponent extends Component {
 
   render() {
     const { t, courseOfAction, context } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], courseOfAction) === null
+    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], courseOfAction) === null
       ? ''
       : {
         label: pathOr(
           null,
-          ['createdByRef', 'node', 'name'],
+          ['createdBy', 'node', 'name'],
           courseOfAction,
         ),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], courseOfAction),
+        value: pathOr(null, ['createdBy', 'node', 'id'], courseOfAction),
         relation: pathOr(
           null,
-          ['createdByRef', 'relation', 'id'],
+          ['createdBy', 'relation', 'id'],
           courseOfAction,
         ),
       };
@@ -253,12 +253,12 @@ class CourseOfActionEditionOverviewComponent extends Component {
       })),
     )(courseOfAction);
     const initialValues = pipe(
-      assoc('createdByRef', createdByRef),
+      assoc('createdBy', createdBy),
       assoc('markingDefinitions', markingDefinitions),
       pick([
         'name',
         'description',
-        'createdByRef',
+        'createdBy',
         'killChainPhases',
         'markingDefinitions',
       ]),
@@ -297,14 +297,14 @@ class CourseOfActionEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
-            <CreatedByRefField
-              name="createdByRef"
+            <CreatedByField
+              name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdByRef" />
+                <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedByRef.bind(this)}
+              onChange={this.handleChangeCreatedBy.bind(this)}
             />
             <MarkingDefinitionsField
               name="markingDefinitions"
@@ -340,7 +340,7 @@ const CourseOfActionEditionOverview = createFragmentContainer(
         id
         name
         description
-        createdByRef {
+        createdBy {
           node {
             id
             name

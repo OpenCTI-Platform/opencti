@@ -17,7 +17,7 @@ import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
+import CreatedByField from '../../common/form/CreatedByField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
 const styles = (theme) => ({
@@ -118,7 +118,7 @@ class SectorCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = evolve(
       {
-        createdByRef: path(['value']),
+        createdBy: path(['value']),
         markingDefinitions: pluck('value'),
       },
       values,
@@ -180,7 +180,7 @@ class SectorCreation extends Component {
               initialValues={{
                 name: '',
                 description: '',
-                createdByRef: '',
+                createdBy: '',
                 markingDefinitions: [],
               }}
               validationSchema={sectorValidation(t)}
@@ -207,8 +207,8 @@ class SectorCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <CreatedByRefField
-                    name="createdByRef"
+                  <CreatedByField
+                    name="createdBy"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />

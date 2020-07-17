@@ -43,7 +43,7 @@ import TopMenuEntities from './TopMenuEntities';
 import TopMenuCountry from './TopMenuCountry';
 import TopMenuCity from './TopMenuCity';
 import TopMenuOrganization from './TopMenuOrganization';
-import TopMenuPerson from './TopMenuPerson';
+import TopMenuIndividual from './TopMenuIndividual';
 import TopMenuData from './TopMenuData';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuProfile from './TopMenuProfile';
@@ -286,8 +286,8 @@ const TopBar = ({
           ) : (
             ''
           )}
-          {location.pathname.includes('/dashboard/entities/persons/') ? (
-            <TopMenuPerson />
+          {location.pathname.includes('/dashboard/entities/individuals/') ? (
+            <TopMenuIndividual />
           ) : (
             ''
           )}

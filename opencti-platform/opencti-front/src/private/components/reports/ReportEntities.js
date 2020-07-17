@@ -17,7 +17,7 @@ import {
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
-import StixDomainEntitiesRightBar from '../common/stix_domain_entities/StixDomainEntitiesRightBar';
+import StixDomainObjectsRightBar from '../common/stix_domain_objects/StixDomainObjectsRightBar';
 
 const styles = () => ({
   container: {
@@ -38,7 +38,7 @@ class ReportEntitiesComponent extends Component {
       sortBy: propOr('name', 'sortBy', params),
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
-      stixDomainEntitiesTypes: propOr([], 'stixDomainEntitiesTypes', params),
+      stixDomainObjectsTypes: propOr([], 'stixDomainObjectsTypes', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
     };
@@ -65,13 +65,13 @@ class ReportEntitiesComponent extends Component {
     this.setState({ openExports: !this.state.openExports });
   }
 
-  handleToggleStixDomainEntityType(type) {
-    if (this.state.stixDomainEntitiesTypes.includes(type)) {
+  handleToggleStixDomainObjectType(type) {
+    if (this.state.stixDomainObjectsTypes.includes(type)) {
       this.setState(
         {
-          stixDomainEntitiesTypes: filter(
+          stixDomainObjectsTypes: filter(
             (t) => t !== type,
-            this.state.stixDomainEntitiesTypes,
+            this.state.stixDomainObjectsTypes,
           ),
         },
         () => this.saveView(),
@@ -79,9 +79,9 @@ class ReportEntitiesComponent extends Component {
     } else {
       this.setState(
         {
-          stixDomainEntitiesTypes: append(
+          stixDomainObjectsTypes: append(
             type,
-            this.state.stixDomainEntitiesTypes,
+            this.state.stixDomainObjectsTypes,
           ),
         },
         () => this.saveView(),
@@ -107,7 +107,7 @@ class ReportEntitiesComponent extends Component {
       sortBy,
       orderAsc,
       searchTerm,
-      stixDomainEntitiesTypes,
+      stixDomainObjectsTypes,
       openExports,
       numberOfElements,
     } = this.state;
@@ -122,7 +122,7 @@ class ReportEntitiesComponent extends Component {
         width: '30%',
         isSortable: true,
       },
-      createdByRef: {
+      createdBy: {
         label: 'Creator',
         width: '15%',
         isSortable: false,
@@ -138,7 +138,7 @@ class ReportEntitiesComponent extends Component {
       },
     };
     const filters = [
-      { key: 'entity_type', values: stixDomainEntitiesTypes, operator: 'match' },
+      { key: 'entity_type', values: stixDomainObjectsTypes, operator: 'match' },
     ];
     const paginationOptions = {
       filters,
@@ -174,9 +174,9 @@ class ReportEntitiesComponent extends Component {
             )}
           />
         </ListLines>
-        <StixDomainEntitiesRightBar
-          stixDomainEntitiesTypes={stixDomainEntitiesTypes}
-          handleToggleStixDomainEntityType={this.handleToggleStixDomainEntityType.bind(
+        <StixDomainObjectsRightBar
+          stixDomainObjectsTypes={stixDomainObjectsTypes}
+          handleToggleStixDomainObjectType={this.handleToggleStixDomainObjectType.bind(
             this,
           )}
           openExports={openExports}

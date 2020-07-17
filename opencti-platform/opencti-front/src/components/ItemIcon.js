@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
   FlagOutlined,
-  PersonOutlined,
+  IndividualOutlined,
   AccountBalanceOutlined,
   DomainOutlined,
   PublicOutlined,
@@ -67,7 +67,7 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'incident':
       return <Fire style={style} fontSize={fontSize} role="img" />;
     case 'user':
-      return <PersonOutlined style={style} fontSize={fontSize} role="img" />;
+      return <IndividualOutlined style={style} fontSize={fontSize} role="img" />;
     case 'organization':
       return (
         <AccountBalanceOutlined style={style} fontSize={fontSize} role="img" />
@@ -131,7 +131,7 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'uses':
     case 'related-to':
     case 'mitigates':
-    case 'impersonates':
+    case 'imindividualates':
     case 'indicates':
     case 'comes-after':
     case 'attributed-to':

@@ -11,8 +11,8 @@ import IntrusionSetDetails from './IntrusionSetDetails';
 import IntrusionSetEdition from './IntrusionSetEdition';
 import IntrusionSetPopover from './IntrusionSetPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
-import EntityStixRelationsDonut from '../../common/stix_relations/EntityStixRelationsDonut';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import EntityStixRelationsDonut from '../../common/stix_core_relationships/EntityStixRelationsDonut';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityCampaignsChart from '../campaigns/EntityCampaignsChart';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
@@ -32,8 +32,8 @@ class IntrusionSetComponent extends Component {
     const { classes, intrusionSet } = this.props;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={intrusionSet}
+        <StixDomainObjectHeader
+          stixDomainObject={intrusionSet}
           PopoverComponent={<IntrusionSetPopover />}
         />
         <Grid

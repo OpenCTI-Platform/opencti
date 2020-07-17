@@ -18,7 +18,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
+import CreatedByField from '../../common/form/CreatedByField';
 import TagsField from '../../common/form/TagsField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
@@ -107,7 +107,7 @@ class ToolCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = pipe(
-      assoc('createdByRef', values.createdByRef.value),
+      assoc('createdBy', values.createdBy.value),
       assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
       assoc('killChainPhases', pluck('value', values.killChainPhases)),
       assoc('tags', pluck('value', values.tags)),
@@ -174,7 +174,7 @@ class ToolCreation extends Component {
               initialValues={{
                 name: '',
                 description: '',
-                createdByRef: '',
+                createdBy: '',
                 markingDefinitions: [],
                 killChainPhases: [],
                 tags: [],
@@ -211,8 +211,8 @@ class ToolCreation extends Component {
                     name="killChainPhases"
                     style={{ marginTop: 20, width: '100%' }}
                   />
-                  <CreatedByRefField
-                    name="createdByRef"
+                  <CreatedByField
+                    name="createdBy"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />

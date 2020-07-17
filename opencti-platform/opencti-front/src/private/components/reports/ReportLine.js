@@ -73,7 +73,7 @@ class ReportLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.createdBy.width }}
               >
-                {pathOr('', ['createdByRef', 'node', 'name'], node)}
+                {pathOr('', ['createdBy', 'node', 'name'], node)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -146,7 +146,7 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
       id
       name
       object_status
-      createdByRef {
+      createdBy {
         node {
           name
         }

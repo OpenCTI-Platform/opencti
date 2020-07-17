@@ -242,14 +242,14 @@ class IntrusionSetEditionDetailsComponent extends Component {
               <MenuItem key="organizational-gain" value="organizational-gain">
                 {t('motivation_organizational-gain')}
               </MenuItem>
-              <MenuItem key="personal-gain" value="personal-gain">
-                {t('motivation_personal-gain')}
+              <MenuItem key="individualal-gain" value="individualal-gain">
+                {t('motivation_individualal-gain')}
               </MenuItem>
               <MenuItem
-                key="personal-satisfaction"
-                value="personal-satisfaction"
+                key="individualal-satisfaction"
+                value="individualal-satisfaction"
               >
-                {t('motivation_personal-satisfaction')}
+                {t('motivation_individualal-satisfaction')}
               </MenuItem>
               <MenuItem key="revenge" value="revenge">
                 {t('motivation_revenge')}
@@ -294,14 +294,14 @@ class IntrusionSetEditionDetailsComponent extends Component {
               <MenuItem key="organizational-gain" value="organizational-gain">
                 {t('motivation_organizational-gain')}
               </MenuItem>
-              <MenuItem key="personal-gain" value="personal-gain">
-                {t('motivation_personal-gain')}
+              <MenuItem key="individualal-gain" value="individualal-gain">
+                {t('motivation_individualal-gain')}
               </MenuItem>
               <MenuItem
-                key="personal-satisfaction"
-                value="personal-satisfaction"
+                key="individualal-satisfaction"
+                value="individualal-satisfaction"
               >
-                {t('motivation_personal-satisfaction')}
+                {t('motivation_individualal-satisfaction')}
               </MenuItem>
               <MenuItem key="revenge" value="revenge">
                 {t('motivation_revenge')}

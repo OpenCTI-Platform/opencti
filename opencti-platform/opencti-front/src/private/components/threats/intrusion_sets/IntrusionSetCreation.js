@@ -17,7 +17,7 @@ import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
+import CreatedByField from '../../common/form/CreatedByField';
 import TagsField from '../../common/form/TagsField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
@@ -107,7 +107,7 @@ class IntrusionSetCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const adaptedValues = evolve(
       {
-        createdByRef: path(['value']),
+        createdBy: path(['value']),
         markingDefinitions: pluck('value'),
         tags: pluck('value'),
       },
@@ -175,7 +175,7 @@ class IntrusionSetCreation extends Component {
               initialValues={{
                 name: '',
                 description: '',
-                createdByRef: '',
+                createdBy: '',
                 markingDefinitions: [],
                 tags: [],
               }}
@@ -212,8 +212,8 @@ class IntrusionSetCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <CreatedByRefField
-                    name="createdByRef"
+                  <CreatedByField
+                    name="createdBy"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />

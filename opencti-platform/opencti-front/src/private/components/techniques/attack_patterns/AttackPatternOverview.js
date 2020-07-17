@@ -72,7 +72,7 @@ class AttackPatternOverviewComponent extends Component {
             {t('Author')}
           </Typography>
           <ItemAuthor
-            createdByRef={pathOr(null, ['createdByRef', 'node'], attackPattern)}
+            createdBy={pathOr(null, ['createdBy', 'node'], attackPattern)}
           />
           <Typography
             variant="h3"
@@ -117,7 +117,7 @@ const AttackPatternOverview = createFragmentContainer(
             }
           }
         }
-        createdByRef {
+        createdBy {
           node {
             id
             name

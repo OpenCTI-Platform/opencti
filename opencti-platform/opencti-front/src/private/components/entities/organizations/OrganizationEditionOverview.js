@@ -21,7 +21,7 @@ import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
+import CreatedByField from '../../common/form/CreatedByField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
 const styles = (theme) => ({
@@ -142,15 +142,15 @@ class OrganizationEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedByRef(name, value) {
+  handleChangeCreatedBy(name, value) {
     const { organization } = this.props;
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], organization),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], organization),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], organization),
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'node', 'name'], organization),
+      value: pathOr(null, ['createdBy', 'node', 'id'], organization),
+      relation: pathOr(null, ['createdBy', 'relation', 'id'], organization),
     };
 
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: organizationMutationRelationAdd,
         variables: {
@@ -163,12 +163,12 @@ class OrganizationEditionOverviewComponent extends Component {
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: organizationMutationRelationDelete,
         variables: {
           id: this.props.organization.id,
-          relationId: currentCreatedByRef.relation,
+          relationId: currentCreatedBy.relation,
         },
       });
       if (value.value) {
@@ -230,14 +230,14 @@ class OrganizationEditionOverviewComponent extends Component {
 
   render() {
     const { t, organization, context } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], organization) === null
+    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], organization) === null
       ? ''
       : {
-        label: pathOr(null, ['createdByRef', 'node', 'name'], organization),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], organization),
+        label: pathOr(null, ['createdBy', 'node', 'name'], organization),
+        value: pathOr(null, ['createdBy', 'node', 'id'], organization),
         relation: pathOr(
           null,
-          ['createdByRef', 'relation', 'id'],
+          ['createdBy', 'relation', 'id'],
           organization,
         ),
       };
@@ -250,7 +250,7 @@ class OrganizationEditionOverviewComponent extends Component {
       })),
     )(organization);
     const initialValues = pipe(
-      assoc('createdByRef', createdByRef),
+      assoc('createdBy', createdBy),
       assoc('markingDefinitions', markingDefinitions),
       pick([
         'name',
@@ -258,7 +258,7 @@ class OrganizationEditionOverviewComponent extends Component {
         'contact_information',
         'organization_class',
         'reliability',
-        'createdByRef',
+        'createdBy',
         'markingDefinitions',
       ]),
     )(organization);
@@ -361,14 +361,14 @@ class OrganizationEditionOverviewComponent extends Component {
               <MenuItem value="E">{t('reliability_E')}</MenuItem>
               <MenuItem value="F">{t('reliability_F')}</MenuItem>
             </Field>
-            <CreatedByRefField
-              name="createdByRef"
+            <CreatedByField
+              name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdByRef" />
+                <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedByRef.bind(this)}
+              onChange={this.handleChangeCreatedBy.bind(this)}
             />
             <MarkingDefinitionsField
               name="markingDefinitions"
@@ -407,7 +407,7 @@ const OrganizationEditionOverview = createFragmentContainer(
         contact_information
         organization_class
         reliability
-        createdByRef {
+        createdBy {
           node {
             id
             name

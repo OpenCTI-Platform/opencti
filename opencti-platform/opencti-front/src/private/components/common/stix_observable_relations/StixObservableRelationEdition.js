@@ -45,7 +45,7 @@ class StixObservableRelationEdition extends Component {
     const {
       classes,
       stixObservableRelationId,
-      stixDomainEntity,
+      stixDomainObject,
       open,
       handleClose,
       handleDelete,
@@ -63,7 +63,7 @@ class StixObservableRelationEdition extends Component {
               if (props) {
                 return (
                   <StixObservableRelationEditionOverview
-                    stixDomainEntity={stixDomainEntity}
+                    stixDomainObject={stixDomainObject}
                     stixObservableRelation={props.stixObservableRelation}
                     handleClose={handleClose.bind(this)}
                     handleDelete={
@@ -87,7 +87,7 @@ class StixObservableRelationEdition extends Component {
 
 StixObservableRelationEdition.propTypes = {
   stixObservableRelationId: PropTypes.string,
-  stixDomainEntity: PropTypes.object,
+  stixDomainObject: PropTypes.object,
   open: PropTypes.bool,
   handleClose: PropTypes.func,
   handleDelete: PropTypes.func,

@@ -51,7 +51,7 @@ class CityOverviewComponent extends Component {
             {t('Author')}
           </Typography>
           <ItemAuthor
-            createdByRef={pathOr(null, ['createdByRef', 'node'], city)}
+            createdBy={pathOr(null, ['createdBy', 'node'], city)}
           />
           <Typography
             variant="h3"
@@ -82,7 +82,7 @@ const CityOverview = createFragmentContainer(CityOverviewComponent, {
       description
       created
       modified
-      createdByRef {
+      createdBy {
         node {
           id
           name

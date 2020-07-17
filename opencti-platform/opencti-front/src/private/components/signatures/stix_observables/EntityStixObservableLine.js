@@ -13,7 +13,7 @@ import { MoreVert } from '@material-ui/icons';
 import { HexagonOutline } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import ItemConfidenceLevel from '../../../../components/ItemConfidenceLevel';
-import StixRelationPopover from '../../common/stix_relations/StixRelationPopover';
+import StixRelationPopover from '../../common/stix_core_relationships/StixRelationPopover';
 
 const styles = (theme) => ({
   item: {

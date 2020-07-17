@@ -72,7 +72,7 @@ class IntrusionSetOverviewComponent extends Component {
             {t('Author')}
           </Typography>
           <ItemAuthor
-            createdByRef={pathOr(null, ['createdByRef', 'node'], intrusionSet)}
+            createdBy={pathOr(null, ['createdBy', 'node'], intrusionSet)}
           />
           <Typography
             variant="h3"
@@ -117,7 +117,7 @@ const IntrusionSetOverview = createFragmentContainer(
             }
           }
         }
-        createdByRef {
+        createdBy {
           node {
             id
             name

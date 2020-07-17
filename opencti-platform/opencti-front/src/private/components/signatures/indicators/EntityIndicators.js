@@ -17,7 +17,7 @@ import EntityIndicatorsLines, {
 } from './EntityIndicatorsLines';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixRelationCreationFromEntity from '../../common/stix_relations/StixRelationCreationFromEntity';
+import StixRelationCreationFromEntity from '../../common/stix_core_relationships/StixRelationCreationFromEntity';
 import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,

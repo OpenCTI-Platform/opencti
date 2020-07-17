@@ -14,7 +14,7 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import StixObservableEntitiesLines, {
   stixObservableEntitiesLinesQuery,
 } from './StixObservableEntitiesLines';
-import StixRelationCreationFromEntity from '../../common/stix_relations/StixRelationCreationFromEntity';
+import StixRelationCreationFromEntity from '../../common/stix_core_relationships/StixRelationCreationFromEntity';
 
 const styles = (theme) => ({
   paper: {

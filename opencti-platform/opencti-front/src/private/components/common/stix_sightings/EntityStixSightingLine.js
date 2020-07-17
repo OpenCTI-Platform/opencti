@@ -167,7 +167,7 @@ const EntityStixSightingLineFragment = createFragmentContainer(
         description
         inferred
         to {
-          ... on StixDomainEntity {
+          ... on StixDomainObject {
             id
             entity_type
             parent_types

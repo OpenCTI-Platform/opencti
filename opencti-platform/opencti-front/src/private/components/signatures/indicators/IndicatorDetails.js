@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
-import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
+import StixDomainObjectTags from '../../common/stix_domain_objects/StixDomainObjectLabels';
 import ItemScore from '../../../../components/ItemScore';
 import ItemCreator from '../../../../components/ItemCreator';
 
@@ -37,7 +37,7 @@ class IndicatorDetailsComponent extends Component {
           </Typography>
           <pre>{indicator.indicator_pattern}</pre>
           <div style={{ marginTop: 20 }}>
-            <StixDomainEntityTags tags={indicator.tags} id={indicator.id} />
+            <StixDomainObjectTags tags={indicator.tags} id={indicator.id} />
           </div>
           <Typography
             variant="h3"

@@ -19,7 +19,7 @@ import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
+import CreatedByField from '../../common/form/CreatedByField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
 const styles = (theme) => ({
@@ -128,15 +128,15 @@ class CityEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedByRef(name, value) {
+  handleChangeCreatedBy(name, value) {
     const { city } = this.props;
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], city),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], city),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], city),
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'node', 'name'], city),
+      value: pathOr(null, ['createdBy', 'node', 'id'], city),
+      relation: pathOr(null, ['createdBy', 'relation', 'id'], city),
     };
 
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: cityMutationRelationAdd,
         variables: {
@@ -149,12 +149,12 @@ class CityEditionOverviewComponent extends Component {
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: cityMutationRelationDelete,
         variables: {
           id: this.props.city.id,
-          relationId: currentCreatedByRef.relation,
+          relationId: currentCreatedBy.relation,
         },
       });
       if (value.value) {
@@ -216,12 +216,12 @@ class CityEditionOverviewComponent extends Component {
 
   render() {
     const { t, city, context } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], city) === null
+    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], city) === null
       ? ''
       : {
-        label: pathOr(null, ['createdByRef', 'node', 'name'], city),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], city),
-        relation: pathOr(null, ['createdByRef', 'relation', 'id'], city),
+        label: pathOr(null, ['createdBy', 'node', 'name'], city),
+        value: pathOr(null, ['createdBy', 'node', 'id'], city),
+        relation: pathOr(null, ['createdBy', 'relation', 'id'], city),
       };
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
@@ -232,9 +232,9 @@ class CityEditionOverviewComponent extends Component {
       })),
     )(city);
     const initialValues = pipe(
-      assoc('createdByRef', createdByRef),
+      assoc('createdBy', createdBy),
       assoc('markingDefinitions', markingDefinitions),
-      pick(['name', 'description', 'createdByRef', 'markingDefinitions']),
+      pick(['name', 'description', 'createdBy', 'markingDefinitions']),
     )(city);
     return (
       <Formik
@@ -270,14 +270,14 @@ class CityEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
-            <CreatedByRefField
-              name="createdByRef"
+            <CreatedByField
+              name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdByRef" />
+                <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedByRef.bind(this)}
+              onChange={this.handleChangeCreatedBy.bind(this)}
             />
             <MarkingDefinitionsField
               name="markingDefinitions"
@@ -313,7 +313,7 @@ const CityEditionOverview = createFragmentContainer(
         id
         name
         description
-        createdByRef {
+        createdBy {
           node {
             id
             name

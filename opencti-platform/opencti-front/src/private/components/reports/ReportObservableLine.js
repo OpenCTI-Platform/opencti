@@ -84,9 +84,9 @@ class ReportObservableLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.createdByRef.width }}
+                style={{ width: dataColumns.createdBy.width }}
               >
-                {pathOr('', ['createdByRef', 'node', 'name'], node)}
+                {pathOr('', ['createdBy', 'node', 'name'], node)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -145,7 +145,7 @@ const ReportObservableLineFragment = createFragmentContainer(
         observable_value
         entity_type
         created_at
-        createdByRef {
+        createdBy {
           node {
             name
           }
@@ -194,7 +194,7 @@ class ReportObservableLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.createdByRef.width }}
+                style={{ width: dataColumns.createdBy.width }}
               >
                 <div className="fakeItem" style={{ width: '70%' }} />
               </div>

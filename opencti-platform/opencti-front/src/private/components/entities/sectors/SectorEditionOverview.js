@@ -24,7 +24,7 @@ import {
 } from '../../../../relay/environment';
 import { now } from '../../../../utils/Time';
 import { sectorsSearchQuery } from '../Sectors';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
+import CreatedByField from '../../common/form/CreatedByField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
 const sectorMutationFieldPatch = graphql`
@@ -133,15 +133,15 @@ class SectorEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedByRef(name, value) {
+  handleChangeCreatedBy(name, value) {
     const { sector } = this.props;
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], sector),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], sector),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], sector),
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'node', 'name'], sector),
+      value: pathOr(null, ['createdBy', 'node', 'id'], sector),
+      relation: pathOr(null, ['createdBy', 'relation', 'id'], sector),
     };
 
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: sectorMutationRelationAdd,
         variables: {
@@ -154,12 +154,12 @@ class SectorEditionOverviewComponent extends Component {
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: sectorMutationRelationDelete,
         variables: {
           id: this.props.sector.id,
-          relationId: currentCreatedByRef.relation,
+          relationId: currentCreatedBy.relation,
         },
       });
       if (value.value) {
@@ -265,12 +265,12 @@ class SectorEditionOverviewComponent extends Component {
 
   render() {
     const { t, sector, context } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], sector) === null
+    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], sector) === null
       ? ''
       : {
-        label: pathOr(null, ['createdByRef', 'node', 'name'], sector),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], sector),
-        relation: pathOr(null, ['createdByRef', 'relation', 'id'], sector),
+        label: pathOr(null, ['createdBy', 'node', 'name'], sector),
+        value: pathOr(null, ['createdBy', 'node', 'id'], sector),
+        relation: pathOr(null, ['createdBy', 'relation', 'id'], sector),
       };
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
@@ -281,9 +281,9 @@ class SectorEditionOverviewComponent extends Component {
       })),
     )(sector);
     const initialValues = pipe(
-      assoc('createdByRef', createdByRef),
+      assoc('createdBy', createdBy),
       assoc('markingDefinitions', markingDefinitions),
-      pick(['name', 'description', 'createdByRef', 'markingDefinitions']),
+      pick(['name', 'description', 'createdBy', 'markingDefinitions']),
     )(sector);
     return (
       <Formik
@@ -319,14 +319,14 @@ class SectorEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
-            <CreatedByRefField
-              name="createdByRef"
+            <CreatedByField
+              name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdByRef" />
+                <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedByRef.bind(this)}
+              onChange={this.handleChangeCreatedBy.bind(this)}
             />
             <MarkingDefinitionsField
               name="markingDefinitions"
@@ -363,7 +363,7 @@ const SectorEditionOverview = createFragmentContainer(
         name
         description
         isSubSector
-        createdByRef {
+        createdBy {
           node {
             id
             name

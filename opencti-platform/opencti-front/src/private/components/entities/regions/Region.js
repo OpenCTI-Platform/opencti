@@ -13,7 +13,7 @@ import EntityLastReports from '../../reports/EntityLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityIncidentsChart from '../../threats/incidents/EntityIncidentsChart';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
 import RegionParentRegions from './RegionParentRegions';
@@ -33,8 +33,8 @@ class RegionComponent extends Component {
     const { classes, region } = this.props;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={region}
+        <StixDomainObjectHeader
+          stixDomainObject={region}
           PopoverComponent={<RegionPopover />}
         />
         <Grid

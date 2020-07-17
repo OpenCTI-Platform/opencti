@@ -11,7 +11,7 @@ import IntrusionSet from './IntrusionSet';
 import IntrusionSetReports from './IntrusionSetReports';
 import IntrusionSetKnowledge from './IntrusionSetKnowledge';
 import IntrusionSetIndicators from './IntrusionSetIndicators';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import IntrusionSetPopover from './IntrusionSetPopover';
 import Loader from '../../../../components/Loader';
@@ -19,7 +19,7 @@ import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
 
 const subscription = graphql`
   subscription RootIntrusionSetSubscription($id: ID!) {
-    stixDomainEntity(id: $id) {
+    stixDomainObject(id: $id) {
       ... on IntrusionSet {
         ...IntrusionSet_intrusionSet
         ...IntrusionSetEditionContainer_intrusionSet
@@ -136,8 +136,8 @@ class RootIntrusionSet extends Component {
                     path="/dashboard/threats/intrusion_sets/:intrusionSetId/files"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.intrusionSet}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.intrusionSet}
                           PopoverComponent={<IntrusionSetPopover />}
                         />
                         <FileManager
@@ -154,8 +154,8 @@ class RootIntrusionSet extends Component {
                     path="/dashboard/threats/intrusion_sets/:intrusionSetId/history"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.intrusionSet}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.intrusionSet}
                           PopoverComponent={<IntrusionSetPopover />}
                         />
                         <StixObjectHistory

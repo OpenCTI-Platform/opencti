@@ -76,9 +76,9 @@ export const StixObservablesExportCreationMutation = graphql`
     $context: String
     $types: [String]
     $search: String
-    $orderBy: StixObservablesOrdering
+    $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode
-    $filters: [StixObservablesFiltering]
+    $filters: [StixCyberObservablesFiltering]
   ) {
     stixObservablesExportAsk(
       format: $format

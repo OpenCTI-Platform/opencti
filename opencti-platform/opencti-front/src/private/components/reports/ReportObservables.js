@@ -100,7 +100,7 @@ class ReportObservablesComponent extends Component {
         width: '35%',
         isSortable: true,
       },
-      createdByRef: {
+      createdBy: {
         label: 'Creator',
         width: '15%',
         isSortable: false,

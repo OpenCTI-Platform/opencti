@@ -29,7 +29,6 @@ import {
 } from '../domain/user';
 import { logger } from '../config/conf';
 import { stixDomainObjectCleanContext, stixDomainObjectEditContext } from '../domain/stixDomainObject';
-import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import passport, { PROVIDERS } from '../config/providers';
 import { AuthenticationFailure } from '../config/errors';
 import { addRole } from '../domain/grant';

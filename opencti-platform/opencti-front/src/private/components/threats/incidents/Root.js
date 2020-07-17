@@ -11,7 +11,7 @@ import Incident from './Incident';
 import IncidentReports from './IncidentReports';
 import IncidentKnowledge from './IncidentKnowledge';
 import IncidentObservables from './IncidentObservables';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import IncidentPopover from './IncidentPopover';
 import Loader from '../../../../components/Loader';
@@ -19,7 +19,7 @@ import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
-    stixDomainEntity(id: $id) {
+    stixDomainObject(id: $id) {
       ... on Incident {
         ...Incident_incident
         ...IncidentEditionContainer_incident
@@ -133,8 +133,8 @@ class RootIncident extends Component {
                     path="/dashboard/threats/incidents/:incidentId/files"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.incident}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.incident}
                           PopoverComponent={<IncidentPopover />}
                         />
                         <FileManager
@@ -151,8 +151,8 @@ class RootIncident extends Component {
                     path="/dashboard/threats/incidents/:incidentId/history"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.incident}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.incident}
                           PopoverComponent={<IncidentPopover />}
                         />
                         <StixObjectHistory

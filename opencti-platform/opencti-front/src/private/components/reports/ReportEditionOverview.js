@@ -28,7 +28,7 @@ import { SubscriptionFocus } from '../../../components/Subscription';
 import DatePickerField from '../../../components/DatePickerField';
 import { attributesQuery } from '../settings/attributes/AttributesLines';
 import Loader from '../../../components/Loader';
-import CreatedByRefField from '../common/form/CreatedByRefField';
+import CreatedByField from '../common/form/CreatedByField';
 import MarkingDefinitionsField from '../common/form/MarkingDefinitionsField';
 
 const styles = (theme) => ({
@@ -143,15 +143,15 @@ class ReportEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedByRef(name, value) {
+  handleChangeCreatedBy(name, value) {
     const { report } = this.props;
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], report),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], report),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], report),
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'node', 'name'], report),
+      value: pathOr(null, ['createdBy', 'node', 'id'], report),
+      relation: pathOr(null, ['createdBy', 'relation', 'id'], report),
     };
 
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: reportMutationRelationAdd,
         variables: {
@@ -164,12 +164,12 @@ class ReportEditionOverviewComponent extends Component {
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: reportMutationRelationDelete,
         variables: {
           id: this.props.report.id,
-          relationId: currentCreatedByRef.relation,
+          relationId: currentCreatedBy.relation,
         },
       });
       if (value.value) {
@@ -231,12 +231,12 @@ class ReportEditionOverviewComponent extends Component {
 
   render() {
     const { t, report, context } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], report) === null
+    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], report) === null
       ? ''
       : {
-        label: pathOr(null, ['createdByRef', 'node', 'name'], report),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], report),
-        relation: pathOr(null, ['createdByRef', 'relation', 'id'], report),
+        label: pathOr(null, ['createdBy', 'node', 'name'], report),
+        value: pathOr(null, ['createdBy', 'node', 'id'], report),
+        relation: pathOr(null, ['createdBy', 'relation', 'id'], report),
       };
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
@@ -247,7 +247,7 @@ class ReportEditionOverviewComponent extends Component {
       })),
     )(report);
     const initialValues = pipe(
-      assoc('createdByRef', createdByRef),
+      assoc('createdBy', createdBy),
       assoc('markingDefinitions', markingDefinitions),
       assoc('published', dateFormat(report.published)),
       pick([
@@ -255,7 +255,7 @@ class ReportEditionOverviewComponent extends Component {
         'published',
         'description',
         'report_class',
-        'createdByRef',
+        'createdBy',
         'markingDefinitions',
         'object_status',
         'source_confidence_level',
@@ -407,17 +407,17 @@ class ReportEditionOverviewComponent extends Component {
                             {t('confidence_4')}
                           </MenuItem>
                         </Field>
-                        <CreatedByRefField
-                          name="createdByRef"
+                        <CreatedByField
+                          name="createdBy"
                           style={{ marginTop: 20, width: '100%' }}
                           setFieldValue={setFieldValue}
                           helpertext={
                             <SubscriptionFocus
                               context={context}
-                              fieldName="createdByRef"
+                              fieldName="createdBy"
                             />
                           }
-                          onChange={this.handleChangeCreatedByRef.bind(this)}
+                          onChange={this.handleChangeCreatedBy.bind(this)}
                         />
                         <MarkingDefinitionsField
                           name="markingDefinitions"
@@ -466,7 +466,7 @@ const ReportEditionOverview = createFragmentContainer(
         published
         object_status
         source_confidence_level
-        createdByRef {
+        createdBy {
           node {
             id
             name

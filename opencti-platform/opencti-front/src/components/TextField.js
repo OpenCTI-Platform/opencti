@@ -3,7 +3,7 @@ import MuiTextField from '@material-ui/core/TextField';
 import { fieldToTextField } from 'formik-material-ui';
 import { useField } from 'formik';
 import { isNil } from 'ramda';
-import StixDomainEntityDetectDuplicate from '../private/components/common/stix_domain_entities/StixDomainEntityDetectDuplicate';
+import StixDomainObjectDetectDuplicate from '../private/components/common/stix_domain_objects/StixDomainObjectDetectDuplicate';
 
 const TextField = (props) => {
   const {
@@ -48,7 +48,7 @@ const TextField = (props) => {
       onBlur={internalOnBlur}
       helperText={
           detectDuplicate && (isNil(meta.error) || !meta.touched) ? (
-          <StixDomainEntityDetectDuplicate
+          <StixDomainObjectDetectDuplicate
             types={detectDuplicate}
             value={meta.value}
           />

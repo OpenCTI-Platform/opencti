@@ -59,9 +59,9 @@ export const incidentsCardsQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: IncidentsOrdering
+    $orderBy: XOpenctiIncidentsOrdering
     $orderMode: OrderingMode
-    $filters: [IncidentsFiltering]
+    $filters: [XOpenctiIncidentsFiltering]
   ) {
     ...IncidentsCards_data
       @arguments(
@@ -84,9 +84,9 @@ export default createPaginationContainer(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "IncidentsOrdering", defaultValue: "name" }
+          orderBy: { type: "XOpenctiIncidentsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[IncidentsFiltering]" }
+          filters: { type: "[XOpenctiIncidentsFiltering]" }
         ) {
         incidents(
           search: $search

@@ -53,7 +53,7 @@ export const tagsLinesQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: TagsOrdering
+    $orderBy: LabelsOrdering
     $orderMode: OrderingMode
   ) {
     ...TagsLines_data
@@ -76,7 +76,7 @@ export default createPaginationContainer(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "TagsOrdering", defaultValue: "value" }
+          orderBy: { type: "LabelsOrdering", defaultValue: "value" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
         tags(

@@ -10,7 +10,7 @@ import TopBar from '../../nav/TopBar';
 import Sector from './Sector';
 import SectorReports from './SectorReports';
 import SectorKnowledge from './SectorKnowledge';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import SectorPopover from './SectorPopover';
 import FileManager from '../../common/files/FileManager';
 import Loader from '../../../../components/Loader';
@@ -18,7 +18,7 @@ import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
 
 const subscription = graphql`
   subscription RootSectorSubscription($id: ID!) {
-    stixDomainEntity(id: $id) {
+    stixDomainObject(id: $id) {
       ... on Sector {
         ...Sector_sector
         ...SectorEditionContainer_sector
@@ -116,8 +116,8 @@ class RootSector extends Component {
                     path="/dashboard/entities/sectors/:sectorId/files"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.sector}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.sector}
                           PopoverComponent={<SectorPopover />}
                         />
                         <FileManager
@@ -134,8 +134,8 @@ class RootSector extends Component {
                     path="/dashboard/entities/sectors/:sectorId/history"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.sector}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.sector}
                           PopoverComponent={<SectorPopover />}
                         />
                         <StixObjectHistory

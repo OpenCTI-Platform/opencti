@@ -20,7 +20,7 @@ import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 import DatePickerField from '../../../../components/DatePickerField';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
+import CreatedByField from '../../common/form/CreatedByField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 import SwitchField from '../../../../components/SwitchField';
 
@@ -145,15 +145,15 @@ class IndicatorEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedByRef(name, value) {
+  handleChangeCreatedBy(name, value) {
     const { indicator } = this.props;
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], indicator),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], indicator),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], indicator),
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'node', 'name'], indicator),
+      value: pathOr(null, ['createdBy', 'node', 'id'], indicator),
+      relation: pathOr(null, ['createdBy', 'relation', 'id'], indicator),
     };
 
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: indicatorMutationRelationAdd,
         variables: {
@@ -166,12 +166,12 @@ class IndicatorEditionOverviewComponent extends Component {
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: indicatorMutationRelationDelete,
         variables: {
           id: this.props.indicator.id,
-          relationId: currentCreatedByRef.relation,
+          relationId: currentCreatedBy.relation,
         },
       });
       if (value.value) {
@@ -233,14 +233,14 @@ class IndicatorEditionOverviewComponent extends Component {
 
   render() {
     const { t, indicator, context } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], indicator) === null
+    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], indicator) === null
       ? ''
       : {
-        label: pathOr(null, ['createdByRef', 'node', 'name'], indicator),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], indicator),
+        label: pathOr(null, ['createdBy', 'node', 'name'], indicator),
+        value: pathOr(null, ['createdBy', 'node', 'id'], indicator),
         relation: pathOr(
           null,
-          ['createdByRef', 'relation', 'id'],
+          ['createdBy', 'relation', 'id'],
           indicator,
         ),
       };
@@ -253,7 +253,7 @@ class IndicatorEditionOverviewComponent extends Component {
       })),
     )(indicator);
     const initialValues = pipe(
-      assoc('createdByRef', createdByRef),
+      assoc('createdBy', createdBy),
       assoc('markingDefinitions', markingDefinitions),
       pick([
         'name',
@@ -263,7 +263,7 @@ class IndicatorEditionOverviewComponent extends Component {
         'valid_until',
         'score',
         'detection',
-        'createdByRef',
+        'createdBy',
         'killChainPhases',
         'markingDefinitions',
       ]),
@@ -357,14 +357,14 @@ class IndicatorEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
-            <CreatedByRefField
-              name="createdByRef"
+            <CreatedByField
+              name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdByRef" />
+                <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedByRef.bind(this)}
+              onChange={this.handleChangeCreatedBy.bind(this)}
             />
             <MarkingDefinitionsField
               name="markingDefinitions"
@@ -419,7 +419,7 @@ const IndicatorEditionOverview = createFragmentContainer(
         score
         description
         detection
-        createdByRef {
+        createdBy {
           node {
             id
             name

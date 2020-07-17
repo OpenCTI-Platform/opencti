@@ -169,7 +169,7 @@ class StixObservableRelationEditionContainer extends Component {
       handleClose,
       handleDelete,
       stixObservableRelation,
-      stixDomainEntity,
+      stixDomainObject,
     } = this.props;
     const { editContext } = stixObservableRelation;
     const killChainPhases = pipe(
@@ -203,8 +203,8 @@ class StixObservableRelationEditionContainer extends Component {
         'markingDefinitions',
       ]),
     )(stixObservableRelation);
-    const link = stixDomainEntity
-      ? resolveLink(stixDomainEntity.entity_type)
+    const link = stixDomainObject
+      ? resolveLink(stixDomainObject.entity_type)
       : '';
     return (
       <div>
@@ -321,12 +321,12 @@ class StixObservableRelationEditionContainer extends Component {
               return <Loader variant="inElement" />;
             }}
           />
-          {stixDomainEntity ? (
+          {stixDomainObject ? (
             <Button
               variant="contained"
               color="primary"
               component={Link}
-              to={`${link}/${stixDomainEntity.id}/knowledge/relations/${stixObservableRelation.id}`}
+              to={`${link}/${stixDomainObject.id}/knowledge/relations/${stixObservableRelation.id}`}
               classes={{ root: classes.buttonLeft }}
             >
               {t('Details')}
@@ -355,7 +355,7 @@ StixObservableRelationEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   handleDelete: PropTypes.func,
   classes: PropTypes.object,
-  stixDomainEntity: PropTypes.object,
+  stixDomainObject: PropTypes.object,
   stixObservableRelation: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

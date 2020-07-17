@@ -27,16 +27,16 @@ import { dayStartDate, parse } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
 import DatePickerField from '../../../../components/DatePickerField';
-import StixSightingCreationFromEntityStixDomainEntitiesLines, {
-  stixSightingCreationFromEntityStixDomainEntitiesLinesQuery,
-} from './StixSightingCreationFromEntityStixDomainEntitiesLines';
+import StixSightingCreationFromEntityStixDomainObjectsLines, {
+  stixSightingCreationFromEntityStixDomainObjectsLinesQuery,
+} from './StixSightingCreationFromEntityStixDomainObjectsLines';
 import StixSightingCreationFromEntityStixObservablesLines, {
   stixSightingCreationFromEntityStixObservablesLinesQuery,
 } from './StixSightingCreationFromEntityStixObservablesLines';
-import StixDomainEntityCreation from '../stix_domain_entities/StixDomainEntityCreation';
+import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import SearchInput from '../../../../components/SearchInput';
 import { truncate } from '../../../../utils/String';
-import CreatedByRefField from '../form/CreatedByRefField';
+import CreatedByField from '../form/CreatedByField';
 import MarkingDefinitionsField from '../form/MarkingDefinitionsField';
 import ConfidenceField from '../form/ConfidenceField';
 import SwitchField from '../../../../components/SwitchField';
@@ -206,7 +206,7 @@ const stixSightingCreationFromEntityQuery = graphql`
 
 const stixSightingCreationFromEntityMutation = graphql`
   mutation StixSightingCreationFromEntityMutation(
-    $input: StixSightingAddInput!
+    $input: StixSightingRelationshipAddInput!
     $reversedReturn: Boolean
   ) {
     stixSightingAdd(input: $input, reversedReturn: $reversedReturn) {
@@ -274,7 +274,7 @@ class StixSightingCreationFromEntity extends Component {
       assoc('toId', toEntityId),
       assoc('first_seen', parse(values.first_seen).format()),
       assoc('last_seen', parse(values.last_seen).format()),
-      assoc('createdByRef', values.createdByRef.value),
+      assoc('createdBy', values.createdBy.value),
       assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
     )(values);
     commitMutation({
@@ -316,8 +316,8 @@ class StixSightingCreationFromEntity extends Component {
     this.setState({ search: keyword });
   }
 
-  handleSelectEntity(stixDomainEntity) {
-    this.setState({ step: 1, targetEntity: stixDomainEntity });
+  handleSelectEntity(stixDomainObject) {
+    this.setState({ step: 1, targetEntity: stixDomainObject });
   }
 
   renderFakeList() {
@@ -342,7 +342,7 @@ class StixSightingCreationFromEntity extends Component {
     const {
       classes, t, targetEntityTypes, onlyObservables,
     } = this.props;
-    const stixDomainEntitiesPaginationOptions = {
+    const stixDomainObjectsPaginationOptions = {
       search: this.state.search,
       types: targetEntityTypes
         ? filter((n) => n !== 'Stix-Observable', targetEntityTypes)
@@ -375,12 +375,12 @@ class StixSightingCreationFromEntity extends Component {
         <div className={classes.containerList}>
           {!onlyObservables ? (
             <QueryRenderer
-              query={stixSightingCreationFromEntityStixDomainEntitiesLinesQuery}
-              variables={{ count: 25, ...stixDomainEntitiesPaginationOptions }}
+              query={stixSightingCreationFromEntityStixDomainObjectsLinesQuery}
+              variables={{ count: 25, ...stixDomainObjectsPaginationOptions }}
               render={({ props }) => {
                 if (props) {
                   return (
-                    <StixSightingCreationFromEntityStixDomainEntitiesLines
+                    <StixSightingCreationFromEntityStixDomainObjectsLines
                       handleSelect={this.handleSelectEntity.bind(this)}
                       data={props}
                     />
@@ -417,11 +417,11 @@ class StixSightingCreationFromEntity extends Component {
               );
             }}
           />
-          <StixDomainEntityCreation
+          <StixDomainObjectCreation
             display={this.state.open}
             contextual={true}
             inputValue={this.state.search}
-            paginationOptions={stixDomainEntitiesPaginationOptions}
+            paginationOptions={stixDomainObjectsPaginationOptions}
             targetEntityTypes={targetEntityTypes}
           />
         </div>
@@ -445,7 +445,7 @@ class StixSightingCreationFromEntity extends Component {
       last_seen: dayStartDate(),
       description: '',
       markingDefinitions: [],
-      createdByRef: '',
+      createdBy: '',
       negative: false,
     };
     return (
@@ -621,8 +621,8 @@ class StixSightingCreationFromEntity extends Component {
                 rows="4"
                 style={{ marginTop: 20 }}
               />
-              <CreatedByRefField
-                name="createdByRef"
+              <CreatedByField
+                name="createdBy"
                 style={{ marginTop: 20, width: '100%' }}
                 setFieldValue={setFieldValue}
               />

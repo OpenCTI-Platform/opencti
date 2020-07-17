@@ -11,7 +11,7 @@ import ReportOverview from './ReportOverview';
 import ReportIdentity from './ReportDetails';
 import ReportEdition from './ReportEdition';
 import EntityExternalReferences from '../common/external_references/EntityExternalReferences';
-import EntityStixRelationsDonut from '../common/stix_relations/EntityStixRelationsDonut';
+import EntityStixRelationsDonut from '../common/stix_core_relationships/EntityStixRelationsDonut';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import StixObjectNotes from '../common/stix_object/StixObjectNotes';
 

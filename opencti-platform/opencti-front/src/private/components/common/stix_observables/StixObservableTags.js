@@ -67,7 +67,7 @@ const styles = () => ({
 const StixObservableMutationRelationsAdd = graphql`
   mutation StixObservableTagsRelationsAddMutation(
     $id: ID!
-    $input: RelationsAddInput!
+    $input: StixMetaRelationshipsAddInput!
   ) {
     stixObservableEdit(id: $id) {
       relationsAdd(input: $input) {

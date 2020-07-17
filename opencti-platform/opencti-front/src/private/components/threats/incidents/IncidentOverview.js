@@ -72,7 +72,7 @@ class IncidentOverviewComponent extends Component {
             {t('Author')}
           </Typography>
           <ItemAuthor
-            createdByRef={pathOr(null, ['createdByRef', 'node'], incident)}
+            createdBy={pathOr(null, ['createdBy', 'node'], incident)}
           />
           <Typography
             variant="h3"
@@ -115,7 +115,7 @@ const IncidentOverview = createFragmentContainer(IncidentOverviewComponent, {
           }
         }
       }
-      createdByRef {
+      createdBy {
         node {
           id
           name

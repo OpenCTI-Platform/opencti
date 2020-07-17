@@ -8,16 +8,16 @@ import { withStyles } from '@material-ui/core/styles';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
 import CurationToolBar from './curation/CurationToolBar';
-import CurationStixDomainEntitiesLines, {
-  curationStixDomainEntitiesLinesQuery,
-} from './curation/CurationStixDomainEntitiesLines';
+import CurationStixDomainObjectsLines, {
+  curationStixDomainObjectsLinesQuery,
+} from './curation/CurationStixDomainObjectsLines';
 import inject18n from '../../../components/i18n';
 import {
   buildViewParamsFromUrlAndStorage,
   convertFilters,
   saveViewParameters,
 } from '../../../utils/ListParameters';
-import StixDomainEntitiesRightBar from '../common/stix_domain_entities/StixDomainEntitiesRightBar';
+import StixDomainObjectsRightBar from '../common/stix_domain_objects/StixDomainObjectsRightBar';
 
 const styles = () => ({
   container: {
@@ -39,7 +39,7 @@ class StixObservables extends Component {
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
       filters: {},
-      stixDomainEntitiesTypes: propOr([], 'stixDomainEntitiesTypes', params),
+      stixDomainObjectsTypes: propOr([], 'stixDomainObjectsTypes', params),
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: {},
     };
@@ -71,12 +71,12 @@ class StixObservables extends Component {
   }
 
   handleToggle(type) {
-    if (this.state.stixDomainEntitiesTypes.includes(type)) {
+    if (this.state.stixDomainObjectsTypes.includes(type)) {
       this.setState(
         {
-          stixDomainEntitiesTypes: filter(
+          stixDomainObjectsTypes: filter(
             (t) => t !== type,
-            this.state.stixDomainEntitiesTypes,
+            this.state.stixDomainObjectsTypes,
           ),
         },
         () => this.saveView(),
@@ -84,9 +84,9 @@ class StixObservables extends Component {
     } else {
       this.setState(
         {
-          stixDomainEntitiesTypes: append(
+          stixDomainObjectsTypes: append(
             type,
-            this.state.stixDomainEntitiesTypes,
+            this.state.stixDomainObjectsTypes,
           ),
         },
         () => this.saveView(),
@@ -189,10 +189,10 @@ class StixObservables extends Component {
           ]}
         >
           <QueryRenderer
-            query={curationStixDomainEntitiesLinesQuery}
+            query={curationStixDomainObjectsLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
             render={({ props }) => (
-              <CurationStixDomainEntitiesLines
+              <CurationStixDomainObjectsLines
                 data={props}
                 paginationOptions={paginationOptions}
                 dataColumns={dataColumns}
@@ -220,7 +220,7 @@ class StixObservables extends Component {
     const { classes } = this.props;
     const {
       view,
-      stixDomainEntitiesTypes,
+      stixDomainObjectsTypes,
       sortBy,
       orderAsc,
       searchTerm,
@@ -229,7 +229,7 @@ class StixObservables extends Component {
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       types:
-        stixDomainEntitiesTypes.length > 0 ? stixDomainEntitiesTypes : null,
+        stixDomainObjectsTypes.length > 0 ? stixDomainObjectsTypes : null,
       search: searchTerm,
       filters: finalFilters,
       orderBy: sortBy,
@@ -238,9 +238,9 @@ class StixObservables extends Component {
     return (
       <div className={classes.container}>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <StixDomainEntitiesRightBar
-          stixDomainEntitiesTypes={stixDomainEntitiesTypes}
-          handleToggleStixDomainEntityType={this.handleToggle.bind(this)}
+        <StixDomainObjectsRightBar
+          stixDomainObjectsTypes={stixDomainObjectsTypes}
+          handleToggleStixDomainObjectType={this.handleToggle.bind(this)}
         />
       </div>
     );

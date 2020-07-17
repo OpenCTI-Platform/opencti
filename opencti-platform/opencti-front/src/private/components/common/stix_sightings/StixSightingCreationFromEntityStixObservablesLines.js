@@ -146,7 +146,7 @@ export const stixSightingCreationFromEntityStixObservablesLinesQuery = graphql`
     $types: [String]
     $count: Int!
     $cursor: ID
-    $orderBy: StixObservablesOrdering
+    $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode
   ) {
     ...StixSightingCreationFromEntityStixObservablesLines_data
@@ -171,7 +171,7 @@ const StixSightingCreationFromEntityStixObservablesLines = createPaginationConta
           types: { type: "[String]" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixObservablesOrdering", defaultValue: "name" }
+          orderBy: { type: "StixCyberObservablesOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
         stixObservables(

@@ -42,7 +42,7 @@ const styles = (theme) => ({
   },
 });
 
-class CurationStixDomainEntityLineComponent extends Component {
+class CurationStixDomainObjectLineComponent extends Component {
   render() {
     const {
       t,
@@ -89,7 +89,7 @@ class CurationStixDomainEntityLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.createdBy.width }}
               >
-                {pathOr('', ['createdByRef', 'node', 'name'], node)}
+                {pathOr('', ['createdBy', 'node', 'name'], node)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -129,7 +129,7 @@ class CurationStixDomainEntityLineComponent extends Component {
   }
 }
 
-CurationStixDomainEntityLineComponent.propTypes = {
+CurationStixDomainObjectLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
@@ -140,18 +140,18 @@ CurationStixDomainEntityLineComponent.propTypes = {
   selectedElements: PropTypes.object,
 };
 
-const CurationStixDomainEntityLineFragment = createFragmentContainer(
-  CurationStixDomainEntityLineComponent,
+const CurationStixDomainObjectLineFragment = createFragmentContainer(
+  CurationStixDomainObjectLineComponent,
   {
     node: graphql`
-      fragment CurationStixDomainEntityLine_node on StixDomainEntity {
+      fragment CurationStixDomainObjectLine_node on StixDomainObject {
         id
         entity_type
         name
         description
         alias
         created_at
-        createdByRef {
+        createdBy {
           node {
             name
           }
@@ -182,12 +182,12 @@ const CurationStixDomainEntityLineFragment = createFragmentContainer(
   },
 );
 
-export const CurationStixDomainEntityLine = compose(
+export const CurationStixDomainObjectLine = compose(
   inject18n,
   withStyles(styles),
-)(CurationStixDomainEntityLineFragment);
+)(CurationStixDomainObjectLineFragment);
 
-class CurationStixDomainEntityLineDummyComponent extends Component {
+class CurationStixDomainObjectLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -242,12 +242,12 @@ class CurationStixDomainEntityLineDummyComponent extends Component {
   }
 }
 
-CurationStixDomainEntityLineDummyComponent.propTypes = {
+CurationStixDomainObjectLineDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export const CurationStixDomainEntityLineDummy = compose(
+export const CurationStixDomainObjectLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(CurationStixDomainEntityLineDummyComponent);
+)(CurationStixDomainObjectLineDummyComponent);

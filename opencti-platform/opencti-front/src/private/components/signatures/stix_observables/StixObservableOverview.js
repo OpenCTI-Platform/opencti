@@ -59,9 +59,9 @@ class StixObservableOverviewComponent extends Component {
             {t('Author')}
           </Typography>
           <ItemAuthor
-            createdByRef={pathOr(
+            createdBy={pathOr(
               null,
-              ['createdByRef', 'node'],
+              ['createdBy', 'node'],
               stixObservable,
             )}
           />
@@ -97,7 +97,7 @@ const StixObservableOverview = createFragmentContainer(
         description
         created_at
         updated_at
-        createdByRef {
+        createdBy {
           node {
             id
             entity_type

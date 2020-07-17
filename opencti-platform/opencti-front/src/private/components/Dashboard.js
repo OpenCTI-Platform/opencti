@@ -130,15 +130,15 @@ const inlineStyles = {
   },
 };
 
-const dashboardStixDomainEntitiesTimeSeriesQuery = graphql`
-  query DashboardStixDomainEntitiesTimeSeriesQuery(
+const dashboardStixDomainObjectsTimeSeriesQuery = graphql`
+  query DashboardStixDomainObjectsTimeSeriesQuery(
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
   ) {
-    stixDomainEntitiesTimeSeries(
+    stixDomainObjectsTimeSeries(
       field: $field
       operation: $operation
       startDate: $startDate
@@ -164,7 +164,7 @@ const dashboardLastReportsQuery = graphql`
           name
           description
           published
-          createdByRef {
+          createdBy {
             node {
               name
             }
@@ -182,14 +182,14 @@ const dashboardLastReportsQuery = graphql`
   }
 `;
 
-const dashboardLastStixDomainEntitiesQuery = graphql`
-  query DashboardLastStixDomainEntitiesQuery(
+const dashboardLastStixDomainObjectsQuery = graphql`
+  query DashboardLastStixDomainObjectsQuery(
     $first: Int
-    $orderBy: StixDomainEntitiesOrdering
+    $orderBy: StixDomainObjectsOrdering
     $orderMode: OrderingMode
     $types: [String]
   ) {
-    stixDomainEntities(
+    stixDomainObjects(
       first: $first
       orderBy: $orderBy
       orderMode: $orderMode
@@ -202,7 +202,7 @@ const dashboardLastStixDomainEntitiesQuery = graphql`
           name
           description
           updated_at
-          createdByRef {
+          createdBy {
             node {
               name
             }
@@ -232,7 +232,7 @@ const dashboardLastNotesQuery = graphql`
           id
           name
           created
-          createdByRef {
+          createdBy {
             node {
               name
             }
@@ -280,7 +280,7 @@ const dashboardLastNotesQuery = graphql`
 const dashboardLastObservablesQuery = graphql`
   query DashboardLastObservablesQuery(
     $first: Int
-    $orderBy: StixObservablesOrdering
+    $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode
   ) {
     stixObservables(first: $first, orderBy: $orderBy, orderMode: $orderMode) {
@@ -304,12 +304,12 @@ const dashboardLastObservablesQuery = graphql`
   }
 `;
 
-const dashboardStixDomainEntitiesNumberQuery = graphql`
-  query DashboardStixDomainEntitiesNumberQuery(
+const dashboardStixDomainObjectsNumberQuery = graphql`
+  query DashboardStixDomainObjectsNumberQuery(
     $types: [String]
     $endDate: DateTime
   ) {
-    stixDomainEntitiesNumber(types: $types, endDate: $endDate) {
+    stixDomainObjectsNumber(types: $types, endDate: $endDate) {
       total
       count
     }
@@ -342,7 +342,7 @@ class Dashboard extends Component {
     const {
       t, n, nsd, classes,
     } = this.props;
-    const stixDomainEntitiesTimeSeriesVariables = {
+    const stixDomainObjectsTimeSeriesVariables = {
       field: 'created_at',
       operation: 'count',
       startDate: yearsAgo(1),
@@ -361,12 +361,12 @@ class Dashboard extends Component {
             <Grid item={true} lg={3} xs={6}>
               <Card classes={{ root: classes.card }} style={{ height: 110 }}>
                 <QueryRenderer
-                  query={dashboardStixDomainEntitiesNumberQuery}
+                  query={dashboardStixDomainObjectsNumberQuery}
                   variables={{ endDate: dayAgo() }}
                   render={({ props }) => {
-                    if (props && props.stixDomainEntitiesNumber) {
-                      const { total } = props.stixDomainEntitiesNumber;
-                      const difference = total - props.stixDomainEntitiesNumber.count;
+                    if (props && props.stixDomainObjectsNumber) {
+                      const { total } = props.stixDomainObjectsNumber;
+                      const difference = total - props.stixDomainObjectsNumber.count;
                       return (
                         <CardContent>
                           <div className={classes.title}>
@@ -438,12 +438,12 @@ class Dashboard extends Component {
               </Card>
               <Card classes={{ root: classes.card }} style={{ height: 110 }}>
                 <QueryRenderer
-                  query={dashboardStixDomainEntitiesNumberQuery}
+                  query={dashboardStixDomainObjectsNumberQuery}
                   variables={{ types: ['report'], endDate: dayAgo() }}
                   render={({ props }) => {
-                    if (props && props.stixDomainEntitiesNumber) {
-                      const { total } = props.stixDomainEntitiesNumber;
-                      const difference = total - props.stixDomainEntitiesNumber.count;
+                    if (props && props.stixDomainObjectsNumber) {
+                      const { total } = props.stixDomainObjectsNumber;
+                      const difference = total - props.stixDomainObjectsNumber.count;
                       return (
                         <CardContent>
                           <div className={classes.title}>
@@ -471,14 +471,14 @@ class Dashboard extends Component {
                   <div className={classes.title}>{t('Ingested entities')}</div>
                   <div className={classes.graphContainer}>
                     <QueryRenderer
-                      query={dashboardStixDomainEntitiesTimeSeriesQuery}
-                      variables={stixDomainEntitiesTimeSeriesVariables}
+                      query={dashboardStixDomainObjectsTimeSeriesQuery}
+                      variables={stixDomainObjectsTimeSeriesVariables}
                       render={({ props }) => {
-                        if (props && props.stixDomainEntitiesTimeSeries) {
+                        if (props && props.stixDomainObjectsTimeSeries) {
                           return (
                             <ResponsiveContainer height={170} width="100%">
                               <BarChart
-                                data={props.stixDomainEntitiesTimeSeries}
+                                data={props.stixDomainObjectsTimeSeries}
                                 margin={{
                                   top: 5,
                                   right: 5,
@@ -536,7 +536,7 @@ class Dashboard extends Component {
               </Typography>
               <Paper classes={{ root: classes.paper }} elevation={2}>
                 <QueryRenderer
-                  query={dashboardLastStixDomainEntitiesQuery}
+                  query={dashboardLastStixDomainObjectsQuery}
                   variables={{
                     first: 8,
                     orderBy: 'modified',
@@ -554,54 +554,54 @@ class Dashboard extends Component {
                     ],
                   }}
                   render={({ props }) => {
-                    if (props && props.stixDomainEntities) {
+                    if (props && props.stixDomainObjects) {
                       return (
                         <List>
-                          {props.stixDomainEntities.edges.map(
-                            (stixDomainEntityEdge) => {
-                              const stixDomainEntity = stixDomainEntityEdge.node;
-                              const stixDomainEntityLink = `${resolveLink(
-                                stixDomainEntity.entity_type,
-                              )}/${stixDomainEntity.id}`;
+                          {props.stixDomainObjects.edges.map(
+                            (stixDomainObjectEdge) => {
+                              const stixDomainObject = stixDomainObjectEdge.node;
+                              const stixDomainObjectLink = `${resolveLink(
+                                stixDomainObject.entity_type,
+                              )}/${stixDomainObject.id}`;
                               const markingDefinition = head(
                                 pathOr(
                                   [],
                                   ['markingDefinitions', 'edges'],
-                                  stixDomainEntity,
+                                  stixDomainObject,
                                 ),
                               );
                               return (
                                 <ListItem
-                                  key={stixDomainEntity.id}
+                                  key={stixDomainObject.id}
                                   dense={true}
                                   button={true}
                                   classes={{ root: classes.item }}
                                   divider={true}
                                   component={Link}
-                                  to={stixDomainEntityLink}
+                                  to={stixDomainObjectLink}
                                 >
                                   <ListItemIcon>
                                     <ItemIcon
-                                      type={stixDomainEntity.entity_type}
+                                      type={stixDomainObject.entity_type}
                                       color="#00bcd4"
                                     />
                                   </ListItemIcon>
                                   <ListItemText
                                     primary={
                                       <div className={classes.itemText}>
-                                        {stixDomainEntity.name}
+                                        {stixDomainObject.name}
                                       </div>
                                     }
                                   />
                                   <div style={inlineStyles.itemAuthor}>
                                     {pathOr(
                                       '',
-                                      ['createdByRef', 'node', 'name'],
-                                      stixDomainEntity,
+                                      ['createdBy', 'node', 'name'],
+                                      stixDomainObject,
                                     )}
                                   </div>
                                   <div style={inlineStyles.itemDate}>
-                                    {nsd(stixDomainEntity.modified)}
+                                    {nsd(stixDomainObject.modified)}
                                   </div>
                                   <div
                                     style={{
@@ -697,7 +697,7 @@ class Dashboard extends Component {
                                 <div style={inlineStyles.itemAuthor}>
                                   {pathOr(
                                     '',
-                                    ['createdByRef', 'node', 'name'],
+                                    ['createdBy', 'node', 'name'],
                                     note,
                                   )}
                                 </div>
@@ -781,7 +781,7 @@ class Dashboard extends Component {
                                 <div style={inlineStyles.itemAuthor}>
                                   {pathOr(
                                     '',
-                                    ['createdByRef', 'node', 'name'],
+                                    ['createdBy', 'node', 'name'],
                                     report,
                                   )}
                                 </div>

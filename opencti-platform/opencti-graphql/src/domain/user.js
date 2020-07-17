@@ -84,7 +84,7 @@ export const ROLE_ADMINISTRATOR = 'Administrator';
 
 export const findById = async (userId) => {
   const data = await loadEntityById(userId, ENTITY_TYPE_USER);
-  return pipe(dissoc('user_email'), dissoc('password'))(data);
+  return data ? dissoc('password', data) : data;
 };
 
 export const findAll = (args) => {
@@ -458,7 +458,7 @@ export const authentication = async (tokenUUID) => {
  * @returns {*}
  */
 export const initAdmin = async (email, password, tokenValue) => {
-  const admin = await findById(OPENCTI_ADMIN_UUID, { isUser: true });
+  const admin = await findById(OPENCTI_ADMIN_UUID);
   const tokenAdmin = generateOpenCTIWebToken(tokenValue);
   if (admin) {
     // Update admin fields

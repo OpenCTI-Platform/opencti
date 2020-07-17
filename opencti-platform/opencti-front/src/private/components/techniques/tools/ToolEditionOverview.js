@@ -20,7 +20,7 @@ import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
+import CreatedByField from '../../common/form/CreatedByField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
 const styles = (theme) => ({
@@ -129,15 +129,15 @@ class ToolEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedByRef(name, value) {
+  handleChangeCreatedBy(name, value) {
     const { tool } = this.props;
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], tool),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], tool),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], tool),
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'node', 'name'], tool),
+      value: pathOr(null, ['createdBy', 'node', 'id'], tool),
+      relation: pathOr(null, ['createdBy', 'relation', 'id'], tool),
     };
 
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: toolMutationRelationAdd,
         variables: {
@@ -150,12 +150,12 @@ class ToolEditionOverviewComponent extends Component {
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: toolMutationRelationDelete,
         variables: {
           id: this.props.tool.id,
-          relationId: currentCreatedByRef.relation,
+          relationId: currentCreatedBy.relation,
         },
       });
       if (value.value) {
@@ -257,12 +257,12 @@ class ToolEditionOverviewComponent extends Component {
 
   render() {
     const { t, tool, context } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], tool) === null
+    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], tool) === null
       ? ''
       : {
-        label: pathOr(null, ['createdByRef', 'node', 'name'], tool),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], tool),
-        relation: pathOr(null, ['createdByRef', 'relation', 'id'], tool),
+        label: pathOr(null, ['createdBy', 'node', 'name'], tool),
+        value: pathOr(null, ['createdBy', 'node', 'id'], tool),
+        relation: pathOr(null, ['createdBy', 'relation', 'id'], tool),
       };
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
@@ -281,13 +281,13 @@ class ToolEditionOverviewComponent extends Component {
       })),
     )(tool);
     const initialValues = pipe(
-      assoc('createdByRef', createdByRef),
+      assoc('createdBy', createdBy),
       assoc('killChainPhases', killChainPhases),
       assoc('markingDefinitions', markingDefinitions),
       pick([
         'name',
         'description',
-        'createdByRef',
+        'createdBy',
         'killChainPhases',
         'markingDefinitions',
       ]),
@@ -338,14 +338,14 @@ class ToolEditionOverviewComponent extends Component {
               }
               onChange={this.handleChangeKillChainPhases.bind(this)}
             />
-            <CreatedByRefField
-              name="createdByRef"
+            <CreatedByField
+              name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdByRef" />
+                <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedByRef.bind(this)}
+              onChange={this.handleChangeCreatedBy.bind(this)}
             />
             <MarkingDefinitionsField
               name="markingDefinitions"
@@ -379,7 +379,7 @@ const ToolEditionOverview = createFragmentContainer(
         id
         name
         description
-        createdByRef {
+        createdBy {
           node {
             id
             name

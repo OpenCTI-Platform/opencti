@@ -28,19 +28,19 @@ const styles = (theme) => ({
   },
 });
 
-class CreatedByRefField extends Component {
+class CreatedByField extends Component {
   constructor(props) {
     super(props);
-    const { defaultCreatedByRef } = props;
+    const { defaultCreatedBy } = props;
     this.state = {
       identityCreation: false,
       identityInput: '',
-      identities: defaultCreatedByRef
+      identities: defaultCreatedBy
         ? [
           {
-            label: defaultCreatedByRef.name,
-            value: defaultCreatedByRef.id,
-            type: defaultCreatedByRef.entity_type,
+            label: defaultCreatedBy.name,
+            value: defaultCreatedBy.id,
+            type: defaultCreatedBy.entity_type,
           },
         ]
         : [],
@@ -139,4 +139,4 @@ class CreatedByRefField extends Component {
   }
 }
 
-export default compose(inject18n, withStyles(styles))(CreatedByRefField);
+export default compose(inject18n, withStyles(styles))(CreatedByField);

@@ -8,12 +8,12 @@ import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
 import IntrusionSetPopover from './IntrusionSetPopover';
 import IntrusionSetKnowledgeBar from './IntrusionSetKnowledgeBar';
-import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
-import StixDomainEntityThreatKnowledge from '../../common/stix_domain_entities/StixDomainEntityThreatKnowledge';
-import StixRelation from '../../common/stix_relations/StixRelation';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
-import StixDomainEntityKillChain from '../../common/stix_domain_entities/StixDomainEntityKillChain';
-import StixDomainEntityVictimology from '../../common/stix_domain_entities/StixDomainEntityVictimology';
+import EntityStixRelations from '../../common/stix_core_relationships/EntityStixCoreRelationships';
+import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
+import StixRelation from '../../common/stix_core_relationships/StixRelation';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectKillChain from '../../common/stix_domain_objects/StixDomainObjectKillChain';
+import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
 
 const styles = () => ({
   container: {
@@ -28,8 +28,8 @@ class IntrusionSetKnowledgeComponent extends Component {
     const link = `/dashboard/threats/intrusion_sets/${intrusionSet.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={intrusionSet}
+        <StixDomainObjectHeader
+          stixDomainObject={intrusionSet}
           PopoverComponent={<IntrusionSetPopover />}
         />
         <IntrusionSetKnowledgeBar intrusionSetId={intrusionSet.id} />
@@ -48,9 +48,9 @@ class IntrusionSetKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/overview"
           render={(routeProps) => (
-            <StixDomainEntityThreatKnowledge
-              stixDomainEntityId={intrusionSet.id}
-              stixDomainEntityType="intrusion-set"
+            <StixDomainObjectThreatKnowledge
+              stixDomainObjectId={intrusionSet.id}
+              stixDomainObjectType="intrusion-set"
               {...routeProps}
             />
           )}
@@ -73,8 +73,8 @@ class IntrusionSetKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/victimology"
           render={(routeProps) => (
-            <StixDomainEntityVictimology
-              stixDomainEntityId={intrusionSet.id}
+            <StixDomainObjectVictimology
+              stixDomainObjectId={intrusionSet.id}
               entityLink={link}
               {...routeProps}
             />
@@ -126,8 +126,8 @@ class IntrusionSetKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/ttp"
           render={(routeProps) => (
-            <StixDomainEntityKillChain
-              stixDomainEntityId={intrusionSet.id}
+            <StixDomainObjectKillChain
+              stixDomainObjectId={intrusionSet.id}
               entityLink={link}
               {...routeProps}
             />

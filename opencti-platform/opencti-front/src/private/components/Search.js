@@ -8,9 +8,9 @@ import { QueryRenderer } from '../../relay/environment';
 import inject18n from '../../components/i18n';
 import TopBar from './nav/TopBar';
 import LoaderWithParticles from '../../components/LoaderWithParticles';
-import StixDomainEntitiesLines, {
-  stixDomainEntitiesLinesQuery,
-} from './common/stix_domain_entities/StixDomainEntitiesLines';
+import StixDomainObjectsLines, {
+  stixDomainObjectsLinesQuery,
+} from './common/stix_domain_objects/StixDomainObjectsLines';
 import StixObservableSearchLines, {
   stixObservablesSearchLinesQuery,
 } from './signatures/stix_observables/StixObservablesSearchLines';
@@ -48,7 +48,7 @@ class Search extends Component {
           {t('Search for an entity')}
         </Typography>
         <QueryRenderer
-          query={stixDomainEntitiesLinesQuery}
+          query={stixDomainObjectsLinesQuery}
           variables={{
             search: keyword,
             count: 100,
@@ -57,7 +57,7 @@ class Search extends Component {
           }}
           render={({ props }) => {
             if (props) {
-              return <StixDomainEntitiesLines data={props} />;
+              return <StixDomainObjectsLines data={props} />;
             }
             return <LoaderWithParticles variant="inside" />;
           }}

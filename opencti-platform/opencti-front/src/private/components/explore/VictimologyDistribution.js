@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 import { compose, propOr, pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../components/i18n';
-import EntityStixRelationsPie from '../common/stix_relations/EntityStixRelationsPie';
-import EntityStixRelationsRadar from '../common/stix_relations/EntityStixRelationsRadar';
-import EntityStixRelationsDonut from '../common/stix_relations/EntityStixRelationsDonut';
-import EntityStixRelationsTable from '../common/stix_relations/EntityStixRelationsTable';
+import EntityStixRelationsPie from '../common/stix_core_relationships/EntityStixRelationsPie';
+import EntityStixRelationsRadar from '../common/stix_core_relationships/EntityStixRelationsRadar';
+import EntityStixRelationsDonut from '../common/stix_core_relationships/EntityStixRelationsDonut';
+import EntityStixRelationsTable from '../common/stix_core_relationships/EntityStixRelationsTable';
 
 const styles = () => ({
   container: {

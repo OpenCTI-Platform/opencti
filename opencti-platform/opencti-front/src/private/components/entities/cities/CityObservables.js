@@ -8,9 +8,9 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import CityPopover from './CityPopover';
-import StixRelation from '../../common/stix_relations/StixRelation';
+import StixRelation from '../../common/stix_core_relationships/StixRelation';
 import EntityStixObservables from '../../signatures/stix_observables/EntityStixObservables';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = () => ({
   container: {
@@ -44,8 +44,8 @@ class CityObservablesComponent extends Component {
             : classes.container
         }
       >
-        <StixDomainEntityHeader
-          stixDomainEntity={city}
+        <StixDomainObjectHeader
+          stixDomainObject={city}
           PopoverComponent={<CityPopover />}
         />
         <Route

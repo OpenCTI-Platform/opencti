@@ -14,7 +14,7 @@ import EntityLastReports from '../../reports/EntityLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityIncidentsChart from '../../threats/incidents/EntityIncidentsChart';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
 import {
@@ -63,8 +63,8 @@ class OrganizationComponent extends Component {
     if (viewAs === 'author') {
       return (
         <div className={classes.container}>
-          <StixDomainEntityHeader
-            stixDomainEntity={organization}
+          <StixDomainObjectHeader
+            stixDomainObject={organization}
             PopoverComponent={<OrganizationPopover />}
             onViewAs={this.handleChangeViewAs.bind(this)}
             viewAs={this.state.viewAs}
@@ -103,8 +103,8 @@ class OrganizationComponent extends Component {
     }
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={organization}
+        <StixDomainObjectHeader
+          stixDomainObject={organization}
           PopoverComponent={<OrganizationPopover />}
           onViewAs={this.handleChangeViewAs.bind(this)}
           viewAs={this.state.viewAs}

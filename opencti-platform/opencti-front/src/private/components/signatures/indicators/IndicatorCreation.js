@@ -20,7 +20,7 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import DatePickerField from '../../../../components/DatePickerField';
 import SelectField from '../../../../components/SelectField';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
+import CreatedByField from '../../common/form/CreatedByField';
 import TagsField from '../../common/form/TagsField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 import TypesField from '../TypesField';
@@ -126,7 +126,7 @@ class IndicatorCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const adaptedValues = evolve(
       {
-        createdByRef: path(['value']),
+        createdBy: path(['value']),
         markingDefinitions: pluck('value'),
         tags: pluck('value'),
       },
@@ -201,7 +201,7 @@ class IndicatorCreation extends Component {
                 valid_from: null,
                 valid_until: null,
                 description: '',
-                createdByRef: '',
+                createdBy: '',
                 markingDefinitions: [],
                 tags: [],
                 detection: false,
@@ -282,8 +282,8 @@ class IndicatorCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <CreatedByRefField
-                    name="createdByRef"
+                  <CreatedByField
+                    name="createdBy"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />

@@ -68,7 +68,7 @@ const styles = (theme) => ({
 });
 
 const tagMutation = graphql`
-  mutation TagCreationMutation($input: TagAddInput!) {
+  mutation TagCreationMutation($input: LabelAddInput!) {
     tagAdd(input: $input) {
       ...TagLine_node
     }
@@ -76,7 +76,7 @@ const tagMutation = graphql`
 `;
 
 const tagContextualMutation = graphql`
-  mutation TagCreationContextualMutation($input: TagAddInput!) {
+  mutation TagCreationContextualMutation($input: LabelAddInput!) {
     tagAdd(input: $input) {
       id
       value

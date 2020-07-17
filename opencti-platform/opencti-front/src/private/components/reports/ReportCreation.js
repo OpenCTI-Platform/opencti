@@ -25,7 +25,7 @@ import MarkingDefinitionsField from '../common/form/MarkingDefinitionsField';
 import { attributesQuery } from '../settings/attributes/AttributesLines';
 import Loader from '../../../components/Loader';
 import TagsField from '../common/form/TagsField';
-import CreatedByRefField from '../common/form/CreatedByRefField';
+import CreatedByField from '../common/form/CreatedByField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -116,7 +116,7 @@ class ReportCreation extends Component {
     const adaptedValues = evolve(
       {
         published: parse(values.published).format(),
-        createdByRef: path(['value']),
+        createdBy: path(['value']),
         markingDefinitions: pluck('value'),
         tags: pluck('value'),
       },
@@ -196,7 +196,7 @@ class ReportCreation extends Component {
                           published: dayStartDate(),
                           description: '',
                           report_class: '',
-                          createdByRef: '',
+                          createdBy: '',
                           markingDefinitions: [],
                           tags: [],
                         }}
@@ -256,8 +256,8 @@ class ReportCreation extends Component {
                               rows="4"
                               style={{ marginTop: 20 }}
                             />
-                            <CreatedByRefField
-                              name="createdByRef"
+                            <CreatedByField
+                              name="createdBy"
                               style={{ marginTop: 20, width: '100%' }}
                               setFieldValue={setFieldValue}
                             />

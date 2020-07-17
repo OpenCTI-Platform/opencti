@@ -11,10 +11,10 @@ import CampaignDetails from './CampaignDetails';
 import CampaignEdition from './CampaignEdition';
 import CampaignPopover from './CampaignPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
-import EntityStixRelationsDonut from '../../common/stix_relations/EntityStixRelationsDonut';
+import EntityStixRelationsDonut from '../../common/stix_core_relationships/EntityStixRelationsDonut';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityIncidentsChart from '../incidents/EntityIncidentsChart';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
 
@@ -32,8 +32,8 @@ class CampaignComponent extends Component {
     const { classes, campaign } = this.props;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={campaign}
+        <StixDomainObjectHeader
+          stixDomainObject={campaign}
           PopoverComponent={<CampaignPopover />}
         />
         <Grid

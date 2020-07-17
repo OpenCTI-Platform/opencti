@@ -7,7 +7,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { MoreVert, Person, PermIdentity } from '@material-ui/icons';
+import { MoreVert, Individual, PermIdentity } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import UserPopover from './UserPopover';
@@ -52,7 +52,7 @@ class UserLineComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true} button={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          {external ? <PermIdentity /> : <Person />}
+          {external ? <PermIdentity /> : <Individual />}
         </ListItemIcon>
         <ListItemText
           primary={
@@ -132,7 +132,7 @@ class UserLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Person />
+          <Individual />
         </ListItemIcon>
         <ListItemText
           primary={

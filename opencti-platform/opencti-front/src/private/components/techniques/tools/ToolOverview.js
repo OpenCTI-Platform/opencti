@@ -72,7 +72,7 @@ class ToolOverviewComponent extends Component {
             {t('Author')}
           </Typography>
           <ItemAuthor
-            createdByRef={pathOr(null, ['createdByRef', 'node'], tool)}
+            createdBy={pathOr(null, ['createdBy', 'node'], tool)}
           />
           <Typography
             variant="h3"
@@ -115,7 +115,7 @@ const ToolOverview = createFragmentContainer(ToolOverviewComponent, {
           }
         }
       }
-      createdByRef {
+      createdBy {
         node {
           id
           name

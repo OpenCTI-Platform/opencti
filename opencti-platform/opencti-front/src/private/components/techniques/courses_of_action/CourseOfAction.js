@@ -11,10 +11,10 @@ import CourseOfActionDetails from './CourseOfActionDetails';
 import CourseOfActionEdition from './CourseOfActionEdition';
 import CourseOfActionPopover from './CourseOfActionPopover';
 import EntityExternalReferences from '../../common/external_references/EntityExternalReferences';
-import EntityStixRelationsPie from '../../common/stix_relations/EntityStixRelationsPie';
+import EntityStixRelationsPie from '../../common/stix_core_relationships/EntityStixRelationsPie';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityStixRelationsChart from '../../common/stix_relations/EntityStixRelationsChart';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import EntityStixRelationsChart from '../../common/stix_core_relationships/EntityStixRelationsChart';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
 
@@ -32,8 +32,8 @@ class CourseOfActionComponent extends Component {
     const { classes, courseOfAction } = this.props;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={courseOfAction}
+        <StixDomainObjectHeader
+          stixDomainObject={courseOfAction}
           PopoverComponent={<CourseOfActionPopover />}
         />
         <Grid

@@ -5,19 +5,19 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {
-  CurationStixDomainEntityLine,
-  CurationStixDomainEntityLineDummy,
-} from './CurationStixDomainEntityLine';
+  CurationStixDomainObjectLine,
+  CurationStixDomainObjectLineDummy,
+} from './CurationStixDomainObjectLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 50;
 
-class CurationStixDomainEntitiesLines extends Component {
+class CurationStixDomainObjectsLines extends Component {
   componentDidUpdate(prevProps) {
     setNumberOfElements(
       prevProps,
       this.props,
-      'stixDomainEntities',
+      'stixDomainObjects',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -37,14 +37,14 @@ class CurationStixDomainEntitiesLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['stixDomainEntities', 'edges'], this.props.data)}
+        dataList={pathOr([], ['stixDomainObjects', 'edges'], this.props.data)}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['stixDomainEntities', 'pageInfo', 'globalCount'],
+          ['stixDomainObjects', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
-        LineComponent={<CurationStixDomainEntityLine />}
-        DummyLineComponent={<CurationStixDomainEntityLineDummy />}
+        LineComponent={<CurationStixDomainObjectLine />}
+        DummyLineComponent={<CurationStixDomainObjectLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         onTagClick={onTagClick.bind(this)}
@@ -55,13 +55,13 @@ class CurationStixDomainEntitiesLines extends Component {
   }
 }
 
-CurationStixDomainEntitiesLines.propTypes = {
+CurationStixDomainObjectsLines.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,
   relay: PropTypes.object,
-  stixDomainEntities: PropTypes.object,
+  stixDomainObjects: PropTypes.object,
   initialLoading: PropTypes.bool,
   onTagClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
@@ -69,17 +69,17 @@ CurationStixDomainEntitiesLines.propTypes = {
   selectedElements: PropTypes.object,
 };
 
-export const curationStixDomainEntitiesLinesQuery = graphql`
-  query CurationStixDomainEntitiesLinesPaginationQuery(
+export const curationStixDomainObjectsLinesQuery = graphql`
+  query CurationStixDomainObjectsLinesPaginationQuery(
     $types: [String]
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: StixDomainEntitiesOrdering
+    $orderBy: StixDomainObjectsOrdering
     $orderMode: OrderingMode
-    $filters: [StixDomainEntitiesFiltering]
+    $filters: [StixDomainObjectsFiltering]
   ) {
-    ...CurationStixDomainEntitiesLines_data
+    ...CurationStixDomainObjectsLines_data
       @arguments(
         types: $types
         search: $search
@@ -92,9 +92,9 @@ export const curationStixDomainEntitiesLinesQuery = graphql`
   }
 `;
 
-export const curationStixDomainEntitiesLinesSearchQuery = graphql`
-  query CurationStixDomainEntitiesLinesSearchQuery($search: String) {
-    stixDomainEntities(search: $search) {
+export const curationStixDomainObjectsLinesSearchQuery = graphql`
+  query CurationStixDomainObjectsLinesSearchQuery($search: String) {
+    stixDomainObjects(search: $search) {
       edges {
         node {
           id
@@ -102,7 +102,7 @@ export const curationStixDomainEntitiesLinesSearchQuery = graphql`
           name
           created_at
           updated_at
-          createdByRef {
+          createdBy {
             node {
               name
             }
@@ -114,20 +114,20 @@ export const curationStixDomainEntitiesLinesSearchQuery = graphql`
 `;
 
 export default createPaginationContainer(
-  CurationStixDomainEntitiesLines,
+  CurationStixDomainObjectsLines,
   {
     data: graphql`
-      fragment CurationStixDomainEntitiesLines_data on Query
+      fragment CurationStixDomainObjectsLines_data on Query
         @argumentDefinitions(
           types: { type: "[String]" }
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixDomainEntitiesOrdering", defaultValue: "name" }
+          orderBy: { type: "StixDomainObjectsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[StixDomainEntitiesFiltering]" }
+          filters: { type: "[StixDomainObjectsFiltering]" }
         ) {
-        stixDomainEntities(
+        stixDomainObjects(
           types: $types
           search: $search
           first: $count
@@ -135,7 +135,7 @@ export default createPaginationContainer(
           orderBy: $orderBy
           orderMode: $orderMode
           filters: $filters
-        ) @connection(key: "Pagination_stixDomainEntities") {
+        ) @connection(key: "Pagination_stixDomainObjects") {
           edges {
             node {
               id
@@ -143,7 +143,7 @@ export default createPaginationContainer(
               name
               alias
               created_at
-              createdByRef {
+              createdBy {
                 node {
                   name
                 }
@@ -156,7 +156,7 @@ export default createPaginationContainer(
                   }
                 }
               }
-              ...CurationStixDomainEntityLine_node
+              ...CurationStixDomainObjectLine_node
             }
           }
           pageInfo {
@@ -171,7 +171,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.stixDomainEntities;
+      return props.data && props.data.stixDomainObjects;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -190,6 +190,6 @@ export default createPaginationContainer(
         filters: fragmentVariables.filters,
       };
     },
-    query: curationStixDomainEntitiesLinesQuery,
+    query: curationStixDomainObjectsLinesQuery,
   },
 );

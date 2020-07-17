@@ -13,7 +13,7 @@ class ItemCreator extends Component {
             variant="outlined"
             size="small"
             component={Link}
-            to={`/dashboard/entities/persons/${creator.id}?viewAs=author`}
+            to={`/dashboard/entities/individuals/${creator.id}?viewAs=author`}
           >
             {creator.name}
           </Button>

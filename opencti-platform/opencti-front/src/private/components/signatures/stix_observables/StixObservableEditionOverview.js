@@ -19,7 +19,7 @@ import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
+import CreatedByField from '../../common/form/CreatedByField';
 import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
 
 const styles = (theme) => ({
@@ -136,19 +136,19 @@ class StixObservableEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedByRef(name, value) {
+  handleChangeCreatedBy(name, value) {
     const { stixObservable } = this.props;
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], stixObservable),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], stixObservable),
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'node', 'name'], stixObservable),
+      value: pathOr(null, ['createdBy', 'node', 'id'], stixObservable),
       relation: pathOr(
         null,
-        ['createdByRef', 'relation', 'id'],
+        ['createdBy', 'relation', 'id'],
         stixObservable,
       ),
     };
 
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: stixObservableMutationRelationAdd,
         variables: {
@@ -161,12 +161,12 @@ class StixObservableEditionOverviewComponent extends Component {
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: stixObservableMutationRelationDelete,
         variables: {
           id: this.props.stixObservable.id,
-          relationId: currentCreatedByRef.relation,
+          relationId: currentCreatedBy.relation,
         },
       });
       if (value.value) {
@@ -228,18 +228,18 @@ class StixObservableEditionOverviewComponent extends Component {
 
   render() {
     const { t, stixObservable, context } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], stixObservable) === null
+    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], stixObservable) === null
       ? ''
       : {
         label: pathOr(
           null,
-          ['createdByRef', 'node', 'name'],
+          ['createdBy', 'node', 'name'],
           stixObservable,
         ),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], stixObservable),
+        value: pathOr(null, ['createdBy', 'node', 'id'], stixObservable),
         relation: pathOr(
           null,
-          ['createdByRef', 'relation', 'id'],
+          ['createdBy', 'relation', 'id'],
           stixObservable,
         ),
       };
@@ -252,12 +252,12 @@ class StixObservableEditionOverviewComponent extends Component {
       })),
     )(stixObservable);
     const initialValues = pipe(
-      assoc('createdByRef', createdByRef),
+      assoc('createdBy', createdBy),
       assoc('markingDefinitions', markingDefinitions),
       pick([
         'observable_value',
         'description',
-        'createdByRef',
+        'createdBy',
         'killChainPhases',
         'markingDefinitions',
       ]),
@@ -302,14 +302,14 @@ class StixObservableEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
-            <CreatedByRefField
-              name="createdByRef"
+            <CreatedByField
+              name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdByRef" />
+                <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedByRef.bind(this)}
+              onChange={this.handleChangeCreatedBy.bind(this)}
             />
             <MarkingDefinitionsField
               name="markingDefinitions"
@@ -345,7 +345,7 @@ const StixObservableEditionOverview = createFragmentContainer(
         id
         observable_value
         description
-        createdByRef {
+        createdBy {
           node {
             id
             name

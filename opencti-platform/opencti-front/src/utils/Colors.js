@@ -96,7 +96,7 @@ export const itemColor = (type, dark) => {
     case 'uses':
     case 'related-to':
     case 'mitigates':
-    case 'impersonates':
+    case 'imindividualates':
     case 'indicates':
     case 'comes-after':
     case 'attributed-to':

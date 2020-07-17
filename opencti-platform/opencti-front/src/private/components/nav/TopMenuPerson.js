@@ -4,7 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { PersonOutlined, ArrowForwardIosOutlined } from '@material-ui/icons';
+import { IndividualOutlined, ArrowForwardIosOutlined } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -36,13 +36,13 @@ const styles = (theme) => ({
   },
 });
 
-class TopMenuPerson extends Component {
+class TopMenuIndividual extends Component {
   render() {
     const {
       t,
       location,
       match: {
-        params: { personId },
+        params: { individualId },
       },
       classes,
     } = this.props;
@@ -50,14 +50,14 @@ class TopMenuPerson extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/entities/persons"
+          to="/dashboard/entities/individuals"
           variant="contained"
           size="small"
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <PersonOutlined className={classes.icon} fontSize="small" />
-          {t('Persons')}
+          <IndividualOutlined className={classes.icon} fontSize="small" />
+          {t('Individuals')}
         </Button>
         <ArrowForwardIosOutlined
           color="inherit"
@@ -65,15 +65,15 @@ class TopMenuPerson extends Component {
         />
         <Button
           component={Link}
-          to={`/dashboard/entities/persons/${personId}`}
+          to={`/dashboard/entities/individuals/${individualId}`}
           variant={
-            location.pathname === `/dashboard/entities/persons/${personId}`
+            location.pathname === `/dashboard/entities/individuals/${individualId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/entities/persons/${personId}`
+            location.pathname === `/dashboard/entities/individuals/${individualId}`
               ? 'primary'
               : 'inherit'
           }
@@ -83,10 +83,10 @@ class TopMenuPerson extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/persons/${personId}/knowledge`}
+          to={`/dashboard/entities/individuals/${individualId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/entities/persons/${personId}/knowledge`,
+              `/dashboard/entities/individuals/${individualId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -94,7 +94,7 @@ class TopMenuPerson extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/entities/persons/${personId}/knowledge`,
+              `/dashboard/entities/individuals/${individualId}/knowledge`,
             )
               ? 'primary'
               : 'inherit'
@@ -105,17 +105,17 @@ class TopMenuPerson extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/persons/${personId}/reports`}
+          to={`/dashboard/entities/individuals/${individualId}/reports`}
           variant={
             location.pathname
-            === `/dashboard/entities/persons/${personId}/reports`
+            === `/dashboard/entities/individuals/${individualId}/reports`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/persons/${personId}/reports`
+            === `/dashboard/entities/individuals/${individualId}/reports`
               ? 'primary'
               : 'inherit'
           }
@@ -126,17 +126,17 @@ class TopMenuPerson extends Component {
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/entities/persons/${personId}/files`}
+            to={`/dashboard/entities/individuals/${individualId}/files`}
             variant={
               location.pathname
-              === `/dashboard/entities/persons/${personId}/files`
+              === `/dashboard/entities/individuals/${individualId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
               location.pathname
-              === `/dashboard/entities/persons/${personId}/files`
+              === `/dashboard/entities/individuals/${individualId}/files`
                 ? 'primary'
                 : 'inherit'
             }
@@ -147,17 +147,17 @@ class TopMenuPerson extends Component {
         </Security>
         <Button
           component={Link}
-          to={`/dashboard/entities/persons/${personId}/history`}
+          to={`/dashboard/entities/individuals/${individualId}/history`}
           variant={
             location.pathname
-            === `/dashboard/entities/persons/${personId}/history`
+            === `/dashboard/entities/individuals/${individualId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/persons/${personId}/history`
+            === `/dashboard/entities/individuals/${individualId}/history`
               ? 'primary'
               : 'inherit'
           }
@@ -170,7 +170,7 @@ class TopMenuPerson extends Component {
   }
 }
 
-TopMenuPerson.propTypes = {
+TopMenuIndividual.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
   match: PropTypes.object,
@@ -182,4 +182,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(TopMenuPerson);
+)(TopMenuIndividual);

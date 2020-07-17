@@ -18,7 +18,7 @@ import SearchInput from '../../../components/SearchInput';
 import ReportAddObjectRefsLines, {
   reportAddObjectRefsLinesQuery,
 } from './ReportAddObjectRefsLines';
-import StixDomainEntityCreation from '../common/stix_domain_entities/StixDomainEntityCreation';
+import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -93,7 +93,7 @@ class ReportAddObjectRefs extends Component {
       reportId,
       knowledgeGraph,
       withPadding,
-      defaultCreatedByRef,
+      defaultCreatedBy,
       defaultMarkingDefinition,
       reportObjectRefs,
     } = this.props;
@@ -192,12 +192,12 @@ class ReportAddObjectRefs extends Component {
             />
           </div>
         </Drawer>
-        <StixDomainEntityCreation
+        <StixDomainObjectCreation
           display={this.state.open}
           contextual={true}
           inputValue={this.state.search}
           paginationOptions={paginationOptions}
-          defaultCreatedByRef={defaultCreatedByRef}
+          defaultCreatedBy={defaultCreatedBy}
           defaultMarkingDefinition={defaultMarkingDefinition}
         />
       </div>
@@ -213,7 +213,7 @@ ReportAddObjectRefs.propTypes = {
   paginationOptions: PropTypes.object,
   knowledgeGraph: PropTypes.bool,
   withPadding: PropTypes.bool,
-  defaultCreatedByRef: PropTypes.object,
+  defaultCreatedBy: PropTypes.object,
   defaultMarkingDefinition: PropTypes.object,
   reportObjectRefs: PropTypes.array,
 };

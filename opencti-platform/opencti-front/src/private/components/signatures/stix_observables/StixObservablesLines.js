@@ -79,9 +79,9 @@ export const stixObservablesLinesQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: StixObservablesOrdering
+    $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode
-    $filters: [StixObservablesFiltering]
+    $filters: [StixCyberObservablesFiltering]
   ) {
     ...StixObservablesLines_data
       @arguments(
@@ -123,11 +123,11 @@ export default createPaginationContainer(
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
           orderBy: {
-            type: "StixObservablesOrdering"
+            type: "StixCyberObservablesOrdering"
             defaultValue: "observable_value"
           }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[StixObservablesFiltering]" }
+          filters: { type: "[StixCyberObservablesFiltering]" }
         ) {
         stixObservables(
           types: $types

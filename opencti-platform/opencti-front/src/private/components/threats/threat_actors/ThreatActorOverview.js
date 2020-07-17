@@ -72,7 +72,7 @@ class ThreatActorOverviewComponent extends Component {
             {t('Author')}
           </Typography>
           <ItemAuthor
-            createdByRef={pathOr(null, ['createdByRef', 'node'], threatActor)}
+            createdBy={pathOr(null, ['createdBy', 'node'], threatActor)}
           />
           <Typography
             variant="h3"
@@ -117,7 +117,7 @@ const ThreatActorOverview = createFragmentContainer(
             }
           }
         }
-        createdByRef {
+        createdBy {
           node {
             id
             name

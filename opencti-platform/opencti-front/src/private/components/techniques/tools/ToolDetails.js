@@ -12,7 +12,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { Launch } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
-import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
+import StixDomainObjectTags from '../../common/stix_domain_objects/StixDomainObjectLabels';
 import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
@@ -34,7 +34,7 @@ class ToolDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixDomainEntityTags tags={tool.tags} id={tool.id} />
+          <StixDomainObjectTags tags={tool.tags} id={tool.id} />
           <Typography
             variant="h3"
             gutterBottom={true}

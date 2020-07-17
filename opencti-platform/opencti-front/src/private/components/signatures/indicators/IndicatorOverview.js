@@ -72,7 +72,7 @@ class IndicatorOverviewComponent extends Component {
             {t('Author')}
           </Typography>
           <ItemAuthor
-            createdByRef={pathOr(null, ['createdByRef', 'node'], indicator)}
+            createdBy={pathOr(null, ['createdBy', 'node'], indicator)}
           />
           <Typography
             variant="h3"
@@ -105,7 +105,7 @@ const IndicatorOverview = createFragmentContainer(IndicatorOverviewComponent, {
       modified
       pattern_type
       detection
-      createdByRef {
+      createdBy {
         node {
           id
           entity_type

@@ -8,9 +8,9 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import ToolPopover from './ToolPopover';
-import StixRelation from '../../common/stix_relations/StixRelation';
+import StixRelation from '../../common/stix_core_relationships/StixRelation';
 import EntityIndicators from '../../signatures/indicators/EntityIndicators';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = (theme) => ({
   container: {
@@ -66,8 +66,8 @@ class ToolIndicatorsComponent extends Component {
     }
     return (
       <div className={className}>
-        <StixDomainEntityHeader
-          stixDomainEntity={tool}
+        <StixDomainObjectHeader
+          stixDomainObject={tool}
           PopoverComponent={<ToolPopover />}
         />
         <Route
