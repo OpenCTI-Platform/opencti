@@ -134,7 +134,6 @@ const CourseOfActionAttackPattern = createFragmentContainer(
               name
               description
             }
-
           }
         }
       }

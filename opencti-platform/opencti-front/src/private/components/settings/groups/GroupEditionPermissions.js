@@ -167,7 +167,6 @@ const GroupEditionPermissions = createFragmentContainer(
               definition
               definition_type
             }
-
           }
         }
       }

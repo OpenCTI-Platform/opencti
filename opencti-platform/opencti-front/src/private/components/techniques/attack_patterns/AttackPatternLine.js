@@ -133,7 +133,6 @@ const AttackPatternLineFragment = createFragmentContainer(
               value
               color
             }
-
           }
         }
       }

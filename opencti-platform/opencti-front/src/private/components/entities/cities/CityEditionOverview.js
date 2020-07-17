@@ -331,7 +331,6 @@ const CityEditionOverview = createFragmentContainer(
               definition
               definition_type
             }
-
           }
         }
       }

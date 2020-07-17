@@ -156,7 +156,6 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
                   value
                   color
                 }
-    
               }
             }
           }
@@ -186,7 +185,6 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
                   value
                   color
                 }
-    
               }
             }
           }
@@ -210,7 +208,6 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
                   value
                   color
                 }
-    
               }
             }
           }
@@ -239,7 +236,6 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
                   value
                   color
                 }
-    
               }
             }
           }

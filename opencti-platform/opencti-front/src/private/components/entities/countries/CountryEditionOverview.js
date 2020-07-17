@@ -334,7 +334,6 @@ const CountryEditionOverview = createFragmentContainer(
               definition
               definition_type
             }
-
           }
         }
       }

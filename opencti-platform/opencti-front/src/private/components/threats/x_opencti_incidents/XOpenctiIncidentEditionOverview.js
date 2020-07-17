@@ -229,9 +229,17 @@ class XOpenctiIncidentEditionOverviewComponent extends Component {
     const createdBy = pathOr(null, ['createdBy', 'node', 'name'], xOpenctiIncident) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'node', 'name'], xOpenctiIncident),
+        label: pathOr(
+          null,
+          ['createdBy', 'node', 'name'],
+          xOpenctiIncident,
+        ),
         value: pathOr(null, ['createdBy', 'node', 'id'], xOpenctiIncident),
-        relation: pathOr(null, ['createdBy', 'relation', 'id'], xOpenctiIncident),
+        relation: pathOr(
+          null,
+          ['createdBy', 'relation', 'id'],
+          xOpenctiIncident,
+        ),
       };
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
@@ -355,7 +363,6 @@ const XOpenctiXOpenctiIncidentEditionOverview = createFragmentContainer(
               definition
               definition_type
             }
-
           }
         }
       }

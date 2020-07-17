@@ -146,7 +146,10 @@ class RootCity extends Component {
                           stixDomainObject={props.city}
                           PopoverComponent={<CityPopover />}
                         />
-                        <StixCoreObjectHistory {...routeProps} entityId={cityId} />
+                        <StixCoreObjectHistory
+                          {...routeProps}
+                          entityId={cityId}
+                        />
                       </React.Fragment>
                     )}
                   />

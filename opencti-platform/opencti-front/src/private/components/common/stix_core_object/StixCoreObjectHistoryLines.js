@@ -104,4 +104,7 @@ const StixCoreObjectHistoryLines = createRefetchContainer(
   stixCoreObjectHistoryLinesQuery,
 );
 
-export default compose(inject18n, withStyles(styles))(StixCoreObjectHistoryLines);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixCoreObjectHistoryLines);

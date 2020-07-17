@@ -186,11 +186,13 @@ const TopBar = ({
           ) : (
             ''
           )}
-          {location.pathname.includes('/dashboard/threats/x_opencti_xOpenctiIncidents/') ? (
+          {location.pathname.includes(
+            '/dashboard/threats/x_opencti_xOpenctiIncidents/',
+          ) ? (
             <TopMenuXOpenctiIncident />
-          ) : (
-            ''
-          )}
+            ) : (
+              ''
+            )}
           {location.pathname.includes('/dashboard/threats/malwares/') ? (
             <TopMenuMalware />
           ) : (

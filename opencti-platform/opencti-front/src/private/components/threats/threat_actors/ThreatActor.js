@@ -66,7 +66,10 @@ class ThreatActorComponent extends Component {
             />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityXOpenctiIncidentsChart entityId={threatActor.id} inferred={true} />
+            <EntityXOpenctiIncidentsChart
+              entityId={threatActor.id}
+              inferred={true}
+            />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={threatActor.id} />

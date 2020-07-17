@@ -773,12 +773,7 @@ export const elLoadByTerms = async (terms, relationsMap, indices = DATA_INDICES)
   }
   return loadedElement;
 };
-const elInternalLoadById = async (
-  id,
-  elementTypes = ['internal_id'],
-  relationsMap = null,
-  indices = DATA_INDICES
-) => {
+const elInternalLoadById = async (id, elementTypes = ['internal_id'], relationsMap = null, indices = DATA_INDICES) => {
   //       must = append({ bool: { should: valuesFiltering, minimum_should_match: 1 } }, must);
   const mustTerms = [];
   const idsTermsPerType = map((e) => ({ [`${e}.keyword`]: id }), elementTypes);

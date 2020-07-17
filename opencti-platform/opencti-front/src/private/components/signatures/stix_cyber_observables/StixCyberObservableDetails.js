@@ -77,7 +77,6 @@ const StixCyberObservableDetails = createFragmentContainer(
               value
               color
             }
-
           }
         }
       }

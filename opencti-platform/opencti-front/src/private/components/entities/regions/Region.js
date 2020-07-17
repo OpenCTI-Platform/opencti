@@ -67,7 +67,10 @@ class RegionComponent extends Component {
             <EntityCampaignsChart entityId={region.id} inferred={true} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityXOpenctiIncidentsChart entityId={region.id} inferred={true} />
+            <EntityXOpenctiIncidentsChart
+              entityId={region.id}
+              inferred={true}
+            />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={region.id} />

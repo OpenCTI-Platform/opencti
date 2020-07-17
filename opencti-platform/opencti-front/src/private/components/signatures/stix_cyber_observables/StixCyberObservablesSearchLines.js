@@ -215,7 +215,6 @@ const StixCyberObservablesSearchLines = createPaginationContainer(
                     value
                     color
                   }
-      
                 }
               }
             }

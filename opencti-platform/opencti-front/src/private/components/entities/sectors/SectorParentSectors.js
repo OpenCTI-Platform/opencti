@@ -97,7 +97,6 @@ const SectorParentSectors = createFragmentContainer(
               name
               description
             }
-
           }
         }
       }

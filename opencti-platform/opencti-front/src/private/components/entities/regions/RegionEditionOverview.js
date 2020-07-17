@@ -339,7 +339,6 @@ const RegionEditionOverview = createFragmentContainer(
               definition
               definition_type
             }
-
           }
         }
       }

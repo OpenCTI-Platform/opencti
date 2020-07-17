@@ -263,7 +263,6 @@ const StixCoreObjectNoteEditionOverview = createFragmentContainer(
               definition
               definition_type
             }
-
           }
         }
       }

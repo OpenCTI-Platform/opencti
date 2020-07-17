@@ -126,7 +126,6 @@ const IntrusionSetLineFragment = createFragmentContainer(
               value
               color
             }
-
           }
         }
         objectMarking {

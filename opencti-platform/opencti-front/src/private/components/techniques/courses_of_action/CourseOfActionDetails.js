@@ -80,7 +80,6 @@ const CourseOfActionDetails = createFragmentContainer(
               value
               color
             }
-
           }
         }
         ...CourseOfActionAttackPatterns_courseOfAction

@@ -88,20 +88,16 @@ const ToolDetails = createFragmentContainer(ToolDetailsComponent, {
         id
         name
       }
-      labels {
+      objectLabel {
         edges {
           node {
             id
-            label_type
             value
             color
           }
-          relation {
-            id
-          }
         }
       }
-      killChainPhases {
+      killChainPhase {
         edges {
           node {
             id

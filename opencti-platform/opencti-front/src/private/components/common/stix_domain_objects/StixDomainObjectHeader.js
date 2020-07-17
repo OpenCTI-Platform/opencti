@@ -107,7 +107,10 @@ class StixDomainObjectHeader extends Component {
           id: this.props.stixDomainObject.id,
           input: {
             key: 'aliases',
-            value: append(data.new_aliases, this.props.stixDomainObject.aliases),
+            value: append(
+              data.new_aliases,
+              this.props.stixDomainObject.aliases,
+            ),
           },
         },
         onCompleted: () => MESSAGING$.notifySuccess(this.props.t('The aliases has been added')),

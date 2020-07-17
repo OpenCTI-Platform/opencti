@@ -52,7 +52,10 @@ class XOpenctiIncidentObservablesComponent extends Component {
           exact
           path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/observables/relations/:relationId"
           render={(routeProps) => (
-            <StixCoreRelationship entityId={xOpenctiIncident.id} {...routeProps} />
+            <StixCoreRelationship
+              entityId={xOpenctiIncident.id}
+              {...routeProps}
+            />
           )}
         />
         <Route

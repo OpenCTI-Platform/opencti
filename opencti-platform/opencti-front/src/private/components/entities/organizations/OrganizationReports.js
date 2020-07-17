@@ -46,7 +46,10 @@ class OrganizationReportsComponent extends Component {
     const { withPadding } = this.state;
     const { classes, organization } = this.props;
     if (
-      contains(organization.x_opencti_organization_type, organizationTypesForAuthorMode)
+      contains(
+        organization.x_opencti_organization_type,
+        organizationTypesForAuthorMode,
+      )
     ) {
       return (
         <div

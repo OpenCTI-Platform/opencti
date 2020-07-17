@@ -398,7 +398,6 @@ const ToolEditionOverview = createFragmentContainer(
               phase_name
               phase_order
             }
-
           }
         }
         markingDefinitions {
@@ -408,7 +407,6 @@ const ToolEditionOverview = createFragmentContainer(
               definition
               definition_type
             }
-
           }
         }
       }

@@ -4,7 +4,10 @@ import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
-import { XOpenctiXOpenctiIncidentCard, XOpenctiIncidentCardDummy } from './XOpenctiXOpenctiIncidentCard';
+import {
+  XOpenctiXOpenctiIncidentCard,
+  XOpenctiIncidentCardDummy,
+} from './XOpenctiXOpenctiIncidentCard';
 import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfCardsToLoad = 50;

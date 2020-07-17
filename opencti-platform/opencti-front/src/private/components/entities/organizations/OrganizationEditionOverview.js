@@ -111,7 +111,9 @@ const organizationValidation = (t) => Yup.object().shape({
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
   contact_information: Yup.string(),
-  x_opencti_organization_type: Yup.string().required(t('This field is required')),
+  x_opencti_organization_type: Yup.string().required(
+    t('This field is required'),
+  ),
   reliability: Yup.string().required(t('This field is required')),
 });
 
@@ -425,7 +427,6 @@ const OrganizationEditionOverview = createFragmentContainer(
               definition
               definition_type
             }
-
           }
         }
       }

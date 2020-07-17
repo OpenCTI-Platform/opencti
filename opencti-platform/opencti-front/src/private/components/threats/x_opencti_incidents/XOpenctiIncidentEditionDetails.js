@@ -54,7 +54,10 @@ const xOpenctiIncidentMutationFieldPatch = graphql`
 `;
 
 const xOpenctiIncidentEditionDetailsFocus = graphql`
-  mutation XOpenctiIncidentEditionDetailsFocusMutation($id: ID!, $input: EditContext!) {
+  mutation XOpenctiIncidentEditionDetailsFocusMutation(
+    $id: ID!
+    $input: EditContext!
+  ) {
     xOpenctiIncidentEdit(id: $id) {
       contextPatch(input: $input) {
         id

@@ -127,7 +127,6 @@ const IndividualLineFragment = createFragmentContainer(
               value
               color
             }
-
           }
         }
       }

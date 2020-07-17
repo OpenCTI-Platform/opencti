@@ -262,7 +262,6 @@ const IndicatorObservables = createFragmentContainer(
               created_at
               updated_at
             }
-
           }
         }
         ...IndicatorHeader_indicator

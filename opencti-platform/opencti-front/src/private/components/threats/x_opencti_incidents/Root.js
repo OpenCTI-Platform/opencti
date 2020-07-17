@@ -88,7 +88,10 @@ class RootXOpenctiIncident extends Component {
                     exact
                     path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId"
                     render={(routeProps) => (
-                      <XOpenctiIncident {...routeProps} xOpenctiIncident={props.xOpenctiIncident} />
+                      <XOpenctiIncident
+                        {...routeProps}
+                        xOpenctiIncident={props.xOpenctiIncident}
+                      />
                     )}
                   />
                   <Route

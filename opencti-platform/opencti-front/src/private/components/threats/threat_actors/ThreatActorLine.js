@@ -125,7 +125,6 @@ const ThreatActorLineFragment = createFragmentContainer(
               value
               color
             }
-
           }
         }
         objectMarking {

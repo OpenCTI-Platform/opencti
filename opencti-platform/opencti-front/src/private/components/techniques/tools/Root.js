@@ -146,7 +146,10 @@ class RootTool extends Component {
                           stixDomainObject={props.tool}
                           PopoverComponent={<ToolPopover />}
                         />
-                        <StixCoreObjectHistory {...routeProps} entityId={toolId} />
+                        <StixCoreObjectHistory
+                          {...routeProps}
+                          entityId={toolId}
+                        />
                       </React.Fragment>
                     )}
                   />

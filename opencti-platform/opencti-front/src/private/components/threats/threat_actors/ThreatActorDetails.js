@@ -141,7 +141,6 @@ const ThreatActorDetails = createFragmentContainer(
               value
               color
             }
-
           }
         }
       }

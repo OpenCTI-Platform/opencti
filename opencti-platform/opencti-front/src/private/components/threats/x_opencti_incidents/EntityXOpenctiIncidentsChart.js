@@ -275,4 +275,7 @@ EntityXOpenctiXOpenctiIncidentsChart.propTypes = {
   relationType: PropTypes.string,
 };
 
-export default compose(inject18n, withStyles(styles))(EntityXOpenctiXOpenctiIncidentsChart);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(EntityXOpenctiXOpenctiIncidentsChart);

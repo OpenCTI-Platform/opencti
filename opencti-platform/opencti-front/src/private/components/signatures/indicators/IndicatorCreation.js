@@ -92,7 +92,7 @@ const indicatorMutation = graphql`
 
 const indicatorValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  indicator_pattern: Yup.string().required(t('This field is required')),
+  pattern: Yup.string().required(t('This field is required')),
   pattern_type: Yup.string().required(t('This field is required')),
   main_observable_type: Yup.string().required(t('This field is required')),
   description: Yup.string(),
@@ -195,7 +195,7 @@ class IndicatorCreation extends Component {
             <Formik
               initialValues={{
                 name: '',
-                indicator_pattern: '',
+                pattern: '',
                 pattern_type: '',
                 main_observable_type: '',
                 valid_from: null,
@@ -240,7 +240,7 @@ class IndicatorCreation extends Component {
                   </Field>
                   <Field
                     component={TextField}
-                    name="indicator_pattern"
+                    name="pattern"
                     label={t('Pattern')}
                     fullWidth={true}
                     multiline={true}

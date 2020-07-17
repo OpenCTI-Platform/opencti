@@ -209,4 +209,7 @@ StixCoreObjectNoteCreation.propTypes = {
   inputType: PropTypes.string,
 };
 
-export default compose(inject18n, withStyles(styles))(StixCoreObjectNoteCreation);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixCoreObjectNoteCreation);

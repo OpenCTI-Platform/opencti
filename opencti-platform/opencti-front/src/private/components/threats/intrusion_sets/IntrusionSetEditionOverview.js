@@ -358,7 +358,6 @@ const IntrusionSetEditionOverview = createFragmentContainer(
               definition
               definition_type
             }
-
           }
         }
       }

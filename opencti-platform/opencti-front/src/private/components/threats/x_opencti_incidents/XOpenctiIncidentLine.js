@@ -109,37 +109,36 @@ XOpenctiIncidentLineComponent.propTypes = {
   onLabelClick: PropTypes.func,
 };
 
-const XOpenctiIncidentLineFragment = createFragmentContainer(XOpenctiIncidentLineComponent, {
-  node: graphql`
-    fragment XOpenctiIncidentLine_node on XOpenctiIncident {
-      id
-      name
-      created
-      modified
-      labels {
-        edges {
-          node {
-            id
-            label_type
-            value
-            color
+const XOpenctiIncidentLineFragment = createFragmentContainer(
+  XOpenctiIncidentLineComponent,
+  {
+    node: graphql`
+      fragment XOpenctiIncidentLine_node on XOpenctiIncident {
+        id
+        name
+        created
+        modified
+        objectMarking {
+          edges {
+            node {
+              id
+              definition
+            }
           }
-          relation {
-            id
+        }
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
+            }
           }
         }
       }
-      objectMarking {
-        edges {
-          node {
-            id
-            definition
-          }
-        }
-      }
-    }
-  `,
-});
+    `,
+  },
+);
 
 export const XOpenctiXOpenctiIncidentLine = compose(
   inject18n,

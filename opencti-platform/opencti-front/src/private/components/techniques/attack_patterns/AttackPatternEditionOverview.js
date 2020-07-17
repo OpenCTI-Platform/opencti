@@ -413,7 +413,6 @@ const AttackPatternEditionOverview = createFragmentContainer(
               phase_name
               phase_order
             }
-
           }
         }
         markingDefinitions {
@@ -423,7 +422,6 @@ const AttackPatternEditionOverview = createFragmentContainer(
               definition
               definition_type
             }
-
           }
         }
       }

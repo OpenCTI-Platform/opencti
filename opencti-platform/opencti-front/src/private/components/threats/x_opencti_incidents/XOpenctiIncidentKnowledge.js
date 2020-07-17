@@ -32,7 +32,9 @@ class XOpenctiIncidentKnowledgeComponent extends Component {
           stixDomainObject={xOpenctiIncident}
           PopoverComponent={<XOpenctiIncidentPopover />}
         />
-        <XOpenctiIncidentKnowledgeBar xOpenctiIncidentId={xOpenctiIncident.id} />
+        <XOpenctiIncidentKnowledgeBar
+          xOpenctiIncidentId={xOpenctiIncident.id}
+        />
         <Route
           exact
           path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/knowledge/relations/:relationId"
@@ -150,15 +152,18 @@ XOpenctiIncidentKnowledgeComponent.propTypes = {
   t: PropTypes.func,
 };
 
-const XOpenctiXOpenctiIncidentKnowledge = createFragmentContainer(XOpenctiIncidentKnowledgeComponent, {
-  xOpenctiIncident: graphql`
-    fragment XOpenctiIncidentKnowledge_xOpenctiIncident on XOpenctiIncident {
-      id
-      name
-      aliases
-    }
-  `,
-});
+const XOpenctiXOpenctiIncidentKnowledge = createFragmentContainer(
+  XOpenctiIncidentKnowledgeComponent,
+  {
+    xOpenctiIncident: graphql`
+      fragment XOpenctiIncidentKnowledge_xOpenctiIncident on XOpenctiIncident {
+        id
+        name
+        aliases
+      }
+    `,
+  },
+);
 
 export default compose(
   inject18n,

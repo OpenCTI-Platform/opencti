@@ -97,7 +97,6 @@ const RegionParentRegions = createFragmentContainer(
               name
               description
             }
-
           }
         }
       }

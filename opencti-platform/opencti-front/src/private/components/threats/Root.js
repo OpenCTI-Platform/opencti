@@ -57,7 +57,9 @@ class Root extends Component {
         />
         <BoundaryRoute
           path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId"
-          render={(routeProps) => <RootXOpenctiIncident {...routeProps} me={me} />}
+          render={(routeProps) => (
+            <RootXOpenctiIncident {...routeProps} me={me} />
+          )}
         />
         <BoundaryRoute
           exact

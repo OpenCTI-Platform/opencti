@@ -105,7 +105,7 @@ class ReportEntityLineComponent extends Component {
                       key={markingDefinition.node.id}
                       variant="inList"
                       label={markingDefinition.node.definition}
-                      color={markingDefinition.node.color}
+                      color={markingDefinition.node.x_opencti_color}
                     />
                   ),
                 )}
@@ -156,7 +156,7 @@ const ReportEntityLineFragment = createFragmentContainer(
             node {
               id
               definition
-              color
+              x_opencti_color
             }
           }
         }

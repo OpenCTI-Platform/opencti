@@ -181,7 +181,10 @@ class StixDomainObjectsRightBar extends Component {
           <ListItem
             dense={true}
             button={true}
-            onClick={handleToggleStixDomainObjectType.bind(this, 'XOpenctiIncident')}
+            onClick={handleToggleStixDomainObjectType.bind(
+              this,
+              'XOpenctiIncident',
+            )}
             classes={{ root: classes.item }}
           >
             <Checkbox

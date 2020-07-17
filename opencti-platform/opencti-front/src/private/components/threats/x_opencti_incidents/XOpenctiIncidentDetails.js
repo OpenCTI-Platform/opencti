@@ -32,7 +32,10 @@ class XOpenctiIncidentDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixDomainObjectLabels labels={xOpenctiIncident.labels} id={xOpenctiIncident.id} />
+          <StixDomainObjectLabels
+            labels={xOpenctiIncident.labels}
+            id={xOpenctiIncident.id}
+          />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -78,32 +81,34 @@ XOpenctiIncidentDetailsComponent.propTypes = {
   fld: PropTypes.func,
 };
 
-const XOpenctiXOpenctiIncidentDetails = createFragmentContainer(XOpenctiIncidentDetailsComponent, {
-  xOpenctiIncident: graphql`
-    fragment XOpenctiIncidentDetails_xOpenctiIncident on XOpenctiIncident {
-      id
-      first_seen
-      last_seen
-      objective
-      creator {
+const XOpenctiXOpenctiIncidentDetails = createFragmentContainer(
+  XOpenctiIncidentDetailsComponent,
+  {
+    xOpenctiIncident: graphql`
+      fragment XOpenctiIncidentDetails_xOpenctiIncident on XOpenctiIncident {
         id
-        name
-      }
-      labels {
-        edges {
-          node {
-            id
-            label_type
-            value
-            color
-          }
-          relation {
-            id
+        first_seen
+        last_seen
+        objective
+        creator {
+          id
+          name
+        }
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
+            }
           }
         }
       }
-    }
-  `,
-});
+    `,
+  },
+);
 
-export default compose(inject18n, withStyles(styles))(XOpenctiXOpenctiIncidentDetails);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(XOpenctiXOpenctiIncidentDetails);

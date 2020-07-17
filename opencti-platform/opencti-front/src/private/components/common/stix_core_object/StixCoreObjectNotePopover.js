@@ -207,4 +207,7 @@ StixCoreObjectNotePopover.propTypes = {
   onUpdate: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(StixCoreObjectNotePopover);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixCoreObjectNotePopover);

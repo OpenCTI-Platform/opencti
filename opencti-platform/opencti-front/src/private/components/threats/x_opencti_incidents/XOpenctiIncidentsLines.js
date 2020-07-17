@@ -4,7 +4,10 @@ import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { XOpenctiXOpenctiIncidentLine, XOpenctiIncidentLineDummy } from './XOpenctiXOpenctiIncidentLine';
+import {
+  XOpenctiXOpenctiIncidentLine,
+  XOpenctiIncidentLineDummy,
+} from './XOpenctiXOpenctiIncidentLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 50;

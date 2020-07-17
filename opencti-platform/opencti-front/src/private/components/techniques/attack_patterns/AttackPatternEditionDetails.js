@@ -189,9 +189,9 @@ const AttackPatternEditionDetails = createFragmentContainer(
     attackPattern: graphql`
       fragment AttackPatternEditionDetails_attackPattern on AttackPattern {
         id
-        external_id
-        platform
-        required_permission
+        x_mitre_platforms
+        x_mitre_permissions_required
+        x_mitre_id
       }
     `,
   },

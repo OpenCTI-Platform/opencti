@@ -35,7 +35,7 @@ class IndicatorDetailsComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Indicator pattern')}
           </Typography>
-          <pre>{indicator.indicator_pattern}</pre>
+          <pre>{indicator.pattern}</pre>
           <div style={{ marginTop: 20 }}>
             <StixDomainObjectLabels
               labels={indicator.labels}
@@ -91,7 +91,7 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
   indicator: graphql`
     fragment IndicatorDetails_indicator on Indicator {
       id
-      indicator_pattern
+      pattern
       valid_from
       valid_until
       score

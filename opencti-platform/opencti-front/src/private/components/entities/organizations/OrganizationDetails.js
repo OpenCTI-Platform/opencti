@@ -127,7 +127,6 @@ const OrganizationDetails = createFragmentContainer(
               value
               color
             }
-
           }
         }
       }

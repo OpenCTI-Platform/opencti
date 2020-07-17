@@ -149,7 +149,6 @@ const ThreatActorCardFragment = createFragmentContainer(
               value
               color
             }
-
           }
         }
         objectMarking {

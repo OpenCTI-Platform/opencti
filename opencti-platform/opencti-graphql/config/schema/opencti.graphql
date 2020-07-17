@@ -3759,6 +3759,9 @@ type XOpenctiIncident implements BasicObject & StixObject & StixCoreObject & Sti
   created: DateTime!
   modified: DateTime!
   # XOpenctiIncident
+  name: String
+  description: String
+  aliases: [String]
   first_seen: DateTime
   last_seen: DateTime
   objective: String

@@ -68,13 +68,15 @@ class TopMenuXOpenctiIncident extends Component {
           component={Link}
           to={`/dashboard/threats/xOpenctiIncidents/${xOpenctiIncidentId}`}
           variant={
-            location.pathname === `/dashboard/threats/xOpenctiIncidents/${xOpenctiIncidentId}`
+            location.pathname
+            === `/dashboard/threats/xOpenctiIncidents/${xOpenctiIncidentId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/threats/xOpenctiIncidents/${xOpenctiIncidentId}`
+            location.pathname
+            === `/dashboard/threats/xOpenctiIncidents/${xOpenctiIncidentId}`
               ? 'primary'
               : 'inherit'
           }

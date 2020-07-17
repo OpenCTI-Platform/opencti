@@ -101,13 +101,17 @@ class TopMenuThreats extends Component {
           component={Link}
           to="/dashboard/threats/xOpenctiIncidents"
           variant={
-            location.pathname.includes('/dashboard/threats/x_opencti_xOpenctiIncidents')
+            location.pathname.includes(
+              '/dashboard/threats/x_opencti_xOpenctiIncidents',
+            )
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/dashboard/threats/x_opencti_xOpenctiIncidents')
+            location.pathname.includes(
+              '/dashboard/threats/x_opencti_xOpenctiIncidents',
+            )
               ? 'primary'
               : 'inherit'
           }

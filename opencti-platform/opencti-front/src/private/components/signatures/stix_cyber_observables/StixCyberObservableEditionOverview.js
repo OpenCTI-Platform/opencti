@@ -366,7 +366,6 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
               definition
               definition_type
             }
-
           }
         }
       }

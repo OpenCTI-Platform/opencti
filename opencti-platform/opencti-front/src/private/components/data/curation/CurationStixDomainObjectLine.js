@@ -171,7 +171,6 @@ const CurationStixDomainObjectLineFragment = createFragmentContainer(
               value
               color
             }
-
           }
         }
       }

@@ -305,7 +305,13 @@ class StixDomainObjectEditionContainer extends Component {
       assoc('aliases', join(',', stixDomainObject.aliases)),
       assoc('createdBy', createdBy),
       assoc('markingDefinitions', markingDefinitions),
-      pick(['name', 'aliases', 'description', 'createdBy', 'markingDefinitions']),
+      pick([
+        'name',
+        'aliases',
+        'description',
+        'createdBy',
+        'markingDefinitions',
+      ]),
     )(stixDomainObject);
     return (
       <div>
@@ -444,7 +450,6 @@ const StixDomainObjectEditionFragment = createFragmentContainer(
               definition
               definition_type
             }
-
           }
         }
         editContext {

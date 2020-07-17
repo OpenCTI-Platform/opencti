@@ -234,4 +234,7 @@ const StixCoreObjectHistoryLine = createFragmentContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(StixCoreObjectHistoryLine);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixCoreObjectHistoryLine);

@@ -24,7 +24,12 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { distributionRelations, loadById, timeSeriesRelations, REL_CONNECTED_SUFFIX } from '../database/grakn';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { convertDataToStix } from '../database/stix';
-import { RELATION_CREATED_BY, RELATION_KILL_CHAIN_PHASE, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from "../utils/idGenerator";
+import {
+  RELATION_CREATED_BY,
+  RELATION_KILL_CHAIN_PHASE,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING,
+} from '../utils/idGenerator';
 import { creator } from '../domain/log';
 
 const stixCoreRelationshipResolvers = {

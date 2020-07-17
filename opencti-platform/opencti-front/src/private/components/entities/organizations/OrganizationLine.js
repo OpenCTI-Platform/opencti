@@ -129,14 +129,13 @@ const OrganizationLineFragment = createFragmentContainer(
         name
         created
         modified
-        labels {
+        objectLabel {
           edges {
             node {
               id
               value
               color
             }
-
           }
         }
       }

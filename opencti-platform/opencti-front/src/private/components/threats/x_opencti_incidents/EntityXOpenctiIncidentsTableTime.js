@@ -122,7 +122,9 @@ class EntityXOpenctiXOpenctiIncidentsTableTime extends Component {
             && props.xOpenctiIncidentsTimeSeries
             && props.xOpenctiIncidentsTimeSeries.length > 0
           ) {
-            const xOpenctiIncidentsTimeSeries = reverse(props.xOpenctiIncidentsTimeSeries);
+            const xOpenctiIncidentsTimeSeries = reverse(
+              props.xOpenctiIncidentsTimeSeries,
+            );
             return (
               <Table className={classes.table}>
                 <TableHead>
@@ -297,4 +299,7 @@ EntityXOpenctiXOpenctiIncidentsTableTime.propTypes = {
   relationType: PropTypes.string,
 };
 
-export default compose(inject18n, withStyles(styles))(EntityXOpenctiXOpenctiIncidentsTableTime);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(EntityXOpenctiXOpenctiIncidentsTableTime);

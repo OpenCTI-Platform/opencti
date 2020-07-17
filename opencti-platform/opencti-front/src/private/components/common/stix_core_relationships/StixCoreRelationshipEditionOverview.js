@@ -631,7 +631,6 @@ const StixCoreRelationshipEditionFragment = createFragmentContainer(
               phase_name
               phase_order
             }
-
           }
         }
         markingDefinitions {
@@ -641,7 +640,6 @@ const StixCoreRelationshipEditionFragment = createFragmentContainer(
               definition
               definition_type
             }
-
           }
         }
         editContext {

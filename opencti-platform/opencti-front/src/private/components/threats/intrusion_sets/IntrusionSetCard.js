@@ -149,7 +149,6 @@ const IntrusionSetCardFragment = createFragmentContainer(
               value
               color
             }
-
           }
         }
         objectMarking {

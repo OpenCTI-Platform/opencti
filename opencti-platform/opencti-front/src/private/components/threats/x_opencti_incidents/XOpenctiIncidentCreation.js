@@ -154,7 +154,9 @@ class XOpenctiXOpenctiIncidentCreation extends Component {
             >
               <Close fontSize="small" />
             </IconButton>
-            <Typography variant="h6">{t('Create an xOpenctiIncident')}</Typography>
+            <Typography variant="h6">
+              {t('Create an xOpenctiIncident')}
+            </Typography>
           </div>
           <div className={classes.container}>
             <Formik

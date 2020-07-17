@@ -106,7 +106,7 @@ const indicatorMutationRelationDelete = graphql`
 
 const indicatorValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  indicator_pattern: Yup.string().required(t('This field is required')),
+  pattern: Yup.string().required(t('This field is required')),
   valid_from: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
@@ -254,7 +254,7 @@ class IndicatorEditionOverviewComponent extends Component {
       assoc('markingDefinitions', markingDefinitions),
       pick([
         'name',
-        'indicator_pattern',
+        'pattern',
         'description',
         'valid_from',
         'valid_until',
@@ -287,7 +287,7 @@ class IndicatorEditionOverviewComponent extends Component {
             />
             <Field
               component={TextField}
-              name="indicator_pattern"
+              name="pattern"
               label={t('Indicator pattern')}
               fullWidth={true}
               multiline={true}
@@ -296,10 +296,7 @@ class IndicatorEditionOverviewComponent extends Component {
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
               helperText={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="indicator_pattern"
-                />
+                <SubscriptionFocus context={context} fieldName="pattern" />
               }
             />
             <Field
@@ -407,7 +404,7 @@ const IndicatorEditionOverview = createFragmentContainer(
       fragment IndicatorEditionOverview_indicator on Indicator {
         id
         name
-        indicator_pattern
+        pattern
         valid_from
         valid_until
         score
@@ -429,7 +426,6 @@ const IndicatorEditionOverview = createFragmentContainer(
               definition
               definition_type
             }
-
           }
         }
       }

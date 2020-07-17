@@ -125,7 +125,6 @@ const CourseOfActionLineFragment = createFragmentContainer(
               value
               color
             }
-
           }
         }
       }

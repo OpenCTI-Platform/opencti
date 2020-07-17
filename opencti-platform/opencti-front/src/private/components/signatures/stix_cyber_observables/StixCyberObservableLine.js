@@ -151,7 +151,6 @@ const StixCyberObservableLineFragment = createFragmentContainer(
               value
               color
             }
-
           }
         }
       }

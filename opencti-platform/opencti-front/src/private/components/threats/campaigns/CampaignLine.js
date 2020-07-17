@@ -117,24 +117,20 @@ const CampaignLineFragment = createFragmentContainer(CampaignLineComponent, {
       name
       created
       modified
-      labels {
-        edges {
-          node {
-            id
-            label_type
-            value
-            color
-          }
-          relation {
-            id
-          }
-        }
-      }
       objectMarking {
         edges {
           node {
             id
             definition
+          }
+        }
+      }
+      objectLabel {
+        edges {
+          node {
+            id
+            value
+            color
           }
         }
       }

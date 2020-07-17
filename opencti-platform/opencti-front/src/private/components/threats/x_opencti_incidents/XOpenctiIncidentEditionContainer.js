@@ -93,7 +93,10 @@ class XOpenctiXOpenctiIncidentEditionContainer extends Component {
             />
           )}
           {this.state.currentTab === 1 && (
-            <XOpenctiIncidentEditionDetails xOpenctiIncident={xOpenctiIncident} context={editContext} />
+            <XOpenctiIncidentEditionDetails
+              xOpenctiIncident={xOpenctiIncident}
+              context={editContext}
+            />
           )}
         </div>
       </div>

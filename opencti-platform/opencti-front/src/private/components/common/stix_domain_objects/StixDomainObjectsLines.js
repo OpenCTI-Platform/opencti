@@ -290,7 +290,6 @@ const StixDomainObjectsLines = createPaginationContainer(
                       value
                       color
                     }
-        
                   }
                 }
               }

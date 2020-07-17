@@ -99,31 +99,37 @@ XOpenctiIncidentOverviewComponent.propTypes = {
   fldt: PropTypes.func,
 };
 
-const XOpenctiXOpenctiIncidentOverview = createFragmentContainer(XOpenctiIncidentOverviewComponent, {
-  xOpenctiIncident: graphql`
-    fragment XOpenctiIncidentOverview_xOpenctiIncident on XOpenctiIncident {
-      id
-      name
-      description
-      created
-      modified
-      objectMarking {
-        edges {
+const XOpenctiXOpenctiIncidentOverview = createFragmentContainer(
+  XOpenctiIncidentOverviewComponent,
+  {
+    xOpenctiIncident: graphql`
+      fragment XOpenctiIncidentOverview_xOpenctiIncident on XOpenctiIncident {
+        id
+        name
+        description
+        created
+        modified
+        objectMarking {
+          edges {
+            node {
+              id
+              definition
+            }
+          }
+        }
+        createdBy {
           node {
             id
-            definition
+            name
+            entity_type
           }
         }
       }
-      createdBy {
-        node {
-          id
-          name
-          entity_type
-        }
-      }
-    }
-  `,
-});
+    `,
+  },
+);
 
-export default compose(inject18n, withStyles(styles))(XOpenctiXOpenctiIncidentOverview);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(XOpenctiXOpenctiIncidentOverview);

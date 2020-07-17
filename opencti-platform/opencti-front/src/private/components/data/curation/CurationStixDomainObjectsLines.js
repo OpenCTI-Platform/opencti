@@ -149,13 +149,13 @@ export default createPaginationContainer(
                 }
               }
               objectMarking {
-          edges {
-            node {
-              id
-              definition
-            }
-          }
-        }
+                edges {
+                  node {
+                    id
+                    definition
+                  }
+                }
+              }
               ...CurationStixDomainObjectLine_node
             }
           }

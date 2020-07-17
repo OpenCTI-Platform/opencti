@@ -280,7 +280,7 @@ class StixDomainObjectKillChainLinesComponent extends Component {
                                 key={markingDefinition.node.id}
                                 variant="inList"
                                 label={markingDefinition.node.definition}
-                                color={markingDefinition.node.color}
+                                color={markingDefinition.node.x_opencti_color}
                               />
                             ))}
                             <ItemYears
@@ -394,7 +394,7 @@ const StixDomainObjectKillChainLines = createRefetchContainer(
                   node {
                     id
                     definition
-                    color
+                    x_opencti_color
                   }
                 }
               }

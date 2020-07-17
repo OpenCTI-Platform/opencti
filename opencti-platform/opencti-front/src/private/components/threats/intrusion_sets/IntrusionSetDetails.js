@@ -151,7 +151,6 @@ const IntrusionSetDetails = createFragmentContainer(
               value
               color
             }
-
           }
         }
       }

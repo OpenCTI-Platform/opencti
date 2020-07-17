@@ -87,7 +87,10 @@ class EntityIndicatorLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.labels.width }}
               >
-                <StixCoreObjectLabels variant="inList" labels={node.to.labels} />
+                <StixCoreObjectLabels
+                  variant="inList"
+                  labels={node.to.labels}
+                />
               </div>
               <div
                 className={classes.bodyItem}
@@ -165,13 +168,13 @@ const EntityIndicatorLineFragment = createFragmentContainer(
             score
             created
             objectMarking {
-          edges {
-            node {
-              id
-              definition
+              edges {
+                node {
+                  id
+                  definition
+                }
+              }
             }
-          }
-        }
             labels {
               edges {
                 node {
@@ -179,7 +182,6 @@ const EntityIndicatorLineFragment = createFragmentContainer(
                   value
                   color
                 }
-    
               }
             }
           }

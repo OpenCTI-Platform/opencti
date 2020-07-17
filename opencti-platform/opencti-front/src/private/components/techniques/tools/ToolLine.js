@@ -116,16 +116,12 @@ const ToolLineFragment = createFragmentContainer(ToolLineComponent, {
       name
       created
       modified
-      labels {
+      objectLabel {
         edges {
           node {
             id
-            label_type
             value
             color
-          }
-          relation {
-            id
           }
         }
       }

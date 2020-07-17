@@ -135,9 +135,9 @@ const AttackPatternDetails = createFragmentContainer(
     attackPattern: graphql`
       fragment AttackPatternDetails_attackPattern on AttackPattern {
         id
-        external_id
-        platform
-        required_permission
+        x_mitre_platforms
+        x_mitre_permissions_required
+        x_mitre_id
         creator {
           id
           name
@@ -149,10 +149,9 @@ const AttackPatternDetails = createFragmentContainer(
               value
               color
             }
-
           }
         }
-        killChainPhases {
+        killChainPhase {
           edges {
             node {
               id
