@@ -107,7 +107,7 @@ const CampaignOverview = createFragmentContainer(CampaignOverviewComponent, {
       description
       created
       modified
-      markingDefinitions {
+      objectMarking {
         edges {
           node {
             id

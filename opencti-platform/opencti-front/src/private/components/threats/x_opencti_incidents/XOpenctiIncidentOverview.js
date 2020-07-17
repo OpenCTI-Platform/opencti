@@ -107,7 +107,7 @@ const XOpenctiXOpenctiIncidentOverview = createFragmentContainer(XOpenctiInciden
       description
       created
       modified
-      markingDefinitions {
+      objectMarking {
         edges {
           node {
             id

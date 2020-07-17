@@ -123,7 +123,7 @@ const WorkspaceLineFragment = createFragmentContainer(WorkspaceLineComponent, {
         }
       }
       created_at
-      markingDefinitions {
+      objectMarking {
         edges {
           node {
             id

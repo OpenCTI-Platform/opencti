@@ -387,9 +387,7 @@ const StixCyberObservableRelationshipEditionFragment = createFragmentContainer(
               definition
               definition_type
             }
-            relation {
-              id
-            }
+
           }
         }
         editContext {

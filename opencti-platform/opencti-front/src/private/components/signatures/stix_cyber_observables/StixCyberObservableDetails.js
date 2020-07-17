@@ -74,13 +74,10 @@ const StixCyberObservableDetails = createFragmentContainer(
           edges {
             node {
               id
-              label_type
               value
               color
             }
-            relation {
-              id
-            }
+
           }
         }
       }

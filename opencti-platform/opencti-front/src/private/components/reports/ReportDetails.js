@@ -92,7 +92,6 @@ const ReportDetails = createFragmentContainer(ReportDetailsComponent, {
         edges {
           node {
             id
-            label_type
             value
             color
           }

@@ -572,9 +572,7 @@ const StixSightingRelationshipEditionFragment = createFragmentContainer(
               definition
               definition_type
             }
-            relation {
-              id
-            }
+
           }
         }
         editContext {

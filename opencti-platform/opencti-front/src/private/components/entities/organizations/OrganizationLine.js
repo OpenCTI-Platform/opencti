@@ -72,10 +72,10 @@ class OrganizationLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.organization_class.width }}
+                style={{ width: dataColumns.x_opencti_organization_type.width }}
               >
-                {node.organization_class
-                  ? t(`organization_${node.organization_class}`)
+                {node.x_opencti_organization_type
+                  ? t(`organization_${node.x_opencti_organization_type}`)
                   : ''}
               </div>
               <div
@@ -125,7 +125,7 @@ const OrganizationLineFragment = createFragmentContainer(
     node: graphql`
       fragment OrganizationLine_node on Organization {
         id
-        organization_class
+        x_opencti_organization_type
         name
         created
         modified
@@ -133,13 +133,10 @@ const OrganizationLineFragment = createFragmentContainer(
           edges {
             node {
               id
-              label_type
               value
               color
             }
-            relation {
-              id
-            }
+
           }
         }
       }
@@ -171,7 +168,7 @@ class OrganizationLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.organization_class.width }}
+                style={{ width: dataColumns.x_opencti_organization_type.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>

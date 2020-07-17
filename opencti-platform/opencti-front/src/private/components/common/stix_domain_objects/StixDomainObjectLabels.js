@@ -75,7 +75,6 @@ const stixDomainObjectMutationRelationsAdd = graphql`
           edges {
             node {
               id
-              label_type
               value
               color
             }
@@ -99,7 +98,6 @@ const stixDomainObjectMutationRelationDelete = graphql`
             edges {
               node {
                 id
-                label_type
                 value
                 color
               }

@@ -97,9 +97,7 @@ const RegionParentRegions = createFragmentContainer(
               name
               description
             }
-            relation {
-              id
-            }
+
           }
         }
       }

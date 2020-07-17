@@ -141,9 +141,7 @@ const AttackPatternCoursesOfAction = createFragmentContainer(
               name
               description
             }
-            relation {
-              id
-            }
+
           }
         }
       }

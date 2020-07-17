@@ -105,7 +105,7 @@ const ToolOverview = createFragmentContainer(ToolOverviewComponent, {
       description
       created
       modified
-      markingDefinitions {
+      objectMarking {
         edges {
           node {
             id

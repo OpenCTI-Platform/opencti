@@ -277,9 +277,7 @@ const EntityExternalReferencesLines = createPaginationContainer(
                 hash
                 external_id
               }
-              relation {
-                id
-              }
+  
             }
           }
         }

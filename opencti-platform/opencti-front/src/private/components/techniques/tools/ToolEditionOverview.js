@@ -398,9 +398,7 @@ const ToolEditionOverview = createFragmentContainer(
               phase_name
               phase_order
             }
-            relation {
-              id
-            }
+
           }
         }
         markingDefinitions {
@@ -410,9 +408,7 @@ const ToolEditionOverview = createFragmentContainer(
               definition
               definition_type
             }
-            relation {
-              id
-            }
+
           }
         }
       }

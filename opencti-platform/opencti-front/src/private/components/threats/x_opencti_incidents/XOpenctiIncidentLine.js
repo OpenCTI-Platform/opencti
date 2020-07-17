@@ -129,7 +129,7 @@ const XOpenctiIncidentLineFragment = createFragmentContainer(XOpenctiIncidentLin
           }
         }
       }
-      markingDefinitions {
+      objectMarking {
         edges {
           node {
             id

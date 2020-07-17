@@ -71,7 +71,7 @@ const IndicatorHeader = createFragmentContainer(IndicatorHeaderComponent, {
       id
       entity_type
       name
-      markingDefinitions {
+      objectMarking {
         edges {
           node {
             id

@@ -159,7 +159,7 @@ const Organization = createFragmentContainer(OrganizationComponent, {
   organization: graphql`
     fragment Organization_organization on Organization {
       id
-      organization_class
+      x_opencti_organization_type
       name
       aliases
       ...OrganizationOverview_organization

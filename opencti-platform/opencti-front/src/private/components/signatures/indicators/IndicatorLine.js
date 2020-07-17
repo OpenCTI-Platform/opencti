@@ -143,7 +143,7 @@ const IndicatorLineFragment = createFragmentContainer(IndicatorLineComponent, {
       valid_until
       score
       created
-      markingDefinitions {
+      objectMarking {
         edges {
           node {
             id
@@ -155,12 +155,8 @@ const IndicatorLineFragment = createFragmentContainer(IndicatorLineComponent, {
         edges {
           node {
             id
-            label_type
             value
             color
-          }
-          relation {
-            id
           }
         }
       }

@@ -91,7 +91,7 @@ class Organizations extends Component {
         width: '23%',
         isSortable: true,
       },
-      organization_class: {
+      x_opencti_organization_type: {
         label: 'Type',
         width: '15%',
         isSortable: true,

@@ -46,7 +46,7 @@ class OrganizationReportsComponent extends Component {
     const { withPadding } = this.state;
     const { classes, organization } = this.props;
     if (
-      contains(organization.organization_class, organizationTypesForAuthorMode)
+      contains(organization.x_opencti_organization_type, organizationTypesForAuthorMode)
     ) {
       return (
         <div
@@ -102,7 +102,7 @@ const OrganizationReports = createFragmentContainer(
     organization: graphql`
       fragment OrganizationReports_organization on Organization {
         id
-        organization_class
+        x_opencti_organization_type
         name
         aliases
       }

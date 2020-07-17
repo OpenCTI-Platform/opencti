@@ -153,7 +153,7 @@ const XOpenctiIncidentCardFragment = createFragmentContainer(XOpenctiIncidentCar
           }
         }
       }
-      markingDefinitions {
+      objectMarking {
         edges {
           node {
             id

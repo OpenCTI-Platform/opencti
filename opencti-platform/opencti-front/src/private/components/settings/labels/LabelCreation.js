@@ -85,7 +85,6 @@ const labelContextualMutation = graphql`
 `;
 
 const labelValidation = (t) => Yup.object().shape({
-  label_type: Yup.string().required(t('This field is required')),
   value: Yup.string().required(t('This field is required')),
   color: Yup.string().required(t('This field is required')),
 });
@@ -186,7 +185,6 @@ class LabelCreation extends Component {
           <div className={classes.container}>
             <Formik
               initialValues={{
-                label_type: '',
                 value: '',
                 color: '',
               }}
@@ -198,16 +196,9 @@ class LabelCreation extends Component {
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
                     component={TextField}
-                    name="label_type"
-                    label={t('Type')}
-                    fullWidth={true}
-                  />
-                  <Field
-                    component={TextField}
                     name="value"
                     label={t('Value')}
                     fullWidth={true}
-                    style={{ marginTop: 20 }}
                   />
                   <Field
                     component={ColorPickerField}
@@ -253,7 +244,6 @@ class LabelCreation extends Component {
         <Formik
           enableReinitialize={true}
           initialValues={{
-            label_type: '',
             value: inputValue,
             color: '',
           }}
@@ -272,16 +262,9 @@ class LabelCreation extends Component {
                 <DialogContent classes={{ root: classes.dialog }}>
                   <Field
                     component={TextField}
-                    name="label_type"
-                    label={t('Type')}
-                    fullWidth={true}
-                  />
-                  <Field
-                    component={TextField}
                     name="value"
                     label={t('Value')}
                     fullWidth={true}
-                    style={{ marginTop: 20 }}
                   />
                   <Field
                     component={ColorPickerField}

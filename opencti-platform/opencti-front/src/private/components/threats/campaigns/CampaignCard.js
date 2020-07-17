@@ -153,7 +153,7 @@ const CampaignCardFragment = createFragmentContainer(CampaignCardComponent, {
           }
         }
       }
-      markingDefinitions {
+      objectMarking {
         edges {
           node {
             id

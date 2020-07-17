@@ -81,7 +81,7 @@ const WorkspaceHeader = createFragmentContainer(WorkspaceHeaderComponent, {
       id
       workspace_type
       name
-      markingDefinitions {
+      objectMarking {
         edges {
           node {
             id

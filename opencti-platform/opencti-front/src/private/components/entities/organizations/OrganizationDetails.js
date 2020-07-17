@@ -67,8 +67,8 @@ class OrganizationDetailsComponent extends Component {
           <Chip
             classes={{ root: classes.chip }}
             label={t(
-              organization.organization_class
-                ? `organization_${organization.organization_class}`
+              organization.x_opencti_organization_type
+                ? `organization_${organization.x_opencti_organization_type}`
                 : 'organization_other',
             )}
           />
@@ -114,7 +114,7 @@ const OrganizationDetails = createFragmentContainer(
       fragment OrganizationDetails_organization on Organization {
         id
         reliability
-        organization_class
+        x_opencti_organization_type
         contact_information
         creator {
           id
@@ -124,13 +124,10 @@ const OrganizationDetails = createFragmentContainer(
           edges {
             node {
               id
-              label_type
               value
               color
             }
-            relation {
-              id
-            }
+
           }
         }
       }

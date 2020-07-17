@@ -130,7 +130,7 @@ const CampaignLineFragment = createFragmentContainer(CampaignLineComponent, {
           }
         }
       }
-      markingDefinitions {
+      objectMarking {
         edges {
           node {
             id

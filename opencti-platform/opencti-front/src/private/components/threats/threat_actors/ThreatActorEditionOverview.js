@@ -359,9 +359,7 @@ const ThreatActorEditionOverview = createFragmentContainer(
               definition
               definition_type
             }
-            relation {
-              id
-            }
+
           }
         }
       }

@@ -111,7 +111,7 @@ const organizationValidation = (t) => Yup.object().shape({
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
   contact_information: Yup.string(),
-  organization_class: Yup.string().required(t('This field is required')),
+  x_opencti_organization_type: Yup.string().required(t('This field is required')),
   reliability: Yup.string().required(t('This field is required')),
 });
 
@@ -257,7 +257,7 @@ class OrganizationEditionOverviewComponent extends Component {
         'name',
         'description',
         'contact_information',
-        'organization_class',
+        'x_opencti_organization_type',
         'reliability',
         'createdBy',
         'markingDefinitions',
@@ -316,20 +316,20 @@ class OrganizationEditionOverviewComponent extends Component {
             />
             <Field
               component={SelectField}
-              name="organization_class"
+              name="x_opencti_organization_type"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
               label={t('Organization type')}
               fullWidth={true}
               inputProps={{
-                name: 'organization_class',
-                id: 'organization_class',
+                name: 'x_opencti_organization_type',
+                id: 'x_opencti_organization_type',
               }}
               containerstyle={{ marginTop: 20, width: '100%' }}
               helpertext={
                 <SubscriptionFocus
                   context={context}
-                  fieldName="organization_class"
+                  fieldName="x_opencti_organization_type"
                 />
               }
             >
@@ -406,7 +406,7 @@ const OrganizationEditionOverview = createFragmentContainer(
         name
         description
         contact_information
-        organization_class
+        x_opencti_organization_type
         reliability
         createdBy {
           node {
@@ -425,9 +425,7 @@ const OrganizationEditionOverview = createFragmentContainer(
               definition
               definition_type
             }
-            relation {
-              id
-            }
+
           }
         }
       }

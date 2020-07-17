@@ -56,12 +56,6 @@ class LabelLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.label_type.width }}
-              >
-                {node.label_type}
-              </div>
-              <div
-                className={classes.bodyItem}
                 style={{ width: dataColumns.value.width }}
               >
                 {node.value}
@@ -105,7 +99,6 @@ const LabelLineFragment = createFragmentContainer(LabelLineComponent, {
   node: graphql`
     fragment LabelLine_node on Label {
       id
-      label_type
       value
       color
       created_at
@@ -129,12 +122,6 @@ class LabelLineDummyComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.label_type.width }}
-              >
-                <div className="fakeItem" style={{ width: '80%' }} />
-              </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.value.width }}

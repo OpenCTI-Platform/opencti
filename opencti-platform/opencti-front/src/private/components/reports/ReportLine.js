@@ -168,7 +168,6 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
         edges {
           node {
             id
-            label_type
             value
             color
           }

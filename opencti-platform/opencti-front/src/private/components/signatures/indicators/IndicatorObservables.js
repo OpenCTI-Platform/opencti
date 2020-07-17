@@ -262,9 +262,7 @@ const IndicatorObservables = createFragmentContainer(
               created_at
               updated_at
             }
-            relation {
-              id
-            }
+
           }
         }
         ...IndicatorHeader_indicator

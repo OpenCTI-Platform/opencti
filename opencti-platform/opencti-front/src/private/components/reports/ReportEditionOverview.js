@@ -481,9 +481,7 @@ const ReportEditionOverview = createFragmentContainer(
               definition
               definition_type
             }
-            relation {
-              id
-            }
+
           }
         }
       }

@@ -86,7 +86,6 @@ const IndividualDetails = createFragmentContainer(IndividualDetailsComponent, {
         edges {
           node {
             id
-            label_type
             value
             color
           }

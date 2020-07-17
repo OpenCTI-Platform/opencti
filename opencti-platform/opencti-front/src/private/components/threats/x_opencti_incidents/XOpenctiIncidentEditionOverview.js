@@ -355,9 +355,7 @@ const XOpenctiXOpenctiIncidentEditionOverview = createFragmentContainer(
               definition
               definition_type
             }
-            relation {
-              id
-            }
+
           }
         }
       }

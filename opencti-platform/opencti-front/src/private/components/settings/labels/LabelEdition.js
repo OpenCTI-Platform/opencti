@@ -80,8 +80,6 @@ const labelEditionFocus = graphql`
 `;
 
 const labelValidation = (t) => Yup.object().shape({
-  label_type: Yup.string().required(t('This field is required')),
-  definition: Yup.string().required(t('This field is required')),
   value: Yup.string().required(t('This field is required')),
   color: Yup.string().required(t('This field is required')),
 });
@@ -131,7 +129,7 @@ class LabelEditionContainer extends Component {
       t, classes, handleClose, label,
     } = this.props;
     const { editContext } = label;
-    const initialValues = pick(['label_type', 'value', 'color'], label);
+    const initialValues = pick(['value', 'color'], label);
     return (
       <div>
         <div className={classes.header}>
@@ -158,24 +156,9 @@ class LabelEditionContainer extends Component {
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
-                  name="label_type"
-                  label={t('Type')}
-                  fullWidth={true}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="label_type"
-                    />
-                  }
-                />
-                <Field
-                  component={TextField}
                   name="value"
                   label={t('Value')}
                   fullWidth={true}
-                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
@@ -221,7 +204,6 @@ const LabelEditionFragment = createFragmentContainer(LabelEditionContainer, {
   label: graphql`
     fragment LabelEdition_label on Label {
       id
-      label_type
       value
       color
       editContext {

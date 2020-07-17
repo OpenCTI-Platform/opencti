@@ -80,7 +80,7 @@ const ReportHeader = createFragmentContainer(ReportHeaderComponent, {
     fragment ReportHeader_report on Report {
       id
       name
-      markingDefinitions {
+      objectMarking {
         edges {
           node {
             id

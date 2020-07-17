@@ -153,13 +153,10 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
               edges {
                 node {
                   id
-                  label_type
                   value
                   color
                 }
-                relation {
-                  id
-                }
+    
               }
             }
           }
@@ -175,24 +172,21 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
               }
             }
             objectMarking {
-          edges {
-            node {
-              id
-              definition
+              edges {
+                node {
+                  id
+                  definition
+                }
+              }
             }
-          }
-        }
             labels {
               edges {
                 node {
                   id
-                  label_type
                   value
                   color
                 }
-                relation {
-                  id
-                }
+    
               }
             }
           }
@@ -202,24 +196,21 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
             parent_types
             observable_value
             objectMarking {
-          edges {
-            node {
-              id
-              definition
+              edges {
+                node {
+                  id
+                  definition
+                }
+              }
             }
-          }
-        }
             labels {
               edges {
                 node {
                   id
-                  label_type
                   value
                   color
                 }
-                relation {
-                  id
-                }
+    
               }
             }
           }
@@ -234,24 +225,21 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
             score
             created
             objectMarking {
-          edges {
-            node {
-              id
-              definition
+              edges {
+                node {
+                  id
+                  definition
+                }
+              }
             }
-          }
-        }
             labels {
               edges {
                 node {
                   id
-                  label_type
                   value
                   color
                 }
-                relation {
-                  id
-                }
+    
               }
             }
           }

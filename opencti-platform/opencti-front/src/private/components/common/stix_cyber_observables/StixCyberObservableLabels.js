@@ -75,7 +75,6 @@ const StixCyberObservableMutationRelationsAdd = graphql`
           edges {
             node {
               id
-              label_type
               value
               color
             }
@@ -99,7 +98,6 @@ const StixCyberObservableMutationRelationDelete = graphql`
             edges {
               node {
                 id
-                label_type
                 value
                 color
               }

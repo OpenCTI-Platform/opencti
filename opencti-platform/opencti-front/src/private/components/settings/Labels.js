@@ -28,7 +28,6 @@ export const labelsSearchQuery = graphql`
       edges {
         node {
           id
-          label_type
           value
           color
         }
@@ -73,14 +72,9 @@ class Labels extends Component {
   renderLines(paginationOptions) {
     const { sortBy, orderAsc, searchTerm } = this.state;
     const dataColumns = {
-      label_type: {
-        label: 'Type',
-        width: '25%',
-        isSortable: true,
-      },
       value: {
         label: 'Value',
-        width: '25%',
+        width: '50%',
         isSortable: true,
       },
       color: {
