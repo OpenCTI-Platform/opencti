@@ -715,6 +715,11 @@ class OpenCTIApiClient:
                     "country": {"from_role": "localized", "to_role": "location"},
                     "city": {"from_role": "localized", "to_role": "location"},
                 },
+                "user": {
+                    "region": {"from_role": "localized", "to_role": "location"},
+                    "country": {"from_role": "localized", "to_role": "location"},
+                    "city": {"from_role": "localized", "to_role": "location"},
+                },
             },
             "indicates": {
                 "indicator": {
