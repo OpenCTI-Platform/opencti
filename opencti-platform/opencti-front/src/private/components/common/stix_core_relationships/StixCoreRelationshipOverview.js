@@ -19,7 +19,7 @@ import { resolveLink } from '../../../../utils/Entity';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import ItemConfidenceLevel from '../../../../components/ItemConfidenceLevel';
+import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipEdition, {
   stixCoreRelationshipEditionDeleteMutation,
 } from './StixCoreRelationshipEdition';
@@ -383,7 +383,7 @@ class StixCoreRelationshipContainer extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Confidence level')}
               </Typography>
-              <ItemConfidenceLevel
+              <ItemConfidence
                 level={
                   stixCoreRelationship.inferred
                     ? 99

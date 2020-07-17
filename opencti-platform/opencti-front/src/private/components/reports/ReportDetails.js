@@ -8,7 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../components/i18n';
 import ItemStatus from '../../../components/ItemStatus';
-import ItemConfidenceLevel from '../../../components/ItemConfidenceLevel';
+import ItemConfidence from '../../../components/ItemConfidence';
 import StixDomainObjectLabels from '../common/stix_domain_objects/StixDomainObjectLabels';
 import ItemCreator from '../../../components/ItemCreator';
 
@@ -64,7 +64,7 @@ class ReportDetailsComponent extends Component {
           >
             {t('Confidence level')}
           </Typography>
-          <ItemConfidenceLevel level={report.source_confidence_level} />
+          <ItemConfidence level={report.confidence} />
         </Paper>
       </div>
     );
@@ -83,7 +83,7 @@ const ReportDetails = createFragmentContainer(ReportDetailsComponent, {
     fragment ReportDetails_report on Report {
       id
       object_status
-      source_confidence_level
+      confidence
       creator {
         id
         name

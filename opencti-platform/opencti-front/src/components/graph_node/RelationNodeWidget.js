@@ -72,11 +72,11 @@ class RelationNodeWidget extends Component {
     return (
       <Tooltip
         title={
-          extras.first_seen ? (
+          extras.start_time ? (
             <span>
-              {t('First obs.')} {nsd(extras.first_seen)}
+              {t('First obs.')} {nsd(extras.start_time)}
               <br />
-              {t('Last obs.')} {nsd(extras.last_seen)}
+              {t('Last obs.')} {nsd(extras.stop_time)}
             </span>
           ) : (
             ''

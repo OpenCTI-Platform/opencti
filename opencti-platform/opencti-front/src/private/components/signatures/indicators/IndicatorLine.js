@@ -137,7 +137,7 @@ const IndicatorLineFragment = createFragmentContainer(IndicatorLineComponent, {
     fragment IndicatorLine_node on Indicator {
       id
       name
-      main_observable_type
+      x_opencti_main_observable_type
       pattern_type
       valid_from
       valid_until

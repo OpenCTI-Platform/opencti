@@ -160,7 +160,7 @@ const EntityIndicatorLineFragment = createFragmentContainer(
           ... on Indicator {
             id
             name
-            main_observable_type
+            x_opencti_main_observable_type
             pattern_type
             description
             valid_from

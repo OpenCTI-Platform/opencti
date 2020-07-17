@@ -175,10 +175,10 @@ const stixCoreRelationshipValidation = (t) => Yup.object().shape({
     .typeError(t('The value must be a number'))
     .integer(t('The value must be a number'))
     .required(t('This field is required')),
-  first_seen: Yup.date()
+  start_time: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  last_seen: Yup.date()
+  stop_time: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
   description: Yup.string(),
@@ -200,8 +200,8 @@ class StixCoreRelationshipCreation extends Component {
       assoc('fromRole', roles.fromRole),
       assoc('toId', this.props.to.id),
       assoc('toRole', roles.toRole),
-      assoc('first_seen', parse(values.first_seen).format()),
-      assoc('last_seen', parse(values.last_seen).format()),
+      assoc('start_time', parse(values.start_time).format()),
+      assoc('stop_time', parse(values.stop_time).format()),
       assoc('createdBy', values.createdBy.value),
       assoc('killChainPhases', pluck('value', values.killChainPhases)),
       assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
@@ -278,14 +278,14 @@ class StixCoreRelationshipCreation extends Component {
         ? 'related-to'
         : '';
     const defaultWeight = weight || 3;
-    const defaultFirstSeen = firstSeen || null;
-    const defaultLastSeen = lastSeen || null;
+    const defaultStartTime = firstSeen || null;
+    const defaultEndTime = lastSeen || null;
     const initialValues = {
       relationship_type: defaultRelationshipType,
       weight: defaultWeight,
       role_played: '',
-      first_seen: defaultFirstSeen,
-      last_seen: defaultLastSeen,
+      start_time: defaultStartTime,
+      stop_time: defaultEndTime,
       description: '',
       killChainPhases: [],
       createdBy: defaultCreatedBy
@@ -553,9 +553,9 @@ class StixCoreRelationshipCreation extends Component {
                   >
                     {t(`relation_${relation.node.relationship_type}`)}
                     <br />
-                    {t('First obs.')} {nsd(relation.node.first_seen)}
+                    {t('First obs.')} {nsd(relation.node.start_time)}
                     <br />
-                    {t('Last obs.')} {nsd(relation.node.last_seen)}
+                    {t('Last obs.')} {nsd(relation.node.stop_time)}
                   </div>
                 </Tooltip>
               </div>

@@ -825,7 +825,7 @@ class ReportKnowledgeGraphComponent extends Component {
           to={createRelationTo}
           firstSeen={lastLinkFirstSeen || dateFormat(report.published)}
           lastSeen={lastLinkLastSeen || dateFormat(report.published)}
-          weight={report.source_confidence_level}
+          weight={report.confidence}
           handleClose={this.handleCloseRelationCreation.bind(this)}
           handleResult={this.handleResultRelationCreation.bind(this)}
           defaultCreatedBy={pathOr(null, ['createdBy', 'node'], report)}
@@ -866,7 +866,7 @@ const ReportKnowledgeGraph = createFragmentContainer(
         name
         graph_data
         published
-        source_confidence_level
+        confidence
         createdBy {
           ... on Organization {
             id

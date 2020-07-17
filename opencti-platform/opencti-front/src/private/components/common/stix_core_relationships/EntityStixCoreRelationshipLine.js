@@ -12,7 +12,7 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVertOutlined, HelpOutlined } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import ItemConfidenceLevel from '../../../../components/ItemConfidenceLevel';
+import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 
 const styles = (theme) => ({
@@ -81,9 +81,9 @@ class EntityStixCoreRelationshipLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.first_seen.width }}
+                style={{ width: dataColumns.start_time.width }}
               >
-                {node.inferred ? '-' : nsd(node.first_seen)}
+                {node.inferred ? '-' : nsd(node.stop_time)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -95,7 +95,7 @@ class EntityStixCoreRelationshipLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.weight.width }}
               >
-                <ItemConfidenceLevel
+                <ItemConfidence
                   level={node.inferred ? 99 : node.weight}
                   variant="inList"
                 />
@@ -214,7 +214,7 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
           ... on Indicator {
             id
             name
-            main_observable_type
+            x_opencti_main_observable_type
             pattern_type
             description
             valid_from
@@ -284,13 +284,13 @@ class EntityStixCoreRelationshipLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.first_seen.width }}
+                style={{ width: dataColumns.start_time.width }}
               >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.last_seen.width }}
+                style={{ width: dataColumns.stop_time.width }}
               >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>

@@ -12,7 +12,7 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
 import { HexagonOutline } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
-import ItemConfidenceLevel from '../../../../components/ItemConfidenceLevel';
+import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 
 const styles = (theme) => ({
@@ -95,7 +95,7 @@ class EntityStixCyberObservableLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.weight.width }}
               >
-                <ItemConfidenceLevel
+                <ItemConfidence
                   level={node.inferred ? 99 : node.weight}
                   variant="inList"
                 />

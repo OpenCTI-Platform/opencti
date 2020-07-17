@@ -416,11 +416,8 @@ const OrganizationEditionOverview = createFragmentContainer(
             name
             entity_type
           }
-          relation {
-            id
-          }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id

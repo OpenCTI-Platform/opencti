@@ -69,7 +69,7 @@ class IntrusionSetComponent extends Component {
               entityId={intrusionSet.id}
               entityType="Indicator"
               relationType="indicates"
-              field="main_observable_type"
+              field="x_opencti_main_observable_type"
             />
           </Grid>
           <Grid item={true} xs={4}>

@@ -94,7 +94,7 @@ const indicatorValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   pattern: Yup.string().required(t('This field is required')),
   pattern_type: Yup.string().required(t('This field is required')),
-  main_observable_type: Yup.string().required(t('This field is required')),
+  x_opencti_main_observable_type: Yup.string().required(t('This field is required')),
   description: Yup.string(),
   detection: Yup.boolean(),
 });
@@ -197,7 +197,7 @@ class IndicatorCreation extends Component {
                 name: '',
                 pattern: '',
                 pattern_type: '',
-                main_observable_type: '',
+                x_opencti_main_observable_type: '',
                 valid_from: null,
                 valid_until: null,
                 description: '',
@@ -249,7 +249,7 @@ class IndicatorCreation extends Component {
                     detectDuplicate={['Indicator']}
                   />
                   <TypesField
-                    name="main_observable_type"
+                    name="x_opencti_main_observable_type"
                     label={t('Main observable type')}
                     containerstyle={{ marginTop: 20, width: '100%' }}
                   />

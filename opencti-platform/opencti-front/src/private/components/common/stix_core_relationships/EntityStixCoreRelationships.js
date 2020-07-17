@@ -102,12 +102,12 @@ class EntityStixCoreRelationships extends Component {
         width: '20%',
         isSortable: false,
       },
-      first_seen: {
+      start_time: {
         label: 'First obs.',
         width: '15%',
         isSortable: true,
       },
-      last_seen: {
+      last_time: {
         label: 'Last obs.',
         width: '15%',
         isSortable: true,

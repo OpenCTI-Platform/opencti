@@ -19,7 +19,7 @@ import StixCoreObjectHistory from '../../common/stix_core_object/StixCoreObjectH
 const subscription = graphql`
   subscription RootIndividualsSubscription($id: ID!) {
     stixDomainObject(id: $id) {
-      ... on User {
+      ... on Individual {
         ...Individual_individual
         ...IndividualEditionContainer_individual
       }

@@ -113,7 +113,7 @@ const reportValidation = (t) => Yup.object().shape({
   report_class: Yup.string().required(t('This field is required')),
   description: Yup.string(),
   object_status: Yup.number(),
-  source_confidence_level: Yup.number(),
+  confidence: Yup.number(),
 });
 
 class ReportEditionOverviewComponent extends Component {
@@ -256,7 +256,7 @@ class ReportEditionOverviewComponent extends Component {
         'createdBy',
         'markingDefinitions',
         'object_status',
-        'source_confidence_level',
+        'confidence',
       ]),
     )(report);
     return (
@@ -379,16 +379,16 @@ class ReportEditionOverviewComponent extends Component {
                         </Field>
                         <Field
                           component={SelectField}
-                          name="source_confidence_level"
+                          name="confidence"
                           onFocus={this.handleChangeFocus.bind(this)}
                           onChange={this.handleSubmitField.bind(this)}
-                          label={t('Confidence level')}
+                          label={t('Confidence')}
                           fullWidth={true}
                           containerstyle={{ width: '100%', marginTop: 20 }}
                           helpertext={
                             <SubscriptionFocus
                               context={context}
-                              fieldName="source_confidence_level"
+                              fieldName="confidence"
                             />
                           }
                         >
@@ -463,7 +463,7 @@ const ReportEditionOverview = createFragmentContainer(
         report_class
         published
         object_status
-        source_confidence_level
+        confidence
         createdBy {
           node {
             id

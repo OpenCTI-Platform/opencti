@@ -91,7 +91,6 @@ const StixCyberObservableOverview = createFragmentContainer(
     stixCyberObservable: graphql`
       fragment StixCyberObservableOverview_stixCyberObservable on StixCyberObservable {
         id
-        name
         entity_type
         description
         created_at

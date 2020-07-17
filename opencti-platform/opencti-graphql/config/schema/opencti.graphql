@@ -704,7 +704,7 @@ type LabelConnection {
 }
 type LabelEdge {
   cursor: String!
-  node: MarkingDefinition!
+  node: Label!
 }
 type Label implements BasicObject & StixObject & StixMetaObject {
   # BasicObject
@@ -4829,7 +4829,7 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
   inferred: Boolean
   # StixCyberObservableRelationship
   start_time: DateTime
-  end_time: DateTime
+  stop_time: DateTime
 }
 input StixCyberObservableRelationshipAddInput {
   stix_id: String

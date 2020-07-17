@@ -232,7 +232,7 @@ class Indicators extends Component {
     if (observableTypes.length > 0) {
       finalFilters = append(
         {
-          key: 'main_observable_type',
+          key: 'x_opencti_main_observable_type',
           values: observableTypes,
           operator: 'match',
         },

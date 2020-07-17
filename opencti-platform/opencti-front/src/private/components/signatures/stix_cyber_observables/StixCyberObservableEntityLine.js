@@ -11,7 +11,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { Help, MoreVert } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
-import ItemConfidenceLevel from '../../../../components/ItemConfidenceLevel';
+import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -138,7 +138,7 @@ class StixCyberObservableEntityLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.weight.width }}
               >
-                <ItemConfidenceLevel
+                <ItemConfidence
                   level={node.inferred ? 99 : node.weight}
                   variant="inList"
                 />
