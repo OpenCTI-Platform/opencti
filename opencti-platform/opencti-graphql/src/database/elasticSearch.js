@@ -20,6 +20,7 @@ import {
   pipe,
   toPairs,
   uniq,
+  isNil,
 } from 'ramda';
 import {
   buildPagination,

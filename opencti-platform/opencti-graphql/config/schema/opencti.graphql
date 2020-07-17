@@ -1136,6 +1136,7 @@ enum CampaignsOrdering {
   name
   first_seen
   last_seen
+  role_played
   created
   modified
   created_at
