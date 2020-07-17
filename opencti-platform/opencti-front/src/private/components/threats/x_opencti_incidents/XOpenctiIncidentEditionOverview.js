@@ -47,25 +47,25 @@ const styles = (theme) => ({
   },
 });
 
-const incidentMutationFieldPatch = graphql`
-  mutation IncidentEditionOverviewFieldPatchMutation(
+const xOpenctiIncidentMutationFieldPatch = graphql`
+  mutation XOpenctiIncidentEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: EditInput!
   ) {
-    incidentEdit(id: $id) {
+    xOpenctiIncidentEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...IncidentEditionOverview_incident
+        ...XOpenctiIncidentEditionOverview_xOpenctiIncident
       }
     }
   }
 `;
 
-export const incidentEditionOverviewFocus = graphql`
-  mutation IncidentEditionOverviewFocusMutation(
+export const xOpenctiIncidentEditionOverviewFocus = graphql`
+  mutation XOpenctiIncidentEditionOverviewFocusMutation(
     $id: ID!
     $input: EditContext!
   ) {
-    incidentEdit(id: $id) {
+    xOpenctiIncidentEdit(id: $id) {
       contextPatch(input: $input) {
         id
       }
@@ -73,36 +73,36 @@ export const incidentEditionOverviewFocus = graphql`
   }
 `;
 
-const incidentMutationRelationAdd = graphql`
-  mutation IncidentEditionOverviewRelationAddMutation(
+const xOpenctiIncidentMutationRelationAdd = graphql`
+  mutation XOpenctiIncidentEditionOverviewRelationAddMutation(
     $id: ID!
     $input: StixMetaRelationshipAddInput
   ) {
-    incidentEdit(id: $id) {
+    xOpenctiIncidentEdit(id: $id) {
       relationAdd(input: $input) {
         from {
-          ...IncidentEditionOverview_incident
+          ...XOpenctiIncidentEditionOverview_xOpenctiIncident
         }
       }
     }
   }
 `;
 
-const incidentMutationRelationDelete = graphql`
-  mutation IncidentEditionOverviewRelationDeleteMutation(
+const xOpenctiIncidentMutationRelationDelete = graphql`
+  mutation XOpenctiIncidentEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: String!
     $relationType: String!
   ) {
-    incidentEdit(id: $id) {
+    xOpenctiIncidentEdit(id: $id) {
       relationDelete(toId: $toId, relationType: $relationType) {
-        ...IncidentEditionOverview_incident
+        ...XOpenctiIncidentEditionOverview_xOpenctiIncident
       }
     }
   }
 `;
 
-const incidentValidation = (t) => Yup.object().shape({
+const xOpenctiIncidentValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string()
     .min(3, t('The value is too short'))
@@ -110,12 +110,12 @@ const incidentValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
 });
 
-class IncidentEditionOverviewComponent extends Component {
+class XOpenctiIncidentEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
     commitMutation({
-      mutation: incidentEditionOverviewFocus,
+      mutation: xOpenctiIncidentEditionOverviewFocus,
       variables: {
-        id: this.props.incident.id,
+        id: this.props.xOpenctiIncident.id,
         input: {
           focusOn: name,
         },
@@ -124,13 +124,13 @@ class IncidentEditionOverviewComponent extends Component {
   }
 
   handleSubmitField(name, value) {
-    incidentValidation(this.props.t)
+    xOpenctiIncidentValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
-          mutation: incidentMutationFieldPatch,
+          mutation: xOpenctiIncidentMutationFieldPatch,
           variables: {
-            id: this.props.incident.id,
+            id: this.props.xOpenctiIncident.id,
             input: { key: name, value },
           },
         });
@@ -139,18 +139,18 @@ class IncidentEditionOverviewComponent extends Component {
   }
 
   handleChangeCreatedBy(name, value) {
-    const { incident } = this.props;
+    const { xOpenctiIncident } = this.props;
     const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'node', 'name'], incident),
-      value: pathOr(null, ['createdBy', 'node', 'id'], incident),
-      relation: pathOr(null, ['createdBy', 'relation', 'id'], incident),
+      label: pathOr(null, ['createdBy', 'node', 'name'], xOpenctiIncident),
+      value: pathOr(null, ['createdBy', 'node', 'id'], xOpenctiIncident),
+      relation: pathOr(null, ['createdBy', 'relation', 'id'], xOpenctiIncident),
     };
 
     if (currentCreatedBy.value === null) {
       commitMutation({
-        mutation: incidentMutationRelationAdd,
+        mutation: xOpenctiIncidentMutationRelationAdd,
         variables: {
-          id: this.props.incident.id,
+          id: this.props.xOpenctiIncident.id,
           input: {
             fromRole: 'so',
             toId: value.value,
@@ -161,17 +161,17 @@ class IncidentEditionOverviewComponent extends Component {
       });
     } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
-        mutation: incidentMutationRelationDelete,
+        mutation: xOpenctiIncidentMutationRelationDelete,
         variables: {
-          id: this.props.incident.id,
+          id: this.props.xOpenctiIncident.id,
           relationId: currentCreatedBy.relation,
         },
       });
       if (value.value) {
         commitMutation({
-          mutation: incidentMutationRelationAdd,
+          mutation: xOpenctiIncidentMutationRelationAdd,
           variables: {
-            id: this.props.incident.id,
+            id: this.props.xOpenctiIncident.id,
             input: {
               fromRole: 'so',
               toId: value.value,
@@ -185,7 +185,7 @@ class IncidentEditionOverviewComponent extends Component {
   }
 
   handleChangeMarkingDefinitions(name, values) {
-    const { incident } = this.props;
+    const { xOpenctiIncident } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
       map((n) => ({
@@ -193,16 +193,16 @@ class IncidentEditionOverviewComponent extends Component {
         value: n.node.id,
         relationId: n.relation.id,
       })),
-    )(incident);
+    )(xOpenctiIncident);
 
     const added = difference(values, currentMarkingDefinitions);
     const removed = difference(currentMarkingDefinitions, values);
 
     if (added.length > 0) {
       commitMutation({
-        mutation: incidentMutationRelationAdd,
+        mutation: xOpenctiIncidentMutationRelationAdd,
         variables: {
-          id: this.props.incident.id,
+          id: this.props.xOpenctiIncident.id,
           input: {
             fromRole: 'so',
             toId: head(added).value,
@@ -215,9 +215,9 @@ class IncidentEditionOverviewComponent extends Component {
 
     if (removed.length > 0) {
       commitMutation({
-        mutation: incidentMutationRelationDelete,
+        mutation: xOpenctiIncidentMutationRelationDelete,
         variables: {
-          id: this.props.incident.id,
+          id: this.props.xOpenctiIncident.id,
           relationId: head(removed).relationId,
         },
       });
@@ -225,13 +225,13 @@ class IncidentEditionOverviewComponent extends Component {
   }
 
   render() {
-    const { t, incident, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], incident) === null
+    const { t, xOpenctiIncident, context } = this.props;
+    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], xOpenctiIncident) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'node', 'name'], incident),
-        value: pathOr(null, ['createdBy', 'node', 'id'], incident),
-        relation: pathOr(null, ['createdBy', 'relation', 'id'], incident),
+        label: pathOr(null, ['createdBy', 'node', 'name'], xOpenctiIncident),
+        value: pathOr(null, ['createdBy', 'node', 'id'], xOpenctiIncident),
+        relation: pathOr(null, ['createdBy', 'relation', 'id'], xOpenctiIncident),
       };
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
@@ -240,7 +240,7 @@ class IncidentEditionOverviewComponent extends Component {
         value: n.node.id,
         relationId: n.relation.id,
       })),
-    )(incident);
+    )(xOpenctiIncident);
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
       map((n) => ({
@@ -248,7 +248,7 @@ class IncidentEditionOverviewComponent extends Component {
         value: n.node.id,
         relationId: n.relation.id,
       })),
-    )(incident);
+    )(xOpenctiIncident);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
       assoc('killChainPhases', killChainPhases),
@@ -260,12 +260,12 @@ class IncidentEditionOverviewComponent extends Component {
         'killChainPhases',
         'markingDefinitions',
       ]),
-    )(incident);
+    )(xOpenctiIncident);
     return (
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={incidentValidation(t)}
+        validationSchema={xOpenctiIncidentValidation(t)}
         onSubmit={() => true}
       >
         {({ setFieldValue }) => (
@@ -322,19 +322,19 @@ class IncidentEditionOverviewComponent extends Component {
   }
 }
 
-IncidentEditionOverviewComponent.propTypes = {
+XOpenctiIncidentEditionOverviewComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  incident: PropTypes.object,
+  xOpenctiIncident: PropTypes.object,
   context: PropTypes.array,
 };
 
-const IncidentEditionOverview = createFragmentContainer(
-  IncidentEditionOverviewComponent,
+const XOpenctiXOpenctiIncidentEditionOverview = createFragmentContainer(
+  XOpenctiIncidentEditionOverviewComponent,
   {
-    incident: graphql`
-      fragment IncidentEditionOverview_incident on Incident {
+    xOpenctiIncident: graphql`
+      fragment XOpenctiIncidentEditionOverview_xOpenctiIncident on XOpenctiIncident {
         id
         name
         description
@@ -368,4 +368,4 @@ const IncidentEditionOverview = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(IncidentEditionOverview);
+)(XOpenctiXOpenctiIncidentEditionOverview);

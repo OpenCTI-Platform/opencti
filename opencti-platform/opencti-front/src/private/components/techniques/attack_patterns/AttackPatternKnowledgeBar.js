@@ -103,10 +103,10 @@ class AttackPatternKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/incidents`}
+            to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/xOpenctiIncidents`}
             selected={
               location.pathname
-              === `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/incidents`
+              === `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/xOpenctiIncidents`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -115,7 +115,7 @@ class AttackPatternKnowledgeBar extends Component {
               <Fire />
             </ListItemIcon>
             <ListItemText
-              primary={t('Incidents')}
+              primary={t('XOpenctiIncidents')}
               secondary={t('Using this TTP')}
             />
           </MenuItem>

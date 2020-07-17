@@ -203,8 +203,8 @@ class StixDomainObjectCreation extends Component {
             ''
           )}
         {targetEntityTypes === undefined
-        || targetEntityTypes.includes('Incident') ? (
-          <MenuItem value="Incident">{t('Incident')}</MenuItem>
+        || targetEntityTypes.includes('XOpenctiXOpenctiIncident') ? (
+          <MenuItem value="XOpenctiXOpenctiIncident">{t('XOpenctiXOpenctiIncident')}</MenuItem>
           ) : (
             ''
           )}

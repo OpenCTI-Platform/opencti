@@ -43,7 +43,7 @@ const styles = (theme) => ({
   },
 });
 
-class IncidentLineComponent extends Component {
+class XOpenctiIncidentLineComponent extends Component {
   render() {
     const {
       fd, classes, dataColumns, node, onLabelClick,
@@ -54,7 +54,7 @@ class IncidentLineComponent extends Component {
         divider={true}
         button={true}
         component={Link}
-        to={`/dashboard/threats/incidents/${node.id}`}
+        to={`/dashboard/threats/xOpenctiIncidents/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Fire />
@@ -101,7 +101,7 @@ class IncidentLineComponent extends Component {
   }
 }
 
-IncidentLineComponent.propTypes = {
+XOpenctiIncidentLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
@@ -109,9 +109,9 @@ IncidentLineComponent.propTypes = {
   onLabelClick: PropTypes.func,
 };
 
-const IncidentLineFragment = createFragmentContainer(IncidentLineComponent, {
+const XOpenctiIncidentLineFragment = createFragmentContainer(XOpenctiIncidentLineComponent, {
   node: graphql`
-    fragment IncidentLine_node on Incident {
+    fragment XOpenctiIncidentLine_node on XOpenctiIncident {
       id
       name
       created
@@ -141,12 +141,12 @@ const IncidentLineFragment = createFragmentContainer(IncidentLineComponent, {
   `,
 });
 
-export const IncidentLine = compose(
+export const XOpenctiXOpenctiIncidentLine = compose(
   inject18n,
   withStyles(styles),
-)(IncidentLineFragment);
+)(XOpenctiIncidentLineFragment);
 
-class IncidentLineDummyComponent extends Component {
+class XOpenctiIncidentLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -192,12 +192,12 @@ class IncidentLineDummyComponent extends Component {
   }
 }
 
-IncidentLineDummyComponent.propTypes = {
+XOpenctiIncidentLineDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export const IncidentLineDummy = compose(
+export const XOpenctiIncidentLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(IncidentLineDummyComponent);
+)(XOpenctiIncidentLineDummyComponent);

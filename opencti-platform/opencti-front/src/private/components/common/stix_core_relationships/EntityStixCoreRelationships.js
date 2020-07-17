@@ -270,8 +270,8 @@ class EntityStixCoreRelationships extends Component {
                     ) : (
                       ''
                     )}
-                    {includes('Incident', targetEntityTypes) ? (
-                      <MenuItem value="Incident">{t('Incident')}</MenuItem>
+                    {includes('XOpenctiXOpenctiIncident', targetEntityTypes) ? (
+                      <MenuItem value="XOpenctiXOpenctiIncident">{t('XOpenctiXOpenctiIncident')}</MenuItem>
                     ) : (
                       ''
                     )}

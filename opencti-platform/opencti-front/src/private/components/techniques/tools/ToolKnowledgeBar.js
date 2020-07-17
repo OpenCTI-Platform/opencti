@@ -101,10 +101,10 @@ class ToolKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/techniques/tools/${toolId}/knowledge/incidents`}
+            to={`/dashboard/techniques/tools/${toolId}/knowledge/xOpenctiIncidents`}
             selected={
               location.pathname
-              === `/dashboard/techniques/tools/${toolId}/knowledge/incidents`
+              === `/dashboard/techniques/tools/${toolId}/knowledge/xOpenctiIncidents`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -113,7 +113,7 @@ class ToolKnowledgeBar extends Component {
               <Fire />
             </ListItemIcon>
             <ListItemText
-              primary={t('Incidents')}
+              primary={t('XOpenctiIncidents')}
               secondary={t('Using this tool')}
             />
           </MenuItem>

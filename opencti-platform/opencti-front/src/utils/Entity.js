@@ -27,8 +27,8 @@ export const resolveLink = (type) => {
       return '/dashboard/threats/intrusion_sets';
     case 'campaign':
       return '/dashboard/threats/campaigns';
-    case 'incident':
-      return '/dashboard/threats/x_opencti_incidents';
+    case 'xOpenctiIncident':
+      return '/dashboard/threats/x_opencti_xOpenctiIncidents';
     case 'malware':
       return '/dashboard/threats/malwares';
     case 'report':

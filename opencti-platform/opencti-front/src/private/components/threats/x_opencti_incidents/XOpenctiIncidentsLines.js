@@ -3,59 +3,61 @@ import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
-import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
-import { IncidentCard, IncidentCardDummy } from './IncidentCard';
+import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
+import { XOpenctiXOpenctiIncidentLine, XOpenctiIncidentLineDummy } from './XOpenctiXOpenctiIncidentLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfCardsToLoad = 50;
+const nbOfRowsToLoad = 50;
 
-class IncidentsCards extends Component {
+class XOpenctiXOpenctiIncidentsLines extends Component {
   componentDidUpdate(prevProps) {
     setNumberOfElements(
       prevProps,
       this.props,
-      'incidents',
+      'xOpenctiIncidents',
       this.props.setNumberOfElements.bind(this),
     );
   }
 
   render() {
-    const { initialLoading, relay, onLabelClick } = this.props;
+    const {
+      initialLoading, dataColumns, relay, onLabelClick,
+    } = this.props;
     return (
-      <ListCardsContent
+      <ListLinesContent
         initialLoading={initialLoading}
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['incidents', 'edges'], this.props.data)}
+        dataList={pathOr([], ['xOpenctiIncidents', 'edges'], this.props.data)}
         globalCount={pathOr(
-          nbOfCardsToLoad,
-          ['incidents', 'pageInfo', 'globalCount'],
+          nbOfRowsToLoad,
+          ['xOpenctiIncidents', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
-        CardComponent={<IncidentCard />}
-        DummyCardComponent={<IncidentCardDummy />}
-        nbOfCardsToLoad={nbOfCardsToLoad}
+        LineComponent={<XOpenctiXOpenctiIncidentLine />}
+        DummyLineComponent={<XOpenctiIncidentLineDummy />}
+        dataColumns={dataColumns}
+        nbOfRowsToLoad={nbOfRowsToLoad}
         onLabelClick={onLabelClick.bind(this)}
       />
     );
   }
 }
 
-IncidentsCards.propTypes = {
+XOpenctiXOpenctiIncidentsLines.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
+  dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,
   relay: PropTypes.object,
-  incidents: PropTypes.object,
   initialLoading: PropTypes.bool,
-  searchTerm: PropTypes.string,
   onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
 };
 
-export const incidentsCardsQuery = graphql`
-  query IncidentsCardsPaginationQuery(
+export const xOpenctiIncidentsLinesQuery = graphql`
+  query XOpenctiIncidentsLinesPaginationQuery(
     $search: String
     $count: Int!
     $cursor: ID
@@ -63,7 +65,7 @@ export const incidentsCardsQuery = graphql`
     $orderMode: OrderingMode
     $filters: [XOpenctiIncidentsFiltering]
   ) {
-    ...IncidentsCards_data
+    ...XOpenctiIncidentsLines_data
       @arguments(
         search: $search
         count: $count
@@ -76,10 +78,10 @@ export const incidentsCardsQuery = graphql`
 `;
 
 export default createPaginationContainer(
-  IncidentsCards,
+  XOpenctiXOpenctiIncidentsLines,
   {
     data: graphql`
-      fragment IncidentsCards_data on Query
+      fragment XOpenctiIncidentsLines_data on Query
         @argumentDefinitions(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
@@ -88,20 +90,20 @@ export default createPaginationContainer(
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
           filters: { type: "[XOpenctiIncidentsFiltering]" }
         ) {
-        incidents(
+        xOpenctiIncidents(
           search: $search
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
           filters: $filters
-        ) @connection(key: "Pagination_incidents") {
+        ) @connection(key: "Pagination_xOpenctiIncidents") {
           edges {
             node {
               id
               name
               description
-              ...IncidentCard_node
+              ...XOpenctiIncidentLine_node
             }
           }
           pageInfo {
@@ -116,7 +118,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.incidents;
+      return props.data && props.data.xOpenctiIncidents;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -134,6 +136,6 @@ export default createPaginationContainer(
         filters: fragmentVariables.filters,
       };
     },
-    query: incidentsCardsQuery,
+    query: xOpenctiIncidentsLinesQuery,
   },
 );

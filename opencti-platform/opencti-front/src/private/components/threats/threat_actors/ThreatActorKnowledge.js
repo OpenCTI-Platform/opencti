@@ -85,12 +85,12 @@ class ThreatActorKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/threats/threat_actors/:threatActorId/knowledge/incidents"
+          path="/dashboard/threats/threat_actors/:threatActorId/knowledge/xOpenctiIncidents"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={threatActor.id}
               relationType="attributed-to"
-              targetEntityTypes={['Incident']}
+              targetEntityTypes={['XOpenctiIncident']}
               entityLink={link}
               creationIsFrom={false}
               {...routeProps}

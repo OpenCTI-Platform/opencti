@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { compose, propOr, pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../components/i18n';
-import EntityIncidentsTableTime from '../threats/x_opencti_incidents/EntityIncidentsTableTime';
-import EntityIncidentsChart from '../threats/x_opencti_incidents/EntityIncidentsChart';
+import EntityXOpenctiIncidentsTableTime from '../threats/x_opencti_xOpenctiIncidents/EntityXOpenctiXOpenctiIncidentsTableTime';
+import EntityXOpenctiIncidentsChart from '../threats/x_opencti_xOpenctiIncidents/EntityXOpenctiXOpenctiIncidentsChart';
 
 const styles = () => ({
   container: {
@@ -12,13 +12,13 @@ const styles = () => ({
   },
 });
 
-class IncidentsTimeseries extends Component {
+class XOpenctiIncidentsTimeseries extends Component {
   render() {
     const { configuration, handleOpenConfig } = this.props;
     switch (configuration.graph_type) {
       case 'table':
         return (
-          <EntityIncidentsTableTime
+          <EntityXOpenctiIncidentsTableTime
             variant="explore"
             configuration={configuration}
             handleOpenConfig={handleOpenConfig.bind(this)}
@@ -28,7 +28,7 @@ class IncidentsTimeseries extends Component {
         );
       case 'line':
         return (
-          <EntityIncidentsChart
+          <EntityXOpenctiIncidentsChart
             variant="explore"
             configuration={configuration}
             handleOpenConfig={handleOpenConfig.bind(this)}
@@ -38,7 +38,7 @@ class IncidentsTimeseries extends Component {
         );
       default:
         return (
-          <EntityIncidentsChart
+          <EntityXOpenctiIncidentsChart
             variant="explore"
             configuration={configuration}
             handleOpenConfig={handleOpenConfig.bind(this)}
@@ -50,7 +50,7 @@ class IncidentsTimeseries extends Component {
   }
 }
 
-IncidentsTimeseries.propTypes = {
+XOpenctiIncidentsTimeseries.propTypes = {
   configuration: PropTypes.object,
   handleOpenConfig: PropTypes.func,
   inferred: PropTypes.bool,
@@ -60,4 +60,4 @@ IncidentsTimeseries.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(IncidentsTimeseries);
+export default compose(inject18n, withStyles(styles))(XOpenctiIncidentsTimeseries);

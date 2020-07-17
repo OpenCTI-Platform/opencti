@@ -82,7 +82,7 @@ const styles = (theme) => ({
   },
 });
 
-class IncidentCardComponent extends Component {
+class XOpenctiIncidentCardComponent extends Component {
   render() {
     const {
       t, fsd, classes, node, onLabelClick,
@@ -92,7 +92,7 @@ class IncidentCardComponent extends Component {
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          to={`/dashboard/threats/incidents/${node.id}`}
+          to={`/dashboard/threats/xOpenctiIncidents/${node.id}`}
         >
           <CardHeader
             classes={{ root: classes.header }}
@@ -124,7 +124,7 @@ class IncidentCardComponent extends Component {
   }
 }
 
-IncidentCardComponent.propTypes = {
+XOpenctiIncidentCardComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -132,9 +132,9 @@ IncidentCardComponent.propTypes = {
   onLabelClick: PropTypes.func,
 };
 
-const IncidentCardFragment = createFragmentContainer(IncidentCardComponent, {
+const XOpenctiIncidentCardFragment = createFragmentContainer(XOpenctiIncidentCardComponent, {
   node: graphql`
-    fragment IncidentCard_node on Incident {
+    fragment XOpenctiIncidentCard_node on XOpenctiIncident {
       id
       name
       description
@@ -165,12 +165,12 @@ const IncidentCardFragment = createFragmentContainer(IncidentCardComponent, {
   `,
 });
 
-export const IncidentCard = compose(
+export const XOpenctiXOpenctiIncidentCard = compose(
   inject18n,
   withStyles(styles),
-)(IncidentCardFragment);
+)(XOpenctiIncidentCardFragment);
 
-class IncidentCardDummyComponent extends Component {
+class XOpenctiIncidentCardDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
@@ -205,11 +205,11 @@ class IncidentCardDummyComponent extends Component {
   }
 }
 
-IncidentCardDummyComponent.propTypes = {
+XOpenctiIncidentCardDummyComponent.propTypes = {
   classes: PropTypes.object,
 };
 
-export const IncidentCardDummy = compose(
+export const XOpenctiIncidentCardDummy = compose(
   inject18n,
   withStyles(styles),
-)(IncidentCardDummyComponent);
+)(XOpenctiIncidentCardDummyComponent);

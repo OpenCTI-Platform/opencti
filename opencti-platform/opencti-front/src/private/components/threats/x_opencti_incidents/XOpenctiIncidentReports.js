@@ -6,7 +6,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
-import IncidentPopover from './IncidentPopover';
+import XOpenctiIncidentPopover from './XOpenctiXOpenctiIncidentPopover';
 import Reports from '../../reports/Reports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
@@ -34,7 +34,7 @@ const styles = (theme) => ({
   },
 });
 
-class IncidentReportsComponent extends Component {
+class XOpenctiIncidentReportsComponent extends Component {
   constructor(props) {
     super(props);
     this.state = { withPadding: false };
@@ -42,7 +42,7 @@ class IncidentReportsComponent extends Component {
 
   render() {
     const { withPadding } = this.state;
-    const { classes, incident } = this.props;
+    const { classes, xOpenctiIncident } = this.props;
     return (
       <div
         className={
@@ -50,12 +50,12 @@ class IncidentReportsComponent extends Component {
         }
       >
         <StixDomainObjectHeader
-          stixDomainObject={incident}
-          PopoverComponent={<IncidentPopover />}
+          stixDomainObject={xOpenctiIncident}
+          PopoverComponent={<XOpenctiIncidentPopover />}
         />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Reports
-            objectId={incident.id}
+            objectId={xOpenctiIncident.id}
             onChangeOpenExports={(openExports) => this.setState({ withPadding: openExports })
             }
           />
@@ -65,15 +65,15 @@ class IncidentReportsComponent extends Component {
   }
 }
 
-IncidentReportsComponent.propTypes = {
-  incident: PropTypes.object,
+XOpenctiIncidentReportsComponent.propTypes = {
+  xOpenctiIncident: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-const IncidentReports = createFragmentContainer(IncidentReportsComponent, {
-  incident: graphql`
-    fragment IncidentReports_incident on Incident {
+const XOpenctiXOpenctiIncidentReports = createFragmentContainer(XOpenctiIncidentReportsComponent, {
+  xOpenctiIncident: graphql`
+    fragment XOpenctiIncidentReports_xOpenctiIncident on XOpenctiIncident {
       id
       name
       aliases
@@ -81,4 +81,4 @@ const IncidentReports = createFragmentContainer(IncidentReportsComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(IncidentReports);
+export default compose(inject18n, withStyles(styles))(XOpenctiXOpenctiIncidentReports);

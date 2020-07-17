@@ -123,10 +123,10 @@ class IntrusionSetKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/incidents`}
+            to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/xOpenctiIncidents`}
             selected={
               location.pathname
-              === `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/incidents`
+              === `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge/xOpenctiIncidents`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -135,7 +135,7 @@ class IntrusionSetKnowledgeBar extends Component {
               <Fire />
             </ListItemIcon>
             <ListItemText
-              primary={t('Incidents')}
+              primary={t('XOpenctiIncidents')}
               secondary={t('Attributed to this intrusion set')}
             />
           </MenuItem>

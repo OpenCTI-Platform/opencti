@@ -21,10 +21,10 @@ const styles = () => ({
   },
 });
 
-class IncidentDetailsComponent extends Component {
+class XOpenctiIncidentDetailsComponent extends Component {
   render() {
     const {
-      fld, t, classes, incident,
+      fld, t, classes, xOpenctiIncident,
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
@@ -32,7 +32,7 @@ class IncidentDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixDomainObjectLabels labels={incident.labels} id={incident.id} />
+          <StixDomainObjectLabels labels={xOpenctiIncident.labels} id={xOpenctiIncident.id} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -40,7 +40,7 @@ class IncidentDetailsComponent extends Component {
           >
             {t('Creator')}
           </Typography>
-          <ItemCreator creator={incident.creator} />
+          <ItemCreator creator={xOpenctiIncident.creator} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -48,7 +48,7 @@ class IncidentDetailsComponent extends Component {
           >
             {t('First seen')}
           </Typography>
-          {fld(incident.first_seen)}
+          {fld(xOpenctiIncident.first_seen)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -56,7 +56,7 @@ class IncidentDetailsComponent extends Component {
           >
             {t('Last seen')}
           </Typography>
-          {fld(incident.last_seen)}
+          {fld(xOpenctiIncident.last_seen)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -64,23 +64,23 @@ class IncidentDetailsComponent extends Component {
           >
             {t('Objective')}
           </Typography>
-          <Markdown className="markdown" source={incident.objective} />
+          <Markdown className="markdown" source={xOpenctiIncident.objective} />
         </Paper>
       </div>
     );
   }
 }
 
-IncidentDetailsComponent.propTypes = {
-  incident: PropTypes.object,
+XOpenctiIncidentDetailsComponent.propTypes = {
+  xOpenctiIncident: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
 
-const IncidentDetails = createFragmentContainer(IncidentDetailsComponent, {
-  incident: graphql`
-    fragment IncidentDetails_incident on Incident {
+const XOpenctiXOpenctiIncidentDetails = createFragmentContainer(XOpenctiIncidentDetailsComponent, {
+  xOpenctiIncident: graphql`
+    fragment XOpenctiIncidentDetails_xOpenctiIncident on XOpenctiIncident {
       id
       first_seen
       last_seen
@@ -106,4 +106,4 @@ const IncidentDetails = createFragmentContainer(IncidentDetailsComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(IncidentDetails);
+export default compose(inject18n, withStyles(styles))(XOpenctiXOpenctiIncidentDetails);

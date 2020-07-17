@@ -64,15 +64,15 @@ const styles = (theme) => ({
   },
 });
 
-const incidentMutation = graphql`
-  mutation IncidentCreationMutation($input: XOpenctiIncidentAddInput!) {
-    incidentAdd(input: $input) {
-      ...IncidentLine_node
+const xOpenctiIncidentMutation = graphql`
+  mutation XOpenctiIncidentCreationMutation($input: XOpenctiIncidentAddInput!) {
+    xOpenctiIncidentAdd(input: $input) {
+      ...XOpenctiIncidentLine_node
     }
   }
 `;
 
-const incidentValidation = (t) => Yup.object().shape({
+const xOpenctiIncidentValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string()
     .min(3, t('The value is too short'))
@@ -80,7 +80,7 @@ const incidentValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
 });
 
-class IncidentCreation extends Component {
+class XOpenctiXOpenctiIncidentCreation extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false };
@@ -101,16 +101,16 @@ class IncidentCreation extends Component {
       assoc('labels', pluck('value', values.labels)),
     )(values);
     commitMutation({
-      mutation: incidentMutation,
+      mutation: xOpenctiIncidentMutation,
       variables: {
         input: finalValues,
       },
       updater: (store) => {
-        const payload = store.getRootField('incidentAdd');
+        const payload = store.getRootField('xOpenctiIncidentAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node');
         const conn = ConnectionHandler.getConnection(
           store.get(store.getRoot().getDataID()),
-          'Pagination_incidents',
+          'Pagination_xOpenctiIncidents',
           this.props.paginationOptions,
         );
         ConnectionHandler.insertEdgeBefore(conn, newEdge);
@@ -154,7 +154,7 @@ class IncidentCreation extends Component {
             >
               <Close fontSize="small" />
             </IconButton>
-            <Typography variant="h6">{t('Create an incident')}</Typography>
+            <Typography variant="h6">{t('Create an xOpenctiIncident')}</Typography>
           </div>
           <div className={classes.container}>
             <Formik
@@ -165,7 +165,7 @@ class IncidentCreation extends Component {
                 markingDefinitions: [],
                 labels: [],
               }}
-              validationSchema={incidentValidation(t)}
+              validationSchema={xOpenctiIncidentValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
             >
@@ -182,7 +182,7 @@ class IncidentCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
-                    detectDuplicate={['Incident']}
+                    detectDuplicate={['XOpenctiIncident']}
                   />
                   <Field
                     component={TextField}
@@ -237,7 +237,7 @@ class IncidentCreation extends Component {
   }
 }
 
-IncidentCreation.propTypes = {
+XOpenctiXOpenctiIncidentCreation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
@@ -247,4 +247,4 @@ IncidentCreation.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(IncidentCreation);
+)(XOpenctiXOpenctiIncidentCreation);

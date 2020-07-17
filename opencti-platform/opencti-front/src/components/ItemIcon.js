@@ -64,7 +64,7 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <DiamondOutline style={style} fontSize={fontSize} role="img" />;
     case 'campaign':
       return <ChessKnight style={style} fontSize={fontSize} role="img" />;
-    case 'incident':
+    case 'xOpenctiIncident':
       return <Fire style={style} fontSize={fontSize} role="img" />;
     case 'user':
       return (

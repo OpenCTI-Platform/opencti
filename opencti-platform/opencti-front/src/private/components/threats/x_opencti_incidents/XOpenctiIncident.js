@@ -6,10 +6,10 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import IncidentOverview from './IncidentOverview';
-import IncidentDetails from './IncidentDetails';
-import IncidentEdition from './IncidentEdition';
-import IncidentPopover from './IncidentPopover';
+import XOpenctiIncidentOverview from './XOpenctiXOpenctiIncidentOverview';
+import XOpenctiIncidentDetails from './XOpenctiXOpenctiIncidentDetails';
+import XOpenctiIncidentEdition from './XOpenctiXOpenctiIncidentEdition';
+import XOpenctiIncidentPopover from './XOpenctiXOpenctiIncidentPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
@@ -26,14 +26,14 @@ const styles = () => ({
   },
 });
 
-class IncidentComponent extends Component {
+class XOpenctiIncidentComponent extends Component {
   render() {
-    const { classes, incident } = this.props;
+    const { classes, xOpenctiIncident } = this.props;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
-          stixDomainObject={incident}
-          PopoverComponent={<IncidentPopover />}
+          stixDomainObject={xOpenctiIncident}
+          PopoverComponent={<XOpenctiIncidentPopover />}
         />
         <Grid
           container={true}
@@ -41,16 +41,16 @@ class IncidentComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={3}>
-            <IncidentOverview incident={incident} />
+            <XOpenctiIncidentOverview xOpenctiIncident={xOpenctiIncident} />
           </Grid>
           <Grid item={true} xs={3}>
-            <IncidentDetails incident={incident} />
+            <XOpenctiIncidentDetails xOpenctiIncident={xOpenctiIncident} />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityLastReports entityId={incident.id} />
+            <EntityLastReports entityId={xOpenctiIncident.id} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes entityId={incident.id} />
+        <StixCoreObjectNotes entityId={xOpenctiIncident.id} />
         <Grid
           container={true}
           spacing={3}
@@ -59,40 +59,40 @@ class IncidentComponent extends Component {
         >
           <Grid item={true} xs={6}>
             <EntityStixCoreRelationshipsDonut
-              entityId={incident.id}
+              entityId={xOpenctiIncident.id}
               entityType="Stix-Observable"
               relationType="related-to"
               field="entity_type"
             />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityReportsChart entityId={incident.id} />
+            <EntityReportsChart entityId={xOpenctiIncident.id} />
           </Grid>
         </Grid>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IncidentEdition incidentId={incident.id} />
+          <XOpenctiIncidentEdition xOpenctiIncidentId={xOpenctiIncident.id} />
         </Security>
       </div>
     );
   }
 }
 
-IncidentComponent.propTypes = {
-  incident: PropTypes.object,
+XOpenctiIncidentComponent.propTypes = {
+  xOpenctiIncident: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-const Incident = createFragmentContainer(IncidentComponent, {
-  incident: graphql`
-    fragment Incident_incident on Incident {
+const XOpenctiXOpenctiIncident = createFragmentContainer(XOpenctiIncidentComponent, {
+  xOpenctiIncident: graphql`
+    fragment XOpenctiIncident_xOpenctiIncident on XOpenctiIncident {
       id
       name
       aliases
-      ...IncidentOverview_incident
-      ...IncidentDetails_incident
+      ...XOpenctiIncidentOverview_xOpenctiIncident
+      ...XOpenctiIncidentDetails_xOpenctiIncident
     }
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(Incident);
+export default compose(inject18n, withStyles(styles))(XOpenctiXOpenctiIncident);

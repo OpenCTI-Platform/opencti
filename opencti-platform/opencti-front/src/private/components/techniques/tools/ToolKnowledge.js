@@ -83,12 +83,12 @@ class ToolKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/techniques/tools/:toolId/knowledge/incidents"
+          path="/dashboard/techniques/tools/:toolId/knowledge/xOpenctiIncidents"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={tool.id}
               relationType="uses"
-              targetEntityTypes={['Incident']}
+              targetEntityTypes={['XOpenctiIncident']}
               entityLink={link}
               creationIsFrom={false}
               {...routeProps}

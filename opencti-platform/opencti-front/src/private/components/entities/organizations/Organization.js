@@ -13,7 +13,7 @@ import OrganizationPopover from './OrganizationPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityIncidentsChart from '../../threats/x_opencti_incidents/EntityIncidentsChart';
+import EntityXOpenctiIncidentsChart from '../../threats/x_opencti_xOpenctiIncidents/EntityXOpenctiXOpenctiIncidentsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixCoreObjectNotes from '../../common/stix_core_object/StixCoreObjectNotes';
@@ -135,7 +135,7 @@ class OrganizationComponent extends Component {
             <EntityCampaignsChart entityId={organization.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityIncidentsChart entityId={organization.id} />
+            <EntityXOpenctiIncidentsChart entityId={organization.id} />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={organization.id} />

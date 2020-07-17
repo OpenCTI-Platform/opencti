@@ -40,22 +40,22 @@ const styles = (theme) => ({
   },
 });
 
-const incidentMutationFieldPatch = graphql`
-  mutation IncidentEditionDetailsFieldPatchMutation(
+const xOpenctiIncidentMutationFieldPatch = graphql`
+  mutation XOpenctiIncidentEditionDetailsFieldPatchMutation(
     $id: ID!
     $input: EditInput!
   ) {
-    incidentEdit(id: $id) {
+    xOpenctiIncidentEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...IncidentEditionDetails_incident
+        ...XOpenctiIncidentEditionDetails_xOpenctiIncident
       }
     }
   }
 `;
 
-const incidentEditionDetailsFocus = graphql`
-  mutation IncidentEditionDetailsFocusMutation($id: ID!, $input: EditContext!) {
-    incidentEdit(id: $id) {
+const xOpenctiIncidentEditionDetailsFocus = graphql`
+  mutation XOpenctiIncidentEditionDetailsFocusMutation($id: ID!, $input: EditContext!) {
+    xOpenctiIncidentEdit(id: $id) {
       contextPatch(input: $input) {
         id
       }
@@ -63,7 +63,7 @@ const incidentEditionDetailsFocus = graphql`
   }
 `;
 
-const incidentValidation = (t) => Yup.object().shape({
+const xOpenctiIncidentValidation = (t) => Yup.object().shape({
   first_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
@@ -73,12 +73,12 @@ const incidentValidation = (t) => Yup.object().shape({
   objective: Yup.string(),
 });
 
-class IncidentEditionDetailsComponent extends Component {
+class XOpenctiIncidentEditionDetailsComponent extends Component {
   handleChangeFocus(name) {
     commitMutation({
-      mutation: incidentEditionDetailsFocus,
+      mutation: xOpenctiIncidentEditionDetailsFocus,
       variables: {
-        id: this.props.incident.id,
+        id: this.props.xOpenctiIncident.id,
         input: {
           focusOn: name,
         },
@@ -87,13 +87,13 @@ class IncidentEditionDetailsComponent extends Component {
   }
 
   handleSubmitField(name, value) {
-    incidentValidation(this.props.t)
+    xOpenctiIncidentValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
-          mutation: incidentMutationFieldPatch,
+          mutation: xOpenctiIncidentMutationFieldPatch,
           variables: {
-            id: this.props.incident.id,
+            id: this.props.xOpenctiIncident.id,
             input: { key: name, value },
           },
         });
@@ -102,18 +102,18 @@ class IncidentEditionDetailsComponent extends Component {
   }
 
   render() {
-    const { t, incident, context } = this.props;
+    const { t, xOpenctiIncident, context } = this.props;
     const initialValues = pipe(
-      assoc('first_seen', dateFormat(incident.first_seen)),
-      assoc('last_seen', dateFormat(incident.last_seen)),
+      assoc('first_seen', dateFormat(xOpenctiIncident.first_seen)),
+      assoc('last_seen', dateFormat(xOpenctiIncident.last_seen)),
       pick(['first_seen', 'last_seen', 'objective']),
-    )(incident);
+    )(xOpenctiIncident);
 
     return (
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={incidentValidation(t)}
+        validationSchema={xOpenctiIncidentValidation(t)}
         onSubmit={() => true}
       >
         {() => (
@@ -164,19 +164,19 @@ class IncidentEditionDetailsComponent extends Component {
   }
 }
 
-IncidentEditionDetailsComponent.propTypes = {
+XOpenctiIncidentEditionDetailsComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  incident: PropTypes.object,
+  xOpenctiIncident: PropTypes.object,
   context: PropTypes.array,
 };
 
-const IncidentEditionDetails = createFragmentContainer(
-  IncidentEditionDetailsComponent,
+const XOpenctiXOpenctiIncidentEditionDetails = createFragmentContainer(
+  XOpenctiIncidentEditionDetailsComponent,
   {
-    incident: graphql`
-      fragment IncidentEditionDetails_incident on Incident {
+    xOpenctiIncident: graphql`
+      fragment XOpenctiIncidentEditionDetails_xOpenctiIncident on XOpenctiIncident {
         id
         first_seen
         last_seen
@@ -189,4 +189,4 @@ const IncidentEditionDetails = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(IncidentEditionDetails);
+)(XOpenctiXOpenctiIncidentEditionDetails);

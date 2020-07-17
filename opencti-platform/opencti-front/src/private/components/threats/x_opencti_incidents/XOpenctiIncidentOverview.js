@@ -21,10 +21,10 @@ const styles = () => ({
   },
 });
 
-class IncidentOverviewComponent extends Component {
+class XOpenctiIncidentOverviewComponent extends Component {
   render() {
     const {
-      t, fldt, classes, incident,
+      t, fldt, classes, xOpenctiIncident,
     } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
@@ -35,7 +35,7 @@ class IncidentOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Marking')}
           </Typography>
-          {incident.markingDefinitions.edges.length > 0 ? (
+          {xOpenctiIncident.markingDefinitions.edges.length > 0 ? (
             map(
               (markingDefinition) => (
                 <ItemMarking
@@ -43,7 +43,7 @@ class IncidentOverviewComponent extends Component {
                   label={markingDefinition.node.definition}
                 />
               ),
-              incident.markingDefinitions.edges,
+              xOpenctiIncident.markingDefinitions.edges,
             )
           ) : (
             <ItemMarking label="TLP:WHITE" />
@@ -55,7 +55,7 @@ class IncidentOverviewComponent extends Component {
           >
             {t('Creation date')}
           </Typography>
-          {fldt(incident.created)}
+          {fldt(xOpenctiIncident.created)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -63,7 +63,7 @@ class IncidentOverviewComponent extends Component {
           >
             {t('Modification date')}
           </Typography>
-          {fldt(incident.modified)}
+          {fldt(xOpenctiIncident.modified)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -72,7 +72,7 @@ class IncidentOverviewComponent extends Component {
             {t('Author')}
           </Typography>
           <ItemAuthor
-            createdBy={pathOr(null, ['createdBy', 'node'], incident)}
+            createdBy={pathOr(null, ['createdBy', 'node'], xOpenctiIncident)}
           />
           <Typography
             variant="h3"
@@ -83,7 +83,7 @@ class IncidentOverviewComponent extends Component {
           </Typography>
           <ExpandableMarkdown
             className="markdown"
-            source={incident.description}
+            source={xOpenctiIncident.description}
             limit={250}
           />
         </Paper>
@@ -92,16 +92,16 @@ class IncidentOverviewComponent extends Component {
   }
 }
 
-IncidentOverviewComponent.propTypes = {
-  incident: PropTypes.object,
+XOpenctiIncidentOverviewComponent.propTypes = {
+  xOpenctiIncident: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fldt: PropTypes.func,
 };
 
-const IncidentOverview = createFragmentContainer(IncidentOverviewComponent, {
-  incident: graphql`
-    fragment IncidentOverview_incident on Incident {
+const XOpenctiXOpenctiIncidentOverview = createFragmentContainer(XOpenctiIncidentOverviewComponent, {
+  xOpenctiIncident: graphql`
+    fragment XOpenctiIncidentOverview_xOpenctiIncident on XOpenctiIncident {
       id
       name
       description
@@ -126,4 +126,4 @@ const IncidentOverview = createFragmentContainer(IncidentOverviewComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(IncidentOverview);
+export default compose(inject18n, withStyles(styles))(XOpenctiXOpenctiIncidentOverview);

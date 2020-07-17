@@ -122,7 +122,7 @@ class OrganizationKnowledgeComponent extends Component {
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
-                'Incident',
+                'XOpenctiIncident',
                 'Malware',
               ]}
               entityLink={link}
@@ -142,7 +142,7 @@ class OrganizationKnowledgeComponent extends Component {
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
-                'Incident',
+                'XOpenctiIncident',
                 'Malware',
               ]}
               entityLink={link}

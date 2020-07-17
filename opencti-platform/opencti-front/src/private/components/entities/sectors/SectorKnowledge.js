@@ -97,12 +97,12 @@ class SectorKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/entities/sectors/:sectorId/knowledge/incidents"
+          path="/dashboard/entities/sectors/:sectorId/knowledge/xOpenctiIncidents"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={sector.id}
               relationType="targets"
-              targetEntityTypes={['Incident']}
+              targetEntityTypes={['XOpenctiIncident']}
               entityLink={link}
               creationIsFrom={false}
               {...routeProps}

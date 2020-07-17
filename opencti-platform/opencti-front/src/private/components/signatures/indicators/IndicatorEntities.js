@@ -132,7 +132,7 @@ class IndicatorEntities extends Component {
             'Threat-Actor',
             'Intrusion-Set',
             'Campaign',
-            'Incident',
+            'XOpenctiIncident',
             'Malware',
             'Tool',
             'Vulnerability',

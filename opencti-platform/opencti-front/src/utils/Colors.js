@@ -35,7 +35,7 @@ export const itemColor = (type, dark) => {
         return '#4a148c';
       }
       return '#9c27b0';
-    case 'incident':
+    case 'xOpenctiIncident':
       if (dark) {
         return '#f44336';
       }

@@ -13,22 +13,22 @@ import {
 import inject18n from '../../../components/i18n';
 import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
-import IncidentsCards, {
-  incidentsCardsQuery,
-} from './x_opencti_incidents/IncidentsCards';
-import IncidentsLines, {
-  incidentsLinesQuery,
-} from './x_opencti_incidents/IncidentsLines';
-import IncidentCreation from './x_opencti_incidents/IncidentCreation';
+import XOpenctiIncidentsCards, {
+  xOpenctiIncidentsCardsQuery,
+} from './x_opencti_xOpenctiIncidents/XOpenctiXOpenctiIncidentsCards';
+import XOpenctiIncidentsLines, {
+  xOpenctiIncidentsLinesQuery,
+} from './x_opencti_xOpenctiIncidents/XOpenctiXOpenctiIncidentsLines';
+import XOpenctiIncidentCreation from './x_opencti_xOpenctiIncidents/XOpenctiXOpenctiIncidentCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
-class XOpenctiIncidents extends Component {
+class XOpenctiXOpenctiIncidents extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-x_opencti_incidents',
+      'view-x_opencti_xOpenctiIncidents',
     );
     this.state = {
       sortBy: propOr('created', 'sortBy', params),
@@ -45,7 +45,7 @@ class XOpenctiIncidents extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-x_opencti_incidents',
+      'view-x_opencti_xOpenctiIncidents',
       dissoc('filters', this.state),
     );
   }
@@ -119,7 +119,7 @@ class XOpenctiIncidents extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
-        exportEntityType="Incident"
+        exportEntityType="XOpenctiXOpenctiIncident"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -133,10 +133,10 @@ class XOpenctiIncidents extends Component {
         ]}
       >
         <QueryRenderer
-          query={incidentsCardsQuery}
+          query={xOpenctiIncidentsCardsQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
-            <IncidentsCards
+            <XOpenctiIncidentsCards
               data={props}
               paginationOptions={paginationOptions}
               initialLoading={props === null}
@@ -192,7 +192,7 @@ class XOpenctiIncidents extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
-        exportEntityType="Incident"
+        exportEntityType="XOpenctiXOpenctiIncident"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -206,10 +206,10 @@ class XOpenctiIncidents extends Component {
         ]}
       >
         <QueryRenderer
-          query={incidentsLinesQuery}
+          query={xOpenctiIncidentsLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
-            <IncidentsLines
+            <XOpenctiIncidentsLines
               data={props}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
@@ -239,17 +239,17 @@ class XOpenctiIncidents extends Component {
         {view === 'cards' ? this.renderCards(paginationOptions) : ''}
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IncidentCreation paginationOptions={paginationOptions} />
+          <XOpenctiIncidentCreation paginationOptions={paginationOptions} />
         </Security>
       </div>
     );
   }
 }
 
-XOpenctiIncidents.propTypes = {
+XOpenctiXOpenctiIncidents.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter)(XOpenctiIncidents);
+export default compose(inject18n, withRouter)(XOpenctiXOpenctiIncidents);

@@ -104,10 +104,10 @@ class CampaignKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/threats/campaigns/${campaignId}/knowledge/incidents`}
+            to={`/dashboard/threats/campaigns/${campaignId}/knowledge/xOpenctiIncidents`}
             selected={
               location.pathname
-              === `/dashboard/threats/campaigns/${campaignId}/knowledge/incidents`
+              === `/dashboard/threats/campaigns/${campaignId}/knowledge/xOpenctiIncidents`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -116,7 +116,7 @@ class CampaignKnowledgeBar extends Component {
               <Fire />
             </ListItemIcon>
             <ListItemText
-              primary={t('Incidents')}
+              primary={t('XOpenctiIncidents')}
               secondary={t('Attributed to this campaign')}
             />
           </MenuItem>

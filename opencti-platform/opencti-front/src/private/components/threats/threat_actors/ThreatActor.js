@@ -11,7 +11,7 @@ import ThreatActorDetails from './ThreatActorDetails';
 import ThreatActorEdition from './ThreatActorEdition';
 import ThreatActorPopover from './ThreatActorPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
-import EntityIncidentsChart from '../x_opencti_incidents/EntityIncidentsChart';
+import EntityXOpenctiIncidentsChart from '../x_opencti_xOpenctiIncidents/EntityXOpenctiXOpenctiIncidentsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityCampaignsChart from '../campaigns/EntityCampaignsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -66,7 +66,7 @@ class ThreatActorComponent extends Component {
             />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityIncidentsChart entityId={threatActor.id} inferred={true} />
+            <EntityXOpenctiIncidentsChart entityId={threatActor.id} inferred={true} />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={threatActor.id} />

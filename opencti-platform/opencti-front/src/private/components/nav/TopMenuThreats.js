@@ -99,22 +99,22 @@ class TopMenuThreats extends Component {
         </Button>
         <Button
           component={Link}
-          to="/dashboard/threats/incidents"
+          to="/dashboard/threats/xOpenctiIncidents"
           variant={
-            location.pathname.includes('/dashboard/threats/x_opencti_incidents')
+            location.pathname.includes('/dashboard/threats/x_opencti_xOpenctiIncidents')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/dashboard/threats/x_opencti_incidents')
+            location.pathname.includes('/dashboard/threats/x_opencti_xOpenctiIncidents')
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
           <Fire className={width > 950 ? classes.icon : ''} fontSize="small" />
-          {width > 950 ? t('Incidents') : ''}
+          {width > 950 ? t('XOpenctiIncidents') : ''}
         </Button>
         <Button
           component={Link}

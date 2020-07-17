@@ -96,12 +96,12 @@ class IntrusionSetKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/incidents"
+          path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/xOpenctiIncidents"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={intrusionSet.id}
               relationType="attributed-to"
-              targetEntityTypes={['Incident']}
+              targetEntityTypes={['XOpenctiIncident']}
               entityLink={link}
               creationIsFrom={false}
               {...routeProps}

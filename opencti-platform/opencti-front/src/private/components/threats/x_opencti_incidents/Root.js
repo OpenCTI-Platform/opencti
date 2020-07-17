@@ -7,22 +7,22 @@ import {
   requestSubscription,
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
-import Incident from './Incident';
-import IncidentReports from './IncidentReports';
-import IncidentKnowledge from './IncidentKnowledge';
-import IncidentObservables from './IncidentObservables';
+import XOpenctiIncident from './XOpenctiXOpenctiIncident';
+import XOpenctiIncidentReports from './XOpenctiXOpenctiIncidentReports';
+import XOpenctiIncidentKnowledge from './XOpenctiXOpenctiIncidentKnowledge';
+import XOpenctiIncidentObservables from './XOpenctiIncidentObservables';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import IncidentPopover from './IncidentPopover';
+import XOpenctiIncidentPopover from './XOpenctiXOpenctiIncidentPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_object/StixCoreObjectHistory';
 
 const subscription = graphql`
-  subscription RootIncidentSubscription($id: ID!) {
+  subscription RootXOpenctiIncidentSubscription($id: ID!) {
     stixDomainObject(id: $id) {
-      ... on Incident {
-        ...Incident_incident
-        ...IncidentEditionContainer_incident
+      ... on XOpenctiIncident {
+        ...XOpenctiIncident_xOpenctiIncident
+        ...XOpenctiIncidentEditionContainer_xOpenctiIncident
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -30,16 +30,16 @@ const subscription = graphql`
   }
 `;
 
-const incidentQuery = graphql`
-  query RootIncidentQuery($id: String!) {
-    incident(id: $id) {
+const xOpenctiIncidentQuery = graphql`
+  query RootXOpenctiIncidentQuery($id: String!) {
+    xOpenctiIncident(id: $id) {
       id
       name
       aliases
-      ...Incident_incident
-      ...IncidentReports_incident
-      ...IncidentKnowledge_incident
-      ...IncidentObservables_incident
+      ...XOpenctiIncident_xOpenctiIncident
+      ...XOpenctiIncidentReports_xOpenctiIncident
+      ...XOpenctiIncidentKnowledge_xOpenctiIncident
+      ...XOpenctiIncidentObservables_xOpenctiIncident
       ...FileImportViewer_entity
       ...FileExportViewer_entity
     }
@@ -49,16 +49,16 @@ const incidentQuery = graphql`
   }
 `;
 
-class RootIncident extends Component {
+class RootXOpenctiIncident extends Component {
   componentDidMount() {
     const {
       match: {
-        params: { incidentId },
+        params: { xOpenctiIncidentId },
       },
     } = this.props;
     const sub = requestSubscription({
       subscription,
-      variables: { id: incidentId },
+      variables: { id: xOpenctiIncidentId },
     });
     this.setState({ sub });
   }
@@ -71,93 +71,93 @@ class RootIncident extends Component {
     const {
       me,
       match: {
-        params: { incidentId },
+        params: { xOpenctiIncidentId },
       },
     } = this.props;
     return (
       <div>
         <TopBar me={me || null} />
         <QueryRenderer
-          query={incidentQuery}
-          variables={{ id: incidentId }}
+          query={xOpenctiIncidentQuery}
+          variables={{ id: xOpenctiIncidentId }}
           render={({ props }) => {
-            if (props && props.incident) {
+            if (props && props.xOpenctiIncident) {
               return (
                 <div>
                   <Route
                     exact
-                    path="/dashboard/threats/incidents/:incidentId"
+                    path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId"
                     render={(routeProps) => (
-                      <Incident {...routeProps} incident={props.incident} />
+                      <XOpenctiIncident {...routeProps} xOpenctiIncident={props.xOpenctiIncident} />
                     )}
                   />
                   <Route
                     exact
-                    path="/dashboard/threats/incidents/:incidentId/reports"
+                    path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/reports"
                     render={(routeProps) => (
-                      <IncidentReports
+                      <XOpenctiIncidentReports
                         {...routeProps}
-                        incident={props.incident}
+                        xOpenctiIncident={props.xOpenctiIncident}
                       />
                     )}
                   />
                   <Route
                     exact
-                    path="/dashboard/threats/incidents/:incidentId/knowledge"
+                    path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/knowledge"
                     render={() => (
                       <Redirect
-                        to={`/dashboard/threats/incidents/${incidentId}/knowledge/overview`}
+                        to={`/dashboard/threats/xOpenctiIncidents/${xOpenctiIncidentId}/knowledge/overview`}
                       />
                     )}
                   />
                   <Route
-                    path="/dashboard/threats/incidents/:incidentId/knowledge"
+                    path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/knowledge"
                     render={(routeProps) => (
-                      <IncidentKnowledge
+                      <XOpenctiIncidentKnowledge
                         {...routeProps}
-                        incident={props.incident}
+                        xOpenctiIncident={props.xOpenctiIncident}
                       />
                     )}
                   />
                   <Route
-                    path="/dashboard/threats/incidents/:incidentId/observables"
+                    path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/observables"
                     render={(routeProps) => (
-                      <IncidentObservables
+                      <XOpenctiIncidentObservables
                         {...routeProps}
-                        incident={props.incident}
+                        xOpenctiIncident={props.xOpenctiIncident}
                       />
                     )}
                   />
                   <Route
                     exact
-                    path="/dashboard/threats/incidents/:incidentId/files"
+                    path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/files"
                     render={(routeProps) => (
                       <React.Fragment>
                         <StixDomainObjectHeader
-                          stixDomainObject={props.incident}
-                          PopoverComponent={<IncidentPopover />}
+                          stixDomainObject={props.xOpenctiIncident}
+                          PopoverComponent={<XOpenctiIncidentPopover />}
                         />
                         <FileManager
                           {...routeProps}
-                          id={incidentId}
+                          id={xOpenctiIncidentId}
                           connectorsExport={props.connectorsForExport}
-                          entity={props.incident}
+                          entity={props.xOpenctiIncident}
                         />
                       </React.Fragment>
                     )}
                   />
                   <Route
                     exact
-                    path="/dashboard/threats/incidents/:incidentId/history"
+                    path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/history"
                     render={(routeProps) => (
                       <React.Fragment>
                         <StixDomainObjectHeader
-                          stixDomainObject={props.incident}
-                          PopoverComponent={<IncidentPopover />}
+                          stixDomainObject={props.xOpenctiIncident}
+                          PopoverComponent={<XOpenctiIncidentPopover />}
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          entityId={incidentId}
+                          entityId={xOpenctiIncidentId}
                         />
                       </React.Fragment>
                     )}
@@ -173,10 +173,10 @@ class RootIncident extends Component {
   }
 }
 
-RootIncident.propTypes = {
+RootXOpenctiIncident.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
   me: PropTypes.object,
 };
 
-export default withRouter(RootIncident);
+export default withRouter(RootXOpenctiIncident);

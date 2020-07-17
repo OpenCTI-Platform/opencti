@@ -93,7 +93,7 @@ class IndividualKnowledgeComponent extends Component {
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
-                'Incident',
+                'XOpenctiIncident',
                 'Malware',
               ]}
               entityLink={link}
@@ -113,7 +113,7 @@ class IndividualKnowledgeComponent extends Component {
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
-                'Incident',
+                'XOpenctiIncident',
                 'Malware',
               ]}
               entityLink={link}

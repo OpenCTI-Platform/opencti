@@ -36,8 +36,8 @@ const i18n = {
         'Souhaitez-vous supprimer ce mode opératoire ?',
       'Do you want to delete this campaign?':
         'Souhaitez-vous supprimer cette campagne ?',
-      'Do you want to delete this incident?':
-        'Souhaitez-vous supprimer cet incident ?',
+      'Do you want to delete this xOpenctiIncident?':
+        'Souhaitez-vous supprimer cet xOpenctiIncident ?',
       'Do you want to delete this malware?':
         'Souhaitez-vous supprimer ce code malveillant ?',
       'Do you want to delete this marking definition?':
@@ -184,8 +184,8 @@ const i18n = {
       'Update an intrusion set': 'Modifier un mode opératoire',
       'Create a campaign': 'Créer une campagne',
       'Update a campaign': 'Modifier une campagne',
-      'Create an incident': 'Créer un incident',
-      'Update an incident': 'Modifier un incident',
+      'Create an xOpenctiIncident': 'Créer un xOpenctiIncident',
+      'Update an xOpenctiIncident': 'Modifier un xOpenctiIncident',
       'Create a malware': 'Créer un code malveillant',
       'Update a malware': 'Modifier un code malveillant',
       'New aliases': 'Nouvel aliases',
@@ -334,8 +334,8 @@ const i18n = {
       Attribution: 'Attribution',
       Campaigns: 'Campagnes',
       Campaign: 'Campagne',
-      Incidents: 'Incidents',
-      Incident: 'Incident',
+      XOpenctiIncidents: 'XOpenctiIncidents',
+      XOpenctiIncident: 'XOpenctiIncident',
       Malwares: 'Codes malveillants',
       Malware: 'Code malveillant',
       'Courses of action': 'Conduites à suivre',
@@ -439,9 +439,9 @@ const i18n = {
       'Attributed to this campaign': 'Attribué à cette campagne',
       'Used in this campaign': 'Utilisé dans cette campagne',
       'Targeted in this campaign': 'Ciblé dans cette campagne',
-      'Origins of this incident': 'Origine de cet incident',
-      'Targeted in this incident': 'Ciblé dans cet incident',
-      'Used in this incident': 'Utilisé dans cet incident',
+      'Origins of this xOpenctiIncident': 'Origine de cet xOpenctiIncident',
+      'Targeted in this xOpenctiIncident': 'Ciblé dans cet xOpenctiIncident',
+      'Used in this xOpenctiIncident': 'Utilisé dans cet xOpenctiIncident',
       'Origins of the malware': 'Origines de ce code',
       Usage: 'Utilisation',
       'Threats using this malware': 'Menaces utilisant ce code',
@@ -660,7 +660,7 @@ const i18n = {
       '[Victimology] Distribution': '[Victimologie] Répartition',
       '[Victimology] Timeseries': '[Victimologie] Séries temporelles',
       '[Campaigns] Timeseries': '[Campagnes] Séries temporelles',
-      '[Incidents] Timeseries': '[Incidents] Séries temporelles',
+      '[XOpenctiIncidents] Timeseries': '[XOpenctiIncidents] Séries temporelles',
       '[TTPs] Distribution': '[TTPs] Répartition',
       '[Killchain] Tactics and procedures':
         '[Killchain] Tactiques et procédures',
@@ -737,8 +737,8 @@ const i18n = {
         "Explorer les campagnes d'attaques des données à travers le temps et les entités impliquées.",
       'Explore the techniques, tactics and procedures of the dataset through time and entities who used its.':
         'Explorer les techniques, tactiques et procédures des données à travers le temps et les entités qui les utilisent.',
-      'Explore the kill chains of entities through time and other contextual information like campaigns or incidents.':
-        "Explorer les kill chains des entités à travers le temps et d'autres informations contextuelles comme les campagnes ou les x_opencti_incidents.",
+      'Explore the kill chains of entities through time and other contextual information like campaigns or xOpenctiIncidents.':
+        "Explorer les kill chains des entités à travers le temps et d'autres informations contextuelles comme les campagnes ou les x_opencti_xOpenctiIncidents.",
       'Explore the vulnerabilities used by entities through time and kill chain phases.':
         'Explorer les vulnérabilités utilisées par les entités à travers le temps et les phases de la kill chain.',
       'Explore the observables of the dataset though time to visualize clusters and correlations.':
@@ -763,7 +763,7 @@ const i18n = {
       'entity_attack-pattern': 'TTP',
       'entity_intrusion-set': 'Mode opératoire',
       entity_campaign: 'Campagne',
-      entity_incident: 'Incident',
+      entity_xOpenctiIncident: 'XOpenctiIncident',
       entity_malware: 'Code malveillant',
       entity_tool: 'Outil',
       entity_organization: 'Organisation',
@@ -941,7 +941,7 @@ const i18n = {
       'entity_attack-pattern': 'TTP',
       'entity_intrusion-set': 'Intrusion set',
       entity_campaign: 'Campaign',
-      entity_incident: 'Incident',
+      entity_xOpenctiIncident: 'XOpenctiIncident',
       entity_malware: 'Malware',
       entity_tool: 'Tool',
       entity_organization: 'Organization',
