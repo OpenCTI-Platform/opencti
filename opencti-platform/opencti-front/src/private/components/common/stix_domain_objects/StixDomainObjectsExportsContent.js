@@ -14,7 +14,9 @@ import StixDomainObjectsExportCreation from './StixDomainObjectsExportCreation';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import FileLine from '../files/FileLine';
 import inject18n from '../../../../components/i18n';
-import Security, { KNOWLEDGE_KNGETEXPORT_KNASKEXPORT } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
+} from '../../../../utils/Security';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -92,9 +94,11 @@ class StixDomainObjectsExportsContentComponent extends Component {
                 context={context}
               />
             </Security>
-            <IconButton color="inherit"
+            <IconButton
+              color="inherit"
               classes={{ root: classes.buttonClose }}
-              onClick={handleToggle.bind(this)}>
+              onClick={handleToggle.bind(this)}
+            >
               <Close />
             </IconButton>
             <div className="clearfix" />

@@ -37,7 +37,10 @@ class IndividualDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixDomainObjectLabels labels={individual.labels} id={individual.id} />
+          <StixDomainObjectLabels
+            labels={individual.labels}
+            id={individual.id}
+          />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -53,7 +56,10 @@ class IndividualDetailsComponent extends Component {
           >
             {t('Contact information')}
           </Typography>
-          <Markdown className="markdown" source={individual.contact_information} />
+          <Markdown
+            className="markdown"
+            source={individual.contact_information}
+          />
         </Paper>
       </div>
     );

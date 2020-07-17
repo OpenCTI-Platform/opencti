@@ -82,7 +82,10 @@ class LabelLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <LabelPopover labelId={node.id} paginationOptions={paginationOptions} />
+          <LabelPopover
+            labelId={node.id}
+            paginationOptions={paginationOptions}
+          />
         </ListItemSecondaryAction>
       </ListItem>
     );

@@ -247,7 +247,9 @@ class StixCoreRelationshipContainer extends Component {
               display: 'inline-block',
             }}
           >
-            <strong>{t(`relation_${stixCoreRelationship.relationship_type}`)}</strong>
+            <strong>
+              {t(`relation_${stixCoreRelationship.relationship_type}`)}
+            </strong>
             {stixCoreRelationship.relationship_type === 'indicates'
             && !stixCoreRelationship.inferred ? (
               <span>
@@ -344,7 +346,9 @@ class StixCoreRelationshipContainer extends Component {
               >
                 {t('Creation date')}
               </Typography>
-              {stixCoreRelationship.inferred ? '-' : fld(stixCoreRelationship.created_at)}
+              {stixCoreRelationship.inferred
+                ? '-'
+                : fld(stixCoreRelationship.created_at)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -352,7 +356,9 @@ class StixCoreRelationshipContainer extends Component {
               >
                 {t('Modification date')}
               </Typography>
-              {stixCoreRelationship.inferred ? '-' : fld(stixCoreRelationship.updated_at)}
+              {stixCoreRelationship.inferred
+                ? '-'
+                : fld(stixCoreRelationship.updated_at)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -378,7 +384,11 @@ class StixCoreRelationshipContainer extends Component {
                 {t('Confidence level')}
               </Typography>
               <ItemConfidenceLevel
-                level={stixCoreRelationship.inferred ? 99 : stixCoreRelationship.weight}
+                level={
+                  stixCoreRelationship.inferred
+                    ? 99
+                    : stixCoreRelationship.weight
+                }
               />
               <Typography
                 variant="h3"
@@ -387,7 +397,9 @@ class StixCoreRelationshipContainer extends Component {
               >
                 {t('First seen')}
               </Typography>
-              {stixCoreRelationship.inferred ? '-' : fld(stixCoreRelationship.first_seen)}
+              {stixCoreRelationship.inferred
+                ? '-'
+                : fld(stixCoreRelationship.first_seen)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -395,7 +407,9 @@ class StixCoreRelationshipContainer extends Component {
               >
                 {t('Last seen')}
               </Typography>
-              {stixCoreRelationship.inferred ? '-' : fld(stixCoreRelationship.last_seen)}
+              {stixCoreRelationship.inferred
+                ? '-'
+                : fld(stixCoreRelationship.last_seen)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -433,7 +447,9 @@ class StixCoreRelationshipContainer extends Component {
             <div style={{ margin: '40px 0 0px 0' }}>
               <Grid container={true} spacing={3}>
                 <Grid item={true} xs={6}>
-                  <StixCoreRelationshipStixCoreRelationships entityId={stixCoreRelationship.id} />
+                  <StixCoreRelationshipStixCoreRelationships
+                    entityId={stixCoreRelationship.id}
+                  />
                 </Grid>
                 <Grid item={true} xs={6}>
                   <EntityLastReports entityId={stixCoreRelationship.id} />
@@ -489,123 +505,126 @@ StixCoreRelationshipContainer.propTypes = {
   location: PropTypes.object,
 };
 
-const StixCoreRelationshipOverview = createFragmentContainer(StixCoreRelationshipContainer, {
-  stixCoreRelationship: graphql`
-    fragment StixCoreRelationshipOverview_stixCoreRelationship on StixCoreRelationship {
-      id
-      relationship_type
-      weight
-      first_seen
-      last_seen
-      description
-      inferred
-      role_played
-      fromRole
-      toRole
-      created_at
-      updated_at
-      createdBy {
-        node {
-          id
-          name
-          entity_type
-        }
-      }
-      markingDefinitions {
-        edges {
+const StixCoreRelationshipOverview = createFragmentContainer(
+  StixCoreRelationshipContainer,
+  {
+    stixCoreRelationship: graphql`
+      fragment StixCoreRelationshipOverview_stixCoreRelationship on StixCoreRelationship {
+        id
+        relationship_type
+        weight
+        first_seen
+        last_seen
+        description
+        inferred
+        role_played
+        fromRole
+        toRole
+        created_at
+        updated_at
+        createdBy {
           node {
             id
-            definition
+            name
+            entity_type
           }
         }
-      }
-      inferences {
-        edges {
-          node {
-            id
-            relationship_type
-            role_played
-            inferred
+        markingDefinitions {
+          edges {
+            node {
+              id
+              definition
+            }
+          }
+        }
+        inferences {
+          edges {
+            node {
+              id
+              relationship_type
+              role_played
+              inferred
+              from {
+                id
+                name
+                entity_type
+                parent_types
+                ... on StixCyberObservable {
+                  observable_value
+                }
+              }
+              to {
+                id
+                name
+                entity_type
+                parent_types
+                ... on StixCyberObservable {
+                  observable_value
+                }
+                ... on StixCoreRelationship {
+                  from {
+                    id
+                    entity_type
+                    name
+                  }
+                  to {
+                    id
+                    entity_type
+                    name
+                  }
+                }
+              }
+            }
+          }
+        }
+        from {
+          id
+          entity_type
+          parent_types
+          name
+          description
+          ... on StixCyberObservable {
+            observable_value
+          }
+          ... on StixCoreRelationship {
             from {
               id
-              name
               entity_type
-              parent_types
-              ... on StixCyberObservable {
-                observable_value
-              }
+              name
             }
             to {
               id
-              name
               entity_type
-              parent_types
-              ... on StixCyberObservable {
-                observable_value
-              }
-              ... on StixCoreRelationship {
-                from {
-                  id
-                  entity_type
-                  name
-                }
-                to {
-                  id
-                  entity_type
-                  name
-                }
-              }
+              name
+            }
+          }
+        }
+        to {
+          id
+          entity_type
+          parent_types
+          name
+          description
+          ... on StixCyberObservable {
+            observable_value
+          }
+          ... on StixCoreRelationship {
+            from {
+              id
+              entity_type
+              name
+            }
+            to {
+              id
+              entity_type
+              name
             }
           }
         }
       }
-      from {
-        id
-        entity_type
-        parent_types
-        name
-        description
-        ... on StixCyberObservable {
-          observable_value
-        }
-        ... on StixCoreRelationship {
-          from {
-            id
-            entity_type
-            name
-          }
-          to {
-            id
-            entity_type
-            name
-          }
-        }
-      }
-      to {
-        id
-        entity_type
-        parent_types
-        name
-        description
-        ... on StixCyberObservable {
-          observable_value
-        }
-        ... on StixCoreRelationship {
-          from {
-            id
-            entity_type
-            name
-          }
-          to {
-            id
-            entity_type
-            name
-          }
-        }
-      }
-    }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

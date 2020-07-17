@@ -207,7 +207,9 @@ class StixDomainObjectThreatKnowledge extends Component {
               style={{ height: 120 }}
             >
               <QueryRenderer
-                query={stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery}
+                query={
+                  stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery
+                }
                 variables={{
                   fromId: stixDomainObjectId,
                   type: 'indicates',
@@ -251,7 +253,9 @@ class StixDomainObjectThreatKnowledge extends Component {
               style={{ height: 120 }}
             >
               <QueryRenderer
-                query={stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery}
+                query={
+                  stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery
+                }
                 variables={{
                   fromId: stixDomainObjectId,
                   endDate: monthsAgo(1),

@@ -18,7 +18,12 @@ import { findById as findKillChainPhaseById } from './killChainPhase';
 import { findById as findStixCyberObservableById } from './stixCyberObservable';
 import { checkIndicatorSyntax, extractObservables } from '../python/pythonBridge';
 import { FunctionalError } from '../config/errors';
-import { isStixCyberObservable, generateStandardId, ENTITY_TYPE_INDICATOR, RELATION_BASED_ON } from '../utils/idGenerator';
+import {
+  isStixCyberObservable,
+  generateStandardId,
+  ENTITY_TYPE_INDICATOR,
+  RELATION_BASED_ON,
+} from '../utils/idGenerator';
 import { askEnrich } from './enrichment';
 
 const OpenCTITimeToLive = {

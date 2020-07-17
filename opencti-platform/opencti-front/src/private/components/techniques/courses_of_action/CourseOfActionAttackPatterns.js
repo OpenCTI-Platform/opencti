@@ -52,7 +52,8 @@ class CourseOfActionAttackPatternComponent extends Component {
         const attackPatterns = node.getLinkedRecord('attackPatterns');
         const edges = attackPatterns.getLinkedRecords('edges');
         const newEdges = filter(
-          (n) => n.getLinkedRecord('node').getValue('id') !== attackPatternEdge.node.id,
+          (n) => n.getLinkedRecord('node').getValue('id')
+            !== attackPatternEdge.node.id,
           edges,
         );
         attackPatterns.setLinkedRecords(newEdges, 'edges');

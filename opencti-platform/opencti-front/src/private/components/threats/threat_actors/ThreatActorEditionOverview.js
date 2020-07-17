@@ -91,10 +91,11 @@ const threatActorMutationRelationAdd = graphql`
 const threatActorMutationRelationDelete = graphql`
   mutation ThreatActorEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationType: String!
   ) {
     threatActorEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationType: $relationType) {
         ...ThreatActorEditionOverview_threatActor
       }
     }

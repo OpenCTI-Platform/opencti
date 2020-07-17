@@ -121,7 +121,9 @@ class EntityStixCoreRelationshipsChart extends Component {
     };
     return (
       <QueryRenderer
-        query={entityStixCoreRelationshipsChartStixCoreRelationshipTimeSeriesQuery}
+        query={
+          entityStixCoreRelationshipsChartStixCoreRelationshipTimeSeriesQuery
+        }
         variables={stixCoreRelationshipsTimeSeriesVariables}
         render={({ props }) => {
           if (props && props.stixCoreRelationshipsTimeSeries) {
@@ -211,11 +213,13 @@ class EntityStixCoreRelationshipsChart extends Component {
             {title || t('Entity usage')}
           </Typography>
           <Security needs={[EXPLORE_EXUPDATE]}>
-            <IconButton color="secondary"
+            <IconButton
+              color="secondary"
               aria-label="Update"
               size="small"
               classes={{ root: classes.updateButton }}
-              onClick={handleOpenConfig.bind(this, configuration)}>
+              onClick={handleOpenConfig.bind(this, configuration)}
+            >
               <SettingsInputComponent fontSize="inherit" />
             </IconButton>
           </Security>
@@ -285,4 +289,7 @@ EntityStixCoreRelationshipsChart.propTypes = {
   handleOpenConfig: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(EntityStixCoreRelationshipsChart);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(EntityStixCoreRelationshipsChart);

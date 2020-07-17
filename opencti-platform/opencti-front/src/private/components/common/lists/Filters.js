@@ -273,7 +273,8 @@ class Filters extends Component {
                     onInputChange={this.searchEntities.bind(this, filterKey)}
                     onChange={this.handleChange.bind(this, filterKey)}
                     value={currentValue ? currentValue.value : null}
-                    getOptionSelected={(option, value) => option.value === value}
+                    getOptionSelected={(option, value) => option.value === value
+                    }
                     renderInput={(params) => (
                       <TextField
                         {...params}

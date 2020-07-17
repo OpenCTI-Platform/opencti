@@ -50,9 +50,7 @@ class RegionOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdBy={pathOr(null, ['createdBy', 'node'], region)}
-          />
+          <ItemAuthor createdBy={pathOr(null, ['createdBy', 'node'], region)} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -93,7 +91,4 @@ const RegionOverview = createFragmentContainer(RegionOverviewComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(RegionOverview);
+export default compose(inject18n, withStyles(styles))(RegionOverview);

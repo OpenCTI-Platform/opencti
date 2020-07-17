@@ -91,7 +91,8 @@ class UserEdition extends Component {
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}>
+            onClick={handleClose.bind(this)}
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
@@ -104,20 +105,21 @@ class UserEdition extends Component {
           <AppBar position="static" elevation={0} className={classes.appBar}>
             <Tabs
               value={this.state.currentTab}
-              onChange={this.handleChangeTab.bind(this)}>
+              onChange={this.handleChangeTab.bind(this)}
+            >
               <Tab label={t('Overview')} />
               <Tab disabled={external} label={t('Password')} />
               <Tab label={t('Groups')} />
             </Tabs>
           </AppBar>
           {this.state.currentTab === 0 && (
-            <UserEditionOverview user={this.props.user} context={editContext}/>
+            <UserEditionOverview user={this.props.user} context={editContext} />
           )}
           {this.state.currentTab === 1 && (
-            <UserEditionPassword user={this.props.user} context={editContext}/>
+            <UserEditionPassword user={this.props.user} context={editContext} />
           )}
           {this.state.currentTab === 2 && (
-            <UserEditionGroups user={this.props.user} context={editContext}/>
+            <UserEditionGroups user={this.props.user} context={editContext} />
           )}
         </div>
       </div>

@@ -167,7 +167,8 @@ class ReportPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <ReportEditionContainer report={props.report}
+                  <ReportEditionContainer
+                    report={props.report}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

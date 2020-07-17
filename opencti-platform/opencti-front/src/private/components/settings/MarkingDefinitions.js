@@ -127,7 +127,4 @@ MarkingDefinitions.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-)(MarkingDefinitions);
+export default compose(inject18n, withRouter)(MarkingDefinitions);

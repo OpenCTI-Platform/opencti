@@ -38,6 +38,7 @@ export const addStixCyberObservableRelationship = async (user, input, reversedRe
   });
   return notify(BUS_TOPICS.StixCyberObservableRelationship.ADDED_TOPIC, created, user);
 };
+
 export const stixCyberObservableRelationshipDelete = async (user, stixCyberObservableRelationshipId) => {
   return deleteRelationById(user, stixCyberObservableRelationshipId, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, {
     noLog: true,

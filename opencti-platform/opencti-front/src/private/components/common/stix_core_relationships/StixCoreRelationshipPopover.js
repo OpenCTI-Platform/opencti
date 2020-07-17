@@ -192,4 +192,7 @@ StixCoreRelationshipPopover.propTypes = {
   onDelete: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(StixCoreRelationshipPopover);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixCoreRelationshipPopover);

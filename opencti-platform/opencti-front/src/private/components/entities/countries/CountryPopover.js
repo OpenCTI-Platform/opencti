@@ -20,7 +20,9 @@ import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { countryEditionQuery } from './CountryEdition';
 import CountryEditionContainer from './CountryEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -167,7 +169,8 @@ class CountryPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <CountryEditionContainer country={props.country}
+                  <CountryEditionContainer
+                    country={props.country}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

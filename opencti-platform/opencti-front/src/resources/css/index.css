@@ -193,7 +193,7 @@ div.srd-port:hover {
 }
 
 .srd-default-link-marker {
-  fill: rgb(165,165,165) !important;
+  fill: rgb(165, 165, 165) !important;
 }
 
 .srd-default-link--path-inferred {

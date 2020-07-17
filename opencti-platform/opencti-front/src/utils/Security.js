@@ -28,7 +28,10 @@ const granted = (me, capabilities, matchAll = false) => {
   const availableCapabilities = [];
   for (let index = 0; index < capabilities.length; index += 1) {
     const checkCapability = capabilities[index];
-    const matchingCapabilities = filter((r) => includes(checkCapability, r), userCapabilities);
+    const matchingCapabilities = filter(
+      (r) => includes(checkCapability, r),
+      userCapabilities,
+    );
     if (matchingCapabilities.length > 0) availableCapabilities.push(checkCapability);
   }
   if (matchAll) return availableCapabilities.length === capabilities.length;

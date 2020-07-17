@@ -80,7 +80,4 @@ SimpleLabelWidget.propTypes = {
   nsd: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(SimpleLabelWidget);
+export default compose(inject18n, withStyles(styles))(SimpleLabelWidget);

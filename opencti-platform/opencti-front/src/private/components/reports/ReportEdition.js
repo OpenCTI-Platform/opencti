@@ -8,10 +8,7 @@ import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../components/i18n';
 import ReportEditionContainer from './ReportEditionContainer';
-import {
-  commitMutation,
-  QueryRenderer,
-} from '../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import { reportEditionOverviewFocus } from './ReportEditionOverview';
 import Loader from '../../../components/Loader';
 
@@ -68,23 +65,28 @@ class ReportEdition extends Component {
     const { classes, reportId } = this.props;
     return (
       <div>
-        <Fab onClick={this.handleOpen.bind(this)}
+        <Fab
+          onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Edit"
-          className={classes.editButton}>
+          className={classes.editButton}
+        >
           <Edit />
         </Fab>
-        <Drawer open={this.state.open}
+        <Drawer
+          open={this.state.open}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}>
+          onClose={this.handleClose.bind(this)}
+        >
           <QueryRenderer
             query={reportEditionQuery}
             variables={{ id: reportId }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <ReportEditionContainer report={props.report}
+                  <ReportEditionContainer
+                    report={props.report}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );

@@ -94,8 +94,9 @@ import {
   isStixSightingRelationship,
   isStixRelationship,
   generateInternalId,
-  ABSTRACT_BASIC_RELATIONSHIP, isStixCyberObservableRelationship
-} from "../utils/idGenerator";
+  ABSTRACT_BASIC_RELATIONSHIP,
+  isStixCyberObservableRelationship,
+} from '../utils/idGenerator';
 import { lockResource } from './redis';
 import { STIX_SPEC_VERSION } from './stix';
 

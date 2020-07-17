@@ -117,10 +117,7 @@ class ImportComponent extends Component {
                 <FileUploader onUploadSuccess={() => relay.refetch()} />
               </div>
               <div className="clearfix" />
-              <Paper
-                classes={{ root: classes.paper }}
-                elevation={2}
-              >
+              <Paper classes={{ root: classes.paper }} elevation={2}>
                 {edges.length ? (
                   <List>
                     {edges.map((file) => (
@@ -134,7 +131,9 @@ class ImportComponent extends Component {
                     ))}
                   </List>
                 ) : (
-                  <div style={{ padding: 10 }}>{t('No file for the moment')}</div>
+                  <div style={{ padding: 10 }}>
+                    {t('No file for the moment')}
+                  </div>
                 )}
               </Paper>
             </div>
@@ -143,7 +142,11 @@ class ImportComponent extends Component {
             <Typography variant="h4" gutterBottom={true}>
               {t('Enabled import connectors')}
             </Typography>
-            <Paper classes={{ root: classes.paper }} elevation={2} style={{ marginTop: 15 }}>
+            <Paper
+              classes={{ root: classes.paper }}
+              elevation={2}
+              style={{ marginTop: 15 }}
+            >
               {connectorsImport.length ? (
                 <List>
                   {connectorsImport.map((connector) => (
@@ -216,7 +219,4 @@ const Import = createRefetchContainer(
   ImportQuery,
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(Import);
+export default compose(inject18n, withStyles(styles))(Import);

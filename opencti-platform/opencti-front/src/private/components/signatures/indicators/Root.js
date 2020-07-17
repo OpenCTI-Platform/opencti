@@ -138,7 +138,10 @@ class RootIndicator extends Component {
                     exact
                     path="/dashboard/signatures/indicators/:indicatorId/knowledge/relations/:relationId"
                     render={(routeProps) => (
-                      <StixCoreRelationship entityId={indicatorId} {...routeProps} />
+                      <StixCoreRelationship
+                        entityId={indicatorId}
+                        {...routeProps}
+                      />
                     )}
                   />
                 </div>

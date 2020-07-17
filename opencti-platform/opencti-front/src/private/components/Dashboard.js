@@ -283,7 +283,11 @@ const dashboardLastObservablesQuery = graphql`
     $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode
   ) {
-    stixCyberObservables(first: $first, orderBy: $orderBy, orderMode: $orderMode) {
+    stixCyberObservables(
+      first: $first
+      orderBy: $orderBy
+      orderMode: $orderMode
+    ) {
       edges {
         node {
           id
@@ -317,7 +321,10 @@ const dashboardStixDomainObjectsNumberQuery = graphql`
 `;
 
 const dashboardStixCoreRelationshipsNumberQuery = graphql`
-  query DashboardStixCoreRelationshipsNumberQuery($type: String, $endDate: DateTime) {
+  query DashboardStixCoreRelationshipsNumberQuery(
+    $type: String
+    $endDate: DateTime
+  ) {
     stixCoreRelationshipsNumber(type: $type, endDate: $endDate) {
       total
       count

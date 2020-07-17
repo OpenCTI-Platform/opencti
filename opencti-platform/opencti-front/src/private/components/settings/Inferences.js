@@ -108,9 +108,7 @@ class Inferences extends Component {
                         >
                           {inference.description}
                         </Typography>
-                        <pre>
-                          {inference.rule}
-                        </pre>
+                        <pre>{inference.rule}</pre>
                       </CardContent>
                       <CardActions disableSpacing className={classes.actions}>
                         <FormControlLabel

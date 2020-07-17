@@ -149,7 +149,9 @@ class EntityStixCoreRelationshipsDonut extends Component {
 
     return (
       <QueryRenderer
-        query={entityStixCoreRelationshipsDonutStixCoreRelationshipDistributionQuery}
+        query={
+          entityStixCoreRelationshipsDonutStixCoreRelationshipDistributionQuery
+        }
         variables={stixCoreRelationshipsDistributionVariables}
         render={({ props }) => {
           if (
@@ -182,9 +184,11 @@ class EntityStixCoreRelationshipsDonut extends Component {
                     label={this.renderLabel}
                     labelLine={true}
                   >
-                    {props.stixCoreRelationshipsDistribution.map((entry, index) => (
-                      <Cell key={index} fill={itemColor(entry.label)} />
-                    ))}
+                    {props.stixCoreRelationshipsDistribution.map(
+                      (entry, index) => (
+                        <Cell key={index} fill={itemColor(entry.label)} />
+                      ),
+                    )}
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>
@@ -239,15 +243,18 @@ class EntityStixCoreRelationshipsDonut extends Component {
           <Typography
             variant="h4"
             gutterBottom={true}
-            style={{ float: 'left', padding: '10px 0 0 10px' }}>
+            style={{ float: 'left', padding: '10px 0 0 10px' }}
+          >
             {title || `${t('Distribution:')} ${t(`entity_${entityType}`)}`}
           </Typography>
           <Security needs={[EXPLORE_EXUPDATE]}>
-            <IconButton color="secondary"
+            <IconButton
+              color="secondary"
               aria-label="Update"
               size="small"
               classes={{ root: classes.updateButton }}
-              onClick={handleOpenConfig.bind(this, configuration)}>
+              onClick={handleOpenConfig.bind(this, configuration)}
+            >
               <SettingsInputComponent fontSize="inherit" />
             </IconButton>
           </Security>

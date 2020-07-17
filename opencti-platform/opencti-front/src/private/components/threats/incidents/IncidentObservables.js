@@ -52,10 +52,7 @@ class IncidentObservablesComponent extends Component {
           exact
           path="/dashboard/threats/incidents/:incidentId/observables/relations/:relationId"
           render={(routeProps) => (
-            <StixCoreRelationship
-              entityId={incident.id}
-              {...routeProps}
-            />
+            <StixCoreRelationship entityId={incident.id} {...routeProps} />
           )}
         />
         <Route

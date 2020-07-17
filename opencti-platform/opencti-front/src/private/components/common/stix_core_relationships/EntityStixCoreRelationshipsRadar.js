@@ -90,7 +90,9 @@ class EntityStixCoreRelationshipsRadar extends Component {
     };
     return (
       <QueryRenderer
-        query={entityStixCoreRelationshipsRadarStixCoreRelationshipDistributionQuery}
+        query={
+          entityStixCoreRelationshipsRadarStixCoreRelationshipDistributionQuery
+        }
         variables={stixCoreRelationshipsDistributionVariables}
         render={({ props }) => {
           if (
@@ -222,4 +224,7 @@ EntityStixCoreRelationshipsRadar.propTypes = {
   handleOpenConfig: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(EntityStixCoreRelationshipsRadar);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(EntityStixCoreRelationshipsRadar);

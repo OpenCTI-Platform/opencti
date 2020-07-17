@@ -20,7 +20,9 @@ import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { cityEditionQuery } from './CityEdition';
 import CityEditionContainer from './CityEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -167,7 +169,8 @@ class CityPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <CityEditionContainer city={props.city}
+                  <CityEditionContainer
+                    city={props.city}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

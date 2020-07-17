@@ -4,7 +4,10 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIosOutlined, DescriptionOutlined } from '@material-ui/icons';
+import {
+  ArrowForwardIosOutlined,
+  DescriptionOutlined,
+} from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -59,7 +62,10 @@ class TopMenuReport extends Component {
           <DescriptionOutlined className={classes.icon} fontSize="small" />
           {t('Reports')}
         </Button>
-        <ArrowForwardIosOutlined color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
           to={`/dashboard/reports/all/${reportId}`}

@@ -37,10 +37,14 @@ class StixCyberObservableComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={2}>
-            <StixCyberObservableOverview stixCyberObservable={stixCyberObservable} />
+            <StixCyberObservableOverview
+              stixCyberObservable={stixCyberObservable}
+            />
           </Grid>
           <Grid item={true} xs={5}>
-            <StixCyberObservableDetails stixCyberObservable={stixCyberObservable} />
+            <StixCyberObservableDetails
+              stixCyberObservable={stixCyberObservable}
+            />
           </Grid>
           <Grid item={true} xs={5}>
             <EntityLastReports stixCyberObservableId={stixCyberObservable.id} />
@@ -53,7 +57,9 @@ class StixCyberObservableComponent extends Component {
           style={{ marginTop: 30 }}
         >
           <Grid item={true} xs={7}>
-            <StixCyberObservableIndicators stixCyberObservable={stixCyberObservable} />
+            <StixCyberObservableIndicators
+              stixCyberObservable={stixCyberObservable}
+            />
           </Grid>
           <Grid item={true} xs={5}>
             <EntityExternalReferences entityId={stixCyberObservable.id} />
@@ -64,7 +70,9 @@ class StixCyberObservableComponent extends Component {
           inputType="observableRefs"
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixCyberObservableEdition stixCyberObservableId={stixCyberObservable.id} />
+          <StixCyberObservableEdition
+            stixCyberObservableId={stixCyberObservable.id}
+          />
         </Security>
       </div>
     );
@@ -77,16 +85,19 @@ StixCyberObservableComponent.propTypes = {
   t: PropTypes.func,
 };
 
-const StixCyberObservable = createFragmentContainer(StixCyberObservableComponent, {
-  stixCyberObservable: graphql`
-    fragment StixCyberObservable_stixCyberObservable on StixCyberObservable {
-      id
-      ...StixCyberObservableHeader_stixCyberObservable
-      ...StixCyberObservableOverview_stixCyberObservable
-      ...StixCyberObservableDetails_stixCyberObservable
-      ...StixCyberObservableIndicators_stixCyberObservable
-    }
-  `,
-});
+const StixCyberObservable = createFragmentContainer(
+  StixCyberObservableComponent,
+  {
+    stixCyberObservable: graphql`
+      fragment StixCyberObservable_stixCyberObservable on StixCyberObservable {
+        id
+        ...StixCyberObservableHeader_stixCyberObservable
+        ...StixCyberObservableOverview_stixCyberObservable
+        ...StixCyberObservableDetails_stixCyberObservable
+        ...StixCyberObservableIndicators_stixCyberObservable
+      }
+    `,
+  },
+);
 
 export default compose(inject18n, withStyles(styles))(StixCyberObservable);

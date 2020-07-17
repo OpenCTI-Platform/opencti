@@ -52,10 +52,7 @@ class CityObservablesComponent extends Component {
           exact
           path="/dashboard/entities/cities/:cityId/observables/relations/:relationId"
           render={(routeProps) => (
-            <StixCoreRelationship
-              entityId={city.id}
-              {...routeProps}
-            />
+            <StixCoreRelationship entityId={city.id} {...routeProps} />
           )}
         />
         <Route
@@ -84,18 +81,15 @@ CityObservablesComponent.propTypes = {
   t: PropTypes.func,
 };
 
-const CityObservables = createFragmentContainer(
-  CityObservablesComponent,
-  {
-    city: graphql`
-      fragment CityObservables_city on City {
-        id
-        name
-        alias
-      }
-    `,
-  },
-);
+const CityObservables = createFragmentContainer(CityObservablesComponent, {
+  city: graphql`
+    fragment CityObservables_city on City {
+      id
+      name
+      alias
+    }
+  `,
+});
 
 export default compose(
   inject18n,

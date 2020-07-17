@@ -248,7 +248,4 @@ EntityReportsChart.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(EntityReportsChart);
+export default compose(inject18n, withStyles(styles))(EntityReportsChart);

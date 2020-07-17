@@ -209,7 +209,10 @@ const stixSightingRelationshipCreationFromEntityMutation = graphql`
     $input: StixSightingRelationshipAddInput!
     $reversedReturn: Boolean
   ) {
-    stixSightingRelationshipAdd(input: $input, reversedReturn: $reversedReturn) {
+    stixSightingRelationshipAdd(
+      input: $input
+      reversedReturn: $reversedReturn
+    ) {
       ...EntityStixSightingRelationshipLine_node
     }
   }
@@ -375,7 +378,9 @@ class StixSightingRelationshipCreationFromEntity extends Component {
         <div className={classes.containerList}>
           {!onlyObservables ? (
             <QueryRenderer
-              query={stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery}
+              query={
+                stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery
+              }
               variables={{ count: 25, ...stixDomainObjectsPaginationOptions }}
               render={({ props }) => {
                 if (props) {
@@ -393,7 +398,9 @@ class StixSightingRelationshipCreationFromEntity extends Component {
             ''
           )}
           <QueryRenderer
-            query={stixSightingRelationshipCreationFromEntityStixCyberObservablesLinesQuery}
+            query={
+              stixSightingRelationshipCreationFromEntityStixCyberObservablesLinesQuery
+            }
             variables={{
               search: this.state.search,
               types: targetEntityTypes,

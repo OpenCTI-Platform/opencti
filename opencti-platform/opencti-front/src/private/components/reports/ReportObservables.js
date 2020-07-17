@@ -69,7 +69,10 @@ class ReportObservablesComponent extends Component {
 
   handleToggle(type) {
     if (this.state.types.includes(type)) {
-      this.setState({ types: filter((t) => t !== type, this.state.types) }, () => this.saveView());
+      this.setState(
+        { types: filter((t) => t !== type, this.state.types) },
+        () => this.saveView(),
+      );
     } else {
       this.setState({ types: append(type, this.state.types) }, () => this.saveView());
     }

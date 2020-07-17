@@ -51,10 +51,12 @@ class StixCyberObservableRelationshipEdition extends Component {
       handleDelete,
     } = this.props;
     return (
-      <Drawer open={open}
+      <Drawer
+        open={open}
         anchor="right"
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose.bind(this)}>
+        onClose={handleClose.bind(this)}
+      >
         {stixCyberObservableRelationshipId ? (
           <QueryRenderer
             query={stixCyberObservableRelationshipEditionQuery}
@@ -64,7 +66,9 @@ class StixCyberObservableRelationshipEdition extends Component {
                 return (
                   <StixCyberObservableRelationEditionOverview
                     stixDomainObject={stixDomainObject}
-                    stixCyberObservableRelationship={props.stixCyberObservableRelationship}
+                    stixCyberObservableRelationship={
+                      props.stixCyberObservableRelationship
+                    }
                     handleClose={handleClose.bind(this)}
                     handleDelete={
                       typeof handleDelete === 'function'

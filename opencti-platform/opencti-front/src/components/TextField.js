@@ -12,7 +12,7 @@ const TextField = (props) => {
     onChange,
     onFocus,
     onSubmit,
-      detectDuplicate,
+    detectDuplicate,
   } = props;
   const internalOnChange = React.useCallback(
     (event) => {
@@ -47,7 +47,7 @@ const TextField = (props) => {
       onFocus={internalOnFocus}
       onBlur={internalOnBlur}
       helperText={
-          detectDuplicate && (isNil(meta.error) || !meta.touched) ? (
+        detectDuplicate && (isNil(meta.error) || !meta.touched) ? (
           <StixDomainObjectDetectDuplicate
             types={detectDuplicate}
             value={meta.value}

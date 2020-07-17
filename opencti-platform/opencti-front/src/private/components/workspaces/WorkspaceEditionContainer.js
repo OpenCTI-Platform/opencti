@@ -53,7 +53,8 @@ class WorkspaceEditionContainer extends Component {
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}>
+            onClick={handleClose.bind(this)}
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
@@ -63,7 +64,10 @@ class WorkspaceEditionContainer extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <WorkspaceEditionOverview workspace={this.props.workspace} context={editContext}/>
+          <WorkspaceEditionOverview
+            workspace={this.props.workspace}
+            context={editContext}
+          />
         </div>
       </div>
     );

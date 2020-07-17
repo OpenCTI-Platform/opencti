@@ -76,7 +76,9 @@ const styles = (theme) => ({
 });
 
 const subscription = graphql`
-  subscription StixCyberObservableRelationshipEditionOverviewSubscription($id: ID!) {
+  subscription StixCyberObservableRelationshipEditionOverviewSubscription(
+    $id: ID!
+  ) {
     stixCyberObservableRelationship(id: $id) {
       ...StixCyberObservableRelationshipEditionOverview_stixCyberObservableRelationship
     }
@@ -189,7 +191,10 @@ class StixCyberObservableRelationEditionContainer extends Component {
       })),
     )(stixCyberObservableRelationship);
     const initialValues = pipe(
-      assoc('first_seen', dateFormat(stixCyberObservableRelationship.first_seen)),
+      assoc(
+        'first_seen',
+        dateFormat(stixCyberObservableRelationship.first_seen),
+      ),
       assoc('last_seen', dateFormat(stixCyberObservableRelationship.last_seen)),
       assoc('killChainPhases', killChainPhases),
       assoc('markingDefinitions', markingDefinitions),
@@ -233,7 +238,9 @@ class StixCyberObservableRelationEditionContainer extends Component {
                   <Formik
                     enableReinitialize={true}
                     initialValues={initialValues}
-                    validationSchema={stixCyberObservableRelationshipValidation(t)}
+                    validationSchema={stixCyberObservableRelationshipValidation(
+                      t,
+                    )}
                     render={() => (
                       <Form style={{ margin: '20px 0 20px 0' }}>
                         <Field

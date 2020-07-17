@@ -26,7 +26,13 @@ import { connectorsForEnrichment } from '../domain/enrichment';
 import { convertDataToStix } from '../database/stix';
 import { stixCoreRelationships } from '../domain/stixCoreObject';
 import { filesListing } from '../database/minio';
-import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING, RELATION_RELATED_TO } from "../utils/idGenerator";
+import {
+  RELATION_CREATED_BY,
+  RELATION_OBJECT,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING,
+  RELATION_RELATED_TO,
+} from '../utils/idGenerator';
 
 const stixCyberObservableResolvers = {
   Query: {

@@ -91,10 +91,11 @@ const campaignMutationRelationAdd = graphql`
 const campaignMutationRelationDelete = graphql`
   mutation CampaignEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationType: String!
   ) {
     campaignEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationType: $relationType) {
         ...CampaignEditionOverview_campaign
       }
     }
@@ -230,11 +231,7 @@ class CampaignEditionOverviewComponent extends Component {
       : {
         label: pathOr(null, ['createdBy', 'node', 'name'], campaign),
         value: pathOr(null, ['createdBy', 'node', 'id'], campaign),
-        relation: pathOr(
-          null,
-          ['createdBy', 'relation', 'id'],
-          campaign,
-        ),
+        relation: pathOr(null, ['createdBy', 'relation', 'id'], campaign),
       };
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
@@ -342,24 +339,16 @@ const CampaignEditionOverview = createFragmentContainer(
         name
         description
         createdBy {
-          node {
-            id
-            name
-            entity_type
-          }
-          relation {
-            id
-          }
+          id
+          name
+          entity_type
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
               definition
               definition_type
-            }
-            relation {
-              id
             }
           }
         }

@@ -139,7 +139,9 @@ class AddCoursesOfAction extends Component {
                   return (
                     <AddCoursesOfActionLines
                       attackPatternId={attackPatternId}
-                      attackPatternCoursesOfAction={attackPatternCoursesOfAction}
+                      attackPatternCoursesOfAction={
+                        attackPatternCoursesOfAction
+                      }
                       data={props}
                     />
                   );
@@ -193,7 +195,4 @@ AddCoursesOfAction.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(AddCoursesOfAction);
+export default compose(inject18n, withStyles(styles))(AddCoursesOfAction);

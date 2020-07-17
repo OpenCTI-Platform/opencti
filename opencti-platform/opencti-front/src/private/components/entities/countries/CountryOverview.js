@@ -93,7 +93,4 @@ const CountryOverview = createFragmentContainer(CountryOverviewComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(CountryOverview);
+export default compose(inject18n, withStyles(styles))(CountryOverview);

@@ -7,7 +7,10 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRightOutlined, AccountBalanceOutlined } from '@material-ui/icons';
+import {
+  KeyboardArrowRightOutlined,
+  AccountBalanceOutlined,
+} from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import StixObjectLabels from '../../common/stix_object/StixObjectLabels';

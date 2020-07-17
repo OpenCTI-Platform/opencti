@@ -32,7 +32,11 @@ class StixCyberObservablesLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['stixCyberObservables', 'edges'], this.props.data)}
+        dataList={pathOr(
+          [],
+          ['stixCyberObservables', 'edges'],
+          this.props.data,
+        )}
         globalCount={pathOr(
           nbOfRowsToLoad,
           ['stixCyberObservables', 'pageInfo', 'globalCount'],
@@ -61,7 +65,10 @@ StixCyberObservablesLines.propTypes = {
 };
 
 export const stixCyberObservablesLinesSubTypesQuery = graphql`
-  query StixCyberObservablesLinesSubTypesQuery($type: String!, $includeParents: Boolean) {
+  query StixCyberObservablesLinesSubTypesQuery(
+    $type: String!
+    $includeParents: Boolean
+  ) {
     subTypes(type: $type, includeParents: $includeParents) {
       edges {
         node {

@@ -17,10 +17,7 @@ import {
 } from 'ramda';
 import * as Yup from 'yup';
 import { dateFormat } from '../../../utils/Time';
-import {
-  QueryRenderer,
-  commitMutation,
-} from '../../../relay/environment';
+import { QueryRenderer, commitMutation } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
@@ -97,10 +94,11 @@ const reportMutationRelationAdd = graphql`
 const reportMutationRelationDelete = graphql`
   mutation ReportEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationType: String!
   ) {
     reportEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationType: $relationType) {
         ...ReportEditionOverview_report
       }
     }

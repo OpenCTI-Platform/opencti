@@ -110,60 +110,71 @@ class StixDomainObjectAddObjectRefsLinesContainer extends Component {
 
     return (
       <div className={classes.container}>
-        {stixDomainObjectsTypes.length > 0 ? stixDomainObjectsTypes.map((type) => (
-          <ExpansionPanel
-            key={type}
-            expanded={this.isExpanded(
-              type,
-              stixDomainObjects[type].length,
-              stixDomainObjectsTypes.length,
-            )}
-            onChange={this.handleChangePanel.bind(this, type)}
-            classes={{ root: classes.expansionPanel }}>
-            <ExpansionPanelSummary expandIcon={<ExpandMore />}>
-              <Typography className={classes.heading}>
-                {t(`entity_${type}`)}
-              </Typography>
-              <Typography className={classes.secondaryHeading}>
-                {stixDomainObjects[type].length} {t('entitie(s)')}
-              </Typography>
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails
-              classes={{ root: classes.expansionPanelContent }}>
-              <List classes={{ root: classes.list }}>
-                {stixDomainObjects[type].map((stixDomainObject) => {
-                  const alreadyAdded = stixDomainObjectObjectRefsIds.includes(
-                    stixDomainObject.id,
-                  );
-                  return (
-                    <ListItem
-                      key={stixDomainObject.id}
-                      classes={{ root: classes.menuItem }}
-                      divider={true}
-                      button={true}
-                      onClick={this.toggleStixDomain.bind(
-                        this,
-                        stixDomainObject,
-                      )}
-                    >
-                      <ListItemIcon>
-                        {alreadyAdded ? (
-                          <CheckCircle classes={{ root: classes.icon }} />
-                        ) : (
-                          <ItemIcon type={type} />
+        {stixDomainObjectsTypes.length > 0 ? (
+          stixDomainObjectsTypes.map((type) => (
+            <ExpansionPanel
+              key={type}
+              expanded={this.isExpanded(
+                type,
+                stixDomainObjects[type].length,
+                stixDomainObjectsTypes.length,
+              )}
+              onChange={this.handleChangePanel.bind(this, type)}
+              classes={{ root: classes.expansionPanel }}
+            >
+              <ExpansionPanelSummary expandIcon={<ExpandMore />}>
+                <Typography className={classes.heading}>
+                  {t(`entity_${type}`)}
+                </Typography>
+                <Typography className={classes.secondaryHeading}>
+                  {stixDomainObjects[type].length} {t('entitie(s)')}
+                </Typography>
+              </ExpansionPanelSummary>
+              <ExpansionPanelDetails
+                classes={{ root: classes.expansionPanelContent }}
+              >
+                <List classes={{ root: classes.list }}>
+                  {stixDomainObjects[type].map((stixDomainObject) => {
+                    const alreadyAdded = stixDomainObjectObjectRefsIds.includes(
+                      stixDomainObject.id,
+                    );
+                    return (
+                      <ListItem
+                        key={stixDomainObject.id}
+                        classes={{ root: classes.menuItem }}
+                        divider={true}
+                        button={true}
+                        onClick={this.toggleStixDomain.bind(
+                          this,
+                          stixDomainObject,
                         )}
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={stixDomainObject.name}
-                        secondary={truncate(stixDomainObject.description, 100)}
-                      />
-                    </ListItem>
-                  );
-                })}
-              </List>
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
-        )) : <div style={{ paddingLeft: 20 }}>{t('No entities were found for this search.')}</div>}
+                      >
+                        <ListItemIcon>
+                          {alreadyAdded ? (
+                            <CheckCircle classes={{ root: classes.icon }} />
+                          ) : (
+                            <ItemIcon type={type} />
+                          )}
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={stixDomainObject.name}
+                          secondary={truncate(
+                            stixDomainObject.description,
+                            100,
+                          )}
+                        />
+                      </ListItem>
+                    );
+                  })}
+                </List>
+              </ExpansionPanelDetails>
+            </ExpansionPanel>
+          ))
+        ) : (
+          <div style={{ paddingLeft: 20 }}>
+            {t('No entities were found for this search.')}
+          </div>
+        )}
       </div>
     );
   }

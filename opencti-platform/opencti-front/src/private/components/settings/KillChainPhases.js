@@ -137,7 +137,4 @@ KillChainPhases.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-)(KillChainPhases);
+export default compose(inject18n, withRouter)(KillChainPhases);

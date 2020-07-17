@@ -86,9 +86,9 @@ const CampaignDetails = createFragmentContainer(CampaignDetailsComponent, {
       last_seen
       objective
       creator {
-          id
-          name
-        }
+        id
+        name
+      }
       labels {
         edges {
           node {

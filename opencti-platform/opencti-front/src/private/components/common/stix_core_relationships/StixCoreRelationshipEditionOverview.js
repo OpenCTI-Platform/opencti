@@ -137,10 +137,11 @@ const stixCoreRelationshipMutationRelationAdd = graphql`
 const stixCoreRelationshipMutationRelationDelete = graphql`
   mutation StixCoreRelationshipEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationType: String!
   ) {
     stixCoreRelationshipEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationType: $relationType) {
         ...StixCoreRelationshipEditionOverview_stixCoreRelationship
       }
     }
@@ -262,7 +263,11 @@ const StixCoreRelationshipEditionContainer = ({
     const currentCreatedBy = {
       label: pathOr(null, ['createdBy', 'node', 'name'], stixCoreRelationship),
       value: pathOr(null, ['createdBy', 'node', 'id'], stixCoreRelationship),
-      relation: pathOr(null, ['createdBy', 'relation', 'id'], stixCoreRelationship),
+      relation: pathOr(
+        null,
+        ['createdBy', 'relation', 'id'],
+        stixCoreRelationship,
+      ),
     };
     if (currentCreatedBy.value === null) {
       commitMutation({
@@ -329,8 +334,16 @@ const StixCoreRelationshipEditionContainer = ({
   const createdBy = pathOr(null, ['createdBy', 'node', 'name'], stixCoreRelationship) === null
     ? ''
     : {
-      label: pathOr(null, ['createdBy', 'node', 'name'], stixCoreRelationship),
-      value: pathOr(null, ['createdBy', 'node', 'id'], stixCoreRelationship),
+      label: pathOr(
+        null,
+        ['createdBy', 'node', 'name'],
+        stixCoreRelationship,
+      ),
+      value: pathOr(
+        null,
+        ['createdBy', 'node', 'id'],
+        stixCoreRelationship,
+      ),
       relation: pathOr(
         null,
         ['createdBy', 'relation', 'id'],
@@ -424,7 +437,8 @@ const StixCoreRelationshipEditionContainer = ({
                         <MenuItem value="3">{t('Good')}</MenuItem>
                         <MenuItem value="4">{t('Strong')}</MenuItem>
                       </Field>
-                      {stixCoreRelationship.relationship_type === 'indicates' ? (
+                      {stixCoreRelationship.relationship_type
+                      === 'indicates' ? (
                         <Field
                           component={SelectField}
                           name="role_played"
@@ -449,9 +463,9 @@ const StixCoreRelationshipEditionContainer = ({
                             </MenuItem>
                           ))}
                         </Field>
-                      ) : (
-                        ''
-                      )}
+                        ) : (
+                          ''
+                        )}
                       <Field
                         component={DatePickerField}
                         name="first_seen"

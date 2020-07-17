@@ -241,7 +241,10 @@ class StixCyberObservableIndicatorsComponent extends Component {
                         className={classes.bodyItem}
                         style={inlineStyles.pattern_type}
                       >
-                        <ItemPatternType variant="inList" label={indicator.pattern_type} />
+                        <ItemPatternType
+                          variant="inList"
+                          label={indicator.pattern_type}
+                        />
                       </div>
                       <div
                         className={classes.bodyItem}
@@ -314,4 +317,7 @@ const StixCyberObservableIndicators = createFragmentContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(StixCyberObservableIndicators);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixCyberObservableIndicators);

@@ -93,10 +93,11 @@ const organizationMutationRelationAdd = graphql`
 const organizationMutationRelationDelete = graphql`
   mutation OrganizationEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationType: String!
   ) {
     organizationEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationType: $relationType) {
         ...OrganizationEditionOverview_organization
       }
     }

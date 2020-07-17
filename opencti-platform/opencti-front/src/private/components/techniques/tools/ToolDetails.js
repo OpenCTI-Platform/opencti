@@ -85,9 +85,9 @@ const ToolDetails = createFragmentContainer(ToolDetailsComponent, {
     fragment ToolDetails_tool on Tool {
       id
       creator {
-          id
-          name
-        }
+        id
+        name
+      }
       labels {
         edges {
           node {

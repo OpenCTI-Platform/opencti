@@ -52,10 +52,7 @@ class CountryObservablesComponent extends Component {
           exact
           path="/dashboard/entities/countries/:countryId/observables/relations/:relationId"
           render={(routeProps) => (
-            <StixCoreRelationship
-              entityId={country.id}
-              {...routeProps}
-            />
+            <StixCoreRelationship entityId={country.id} {...routeProps} />
           )}
         />
         <Route

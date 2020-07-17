@@ -88,10 +88,11 @@ const countryMutationRelationAdd = graphql`
 const countryMutationRelationDelete = graphql`
   mutation CountryEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationType: String!
   ) {
     countryEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationType: $relationType) {
         ...CountryEditionOverview_country
       }
     }

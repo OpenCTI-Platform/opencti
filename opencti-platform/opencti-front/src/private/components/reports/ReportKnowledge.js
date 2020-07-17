@@ -15,7 +15,9 @@ import GlobalLabelFactory from '../../../components/graph_node/GlobalLabelFactor
 import RelationNodeFactory from '../../../components/graph_node/RelationNodeFactory';
 import { SubscriptionAvatars } from '../../../components/Subscription';
 import ReportHeader from './ReportHeader';
-import ReportKnowledgeGraph, { reportKnowledgeGraphQuery } from './ReportKnowledgeGraph';
+import ReportKnowledgeGraph, {
+  reportKnowledgeGraphQuery,
+} from './ReportKnowledgeGraph';
 import Loader from '../../../components/Loader';
 
 const styles = (theme) => ({
@@ -52,9 +54,11 @@ class ReportKnowledgeComponent extends Component {
     const { editContext } = report;
     return (
       <div className={classes.container}>
-        <Drawer anchor="bottom"
+        <Drawer
+          anchor="bottom"
           variant="permanent"
-          classes={{ paper: classes.bottomNav }}>
+          classes={{ paper: classes.bottomNav }}
+        >
           <div> &nbsp; </div>
         </Drawer>
         <ReportHeader report={report} variant="noMarking" />

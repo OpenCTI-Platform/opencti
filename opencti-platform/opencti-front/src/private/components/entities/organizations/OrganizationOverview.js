@@ -125,7 +125,4 @@ const OrganizationOverview = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(OrganizationOverview);
+export default compose(inject18n, withStyles(styles))(OrganizationOverview);

@@ -45,7 +45,4 @@ const WorkspaceExplore = createFragmentContainer(WorkspaceExploreComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(WorkspaceExplore);
+export default compose(inject18n, withStyles(styles))(WorkspaceExplore);

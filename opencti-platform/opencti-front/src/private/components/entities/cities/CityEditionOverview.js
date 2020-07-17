@@ -85,10 +85,11 @@ const cityMutationRelationAdd = graphql`
 const cityMutationRelationDelete = graphql`
   mutation CityEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationType: String!
   ) {
     cityEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationType: $relationType) {
         ...CityEditionOverview_city
       }
     }

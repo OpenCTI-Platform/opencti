@@ -156,7 +156,9 @@ export const stixCoreRelationshipCreationQuery = graphql`
 `;
 
 const stixCoreRelationshipCreationMutation = graphql`
-  mutation StixCoreRelationshipCreationMutation($input: StixCoreRelationshipAddInput!) {
+  mutation StixCoreRelationshipCreationMutation(
+    $input: StixCoreRelationshipAddInput!
+  ) {
     stixCoreRelationshipAdd(input: $input) {
       id
       relationship_type
@@ -232,7 +234,8 @@ class StixCoreRelationshipCreation extends Component {
       }).then((data) => {
         this.setState({
           step:
-            data.stixCoreRelationships.edges && data.stixCoreRelationships.edges.length > 0
+            data.stixCoreRelationships.edges
+            && data.stixCoreRelationships.edges.length > 0
               ? 1
               : 2,
           existingRelations: data.stixCoreRelationships.edges,
@@ -713,4 +716,7 @@ StixCoreRelationshipCreation.propTypes = {
   defaultMarkingDefinition: PropTypes.object,
 };
 
-export default compose(inject18n, withStyles(styles))(StixCoreRelationshipCreation);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixCoreRelationshipCreation);

@@ -67,7 +67,9 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'incident':
       return <Fire style={style} fontSize={fontSize} role="img" />;
     case 'user':
-      return <IndividualOutlined style={style} fontSize={fontSize} role="img" />;
+      return (
+        <IndividualOutlined style={style} fontSize={fontSize} role="img" />
+      );
     case 'organization':
       return (
         <AccountBalanceOutlined style={style} fontSize={fontSize} role="img" />

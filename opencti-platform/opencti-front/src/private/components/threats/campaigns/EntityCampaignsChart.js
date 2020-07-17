@@ -203,11 +203,13 @@ class EntityCampaignsChart extends Component {
             {title || t('Campaigns')}
           </Typography>
           <Security needs={[EXPLORE_EXUPDATE]}>
-            <IconButton color="secondary"
+            <IconButton
+              color="secondary"
               aria-label="Update"
               size="small"
               classes={{ root: classes.updateButton }}
-              onClick={handleOpenConfig.bind(this, configuration)}>
+              onClick={handleOpenConfig.bind(this, configuration)}
+            >
               <SettingsInputComponent fontSize="inherit" />
             </IconButton>
           </Security>

@@ -20,7 +20,9 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { threatActorEditionQuery } from './ThreatActorEdition';
 import ThreatActorEditionContainer from './ThreatActorEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -173,7 +175,8 @@ class ThreatActorPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <ThreatActorEditionContainer threatActor={props.threatActor}
+                  <ThreatActorEditionContainer
+                    threatActor={props.threatActor}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

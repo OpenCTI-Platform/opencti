@@ -88,4 +88,7 @@ const StixCyberObservableDetails = createFragmentContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(StixCyberObservableDetails);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixCyberObservableDetails);

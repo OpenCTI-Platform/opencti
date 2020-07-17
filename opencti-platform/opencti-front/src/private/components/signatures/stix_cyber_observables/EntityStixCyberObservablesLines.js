@@ -26,7 +26,11 @@ class EntityStixCyberObservablesLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['stixCoreRelationships', 'edges'], this.props.data)}
+        dataList={pathOr(
+          [],
+          ['stixCoreRelationships', 'edges'],
+          this.props.data,
+        )}
         globalCount={pathOr(
           nbOfRowsToLoad,
           ['stixCoreRelationships', 'pageInfo', 'globalCount'],
@@ -95,7 +99,7 @@ export default createPaginationContainer(
     data: graphql`
       fragment EntityStixCyberObservablesLines_data on Query
         @argumentDefinitions(
-          inferred: { type: "Boolean"}
+          inferred: { type: "Boolean" }
           fromId: { type: "String" }
           toTypes: { type: "[String]" }
           relationType: { type: "String" }
@@ -106,7 +110,10 @@ export default createPaginationContainer(
           weights: { type: "[Int]" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixCoreRelationshipsOrdering", defaultValue: "start_time" }
+          orderBy: {
+            type: "StixCoreRelationshipsOrdering"
+            defaultValue: "start_time"
+          }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
         stixCoreRelationships(

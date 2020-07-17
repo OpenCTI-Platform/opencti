@@ -4,7 +4,10 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { IndividualOutlined, ArrowForwardIosOutlined } from '@material-ui/icons';
+import {
+  IndividualOutlined,
+  ArrowForwardIosOutlined,
+} from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -67,13 +70,15 @@ class TopMenuIndividual extends Component {
           component={Link}
           to={`/dashboard/entities/individuals/${individualId}`}
           variant={
-            location.pathname === `/dashboard/entities/individuals/${individualId}`
+            location.pathname
+            === `/dashboard/entities/individuals/${individualId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/entities/individuals/${individualId}`
+            location.pathname
+            === `/dashboard/entities/individuals/${individualId}`
               ? 'primary'
               : 'inherit'
           }

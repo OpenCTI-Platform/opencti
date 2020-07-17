@@ -521,7 +521,7 @@ const generateStixDomainObjectUUID = (type, data) => {
 const generateStixCyberObservableUUID = (type, data) => {
   // TODO
   return uuidv4();
-}
+};
 const generateInternalObjectId = (type, data) => {
   const prefix = convertEntityTypeToStixType(type);
   const id = generateInternalObjectUUID(type, data);

@@ -37,18 +37,22 @@ class StixCyberObservableHeaderComponent extends Component {
           {truncate(stixCyberObservable.observable_value, 50)}
         </Typography>
         <div className={classes.popover}>
-          <StixCyberObservablePopover stixCyberObservableId={stixCyberObservable.id} />
+          <StixCyberObservablePopover
+            stixCyberObservableId={stixCyberObservable.id}
+          />
         </div>
         {variant !== 'noMarking' ? (
           <div className={classes.marking}>
-            {pathOr([], ['markingDefinitions', 'edges'], stixCyberObservable).map(
-              (markingDefinition) => (
-                <ItemMarking
-                  key={markingDefinition.node.id}
-                  label={markingDefinition.node.definition}
-                />
-              ),
-            )}
+            {pathOr(
+              [],
+              ['markingDefinitions', 'edges'],
+              stixCyberObservable,
+            ).map((markingDefinition) => (
+              <ItemMarking
+                key={markingDefinition.node.id}
+                label={markingDefinition.node.definition}
+              />
+            ))}
           </div>
         ) : (
           ''

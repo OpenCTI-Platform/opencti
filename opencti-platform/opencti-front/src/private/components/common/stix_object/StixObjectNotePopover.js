@@ -15,10 +15,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import { MoreVertOutlined } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  QueryRenderer,
-} from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
 import StixObjectNoteEdition from './StixObjectNoteEdition';
 

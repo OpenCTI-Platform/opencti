@@ -91,10 +91,11 @@ const courseOfActionMutationRelationAdd = graphql`
 const courseOfActionMutationRelationDelete = graphql`
   mutation CourseOfActionEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationType: String!
   ) {
     courseOfActionEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationType: $relationType) {
         ...CourseOfActionEditionOverview_courseOfAction
       }
     }
@@ -142,11 +143,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
     const currentCreatedBy = {
       label: pathOr(null, ['createdBy', 'node', 'name'], courseOfAction),
       value: pathOr(null, ['createdBy', 'node', 'id'], courseOfAction),
-      relation: pathOr(
-        null,
-        ['createdBy', 'relation', 'id'],
-        courseOfAction,
-      ),
+      relation: pathOr(null, ['createdBy', 'relation', 'id'], courseOfAction),
     };
 
     if (currentCreatedBy.value === null) {
@@ -232,11 +229,7 @@ class CourseOfActionEditionOverviewComponent extends Component {
     const createdBy = pathOr(null, ['createdBy', 'node', 'name'], courseOfAction) === null
       ? ''
       : {
-        label: pathOr(
-          null,
-          ['createdBy', 'node', 'name'],
-          courseOfAction,
-        ),
+        label: pathOr(null, ['createdBy', 'node', 'name'], courseOfAction),
         value: pathOr(null, ['createdBy', 'node', 'id'], courseOfAction),
         relation: pathOr(
           null,

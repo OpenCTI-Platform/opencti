@@ -58,7 +58,10 @@ class ToolComponent extends Component {
           style={{ marginTop: 15 }}
         >
           <Grid item={true} xs={6}>
-            <EntityStixCoreRelationshipsChart entityId={tool.id} relationType="uses" />
+            <EntityStixCoreRelationshipsChart
+              entityId={tool.id}
+              relationType="uses"
+            />
           </Grid>
           <Grid item={true} xs={6}>
             <EntityReportsChart entityId={tool.id} />

@@ -12,18 +12,18 @@ import RedirectManager from './components/RedirectManager';
 import RootPrivate from './private/Root';
 
 const App = () => (
-    <ThemeProvider theme={createMuiTheme(theme)}>
-        <BrowserRouter basename={APP_BASE_PATH}>
-            <RedirectManager>
-                <CssBaseline />
-                <Switch>
-                    <Redirect exact from="/" to="/dashboard" />
-                    <Route exact path="/login" component={Login} />
-                    <BoundaryRoute component={RootPrivate} />
-                </Switch>
-            </RedirectManager>
-        </BrowserRouter>
-    </ThemeProvider>
+  <ThemeProvider theme={createMuiTheme(theme)}>
+    <BrowserRouter basename={APP_BASE_PATH}>
+      <RedirectManager>
+        <CssBaseline />
+        <Switch>
+          <Redirect exact from="/" to="/dashboard" />
+          <Route exact path="/login" component={Login} />
+          <BoundaryRoute component={RootPrivate} />
+        </Switch>
+      </RedirectManager>
+    </BrowserRouter>
+  </ThemeProvider>
 );
 
 export default App;

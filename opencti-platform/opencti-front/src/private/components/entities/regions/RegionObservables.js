@@ -52,10 +52,7 @@ class RegionObservablesComponent extends Component {
           exact
           path="/dashboard/entities/regions/:regionId/observables/relations/:relationId"
           render={(routeProps) => (
-            <StixCoreRelationship
-              entityId={region.id}
-              {...routeProps}
-            />
+            <StixCoreRelationship entityId={region.id} {...routeProps} />
           )}
         />
         <Route
@@ -84,18 +81,15 @@ RegionObservablesComponent.propTypes = {
   t: PropTypes.func,
 };
 
-const RegionObservables = createFragmentContainer(
-  RegionObservablesComponent,
-  {
-    region: graphql`
-      fragment RegionObservables_region on Region {
-        id
-        name
-        alias
-      }
-    `,
-  },
-);
+const RegionObservables = createFragmentContainer(RegionObservablesComponent, {
+  region: graphql`
+    fragment RegionObservables_region on Region {
+      id
+      name
+      alias
+    }
+  `,
+});
 
 export default compose(
   inject18n,

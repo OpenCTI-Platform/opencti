@@ -389,7 +389,9 @@ class StixCoreRelationshipCreationFromEntity extends Component {
         <div className={classes.containerList}>
           {!onlyObservables ? (
             <QueryRenderer
-              query={stixCoreRelationshipCreationFromEntityStixDomainObjectsLinesQuery}
+              query={
+                stixCoreRelationshipCreationFromEntityStixDomainObjectsLinesQuery
+              }
               variables={{ count: 25, ...stixDomainObjectsPaginationOptions }}
               render={({ props }) => {
                 if (props) {
@@ -407,7 +409,9 @@ class StixCoreRelationshipCreationFromEntity extends Component {
             ''
           )}
           <QueryRenderer
-            query={stixCoreRelationshipCreationFromEntityStixCyberObservablesLinesQuery}
+            query={
+              stixCoreRelationshipCreationFromEntityStixCyberObservablesLinesQuery
+            }
             variables={{
               search: this.state.search,
               types: targetEntityTypes,

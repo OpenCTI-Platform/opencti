@@ -37,12 +37,12 @@ const externalReferenceLinesMutationRelationAdd = graphql`
         id
         to {
           ... on ExternalReference {
-              id
-              source_name
-              description
-              url
-              hash
-              external_id
+            id
+            source_name
+            description
+            url
+            hash
+            external_id
           }
         }
       }
@@ -53,10 +53,11 @@ const externalReferenceLinesMutationRelationAdd = graphql`
 export const externalReferenceMutationRelationDelete = graphql`
   mutation AddExternalReferencesLinesRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationType: String!
   ) {
     externalReferenceEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationType: $relationType) {
         id
       }
     }
@@ -65,16 +66,16 @@ export const externalReferenceMutationRelationDelete = graphql`
 
 const sharedUpdater = (store, entityId, newEdge) => {
   const entity = store.get(entityId);
-  const conn = ConnectionHandler.getConnection(entity, 'Pagination_externalReferences');
+  const conn = ConnectionHandler.getConnection(
+    entity,
+    'Pagination_externalReferences',
+  );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
 class AddExternalReferencesLinesContainer extends Component {
   toggleExternalReference(externalReference) {
-    const {
-      entityId,
-      entityExternalReferences,
-    } = this.props;
+    const { entityId, entityExternalReferences } = this.props;
     const entityExternalReferencesIds = map(
       (n) => n.node.id,
       entityExternalReferences,
@@ -98,7 +99,10 @@ class AddExternalReferencesLinesContainer extends Component {
         },
         updater: (store) => {
           const entity = store.get(entityId);
-          const conn = ConnectionHandler.getConnection(entity, 'Pagination_externalReferences');
+          const conn = ConnectionHandler.getConnection(
+            entity,
+            'Pagination_externalReferences',
+          );
           ConnectionHandler.deleteNode(conn, externalReference.id);
         },
       });
@@ -116,7 +120,8 @@ class AddExternalReferencesLinesContainer extends Component {
           input,
         },
         updater: (store) => {
-          const payload = store.getRootField('externalReferenceEdit')
+          const payload = store
+            .getRootField('externalReferenceEdit')
             .getLinkedRecord('relationAdd', { input });
           const relationId = payload.getValue('id');
           const node = payload.getLinkedRecord('to');

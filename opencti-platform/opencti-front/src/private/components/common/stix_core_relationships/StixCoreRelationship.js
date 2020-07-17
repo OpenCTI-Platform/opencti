@@ -64,4 +64,8 @@ StixCoreRelationship.propTypes = {
   match: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter, withStyles(styles))(StixCoreRelationship);
+export default compose(
+  inject18n,
+  withRouter,
+  withStyles(styles),
+)(StixCoreRelationship);

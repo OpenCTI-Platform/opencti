@@ -50,7 +50,7 @@ const inlineStyles = {
 class ItemScore extends Component {
   render() {
     const { score, classes, variant } = this.props;
-    const style = (variant === 'inList') ? classes.chipInList : classes.chip;
+    const style = variant === 'inList' ? classes.chipInList : classes.chip;
     if (score <= 20) {
       return (
         <Chip
@@ -103,7 +103,4 @@ ItemScore.propTypes = {
   score: PropTypes.number,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(ItemScore);
+export default compose(inject18n, withStyles(styles))(ItemScore);

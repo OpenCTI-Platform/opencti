@@ -88,10 +88,11 @@ const regionMutationRelationAdd = graphql`
 const regionMutationRelationDelete = graphql`
   mutation RegionEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationType: String!
   ) {
     regionEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationType: $relationType) {
         ...RegionEditionOverview_region
       }
     }
@@ -282,10 +283,7 @@ class RegionEditionOverviewComponent extends Component {
                 style={{ marginTop: 20, width: '100%' }}
                 setFieldValue={setFieldValue}
                 helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="createdBy"
-                  />
+                  <SubscriptionFocus context={context} fieldName="createdBy" />
                 }
                 onChange={this.handleChangeCreatedBy.bind(this)}
               />

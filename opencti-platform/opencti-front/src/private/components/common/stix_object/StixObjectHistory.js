@@ -64,7 +64,10 @@ class StixObjectHistory extends Component {
             variables={{
               filters: [
                 { key: 'entity_id', values: [entityId] },
-                { key: 'event_type', values: ['create', 'update', 'update_add', 'update_remove'] },
+                {
+                  key: 'event_type',
+                  values: ['create', 'update', 'update_add', 'update_remove'],
+                },
               ],
               first: 200,
               orderBy: 'event_date',
@@ -105,7 +108,11 @@ class StixObjectHistory extends Component {
             query={stixObjectHistoryLinesQuery}
             variables={{
               filters: [
-                { key: 'connection_id', values: [entityId], operator: 'wildcard' },
+                {
+                  key: 'connection_id',
+                  values: [entityId],
+                  operator: 'wildcard',
+                },
                 {
                   key: 'event_type',
                   values: ['create', 'delete'],

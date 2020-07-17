@@ -133,15 +133,18 @@ IndividualKnowledgeComponent.propTypes = {
   t: PropTypes.func,
 };
 
-const IndividualKnowledge = createFragmentContainer(IndividualKnowledgeComponent, {
-  individual: graphql`
-    fragment IndividualKnowledge_individual on User {
-      id
-      name
-      alias
-    }
-  `,
-});
+const IndividualKnowledge = createFragmentContainer(
+  IndividualKnowledgeComponent,
+  {
+    individual: graphql`
+      fragment IndividualKnowledge_individual on User {
+        id
+        name
+        alias
+      }
+    `,
+  },
+);
 
 export default compose(
   inject18n,

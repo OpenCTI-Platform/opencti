@@ -63,7 +63,8 @@ class AddSubSectorsLinesContainer extends Component {
           const subSectors = node.getLinkedRecord('subSectors');
           const edges = subSectors.getLinkedRecords('edges');
           const newEdges = filter(
-            (n) => n.getLinkedRecord('node').getValue('id') !== existingSubSector.node.id,
+            (n) => n.getLinkedRecord('node').getValue('id')
+              !== existingSubSector.node.id,
             edges,
           );
           subSectors.setLinkedRecords(newEdges, 'edges');

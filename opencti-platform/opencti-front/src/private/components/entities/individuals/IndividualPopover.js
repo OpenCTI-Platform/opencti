@@ -20,7 +20,9 @@ import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { individualEditionQuery } from './IndividualEdition';
 import IndividualEditionContainer from './IndividualEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -111,7 +113,11 @@ class IndividualPopover extends Component {
     } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton disabled={disabled} onClick={this.handleOpen.bind(this)} aria-haspopup="true">
+        <IconButton
+          disabled={disabled}
+          onClick={this.handleOpen.bind(this)}
+          aria-haspopup="true"
+        >
           <MoreVert />
         </IconButton>
         <Menu
@@ -169,7 +175,8 @@ class IndividualPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <IndividualEditionContainer individual={props.individual}
+                  <IndividualEditionContainer
+                    individual={props.individual}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

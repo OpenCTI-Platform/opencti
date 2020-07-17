@@ -267,4 +267,7 @@ EntityStixSightingRelationshipRelationships.propTypes = {
   exploreLink: PropTypes.string,
 };
 
-export default compose(inject18n, withStyles(styles))(EntityStixSightingRelationships);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(EntityStixSightingRelationships);

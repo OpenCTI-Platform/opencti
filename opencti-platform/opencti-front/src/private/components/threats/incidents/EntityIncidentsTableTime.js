@@ -102,7 +102,7 @@ class EntityIncidentsTableTime extends Component {
       endDate,
     } = this.props;
     const monthInterval = this.state.interval === 'month' ? monthsAgo(6) : monthsAgo(12 * 5);
-    const finalStartDate = (variant === 'explore' && startDate) ? startDate : monthInterval;
+    const finalStartDate = variant === 'explore' && startDate ? startDate : monthInterval;
     const incidentsTimeSeriesVariables = {
       objectId: entityId,
       field: 'first_seen',
@@ -223,13 +223,15 @@ class EntityIncidentsTableTime extends Component {
             {title || t('Incidents')}
           </Typography>
           <Security needs={[EXPLORE_EXUPDATE]}>
-              <IconButton color="secondary"
-                aria-label="Update"
-                size="small"
-                classes={{ root: classes.updateButton }}
-                onClick={handleOpenConfig.bind(this, configuration)}>
-                <SettingsInputComponent fontSize="inherit" />
-              </IconButton>
+            <IconButton
+              color="secondary"
+              aria-label="Update"
+              size="small"
+              classes={{ root: classes.updateButton }}
+              onClick={handleOpenConfig.bind(this, configuration)}
+            >
+              <SettingsInputComponent fontSize="inherit" />
+            </IconButton>
           </Security>
           <div className="clearfix" />
           {this.renderContent()}
@@ -295,7 +297,4 @@ EntityIncidentsTableTime.propTypes = {
   relationType: PropTypes.string,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(EntityIncidentsTableTime);
+export default compose(inject18n, withStyles(styles))(EntityIncidentsTableTime);

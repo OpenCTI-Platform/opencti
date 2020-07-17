@@ -91,10 +91,11 @@ const incidentMutationRelationAdd = graphql`
 const incidentMutationRelationDelete = graphql`
   mutation IncidentEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationType: String!
   ) {
     incidentEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationType: $relationType) {
         ...IncidentEditionOverview_incident
       }
     }
@@ -230,11 +231,7 @@ class IncidentEditionOverviewComponent extends Component {
       : {
         label: pathOr(null, ['createdBy', 'node', 'name'], incident),
         value: pathOr(null, ['createdBy', 'node', 'id'], incident),
-        relation: pathOr(
-          null,
-          ['createdBy', 'relation', 'id'],
-          incident,
-        ),
+        relation: pathOr(null, ['createdBy', 'relation', 'id'], incident),
       };
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),

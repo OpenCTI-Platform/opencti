@@ -84,20 +84,20 @@ class StixCyberObservablesRightBar extends Component {
                   }
                 >
                   {translatedOrderedList.map((subType) => (
-                      <ListItem
-                        key={subType.id}
-                        dense={true}
-                        button={true}
-                        onClick={handleToggle.bind(this, subType.label)}
-                        classes={{ root: classes.item }}
-                      >
-                        <Checkbox
-                          checked={types.includes(subType.label)}
-                          disableRipple={true}
-                          size="small"
-                        />
-                        <ListItemText primary={subType.tlabel} />
-                      </ListItem>
+                    <ListItem
+                      key={subType.id}
+                      dense={true}
+                      button={true}
+                      onClick={handleToggle.bind(this, subType.label)}
+                      classes={{ root: classes.item }}
+                    >
+                      <Checkbox
+                        checked={types.includes(subType.label)}
+                        disableRipple={true}
+                        size="small"
+                      />
+                      <ListItemText primary={subType.tlabel} />
+                    </ListItem>
                   ))}
                 </List>
               );
@@ -118,4 +118,7 @@ StixCyberObservablesRightBar.propTypes = {
   openExports: PropTypes.bool,
 };
 
-export default compose(inject18n, withStyles(styles))(StixCyberObservablesRightBar);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixCyberObservablesRightBar);

@@ -97,7 +97,9 @@ class EntityStixCoreRelationshipsTable extends Component {
     };
     return (
       <QueryRenderer
-        query={entityStixCoreRelationshipsTableStixCoreRelationshipDistributionQuery}
+        query={
+          entityStixCoreRelationshipsTableStixCoreRelationshipDistributionQuery
+        }
         variables={stixCoreRelationshipsDistributionVariables}
         render={({ props }) => {
           if (
@@ -193,14 +195,15 @@ class EntityStixCoreRelationshipsTable extends Component {
             {title || `${t('Distribution:')} ${t(`entity_${entityType}`)}`}
           </Typography>
           <Security needs={[EXPLORE_EXUPDATE]}>
-              <IconButton
-                color="secondary"
-                aria-label="Update"
-                size="small"
-                classes={{ root: classes.updateButton }}
-                onClick={handleOpenConfig.bind(this, configuration)}>
-                <SettingsInputComponent fontSize="inherit" />
-              </IconButton>
+            <IconButton
+              color="secondary"
+              aria-label="Update"
+              size="small"
+              classes={{ root: classes.updateButton }}
+              onClick={handleOpenConfig.bind(this, configuration)}
+            >
+              <SettingsInputComponent fontSize="inherit" />
+            </IconButton>
           </Security>
           <div className="clearfix" />
           {this.renderContent()}

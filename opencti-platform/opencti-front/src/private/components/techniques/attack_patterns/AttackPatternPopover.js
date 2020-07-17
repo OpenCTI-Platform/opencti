@@ -20,7 +20,9 @@ import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { attackPatternEditionQuery } from './AttackPatternEdition';
 import AttackPatternEditionContainer from './AttackPatternEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -167,7 +169,8 @@ class AttackPatternPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <AttackPatternEditionContainer attackPattern={props.attackPattern}
+                  <AttackPatternEditionContainer
+                    attackPattern={props.attackPattern}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

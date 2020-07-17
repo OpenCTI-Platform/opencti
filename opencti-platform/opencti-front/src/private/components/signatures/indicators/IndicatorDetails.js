@@ -37,7 +37,10 @@ class IndicatorDetailsComponent extends Component {
           </Typography>
           <pre>{indicator.indicator_pattern}</pre>
           <div style={{ marginTop: 20 }}>
-            <StixDomainObjectLabels labels={indicator.labels} id={indicator.id} />
+            <StixDomainObjectLabels
+              labels={indicator.labels}
+              id={indicator.id}
+            />
           </div>
           <Typography
             variant="h3"
@@ -94,9 +97,9 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
       score
       detection
       creator {
-          id
-          name
-        }
+        id
+        name
+      }
       labels {
         edges {
           node {

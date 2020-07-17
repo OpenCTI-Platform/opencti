@@ -75,56 +75,61 @@ class StixCoreRelationshipCreationFromEntityStixCyberObservablesLinesContainer e
     const {
       t, classes, data, handleSelect,
     } = this.props;
-    const stixCyberObservablesNodes = map((n) => n.node, data.stixCyberObservables.edges);
-    const byType = groupBy((stixCyberObservable) => stixCyberObservable.entity_type);
+    const stixCyberObservablesNodes = map(
+      (n) => n.node,
+      data.stixCyberObservables.edges,
+    );
+    const byType = groupBy(
+      (stixCyberObservable) => stixCyberObservable.entity_type,
+    );
     const stixCyberObservables = byType(stixCyberObservablesNodes);
     const stixCyberObservablesTypes = keys(stixCyberObservables);
 
     return (
       <div className={classes.container}>
         {stixCyberObservablesTypes.map((type) => (
-            <ExpansionPanel
-              key={type}
-              expanded={this.isExpanded(
-                type,
-                stixCyberObservables[type].length,
-                stixCyberObservablesTypes.length,
-              )}
-              onChange={this.handleChangePanel.bind(this, type)}
-              classes={{ root: classes.expansionPanel }}
+          <ExpansionPanel
+            key={type}
+            expanded={this.isExpanded(
+              type,
+              stixCyberObservables[type].length,
+              stixCyberObservablesTypes.length,
+            )}
+            onChange={this.handleChangePanel.bind(this, type)}
+            classes={{ root: classes.expansionPanel }}
+          >
+            <ExpansionPanelSummary expandIcon={<ExpandMore />}>
+              <Typography className={classes.heading}>
+                {t(`observable_${type}`)}
+              </Typography>
+              <Typography className={classes.secondaryHeading}>
+                {stixCyberObservables[type].length} {t('observable(s)')}
+              </Typography>
+            </ExpansionPanelSummary>
+            <ExpansionPanelDetails
+              classes={{ root: classes.expansionPanelContent }}
             >
-              <ExpansionPanelSummary expandIcon={<ExpandMore />}>
-                <Typography className={classes.heading}>
-                  {t(`observable_${type}`)}
-                </Typography>
-                <Typography className={classes.secondaryHeading}>
-                  {stixCyberObservables[type].length} {t('observable(s)')}
-                </Typography>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails
-                classes={{ root: classes.expansionPanelContent }}
-              >
-                <List classes={{ root: classes.list }}>
-                  {stixCyberObservables[type].map((stixCyberObservable) => (
-                    <ListItem
-                      key={stixCyberObservable.id}
-                      classes={{ root: classes.menuItem }}
-                      divider={true}
-                      button={true}
-                      onClick={handleSelect.bind(this, stixCyberObservable)}
-                    >
-                      <ListItemIcon>
-                        <ItemIcon type={type} />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={stixCyberObservable.observable_value}
-                        secondary={truncate(stixCyberObservable.description, 100)}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
+              <List classes={{ root: classes.list }}>
+                {stixCyberObservables[type].map((stixCyberObservable) => (
+                  <ListItem
+                    key={stixCyberObservable.id}
+                    classes={{ root: classes.menuItem }}
+                    divider={true}
+                    button={true}
+                    onClick={handleSelect.bind(this, stixCyberObservable)}
+                  >
+                    <ListItemIcon>
+                      <ItemIcon type={type} />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={stixCyberObservable.observable_value}
+                      secondary={truncate(stixCyberObservable.description, 100)}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </ExpansionPanelDetails>
+          </ExpansionPanel>
         ))}
       </div>
     );
@@ -171,7 +176,10 @@ const StixCoreRelationshipCreationFromEntityStixCyberObservablesLines = createPa
           types: { type: "[String]" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixCyberObservablesOrdering", defaultValue: "name" }
+          orderBy: {
+            type: "StixCyberObservablesOrdering"
+            defaultValue: "name"
+          }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
         stixCyberObservables(

@@ -125,10 +125,11 @@ const stixDomainObjectMutationRelationAdd = graphql`
 const stixDomainObjectMutationRelationDelete = graphql`
   mutation StixDomainObjectEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationType: String!
   ) {
     stixDomainObjectEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationType: $relationType) {
         ...StixDomainObjectEditionOverview_stixDomainObject
       }
     }
@@ -161,11 +162,7 @@ class StixDomainObjectEditionContainer extends Component {
     const currentCreatedBy = {
       label: pathOr(null, ['createdBy', 'node', 'name'], stixDomainObject),
       value: pathOr(null, ['createdBy', 'node', 'id'], stixDomainObject),
-      relation: pathOr(
-        null,
-        ['createdBy', 'relation', 'id'],
-        stixDomainObject,
-      ),
+      relation: pathOr(null, ['createdBy', 'relation', 'id'], stixDomainObject),
     };
 
     if (currentCreatedBy.value === null) {
@@ -289,11 +286,7 @@ class StixDomainObjectEditionContainer extends Component {
           ['createdBy', 'node', 'name'],
           stixDomainObject,
         ),
-        value: pathOr(
-          null,
-          ['createdBy', 'node', 'id'],
-          stixDomainObject,
-        ),
+        value: pathOr(null, ['createdBy', 'node', 'id'], stixDomainObject),
         relation: pathOr(
           null,
           ['createdBy', 'relation', 'id'],
@@ -312,13 +305,7 @@ class StixDomainObjectEditionContainer extends Component {
       assoc('alias', join(',', stixDomainObject.alias)),
       assoc('createdBy', createdBy),
       assoc('markingDefinitions', markingDefinitions),
-      pick([
-        'name',
-        'alias',
-        'description',
-        'createdBy',
-        'markingDefinitions',
-      ]),
+      pick(['name', 'alias', 'description', 'createdBy', 'markingDefinitions']),
     )(stixDomainObject);
     return (
       <div>

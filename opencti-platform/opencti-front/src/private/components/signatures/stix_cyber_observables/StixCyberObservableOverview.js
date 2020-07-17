@@ -59,11 +59,7 @@ class StixCyberObservableOverviewComponent extends Component {
             {t('Author')}
           </Typography>
           <ItemAuthor
-            createdBy={pathOr(
-              null,
-              ['createdBy', 'node'],
-              stixCyberObservable,
-            )}
+            createdBy={pathOr(null, ['createdBy', 'node'], stixCyberObservable)}
           />
           <Typography
             variant="h3"
@@ -72,7 +68,10 @@ class StixCyberObservableOverviewComponent extends Component {
           >
             {t('Description')}
           </Typography>
-          <Markdown className="markdown" source={stixCyberObservable.description} />
+          <Markdown
+            className="markdown"
+            source={stixCyberObservable.description}
+          />
         </Paper>
       </div>
     );
@@ -109,4 +108,7 @@ const StixCyberObservableOverview = createFragmentContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(StixCyberObservableOverview);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixCyberObservableOverview);

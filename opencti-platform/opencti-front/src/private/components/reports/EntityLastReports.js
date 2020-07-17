@@ -119,7 +119,12 @@ class EntityLastReports extends Component {
     const filters = [];
     if (authorId) filters.push({ key: 'createdBy', values: [authorId] });
     if (entityId) filters.push({ key: 'knowledgeContains', values: [entityId] });
-    if (stixCyberObservableId) filters.push({ key: 'observablesContains', values: [stixCyberObservableId] });
+    if (stixCyberObservableId) {
+      filters.push({
+        key: 'observablesContains',
+        values: [stixCyberObservableId],
+      });
+    }
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -166,11 +171,7 @@ class EntityLastReports extends Component {
                             }
                           />
                           <div style={inlineStyles.itemAuthor}>
-                            {pathOr(
-                              '',
-                              ['createdBy', 'node', 'name'],
-                              report,
-                            )}
+                            {pathOr('', ['createdBy', 'node', 'name'], report)}
                           </div>
                           <div style={inlineStyles.itemDate}>
                             {nsd(report.published)}

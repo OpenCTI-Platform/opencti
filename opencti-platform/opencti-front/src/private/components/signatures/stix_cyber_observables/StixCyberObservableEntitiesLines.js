@@ -42,7 +42,11 @@ class StixCyberObservableEntitiesLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['stixCoreRelationships', 'edges'], this.props.data)}
+        dataList={pathOr(
+          [],
+          ['stixCoreRelationships', 'edges'],
+          this.props.data,
+        )}
         globalCount={pathOr(
           nbOfRowsToLoad,
           ['stixCoreRelationships', 'pageInfo', 'globalCount'],
@@ -55,7 +59,9 @@ class StixCyberObservableEntitiesLines extends Component {
           />
         }
         DummyLineComponent={
-          <StixCyberObservableEntityLineDummy displayRelation={displayRelation} />
+          <StixCyberObservableEntityLineDummy
+            displayRelation={displayRelation}
+          />
         }
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
@@ -131,7 +137,10 @@ export default createPaginationContainer(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixCoreRelationshipsOrdering", defaultValue: "start_time" }
+          orderBy: {
+            type: "StixCoreRelationshipsOrdering"
+            defaultValue: "start_time"
+          }
           orderMode: { type: "OrderingMode" }
         ) {
         stixCoreRelationships(

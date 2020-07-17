@@ -49,7 +49,11 @@ class LabelsField extends Component {
     }).then((data) => {
       const labels = pipe(
         pathOr([], ['labels', 'edges']),
-        map((n) => ({ label: n.node.value, value: n.node.id, color: n.node.color })),
+        map((n) => ({
+          label: n.node.value,
+          value: n.node.id,
+          color: n.node.color,
+        })),
       )(data);
       this.setState({
         labels: union(this.state.labels, labels),

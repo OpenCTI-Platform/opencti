@@ -75,8 +75,13 @@ class StixCyberObservableRelationshipCreationFromEntityLinesContainer extends Co
     const {
       t, classes, data, handleSelect,
     } = this.props;
-    const stixCyberObservablesNodes = map((n) => n.node, data.stixCyberObservables.edges);
-    const byType = groupBy((stixCyberObservable) => stixCyberObservable.entity_type);
+    const stixCyberObservablesNodes = map(
+      (n) => n.node,
+      data.stixCyberObservables.edges,
+    );
+    const byType = groupBy(
+      (stixCyberObservable) => stixCyberObservable.entity_type,
+    );
     const stixCyberObservables = byType(stixCyberObservablesNodes);
     const stixCyberObservablesTypes = keys(stixCyberObservables);
 
@@ -118,7 +123,10 @@ class StixCyberObservableRelationshipCreationFromEntityLinesContainer extends Co
                         <ItemIcon type={type} />
                       </ListItemIcon>
                       <ListItemText
-                        primary={truncate(stixCyberObservable.observable_value, 100)}
+                        primary={truncate(
+                          stixCyberObservable.observable_value,
+                          100,
+                        )}
                       />
                     </ListItem>
                   ))}
@@ -176,7 +184,10 @@ const StixCyberObservableRelationshipCreationFromEntityLines = createPaginationC
           types: { type: "[String]" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixCyberObservablesOrdering", defaultValue: "name" }
+          orderBy: {
+            type: "StixCyberObservablesOrdering"
+            defaultValue: "name"
+          }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
         stixCyberObservables(

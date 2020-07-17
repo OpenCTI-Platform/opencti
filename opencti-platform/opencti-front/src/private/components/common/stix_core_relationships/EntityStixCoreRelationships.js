@@ -175,7 +175,7 @@ class EntityStixCoreRelationships extends Component {
       fromId: entityId,
       fromRole: role || null,
       toTypes: toType === 'All' ? targetEntityTypes : [toType],
-      inferred: !!((inferred || inference)),
+      inferred: !!(inferred || inference),
       relationType,
       search: searchTerm,
       orderBy: sortBy,
@@ -359,4 +359,7 @@ EntityStixCoreRelationships.propTypes = {
   inference: PropTypes.bool,
 };
 
-export default compose(inject18n, withStyles(styles))(EntityStixCoreRelationships);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(EntityStixCoreRelationships);

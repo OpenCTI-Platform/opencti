@@ -160,7 +160,10 @@ class StixCyberObservableLabels extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const currentLabelsIds = map((label) => label.node.id, this.props.labels.edges);
+    const currentLabelsIds = map(
+      (label) => label.node.id,
+      this.props.labels.edges,
+    );
     const labelsIds = pipe(
       map((value) => value.value),
       filter((value) => !currentLabelsIds.includes(value)),
@@ -353,4 +356,7 @@ StixCyberObservableLabels.propTypes = {
   labels: PropTypes.object,
 };
 
-export default compose(inject18n, withStyles(styles))(StixCyberObservableLabels);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixCyberObservableLabels);

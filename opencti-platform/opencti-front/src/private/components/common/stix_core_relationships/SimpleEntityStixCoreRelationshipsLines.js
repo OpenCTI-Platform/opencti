@@ -58,44 +58,46 @@ class SimpleEntityStixCoreRelationshipsLinesContainer extends Component {
         <Paper classes={{ root: classes.paper }} elevation={2}>
           {data.stixCoreRelationships.edges.length > 0 ? (
             <List>
-              {data.stixCoreRelationships.edges.map((stixCoreRelationshipEdge) => {
-                const stixCoreRelationship = stixCoreRelationshipEdge.node;
-                const stixDomainObject = stixCoreRelationship.to;
-                const stixDomainObjectFrom = stixCoreRelationship.from;
-                let link = `${entityLink}/relations/${stixCoreRelationship.id}`;
-                if (stixDomainObjectFrom.id !== entityId) {
-                  link = `${resolveLink(stixDomainObjectFrom.entity_type)}/${
-                    stixDomainObjectFrom.id
-                  }/knowledge/relations/${stixCoreRelationship.id}`;
-                }
-                return (
-                  <ListItem
-                    key={stixCoreRelationship.id}
-                    dense={true}
-                    divider={true}
-                    button={true}
-                    component={Link}
-                    to={link}
-                  >
-                    <ListItemIcon>
-                      <Avatar classes={{ root: classes.avatar }}>
-                        {stixDomainObject.name.substring(0, 1)}
-                      </Avatar>
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={stixDomainObject.name}
-                      secondary={t(`entity_${stixDomainObject.entity_type}`)}
-                    />
-                    <ListItemSecondaryAction>
-                      <StixCoreRelationshipPopover
-                        stixCoreRelationshipId={stixCoreRelationship.id}
-                        paginationOptions={paginationOptions}
-                        disabled={stixCoreRelationship.inferred}
+              {data.stixCoreRelationships.edges.map(
+                (stixCoreRelationshipEdge) => {
+                  const stixCoreRelationship = stixCoreRelationshipEdge.node;
+                  const stixDomainObject = stixCoreRelationship.to;
+                  const stixDomainObjectFrom = stixCoreRelationship.from;
+                  let link = `${entityLink}/relations/${stixCoreRelationship.id}`;
+                  if (stixDomainObjectFrom.id !== entityId) {
+                    link = `${resolveLink(stixDomainObjectFrom.entity_type)}/${
+                      stixDomainObjectFrom.id
+                    }/knowledge/relations/${stixCoreRelationship.id}`;
+                  }
+                  return (
+                    <ListItem
+                      key={stixCoreRelationship.id}
+                      dense={true}
+                      divider={true}
+                      button={true}
+                      component={Link}
+                      to={link}
+                    >
+                      <ListItemIcon>
+                        <Avatar classes={{ root: classes.avatar }}>
+                          {stixDomainObject.name.substring(0, 1)}
+                        </Avatar>
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={stixDomainObject.name}
+                        secondary={t(`entity_${stixDomainObject.entity_type}`)}
                       />
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                );
-              })}
+                      <ListItemSecondaryAction>
+                        <StixCoreRelationshipPopover
+                          stixCoreRelationshipId={stixCoreRelationship.id}
+                          paginationOptions={paginationOptions}
+                          disabled={stixCoreRelationship.inferred}
+                        />
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  );
+                },
+              )}
             </List>
           ) : (
             <div style={{ display: 'table', height: '100%', width: '100%' }}>

@@ -50,9 +50,7 @@ class SectorOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdBy={pathOr(null, ['createdBy', 'node'], sector)}
-          />
+          <ItemAuthor createdBy={pathOr(null, ['createdBy', 'node'], sector)} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -93,7 +91,4 @@ const SectorOverview = createFragmentContainer(SectorOverviewComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(SectorOverview);
+export default compose(inject18n, withStyles(styles))(SectorOverview);

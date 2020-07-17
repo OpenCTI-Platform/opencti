@@ -56,7 +56,8 @@ class StixDomainObjectEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixDomainObjectEditionOverview variant={variant}
+                  <StixDomainObjectEditionOverview
+                    variant={variant}
                     stixDomainObject={props.stixDomainObject}
                     handleClose={handleClose.bind(this)}
                     handleDelete={
@@ -67,7 +68,7 @@ class StixDomainObjectEdition extends Component {
                   />
                 );
               }
-              return <Loader variant='inElement' />;
+              return <Loader variant="inElement" />;
             }}
           />
         ) : (
@@ -89,7 +90,4 @@ StixDomainObjectEdition.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixDomainObjectEdition);
+export default compose(inject18n, withStyles(styles))(StixDomainObjectEdition);

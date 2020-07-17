@@ -153,7 +153,8 @@ class LabelPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <LabelEdition label={props.label}
+                  <LabelEdition
+                    label={props.label}
                     handleClose={this.handleCloseUpdate.bind(this)}
                   />
                 );

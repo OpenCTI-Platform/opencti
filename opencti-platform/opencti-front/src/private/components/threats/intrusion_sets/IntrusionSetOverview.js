@@ -129,7 +129,4 @@ const IntrusionSetOverview = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(IntrusionSetOverview);
+export default compose(inject18n, withStyles(styles))(IntrusionSetOverview);

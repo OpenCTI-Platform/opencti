@@ -92,10 +92,11 @@ const attackPatternMutationRelationAdd = graphql`
 const attackPatternMutationRelationDelete = graphql`
   mutation AttackPatternEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationType: String!
   ) {
     attackPatternEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationType: $relationType) {
         ...AttackPatternEditionOverview_attackPattern
       }
     }
@@ -269,11 +270,7 @@ class AttackPatternEditionOverviewComponent extends Component {
     const createdBy = pathOr(null, ['createdBy', 'node', 'name'], attackPattern) === null
       ? ''
       : {
-        label: pathOr(
-          null,
-          ['createdBy', 'node', 'name'],
-          attackPattern,
-        ),
+        label: pathOr(null, ['createdBy', 'node', 'name'], attackPattern),
         value: pathOr(null, ['createdBy', 'node', 'id'], attackPattern),
         relation: pathOr(
           null,

@@ -9,7 +9,11 @@ import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import {
-  Gauge, ChessKnight, Fire, DiamondOutline, Biohazard,
+  Gauge,
+  ChessKnight,
+  Fire,
+  DiamondOutline,
+  Biohazard,
 } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
@@ -51,11 +55,13 @@ class ToolKnowledgeBar extends Component {
             dense={false}
             classes={{ root: classes.item }}
           >
-
             <ListItemIcon>
               <Gauge />
             </ListItemIcon>
-            <ListItemText primary={t('Overview')} secondary={t('Synthesis of knowledge')} />
+            <ListItemText
+              primary={t('Overview')}
+              secondary={t('Synthesis of knowledge')}
+            />
           </MenuItem>
           <MenuItem
             component={Link}

@@ -157,7 +157,9 @@ class StixCyberObservableLinks extends Component {
             <Typography variant="h4" gutterBottom={true}>
               {t('Enrichment connectors')}
             </Typography>
-            <StixCyberObservableEnrichment stixCyberObservable={stixCyberObservable} />
+            <StixCyberObservableEnrichment
+              stixCyberObservable={stixCyberObservable}
+            />
           </Grid>
         </Grid>
       </div>

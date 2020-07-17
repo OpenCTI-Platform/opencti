@@ -6,10 +6,7 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
-import {
-  commitMutation,
-  QueryRenderer,
-} from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import StixCyberObservableEditionContainer from './StixCyberObservableEditionContainer';
 import { stixCyberObservableEditionOverviewFocus } from './StixCyberObservableEditionOverview';
@@ -72,14 +69,16 @@ class StixCyberObservableEdition extends Component {
           onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Edit"
-          className={classes.editButton}>
+          className={classes.editButton}
+        >
           <Edit />
         </Fab>
         <Drawer
           open={this.state.open}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}>
+          onClose={this.handleClose.bind(this)}
+        >
           <QueryRenderer
             query={stixCyberObservableEditionQuery}
             variables={{ id: stixCyberObservableId }}

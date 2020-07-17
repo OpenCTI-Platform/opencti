@@ -56,30 +56,35 @@ class RoleLineComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
                 {node.name}
               </div>
-              <div className={classes.bodyItem}
-                style={{ width: dataColumns.default_assignation.width }}>
-                {node.default_assignation ? <Check/> : '-'}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.default_assignation.width }}
+              >
+                {node.default_assignation ? <Check /> : '-'}
               </div>
-              <div className={classes.bodyItem}
-                style={{ width: dataColumns.created_at.width }}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created_at.width }}
+              >
                 {fd(node.created_at)}
               </div>
-              <div className={classes.bodyItem}
-                style={{ width: dataColumns.updated_at.width }}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.updated_at.width }}
+              >
                 {fd(node.updated_at)}
               </div>
             </div>
           }
         />
         <ListItemSecondaryAction>
-          <RolePopover
-            roleId={node.id}
-            paginationOptions={paginationOptions}
-          />
+          <RolePopover roleId={node.id} paginationOptions={paginationOptions} />
         </ListItemSecondaryAction>
       </ListItem>
     );
@@ -125,21 +130,26 @@ class RoleLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}>
+                style={{ width: dataColumns.name.width }}
+              >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              <div className={classes.bodyItem}
-                   style={{ width: dataColumns.default_assignation.width }}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.default_assignation.width }}
+              >
                 <div className="fakeItem" style={{ width: 80 }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.created_at.width }}>
+                style={{ width: dataColumns.created_at.width }}
+              >
                 <div className="fakeItem" style={{ width: 80 }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.updated_at.width }}>
+                style={{ width: dataColumns.updated_at.width }}
+              >
                 <div className="fakeItem" style={{ width: 80 }} />
               </div>
             </div>

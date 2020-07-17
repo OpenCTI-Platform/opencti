@@ -75,8 +75,13 @@ class StixSightingRelationshipCreationFromEntityStixCyberObservablesLinesContain
     const {
       t, classes, data, handleSelect,
     } = this.props;
-    const stixCyberObservablesNodes = map((n) => n.node, data.stixCyberObservables.edges);
-    const byType = groupBy((stixCyberObservable) => stixCyberObservable.entity_type);
+    const stixCyberObservablesNodes = map(
+      (n) => n.node,
+      data.stixCyberObservables.edges,
+    );
+    const byType = groupBy(
+      (stixCyberObservable) => stixCyberObservable.entity_type,
+    );
     const stixCyberObservables = byType(stixCyberObservablesNodes);
     const stixCyberObservablesTypes = keys(stixCyberObservables);
 
@@ -171,7 +176,10 @@ const StixSightingRelationshipCreationFromEntityStixCyberObservablesLines = crea
           types: { type: "[String]" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixCyberObservablesOrdering", defaultValue: "name" }
+          orderBy: {
+            type: "StixCyberObservablesOrdering"
+            defaultValue: "name"
+          }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
         stixCyberObservables(

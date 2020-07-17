@@ -69,7 +69,4 @@ const ExploreHeader = createFragmentContainer(ExploreHeaderComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(ExploreHeader);
+export default compose(inject18n, withStyles(styles))(ExploreHeader);

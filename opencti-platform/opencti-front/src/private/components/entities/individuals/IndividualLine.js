@@ -7,7 +7,10 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRightOutlined, IndividualOutlined } from '@material-ui/icons';
+import {
+  KeyboardArrowRightOutlined,
+  IndividualOutlined,
+} from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import StixObjectLabels from '../../common/stix_object/StixObjectLabels';
@@ -108,29 +111,32 @@ IndividualLineComponent.propTypes = {
   onLabelClick: PropTypes.func,
 };
 
-const IndividualLineFragment = createFragmentContainer(IndividualLineComponent, {
-  node: graphql`
-    fragment IndividualLine_node on User {
-      id
-      name
-      created
-      modified
-      labels {
-        edges {
-          node {
-            id
-            label_type
-            value
-            color
-          }
-          relation {
-            id
+const IndividualLineFragment = createFragmentContainer(
+  IndividualLineComponent,
+  {
+    node: graphql`
+      fragment IndividualLine_node on User {
+        id
+        name
+        created
+        modified
+        labels {
+          edges {
+            node {
+              id
+              label_type
+              value
+              color
+            }
+            relation {
+              id
+            }
           }
         }
       }
-    }
-  `,
-});
+    `,
+  },
+);
 
 export const IndividualLine = compose(
   inject18n,

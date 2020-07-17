@@ -123,7 +123,10 @@ class StixDomainObjectKnowledge extends Component {
                           {t('Total reports')}
                         </div>
                         <div className={classes.icon}>
-                          <AssignmentOutlined color="inherit" fontSize="large" />
+                          <AssignmentOutlined
+                            color="inherit"
+                            fontSize="large"
+                          />
                         </div>
                       </CardContent>
                     );
@@ -144,7 +147,9 @@ class StixDomainObjectKnowledge extends Component {
               style={{ height: 120 }}
             >
               <QueryRenderer
-                query={stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery}
+                query={
+                  stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery
+                }
                 variables={{
                   fromId: stixDomainObjectId,
                   endDate: monthsAgo(1),

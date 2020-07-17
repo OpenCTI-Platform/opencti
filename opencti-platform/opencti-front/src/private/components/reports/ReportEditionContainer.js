@@ -73,7 +73,10 @@ class ReportEditionContainer extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <ReportEditionOverview report={this.props.report} context={editContext}/>
+          <ReportEditionOverview
+            report={this.props.report}
+            context={editContext}
+          />
         </div>
       </div>
     );

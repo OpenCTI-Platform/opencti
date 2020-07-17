@@ -118,7 +118,9 @@ class EntityStixCoreRelationshipsTableTime extends Component {
     };
     return (
       <QueryRenderer
-        query={entityStixCoreRelationshipsTableTimeStixCoreRelationshipTimeSeriesQuery}
+        query={
+          entityStixCoreRelationshipsTableTimeStixCoreRelationshipTimeSeriesQuery
+        }
         variables={stixCoreRelationshipsTimeSeriesVariables}
         render={({ props }) => {
           if (
@@ -230,11 +232,13 @@ class EntityStixCoreRelationshipsTableTime extends Component {
             {title || t('Entity usage')}
           </Typography>
           <Security needs={[EXPLORE_EXUPDATE]}>
-            <IconButton color="secondary"
+            <IconButton
+              color="secondary"
               aria-label="Update"
               size="small"
               classes={{ root: classes.updateButton }}
-              onClick={handleOpenConfig.bind(this, configuration)}>
+              onClick={handleOpenConfig.bind(this, configuration)}
+            >
               <SettingsInputComponent fontSize="inherit" />
             </IconButton>
           </Security>

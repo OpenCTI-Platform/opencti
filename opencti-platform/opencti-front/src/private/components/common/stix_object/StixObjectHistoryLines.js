@@ -29,7 +29,13 @@ class StixObjectHistoryLinesComponent extends Component {
         {logs.length > 0 ? (
           logs.map((logEdge) => {
             const log = logEdge.node;
-            return <StixObjectHistoryLine key={log.id} node={log} isRelation={isRelationLog} />;
+            return (
+              <StixObjectHistoryLine
+                key={log.id}
+                node={log}
+                isRelation={isRelationLog}
+              />
+            );
           })
         ) : (
           <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -40,7 +46,9 @@ class StixObjectHistoryLinesComponent extends Component {
                 textAlign: 'center',
               }}
             >
-              {isRelationLog ? t('No relations history about this entity.') : t('No history about this entity.')}
+              {isRelationLog
+                ? t('No relations history about this entity.')
+                : t('No history about this entity.')}
             </span>
           </div>
         )}

@@ -103,9 +103,7 @@ class Workspaces extends Component {
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
-      filters: [
-        { key: 'workspace_type', values: [workspaceType] },
-      ],
+      filters: [{ key: 'workspace_type', values: [workspaceType] }],
     };
     return (
       <div>
@@ -128,7 +126,4 @@ Workspaces.propTypes = {
   workspaceType: PropTypes.string,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-)(Workspaces);
+export default compose(inject18n, withRouter)(Workspaces);

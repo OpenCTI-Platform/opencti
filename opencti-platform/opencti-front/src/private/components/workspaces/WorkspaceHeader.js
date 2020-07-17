@@ -46,8 +46,10 @@ class WorkspaceHeaderComponent extends Component {
         </Typography>
         <div className={classes.popover}>
           <Security needs={[EXPLORE_EXUPDATE]}>
-            <WorkspacePopover workspaceId={workspace.id}
-              workspaceType={workspace.workspace_type}/>
+            <WorkspacePopover
+              workspaceId={workspace.id}
+              workspaceType={workspace.workspace_type}
+            />
           </Security>
         </div>
         <div className={classes.marking}>
@@ -91,7 +93,4 @@ const WorkspaceHeader = createFragmentContainer(WorkspaceHeaderComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(WorkspaceHeader);
+export default compose(inject18n, withStyles(styles))(WorkspaceHeader);

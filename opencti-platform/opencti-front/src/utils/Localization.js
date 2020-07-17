@@ -87,7 +87,8 @@ const i18n = {
       'Do you want to remove the observable from this indicator?':
         'Souhaitez-vous supprimer cet observable de cet indicateur ?',
       'Do you want to delete this role?': 'Souhaitez-vous supprimer ce rôle ?',
-      'Do you want to delete this label?': 'Souhaitez-vous supprimer ce label ?',
+      'Do you want to delete this label?':
+        'Souhaitez-vous supprimer ce label ?',
       'Do you want to delete this note?':
         'Souhaitez-vous supprimer cette note ?',
       'Do you want to delete these entities?':
@@ -293,7 +294,8 @@ const i18n = {
       'Direct targeting of this country': 'Ciblage direct de ce pays',
       'Groups permissions on data marking is not fully implemented yet.':
         "Les permissions des groupes sur le marquage des données n'est pas encore implémenté.",
-      'No potential duplicate entities has been found.': "Aucun potentiel duplicat d'entité n'a été trouvé.",
+      'No potential duplicate entities has been found.':
+        "Aucun potentiel duplicat d'entité n'a été trouvé.",
       'potential duplicate entity': "duplicat potentiel d'entité",
       'has been found.': 'a été trouvé.',
       'potential duplicate entities': "duplicats potentiels d'entité",
@@ -828,7 +830,8 @@ const i18n = {
       'observable_user-agent': 'User agent',
       'observable_windows-scheduled-task': 'Tâche planifiée Windows',
       'observable_windows-service-name': 'Service Win. - Nom',
-      'observable_windows-service-display-name': "Service Win. - Nom d'affichage",
+      'observable_windows-service-display-name':
+        "Service Win. - Nom d'affichage",
       'observable_x509-certificate-issuer': 'Cert. X509 - Emetteur',
       'observable_x509-certificate-serial-number': 'Cert. X509 - N° de série',
       Status: 'Statut',

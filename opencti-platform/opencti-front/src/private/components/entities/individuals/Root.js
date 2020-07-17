@@ -86,14 +86,20 @@ class RootIndividual extends Component {
                     exact
                     path="/dashboard/entities/individuals/:individualId"
                     render={(routeProps) => (
-                      <Individual {...routeProps} individual={props.individual} />
+                      <Individual
+                        {...routeProps}
+                        individual={props.individual}
+                      />
                     )}
                   />
                   <Route
                     exact
                     path="/dashboard/entities/individuals/:individualId/reports"
                     render={(routeProps) => (
-                      <IndividualReports {...routeProps} individual={props.individual} />
+                      <IndividualReports
+                        {...routeProps}
+                        individual={props.individual}
+                      />
                     )}
                   />
                   <Route
@@ -108,7 +114,10 @@ class RootIndividual extends Component {
                   <Route
                     path="/dashboard/entities/individuals/:individualId/knowledge"
                     render={(routeProps) => (
-                      <IndividualKnowledge {...routeProps} individual={props.individual} />
+                      <IndividualKnowledge
+                        {...routeProps}
+                        individual={props.individual}
+                      />
                     )}
                   />
                   <Route

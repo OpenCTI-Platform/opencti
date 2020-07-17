@@ -93,10 +93,11 @@ const indicatorMutationRelationAdd = graphql`
 const indicatorMutationRelationDelete = graphql`
   mutation IndicatorEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationType: String!
   ) {
     indicatorEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationType: $relationType) {
         ...IndicatorEditionOverview_indicator
       }
     }
@@ -238,11 +239,7 @@ class IndicatorEditionOverviewComponent extends Component {
       : {
         label: pathOr(null, ['createdBy', 'node', 'name'], indicator),
         value: pathOr(null, ['createdBy', 'node', 'id'], indicator),
-        relation: pathOr(
-          null,
-          ['createdBy', 'relation', 'id'],
-          indicator,
-        ),
+        relation: pathOr(null, ['createdBy', 'relation', 'id'], indicator),
       };
     const markingDefinitions = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
@@ -378,18 +375,15 @@ class IndicatorEditionOverviewComponent extends Component {
               onChange={this.handleChangeMarkingDefinitions.bind(this)}
             />
             <Field
-                component={SwitchField}
-                type="checkbox"
-                name="detection"
-                label={t('Detection')}
-                containerstyle={{ marginTop: 20 }}
-                onChange={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus
-                      context={context}
-                      fieldName="negative"
-                  />
-                }
+              component={SwitchField}
+              type="checkbox"
+              name="detection"
+              label={t('Detection')}
+              containerstyle={{ marginTop: 20 }}
+              onChange={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="negative" />
+              }
             />
           </Form>
         )}

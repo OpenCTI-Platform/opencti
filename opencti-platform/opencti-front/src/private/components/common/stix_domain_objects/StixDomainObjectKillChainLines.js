@@ -196,7 +196,10 @@ class StixDomainObjectKillChainLinesComponent extends Component {
                 <ListItem
                   button={true}
                   divider={true}
-                  onClick={this.handleToggleLine.bind(this, stixCoreRelationship.id)}
+                  onClick={this.handleToggleLine.bind(
+                    this,
+                    stixCoreRelationship.id,
+                  )}
                 >
                   <ListItemIcon>
                     <Launch color="primary" role="img" />
@@ -210,89 +213,96 @@ class StixDomainObjectKillChainLinesComponent extends Component {
                       )}
                       aria-haspopup="true"
                     >
-                      {this.state.expandedLines[stixCoreRelationship.id] === false ? (
+                      {this.state.expandedLines[stixCoreRelationship.id]
+                      === false ? (
                         <ExpandMore />
-                      ) : (
+                        ) : (
                         <ExpandLess />
-                      )}
+                        )}
                     </IconButton>
                   </ListItemSecondaryAction>
                 </ListItem>
                 <Collapse
-                  in={this.state.expandedLines[stixCoreRelationship.id] !== false}
+                  in={
+                    this.state.expandedLines[stixCoreRelationship.id] !== false
+                  }
                 >
                   <List>
-                    {stixCoreRelationship.attackPatterns.map((attackPattern) => {
-                      const link = `${entityLink}/relations/${attackPattern.id}`;
-                      return (
-                        <ListItem
-                          key={attackPattern.id}
-                          classes={{ root: classes.nested }}
-                          divider={true}
-                          button={true}
-                          dense={true}
-                          component={Link}
-                          to={link}
-                        >
-                          <ListItemIcon>
-                            <LockPattern color="primary" role="img" />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={
-                              <span>
-                                <strong>{attackPattern.to.external_id}</strong>{' '}
-                                - {attackPattern.to.name}
-                              </span>
-                            }
-                            secondary={
-                              // eslint-disable-next-line no-nested-ternary
-                              attackPattern.description
-                              && attackPattern.description.length > 0 ? (
-                                <Markdown
-                                  className="markdown"
-                                  source={attackPattern.description}
-                                />
-                                ) : attackPattern.inferred ? (
-                                <i>{t('This relation is inferred')}</i>
-                                ) : (
-                                  t('No description of this usage')
-                                )
-                            }
-                          />
-                          {take(
-                            1,
-                            pathOr(
-                              [],
-                              ['markingDefinitions', 'edges'],
-                              attackPattern,
-                            ),
-                          ).map((markingDefinition) => (
-                            <ItemMarking
-                              key={markingDefinition.node.id}
+                    {stixCoreRelationship.attackPatterns.map(
+                      (attackPattern) => {
+                        const link = `${entityLink}/relations/${attackPattern.id}`;
+                        return (
+                          <ListItem
+                            key={attackPattern.id}
+                            classes={{ root: classes.nested }}
+                            divider={true}
+                            button={true}
+                            dense={true}
+                            component={Link}
+                            to={link}
+                          >
+                            <ListItemIcon>
+                              <LockPattern color="primary" role="img" />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={
+                                <span>
+                                  <strong>
+                                    {attackPattern.to.external_id}
+                                  </strong>{' '}
+                                  - {attackPattern.to.name}
+                                </span>
+                              }
+                              secondary={
+                                // eslint-disable-next-line no-nested-ternary
+                                attackPattern.description
+                                && attackPattern.description.length > 0 ? (
+                                  <Markdown
+                                    className="markdown"
+                                    source={attackPattern.description}
+                                  />
+                                  ) : attackPattern.inferred ? (
+                                  <i>{t('This relation is inferred')}</i>
+                                  ) : (
+                                    t('No description of this usage')
+                                  )
+                              }
+                            />
+                            {take(
+                              1,
+                              pathOr(
+                                [],
+                                ['markingDefinitions', 'edges'],
+                                attackPattern,
+                              ),
+                            ).map((markingDefinition) => (
+                              <ItemMarking
+                                key={markingDefinition.node.id}
+                                variant="inList"
+                                label={markingDefinition.node.definition}
+                                color={markingDefinition.node.color}
+                              />
+                            ))}
+                            <ItemYears
                               variant="inList"
-                              label={markingDefinition.node.definition}
-                              color={markingDefinition.node.color}
+                              years={
+                                attackPattern.inferred
+                                  ? t('Inferred')
+                                  : attackPattern.years
+                              }
+                              disabled={attackPattern.inferred}
                             />
-                          ))}
-                          <ItemYears
-                            variant="inList"
-                            years={
-                              attackPattern.inferred
-                                ? t('Inferred')
-                                : attackPattern.years
-                            }
-                            disabled={attackPattern.inferred}
-                          />
-                          <ListItemSecondaryAction>
-                            <StixCoreRelationshipPopover
-                              stixCoreRelationshipId={attackPattern.id}
-                              paginationOptions={paginationOptions}
-                              onDelete={this.props.relay.refetch.bind(this)}
-                            />
-                          </ListItemSecondaryAction>
-                        </ListItem>
-                      );
-                    })}
+                            <ListItemSecondaryAction>
+                              <StixCoreRelationshipPopover
+                                stixCoreRelationshipId={attackPattern.id}
+                                paginationOptions={paginationOptions}
+                                onDelete={this.props.relay.refetch.bind(this)}
+                              />
+                            </ListItemSecondaryAction>
+                          </ListItem>
+                        );
+                      },
+                    )}
                   </List>
                 </Collapse>
               </div>

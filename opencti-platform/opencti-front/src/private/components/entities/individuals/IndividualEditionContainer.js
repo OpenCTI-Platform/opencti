@@ -50,9 +50,11 @@ class IndividualEditionContainer extends Component {
     return (
       <div>
         <div className={classes.header}>
-          <IconButton aria-label="Close"
+          <IconButton
+            aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}>
+            onClick={handleClose.bind(this)}
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
@@ -62,7 +64,10 @@ class IndividualEditionContainer extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <IndividualEditionOverview individual={this.props.individual} context={editContext}/>
+          <IndividualEditionOverview
+            individual={this.props.individual}
+            context={editContext}
+          />
         </div>
       </div>
     );
@@ -77,18 +82,21 @@ IndividualEditionContainer.propTypes = {
   t: PropTypes.func,
 };
 
-const IndividualEditionFragment = createFragmentContainer(IndividualEditionContainer, {
-  individual: graphql`
-    fragment IndividualEditionContainer_individual on User {
-      id
-      ...IndividualEditionOverview_individual
-      editContext {
-        name
-        focusOn
+const IndividualEditionFragment = createFragmentContainer(
+  IndividualEditionContainer,
+  {
+    individual: graphql`
+      fragment IndividualEditionContainer_individual on User {
+        id
+        ...IndividualEditionOverview_individual
+        editContext {
+          name
+          focusOn
+        }
       }
-    }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

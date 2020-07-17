@@ -136,10 +136,11 @@ const stixSightingRelationshipMutationRelationAdd = graphql`
 const stixSightingRelationshipMutationRelationDelete = graphql`
   mutation StixSightingRelationshipEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationType: String!
   ) {
     stixSightingRelationshipEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationType: $relationType) {
         ...StixSightingRelationshipEditionOverview_stixSightingRelationship
       }
     }
@@ -225,9 +226,21 @@ const StixSightingRelationshipEditionContainer = ({
   };
   const handleChangeCreatedBy = (name, value) => {
     const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'node', 'name'], stixSightingRelationship),
-      value: pathOr(null, ['createdBy', 'node', 'id'], stixSightingRelationship),
-      relation: pathOr(null, ['createdBy', 'relation', 'id'], stixSightingRelationship),
+      label: pathOr(
+        null,
+        ['createdBy', 'node', 'name'],
+        stixSightingRelationship,
+      ),
+      value: pathOr(
+        null,
+        ['createdBy', 'node', 'id'],
+        stixSightingRelationship,
+      ),
+      relation: pathOr(
+        null,
+        ['createdBy', 'relation', 'id'],
+        stixSightingRelationship,
+      ),
     };
     if (currentCreatedBy.value === null) {
       commitMutation({
@@ -291,11 +304,20 @@ const StixSightingRelationshipEditionContainer = ({
       })
       .catch(() => false);
   };
-  const createdBy = pathOr(null, ['createdBy', 'node', 'name'], stixSightingRelationship) === null
+  const createdBy = pathOr(null, ['createdBy', 'node', 'name'], stixSightingRelationship)
+    === null
     ? ''
     : {
-      label: pathOr(null, ['createdBy', 'node', 'name'], stixSightingRelationship),
-      value: pathOr(null, ['createdBy', 'node', 'id'], stixSightingRelationship),
+      label: pathOr(
+        null,
+        ['createdBy', 'node', 'name'],
+        stixSightingRelationship,
+      ),
+      value: pathOr(
+        null,
+        ['createdBy', 'node', 'id'],
+        stixSightingRelationship,
+      ),
       relation: pathOr(
         null,
         ['createdBy', 'relation', 'id'],

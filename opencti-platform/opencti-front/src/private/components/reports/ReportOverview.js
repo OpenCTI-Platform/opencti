@@ -43,10 +43,7 @@ class ReportOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Report type')}
           </Typography>
-          <Chip
-            classes={{ root: classes.chip }}
-            label={report.report_class}
-          />
+          <Chip classes={{ root: classes.chip }} label={report.report_class} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -70,9 +67,7 @@ class ReportOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdBy={pathOr(null, ['createdBy', 'node'], report)}
-          />
+          <ItemAuthor createdBy={pathOr(null, ['createdBy', 'node'], report)} />
           <Typography
             variant="h3"
             gutterBottom={true}

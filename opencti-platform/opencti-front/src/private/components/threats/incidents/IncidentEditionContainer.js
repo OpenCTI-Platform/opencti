@@ -66,7 +66,8 @@ class IncidentEditionContainer extends Component {
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}>
+            onClick={handleClose.bind(this)}
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
@@ -86,10 +87,13 @@ class IncidentEditionContainer extends Component {
             </Tabs>
           </AppBar>
           {this.state.currentTab === 0 && (
-            <IncidentEditionOverview incident={incident} context={editContext}/>
+            <IncidentEditionOverview
+              incident={incident}
+              context={editContext}
+            />
           )}
           {this.state.currentTab === 1 && (
-            <IncidentEditionDetails incident={incident} context={editContext}/>
+            <IncidentEditionDetails incident={incident} context={editContext} />
           )}
         </div>
       </div>

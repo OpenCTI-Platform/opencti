@@ -115,7 +115,9 @@ class EntityStixCoreRelationshipsPie extends Component {
     };
     return (
       <QueryRenderer
-        query={entityStixCoreRelationshipsPieStixCoreRelationshipDistributionQuery}
+        query={
+          entityStixCoreRelationshipsPieStixCoreRelationshipDistributionQuery
+        }
         variables={stixCoreRelationshipsDistributionVariables}
         render={({ props }) => {
           if (
@@ -147,9 +149,11 @@ class EntityStixCoreRelationshipsPie extends Component {
                     label={renderCustomizedLabel}
                     labelLine={false}
                   >
-                    {props.stixCoreRelationshipsDistribution.map((entry, index) => (
-                      <Cell key={index} fill={itemColor(entry.label)} />
-                    ))}
+                    {props.stixCoreRelationshipsDistribution.map(
+                      (entry, index) => (
+                        <Cell key={index} fill={itemColor(entry.label)} />
+                      ),
+                    )}
                   </Pie>
                   <Legend
                     verticalAlign="bottom"
@@ -213,11 +217,13 @@ class EntityStixCoreRelationshipsPie extends Component {
             {title || `${t('Distribution:')} ${t(`entity_${entityType}`)}`}
           </Typography>
           <Security needs={[EXPLORE_EXUPDATE]}>
-            <IconButton color="secondary"
+            <IconButton
+              color="secondary"
               aria-label="Update"
               size="small"
               classes={{ root: classes.updateButton }}
-              onClick={handleOpenConfig.bind(this, configuration)}>
+              onClick={handleOpenConfig.bind(this, configuration)}
+            >
               <SettingsInputComponent fontSize="inherit" />
             </IconButton>
           </Security>

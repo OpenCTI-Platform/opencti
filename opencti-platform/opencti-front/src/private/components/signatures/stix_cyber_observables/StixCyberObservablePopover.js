@@ -20,7 +20,9 @@ import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { stixCyberObservableEditionQuery } from './StixCyberObservableEdition';
 import StixCyberObservableEditionContainer from './StixCyberObservableEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -167,7 +169,8 @@ class StixCyberObservablePopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixCyberObservableEditionContainer stixCyberObservable={props.stixCyberObservable}
+                  <StixCyberObservableEditionContainer
+                    stixCyberObservable={props.stixCyberObservable}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

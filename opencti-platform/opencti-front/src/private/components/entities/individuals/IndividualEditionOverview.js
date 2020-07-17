@@ -61,7 +61,10 @@ const individualMutationFieldPatch = graphql`
 `;
 
 export const individualEditionOverviewFocus = graphql`
-  mutation IndividualEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
+  mutation IndividualEditionOverviewFocusMutation(
+    $id: ID!
+    $input: EditContext!
+  ) {
     individualEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -88,10 +91,11 @@ const individualMutationRelationAdd = graphql`
 const individualMutationRelationDelete = graphql`
   mutation IndividualEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationType: String!
   ) {
     individualEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationType: $relationType) {
         ...IndividualEditionOverview_individual
       }
     }
@@ -126,7 +130,10 @@ class IndividualEditionOverviewComponent extends Component {
       .then(() => {
         commitMutation({
           mutation: individualMutationFieldPatch,
-          variables: { id: this.props.individual.id, input: { key: name, value } },
+          variables: {
+            id: this.props.individual.id,
+            input: { key: name, value },
+          },
         });
       })
       .catch(() => false);

@@ -86,9 +86,9 @@ const IncidentDetails = createFragmentContainer(IncidentDetailsComponent, {
       last_seen
       objective
       creator {
-          id
-          name
-        }
+        id
+        name
+      }
       labels {
         edges {
           node {

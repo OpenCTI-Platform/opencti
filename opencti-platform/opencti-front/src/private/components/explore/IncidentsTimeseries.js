@@ -60,7 +60,4 @@ IncidentsTimeseries.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(IncidentsTimeseries);
+export default compose(inject18n, withStyles(styles))(IncidentsTimeseries);

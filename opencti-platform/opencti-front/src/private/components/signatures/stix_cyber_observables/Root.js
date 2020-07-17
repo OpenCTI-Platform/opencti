@@ -147,7 +147,10 @@ class RootStixCyberObservable extends Component {
                     exact
                     path="/dashboard/signatures/observables/:observableId/knowledge/relations/:relationId"
                     render={(routeProps) => (
-                      <StixCoreRelationship entityId={observableId} {...routeProps} />
+                      <StixCoreRelationship
+                        entityId={observableId}
+                        {...routeProps}
+                      />
                     )}
                   />
                 </div>

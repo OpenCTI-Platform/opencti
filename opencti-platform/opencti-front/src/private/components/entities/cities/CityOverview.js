@@ -50,9 +50,7 @@ class CityOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdBy={pathOr(null, ['createdBy', 'node'], city)}
-          />
+          <ItemAuthor createdBy={pathOr(null, ['createdBy', 'node'], city)} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -93,7 +91,4 @@ const CityOverview = createFragmentContainer(CityOverviewComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(CityOverview);
+export default compose(inject18n, withStyles(styles))(CityOverview);

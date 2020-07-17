@@ -156,7 +156,4 @@ IndicatorEntities.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(IndicatorEntities);
+export default compose(inject18n, withStyles(styles))(IndicatorEntities);

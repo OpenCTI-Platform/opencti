@@ -12,7 +12,9 @@ import {
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
-import IndividualsLines, { individualsLinesQuery } from './individuals/IndividualsLines';
+import IndividualsLines, {
+  individualsLinesQuery,
+} from './individuals/IndividualsLines';
 import IndividualCreation from './individuals/IndividualCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 

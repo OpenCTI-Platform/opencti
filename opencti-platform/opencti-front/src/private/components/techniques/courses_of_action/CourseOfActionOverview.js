@@ -72,11 +72,7 @@ class CourseOfActionOverviewComponent extends Component {
             {t('Author')}
           </Typography>
           <ItemAuthor
-            createdBy={pathOr(
-              null,
-              ['createdBy', 'node'],
-              courseOfAction,
-            )}
+            createdBy={pathOr(null, ['createdBy', 'node'], courseOfAction)}
           />
           <Typography
             variant="h3"

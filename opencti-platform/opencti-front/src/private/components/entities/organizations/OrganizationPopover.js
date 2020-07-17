@@ -20,7 +20,9 @@ import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { organizationEditionQuery } from './OrganizationEdition';
 import OrganizationEditionContainer from './OrganizationEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -167,7 +169,8 @@ class OrganizationPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <OrganizationEditionContainer organization={props.organization}
+                  <OrganizationEditionContainer
+                    organization={props.organization}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

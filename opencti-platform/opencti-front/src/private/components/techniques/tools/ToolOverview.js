@@ -71,9 +71,7 @@ class ToolOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdBy={pathOr(null, ['createdBy', 'node'], tool)}
-          />
+          <ItemAuthor createdBy={pathOr(null, ['createdBy', 'node'], tool)} />
           <Typography
             variant="h3"
             gutterBottom={true}

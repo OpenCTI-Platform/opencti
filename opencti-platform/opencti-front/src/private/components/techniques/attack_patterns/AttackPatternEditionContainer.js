@@ -66,7 +66,8 @@ class AttackPatternEditionContainer extends Component {
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}>
+            onClick={handleClose.bind(this)}
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
@@ -86,10 +87,16 @@ class AttackPatternEditionContainer extends Component {
             </Tabs>
           </AppBar>
           {this.state.currentTab === 0 && (
-            <AttackPatternEditionOverview attackPattern={attackPattern} context={editContext}/>
+            <AttackPatternEditionOverview
+              attackPattern={attackPattern}
+              context={editContext}
+            />
           )}
           {this.state.currentTab === 1 && (
-            <AttackPatternEditionDetails attackPattern={attackPattern} context={editContext}/>
+            <AttackPatternEditionDetails
+              attackPattern={attackPattern}
+              context={editContext}
+            />
           )}
         </div>
       </div>

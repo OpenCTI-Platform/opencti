@@ -20,7 +20,9 @@ import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { toolEditionQuery } from './ToolEdition';
 import ToolEditionContainer from './ToolEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -167,7 +169,8 @@ class ToolPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <ToolEditionContainer tool={props.tool}
+                  <ToolEditionContainer
+                    tool={props.tool}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

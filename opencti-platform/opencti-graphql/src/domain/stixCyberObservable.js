@@ -137,9 +137,11 @@ export const addStixCyberObservable = async (user, stixCyberObservable) => {
   }
   return notify(BUS_TOPICS.StixCyberObservable.ADDED_TOPIC, created, user);
 };
+
 export const stixCyberObservableDelete = async (user, stixCyberObservableId) => {
   return deleteEntityById(user, stixCyberObservableId, 'Stix-Observable');
 };
+
 export const stixCyberObservableAddRelation = (user, stixCyberObservableId, input) => {
   if (!input.through) throw ForbiddenAccess();
   const finalInput = pipe(assoc('fromId', stixCyberObservableId), assoc('fromType', 'Stix-Observable'))(input);

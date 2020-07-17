@@ -98,4 +98,7 @@ StixSightingRelationshipEdition.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(StixSightingRelationshipEdition);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixSightingRelationshipEdition);

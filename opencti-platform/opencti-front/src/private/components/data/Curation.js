@@ -228,8 +228,7 @@ class StixCyberObservables extends Component {
     } = this.state;
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
-      types:
-        stixDomainObjectsTypes.length > 0 ? stixDomainObjectsTypes : null,
+      types: stixDomainObjectsTypes.length > 0 ? stixDomainObjectsTypes : null,
       search: searchTerm,
       filters: finalFilters,
       orderBy: sortBy,

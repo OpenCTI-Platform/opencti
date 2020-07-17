@@ -86,10 +86,11 @@ const toolMutationRelationAdd = graphql`
 const toolMutationRelationDelete = graphql`
   mutation ToolEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationType: String!
   ) {
     toolEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationType: $relationType) {
         ...ToolEditionOverview_tool
       }
     }

@@ -52,7 +52,9 @@ class StixCyberObservableObservablesLines extends Component {
           this.props.data,
         )}
         LineComponent={
-          <StixCyberObservableObservableLine displayRelation={displayRelation} />
+          <StixCyberObservableObservableLine
+            displayRelation={displayRelation}
+          />
         }
         DummyLineComponent={
           <StixCyberObservableObservableLineDummy

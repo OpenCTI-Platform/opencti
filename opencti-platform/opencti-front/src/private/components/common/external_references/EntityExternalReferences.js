@@ -48,14 +48,17 @@ class EntityExternalReferences extends Component {
         variables={{ entityId, count: 200 }}
         render={({ props }) => {
           if (props) {
-            return (<EntityExternalReferencesLines entityId={entityId} data={props}/>);
+            return (
+              <EntityExternalReferencesLines entityId={entityId} data={props} />
+            );
           }
           return (
             <div style={{ height: '100%' }}>
               <Typography
                 variant="h4"
                 gutterBottom={true}
-                style={{ float: 'left' }}>
+                style={{ float: 'left' }}
+              >
                 {t('External references')}
               </Typography>
               <div className="clearfix" />
@@ -101,7 +104,4 @@ EntityExternalReferences.propTypes = {
   fld: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(EntityExternalReferences);
+export default compose(inject18n, withStyles(styles))(EntityExternalReferences);

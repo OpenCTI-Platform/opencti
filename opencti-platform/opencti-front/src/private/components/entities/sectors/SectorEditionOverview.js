@@ -18,10 +18,7 @@ import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import {
-  commitMutation,
-  fetchQuery,
-} from '../../../../relay/environment';
+import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import { now } from '../../../../utils/Time';
 import { sectorsSearchQuery } from '../Sectors';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -68,10 +65,11 @@ const sectorMutationRelationAdd = graphql`
 const sectorMutationRelationDelete = graphql`
   mutation SectorEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationType: String!
   ) {
     sectorEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationType: $relationType) {
         ...SectorEditionOverview_sector
       }
     }

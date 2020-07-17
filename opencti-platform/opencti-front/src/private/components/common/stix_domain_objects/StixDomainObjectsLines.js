@@ -326,7 +326,4 @@ const StixDomainObjectsLines = createPaginationContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixDomainObjectsLines);
+export default compose(inject18n, withStyles(styles))(StixDomainObjectsLines);

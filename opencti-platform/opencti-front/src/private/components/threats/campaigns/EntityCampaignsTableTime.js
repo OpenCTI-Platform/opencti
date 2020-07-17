@@ -223,13 +223,15 @@ class EntityCampaignsTableTime extends Component {
             {title || t('Campaigns')}
           </Typography>
           <Security needs={[EXPLORE_EXUPDATE]}>
-              <IconButton color="secondary"
-                aria-label="Update"
-                size="small"
-                classes={{ root: classes.updateButton }}
-                onClick={handleOpenConfig.bind(this, configuration)}>
-                <SettingsInputComponent fontSize="inherit" />
-              </IconButton>
+            <IconButton
+              color="secondary"
+              aria-label="Update"
+              size="small"
+              classes={{ root: classes.updateButton }}
+              onClick={handleOpenConfig.bind(this, configuration)}
+            >
+              <SettingsInputComponent fontSize="inherit" />
+            </IconButton>
           </Security>
           <div className="clearfix" />
           {this.renderContent()}

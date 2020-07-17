@@ -160,7 +160,10 @@ class StixDomainObjectLabels extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const currentLabelsIds = map((label) => label.node.id, this.props.labels.edges);
+    const currentLabelsIds = map(
+      (label) => label.node.id,
+      this.props.labels.edges,
+    );
     const labelsIds = pipe(
       map((value) => value.value),
       filter((value) => !currentLabelsIds.includes(value)),

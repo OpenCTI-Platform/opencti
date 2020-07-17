@@ -133,7 +133,4 @@ RelationNodeWidget.propTypes = {
   nsd: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(RelationNodeWidget);
+export default compose(inject18n, withStyles(styles))(RelationNodeWidget);

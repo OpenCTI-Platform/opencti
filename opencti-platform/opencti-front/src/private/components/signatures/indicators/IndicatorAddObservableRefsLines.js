@@ -68,10 +68,11 @@ export const indicatorMutationRelationAdd = graphql`
 export const indicatorMutationRelationDelete = graphql`
   mutation IndicatorAddObservableRefsLinesRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationType: String!
   ) {
     indicatorEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationType: $relationType) {
         ...IndicatorObservables_indicator
       }
     }
@@ -90,11 +91,16 @@ class IndicatorAddObservableRefsLinesContainer extends Component {
       (n) => n.node.id,
       indicatorObservableRefs,
     );
-    const alreadyAdded = indicatorObservableRefsIds.includes(stixCyberObservable.id);
+    const alreadyAdded = indicatorObservableRefsIds.includes(
+      stixCyberObservable.id,
+    );
 
     if (alreadyAdded) {
       const existingStixCyberObservable = head(
-        filter((n) => n.node.id === stixCyberObservable.id, indicatorObservableRefs),
+        filter(
+          (n) => n.node.id === stixCyberObservable.id,
+          indicatorObservableRefs,
+        ),
       );
       commitMutation({
         mutation: indicatorMutationRelationDelete,
@@ -144,8 +150,13 @@ class IndicatorAddObservableRefsLinesContainer extends Component {
       (n) => n.node.id,
       indicatorObservableRefs,
     );
-    const stixCyberObservablesNodes = map((n) => n.node, data.stixCyberObservables.edges);
-    const byType = groupBy((stixCyberObservable) => stixCyberObservable.entity_type);
+    const stixCyberObservablesNodes = map(
+      (n) => n.node,
+      data.stixCyberObservables.edges,
+    );
+    const byType = groupBy(
+      (stixCyberObservable) => stixCyberObservable.entity_type,
+    );
     const stixCyberObservables = byType(stixCyberObservablesNodes);
     const stixCyberObservablesTypes = keys(stixCyberObservables);
 
@@ -256,7 +267,10 @@ const IndicatorAddObservableRefsLines = createPaginationContainer(
 
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixCyberObservablesOrdering", defaultValue: "name" }
+          orderBy: {
+            type: "StixCyberObservablesOrdering"
+            defaultValue: "name"
+          }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
         stixCyberObservables(

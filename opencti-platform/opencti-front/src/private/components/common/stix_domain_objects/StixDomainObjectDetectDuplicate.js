@@ -114,7 +114,7 @@ class StixDomainObjectDetectDuplicate extends Component {
         <Dialog
           open={this.state.open}
           fullWidth={true}
-          maxWidth='md'
+          maxWidth="md"
           keepMounted={true}
           TransitionComponent={Transition}
           onClose={this.handleClose.bind(this)}

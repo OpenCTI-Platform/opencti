@@ -20,7 +20,9 @@ import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { incidentEditionQuery } from './IncidentEdition';
 import IncidentEditionContainer from './IncidentEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -168,7 +170,8 @@ class IncidentPopover extends Component {
               if (props) {
                 // Done
                 return (
-                  <IncidentEditionContainer incident={props.incident}
+                  <IncidentEditionContainer
+                    incident={props.incident}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

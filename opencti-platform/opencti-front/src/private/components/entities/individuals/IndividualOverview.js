@@ -95,34 +95,34 @@ IndividualOverviewComponent.propTypes = {
   fldt: PropTypes.func,
 };
 
-const IndividualOverview = createFragmentContainer(IndividualOverviewComponent, {
-  individual: graphql`
-    fragment IndividualOverview_individual on User {
-      id
-      name
-      description
-      created
-      modified
-      markingDefinitions {
-        edges {
+const IndividualOverview = createFragmentContainer(
+  IndividualOverviewComponent,
+  {
+    individual: graphql`
+      fragment IndividualOverview_individual on User {
+        id
+        name
+        description
+        created
+        modified
+        markingDefinitions {
+          edges {
+            node {
+              id
+              definition
+            }
+          }
+        }
+        createdBy {
           node {
             id
-            definition
+            name
+            entity_type
           }
         }
       }
-      createdBy {
-        node {
-          id
-          name
-          entity_type
-        }
-      }
-    }
-  `,
-});
+    `,
+  },
+);
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(IndividualOverview);
+export default compose(inject18n, withStyles(styles))(IndividualOverview);

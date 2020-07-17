@@ -31,7 +31,10 @@ class IntrusionSetDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixDomainObjectLabels labels={intrusionSet.labels} id={intrusionSet.id} />
+          <StixDomainObjectLabels
+            labels={intrusionSet.labels}
+            id={intrusionSet.id}
+          />
           <Typography
             variant="h3"
             gutterBottom={true}

@@ -30,13 +30,17 @@ const StixCyberObservableKnowledge = (props) => {
         classes={{ container: classes.gridContainer }}
       >
         <Grid item={true} xs={9}>
-          <StixCyberObservableKnowledgeEntities entityId={stixCyberObservable.id} />
+          <StixCyberObservableKnowledgeEntities
+            entityId={stixCyberObservable.id}
+          />
         </Grid>
         <Grid item={true} xs={3}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Enrichment connectors')}
           </Typography>
-          <StixCyberObservableEnrichment stixCyberObservable={stixCyberObservable} />
+          <StixCyberObservableEnrichment
+            stixCyberObservable={stixCyberObservable}
+          />
         </Grid>
       </Grid>
     </div>

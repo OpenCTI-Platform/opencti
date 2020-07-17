@@ -20,7 +20,9 @@ import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { indicatorEditionQuery } from './IndicatorEdition';
 import IndicatorEditionContainer from './IndicatorEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -167,7 +169,8 @@ class IndicatorPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <IndicatorEditionContainer indicator={props.indicator}
+                  <IndicatorEditionContainer
+                    indicator={props.indicator}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

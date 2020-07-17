@@ -52,10 +52,7 @@ class OrganizationObservablesComponent extends Component {
           exact
           path="/dashboard/entities/organizations/:organizationId/observables/relations/:relationId"
           render={(routeProps) => (
-            <StixCoreRelationship
-              entityId={organization.id}
-              {...routeProps}
-            />
+            <StixCoreRelationship entityId={organization.id} {...routeProps} />
           )}
         />
         <Route

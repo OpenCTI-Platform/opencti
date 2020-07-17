@@ -20,7 +20,9 @@ import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { courseOfActionEditionQuery } from './CourseOfActionEdition';
 import CourseOfActionEditionContainer from './CourseOfActionEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -167,7 +169,8 @@ class CourseOfActionPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <CourseOfActionEditionContainer courseOfAction={props.courseOfAction}
+                  <CourseOfActionEditionContainer
+                    courseOfAction={props.courseOfAction}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

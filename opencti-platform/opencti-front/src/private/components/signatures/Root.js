@@ -24,7 +24,9 @@ class Root extends Component {
         />
         <BoundaryRoute
           path="/dashboard/signatures/observables/:observableId"
-          render={(routeProps) => <RootStixCyberObservable {...routeProps} me={me} />}
+          render={(routeProps) => (
+            <RootStixCyberObservable {...routeProps} me={me} />
+          )}
         />
         <BoundaryRoute
           exact

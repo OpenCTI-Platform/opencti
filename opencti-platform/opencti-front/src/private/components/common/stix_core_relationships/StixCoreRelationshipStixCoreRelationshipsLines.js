@@ -65,46 +65,56 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <List classes={{ root: classes.list }}>
-            {data.stixCoreRelationships.edges.map((stixCoreRelationshipEdge) => {
-              const stixCoreRelationship = stixCoreRelationshipEdge.node;
-              const link = `${resolveLink(
-                stixCoreRelationship.to.parent_types.includes('Stix-Observable')
-                  ? 'observable'
-                  : stixCoreRelationship.to.entity_type,
-              )}/${stixCoreRelationship.to.id}`;
-              return (
-                <ListItem
-                  key={stixCoreRelationship.id}
-                  dense={true}
-                  divider={true}
-                  button={true}
-                  component={Link}
-                  to={link}
-                >
-                  <ListItemIcon>
-                    <ItemIcon type={stixCoreRelationship.to.entity_type} />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      stixCoreRelationship.to.parent_types.includes('Stix-Observable')
-                        ? stixCoreRelationship.to.observable_value
-                        : stixCoreRelationship.to.name
-                    }
-                    secondary={
-                      stixCoreRelationship.to.parent_types.includes('Stix-Observable')
-                        ? t(`observable_${stixCoreRelationship.to.entity_type}`)
-                        : t(`entity_${stixCoreRelationship.to.entity_type}`)
-                    }
-                  />
-                  <ListItemSecondaryAction>
-                    <StixCoreRelationshipPopover
-                      stixCoreRelationshipId={stixCoreRelationship.id}
-                      paginationOptions={paginationOptions}
+            {data.stixCoreRelationships.edges.map(
+              (stixCoreRelationshipEdge) => {
+                const stixCoreRelationship = stixCoreRelationshipEdge.node;
+                const link = `${resolveLink(
+                  stixCoreRelationship.to.parent_types.includes(
+                    'Stix-Observable',
+                  )
+                    ? 'observable'
+                    : stixCoreRelationship.to.entity_type,
+                )}/${stixCoreRelationship.to.id}`;
+                return (
+                  <ListItem
+                    key={stixCoreRelationship.id}
+                    dense={true}
+                    divider={true}
+                    button={true}
+                    component={Link}
+                    to={link}
+                  >
+                    <ListItemIcon>
+                      <ItemIcon type={stixCoreRelationship.to.entity_type} />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        stixCoreRelationship.to.parent_types.includes(
+                          'Stix-Observable',
+                        )
+                          ? stixCoreRelationship.to.observable_value
+                          : stixCoreRelationship.to.name
+                      }
+                      secondary={
+                        stixCoreRelationship.to.parent_types.includes(
+                          'Stix-Observable',
+                        )
+                          ? t(
+                            `observable_${stixCoreRelationship.to.entity_type}`,
+                          )
+                          : t(`entity_${stixCoreRelationship.to.entity_type}`)
+                      }
                     />
-                  </ListItemSecondaryAction>
-                </ListItem>
-              );
-            })}
+                    <ListItemSecondaryAction>
+                      <StixCoreRelationshipPopover
+                        stixCoreRelationshipId={stixCoreRelationship.id}
+                        paginationOptions={paginationOptions}
+                      />
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                );
+              },
+            )}
           </List>
         </Paper>
       </div>
@@ -153,7 +163,10 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
           relationType: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixCoreRelationshipsOrdering", defaultValue: "start_time" }
+          orderBy: {
+            type: "StixCoreRelationshipsOrdering"
+            defaultValue: "start_time"
+          }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
         stixCoreRelationships(

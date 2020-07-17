@@ -20,7 +20,9 @@ import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { intrusionSetEditionQuery } from './IntrusionSetEdition';
 import IntrusionSetEditionContainer from './IntrusionSetEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -167,7 +169,8 @@ class IntrusionSetPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <IntrusionSetEditionContainer intrusionSet={props.intrusionSet}
+                  <IntrusionSetEditionContainer
+                    intrusionSet={props.intrusionSet}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

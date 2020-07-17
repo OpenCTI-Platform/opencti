@@ -67,7 +67,9 @@ class SearchInput extends Component {
               ? classes.searchRootInDrawer
               : classes.searchRoot,
           input:
-            variant === 'small' ? classes.searchInputSmall : classes.searchInput,
+            variant === 'small'
+              ? classes.searchInputSmall
+              : classes.searchInput,
         }}
         disableUnderline={true}
       />
@@ -84,7 +86,4 @@ SearchInput.propTypes = {
   variant: PropTypes.string,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(SearchInput);
+export default compose(inject18n, withStyles(styles))(SearchInput);
