@@ -563,7 +563,8 @@ class OpenCTIApiClient:
             to_type = "stix_relation"
         if relation_type == "related-to":
             return {"from_role": "relate_from", "to_role": "relate_to"}
-
+        if relation_type == "linked":
+            return {"from_role": "link_from", "to_role": "link_to"}
         relation_type = relation_type.lower()
         from_type = from_type.lower()
         from_type = (
