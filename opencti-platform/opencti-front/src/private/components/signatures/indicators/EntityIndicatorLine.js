@@ -14,7 +14,7 @@ import { ShieldSearch } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 import ItemPatternType from '../../../../components/ItemPatternType';
-import StixObjectLabels from '../../common/stix_object/StixObjectLabels';
+import StixCoreObjectLabels from '../../common/stix_core_object/StixCoreObjectLabels';
 import ItemMarking from '../../../../components/ItemMarking';
 
 const styles = (theme) => ({
@@ -87,7 +87,7 @@ class EntityIndicatorLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.labels.width }}
               >
-                <StixObjectLabels variant="inList" labels={node.to.labels} />
+                <StixCoreObjectLabels variant="inList" labels={node.to.labels} />
               </div>
               <div
                 className={classes.bodyItem}
@@ -164,14 +164,14 @@ const EntityIndicatorLineFragment = createFragmentContainer(
             valid_until
             score
             created
-            markingDefinitions {
-              edges {
-                node {
-                  id
-                  definition
-                }
-              }
+            objectMarking {
+          edges {
+            node {
+              id
+              definition
             }
+          }
+        }
             labels {
               edges {
                 node {

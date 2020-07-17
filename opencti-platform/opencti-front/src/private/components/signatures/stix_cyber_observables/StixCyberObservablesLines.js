@@ -153,14 +153,14 @@ export default createPaginationContainer(
               first_seen
               last_seen
               created_at
-              markingDefinitions {
-                edges {
-                  node {
-                    id
-                    definition
-                  }
-                }
-              }
+              objectMarking {
+          edges {
+            node {
+              id
+              definition
+            }
+          }
+        }
               ...StixCyberObservableLine_node
             }
           }

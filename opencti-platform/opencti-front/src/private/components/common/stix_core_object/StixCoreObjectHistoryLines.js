@@ -6,7 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { createRefetchContainer } from 'react-relay';
 import Paper from '@material-ui/core/Paper/Paper';
 import inject18n from '../../../../components/i18n';
-import StixObjectHistoryLine from './StixObjectHistoryLine';
+import StixCoreObjectHistoryLine from './StixCoreObjectHistoryLine';
 
 const styles = () => ({
   paper: {
@@ -18,7 +18,7 @@ const styles = () => ({
   },
 });
 
-class StixObjectHistoryLinesComponent extends Component {
+class StixCoreObjectHistoryLinesComponent extends Component {
   render() {
     const {
       t, classes, data, isRelationLog,
@@ -30,7 +30,7 @@ class StixObjectHistoryLinesComponent extends Component {
           logs.map((logEdge) => {
             const log = logEdge.node;
             return (
-              <StixObjectHistoryLine
+              <StixCoreObjectHistoryLine
                 key={log.id}
                 node={log}
                 isRelation={isRelationLog}
@@ -57,7 +57,7 @@ class StixObjectHistoryLinesComponent extends Component {
   }
 }
 
-StixObjectHistoryLinesComponent.propTypes = {
+StixCoreObjectHistoryLinesComponent.propTypes = {
   entityId: PropTypes.string,
   isRelationLog: PropTypes.bool,
   data: PropTypes.object,
@@ -65,8 +65,8 @@ StixObjectHistoryLinesComponent.propTypes = {
   t: PropTypes.func,
 };
 
-export const stixObjectHistoryLinesQuery = graphql`
-  query StixObjectHistoryLinesQuery(
+export const stixCoreObjectHistoryLinesQuery = graphql`
+  query StixCoreObjectHistoryLinesQuery(
     $first: Int
     $orderBy: LogsOrdering
     $orderMode: OrderingMode
@@ -74,15 +74,15 @@ export const stixObjectHistoryLinesQuery = graphql`
     $filterMode: FilterMode
     $search: String
   ) {
-    ...StixObjectHistoryLines_data
+    ...StixCoreObjectHistoryLines_data
   }
 `;
 
-const StixObjectHistoryLines = createRefetchContainer(
-  StixObjectHistoryLinesComponent,
+const StixCoreObjectHistoryLines = createRefetchContainer(
+  StixCoreObjectHistoryLinesComponent,
   {
     data: graphql`
-      fragment StixObjectHistoryLines_data on Query {
+      fragment StixCoreObjectHistoryLines_data on Query {
         logs(
           first: $first
           orderBy: $orderBy
@@ -94,14 +94,14 @@ const StixObjectHistoryLines = createRefetchContainer(
           edges {
             node {
               id
-              ...StixObjectHistoryLine_node
+              ...StixCoreObjectHistoryLine_node
             }
           }
         }
       }
     `,
   },
-  stixObjectHistoryLinesQuery,
+  stixCoreObjectHistoryLinesQuery,
 );
 
-export default compose(inject18n, withStyles(styles))(StixObjectHistoryLines);
+export default compose(inject18n, withStyles(styles))(StixCoreObjectHistoryLines);

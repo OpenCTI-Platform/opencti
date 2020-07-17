@@ -15,7 +15,7 @@ import Loader from '../../../../components/Loader';
 import FileManager from '../../common/files/FileManager';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import ThreatActorPopover from './ThreatActorPopover';
-import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
+import StixCoreObjectHistory from '../../common/stix_core_object/StixCoreObjectHistory';
 
 const subscription = graphql`
   subscription RootThreatActorSubscription($id: ID!) {
@@ -158,7 +158,7 @@ class RootThreatActor extends Component {
                           stixDomainObject={props.threatActor}
                           PopoverComponent={<ThreatActorPopover />}
                         />
-                        <StixObjectHistory
+                        <StixCoreObjectHistory
                           {...routeProps}
                           entityId={threatActorId}
                         />

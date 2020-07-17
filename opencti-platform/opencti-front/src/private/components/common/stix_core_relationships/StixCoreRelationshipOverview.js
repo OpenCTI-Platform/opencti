@@ -34,7 +34,7 @@ import StixCoreRelationshipInferences from './StixCoreRelationshipInferences';
 import StixCoreRelationshipStixCoreRelationships from './StixCoreRelationshipStixCoreRelationships';
 import EntityLastReports from '../../reports/EntityLastReports';
 import ItemAuthor from '../../../../components/ItemAuthor';
-import StixObjectNotes from '../stix_object/StixObjectNotes';
+import StixCoreObjectNotes from '../stix_core_object/StixCoreObjectNotes';
 
 const styles = () => ({
   container: {
@@ -455,7 +455,7 @@ class StixCoreRelationshipContainer extends Component {
                   <EntityLastReports entityId={stixCoreRelationship.id} />
                 </Grid>
               </Grid>
-              <StixObjectNotes
+              <StixCoreObjectNotes
                 marginTop={55}
                 entityId={stixCoreRelationship.id}
                 inputType="relationRefs"
@@ -523,13 +523,18 @@ const StixCoreRelationshipOverview = createFragmentContainer(
         created_at
         updated_at
         createdBy {
-          node {
+          ... on Organization {
+            id
+            name
+            entity_type
+          }
+          ... on Individual {
             id
             name
             entity_type
           }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id

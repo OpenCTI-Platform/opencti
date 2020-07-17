@@ -5,9 +5,9 @@ import Grid from '@material-ui/core/Grid';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core';
 import inject18n from '../../../../components/i18n';
-import StixObjectHistoryLines, {
-  stixObjectHistoryLinesQuery,
-} from './StixObjectHistoryLines';
+import StixCoreObjectHistoryLines, {
+  stixCoreObjectHistoryLinesQuery,
+} from './StixCoreObjectHistoryLines';
 import { QueryRenderer } from '../../../../relay/environment';
 import SearchInput from '../../../../components/SearchInput';
 
@@ -20,7 +20,7 @@ const styles = () => ({
   },
 });
 
-class StixObjectHistory extends Component {
+class StixCoreObjectHistory extends Component {
   constructor(props) {
     super(props);
     this.state = { entitySearchTerm: '', relationsSearchTerm: '' };
@@ -60,7 +60,7 @@ class StixObjectHistory extends Component {
           </div>
           <div className="clearfix" />
           <QueryRenderer
-            query={stixObjectHistoryLinesQuery}
+            query={stixCoreObjectHistoryLinesQuery}
             variables={{
               filters: [
                 { key: 'entity_id', values: [entityId] },
@@ -77,7 +77,7 @@ class StixObjectHistory extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixObjectHistoryLines
+                  <StixCoreObjectHistoryLines
                     entityId={entityId}
                     data={props}
                     isRelationLog={false}
@@ -105,7 +105,7 @@ class StixObjectHistory extends Component {
           </div>
           <div className="clearfix" />
           <QueryRenderer
-            query={stixObjectHistoryLinesQuery}
+            query={stixCoreObjectHistoryLinesQuery}
             variables={{
               filters: [
                 {
@@ -126,7 +126,7 @@ class StixObjectHistory extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixObjectHistoryLines
+                  <StixCoreObjectHistoryLines
                     entityId={entityId}
                     data={props}
                     isRelationLog={true}
@@ -142,9 +142,9 @@ class StixObjectHistory extends Component {
   }
 }
 
-StixObjectHistory.propTypes = {
+StixCoreObjectHistory.propTypes = {
   t: PropTypes.func,
   entityId: PropTypes.string,
 };
 
-export default compose(inject18n, withStyles(styles))(StixObjectHistory);
+export default compose(inject18n, withStyles(styles))(StixCoreObjectHistory);

@@ -15,7 +15,7 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import FileManager from '../../common/files/FileManager';
 import IncidentPopover from './IncidentPopover';
 import Loader from '../../../../components/Loader';
-import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
+import StixCoreObjectHistory from '../../common/stix_core_object/StixCoreObjectHistory';
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -155,7 +155,7 @@ class RootIncident extends Component {
                           stixDomainObject={props.incident}
                           PopoverComponent={<IncidentPopover />}
                         />
-                        <StixObjectHistory
+                        <StixCoreObjectHistory
                           {...routeProps}
                           entityId={incidentId}
                         />

@@ -13,7 +13,7 @@ import {
 } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
-import StixObjectLabels from '../../common/stix_object/StixObjectLabels';
+import StixCoreObjectLabels from '../../common/stix_core_object/StixCoreObjectLabels';
 
 const styles = (theme) => ({
   item: {
@@ -74,7 +74,7 @@ class IndividualLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.labels.width }}
               >
-                <StixObjectLabels
+                <StixCoreObjectLabels
                   variant="inList"
                   labels={node.labels}
                   onClick={onLabelClick.bind(this)}

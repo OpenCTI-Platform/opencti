@@ -17,7 +17,7 @@ import { MoreVertOutlined } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
-import StixObjectNoteEdition from './StixObjectNoteEdition';
+import StixCoreObjectNoteEdition from './StixCoreObjectNoteEdition';
 
 const styles = (theme) => ({
   container: {
@@ -42,33 +42,33 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const stixObjectNotePopoverCleanContext = graphql`
-  mutation StixObjectNotePopoverCleanContextMutation($id: ID!) {
+const stixCoreObjectNotePopoverCleanContext = graphql`
+  mutation StixCoreObjectNotePopoverCleanContextMutation($id: ID!) {
     noteEdit(id: $id) {
       contextClean {
-        ...StixObjectNoteEdition_note
+        ...StixCoreObjectNoteEdition_note
       }
     }
   }
 `;
 
-const stixObjectNotePopoverDeletionMutation = graphql`
-  mutation StixObjectNotePopoverDeletionMutation($id: ID!) {
+const stixCoreObjectNotePopoverDeletionMutation = graphql`
+  mutation StixCoreObjectNotePopoverDeletionMutation($id: ID!) {
     noteEdit(id: $id) {
       delete
     }
   }
 `;
 
-const stixObjectNotePopoverEditionQuery = graphql`
-  query StixObjectNotePopoverEditionQuery($id: String!) {
+const stixCoreObjectNotePopoverEditionQuery = graphql`
+  query StixCoreObjectNotePopoverEditionQuery($id: String!) {
     note(id: $id) {
-      ...StixObjectNoteEdition_note
+      ...StixCoreObjectNoteEdition_note
     }
   }
 `;
 
-class StixObjectNotePopover extends Component {
+class StixCoreObjectNotePopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -94,7 +94,7 @@ class StixObjectNotePopover extends Component {
 
   handleCloseUpdate() {
     commitMutation({
-      mutation: stixObjectNotePopoverCleanContext,
+      mutation: stixCoreObjectNotePopoverCleanContext,
       variables: { id: this.props.roleId },
     });
     this.setState({ displayUpdate: false });
@@ -112,7 +112,7 @@ class StixObjectNotePopover extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
-      mutation: stixObjectNotePopoverDeletionMutation,
+      mutation: stixCoreObjectNotePopoverDeletionMutation,
       variables: {
         id: this.props.noteId,
       },
@@ -151,12 +151,12 @@ class StixObjectNotePopover extends Component {
           onClose={this.handleCloseUpdate.bind(this)}
         >
           <QueryRenderer
-            query={stixObjectNotePopoverEditionQuery}
+            query={stixCoreObjectNotePopoverEditionQuery}
             variables={{ id: noteId }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixObjectNoteEdition
+                  <StixCoreObjectNoteEdition
                     note={props.note}
                     handleClose={this.handleCloseUpdate.bind(this)}
                   />
@@ -199,7 +199,7 @@ class StixObjectNotePopover extends Component {
   }
 }
 
-StixObjectNotePopover.propTypes = {
+StixCoreObjectNotePopover.propTypes = {
   noteId: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
@@ -207,4 +207,4 @@ StixObjectNotePopover.propTypes = {
   onUpdate: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(StixObjectNotePopover);
+export default compose(inject18n, withStyles(styles))(StixCoreObjectNotePopover);

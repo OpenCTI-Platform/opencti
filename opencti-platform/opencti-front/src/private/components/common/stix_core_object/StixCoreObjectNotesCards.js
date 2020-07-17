@@ -8,9 +8,9 @@ import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper/Paper';
 import inject18n from '../../../../components/i18n';
-import StixObjectNoteCard from './StixObjectNoteCard';
+import StixCoreObjectNoteCard from './StixCoreObjectNoteCard';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixObjectNotesCreation from './StixObjectNoteCreation';
+import StixCoreObjectNotesCreation from './StixCoreObjectNoteCreation';
 
 const styles = () => ({
   paper: {
@@ -20,7 +20,7 @@ const styles = () => ({
   },
 });
 
-class StixObjectNotesComponent extends Component {
+class StixCoreObjectNotesComponent extends Component {
   render() {
     const {
       t, classes, entityId, inputType, data, marginTop,
@@ -32,7 +32,7 @@ class StixObjectNotesComponent extends Component {
           {t('Notes about this entity')}
         </Typography>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixObjectNotesCreation
+          <StixCoreObjectNotesCreation
             entityId={entityId}
             onCreate={this.props.relay.refetch.bind(this)}
             inputType={inputType}
@@ -50,7 +50,7 @@ class StixObjectNotesComponent extends Component {
                 const note = noteEdge.node;
                 return (
                   <Grid key={note.id} item={true} xs={3}>
-                    <StixObjectNoteCard
+                    <StixCoreObjectNoteCard
                       node={note}
                       onUpdate={this.props.relay.refetch.bind(this)}
                     />
@@ -77,7 +77,7 @@ class StixObjectNotesComponent extends Component {
   }
 }
 
-StixObjectNotesComponent.propTypes = {
+StixCoreObjectNotesComponent.propTypes = {
   entityId: PropTypes.string,
   inputType: PropTypes.string,
   marginTop: PropTypes.number,
@@ -86,8 +86,8 @@ StixObjectNotesComponent.propTypes = {
   t: PropTypes.func,
 };
 
-export const stixObjectNotesCardsQuery = graphql`
-  query StixObjectNotesCardsQuery(
+export const stixCoreObjectNotesCardsQuery = graphql`
+  query StixCoreObjectNotesCardsQuery(
     $first: Int
     $orderBy: NotesOrdering
     $orderMode: OrderingMode
@@ -95,15 +95,15 @@ export const stixObjectNotesCardsQuery = graphql`
     $filterMode: FilterMode
     $search: String
   ) {
-    ...StixObjectNotesCards_data
+    ...StixCoreObjectNotesCards_data
   }
 `;
 
-const StixObjectNotesCards = createRefetchContainer(
-  StixObjectNotesComponent,
+const StixCoreObjectNotesCards = createRefetchContainer(
+  StixCoreObjectNotesComponent,
   {
     data: graphql`
-      fragment StixObjectNotesCards_data on Query {
+      fragment StixCoreObjectNotesCards_data on Query {
         notes(
           first: $first
           orderBy: $orderBy
@@ -114,14 +114,14 @@ const StixObjectNotesCards = createRefetchContainer(
         ) {
           edges {
             node {
-              ...StixObjectNoteCard_node
+              ...StixCoreObjectNoteCard_node
             }
           }
         }
       }
     `,
   },
-  stixObjectNotesCardsQuery,
+  stixCoreObjectNotesCardsQuery,
 );
 
-export default compose(inject18n, withStyles(styles))(StixObjectNotesCards);
+export default compose(inject18n, withStyles(styles))(StixCoreObjectNotesCards);

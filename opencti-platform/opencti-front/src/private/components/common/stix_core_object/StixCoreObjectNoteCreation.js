@@ -60,9 +60,9 @@ const styles = (theme) => ({
 });
 
 const noteMutation = graphql`
-  mutation StixObjectNoteCreationCreationMutation($input: NoteAddInput!) {
+  mutation StixCoreObjectNoteCreationCreationMutation($input: NoteAddInput!) {
     noteAdd(input: $input) {
-      ...StixObjectNoteCard_node
+      ...StixCoreObjectNoteCard_node
     }
   }
 `;
@@ -72,7 +72,7 @@ const noteValidation = (t) => Yup.object().shape({
   content: Yup.string().required(t('This field is required')),
 });
 
-class StixObjectNoteCreation extends Component {
+class StixCoreObjectNoteCreation extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false };
@@ -201,7 +201,7 @@ class StixObjectNoteCreation extends Component {
   }
 }
 
-StixObjectNoteCreation.propTypes = {
+StixCoreObjectNoteCreation.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   onCreate: PropTypes.func,
@@ -209,4 +209,4 @@ StixObjectNoteCreation.propTypes = {
   inputType: PropTypes.string,
 };
 
-export default compose(inject18n, withStyles(styles))(StixObjectNoteCreation);
+export default compose(inject18n, withStyles(styles))(StixCoreObjectNoteCreation);

@@ -17,7 +17,7 @@ import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityIncidentsChart from '../../threats/x_opencti_incidents/EntityIncidentsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
+import StixCoreObjectNotes from '../../common/stix_core_object/StixCoreObjectNotes';
 
 const styles = () => ({
   container: {
@@ -56,7 +56,7 @@ class SectorComponent extends Component {
             <EntityLastReports entityId={sector.id} />
           </Grid>
         </Grid>
-        <StixObjectNotes entityId={sector.id} />
+        <StixCoreObjectNotes entityId={sector.id} />
         <Grid
           container={true}
           spacing={3}

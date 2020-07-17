@@ -76,7 +76,7 @@ const styles = (theme) => ({
   },
 });
 
-class StixObjectHistoryLineComponent extends Component {
+class StixCoreObjectHistoryLineComponent extends Component {
   renderIcon(eventType, isRelation) {
     if (isRelation) {
       if (eventType === 'create') {
@@ -208,7 +208,7 @@ class StixObjectHistoryLineComponent extends Component {
   }
 }
 
-StixObjectHistoryLineComponent.propTypes = {
+StixCoreObjectHistoryLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -216,11 +216,11 @@ StixObjectHistoryLineComponent.propTypes = {
   isRelation: PropTypes.bool,
 };
 
-const StixObjectHistoryLine = createFragmentContainer(
-  StixObjectHistoryLineComponent,
+const StixCoreObjectHistoryLine = createFragmentContainer(
+  StixCoreObjectHistoryLineComponent,
   {
     node: graphql`
-      fragment StixObjectHistoryLine_node on Log {
+      fragment StixCoreObjectHistoryLine_node on Log {
         id
         event_type
         event_date
@@ -234,4 +234,4 @@ const StixObjectHistoryLine = createFragmentContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(StixObjectHistoryLine);
+export default compose(inject18n, withStyles(styles))(StixCoreObjectHistoryLine);

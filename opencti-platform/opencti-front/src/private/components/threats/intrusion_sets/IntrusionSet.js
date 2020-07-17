@@ -16,7 +16,7 @@ import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationshi
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityCampaignsChart from '../campaigns/EntityCampaignsChart';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
+import StixCoreObjectNotes from '../../common/stix_core_object/StixCoreObjectNotes';
 
 const styles = () => ({
   container: {
@@ -51,7 +51,7 @@ class IntrusionSetComponent extends Component {
             <EntityLastReports entityId={intrusionSet.id} />
           </Grid>
         </Grid>
-        <StixObjectNotes entityId={intrusionSet.id} />
+        <StixCoreObjectNotes entityId={intrusionSet.id} />
         <Grid
           container={true}
           spacing={3}

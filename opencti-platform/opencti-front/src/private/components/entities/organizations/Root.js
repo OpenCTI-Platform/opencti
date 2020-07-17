@@ -15,7 +15,7 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import FileManager from '../../common/files/FileManager';
 import OrganizationPopover from './OrganizationPopover';
 import Loader from '../../../../components/Loader';
-import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
+import StixCoreObjectHistory from '../../common/stix_core_object/StixCoreObjectHistory';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
@@ -158,7 +158,7 @@ class RootOrganization extends Component {
                           stixDomainObject={props.organization}
                           PopoverComponent={<OrganizationPopover />}
                         />
-                        <StixObjectHistory
+                        <StixCoreObjectHistory
                           {...routeProps}
                           entityId={organizationId}
                         />

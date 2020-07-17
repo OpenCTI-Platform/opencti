@@ -14,7 +14,7 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import SectorPopover from './SectorPopover';
 import FileManager from '../../common/files/FileManager';
 import Loader from '../../../../components/Loader';
-import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
+import StixCoreObjectHistory from '../../common/stix_core_object/StixCoreObjectHistory';
 
 const subscription = graphql`
   subscription RootSectorSubscription($id: ID!) {
@@ -138,7 +138,7 @@ class RootSector extends Component {
                           stixDomainObject={props.sector}
                           PopoverComponent={<SectorPopover />}
                         />
-                        <StixObjectHistory
+                        <StixCoreObjectHistory
                           {...routeProps}
                           entityId={sectorId}
                         />

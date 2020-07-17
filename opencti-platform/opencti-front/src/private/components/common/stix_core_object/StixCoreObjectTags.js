@@ -40,7 +40,7 @@ const styles = () => ({
   },
 });
 
-class StixObjectLabels extends Component {
+class StixCoreObjectLabels extends Component {
   hexToRGB(hex, transp = 0.1) {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
@@ -109,7 +109,7 @@ class StixObjectLabels extends Component {
   }
 }
 
-StixObjectLabels.propTypes = {
+StixCoreObjectLabels.propTypes = {
   classes: PropTypes.object.isRequired,
   t: PropTypes.func,
   variant: PropTypes.string,
@@ -117,4 +117,4 @@ StixObjectLabels.propTypes = {
   labels: PropTypes.object,
 };
 
-export default compose(inject18n, withStyles(styles))(StixObjectLabels);
+export default compose(inject18n, withStyles(styles))(StixCoreObjectLabels);

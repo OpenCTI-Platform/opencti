@@ -13,7 +13,7 @@ import IndicatorEdition from './IndicatorEdition';
 import EntityLastReports from '../../reports/EntityLastReports';
 import IndicatorEntities from './IndicatorEntities';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
+import StixCoreObjectNotes from '../../common/stix_core_object/StixCoreObjectNotes';
 import EntityExternalReferences from '../../common/external_references/EntityExternalReferences';
 
 const styles = () => ({
@@ -61,7 +61,7 @@ class IndicatorComponent extends Component {
             <EntityExternalReferences entityId={indicator.id} />
           </Grid>
         </Grid>
-        <StixObjectNotes entityId={indicator.id} marginTop={25} />
+        <StixCoreObjectNotes entityId={indicator.id} marginTop={25} />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IndicatorEdition indicatorId={indicator.id} />
         </Security>

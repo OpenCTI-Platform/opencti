@@ -14,7 +14,7 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import FileManager from '../../common/files/FileManager';
 import AttackPatternPopover from './AttackPatternPopover';
 import Loader from '../../../../components/Loader';
-import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
+import StixCoreObjectHistory from '../../common/stix_core_object/StixCoreObjectHistory';
 import AttackPatternIndicators from './AttackPatternIndicators';
 
 const subscription = graphql`
@@ -157,7 +157,7 @@ class RootAttackPattern extends Component {
                           stixDomainObject={props.attackPattern}
                           PopoverComponent={<AttackPatternPopover />}
                         />
-                        <StixObjectHistory
+                        <StixCoreObjectHistory
                           {...routeProps}
                           entityId={attackPatternId}
                         />

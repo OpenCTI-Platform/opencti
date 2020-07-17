@@ -9,7 +9,7 @@ import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
-import StixObjectNoteEditionOverview from './StixObjectNoteEditionOverview';
+import StixCoreObjectNoteEditionOverview from './StixCoreObjectNoteEditionOverview';
 
 const styles = (theme) => ({
   header: {
@@ -41,7 +41,7 @@ const styles = (theme) => ({
   },
 });
 
-class StixObjectNoteEdition extends Component {
+class StixCoreObjectNoteEdition extends Component {
   render() {
     const {
       t, classes, handleClose, note,
@@ -64,7 +64,7 @@ class StixObjectNoteEdition extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <StixObjectNoteEditionOverview
+          <StixCoreObjectNoteEditionOverview
             note={this.props.note}
             context={editContext}
           />
@@ -74,7 +74,7 @@ class StixObjectNoteEdition extends Component {
   }
 }
 
-StixObjectNoteEdition.propTypes = {
+StixCoreObjectNoteEdition.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
   note: PropTypes.object,
@@ -82,13 +82,13 @@ StixObjectNoteEdition.propTypes = {
   t: PropTypes.func,
 };
 
-const StixObjectNoteEditionFragment = createFragmentContainer(
-  StixObjectNoteEdition,
+const StixCoreObjectNoteEditionFragment = createFragmentContainer(
+  StixCoreObjectNoteEdition,
   {
     note: graphql`
-      fragment StixObjectNoteEdition_note on Note {
+      fragment StixCoreObjectNoteEdition_note on Note {
         id
-        ...StixObjectNoteEditionOverview_note
+        ...StixCoreObjectNoteEditionOverview_note
         editContext {
           name
           focusOn
@@ -101,4 +101,4 @@ const StixObjectNoteEditionFragment = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(StixObjectNoteEditionFragment);
+)(StixCoreObjectNoteEditionFragment);

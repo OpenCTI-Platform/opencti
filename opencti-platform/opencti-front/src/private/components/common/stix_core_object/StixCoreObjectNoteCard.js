@@ -13,7 +13,7 @@ import Avatar from '@material-ui/core/Avatar';
 import { ClockOutline } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
-import StixObjectNotePopover from './StixObjectNotePopover';
+import StixCoreObjectNotePopover from './StixCoreObjectNotePopover';
 
 const styles = (theme) => ({
   card: {
@@ -52,7 +52,7 @@ const styles = (theme) => ({
   },
 });
 
-class StixObjectNoteCardComponent extends Component {
+class StixCoreObjectNoteCardComponent extends Component {
   render() {
     const {
       nsdt, classes, node, onUpdate,
@@ -79,7 +79,7 @@ class StixObjectNoteCardComponent extends Component {
             </span>
           }
           action={
-            <StixObjectNotePopover
+            <StixCoreObjectNotePopover
               noteId={node.id}
               onUpdate={onUpdate.bind(this)}
             />
@@ -113,7 +113,7 @@ class StixObjectNoteCardComponent extends Component {
   }
 }
 
-StixObjectNoteCardComponent.propTypes = {
+StixCoreObjectNoteCardComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -121,11 +121,11 @@ StixObjectNoteCardComponent.propTypes = {
   onUpdate: PropTypes.func,
 };
 
-const StixObjectNoteCard = createFragmentContainer(
-  StixObjectNoteCardComponent,
+const StixCoreObjectNoteCard = createFragmentContainer(
+  StixCoreObjectNoteCardComponent,
   {
     node: graphql`
-      fragment StixObjectNoteCard_node on Note {
+      fragment StixCoreObjectNoteCard_node on Note {
         id
         name
         description
@@ -165,4 +165,4 @@ const StixObjectNoteCard = createFragmentContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(StixObjectNoteCard);
+export default compose(inject18n, withStyles(styles))(StixCoreObjectNoteCard);

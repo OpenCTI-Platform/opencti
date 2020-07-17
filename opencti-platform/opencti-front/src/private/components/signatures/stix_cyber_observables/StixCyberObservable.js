@@ -14,7 +14,7 @@ import EntityLastReports from '../../reports/EntityLastReports';
 import StixCyberObservableIndicators from './StixCyberObservableIndicators';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import EntityExternalReferences from '../../common/external_references/EntityExternalReferences';
-import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
+import StixCoreObjectNotes from '../../common/stix_core_object/StixCoreObjectNotes';
 
 const styles = () => ({
   container: {
@@ -65,7 +65,7 @@ class StixCyberObservableComponent extends Component {
             <EntityExternalReferences entityId={stixCyberObservable.id} />
           </Grid>
         </Grid>
-        <StixObjectNotes
+        <StixCoreObjectNotes
           entityId={stixCyberObservable.id}
           inputType="observableRefs"
         />

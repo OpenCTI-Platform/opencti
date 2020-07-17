@@ -868,13 +868,18 @@ const ReportKnowledgeGraph = createFragmentContainer(
         published
         source_confidence_level
         createdBy {
-          node {
+          ... on Organization {
+            id
+            name
+            entity_type
+          }
+          ... on Individual {
             id
             name
             entity_type
           }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id

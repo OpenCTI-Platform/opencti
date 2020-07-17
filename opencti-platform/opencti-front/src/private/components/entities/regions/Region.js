@@ -15,7 +15,7 @@ import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityIncidentsChart from '../../threats/x_opencti_incidents/EntityIncidentsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
+import StixCoreObjectNotes from '../../common/stix_core_object/StixCoreObjectNotes';
 import RegionParentRegions from './RegionParentRegions';
 import RegionSubRegions from './RegionSubRegions';
 
@@ -56,7 +56,7 @@ class RegionComponent extends Component {
             <EntityLastReports entityId={region.id} />
           </Grid>
         </Grid>
-        <StixObjectNotes entityId={region.id} />
+        <StixCoreObjectNotes entityId={region.id} />
         <Grid
           container={true}
           spacing={3}

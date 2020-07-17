@@ -110,14 +110,14 @@ export default createPaginationContainer(
                   name
                 }
               }
-              markingDefinitions {
-                edges {
-                  node {
-                    id
-                    definition
-                  }
-                }
-              }
+              objectMarking {
+          edges {
+            node {
+              id
+              definition
+            }
+          }
+        }
               ...ReportLine_node
             }
           }

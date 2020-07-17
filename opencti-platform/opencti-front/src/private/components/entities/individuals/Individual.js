@@ -18,7 +18,7 @@ import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityIncidentsChart from '../../threats/x_opencti_incidents/EntityIncidentsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
+import StixCoreObjectNotes from '../../common/stix_core_object/StixCoreObjectNotes';
 import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
@@ -87,7 +87,7 @@ class IndividualComponent extends Component {
               <EntityLastReports authorId={individual.id} />
             </Grid>
           </Grid>
-          <StixObjectNotes entityId={individual.id} />
+          <StixCoreObjectNotes entityId={individual.id} />
           <Grid
             container={true}
             spacing={3}
@@ -132,7 +132,7 @@ class IndividualComponent extends Component {
             <EntityLastReports entityId={individual.id} />
           </Grid>
         </Grid>
-        <StixObjectNotes entityId={individual.id} />
+        <StixCoreObjectNotes entityId={individual.id} />
         <Grid
           container={true}
           spacing={3}

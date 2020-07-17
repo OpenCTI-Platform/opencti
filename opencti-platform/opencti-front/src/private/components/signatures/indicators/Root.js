@@ -11,7 +11,7 @@ import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreR
 import Indicator from './Indicator';
 import IndicatorObservables from './IndicatorObservables';
 import Loader from '../../../../components/Loader';
-import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
+import StixCoreObjectHistory from '../../common/stix_core_object/StixCoreObjectHistory';
 import IndicatorHeader from './IndicatorHeader';
 import IndicatorPopover from './IndicatorPopover';
 import EntityStixSightingRelationships from '../../common/stix_sighting_relationships/EntityStixSightingRelationships';
@@ -127,7 +127,7 @@ class RootIndicator extends Component {
                           indicator={props.indicator}
                           PopoverComponent={<IndicatorPopover />}
                         />
-                        <StixObjectHistory
+                        <StixCoreObjectHistory
                           {...routeProps}
                           entityId={indicatorId}
                         />

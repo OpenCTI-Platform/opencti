@@ -13,7 +13,7 @@ import CardContent from '@material-ui/core/CardContent';
 import Avatar from '@material-ui/core/Avatar';
 import { ChessKnight } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
-import StixObjectLabels from '../../common/stix_object/StixObjectLabels';
+import StixCoreObjectLabels from '../../common/stix_core_object/StixCoreObjectLabels';
 
 const styles = (theme) => ({
   card: {
@@ -112,7 +112,7 @@ class CampaignCardComponent extends Component {
               />
             </div>
             <div className={classes.labels}>
-              <StixObjectLabels
+              <StixCoreObjectLabels
                 labels={node.labels}
                 onClick={onLabelClick.bind(this)}
               />

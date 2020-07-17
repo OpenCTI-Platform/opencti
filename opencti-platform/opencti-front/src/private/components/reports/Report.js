@@ -13,7 +13,7 @@ import ReportEdition from './ReportEdition';
 import EntityExternalReferences from '../common/external_references/EntityExternalReferences';
 import EntityStixCoreRelationshipsDonut from '../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
-import StixObjectNotes from '../common/stix_object/StixObjectNotes';
+import StixCoreObjectNotes from '../common/stix_core_object/StixCoreObjectNotes';
 
 const styles = () => ({
   container: {
@@ -45,7 +45,7 @@ class ReportComponent extends Component {
             <EntityExternalReferences entityId={report.id} />
           </Grid>
         </Grid>
-        <StixObjectNotes entityId={report.id} />
+        <StixCoreObjectNotes entityId={report.id} />
         <Grid
           container={true}
           spacing={3}

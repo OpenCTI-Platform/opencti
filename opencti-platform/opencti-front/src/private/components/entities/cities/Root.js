@@ -15,7 +15,7 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import FileManager from '../../common/files/FileManager';
 import CityPopover from './CityPopover';
 import Loader from '../../../../components/Loader';
-import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
+import StixCoreObjectHistory from '../../common/stix_core_object/StixCoreObjectHistory';
 
 const subscription = graphql`
   subscription RootCitiesSubscription($id: ID!) {
@@ -146,7 +146,7 @@ class RootCity extends Component {
                           stixDomainObject={props.city}
                           PopoverComponent={<CityPopover />}
                         />
-                        <StixObjectHistory {...routeProps} entityId={cityId} />
+                        <StixCoreObjectHistory {...routeProps} entityId={cityId} />
                       </React.Fragment>
                     )}
                   />

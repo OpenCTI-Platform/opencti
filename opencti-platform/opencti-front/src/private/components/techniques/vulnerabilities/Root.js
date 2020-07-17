@@ -14,7 +14,7 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import FileManager from '../../common/files/FileManager';
 import VulnerabilityPopover from './VulnerabilityPopover';
 import Loader from '../../../../components/Loader';
-import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
+import StixCoreObjectHistory from '../../common/stix_core_object/StixCoreObjectHistory';
 import VulnerabilityIndicators from './VulnerabilityIndicators';
 
 const subscription = graphql`
@@ -157,7 +157,7 @@ class RootVulnerability extends Component {
                           stixDomainObject={props.vulnerability}
                           PopoverComponent={<VulnerabilityPopover />}
                         />
-                        <StixObjectHistory
+                        <StixCoreObjectHistory
                           {...routeProps}
                           entityId={vulnerabilityId}
                         />

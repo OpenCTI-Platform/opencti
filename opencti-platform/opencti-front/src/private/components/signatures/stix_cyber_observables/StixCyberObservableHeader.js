@@ -77,7 +77,7 @@ const StixCyberObservableHeader = createFragmentContainer(
         id
         entity_type
         observable_value
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id

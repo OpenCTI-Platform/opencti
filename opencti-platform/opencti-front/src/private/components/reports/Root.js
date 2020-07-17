@@ -9,7 +9,7 @@ import ReportEntities from './ReportEntities';
 import ReportKnowledge from './ReportKnowledge';
 import ReportObservables from './ReportObservables';
 import FileManager from '../common/files/FileManager';
-import StixObjectHistory from '../common/stix_object/StixObjectHistory';
+import StixCoreObjectHistory from '../common/stix_core_object/StixCoreObjectHistory';
 import ReportHeader from './ReportHeader';
 import Loader from '../../../components/Loader';
 
@@ -137,7 +137,7 @@ class RootReport extends Component {
                     render={(routeProps) => (
                       <React.Fragment>
                         <ReportHeader report={props.report} />
-                        <StixObjectHistory
+                        <StixCoreObjectHistory
                           {...routeProps}
                           entityId={reportId}
                         />

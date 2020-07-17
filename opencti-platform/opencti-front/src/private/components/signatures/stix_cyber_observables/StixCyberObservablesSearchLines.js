@@ -20,7 +20,7 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
-import StixObjectLabels from '../../common/stix_object/StixObjectLabels';
+import StixCoreObjectLabels from '../../common/stix_core_object/StixCoreObjectLabels';
 
 const styles = (theme) => ({
   container: {
@@ -136,7 +136,7 @@ class StixCyberObservablesContainer extends Component {
                       secondary={truncate(stixCyberObservable.description, 200)}
                     />
                     <ListItemSecondaryAction>
-                      <StixObjectLabels
+                      <StixCoreObjectLabels
                         labels={stixCyberObservable.labels}
                         variant="inSearch"
                       />

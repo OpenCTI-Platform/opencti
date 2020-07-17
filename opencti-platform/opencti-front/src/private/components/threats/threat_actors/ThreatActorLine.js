@@ -10,7 +10,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight, Public } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
-import StixObjectLabels from '../../common/stix_object/StixObjectLabels';
+import StixCoreObjectLabels from '../../common/stix_core_object/StixCoreObjectLabels';
 
 const styles = (theme) => ({
   item: {
@@ -71,7 +71,7 @@ class ThreatActorLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.labels.width }}
               >
-                <StixObjectLabels
+                <StixCoreObjectLabels
                   variant="inList"
                   labels={node.labels}
                   onClick={onLabelClick.bind(this)}
@@ -131,7 +131,7 @@ const ThreatActorLineFragment = createFragmentContainer(
             }
           }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id

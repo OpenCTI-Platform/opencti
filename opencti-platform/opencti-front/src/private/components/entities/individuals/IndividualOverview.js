@@ -105,7 +105,7 @@ const IndividualOverview = createFragmentContainer(
         description
         created
         modified
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
@@ -114,7 +114,12 @@ const IndividualOverview = createFragmentContainer(
           }
         }
         createdBy {
-          node {
+          ... on Organization {
+            id
+            name
+            entity_type
+          }
+          ... on Individual {
             id
             name
             entity_type

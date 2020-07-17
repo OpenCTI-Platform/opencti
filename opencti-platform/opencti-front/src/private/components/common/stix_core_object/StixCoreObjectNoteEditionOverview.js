@@ -46,21 +46,21 @@ const styles = (theme) => ({
   },
 });
 
-const stixObjectNoteMutationFieldPatch = graphql`
-  mutation StixObjectNoteEditionOverviewFieldPatchMutation(
+const stixCoreObjectNoteMutationFieldPatch = graphql`
+  mutation StixCoreObjectNoteEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: EditInput!
   ) {
     noteEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...StixObjectNoteEditionOverview_note
+        ...StixCoreObjectNoteEditionOverview_note
       }
     }
   }
 `;
 
-export const stixObjectNoteEditionOverviewFocus = graphql`
-  mutation StixObjectNoteEditionOverviewFocusMutation(
+export const stixCoreObjectNoteEditionOverviewFocus = graphql`
+  mutation StixCoreObjectNoteEditionOverviewFocusMutation(
     $id: ID!
     $input: EditContext!
   ) {
@@ -72,30 +72,30 @@ export const stixObjectNoteEditionOverviewFocus = graphql`
   }
 `;
 
-const stixObjectNoteMutationRelationAdd = graphql`
-  mutation StixObjectNoteEditionOverviewRelationAddMutation(
+const stixCoreObjectNoteMutationRelationAdd = graphql`
+  mutation StixCoreObjectNoteEditionOverviewRelationAddMutation(
     $id: ID!
     $input: StixMetaRelationshipAddInput!
   ) {
     noteEdit(id: $id) {
       relationAdd(input: $input) {
         from {
-          ...StixObjectNoteEditionOverview_note
+          ...StixCoreObjectNoteEditionOverview_note
         }
       }
     }
   }
 `;
 
-const stixObjectNoteMutationRelationDelete = graphql`
-  mutation StixObjectNoteEditionOverviewRelationDeleteMutation(
+const stixCoreObjectNoteMutationRelationDelete = graphql`
+  mutation StixCoreObjectNoteEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: String!
     $relationType: String!
   ) {
     noteEdit(id: $id) {
       relationDelete(toId: $toId, relationType: $relationType) {
-        ...StixObjectNoteEditionOverview_note
+        ...StixCoreObjectNoteEditionOverview_note
       }
     }
   }
@@ -109,10 +109,10 @@ const noteValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
 });
 
-class StixObjectNoteEditionOverviewComponent extends Component {
+class StixCoreObjectNoteEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
     commitMutation({
-      mutation: stixObjectNoteEditionOverviewFocus,
+      mutation: stixCoreObjectNoteEditionOverviewFocus,
       variables: {
         id: this.props.note.id,
         input: {
@@ -127,7 +127,7 @@ class StixObjectNoteEditionOverviewComponent extends Component {
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
-          mutation: stixObjectNoteMutationFieldPatch,
+          mutation: stixCoreObjectNoteMutationFieldPatch,
           variables: { id: this.props.note.id, input: { key: name, value } },
         });
       })
@@ -150,7 +150,7 @@ class StixObjectNoteEditionOverviewComponent extends Component {
 
     if (added.length > 0) {
       commitMutation({
-        mutation: stixObjectNoteMutationRelationAdd,
+        mutation: stixCoreObjectNoteMutationRelationAdd,
         variables: {
           id: this.props.note.id,
           input: {
@@ -165,7 +165,7 @@ class StixObjectNoteEditionOverviewComponent extends Component {
 
     if (removed.length > 0) {
       commitMutation({
-        mutation: stixObjectNoteMutationRelationDelete,
+        mutation: stixCoreObjectNoteMutationRelationDelete,
         variables: {
           id: this.props.note.id,
           relationId: head(removed).relationId,
@@ -240,7 +240,7 @@ class StixObjectNoteEditionOverviewComponent extends Component {
   }
 }
 
-StixObjectNoteEditionOverviewComponent.propTypes = {
+StixCoreObjectNoteEditionOverviewComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
@@ -248,11 +248,11 @@ StixObjectNoteEditionOverviewComponent.propTypes = {
   context: PropTypes.array,
 };
 
-const StixObjectNoteEditionOverview = createFragmentContainer(
-  StixObjectNoteEditionOverviewComponent,
+const StixCoreObjectNoteEditionOverview = createFragmentContainer(
+  StixCoreObjectNoteEditionOverviewComponent,
   {
     note: graphql`
-      fragment StixObjectNoteEditionOverview_note on Note {
+      fragment StixCoreObjectNoteEditionOverview_note on Note {
         id
         name
         content
@@ -276,4 +276,4 @@ const StixObjectNoteEditionOverview = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixObjectNoteEditionOverview);
+)(StixCoreObjectNoteEditionOverview);

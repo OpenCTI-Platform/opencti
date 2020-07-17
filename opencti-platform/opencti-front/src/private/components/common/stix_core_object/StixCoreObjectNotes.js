@@ -2,12 +2,12 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
-import StixObjectNotesCards, {
-  stixObjectNotesCardsQuery,
-} from './StixObjectNotesCards';
+import StixCoreObjectNotesCards, {
+  stixCoreObjectNotesCardsQuery,
+} from './StixCoreObjectNotesCards';
 import { QueryRenderer } from '../../../../relay/environment';
 
-class StixObjectNotes extends Component {
+class StixCoreObjectNotes extends Component {
   render() {
     const {
       t, entityId, inputType, marginTop,
@@ -18,7 +18,7 @@ class StixObjectNotes extends Component {
     }
     return (
       <QueryRenderer
-        query={stixObjectNotesCardsQuery}
+        query={stixCoreObjectNotesCardsQuery}
         variables={{
           filters: [{ key: filter, values: [entityId] }],
           first: 200,
@@ -28,7 +28,7 @@ class StixObjectNotes extends Component {
         render={({ props }) => {
           if (props) {
             return (
-              <StixObjectNotesCards
+              <StixCoreObjectNotesCards
                 entityId={entityId}
                 inputType={inputType}
                 data={props}
@@ -53,11 +53,11 @@ class StixObjectNotes extends Component {
   }
 }
 
-StixObjectNotes.propTypes = {
+StixCoreObjectNotes.propTypes = {
   t: PropTypes.func,
   entityId: PropTypes.string,
   inputType: PropTypes.string,
   marginTop: PropTypes.number,
 };
 
-export default inject18n(StixObjectNotes);
+export default inject18n(StixCoreObjectNotes);

@@ -21,7 +21,7 @@ import { truncate } from '../../../../utils/String';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
-import StixObjectLabels from '../stix_object/StixObjectLabels';
+import StixCoreObjectLabels from '../stix_core_object/StixCoreObjectLabels';
 
 const styles = (theme) => ({
   container: {
@@ -152,7 +152,7 @@ class StixDomainObjectsContainer extends Component {
                             )}
                           />
                           <ListItemSecondaryAction>
-                            <StixObjectLabels
+                            <StixCoreObjectLabels
                               labels={stixDomainObject.labels}
                               variant="inSearch"
                             />
@@ -177,7 +177,7 @@ class StixDomainObjectsContainer extends Component {
                           )}
                         />
                         <ListItemSecondaryAction>
-                          <StixObjectLabels
+                          <StixCoreObjectLabels
                             labels={stixDomainObject.labels}
                             variant="inSearch"
                           />

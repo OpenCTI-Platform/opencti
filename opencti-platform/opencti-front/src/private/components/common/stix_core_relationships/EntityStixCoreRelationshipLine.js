@@ -174,14 +174,14 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
                 }
               }
             }
-            markingDefinitions {
-              edges {
-                node {
-                  id
-                  definition
-                }
-              }
+            objectMarking {
+          edges {
+            node {
+              id
+              definition
             }
+          }
+        }
             labels {
               edges {
                 node {
@@ -201,14 +201,14 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
             entity_type
             parent_types
             observable_value
-            markingDefinitions {
-              edges {
-                node {
-                  id
-                  definition
-                }
-              }
+            objectMarking {
+          edges {
+            node {
+              id
+              definition
             }
+          }
+        }
             labels {
               edges {
                 node {
@@ -233,14 +233,14 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
             valid_until
             score
             created
-            markingDefinitions {
-              edges {
-                node {
-                  id
-                  definition
-                }
-              }
+            objectMarking {
+          edges {
+            node {
+              id
+              definition
             }
+          }
+        }
             labels {
               edges {
                 node {

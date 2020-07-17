@@ -339,9 +339,16 @@ const CampaignEditionOverview = createFragmentContainer(
         name
         description
         createdBy {
-          id
-          name
-          entity_type
+          ... on Organization {
+            id
+            name
+            entity_type
+          }
+          ... on Individual {
+            id
+            name
+            entity_type
+          }
         }
         objectMarking {
           edges {

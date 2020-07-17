@@ -109,7 +109,7 @@ const CourseOfActionOverview = createFragmentContainer(
         description
         created
         modified
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
@@ -118,7 +118,12 @@ const CourseOfActionOverview = createFragmentContainer(
           }
         }
         createdBy {
-          node {
+          ... on Organization {
+            id
+            name
+            entity_type
+          }
+          ... on Individual {
             id
             name
             entity_type
