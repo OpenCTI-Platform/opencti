@@ -61,14 +61,23 @@ class OpenCTIApiClient:
     :type log_level: str, optional
     :param ssl_verify:
     :type ssl_verify: bool, optional
+    :param proxies:
+    :type proxies: dict, optional, The proxy configuration, would have `http` and `https` attributes. Defaults to {}
+        ```
+        proxies: {
+            "http: "http://my_proxy:8080"
+            "https: "http://my_proxy:8080"
+        }
+        ```
     """
 
-    def __init__(self, url, token, log_level="info", ssl_verify=False):
+    def __init__(self, url, token, log_level="info", ssl_verify=False, proxies={}):
         """Constructor method
         """
 
         # Check configuration
         self.ssl_verify = ssl_verify
+        self.proxies = proxies
         if url is None or len(token) == 0:
             raise ValueError("Url configuration must be configured")
         if token is None or len(token) == 0 or token == "ChangeMe":
@@ -234,6 +243,7 @@ class OpenCTIApiClient:
                 files=multipart_files,
                 headers=self.request_headers,
                 verify=self.ssl_verify,
+                proxies=self.proxies,
             )
         # If no
         else:
@@ -242,6 +252,7 @@ class OpenCTIApiClient:
                 json={"query": query, "variables": variables},
                 headers=self.request_headers,
                 verify=self.ssl_verify,
+                proxies=self.proxies,
             )
         # Build response
         if r.status_code == 200:
