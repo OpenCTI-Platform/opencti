@@ -118,7 +118,7 @@ const CourseOfActionLineFragment = createFragmentContainer(
         name
         created
         modified
-        labels {
+        objectLabel {
           edges {
             node {
               id

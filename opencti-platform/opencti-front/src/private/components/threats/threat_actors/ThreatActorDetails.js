@@ -128,13 +128,13 @@ const ThreatActorDetails = createFragmentContainer(
         sophistication
         resource_level
         primary_motivation
-        secondary_motivation
+        secondary_motivations
         goal
         creator {
           id
           name
         }
-        labels {
+        objectLabel {
           edges {
             node {
               id

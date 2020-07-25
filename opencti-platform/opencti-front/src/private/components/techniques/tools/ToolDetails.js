@@ -97,13 +97,13 @@ const ToolDetails = createFragmentContainer(ToolDetailsComponent, {
           }
         }
       }
-      killChainPhase {
+      killChainPhases {
         edges {
           node {
             id
             kill_chain_name
             phase_name
-            phase_order
+            x_opencti_order
           }
         }
       }

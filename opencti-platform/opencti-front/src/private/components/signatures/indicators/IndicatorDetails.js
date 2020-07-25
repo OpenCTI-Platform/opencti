@@ -94,13 +94,13 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
       pattern
       valid_from
       valid_until
-      score
-      detection
+      x_opencti_score
+      x_opencti_detection
       creator {
         id
         name
       }
-      labels {
+      objectLabel {
         edges {
           node {
             id

@@ -70,7 +70,7 @@ class IntrusionSetLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.labels.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
                 <StixCoreObjectLabels
                   variant="inList"
@@ -119,20 +119,20 @@ const IntrusionSetLineFragment = createFragmentContainer(
         name
         created
         modified
-        labels {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
-        }
         objectMarking {
           edges {
             node {
               id
               definition
+            }
+          }
+        }
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
             }
           }
         }

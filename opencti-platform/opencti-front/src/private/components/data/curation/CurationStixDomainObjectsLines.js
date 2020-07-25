@@ -99,13 +99,97 @@ export const curationStixDomainObjectsLinesSearchQuery = graphql`
         node {
           id
           entity_type
-          name
           created_at
           updated_at
+          ... on AttackPattern {
+            name
+            description
+            aliases
+          }
+          ... on Campaign {
+            name
+            description
+            aliases
+          }
+          ... on CourseOfAction {
+            name
+            description
+            x_opencti_aliases
+          }
+          ... on Individual {
+            name
+            description
+            aliases
+          }
+          ... on Organization {
+            name
+            description
+            aliases
+          }
+          ... on Sector {
+            name
+            description
+            aliases
+          }
+          ... on Indicator {
+            name
+            description
+          }
+          ... on Infrastructure {
+            name
+            description
+          }
+          ... on IntrusionSet {
+            name
+            aliases
+            description
+          }
+          ... on Position {
+            name
+            description
+            x_opencti_aliases
+          }
+          ... on City {
+            name
+            description
+            x_opencti_aliases
+          }
+          ... on Country {
+            name
+            description
+            x_opencti_aliases
+          }
+          ... on Region {
+            name
+            description
+            x_opencti_aliases
+          }
+          ... on Malware {
+            name
+            aliases
+            description
+          }
+          ... on ThreatActor {
+            name
+            aliases
+            description
+          }
+          ... on Tool {
+            name
+            aliases
+            description
+          }
+          ... on Vulnerability {
+            name
+            description
+          }
+          ... on XOpenctiIncident {
+            name
+            aliases
+            description
+          }
           createdBy {
-            node {
-              name
-            }
+            name
           }
         }
       }
@@ -140,8 +224,6 @@ export default createPaginationContainer(
             node {
               id
               entity_type
-              name
-              aliases
               created_at
               createdBy {
                 node {

@@ -83,7 +83,7 @@ const City = createFragmentContainer(CityComponent, {
     fragment City_city on City {
       id
       name
-      aliases
+      x_opencti_aliases
       ...CityOverview_city
     }
   `,

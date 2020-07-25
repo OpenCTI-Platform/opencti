@@ -10,7 +10,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
-import StixCoreObjectLabels from '../../common/stix_core_object/StixCoreObjectLabels';
+import StixDomainObjectLabels from '../../common/stix_domain_objects/StixDomainObjectLabels';
 
 const styles = (theme) => ({
   item: {
@@ -95,7 +95,7 @@ class CurationStixDomainObjectLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.labels.width }}
               >
-                <StixCoreObjectLabels
+                <StixDomainObjectLabels
                   variant="inList"
                   labels={node.labels}
                   onClick={onLabelClick.bind(this)}
@@ -147,14 +147,96 @@ const CurationStixDomainObjectLineFragment = createFragmentContainer(
       fragment CurationStixDomainObjectLine_node on StixDomainObject {
         id
         entity_type
-        name
-        description
-        aliases
         created_at
+        ... on AttackPattern {
+          name
+          description
+          aliases
+        }
+        ... on Campaign {
+          name
+          description
+          aliases
+        }
+        ... on CourseOfAction {
+          name
+          description
+          x_opencti_aliases
+        }
+        ... on Individual {
+          name
+          description
+          aliases
+        }
+        ... on Organization {
+          name
+          description
+          aliases
+        }
+        ... on Sector {
+          name
+          description
+          aliases
+        }
+        ... on Indicator {
+          name
+          description
+        }
+        ... on Infrastructure {
+          name
+          description
+        }
+        ... on IntrusionSet {
+          name
+          aliases
+          description
+        }
+        ... on Position {
+          name
+          description
+          x_opencti_aliases
+        }
+        ... on City {
+          name
+          description
+          x_opencti_aliases
+        }
+        ... on Country {
+          name
+          description
+          x_opencti_aliases
+        }
+        ... on Region {
+          name
+          description
+          x_opencti_aliases
+        }
+        ... on Malware {
+          name
+          aliases
+          description
+        }
+        ... on ThreatActor {
+          name
+          aliases
+          description
+        }
+        ... on Tool {
+          name
+          aliases
+          description
+        }
+        ... on Vulnerability {
+          name
+          description
+        }
+        ... on XOpenctiIncident {
+          name
+          aliases
+          description
+        }
         createdBy {
-          node {
-            name
-          }
+          name
         }
         objectMarking {
           edges {
@@ -164,7 +246,7 @@ const CurationStixDomainObjectLineFragment = createFragmentContainer(
             }
           }
         }
-        labels {
+        objectLabel {
           edges {
             node {
               id

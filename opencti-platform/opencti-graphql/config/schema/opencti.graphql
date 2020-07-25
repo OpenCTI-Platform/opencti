@@ -533,6 +533,7 @@ type Connector implements BasicObject & InternalObject {
   entity_type: String!
   # Connector
   name: String!
+  active: Boolean
   connector_type: String
   connector_scope: [String!]
   connector_state: String
@@ -1865,7 +1866,9 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   # CourseOfAction
   name: String!
   description: String
+  x_opencti_aliases: [String]
   attackPatterns: AttackPatternConnection
+
   # Technical
   creator: User
   importFiles(first: Int): FileConnection
@@ -2765,6 +2768,7 @@ interface Location {
   latitude: Float
   longitude: Float
   precision: Float
+  x_opencti_aliases: [String]
 }
 
 ################ Positions
@@ -2851,6 +2855,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   latitude: Float
   longitude: Float
   precision: Float
+  x_opencti_aliases: [String]
   # Position
   street_address: String
   postal_code: String
@@ -2871,6 +2876,7 @@ input PositionAddInput {
   street_address: String
   postal_code: String
   confidence: Int
+  x_opencti_aliases: [String]
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -2965,6 +2971,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   latitude: Float
   longitude: Float
   precision: Float
+  x_opencti_aliases: [String]
   # City
   country: Country
   # Technical
@@ -2982,6 +2989,7 @@ input CityAddInput {
   longitude: Float
   precision: Float
   confidence: Int
+  x_opencti_aliases: [String]
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -3073,6 +3081,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   latitude: Float
   longitude: Float
   precision: Float
+  x_opencti_aliases: [String]
   # Country
   region: Region
   # Technical
@@ -3088,6 +3097,7 @@ input CountryAddInput {
   description: String
   aliases: [String]
   confidence: Int
+  x_opencti_aliases: [String]
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -3179,6 +3189,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   latitude: Float
   longitude: Float
   precision: Float
+  x_opencti_aliases: [String]
   # Region
   parentRegions: Region
   subRegions: RegionConnection
@@ -3196,7 +3207,7 @@ input RegionAddInput {
   description: String
   contact_information: String
   confidence: Int
-  alias: [String]
+  x_opencti_aliases: [String]
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -3781,7 +3792,7 @@ input XOpenctiIncidentAddInput {
   objective: String
   first_seen: DateTime
   last_seen: DateTime
-  alias: [String]
+  aliases: [String]
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]

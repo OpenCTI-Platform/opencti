@@ -137,10 +137,10 @@ const IndividualKnowledge = createFragmentContainer(
   IndividualKnowledgeComponent,
   {
     individual: graphql`
-      fragment IndividualKnowledge_individual on User {
+      fragment IndividualKnowledge_individual on Individual {
         id
         name
-        aliases
+        x_opencti_aliases
       }
     `,
   },

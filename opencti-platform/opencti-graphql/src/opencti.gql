@@ -71,6 +71,7 @@ define
   external sub attribute, datatype boolean;
   default_assignation sub attribute, datatype boolean;
   attribute_order sub attribute, datatype double;
+  active sub attribute, datatype boolean;
   connector_type sub attribute, datatype string;
   connector_scope sub attribute, datatype string;
   connector_state sub attribute, datatype string;
@@ -860,6 +861,7 @@ define
 
   Connector sub Internal-Object,
     has name,
+    has active,
     has connector_type,
     has connector_scope,
     has connector_state,
@@ -1017,6 +1019,7 @@ define
   Course-Of-Action sub Stix-Domain-Object,
     has name,
     has description,
+    has x_opencti_aliases,
     plays investigates_from,
     plays migrates_from,
     plays remediates_from;

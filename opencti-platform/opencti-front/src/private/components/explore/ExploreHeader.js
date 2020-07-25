@@ -33,18 +33,19 @@ class ExploreHeaderComponent extends Component {
           gutterBottom={true}
           classes={{ root: classes.title }}
         >
-          {stixDomainObject.name}
+          {propOr('-', 'name', stixDomainObject)}
         </Typography>
         <div className={classes.aliaseses}>
-          {propOr([], 'aliases', stixDomainObject).map((label) => (label.length > 0 ? (
-              <Chip
-                key={label}
-                classes={{ root: classes.aliases }}
-                label={label}
-              />
-          ) : (
-            ''
-          )))}
+          {propOr(null, 'x_opencti_aliases', stixDomainObject)
+            || propOr([], 'aliases', stixDomainObject).map((label) => (label.length > 0 ? (
+                <Chip
+                  key={label}
+                  classes={{ root: classes.aliases }}
+                  label={label}
+                />
+            ) : (
+              ''
+            )))}
         </div>
         <div className="clearfix" />
       </div>
@@ -63,8 +64,30 @@ const ExploreHeader = createFragmentContainer(ExploreHeaderComponent, {
   stixDomainObject: graphql`
     fragment ExploreHeader_stixDomainObject on StixDomainObject {
       id
-      name
-      aliases
+      ... on AttackPattern {
+        name
+        aliases
+      }
+      ... on Campaign {
+        name
+        aliases
+      }
+      ... on CourseOfAction {
+        name
+        x_opencti_aliases
+      }
+      ... on Individual {
+        name
+        aliases
+      }
+      ... on Organization {
+        name
+        aliases
+      }
+      ... on Sector {
+        name
+        aliases
+      }
     }
   `,
 });
