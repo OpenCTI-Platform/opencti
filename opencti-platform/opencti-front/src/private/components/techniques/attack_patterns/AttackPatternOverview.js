@@ -118,12 +118,7 @@ const AttackPatternOverview = createFragmentContainer(
           }
         }
         createdBy {
-          ... on Organization {
-            id
-            name
-            entity_type
-          }
-          ... on Individual {
+          ... on Identity {
             id
             name
             entity_type

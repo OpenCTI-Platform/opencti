@@ -47,7 +47,7 @@ export const addXOpenctiIncident = async (user, incident) => {
   const currentDate = now();
   const incidentToCreate = pipe(
     assoc('first_seen', incident.first_seen ? incident.first_seen : currentDate),
-    assoc('last_seen', incident.first_seen ? incident.first_seen : currentDate)
+    assoc('last_seen', incident.last_seen ? incident.last_seen : currentDate)
   )(incident);
   const created = await createEntity(user, incidentToCreate, ENTITY_TYPE_X_OPENCTI_INCIDENT);
   return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);

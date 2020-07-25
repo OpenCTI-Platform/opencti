@@ -118,7 +118,7 @@ const XOpenctiXOpenctiIncidentOverview = createFragmentContainer(
           }
         }
         createdBy {
-          node {
+          ... on Identity {
             id
             name
             entity_type

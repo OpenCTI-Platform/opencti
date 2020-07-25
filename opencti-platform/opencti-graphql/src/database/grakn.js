@@ -1349,7 +1349,6 @@ const createRelationRaw = async (user, input, opts = {}) => {
   relationAttributes.entity_type = relationshipType;
   relationAttributes.created_at = today;
   relationAttributes.updated_at = today;
-
   // stix-relationship
   if (isStixRelationship(relationshipType)) {
     relationAttributes.stix_ids = isNil(input.stix_id) ? [] : [input.stix_id];
@@ -1634,10 +1633,10 @@ export const createEntity = async (user, entity, type, opts = {}) => {
   // Dissoc additional data
   let data = pipe(
     dissoc('createdBy'),
-    dissoc('markingDefinitions'),
-    dissoc('labels'),
+    dissoc('objectMarking'),
+    dissoc('objectLabel'),
     dissoc('killChainPhases'),
-    dissoc('objects')
+    dissoc('object')
   )(entity);
   // Default attributes
   // Basic-Object
@@ -1740,10 +1739,10 @@ export const createEntity = async (user, entity, type, opts = {}) => {
   if (isStixCoreObject(type)) {
     postOperations.push(
       addCreatedBy(user, internalId, entity.createdBy || user.id, opts),
-      addMarkingDefs(user, internalId, entity.markingDefinitions, opts),
-      addLabels(user, internalId, entity.labels, opts), // Embedded in same execution.
+      addMarkingDefs(user, internalId, entity.objectMarking, opts),
+      addLabels(user, internalId, entity.objectLabel, opts), // Embedded in same execution.
       addKillChains(user, internalId, entity.killChainPhases, opts), // Embedded in same execution.
-      addObjects(user, internalId, entity.objects, opts)
+      addObjects(user, internalId, entity.object, opts)
     );
   }
   await Promise.all(postOperations);

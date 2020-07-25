@@ -105,24 +105,19 @@ const OrganizationOverview = createFragmentContainer(
         description
         created
         modified
+        createdBy {
+          ... on Identity {
+            id
+            name
+            entity_type
+          }
+        }
         objectMarking {
           edges {
             node {
               id
               definition
             }
-          }
-        }
-        createdBy {
-          ... on Organization {
-            id
-            name
-            entity_type
-          }
-          ... on Individual {
-            id
-            name
-            entity_type
           }
         }
       }

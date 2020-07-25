@@ -164,10 +164,8 @@ class CityEditionOverviewComponent extends Component {
           variables: {
             id: this.props.city.id,
             input: {
-              fromRole: 'so',
               toId: value.value,
-              toRole: 'creator',
-              through: 'created_by_ref',
+              relationship_type: 'created-by',
             },
           },
         });
@@ -178,7 +176,7 @@ class CityEditionOverviewComponent extends Component {
   handleChangeMarkingDefinitions(name, values) {
     const { city } = this.props;
     const currentMarkingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
@@ -195,10 +193,8 @@ class CityEditionOverviewComponent extends Component {
         variables: {
           id: this.props.city.id,
           input: {
-            fromRole: 'so',
             toId: head(added).value,
-            toRole: 'marking',
-            through: 'object_marking_refs',
+            relationship_type: 'object-marking',
           },
         },
       });
@@ -225,7 +221,7 @@ class CityEditionOverviewComponent extends Component {
         relation: pathOr(null, ['createdBy', 'relation', 'id'], city),
       };
     const markingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
@@ -315,16 +311,13 @@ const CityEditionOverview = createFragmentContainer(
         name
         description
         createdBy {
-          node {
+          ... on Identity {
             id
             name
             entity_type
           }
-          relation {
-            id
-          }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id

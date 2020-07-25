@@ -44,7 +44,7 @@ class ObjectMarkingField extends Component {
       search: event && event.target.value !== 0 ? event.target.value : '',
     }).then((data) => {
       const markingDefinitions = pipe(
-        pathOr([], ['markingDefinitions', 'edges']),
+        pathOr([], ['objectMarking', 'edges']),
         map((n) => ({
           label: n.node.definition,
           value: n.node.id,

@@ -190,13 +190,10 @@ export const curationStixDomainObjectsLinesSearchQuery = graphql`
             description
           }
           createdBy {
-            ... on Individual {
-              name
-            }
-            ... on Organization {
-              name
-            }
+          ... on Identity {
+            name
           }
+        }
         }
       }
     }
@@ -232,13 +229,10 @@ export default createPaginationContainer(
               entity_type
               created_at
               createdBy {
-                ... on Individual {
-                  name
-                }
-                ... on Organization {
-                  name
-                }
-              }
+          ... on Identity {
+            name
+          }
+        }
               objectMarking {
                 edges {
                   node {

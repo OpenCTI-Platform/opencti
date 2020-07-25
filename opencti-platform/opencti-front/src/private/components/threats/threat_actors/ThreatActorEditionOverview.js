@@ -187,7 +187,7 @@ class ThreatActorEditionOverviewComponent extends Component {
   handleChangeMarkingDefinitions(name, values) {
     const { threatActor } = this.props;
     const currentMarkingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
@@ -246,7 +246,7 @@ class ThreatActorEditionOverviewComponent extends Component {
       })),
     )(threatActor);
     const markingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
@@ -343,16 +343,13 @@ const ThreatActorEditionOverview = createFragmentContainer(
         name
         description
         createdBy {
-          node {
+          ... on Identity {
             id
             name
             entity_type
           }
-          relation {
-            id
-          }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id

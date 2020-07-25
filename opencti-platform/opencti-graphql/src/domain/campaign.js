@@ -33,7 +33,7 @@ export const campaignsTimeSeriesByEntity = (args) => {
 export const addCampaign = async (user, campaign) => {
   const campaignToCreate = pipe(
     assoc('first_seen', isNil(campaign.first_seen) ? new Date(FROM_START) : campaign.first_seen),
-    assoc('last_seen', isNil(campaign.first_seen) ? new Date(UNTIL_END) : campaign.first_seen)
+    assoc('last_seen', isNil(campaign.last_seen) ? new Date(UNTIL_END) : campaign.last_seen)
   )(campaign);
   const created = await createEntity(user, campaignToCreate, ENTITY_TYPE_CAMPAIGN);
   return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);

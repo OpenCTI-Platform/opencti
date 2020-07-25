@@ -75,22 +75,19 @@ IndividualDetailsComponent.propTypes = {
 
 const IndividualDetails = createFragmentContainer(IndividualDetailsComponent, {
   individual: graphql`
-    fragment IndividualDetails_individual on User {
+    fragment IndividualDetails_individual on Individual {
       id
       contact_information
       creator {
         id
         name
       }
-      labels {
+      objectLabel {
         edges {
           node {
             id
             value
             color
-          }
-          relation {
-            id
           }
         }
       }

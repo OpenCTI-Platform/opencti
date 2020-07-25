@@ -137,7 +137,7 @@ class StixCoreObjectNoteEditionOverviewComponent extends Component {
   handleChangeMarkingDefinitions(name, values) {
     const { note } = this.props;
     const currentMarkingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
@@ -154,10 +154,8 @@ class StixCoreObjectNoteEditionOverviewComponent extends Component {
         variables: {
           id: this.props.note.id,
           input: {
-            fromRole: 'so',
             toId: head(added).value,
-            toRole: 'marking',
-            through: 'object_marking_refs',
+            relationship_type: 'object-marking',
           },
         },
       });
@@ -177,7 +175,7 @@ class StixCoreObjectNoteEditionOverviewComponent extends Component {
   render() {
     const { t, note, context } = this.props;
     const markingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
@@ -256,7 +254,7 @@ const StixCoreObjectNoteEditionOverview = createFragmentContainer(
         id
         name
         content
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id

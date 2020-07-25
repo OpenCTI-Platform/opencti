@@ -174,10 +174,8 @@ class AttackPatternEditionOverviewComponent extends Component {
           variables: {
             id: this.props.attackPattern.id,
             input: {
-              fromRole: 'so',
               toId: value.value,
-              toRole: 'creator',
-              through: 'created_by_ref',
+              relationship_type: 'created-by',
             },
           },
         });
@@ -228,7 +226,7 @@ class AttackPatternEditionOverviewComponent extends Component {
   handleChangeMarkingDefinitions(name, values) {
     const { attackPattern } = this.props;
     const currentMarkingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
@@ -287,7 +285,7 @@ class AttackPatternEditionOverviewComponent extends Component {
       })),
     )(attackPattern);
     const markingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
@@ -396,13 +394,10 @@ const AttackPatternEditionOverview = createFragmentContainer(
         name
         description
         createdBy {
-          node {
+          ... on Identity {
             id
             name
             entity_type
-          }
-          relation {
-            id
           }
         }
         killChainPhases {
@@ -415,7 +410,7 @@ const AttackPatternEditionOverview = createFragmentContainer(
             }
           }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id

@@ -105,7 +105,7 @@ class GroupEditionPermissionsComponent extends Component {
             if (props) {
               // Done
               const markingDefinitions = pipe(
-                pathOr([], ['markingDefinitions', 'edges']),
+                pathOr([], ['objectMarking', 'edges']),
                 map((n) => n.node),
               )(props);
               return (

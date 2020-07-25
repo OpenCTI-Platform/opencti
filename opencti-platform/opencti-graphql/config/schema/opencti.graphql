@@ -1126,7 +1126,7 @@ input AttackPatternAddInput {
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
-  killChainPhase: [String]
+  killChainPhases: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -1301,7 +1301,7 @@ interface Container {
     filterMode: FilterMode
     search: String
     types: [String]
-  ): StixCoreObjectOrStixCoreRelationship
+  ): StixObjectOrStixCoreRelationship
 }
 
 ################ Notes
@@ -1395,7 +1395,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     filterMode: FilterMode
     search: String
     types: [String]
-  ): StixCoreObjectOrStixCoreRelationship
+  ): StixObjectOrStixCoreRelationship
   # Note
   attribute_abstract: String
   content: String!
@@ -1416,6 +1416,7 @@ input NoteAddInput {
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
+  object: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -1515,7 +1516,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     filterMode: FilterMode
     search: String
     types: [String]
-  ): StixCoreObjectOrStixCoreRelationship
+  ): StixObjectOrStixCoreRelationship
   # ObservedData
   first_observed: DateTime!
   last_observed: DateTime!
@@ -1632,7 +1633,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     filterMode: FilterMode
     search: String
     types: [String]
-  ): StixCoreObjectOrStixCoreRelationship
+  ): StixObjectOrStixCoreRelationship
   # Opinion
   explanation: String
   authors: [String]
@@ -1755,7 +1756,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     filterMode: FilterMode
     search: String
     types: [String]
-  ): StixCoreObjectOrStixCoreRelationship
+  ): StixObjectOrStixCoreRelationship
   # Report
   name: String!
   description: String
@@ -3334,7 +3335,7 @@ input MalwareAddInput {
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
-  killChainPhase: [String]
+  killChainPhases: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -3566,7 +3567,7 @@ input ToolAddInput {
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
-  killChainPhase: [String]
+  killChainPhases: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -4538,26 +4539,27 @@ input InternalRelationshipAddInput {
 
 ######## STIX RELATIONSHIPS
 
-union StixCoreObjectOrStixCoreRelationship =
+union StixObjectOrStixCoreRelationship =
     #### Stix Core Objects
-  ## Stix Domain Objects
-  AttackPattern
-  | Campaign
-  | # Containers
-  Note
+  ## Stix Meta Objects
+  MarkingDefinition
+  | Label
+  | KillChainPhase
+  | ExternalReference ## Stix Domain Objects
+  | AttackPattern
+  | Campaign # Containers
+  | Note
   | ObservedData
   | Opinion
   | Report
-  | CourseOfAction
-  | # Identity
-  Individual
+  | CourseOfAction # Identity
+  | Individual
   | Organization
   | Sector
   | Indicator
   | Infrastructure
-  | IntrusionSet
-  | # Location
-  City
+  | IntrusionSet # Location
+  | City
   | Country
   | Region
   | Position
@@ -4565,15 +4567,13 @@ union StixCoreObjectOrStixCoreRelationship =
   | ThreatActor
   | Tool
   | Vulnerability
-  | XOpenctiIncident
-  | ## Six Cyber Observables
-  AutonomousSystem
+  | XOpenctiIncident ## Six Cyber Observables
+  | AutonomousSystem
   | Directory
   | DomainName
   | EmailAddr
-  | EmailMessage
-  | ### Stix Core Relationships
-  StixCoreRelationship
+  | EmailMessage ### Stix Core Relationships
+  | StixCoreRelationship
 
 interface StixRelationship {
   # BasicRelationship
@@ -4584,8 +4584,8 @@ interface StixRelationship {
   # StixRelationship
   standard_id: String!
   stix_ids: [String]
-  from: StixCoreObjectOrStixCoreRelationship
-  to: StixCoreObjectOrStixCoreRelationship
+  from: StixObjectOrStixCoreRelationship
+  to: StixObjectOrStixCoreRelationship
   inferred: Boolean
 }
 
@@ -4641,8 +4641,8 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   # StixRelationship
   standard_id: String!
   stix_ids: [String]
-  from: StixCoreObjectOrStixCoreRelationship
-  to: StixCoreObjectOrStixCoreRelationship
+  from: StixObjectOrStixCoreRelationship
+  to: StixObjectOrStixCoreRelationship
   inferred: Boolean
   # StixCoreRelationship
   relationship_type: String!
@@ -4708,7 +4708,7 @@ input StixCoreRelationshipAddInput {
 enum StixSightingRelationshipsOrdering {
   confidence
   number
-  negative
+  x_opencti_negative
   first_seen
   last_seen
   created
@@ -4724,7 +4724,7 @@ enum StixSightingRelationshipsOrdering {
   toCreatedAt
 }
 enum StixSightingRelationshipsFilter {
-  negative
+  x_opencti_negative
   created
   modified
   created_at
@@ -4757,8 +4757,8 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   # StixRelationship
   standard_id: String!
   stix_ids: [String]
-  from: StixCoreObjectOrStixCoreRelationship
-  to: StixCoreObjectOrStixCoreRelationship
+  from: StixObjectOrStixCoreRelationship
+  to: StixObjectOrStixCoreRelationship
   inferred: Boolean
   # StixSightingRelationship
   description: String
@@ -4837,8 +4837,8 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
   # StixRelationship
   standard_id: String!
   stix_ids: [String]
-  from: StixCoreObjectOrStixCoreRelationship
-  to: StixCoreObjectOrStixCoreRelationship
+  from: StixObjectOrStixCoreRelationship
+  to: StixObjectOrStixCoreRelationship
   inferred: Boolean
   # StixCyberObservableRelationship
   relationship_type: String!
@@ -4869,8 +4869,8 @@ type StixMetaRelationship implements BasicRelationship & StixRelationship {
   # StixRelationship
   standard_id: String!
   stix_ids: [String]
-  from: StixCoreObjectOrStixCoreRelationship
-  to: StixCoreObjectOrStixCoreRelationship
+  from: StixObjectOrStixCoreRelationship
+  to: StixObjectOrStixCoreRelationship
   inferred: Boolean
 }
 input StixMetaRelationshipAddInput {

@@ -150,12 +150,11 @@ const EntityIndicatorLineFragment = createFragmentContainer(
     node: graphql`
       fragment EntityIndicatorLine_node on StixCoreRelationship {
         id
-        weight
-        first_seen
-        last_seen
+        start_time
+        stop_time
         description
+        confidence
         inferred
-        role_played
         to {
           ... on Indicator {
             id
@@ -175,7 +174,7 @@ const EntityIndicatorLineFragment = createFragmentContainer(
                 }
               }
             }
-            labels {
+            objectLabel {
               edges {
                 node {
                   id

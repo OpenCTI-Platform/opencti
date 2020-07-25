@@ -135,9 +135,6 @@ const SectorSubSectors = createFragmentContainer(SectorSubSectorsComponent, {
             name
             description
           }
-          relation {
-            id
-          }
         }
       }
     }

@@ -15,7 +15,7 @@ export const findAll = (args) => {
 export const addIntrusionSet = async (user, intrusionSet) => {
   const intrusionSetToCreate = pipe(
     assoc('first_seen', isNil(intrusionSet.first_seen) ? new Date(FROM_START) : intrusionSet.first_seen),
-    assoc('last_seen', isNil(intrusionSet.first_seen) ? new Date(UNTIL_END) : intrusionSet.first_seen)
+    assoc('last_seen', isNil(intrusionSet.last_seen) ? new Date(UNTIL_END) : intrusionSet.last_seen)
   )(intrusionSet);
   const created = await createEntity(user, intrusionSetToCreate, ENTITY_TYPE_INTRUSION_SET);
   return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);

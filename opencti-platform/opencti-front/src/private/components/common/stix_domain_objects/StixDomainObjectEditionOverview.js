@@ -192,10 +192,8 @@ class StixDomainObjectEditionContainer extends Component {
           variables: {
             id: stixDomainObject.id,
             input: {
-              fromRole: 'so',
               toId: value.value,
-              toRole: 'creator',
-              through: 'created_by_ref',
+              relationship_type: 'created-by',
             },
           },
         });
@@ -206,7 +204,7 @@ class StixDomainObjectEditionContainer extends Component {
   handleChangeMarkingDefinitions(name, values) {
     const { stixDomainObject } = this.props;
     const currentMarkingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
@@ -294,7 +292,7 @@ class StixDomainObjectEditionContainer extends Component {
         ),
       };
     const markingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
@@ -434,16 +432,13 @@ const StixDomainObjectEditionFragment = createFragmentContainer(
         description
         aliases
         createdBy {
-          node {
+          ... on Identity {
             id
             name
             entity_type
           }
-          relation {
-            id
-          }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id

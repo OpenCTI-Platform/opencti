@@ -141,7 +141,7 @@ class WorkspaceEditionOverviewComponent extends Component {
   handleChangeMarkingDefinitions(name, values) {
     const { workspace } = this.props;
     const currentMarkingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
@@ -158,10 +158,8 @@ class WorkspaceEditionOverviewComponent extends Component {
         variables: {
           id: this.props.workspace.id,
           input: {
-            fromRole: 'so',
             toId: head(added).value,
-            toRole: 'marking',
-            through: 'object_marking_refs',
+            relationship_type: 'object-marking',
           },
         },
       });
@@ -181,7 +179,7 @@ class WorkspaceEditionOverviewComponent extends Component {
   render() {
     const { t, workspace, context } = this.props;
     const markingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
@@ -266,7 +264,7 @@ const WorkspaceEditionOverview = createFragmentContainer(
         id
         name
         description
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id

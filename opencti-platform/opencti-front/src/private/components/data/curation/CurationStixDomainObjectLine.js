@@ -236,10 +236,7 @@ const CurationStixDomainObjectLineFragment = createFragmentContainer(
           description
         }
         createdBy {
-          ... on Individual {
-            name
-          }
-          ... on Organization {
+          ... on Identity {
             name
           }
         }

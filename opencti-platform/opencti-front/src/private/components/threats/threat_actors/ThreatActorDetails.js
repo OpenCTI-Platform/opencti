@@ -89,12 +89,12 @@ class ThreatActorDetailsComponent extends Component {
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t('Secondary motivation')}
+            {t('Secondary motivations')}
           </Typography>
           {t(
             `${
-              threatActor.secondary_motivation
-                ? `motivation_${threatActor.secondary_motivation}`
+              threatActor.secondary_motivations
+                ? `motivation_${threatActor.secondary_motivations}`
                 : 'motivation_unknown'
             }`,
           )}
@@ -103,9 +103,9 @@ class ThreatActorDetailsComponent extends Component {
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t('Goal')}
+            {t('Goals')}
           </Typography>
-          <Markdown className="markdown" source={threatActor.goal} />
+          <Markdown className="markdown" source={threatActor.goals} />
         </Paper>
       </div>
     );
@@ -129,7 +129,7 @@ const ThreatActorDetails = createFragmentContainer(
         resource_level
         primary_motivation
         secondary_motivations
-        goal
+        goals
         creator {
           id
           name

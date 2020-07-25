@@ -183,7 +183,7 @@ class StixCyberObservableRelationEditionContainer extends Component {
       })),
     )(stixCyberObservableRelationship);
     const markingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
@@ -380,7 +380,7 @@ const StixCyberObservableRelationshipEditionFragment = createFragmentContainer(
         description
         relationship_type
         role_played
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id

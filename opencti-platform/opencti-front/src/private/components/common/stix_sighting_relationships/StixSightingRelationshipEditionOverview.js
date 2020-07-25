@@ -148,7 +148,7 @@ const stixSightingRelationshipMutationRelationDelete = graphql`
 `;
 
 const stixSightingRelationshipValidation = (t) => Yup.object().shape({
-  number: Yup.number()
+  attribute_count: Yup.number()
     .typeError(t('The value must be a number'))
     .integer(t('The value must be a number'))
     .required(t('This field is required')),
@@ -163,7 +163,7 @@ const stixSightingRelationshipValidation = (t) => Yup.object().shape({
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
   description: Yup.string(),
-  negative: Yup.boolean(),
+  x_opencti_negative: Yup.boolean(),
 });
 
 const StixSightingRelationshipEditionContainer = ({
@@ -188,7 +188,7 @@ const StixSightingRelationshipEditionContainer = ({
   });
   const handleChangeMarkingDefinitions = (name, values) => {
     const currentMarkingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
@@ -205,10 +205,8 @@ const StixSightingRelationshipEditionContainer = ({
         variables: {
           id: stixSightingRelationship.id,
           input: {
-            fromRole: 'so',
             toId: head(added).value,
-            toRole: 'marking',
-            through: 'object_marking_refs',
+            relationship_type: 'object-marking',
           },
         },
       });
@@ -269,10 +267,8 @@ const StixSightingRelationshipEditionContainer = ({
           variables: {
             id: stixSightingRelationship.id,
             input: {
-              fromRole: 'so',
               toId: value.value,
-              toRole: 'creator',
-              through: 'created_by_ref',
+              relationship_type: 'created-by',
             },
           },
         });
@@ -325,7 +321,7 @@ const StixSightingRelationshipEditionContainer = ({
       ),
     };
   const markingDefinitions = pipe(
-    pathOr([], ['markingDefinitions', 'edges']),
+    pathOr([], ['objectMarking', 'edges']),
     map((n) => ({
       label: n.node.definition,
       value: n.node.id,
@@ -343,9 +339,9 @@ const StixSightingRelationshipEditionContainer = ({
       'first_seen',
       'last_seen',
       'description',
-      'negative',
+      'x_opencti_negative',
       'createdBy',
-      'markingDefinitions',
+      'objectMarking',
     ]),
   )(stixSightingRelationship);
   const link = stixDomainObject
@@ -383,7 +379,7 @@ const StixSightingRelationshipEditionContainer = ({
                     <Form style={{ margin: '20px 0 20px 0' }}>
                       <Field
                         component={TextField}
-                        name="number"
+                        name="attribute_count"
                         label={t('Count')}
                         fullWidth={true}
                         onFocus={handleChangeFocus}
@@ -391,7 +387,7 @@ const StixSightingRelationshipEditionContainer = ({
                         helperText={
                           <SubscriptionFocus
                             context={editContext}
-                            fieldName="number"
+                            fieldName="attribute_count"
                           />
                         }
                       />
@@ -483,7 +479,7 @@ const StixSightingRelationshipEditionContainer = ({
                       <Field
                         component={SwitchField}
                         type="checkbox"
-                        name="negative"
+                        name="x_opencti_negative"
                         label={t(
                           'Sighed a false positive (negative feedback)?',
                         )}
@@ -492,7 +488,7 @@ const StixSightingRelationshipEditionContainer = ({
                         helperText={
                           <SubscriptionFocus
                             context={editContext}
-                            fieldName="negative"
+                            fieldName="x_opencti_negative"
                           />
                         }
                       />
@@ -549,23 +545,20 @@ const StixSightingRelationshipEditionFragment = createFragmentContainer(
     stixSightingRelationship: graphql`
       fragment StixSightingRelationshipEditionOverview_stixSightingRelationship on StixSightingRelationship {
         id
-        number
-        negative
+        attribute_count
+        x_opencti_negative
         confidence
         first_seen
         last_seen
         description
         createdBy {
-          node {
+          ... on Identity {
             id
             name
             entity_type
           }
-          relation {
-            id
-          }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id

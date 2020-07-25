@@ -523,12 +523,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
         created_at
         updated_at
         createdBy {
-          ... on Organization {
-            id
-            name
-            entity_type
-          }
-          ... on Individual {
+          ... on Identity {
             id
             name
             entity_type
