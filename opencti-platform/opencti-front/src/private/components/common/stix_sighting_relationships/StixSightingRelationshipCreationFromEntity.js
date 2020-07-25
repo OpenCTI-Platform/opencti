@@ -37,7 +37,7 @@ import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCre
 import SearchInput from '../../../../components/SearchInput';
 import { truncate } from '../../../../utils/String';
 import CreatedByField from '../form/CreatedByField';
-import MarkingDefinitionsField from '../form/MarkingDefinitionsField';
+import ObjectMarkingField from '../form/ObjectMarkingField';
 import ConfidenceField from '../form/ConfidenceField';
 import SwitchField from '../../../../components/SwitchField';
 
@@ -278,7 +278,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
       assoc('first_seen', parse(values.first_seen).format()),
       assoc('last_seen', parse(values.last_seen).format()),
       assoc('createdBy', values.createdBy.value),
-      assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
+      assoc('objectMarking', pluck('value', values.objectMarking)),
     )(values);
     commitMutation({
       mutation: stixSightingRelationshipCreationFromEntityMutation,
@@ -451,7 +451,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
       first_seen: dayStartDate(),
       last_seen: dayStartDate(),
       description: '',
-      markingDefinitions: [],
+      objectMarking: [],
       createdBy: '',
       negative: false,
     };
@@ -633,8 +633,8 @@ class StixSightingRelationshipCreationFromEntity extends Component {
                 style={{ marginTop: 20, width: '100%' }}
                 setFieldValue={setFieldValue}
               />
-              <MarkingDefinitionsField
-                name="markingDefinitions"
+              <ObjectMarkingField
+                name="objectMarking"
                 style={{ marginTop: 20, width: '100%' }}
               />
               <Field

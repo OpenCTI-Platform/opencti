@@ -31,7 +31,7 @@ import {
   SubscriptionFocus,
 } from '../../../../components/Subscription';
 import CreatedByField from '../form/CreatedByField';
-import MarkingDefinitionsField from '../form/MarkingDefinitionsField';
+import ObjectMarkingField from '../form/ObjectMarkingField';
 
 const styles = (theme) => ({
   header: {
@@ -395,13 +395,13 @@ class StixDomainObjectEditionContainer extends Component {
                   }
                   onChange={this.handleChangeCreatedBy.bind(this)}
                 />
-                <MarkingDefinitionsField
-                  name="markingDefinitions"
+                <ObjectMarkingField
+                  name="objectMarking"
                   style={{ marginTop: 20, width: '100%' }}
                   helpertext={
                     <SubscriptionFocus
                       context={editContext}
-                      fieldName="markingDefinitions"
+                      fieldname="objectMarking"
                     />
                   }
                   onChange={this.handleChangeMarkingDefinitions.bind(this)}

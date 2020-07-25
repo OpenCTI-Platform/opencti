@@ -21,7 +21,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import CreatedByField from '../../common/form/CreatedByField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -361,13 +361,13 @@ class AttackPatternEditionOverviewComponent extends Component {
               }
               onChange={this.handleChangeCreatedBy.bind(this)}
             />
-            <MarkingDefinitionsField
-              name="markingDefinitions"
+            <ObjectMarkingField
+              name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
                 <SubscriptionFocus
                   context={context}
-                  fieldName="markingDefinitions"
+                  fieldname="objectMarking"
                 />
               }
               onChange={this.handleChangeMarkingDefinitions.bind(this)}

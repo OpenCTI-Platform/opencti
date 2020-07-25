@@ -21,7 +21,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 import DatePickerField from '../../../../components/DatePickerField';
 import CreatedByField from '../../common/form/CreatedByField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SwitchField from '../../../../components/SwitchField';
 
 const styles = (theme) => ({
@@ -360,13 +360,13 @@ class IndicatorEditionOverviewComponent extends Component {
               }
               onChange={this.handleChangeCreatedBy.bind(this)}
             />
-            <MarkingDefinitionsField
-              name="markingDefinitions"
+            <ObjectMarkingField
+              name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
                 <SubscriptionFocus
                   context={context}
-                  fieldName="markingDefinitions"
+                  fieldname="objectMarking"
                 />
               }
               onChange={this.handleChangeMarkingDefinitions.bind(this)}

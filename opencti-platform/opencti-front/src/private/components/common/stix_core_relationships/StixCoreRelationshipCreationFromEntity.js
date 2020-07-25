@@ -54,7 +54,7 @@ import { attributesQuery } from '../../settings/attributes/AttributesLines';
 import Loader from '../../../../components/Loader';
 import KillChainPhasesField from '../form/KillChainPhasesField';
 import CreatedByField from '../form/CreatedByField';
-import MarkingDefinitionsField from '../form/MarkingDefinitionsField';
+import objectMarkingField from '../form/ObjectMarkingField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -289,7 +289,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
       assoc('last_seen', parse(values.last_seen).format()),
       assoc('createdBy', values.createdBy.value),
       assoc('killChainPhases', pluck('value', values.killChainPhases)),
-      assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
+      assoc('markingDefinitions', pluck('value', values.objectMarking)),
     )(values);
     commitMutation({
       mutation: stixCoreRelationshipCreationFromEntityMutation,
@@ -490,7 +490,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
       last_seen: dayStartDate(),
       description: '',
       killChainPhases: [],
-      markingDefinitions: [],
+      objectMarking: [],
       createdBy: '',
     };
     return (
@@ -752,8 +752,8 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                         style={{ marginTop: 20, width: '100%' }}
                         setFieldValue={setFieldValue}
                       />
-                      <MarkingDefinitionsField
-                        name="markingDefinitions"
+                      <objectMarkingField
+                        name="objectMarking"
                         style={{ marginTop: 20, width: '100%' }}
                       />
                       <div className={classes.buttonBack}>

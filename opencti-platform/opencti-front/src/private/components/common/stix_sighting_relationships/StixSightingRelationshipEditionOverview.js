@@ -36,7 +36,7 @@ import {
 import DatePickerField from '../../../../components/DatePickerField';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
 import Loader from '../../../../components/Loader';
-import MarkingDefinitionsField from '../form/MarkingDefinitionsField';
+import ObjectMarkingField from '../form/ObjectMarkingField';
 import CreatedByField from '../form/CreatedByField';
 import ConfidenceField from '../form/ConfidenceField';
 import SwitchField from '../../../../components/SwitchField';
@@ -469,13 +469,13 @@ const StixSightingRelationshipEditionContainer = ({
                         }
                         onChange={handleChangeCreatedBy}
                       />
-                      <MarkingDefinitionsField
-                        name="markingDefinitions"
+                      <ObjectMarkingField
+                        name="objectMarking"
                         style={{ marginTop: 20, width: '100%' }}
                         helpertext={
                           <SubscriptionFocus
                             context={editContext}
-                            fieldName="markingDefinitions"
+                            fieldname="objectMarking"
                           />
                         }
                         onChange={handleChangeMarkingDefinitions}

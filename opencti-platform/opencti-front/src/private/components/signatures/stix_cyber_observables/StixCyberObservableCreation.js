@@ -23,8 +23,8 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import CreatedByField from '../../common/form/CreatedByField';
-import LabelsField from '../../common/form/LabelsField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import TypesField from '../TypesField';
 
 const styles = (theme) => ({
@@ -225,7 +225,7 @@ class StixCyberObservableCreation extends Component {
                 observable_value: '',
                 description: '',
                 createdBy: '',
-                markingDefinitions: [],
+                objectMarking: [],
                 labels: [],
                 createIndicator: false,
               }}
@@ -269,14 +269,14 @@ class StixCyberObservableCreation extends Component {
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />
-                  <LabelsField
-                    name="labels"
+                  <ObjectLabelField
+                    name="objectLabel"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
-                    values={values.labels}
+                    values={values.objectLabel}
                   />
-                  <MarkingDefinitionsField
-                    name="markingDefinitions"
+                  <ObjectMarkingField
+                    name="objectMarking"
                     style={{ marginTop: 20, width: '100%' }}
                   />
                   <Field
@@ -334,7 +334,7 @@ class StixCyberObservableCreation extends Component {
             observable_value: inputValue,
             description: '',
             createdBy: '',
-            markingDefinitions: [],
+            objectMarking: [],
           }}
           validationSchema={stixCyberObservableValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
@@ -383,14 +383,14 @@ class StixCyberObservableCreation extends Component {
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />
-                  <LabelsField
-                    name="labels"
+                  <ObjectLabelField
+                    name="objectLabel"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
-                    values={values.labels}
+                    values={values.objectLabel}
                   />
-                  <MarkingDefinitionsField
-                    name="markingDefinitions"
+                  <ObjectMarkingField
+                    name="objectMarking"
                     style={{ marginTop: 20, width: '100%' }}
                   />
                 </DialogContent>

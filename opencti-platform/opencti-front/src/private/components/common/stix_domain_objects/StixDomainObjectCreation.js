@@ -24,8 +24,8 @@ import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import CreatedByField from '../form/CreatedByField';
-import MarkingDefinitionsField from '../form/MarkingDefinitionsField';
-import LabelsField from '../form/LabelsField';
+import ObjectMarkingField from '../form/ObjectMarkingField';
+import ObjectLabelField from '../form/ObjectLabelField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -117,8 +117,8 @@ class StixDomainObjectCreation extends Component {
     const finalValues = pipe(
       assoc('aliases', split(',', values.aliases)),
       assoc('createdBy', values.createdBy.value),
-      assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
-      assoc('labels', pluck('value', values.labels)),
+      assoc('objectMarking', pluck('value', values.objectMarking)),
+      assoc('objectLabel', pluck('value', values.objectLabel)),
     )(values);
     commitMutation({
       mutation: stixDomainObjectCreationMutation,
@@ -302,7 +302,7 @@ class StixDomainObjectCreation extends Component {
                 aliases: '',
                 createdBy: '',
                 labels: [],
-                markingDefinitions: [],
+                objectMarking: [],
               }}
               validationSchema={stixDomainObjectValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -346,14 +346,14 @@ class StixDomainObjectCreation extends Component {
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />
-                  <LabelsField
-                    name="labels"
+                  <ObjectLabelField
+                    name="objectLabel"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
-                    values={values.labels}
+                    values={values.objectLabel}
                   />
-                  <MarkingDefinitionsField
-                    name="markingDefinitions"
+                  <ObjectMarkingField
+                    name="objectMarking"
                     style={{ marginTop: 20, width: '100%' }}
                   />
                   <div className={classes.buttons}>
@@ -479,14 +479,14 @@ class StixDomainObjectCreation extends Component {
                     setFieldValue={setFieldValue}
                     defaultCreatedBy={defaultCreatedBy}
                   />
-                  <LabelsField
-                    name="labels"
+                  <ObjectLabelField
+                    name="objectLabel"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
-                    values={values.labels}
+                    values={values.objectLabel}
                   />
-                  <MarkingDefinitionsField
-                    name="markingDefinitions"
+                  <ObjectMarkingField
+                    name="objectMarking"
                     style={{ marginTop: 20, width: '100%' }}
                     defaultMarkingDefinition={defaultMarkingDefinition}
                   />

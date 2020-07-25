@@ -4633,7 +4633,7 @@ type StixCoreRelationshipEdge {
   node: StixCoreRelationship!
 }
 type StixCoreRelationship implements BasicRelationship & StixRelationship {
-  # BasicRelationship²
+  # BasicRelationship
   id: ID! # internal_id
   entity_type: String!
   fromRole: String
@@ -4645,6 +4645,8 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   to: StixCoreObjectOrStixCoreRelationship
   inferred: Boolean
   # StixCoreRelationship
+  relationship_type: String!
+  description: String
   start_time: DateTime
   stop_time: DateTime
   revoked: Boolean!

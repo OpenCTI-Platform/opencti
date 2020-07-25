@@ -19,7 +19,7 @@ import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import MarkingDefinitionsField from '../form/MarkingDefinitionsField';
+import ObjectMarkingField from '../form/ObjectMarkingField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -222,16 +222,16 @@ class StixCoreObjectNoteEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="content" />
               }
             />
-            <MarkingDefinitionsField
-              name="markingDefinitions"
+            <ObjectMarkingField
+              name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
                 <SubscriptionFocus
                   context={context}
-                  fieldName="markingDefinitions"
+                  fieldName="objectMarking"
                 />
               }
-              onChange={this.handleChangeMarkingDefinitions.bind(this)}
+              onChange={this.handleChangeobjectMarking.bind(this)}
             />
           </Form>
         )}

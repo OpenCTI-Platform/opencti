@@ -22,7 +22,7 @@ const styles = () => ({
   },
 });
 
-class MarkingDefinitionsField extends Component {
+class ObjectMarkingField extends Component {
   constructor(props) {
     super(props);
     const { defaultMarkingDefinition } = props;
@@ -87,4 +87,4 @@ class MarkingDefinitionsField extends Component {
   }
 }
 
-export default compose(inject18n, withStyles(styles))(MarkingDefinitionsField);
+export default compose(inject18n, withStyles(styles))(ObjectMarkingField);

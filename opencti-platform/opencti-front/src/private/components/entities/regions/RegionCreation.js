@@ -18,7 +18,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -118,7 +118,7 @@ class RegionCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = pipe(
       assoc('createdBy', values.createdBy.value),
-      assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
+      assoc('objectMarking', pluck('value', values.objectMarking)),
     )(values);
     commitMutation({
       mutation: regionMutation,
@@ -183,7 +183,7 @@ class RegionCreation extends Component {
                 name: '',
                 description: '',
                 createdBy: '',
-                markingDefinitions: [],
+                objectMarking: [],
               }}
               validationSchema={regionValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -214,8 +214,8 @@ class RegionCreation extends Component {
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />
-                  <MarkingDefinitionsField
-                    name="markingDefinitions"
+                  <ObjectMarkingField
+                    name="objectMarking"
                     style={{ marginTop: 20, width: '100%' }}
                   />
                   <div className={classes.buttons}>

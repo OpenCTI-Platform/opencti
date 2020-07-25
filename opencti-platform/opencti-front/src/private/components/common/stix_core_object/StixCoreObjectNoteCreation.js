@@ -15,7 +15,7 @@ import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import MarkingDefinitionsField from '../form/MarkingDefinitionsField';
+import ObjectMarkingField from '../form/ObjectMarkingField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -88,7 +88,7 @@ class StixCoreObjectNoteCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = pipe(
-      assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
+      assoc('objectMarking', pluck('value', values.objectMarking)),
       assoc(this.props.inputType ? this.props.inputType : 'objectRefs', [
         this.props.entityId,
       ]),
@@ -145,7 +145,7 @@ class StixCoreObjectNoteCreation extends Component {
               initialValues={{
                 name: '',
                 content: '',
-                markingDefinitions: [],
+                objectMarking: [],
               }}
               validationSchema={noteValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -168,8 +168,8 @@ class StixCoreObjectNoteCreation extends Component {
                     rows={4}
                     style={{ marginTop: 20 }}
                   />
-                  <MarkingDefinitionsField
-                    name="markingDefinitions"
+                  <ObjectMarkingField
+                    name="objectMarking"
                     style={{ marginTop: 20, width: '100%' }}
                   />
                   <div className={classes.buttons}>

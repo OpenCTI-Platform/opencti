@@ -18,7 +18,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -181,7 +181,7 @@ class SectorCreation extends Component {
                 name: '',
                 description: '',
                 createdBy: '',
-                markingDefinitions: [],
+                objectMarking: [],
               }}
               validationSchema={sectorValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -212,8 +212,8 @@ class SectorCreation extends Component {
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />
-                  <MarkingDefinitionsField
-                    name="markingDefinitions"
+                  <ObjectMarkingField
+                    name="objectMarking"
                     style={{ marginTop: 20, width: '100%' }}
                   />
                   <div className={classes.buttons}>

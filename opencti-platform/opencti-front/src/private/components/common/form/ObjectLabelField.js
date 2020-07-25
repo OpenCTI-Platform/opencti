@@ -26,7 +26,7 @@ const styles = () => ({
   },
 });
 
-class LabelsField extends Component {
+class ObjectLabelField extends Component {
   constructor(props) {
     super(props);
     this.state = { labelCreation: false, labelInput: '', labels: [] };
@@ -120,4 +120,4 @@ class LabelsField extends Component {
   }
 }
 
-export default compose(inject18n, withStyles(styles))(LabelsField);
+export default compose(inject18n, withStyles(styles))(ObjectLabelField);

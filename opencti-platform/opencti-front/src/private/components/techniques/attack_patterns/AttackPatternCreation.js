@@ -19,8 +19,8 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import CreatedByField from '../../common/form/CreatedByField';
-import LabelsField from '../../common/form/LabelsField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -108,9 +108,9 @@ class AttackPatternCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = pipe(
       assoc('createdBy', values.createdBy.value),
-      assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
+      assoc('objectMarking', pluck('value', values.objectMarking)),
       assoc('killChainPhases', pluck('value', values.killChainPhases)),
-      assoc('labels', pluck('value', values.labels)),
+      assoc('objectLabel', pluck('value', values.objectLabel)),
     )(values);
     commitMutation({
       mutation: attackPatternMutation,
@@ -177,7 +177,7 @@ class AttackPatternCreation extends Component {
                 name: '',
                 description: '',
                 createdBy: '',
-                markingDefinitions: [],
+                objectMarking: [],
                 killChainPhases: [],
                 labels: [],
               }}
@@ -218,14 +218,14 @@ class AttackPatternCreation extends Component {
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />
-                  <LabelsField
-                    name="labels"
+                  <ObjectLabelField
+                    name="objectLabel"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
-                    values={values.labels}
+                    values={values.objectLabel}
                   />
-                  <MarkingDefinitionsField
-                    name="markingDefinitions"
+                  <ObjectMarkingField
+                    name="objectMarking"
                     style={{ marginTop: 20, width: '100%' }}
                   />
                   <div className={classes.buttons}>

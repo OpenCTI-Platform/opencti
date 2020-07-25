@@ -21,8 +21,8 @@ import TextField from '../../../../components/TextField';
 import DatePickerField from '../../../../components/DatePickerField';
 import SelectField from '../../../../components/SelectField';
 import CreatedByField from '../../common/form/CreatedByField';
-import LabelsField from '../../common/form/LabelsField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import TypesField from '../TypesField';
 import SwitchField from '../../../../components/SwitchField';
 
@@ -202,7 +202,7 @@ class IndicatorCreation extends Component {
                 valid_until: null,
                 description: '',
                 createdBy: '',
-                markingDefinitions: [],
+                objectMarking: [],
                 labels: [],
                 detection: false,
               }}
@@ -287,14 +287,14 @@ class IndicatorCreation extends Component {
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />
-                  <LabelsField
-                    name="labels"
+                  <ObjectLabelField
+                    name="objectLabel"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
-                    values={values.labels}
+                    values={values.objectLabel}
                   />
-                  <MarkingDefinitionsField
-                    name="markingDefinitions"
+                  <ObjectMarkingField
+                    name="objectMarking"
                     style={{ marginTop: 20, width: '100%' }}
                   />
                   <Field

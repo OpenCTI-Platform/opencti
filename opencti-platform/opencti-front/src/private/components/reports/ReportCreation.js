@@ -21,10 +21,10 @@ import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import DatePickerField from '../../../components/DatePickerField';
 import SelectField from '../../../components/SelectField';
-import MarkingDefinitionsField from '../common/form/MarkingDefinitionsField';
+import ObjectMarkingField from '../common/form/ObjectMarkingField';
 import { attributesQuery } from '../settings/attributes/AttributesLines';
 import Loader from '../../../components/Loader';
-import LabelsField from '../common/form/LabelsField';
+import ObjectLabelField from '../common/form/ObjectLabelField';
 import CreatedByField from '../common/form/CreatedByField';
 
 const styles = (theme) => ({
@@ -197,7 +197,7 @@ class ReportCreation extends Component {
                           description: '',
                           report_class: '',
                           createdBy: '',
-                          markingDefinitions: [],
+                          objectMarking: [],
                           labels: [],
                         }}
                         validationSchema={reportValidation(t)}
@@ -261,14 +261,14 @@ class ReportCreation extends Component {
                               style={{ marginTop: 20, width: '100%' }}
                               setFieldValue={setFieldValue}
                             />
-                            <LabelsField
-                              name="labels"
+                            <ObjectLabelField
+                              name="objectLabel"
                               style={{ marginTop: 20, width: '100%' }}
                               setFieldValue={setFieldValue}
-                              values={values.labels}
+                              values={values.objectLabel}
                             />
-                            <MarkingDefinitionsField
-                              name="markingDefinitions"
+                            <ObjectMarkingField
+                              name="objectMarking"
                               style={{ marginTop: 20, width: '100%' }}
                             />
                             <div className={classes.buttons}>

@@ -18,8 +18,8 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
-import LabelsField from '../../common/form/LabelsField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -176,7 +176,7 @@ class IntrusionSetCreation extends Component {
                 name: '',
                 description: '',
                 createdBy: '',
-                markingDefinitions: [],
+                objectMarking: [],
                 labels: [],
               }}
               validationSchema={intrusionSetValidation(t)}
@@ -217,14 +217,14 @@ class IntrusionSetCreation extends Component {
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />
-                  <LabelsField
-                    name="labels"
+                  <ObjectLabelField
+                    name="objectLabel"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
-                    values={values.labels}
+                    values={values.objectLabel}
                   />
-                  <MarkingDefinitionsField
-                    name="markingDefinitions"
+                  <ObjectMarkingField
+                    name="objectMarking"
                     style={{ marginTop: 20, width: '100%' }}
                   />
                   <div className={classes.buttons}>

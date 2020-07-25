@@ -39,7 +39,7 @@ import DatePickerField from '../../../../components/DatePickerField';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
 import Loader from '../../../../components/Loader';
 import KillChainPhasesField from '../form/KillChainPhasesField';
-import MarkingDefinitionsField from '../form/MarkingDefinitionsField';
+import objectMarkingField from '../form/ObjectMarkingField';
 import CreatedByField from '../form/CreatedByField';
 
 const styles = (theme) => ({
@@ -221,8 +221,8 @@ const StixCoreRelationshipEditionContainer = ({
       });
     }
   };
-  const handleChangeMarkingDefinitions = (name, values) => {
-    const currentMarkingDefinitions = pipe(
+  const handleChangeobjectMarking = (name, values) => {
+    const currentobjectMarking = pipe(
       pathOr([], ['markingDefinitions', 'edges']),
       map((n) => ({
         label: n.node.definition,
@@ -231,8 +231,8 @@ const StixCoreRelationshipEditionContainer = ({
       })),
     )(stixCoreRelationship);
 
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
+    const added = difference(values, currentobjectMarking);
+    const removed = difference(currentobjectMarking, values);
 
     if (added.length > 0) {
       commitMutation({
@@ -358,7 +358,7 @@ const StixCoreRelationshipEditionContainer = ({
       relationId: n.relation.id,
     })),
   )(stixCoreRelationship);
-  const markingDefinitions = pipe(
+  const objectMarking = pipe(
     pathOr([], ['markingDefinitions', 'edges']),
     map((n) => ({
       label: n.node.definition,
@@ -371,7 +371,7 @@ const StixCoreRelationshipEditionContainer = ({
     assoc('last_seen', dateFormat(stixCoreRelationship.last_seen)),
     assoc('createdBy', createdBy),
     assoc('killChainPhases', killChainPhases),
-    assoc('markingDefinitions', markingDefinitions),
+    assoc('markingDefinitions', objectMarking),
     pick([
       'weight',
       'first_seen',
@@ -543,16 +543,16 @@ const StixCoreRelationshipEditionContainer = ({
                         }
                         onChange={handleChangeCreatedBy}
                       />
-                      <MarkingDefinitionsField
-                        name="markingDefinitions"
+                      <objectMarkingField
+                        name="objectMarking"
                         style={{ marginTop: 20, width: '100%' }}
                         helpertext={
                           <SubscriptionFocus
                             context={editContext}
-                            fieldName="markingDefinitions"
+                            fieldname="objectMarking"
                           />
                         }
-                        onChange={handleChangeMarkingDefinitions}
+                        onChange={handleChangeobjectMarking}
                       />
                     </Form>
                   )}
@@ -607,20 +607,21 @@ const StixCoreRelationshipEditionFragment = createFragmentContainer(
     stixCoreRelationship: graphql`
       fragment StixCoreRelationshipEditionOverview_stixCoreRelationship on StixCoreRelationship {
         id
-        weight
+        confidence
         first_seen
         last_seen
         description
         relationship_type
-        role_played
         createdBy {
-          node {
+          ... on Organization {
             id
             name
             entity_type
           }
-          relation {
+          ... on Individual {
             id
+            name
+            entity_type
           }
         }
         killChainPhases {
@@ -633,7 +634,7 @@ const StixCoreRelationshipEditionFragment = createFragmentContainer(
             }
           }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id

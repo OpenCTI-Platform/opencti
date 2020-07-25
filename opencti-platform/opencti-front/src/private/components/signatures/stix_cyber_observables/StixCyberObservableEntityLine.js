@@ -176,11 +176,10 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
       fragment StixCyberObservableEntityLine_node on StixCoreRelationship {
         id
         relationship_type
-        weight
-        first_seen
-        last_seen
+        confidence
+        start_time
+        stop_time
         description
-        role_played
         inferred
         to {
           id
@@ -266,7 +265,7 @@ class StixCyberObservableEntityLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.weight.width }}
+                style={{ width: dataColumns.confidence.width }}
               >
                 <div className="fakeItem" style={{ width: 100 }} />
               </div>
