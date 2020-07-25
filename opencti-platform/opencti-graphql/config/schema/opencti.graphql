@@ -4839,6 +4839,7 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
   to: StixCoreObjectOrStixCoreRelationship
   inferred: Boolean
   # StixCyberObservableRelationship
+  relationship_type: String!
   start_time: DateTime
   stop_time: DateTime
 }

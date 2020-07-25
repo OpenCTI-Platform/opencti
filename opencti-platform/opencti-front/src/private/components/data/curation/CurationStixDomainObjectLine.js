@@ -236,7 +236,12 @@ const CurationStixDomainObjectLineFragment = createFragmentContainer(
           description
         }
         createdBy {
-          name
+          ... on Individual {
+            name
+          }
+          ... on Organization {
+            name
+          }
         }
         objectMarking {
           edges {

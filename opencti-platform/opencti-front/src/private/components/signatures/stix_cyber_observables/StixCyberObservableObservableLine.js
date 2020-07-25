@@ -143,15 +143,15 @@ const StixCyberObservableObservableLineFragment = createFragmentContainer(
       fragment StixCyberObservableObservableLine_node on StixCyberObservableRelationship {
         id
         relationship_type
-        role_played
         start_time
         stop_time
         to {
-          id
-          entity_type
-          value
-          created_at
-          updated_at
+          ... on StixCyberObservable {
+            id
+            entity_type
+            created_at
+            updated_at
+          }
         }
       }
     `,

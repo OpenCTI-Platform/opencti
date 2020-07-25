@@ -88,7 +88,7 @@ const CountryObservables = createFragmentContainer(
       fragment CountryObservables_country on Country {
         id
         name
-        aliases
+        x_opencti_aliases
       }
     `,
   },

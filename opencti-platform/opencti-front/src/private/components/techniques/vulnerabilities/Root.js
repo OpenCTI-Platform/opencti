@@ -35,7 +35,6 @@ const vulnerabilityQuery = graphql`
     vulnerability(id: $id) {
       id
       name
-      aliases
       ...Vulnerability_vulnerability
       ...VulnerabilityReports_vulnerability
       ...VulnerabilityKnowledge_vulnerability
