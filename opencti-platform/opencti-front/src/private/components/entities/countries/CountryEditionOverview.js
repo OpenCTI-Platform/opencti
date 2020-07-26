@@ -219,7 +219,6 @@ class CountryEditionOverviewComponent extends Component {
       : {
         label: pathOr(null, ['createdBy', 'node', 'name'], country),
         value: pathOr(null, ['createdBy', 'node', 'id'], country),
-        relation: pathOr(null, ['createdBy', 'relation', 'id'], country),
       };
     const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),

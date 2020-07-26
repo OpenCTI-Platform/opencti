@@ -189,7 +189,7 @@ class Reports extends Component {
     const finalFilters = convertFilters(filters);
     if (reportFilterClass) {
       finalFilters.push({
-        key: 'report_class',
+        key: 'report_types',
         values: [reportFilterClass],
       });
     }

@@ -74,7 +74,7 @@ class EntityReportsPie extends Component {
     } = this.props;
     const reportsDistributionVariables = {
       objectId: entityId,
-      field: field || 'report_class',
+      field: field || 'report_types',
       operation: 'count',
     };
     return (

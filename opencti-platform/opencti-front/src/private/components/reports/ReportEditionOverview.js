@@ -110,10 +110,10 @@ const reportValidation = (t) => Yup.object().shape({
   published: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  report_class: Yup.string().required(t('This field is required')),
+  report_types: Yup.array().required(t('This field is required')),
   description: Yup.string(),
-  object_status: Yup.number(),
   confidence: Yup.number(),
+  x_opencti_report_status: Yup.number(),
 });
 
 class ReportEditionOverviewComponent extends Component {
@@ -246,7 +246,7 @@ class ReportEditionOverviewComponent extends Component {
         'name',
         'published',
         'description',
-        'report_class',
+        'report_types',
         'createdBy',
         'markingDefinitions',
         'object_status',
@@ -257,10 +257,10 @@ class ReportEditionOverviewComponent extends Component {
       <div>
         <QueryRenderer
           query={attributesQuery}
-          variables={{ type: 'report_class' }}
+          variables={{ type: 'report_types' }}
           render={({ props }) => {
             if (props && props.attributes) {
-              const reportClassesEdges = props.attributes.edges;
+              const reportTypesEdges = props.attributes.edges;
               return (
                 <Formik
                   enableReinitialize={true}
@@ -286,25 +286,26 @@ class ReportEditionOverviewComponent extends Component {
                         />
                         <Field
                           component={SelectField}
-                          name="report_class"
+                          name="report_types"
                           onFocus={this.handleChangeFocus.bind(this)}
                           onChange={this.handleSubmitField.bind(this)}
-                          label={t('Report type')}
+                          label={t('Report types')}
                           fullWidth={true}
+                          multiple={true}
                           containerstyle={{ marginTop: 20, width: '100%' }}
                           helpertext={
                             <SubscriptionFocus
                               context={context}
-                              fieldName="report_class"
+                              fieldName="report_types"
                             />
                           }
                         >
-                          {reportClassesEdges.map((reportClassEdge) => (
+                          {reportTypesEdges.map((reportTypeEdge) => (
                             <MenuItem
-                              key={reportClassEdge.node.value}
-                              value={reportClassEdge.node.value}
+                              key={reportTypeEdge.node.value}
+                              value={reportTypeEdge.node.value}
                             >
-                              {reportClassEdge.node.value}
+                              {reportTypeEdge.node.value}
                             </MenuItem>
                           ))}
                         </Field>
@@ -420,9 +421,7 @@ class ReportEditionOverviewComponent extends Component {
                               fieldname="objectMarking"
                             />
                           }
-                          onChange={this.handleChangeObjectMarking.bind(
-                            this,
-                          )}
+                          onChange={this.handleChangeObjectMarking.bind(this)}
                         />
                       </Form>
                     </div>
@@ -454,10 +453,10 @@ const ReportEditionOverview = createFragmentContainer(
         id
         name
         description
-        report_class
+        report_types
         published
-        object_status
         confidence
+        x_opencti_report_status
         createdBy {
           ... on Identity {
             id

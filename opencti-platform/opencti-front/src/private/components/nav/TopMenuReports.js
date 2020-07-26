@@ -42,7 +42,7 @@ class TopMenuReports extends Component {
         </Button>
         <QueryRenderer
           query={attributesQuery}
-          variables={{ type: 'report_class' }}
+          variables={{ type: 'report_types' }}
           render={({ props }) => {
             if (props && props.attributes) {
               const reportClassesEdges = props.attributes.edges;

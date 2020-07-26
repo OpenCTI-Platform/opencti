@@ -84,7 +84,7 @@ const reportValidation = (t) => Yup.object().shape({
   published: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  report_class: Yup.string().required(t('This field is required')),
+  report_types: Yup.string().required(t('This field is required')),
   description: Yup.string(),
 });
 
@@ -171,7 +171,7 @@ class ReportCreation extends Component {
         >
           <QueryRenderer
             query={attributesQuery}
-            variables={{ type: 'report_class' }}
+            variables={{ type: 'report_types' }}
             render={({ props }) => {
               if (props && props.attributes) {
                 const reportClassesEdges = props.attributes.edges;
@@ -195,7 +195,7 @@ class ReportCreation extends Component {
                           name: '',
                           published: dayStartDate(),
                           description: '',
-                          report_class: '',
+                          report_types: '',
                           createdBy: '',
                           objectMarking: [],
                           labels: [],
@@ -230,7 +230,7 @@ class ReportCreation extends Component {
                             />
                             <Field
                               component={SelectField}
-                              name="report_class"
+                              name="report_types"
                               label={t('Report type')}
                               fullWidth={true}
                               containerstyle={{

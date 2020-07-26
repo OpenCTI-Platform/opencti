@@ -144,7 +144,6 @@ class IndividualEditionOverviewComponent extends Component {
     const currentCreatedBy = {
       label: pathOr(null, ['createdBy', 'node', 'name'], individual),
       value: pathOr(null, ['createdBy', 'node', 'id'], individual),
-      relation: pathOr(null, ['createdBy', 'relation', 'id'], individual),
     };
 
     if (currentCreatedBy.value === null) {
@@ -163,7 +162,8 @@ class IndividualEditionOverviewComponent extends Component {
         mutation: individualMutationRelationDelete,
         variables: {
           id: this.props.individual.id,
-          relationId: currentCreatedBy.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {
@@ -188,7 +188,6 @@ class IndividualEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(individual);
 
@@ -213,7 +212,8 @@ class IndividualEditionOverviewComponent extends Component {
         mutation: individualMutationRelationDelete,
         variables: {
           id: this.props.individual.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -227,25 +227,23 @@ class IndividualEditionOverviewComponent extends Component {
       : {
         label: pathOr(null, ['createdBy', 'node', 'name'], individual),
         value: pathOr(null, ['createdBy', 'node', 'id'], individual),
-        relation: pathOr(null, ['createdBy', 'relation', 'id'], individual),
       };
-    const markingDefinitions = pipe(
+    const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(individual);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
-      assoc('markingDefinitions', markingDefinitions),
+      assoc('objectMarking', objectMarking),
       pick([
         'name',
         'description',
         'contact_information',
         'createdBy',
-        'markingDefinitions',
+        'objectMarking',
       ]),
     )(individual);
     return (

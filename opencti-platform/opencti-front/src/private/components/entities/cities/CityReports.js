@@ -76,7 +76,7 @@ const CityReports = createFragmentContainer(CityReportsComponent, {
     fragment CityReports_city on City {
       id
       name
-      aliases
+      x_opencti_aliases
     }
   `,
 });

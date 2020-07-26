@@ -137,7 +137,6 @@ class RegionEditionOverviewComponent extends Component {
     const currentCreatedBy = {
       label: pathOr(null, ['createdBy', 'node', 'name'], region),
       value: pathOr(null, ['createdBy', 'node', 'id'], region),
-      relation: pathOr(null, ['createdBy', 'relation', 'id'], region),
     };
 
     if (currentCreatedBy.value === null) {
@@ -156,7 +155,8 @@ class RegionEditionOverviewComponent extends Component {
         mutation: regionMutationRelationDelete,
         variables: {
           id: this.props.region.id,
-          relationId: currentCreatedBy.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {
@@ -181,7 +181,6 @@ class RegionEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(region);
 
@@ -206,7 +205,8 @@ class RegionEditionOverviewComponent extends Component {
         mutation: regionMutationRelationDelete,
         variables: {
           id: this.props.region.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }

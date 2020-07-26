@@ -93,7 +93,7 @@ const stixDomainObjectMutationRelationDelete = graphql`
   ) {
     stixDomainObjectEdit(id: $id) {
       relationDelete(toId: $toId, relationship_type: $relationship_type) {
-        ... on StixEntity {
+        ... on StixDomainObject {
           objectLabel {
             edges {
               node {

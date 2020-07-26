@@ -114,7 +114,7 @@ const organizationValidation = (t) => Yup.object().shape({
   x_opencti_organization_type: Yup.string().required(
     t('This field is required'),
   ),
-  reliability: Yup.string().required(t('This field is required')),
+  x_opencti_reliability: Yup.string().required(t('This field is required')),
 });
 
 class OrganizationEditionOverviewComponent extends Component {
@@ -232,13 +232,8 @@ class OrganizationEditionOverviewComponent extends Component {
       : {
         label: pathOr(null, ['createdBy', 'node', 'name'], organization),
         value: pathOr(null, ['createdBy', 'node', 'id'], organization),
-        relation: pathOr(
-          null,
-          ['createdBy', 'relation', 'id'],
-          organization,
-        ),
       };
-    const markingDefinitions = pipe(
+    const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
@@ -247,7 +242,7 @@ class OrganizationEditionOverviewComponent extends Component {
     )(organization);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
-      assoc('markingDefinitions', markingDefinitions),
+      assoc('objectMarking', objectMarking),
       pick([
         'name',
         'description',
@@ -347,7 +342,10 @@ class OrganizationEditionOverviewComponent extends Component {
               }}
               containerstyle={{ marginTop: 20, width: '100%' }}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="x_opencti_reliability" />
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_opencti_reliability"
+                />
               }
             >
               <MenuItem value="A">{t('reliability_A')}</MenuItem>

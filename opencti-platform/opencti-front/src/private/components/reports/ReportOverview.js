@@ -43,7 +43,7 @@ class ReportOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Report type')}
           </Typography>
-          <Chip classes={{ root: classes.chip }} label={report.report_class} />
+          <Chip classes={{ root: classes.chip }} label={report.report_types} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -101,7 +101,7 @@ const ReportOverview = createFragmentContainer(ReportOverviewComponent, {
       description
       published
       modified
-      report_class
+      report_types
               createdBy {
           ... on Identity {
             id

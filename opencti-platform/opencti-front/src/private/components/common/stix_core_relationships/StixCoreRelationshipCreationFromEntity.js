@@ -33,10 +33,7 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { dayStartDate, parse } from '../../../../utils/Time';
-import {
-  resolveRelationsTypes,
-  resolveRoles,
-} from '../../../../utils/Relation';
+import { resolveRelationsTypes } from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
