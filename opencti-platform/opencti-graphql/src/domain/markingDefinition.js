@@ -41,6 +41,7 @@ export const markingDefinitionCleanContext = async (user, markingDefinitionId) =
     notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user)
   );
 };
+
 export const markingDefinitionEditContext = async (user, markingDefinitionId, input) => {
   await setEditContext(user, markingDefinitionId, input);
   return loadEntityById(markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) =>

@@ -157,7 +157,7 @@ type Number {
   count: Int!
 }
 
-### INTERFACES
+### INTERFACES & TYPES
 
 ###### INTERNAL
 
