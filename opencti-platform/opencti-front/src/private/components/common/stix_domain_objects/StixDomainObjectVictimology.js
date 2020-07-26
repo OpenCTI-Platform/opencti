@@ -91,7 +91,7 @@ class StixDomainObjectVictimology extends Component {
     const paginationOptions = {
       fromId: stixDomainObjectId,
       toTypes: types,
-      relationType: 'targets',
+      relationship_type: 'targets',
       inferred,
       search: searchTerm,
     };
@@ -196,7 +196,7 @@ class StixDomainObjectVictimology extends Component {
           <EntityStixCoreRelationships
             entityId={stixDomainObjectId}
             targetEntityTypes={types}
-            relationType="targets"
+            relationship_type="targets"
             noBottomBar={true}
             creationIsFrom={true}
             inference={inferred}

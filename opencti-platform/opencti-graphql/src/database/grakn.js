@@ -294,9 +294,9 @@ const getAliasInternalIdFilter = (query, alias) => {
   const keyVars = Array.from(query.matchAll(reg));
   return keyVars.length > 0 ? last(head(keyVars)) : undefined;
 };
-const extractRelationAlias = (alias, role, oppositeAlias, relationType) => {
+const extractRelationAlias = (alias, role, oppositeAlias, relationship_type) => {
   const variables = [];
-  const oppositeRole = role.endsWith('_from') ? `${relationType}_to` : `${relationType}_from`;
+  const oppositeRole = role.endsWith('_from') ? `${relationship_type}_to` : `${relationship_type}_from`;
   // Control the role specified in the query.
   variables.push({ role, alias, forceNatural: false });
   variables.push({ role: oppositeRole, alias: oppositeAlias, forceNatural: false });
@@ -312,7 +312,7 @@ export const extractQueryVars = (query) => {
   const relationsVars = Array.from(query.matchAll(/\(([a-z_\-\s:$]+),([a-z_\-\s:$]+)\)[\s]*isa[\s]*([a-z_-]+)/g));
   const roles = flatten(
     map((r) => {
-      const [, left, right, relationType] = r;
+      const [, left, right, relationship_type] = r;
       const [leftRole, leftAlias] = includes(':', left) ? left.trim().split(':') : [null, left];
       const [rightRole, rightAlias] = includes(':', right) ? right.trim().split(':') : [null, right];
       const lAlias = leftAlias.trim().replace('$', '');
@@ -329,11 +329,11 @@ export const extractQueryVars = (query) => {
       // If no filtering, roles must be fully specified or not specified.
       // If missing left role
       if (leftRole === null && rightRole !== null) {
-        return extractRelationAlias(rAlias, rightRole, lAlias, relationType);
+        return extractRelationAlias(rAlias, rightRole, lAlias, relationship_type);
       }
       // If missing right role
       if (leftRole !== null && rightRole === null) {
-        return extractRelationAlias(lAlias, leftRole, rAlias, relationType);
+        return extractRelationAlias(lAlias, leftRole, rAlias, relationship_type);
       }
       // Else, we have both or nothing
       const roleForRight = rightRole ? rightRole.trim() : undefined;
@@ -861,7 +861,7 @@ export const listEntities = async (entityTypes, searchFields, args = {}) => {
                       ${queryAttributesFields} ${queryAttributesFilters} get;`;
   return listElements(baseQuery, first, offset, orderBy, orderMode, 'elem', null, false, false, args.noCache);
 };
-export const listRelations = async (relationType, args) => {
+export const listRelations = async (relationship_type, args) => {
   const searchFields = ['name', 'description'];
   const {
     first = 1000,
@@ -891,7 +891,7 @@ export const listRelations = async (relationType, args) => {
   const offset = after ? cursorToOffset(after) : 0;
   const isRelationOrderBy = orderBy && includes('.', orderBy);
   // Handle relation type(s)
-  const relationToGet = relationType || 'stix_relation';
+  const relationToGet = relationship_type || 'stix_relation';
   // 0 - Check if we can support the query by Elastic
   const unsupportedOrdering = isRelationOrderBy && last(orderBy.split('.')) !== 'internal_id';
   // Search is not supported because its only search on the relation to.
@@ -1189,11 +1189,11 @@ export const timeSeriesEntities = async (entityType, filters, options) => {
 export const timeSeriesRelations = async (options) => {
   // filters: [ { isRelation: true, type: stix_relation, from: 'role', to: 'role', value: uuid } ]
   //            { isRelation: false, type: report_class, value: string } ]
-  const { startDate, endDate, operation, relationType, field, interval } = options;
+  const { startDate, endDate, operation, relationship_type, field, interval } = options;
   const { fromId, noCache = false, inferred = false } = options;
   // Check if can be supported by ES
   let histogramData;
-  const entityType = relationType ? escape(relationType) : 'stix_relation';
+  const entityType = relationship_type ? escape(relationship_type) : 'stix_relation';
   if (!noCache && operation === 'count' && inferred === false) {
     const filters = [];
     if (fromId) filters.push({ isRelation: false, type: 'connections.internal_id', value: fromId });
@@ -1230,9 +1230,9 @@ export const distributionEntities = async (entityType, filters = [], options) =>
 export const distributionRelations = async (options) => {
   const { fromId, field, operation } = options; // Mandatory fields
   const { limit = 50, order, noCache = false, inferred = false } = options;
-  const { startDate, endDate, relationType, toTypes = [] } = options;
+  const { startDate, endDate, relationship_type, toTypes = [] } = options;
   let distributionData;
-  const entityType = relationType ? escape(relationType) : 'stix_relation';
+  const entityType = relationship_type ? escape(relationship_type) : 'stix_relation';
   // Using elastic can only be done if the distribution is a count on types
   if (!noCache && field === 'entity_type' && operation === 'count' && inferred === false) {
     distributionData = await elAggregationRelationsCount(entityType, startDate, endDate, toTypes, fromId);
@@ -1259,10 +1259,10 @@ export const distributionRelations = async (options) => {
 };
 export const distributionEntitiesThroughRelations = async (options) => {
   const { limit = 10, order, inferred = false } = options;
-  const { relationType, remoteRelationType, toType, fromId, field, operation } = options;
-  let query = `match $rel($from, $to) isa ${relationType}; $to isa ${toType};`;
+  const { relationship_type, remoterelationship_type, toType, fromId, field, operation } = options;
+  let query = `match $rel($from, $to) isa ${relationship_type}; $to isa ${toType};`;
   query += `$from has internal_id "${escapeString(fromId)}";`;
-  query += `$rel2($to, $to2) isa ${remoteRelationType};`;
+  query += `$rel2($to, $to2) isa ${remoterelationship_type};`;
   query += `$to2 has ${escape(field)} $g; get; group $g; ${escape(operation)};`;
   const distributionData = await graknTimeSeries(query, 'label', 'value', inferred);
   // Take a maximum amount of distribution depending on the ordering.
@@ -1957,7 +1957,7 @@ export const deleteRelationById = async (user, relationId, type, options = {}) =
   }
   return relationId;
 };
-export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationType, scopeType) => {
+export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationship_type, scopeType) => {
   /* istanbul ignore if */
   if (isNil(scopeType)) {
     throw FunctionalError(`You need to specify a scope type when deleting a relation with from and to`);
@@ -1966,7 +1966,7 @@ export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationTyp
   const etoId = escapeString(toId);
   const read = `match $from has internal_id "${efromId}"; 
     $to has internal_id "${etoId}"; 
-    $rel($from, $to) isa ${relationType}; get;`;
+    $rel($from, $to) isa ${relationship_type}; get;`;
   const relationsToDelete = await find(read, ['rel']);
   const relationsIds = map((r) => r.rel.id, relationsToDelete);
   for (let i = 0; i < relationsIds.length; i += 1) {

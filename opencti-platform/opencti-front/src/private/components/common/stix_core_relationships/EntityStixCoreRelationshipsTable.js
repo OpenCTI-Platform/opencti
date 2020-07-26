@@ -49,7 +49,7 @@ const entityStixCoreRelationshipsTableStixCoreRelationshipDistributionQuery = gr
   query EntityStixCoreRelationshipsTableStixCoreRelationshipDistributionQuery(
     $fromId: String!
     $toTypes: [String]
-    $relationType: String
+    $relationship_type: String
     $inferred: Boolean
     $startDate: DateTime
     $endDate: DateTime
@@ -59,7 +59,7 @@ const entityStixCoreRelationshipsTableStixCoreRelationshipDistributionQuery = gr
     stixCoreRelationshipsDistribution(
       fromId: $fromId
       toTypes: $toTypes
-      relationType: $relationType
+      relationship_type: $relationship_type
       inferred: $inferred
       startDate: $startDate
       endDate: $endDate
@@ -79,7 +79,7 @@ class EntityStixCoreRelationshipsTable extends Component {
       classes,
       entityId,
       entityType,
-      relationType,
+      relationship_type,
       field,
       inferred,
       startDate,
@@ -91,7 +91,7 @@ class EntityStixCoreRelationshipsTable extends Component {
       inferred: inferred || false,
       startDate: startDate || null,
       endDate: endDate || null,
-      relationType,
+      relationship_type,
       field,
       operation: 'count',
     };
@@ -227,7 +227,7 @@ EntityStixCoreRelationshipsTable.propTypes = {
   variant: PropTypes.string,
   title: PropTypes.string,
   entityId: PropTypes.string,
-  relationType: PropTypes.string,
+  relationship_type: PropTypes.string,
   entityType: PropTypes.string,
   inferred: PropTypes.bool,
   startDate: PropTypes.string,

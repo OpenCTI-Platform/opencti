@@ -59,7 +59,7 @@ class CountryKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={country.id}
-              relationType="localization"
+              relationship_type="localization"
               targetEntityTypes={['City']}
               entityLink={link}
               creationIsFrom={false}
@@ -73,7 +73,7 @@ class CountryKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={country.id}
-              relationType="localization"
+              relationship_type="localization"
               targetEntityTypes={['Organization']}
               entityLink={link}
               creationIsFrom={false}
@@ -87,7 +87,7 @@ class CountryKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={country.id}
-              relationType="targets"
+              relationship_type="targets"
               targetEntityTypes={[
                 'Country',
                 'Threat-Actor',

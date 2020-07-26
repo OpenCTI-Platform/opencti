@@ -87,7 +87,7 @@ export const indicatorEntitiesLinesQuery = graphql`
   query IndicatorEntitiesLinesPaginationQuery(
     $fromId: String
     $inferred: Boolean
-    $relationType: String
+    $relationship_type: String
     $firstSeenStart: DateTime
     $firstSeenStop: DateTime
     $lastSeenStart: DateTime
@@ -103,7 +103,7 @@ export const indicatorEntitiesLinesQuery = graphql`
       @arguments(
         fromId: $fromId
         inferred: $inferred
-        relationType: $relationType
+        relationship_type: $relationship_type
         firstSeenStart: $firstSeenStart
         firstSeenStop: $firstSeenStop
         lastSeenStart: $lastSeenStart
@@ -126,7 +126,7 @@ export default createPaginationContainer(
         @argumentDefinitions(
           fromId: { type: "String" }
           inferred: { type: "Boolean" }
-          relationType: { type: "String" }
+          relationship_type: { type: "String" }
           firstSeenStart: { type: "DateTime" }
           firstSeenStop: { type: "DateTime" }
           lastSeenStart: { type: "DateTime" }
@@ -144,7 +144,7 @@ export default createPaginationContainer(
         stixCoreRelationships(
           fromId: $fromId
           inferred: $inferred
-          relationType: $relationType
+          relationship_type: $relationship_type
           firstSeenStart: $firstSeenStart
           firstSeenStop: $firstSeenStop
           lastSeenStart: $lastSeenStart
@@ -186,7 +186,7 @@ export default createPaginationContainer(
         fromId: fragmentVariables.fromId,
         toTypes: fragmentVariables.toTypes,
         inferred: fragmentVariables.inferred,
-        relationType: fragmentVariables.relationType,
+        relationship_type: fragmentVariables.relationship_type,
         firstSeenStart: fragmentVariables.firstSeenStart,
         firstSeenStop: fragmentVariables.firstSeenStop,
         lastSeenStart: fragmentVariables.lastSeenStart,

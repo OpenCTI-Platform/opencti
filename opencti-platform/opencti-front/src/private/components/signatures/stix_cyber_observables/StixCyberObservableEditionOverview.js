@@ -92,10 +92,10 @@ const stixCyberObservableMutationRelationDelete = graphql`
   mutation StixCyberObservableEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: String!
-    $relationType: String!
+    $relationship_type: String!
   ) {
     stixCyberObservableEdit(id: $id) {
-      relationDelete(toId: $toId, relationType: $relationType) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...StixCyberObservableEditionOverview_stixCyberObservable
       }
     }
@@ -155,10 +155,8 @@ class StixCyberObservableEditionOverviewComponent extends Component {
         variables: {
           id: this.props.stixCyberObservable.id,
           input: {
-            fromRole: 'so',
             toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });

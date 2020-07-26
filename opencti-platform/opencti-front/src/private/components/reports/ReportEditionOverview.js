@@ -95,10 +95,10 @@ const reportMutationRelationDelete = graphql`
   mutation ReportEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: String!
-    $relationType: String!
+    $relationship_type: String!
   ) {
     reportEdit(id: $id) {
-      relationDelete(toId: $toId, relationType: $relationType) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...ReportEditionOverview_report
       }
     }
@@ -155,10 +155,8 @@ class ReportEditionOverviewComponent extends Component {
         variables: {
           id: this.props.report.id,
           input: {
-            fromRole: 'so',
             toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });

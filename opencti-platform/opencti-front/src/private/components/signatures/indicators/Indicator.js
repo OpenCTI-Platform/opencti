@@ -54,7 +54,7 @@ class IndicatorComponent extends Component {
           <Grid item={true} xs={7}>
             <IndicatorEntities
               entityId={indicator.id}
-              relationType="indicates"
+              relationship_type="indicates"
             />
           </Grid>
           <Grid item={true} xs={5}>

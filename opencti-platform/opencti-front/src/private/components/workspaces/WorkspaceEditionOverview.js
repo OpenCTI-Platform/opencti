@@ -91,10 +91,10 @@ const workspaceMutationRelationDelete = graphql`
   mutation WorkspaceEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: String!
-    $relationType: String!
+    $relationship_type: String!
   ) {
     workspaceEdit(id: $id) {
-      relationDelete(toId: $toId, relationType: $relationType) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...WorkspaceEditionOverview_workspace
       }
     }

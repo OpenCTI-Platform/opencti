@@ -235,14 +235,11 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const roles = resolveRoles(values.relationship_type);
     const fromEntityId = this.props.entityId;
     const toEntityId = this.state.targetEntity.id;
     const finalValues = pipe(
       assoc('fromId', fromEntityId),
-      assoc('fromRole', this.props.isFrom ? roles.fromRole : roles.toRole),
       assoc('toId', toEntityId),
-      assoc('toRole', this.props.isFrom ? roles.toRole : roles.fromRole),
       assoc('first_seen', parse(values.first_seen).format()),
       assoc('last_seen', parse(values.last_seen).format()),
     )(values);

@@ -277,7 +277,7 @@ export const stixDomainObjectDeleteRelation = async (
   stixDomainObjectId,
   relationId = null,
   toId = null,
-  relationType = 'stix_relation_embedded'
+  relationship_type = 'stix_relation_embedded'
 ) => {
   const stixDomainObject = await loadEntityById(stixDomainObjectId, 'Stix-Domain-Object');
   if (!stixDomainObject) {
@@ -298,11 +298,11 @@ export const stixDomainObjectDeleteRelation = async (
     if (
       stixDomainObject.entity_type === 'user' &&
       !isNil(stixDomainObject.external) &&
-      ![RELATION_OBJECT_LABEL, RELATION_CREATED_BY, RELATION_OBJECT_MARKING].includes(relationType)
+      ![RELATION_OBJECT_LABEL, RELATION_CREATED_BY, RELATION_OBJECT_MARKING].includes(relationship_type)
     ) {
       throw ForbiddenAccess();
     }
-    await deleteRelationsByFromAndTo(user, stixDomainObjectId, toId, relationType, 'relation');
+    await deleteRelationsByFromAndTo(user, stixDomainObjectId, toId, relationship_type, 'relation');
   } else {
     throw FunctionalError('Cannot delete the relation, missing relationId or toId');
   }

@@ -329,11 +329,11 @@ export const userAddRelation = async (user, userId, input) => {
   return notify(BUS_TOPICS.stixDomainObject.EDIT_TOPIC, data, user);
 };
 
-export const userDeleteRelation = async (user, userId, relationId = null, toId = null, relationType = 'relation') => {
+export const userDeleteRelation = async (user, userId, relationId = null, toId = null, relationship_type = 'relation') => {
   if (relationId) {
     await deleteRelationById(user, relationId, 'relation');
   } else if (toId) {
-    await deleteRelationsByFromAndTo(user, userId, toId, relationType, 'relation');
+    await deleteRelationsByFromAndTo(user, userId, toId, relationship_type, 'relation');
   } else {
     throw FunctionalError('Cannot delete the relation, missing relationId or toId');
   }

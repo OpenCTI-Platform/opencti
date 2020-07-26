@@ -59,7 +59,7 @@ class SectorKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={sector.id}
-              relationType="gathering"
+              relationship_type="gathering"
               targetEntityTypes={['Organization']}
               entityLink={link}
               creationIsFrom={false}
@@ -73,7 +73,7 @@ class SectorKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={sector.id}
-              relationType="targets"
+              relationship_type="targets"
               targetEntityTypes={['Intrusion-Set']}
               entityLink={link}
               creationIsFrom={false}
@@ -87,7 +87,7 @@ class SectorKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={sector.id}
-              relationType="targets"
+              relationship_type="targets"
               targetEntityTypes={['Campaign']}
               entityLink={link}
               creationIsFrom={false}
@@ -101,7 +101,7 @@ class SectorKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={sector.id}
-              relationType="targets"
+              relationship_type="targets"
               targetEntityTypes={['XOpenctiIncident']}
               entityLink={link}
               creationIsFrom={false}
@@ -115,7 +115,7 @@ class SectorKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={sector.id}
-              relationType="targets"
+              relationship_type="targets"
               targetEntityTypes={['Malware']}
               entityLink={link}
               creationIsFrom={false}

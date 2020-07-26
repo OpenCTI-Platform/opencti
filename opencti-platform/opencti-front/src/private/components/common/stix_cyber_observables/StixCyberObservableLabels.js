@@ -89,10 +89,10 @@ const StixCyberObservableMutationRelationDelete = graphql`
   mutation StixCyberObservableLabelsRelationDeleteMutation(
     $id: ID!
     $toId: String
-    $relationType: String
+    $relationship_type: String
   ) {
     stixCyberObservableEdit(id: $id) {
-      relationDelete(toId: $toId, relationType: $relationType) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ... on StixEntity {
           labels {
             edges {
@@ -171,10 +171,8 @@ class StixCyberObservableLabels extends Component {
       variables: {
         id: this.props.id,
         input: {
-          fromRole: 'so',
           toIds: labelsIds,
-          toRole: 'labelging',
-          through: 'labelged',
+          relationship_type: 'object-label',
         },
       },
       setSubmitting,
@@ -192,7 +190,7 @@ class StixCyberObservableLabels extends Component {
       variables: {
         id: this.props.id,
         toId: labelId,
-        relationType: 'labelged',
+        relationship_type: 'labelged',
       },
     });
   }

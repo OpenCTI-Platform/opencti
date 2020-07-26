@@ -52,7 +52,7 @@ class StixDomainObjectKillChain extends Component {
     const paginationOptions = {
       fromId: stixDomainObjectId,
       toTypes: ['Attack-Pattern'],
-      relationType: 'uses',
+      relationship_type: 'uses',
       inferred,
       search: searchTerm,
     };

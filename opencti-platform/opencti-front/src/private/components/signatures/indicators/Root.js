@@ -73,7 +73,7 @@ class RootIndicator extends Component {
         <TopBar me={me || null} />
         <QueryRenderer
           query={indicatorQuery}
-          variables={{ id: indicatorId, relationType: 'indicates' }}
+          variables={{ id: indicatorId, relationship_type: 'indicates' }}
           render={({ props }) => {
             if (props && props.indicator) {
               return (

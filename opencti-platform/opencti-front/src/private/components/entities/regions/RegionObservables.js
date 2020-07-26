@@ -62,7 +62,7 @@ class RegionObservablesComponent extends Component {
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityStixCyberObservables
                 entityId={region.id}
-                relationType="localization"
+                relationship_type="localization"
                 entityLink={link}
                 {...routeProps}
               />

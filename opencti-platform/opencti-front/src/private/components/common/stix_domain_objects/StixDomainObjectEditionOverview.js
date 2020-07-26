@@ -126,10 +126,10 @@ const stixDomainObjectMutationRelationDelete = graphql`
   mutation StixDomainObjectEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: String!
-    $relationType: String!
+    $relationship_type: String!
   ) {
     stixDomainObjectEdit(id: $id) {
-      relationDelete(toId: $toId, relationType: $relationType) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...StixDomainObjectEditionOverview_stixDomainObject
       }
     }
@@ -171,10 +171,8 @@ class StixDomainObjectEditionContainer extends Component {
         variables: {
           id: stixDomainObject.id,
           input: {
-            fromRole: 'so',
             toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });
@@ -221,10 +219,8 @@ class StixDomainObjectEditionContainer extends Component {
         variables: {
           id: stixDomainObject.id,
           input: {
-            fromRole: 'so',
-            toRole: 'marking',
             toId: head(added).value,
-            through: 'object_marking_refs',
+            relationship_type: 'object-marking',
           },
         },
       });

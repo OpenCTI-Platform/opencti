@@ -89,10 +89,10 @@ const countryMutationRelationDelete = graphql`
   mutation CountryEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: String!
-    $relationType: String!
+    $relationship_type: String!
   ) {
     countryEdit(id: $id) {
-      relationDelete(toId: $toId, relationType: $relationType) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...CountryEditionOverview_country
       }
     }
@@ -146,10 +146,8 @@ class CountryEditionOverviewComponent extends Component {
         variables: {
           id: this.props.country.id,
           input: {
-            fromRole: 'so',
             toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });

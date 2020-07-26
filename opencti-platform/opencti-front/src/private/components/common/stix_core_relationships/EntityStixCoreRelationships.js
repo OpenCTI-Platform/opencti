@@ -152,7 +152,7 @@ class EntityStixCoreRelationships extends Component {
       targetEntityTypes,
       entityId,
       role,
-      relationType,
+      relationship_type,
       creationIsFrom,
       noBottomBar,
       inference,
@@ -176,7 +176,7 @@ class EntityStixCoreRelationships extends Component {
       fromRole: role || null,
       toTypes: toType === 'All' ? targetEntityTypes : [toType],
       inferred: !!(inferred || inference),
-      relationType,
+      relationship_type,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
@@ -336,7 +336,7 @@ class EntityStixCoreRelationships extends Component {
             isFrom={creationIsFrom}
             paddingRight={true}
             targetEntityTypes={targetEntityTypes}
-            allowedRelationshipTypes={[relationType]}
+            allowedRelationshipTypes={[relationship_type]}
             paginationOptions={paginationOptions}
           />
         </Security>
@@ -350,7 +350,7 @@ EntityStixCoreRelationships.propTypes = {
   role: PropTypes.string,
   targetEntityTypes: PropTypes.array,
   entityLink: PropTypes.string,
-  relationType: PropTypes.string,
+  relationship_type: PropTypes.string,
   classes: PropTypes.object,
   reportClass: PropTypes.string,
   t: PropTypes.func,

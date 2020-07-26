@@ -48,10 +48,10 @@ const groupMutationRelationDelete = graphql`
   mutation GroupEditionPermissionsMarkingDefinitionsRelationDeleteMutation(
     $id: ID!
     $toId: String!
-    $relationType: String!
+    $relationship_type: String!
   ) {
     groupEdit(id: $id) {
-      relationDelete(toId: $toId, relationType: $relationType) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...GroupEditionPermissions_group
       }
     }

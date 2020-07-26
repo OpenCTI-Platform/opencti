@@ -612,7 +612,7 @@ export const stixDomainObjectVictimologySectorsStixCoreRelationshipsQuery = grap
   query StixDomainObjectVictimologySectorsStixCoreRelationshipsQuery(
     $fromId: String
     $toTypes: [String]
-    $relationType: String
+    $relationship_type: String
     $inferred: Boolean
     $first: Int
   ) {
@@ -628,7 +628,7 @@ const StixDomainObjectVictimologySectorsSectorLines = createRefetchContainer(
         stixCoreRelationships(
           fromId: $fromId
           toTypes: $toTypes
-          relationType: $relationType
+          relationship_type: $relationship_type
           inferred: $inferred
           first: $first
         ) {

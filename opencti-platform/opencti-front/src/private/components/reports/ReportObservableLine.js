@@ -116,7 +116,7 @@ class ReportObservableLineComponent extends Component {
           <ReportRefPopover
             reportId={reportId}
             toId={node.id}
-            relationType="observable_refs"
+            relationship_type="observable_refs"
             paginationKey="Pagination_observableRefs"
             paginationOptions={paginationOptions}
           />

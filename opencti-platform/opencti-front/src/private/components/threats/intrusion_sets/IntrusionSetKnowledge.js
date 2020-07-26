@@ -61,7 +61,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={intrusionSet.id}
-              relationType="attributed-to"
+              relationship_type="attributed-to"
               targetEntityTypes={['Threat-Actor', 'Organization', 'User']}
               entityLink={link}
               creationIsFrom={true}
@@ -86,7 +86,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={intrusionSet.id}
-              relationType="attributed-to"
+              relationship_type="attributed-to"
               targetEntityTypes={['Campaign']}
               entityLink={link}
               creationIsFrom={false}
@@ -100,7 +100,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={intrusionSet.id}
-              relationType="attributed-to"
+              relationship_type="attributed-to"
               targetEntityTypes={['XOpenctiIncident']}
               entityLink={link}
               creationIsFrom={false}
@@ -114,7 +114,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={intrusionSet.id}
-              relationType="uses"
+              relationship_type="uses"
               targetEntityTypes={['Malware']}
               entityLink={link}
               creationIsFrom={true}
@@ -139,7 +139,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={intrusionSet.id}
-              relationType="uses"
+              relationship_type="uses"
               targetEntityTypes={['Tool']}
               entityLink={link}
               creationIsFrom={true}
@@ -153,7 +153,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={intrusionSet.id}
-              relationType="targets"
+              relationship_type="targets"
               targetEntityTypes={['Vulnerability']}
               entityLink={link}
               creationIsFrom={true}

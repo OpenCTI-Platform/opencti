@@ -92,10 +92,10 @@ const campaignMutationRelationDelete = graphql`
   mutation CampaignEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: String!
-    $relationType: String!
+    $relationship_type: String!
   ) {
     campaignEdit(id: $id) {
-      relationDelete(toId: $toId, relationType: $relationType) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...CampaignEditionOverview_campaign
       }
     }
@@ -152,10 +152,8 @@ class CampaignEditionOverviewComponent extends Component {
         variables: {
           id: this.props.campaign.id,
           input: {
-            fromRole: 'so',
             toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });

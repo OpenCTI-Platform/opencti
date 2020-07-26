@@ -337,7 +337,7 @@ export const stixDomainObjectKillChainLinesStixCoreRelationshipsQuery = graphql`
   query StixDomainObjectKillChainLinesStixCoreRelationshipsQuery(
     $fromId: String
     $toTypes: [String]
-    $relationType: String
+    $relationship_type: String
     $inferred: Boolean
     $first: Int
   ) {
@@ -353,7 +353,7 @@ const StixDomainObjectKillChainLines = createRefetchContainer(
         stixCoreRelationships(
           fromId: $fromId
           toTypes: $toTypes
-          relationType: $relationType
+          relationship_type: $relationship_type
           inferred: $inferred
           first: $first
         ) {

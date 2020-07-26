@@ -62,7 +62,7 @@ const entityXOpenctiIncidentsTableTimeXOpenctiIncidentsTimeSeriesQuery = graphql
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
-    $relationType: String!
+    $relationship_type: String!
   ) {
     xOpenctiIncidentsTimeSeries(
       objectId: $objectId
@@ -71,7 +71,7 @@ const entityXOpenctiIncidentsTableTimeXOpenctiIncidentsTimeSeriesQuery = graphql
       startDate: $startDate
       endDate: $endDate
       interval: $interval
-      relationType: $relationType
+      relationship_type: $relationship_type
     ) {
       date
       value
@@ -95,7 +95,7 @@ class EntityXOpenctiXOpenctiIncidentsTableTime extends Component {
       md,
       yd,
       entityId,
-      relationType,
+      relationship_type,
       variant,
       classes,
       startDate,
@@ -110,7 +110,7 @@ class EntityXOpenctiXOpenctiIncidentsTableTime extends Component {
       startDate: finalStartDate,
       endDate: variant === 'explore' && endDate ? endDate : now(),
       interval: this.state.interval,
-      relationType: relationType || 'targets',
+      relationship_type: relationship_type || 'targets',
     };
     return (
       <QueryRenderer
@@ -296,7 +296,7 @@ EntityXOpenctiXOpenctiIncidentsTableTime.propTypes = {
   yd: PropTypes.func,
   configuration: PropTypes.object,
   handleOpenConfig: PropTypes.func,
-  relationType: PropTypes.string,
+  relationship_type: PropTypes.string,
 };
 
 export default compose(

@@ -84,7 +84,7 @@ class CampaignIndicatorsComponent extends Component {
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityIndicators
                 entityId={campaign.id}
-                relationType="indicates"
+                relationship_type="indicates"
                 entityLink={link}
                 onChangeOpenExports={(openExports) => this.setState({ withPadding: openExports })
                 }

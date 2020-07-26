@@ -86,10 +86,10 @@ const cityMutationRelationDelete = graphql`
   mutation CityEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: String!
-    $relationType: String!
+    $relationship_type: String!
   ) {
     cityEdit(id: $id) {
-      relationDelete(toId: $toId, relationType: $relationType) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...CityEditionOverview_city
       }
     }
@@ -143,10 +143,8 @@ class CityEditionOverviewComponent extends Component {
         variables: {
           id: this.props.city.id,
           input: {
-            fromRole: 'so',
             toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });

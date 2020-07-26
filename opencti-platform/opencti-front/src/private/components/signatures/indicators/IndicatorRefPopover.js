@@ -42,7 +42,7 @@ Transition.displayName = 'TransitionSlide';
 const indicatorRefPopoverDeletionMutation = graphql`
   mutation IndicatorRefPopoverDeletionMutation($id: ID!, $relationId: ID!) {
     indicatorEdit(id: $id) {
-      relationDelete(toId: $toId, relationType: $relationType) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...IndicatorObservables_indicator
       }
     }

@@ -135,7 +135,7 @@ StixCoreRelationshipStixCoreRelationshipsLinesContainer.propTypes = {
 export const stixCoreRelationshipStixCoreRelationshipsLinesQuery = graphql`
   query StixCoreRelationshipStixCoreRelationshipsLinesQuery(
     $fromId: String
-    $relationType: String
+    $relationship_type: String
     $count: Int!
     $cursor: ID
     $orderBy: StixCoreRelationshipsOrdering
@@ -144,7 +144,7 @@ export const stixCoreRelationshipStixCoreRelationshipsLinesQuery = graphql`
     ...StixCoreRelationshipStixCoreRelationshipsLines_data
       @arguments(
         fromId: $fromId
-        relationType: $relationType
+        relationship_type: $relationship_type
         count: $count
         cursor: $cursor
         orderBy: $orderBy
@@ -160,7 +160,7 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
       fragment StixCoreRelationshipStixCoreRelationshipsLines_data on Query
         @argumentDefinitions(
           fromId: { type: "String" }
-          relationType: { type: "String" }
+          relationship_type: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
           orderBy: {
@@ -171,7 +171,7 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
         ) {
         stixCoreRelationships(
           fromId: $fromId
-          relationType: $relationType
+          relationship_type: $relationship_type
           first: $count
           after: $cursor
           orderBy: $orderBy
@@ -272,7 +272,7 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         fromId: fragmentVariables.fromId,
-        relationType: fragmentVariables.relationType,
+        relationship_type: fragmentVariables.relationship_type,
         count,
         cursor,
         orderBy: fragmentVariables.orderBy,

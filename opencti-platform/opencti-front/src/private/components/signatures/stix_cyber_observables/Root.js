@@ -71,7 +71,7 @@ class RootStixCyberObservable extends Component {
         <TopBar me={me || null} />
         <QueryRenderer
           query={stixCyberObservableQuery}
-          variables={{ id: observableId, relationType: 'indicates' }}
+          variables={{ id: observableId, relationship_type: 'indicates' }}
           render={({ props }) => {
             if (props && props.stixCyberObservable) {
               return (

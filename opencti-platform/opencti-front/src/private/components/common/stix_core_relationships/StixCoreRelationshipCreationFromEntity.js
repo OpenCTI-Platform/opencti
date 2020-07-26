@@ -54,7 +54,7 @@ import { attributesQuery } from '../../settings/attributes/AttributesLines';
 import Loader from '../../../../components/Loader';
 import KillChainPhasesField from '../form/KillChainPhasesField';
 import CreatedByField from '../form/CreatedByField';
-import objectMarkingField from '../form/ObjectMarkingField';
+import ObjectMarkingField from '../form/ObjectMarkingField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -277,19 +277,16 @@ class StixCoreRelationshipCreationFromEntity extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const { isFrom, entityId } = this.props;
     const { targetEntity } = this.state;
-    const roles = resolveRoles(values.relationship_type);
     const fromEntityId = isFrom ? entityId : targetEntity.id;
     const toEntityId = isFrom ? targetEntity.id : entityId;
     const finalValues = pipe(
       assoc('fromId', fromEntityId),
-      assoc('fromRole', roles.fromRole),
       assoc('toId', toEntityId),
-      assoc('toRole', roles.toRole),
-      assoc('first_seen', parse(values.first_seen).format()),
-      assoc('last_seen', parse(values.last_seen).format()),
+      assoc('start_time', parse(values.start_time).format()),
+      assoc('stop_time', parse(values.stop_time).format()),
       assoc('createdBy', values.createdBy.value),
       assoc('killChainPhases', pluck('value', values.killChainPhases)),
-      assoc('markingDefinitions', pluck('value', values.objectMarking)),
+      assoc('objectMarking', pluck('value', values.objectMarking)),
     )(values);
     commitMutation({
       mutation: stixCoreRelationshipCreationFromEntityMutation,
@@ -752,7 +749,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                         style={{ marginTop: 20, width: '100%' }}
                         setFieldValue={setFieldValue}
                       />
-                      <objectMarkingField
+                      <ObjectMarkingField
                         name="objectMarking"
                         style={{ marginTop: 20, width: '100%' }}
                       />

@@ -61,14 +61,14 @@ class IntrusionSetComponent extends Component {
           <Grid item={true} xs={4}>
             <EntityCampaignsChart
               entityId={intrusionSet.id}
-              relationType="attributed-to"
+              relationship_type="attributed-to"
             />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityStixCoreRelationshipsDonut
               entityId={intrusionSet.id}
               entityType="Indicator"
-              relationType="indicates"
+              relationship_type="indicates"
               field="x_opencti_main_observable_type"
             />
           </Grid>

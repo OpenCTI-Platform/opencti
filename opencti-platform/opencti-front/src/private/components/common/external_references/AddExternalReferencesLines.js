@@ -54,10 +54,10 @@ export const externalReferenceMutationRelationDelete = graphql`
   mutation AddExternalReferencesLinesRelationDeleteMutation(
     $id: ID!
     $toId: String!
-    $relationType: String!
+    $relationship_type: String!
   ) {
     externalReferenceEdit(id: $id) {
-      relationDelete(toId: $toId, relationType: $relationType) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         id
       }
     }
@@ -108,10 +108,8 @@ class AddExternalReferencesLinesContainer extends Component {
       });
     } else {
       const input = {
-        fromRole: 'so',
         toId: externalReference.id,
-        toRole: 'external_reference',
-        through: 'external_references',
+        relationship_type: 'external-reference',
       };
       commitMutation({
         mutation: externalReferenceLinesMutationRelationAdd,

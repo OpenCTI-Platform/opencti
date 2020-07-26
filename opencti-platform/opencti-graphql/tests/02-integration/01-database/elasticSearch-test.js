@@ -272,10 +272,10 @@ describe('Elasticsearch relation reconstruction', () => {
   const CONN_MARKING_ID = '63309927-48f6-45c2-aee0-4d92b403cee5';
   const CONN_MARKING_GRAKN_ID = 'V409696';
   const CONN_MARKING_ROLE = 'marking';
-  const buildRelationConcept = (relationType) => ({
+  const buildRelationConcept = (relationship_type) => ({
     internal_id_key: RELATION_ID,
     entity_type: 'relation_embedded',
-    relationship_type: relationType,
+    relationship_type: relationship_type,
     connections: [
       {
         internal_id_key: CONN_MALWARE_ID,

@@ -134,7 +134,7 @@ export const simpleEntityStixCoreRelationshipsLinesQuery = graphql`
     $fromId: String
     $toTypes: [String]
     $inferred: Boolean
-    $relationType: String
+    $relationship_type: String
     $firstSeenStart: DateTime
     $firstSeenStop: DateTime
     $lastSeenStart: DateTime
@@ -148,7 +148,7 @@ export const simpleEntityStixCoreRelationshipsLinesQuery = graphql`
         fromId: $fromId
         toTypes: $toTypes
         inferred: $inferred
-        relationType: $relationType
+        relationship_type: $relationship_type
         firstSeenStart: $firstSeenStart
         firstSeenStop: $firstSeenStop
         lastSeenStart: $lastSeenStart
@@ -169,7 +169,7 @@ const SimpleEntityStixCoreRelationshipsLines = createPaginationContainer(
           fromId: { type: "String" }
           toTypes: { type: "[String]" }
           inferred: { type: "Boolean" }
-          relationType: { type: "String" }
+          relationship_type: { type: "String" }
           firstSeenStart: { type: "DateTime" }
           firstSeenStop: { type: "DateTime" }
           lastSeenStart: { type: "DateTime" }
@@ -182,7 +182,7 @@ const SimpleEntityStixCoreRelationshipsLines = createPaginationContainer(
           fromId: $fromId
           toTypes: $toTypes
           inferred: $inferred
-          relationType: $relationType
+          relationship_type: $relationship_type
           firstSeenStart: $firstSeenStart
           firstSeenStop: $firstSeenStop
           lastSeenStart: $lastSeenStart
@@ -227,7 +227,7 @@ const SimpleEntityStixCoreRelationshipsLines = createPaginationContainer(
         fromId: fragmentVariables.fromId,
         toTypes: fragmentVariables.toTypes,
         inferred: fragmentVariables.inferred,
-        relationType: fragmentVariables.relationType,
+        relationship_type: fragmentVariables.relationship_type,
         firstSeenStart: fragmentVariables.firstSeenStart,
         firstSeenStop: fragmentVariables.firstSeenStop,
         lastSeenStart: fragmentVariables.lastSeenStart,

@@ -92,10 +92,10 @@ const intrusionSetMutationRelationDelete = graphql`
   mutation IntrusionSetEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: String!
-    $relationType: String!
+    $relationship_type: String!
   ) {
     intrusionSetEdit(id: $id) {
-      relationDelete(toId: $toId, relationType: $relationType) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...IntrusionSetEditionOverview_intrusionSet
       }
     }
@@ -152,10 +152,8 @@ class IntrusionSetEditionOverviewComponent extends Component {
         variables: {
           id: this.props.intrusionSet.id,
           input: {
-            fromRole: 'so',
             toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });

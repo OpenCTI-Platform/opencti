@@ -39,7 +39,7 @@ const TIMESERIES_QUERY = gql`
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
-    $relationType: String
+    $relationship_type: String
     $inferred: Boolean
   ) {
     campaignsTimeSeries(
@@ -49,7 +49,7 @@ const TIMESERIES_QUERY = gql`
       startDate: $startDate
       endDate: $endDate
       interval: $interval
-      relationType: $relationType
+      relationship_type: $relationship_type
       inferred: $inferred
     ) {
       date
@@ -143,7 +143,7 @@ describe('Campaign resolver standard behavior', () => {
         startDate: '2020-01-01T00:00:00+00:00',
         endDate: '2021-01-01T00:00:00+00:00',
         interval: 'month',
-        relationType: 'attributed-to',
+        relationship_type: 'attributed-to',
       },
     });
     expect(queryResult.data.campaignsTimeSeries.length).toEqual(13);

@@ -91,10 +91,10 @@ const stixCoreObjectNoteMutationRelationDelete = graphql`
   mutation StixCoreObjectNoteEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: String!
-    $relationType: String!
+    $relationship_type: String!
   ) {
     noteEdit(id: $id) {
-      relationDelete(toId: $toId, relationType: $relationType) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...StixCoreObjectNoteEditionOverview_note
       }
     }

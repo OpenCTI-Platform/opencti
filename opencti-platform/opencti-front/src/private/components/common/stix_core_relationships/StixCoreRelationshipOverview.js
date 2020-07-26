@@ -387,7 +387,7 @@ class StixCoreRelationshipContainer extends Component {
                 level={
                   stixCoreRelationship.inferred
                     ? 99
-                    : stixCoreRelationship.weight
+                    : stixCoreRelationship.confidence
                 }
               />
               <Typography
@@ -395,21 +395,21 @@ class StixCoreRelationshipContainer extends Component {
                 gutterBottom={true}
                 style={{ marginTop: 20 }}
               >
-                {t('First seen')}
+                {t('Start time')}
               </Typography>
               {stixCoreRelationship.inferred
                 ? '-'
-                : fld(stixCoreRelationship.first_seen)}
+                : fld(stixCoreRelationship.start_time)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
                 style={{ marginTop: 20 }}
               >
-                {t('Last seen')}
+                {t('Stop time')}
               </Typography>
               {stixCoreRelationship.inferred
                 ? '-'
-                : fld(stixCoreRelationship.last_seen)}
+                : fld(stixCoreRelationship.stop_time)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -513,11 +513,10 @@ const StixCoreRelationshipOverview = createFragmentContainer(
         id
         relationship_type
         weight
-        first_seen
-        last_seen
+        start_time
+        stop_time
         description
         inferred
-        role_played
         fromRole
         toRole
         created_at

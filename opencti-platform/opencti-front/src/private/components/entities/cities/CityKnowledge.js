@@ -59,7 +59,7 @@ class CityKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationType="localization"
+              relationship_type="localization"
               targetEntityTypes={['Country']}
               entityLink={link}
               creationIsFrom={false}
@@ -73,7 +73,7 @@ class CityKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationType="targets"
+              relationship_type="targets"
               targetEntityTypes={[
                 'Country',
                 'Threat-Actor',
@@ -104,7 +104,7 @@ const CityKnowledge = createFragmentContainer(CityKnowledgeComponent, {
     fragment CityKnowledge_city on City {
       id
       name
-      aliases
+      x_opencti_aliases
     }
   `,
 });

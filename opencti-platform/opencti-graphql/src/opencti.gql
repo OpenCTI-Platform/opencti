@@ -598,6 +598,7 @@ define
     has last_seen,
     has attribute_count,
     has x_opencti_negative,
+    has confidence,
     plays created-by_from,
     plays object-marking_from,
     plays object-label_from,

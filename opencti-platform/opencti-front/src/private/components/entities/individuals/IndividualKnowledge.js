@@ -59,7 +59,7 @@ class IndividualKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={individual.id}
-              relationType="gathering"
+              relationship_type="gathering"
               targetEntityTypes={['Organization']}
               entityLink={link}
               creationIsFrom={true}
@@ -73,7 +73,7 @@ class IndividualKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={individual.id}
-              relationType="localization"
+              relationship_type="localization"
               targetEntityTypes={['City', 'Country', 'Region']}
               entityLink={link}
               creationIsFrom={true}
@@ -87,7 +87,7 @@ class IndividualKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={individual.id}
-              relationType="targets"
+              relationship_type="targets"
               targetEntityTypes={[
                 'Country',
                 'Threat-Actor',
@@ -108,7 +108,7 @@ class IndividualKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={individual.id}
-              relationType="attributed-to"
+              relationship_type="attributed-to"
               targetEntityTypes={[
                 'Threat-Actor',
                 'Intrusion-Set',
@@ -140,7 +140,7 @@ const IndividualKnowledge = createFragmentContainer(
       fragment IndividualKnowledge_individual on Individual {
         id
         name
-        x_opencti_aliases
+        aliases
       }
     `,
   },

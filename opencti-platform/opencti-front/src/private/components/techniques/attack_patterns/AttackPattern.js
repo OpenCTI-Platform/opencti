@@ -62,7 +62,7 @@ class AttackPatternComponent extends Component {
           <Grid item={true} xs={4}>
             <EntityStixCoreRelationshipsChart
               entityId={attackPattern.id}
-              relationType="uses"
+              relationship_type="uses"
             />
           </Grid>
           <Grid item={true} xs={4}>

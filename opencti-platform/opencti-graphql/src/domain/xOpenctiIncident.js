@@ -23,7 +23,7 @@ export const findAll = (args) => {
 
 // region time series
 export const xOpenctiIncidentsTimeSeriesByEntity = async (args) => {
-  const filters = [{ isRelation: true, type: args.relationType, value: args.objectId }];
+  const filters = [{ isRelation: true, type: args.relationship_type, value: args.objectId }];
   return timeSeriesEntities(ENTITY_TYPE_X_OPENCTI_INCIDENT, filters, args);
 };
 

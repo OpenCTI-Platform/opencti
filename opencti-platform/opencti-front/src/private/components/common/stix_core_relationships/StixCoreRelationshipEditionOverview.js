@@ -39,7 +39,7 @@ import DatePickerField from '../../../../components/DatePickerField';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
 import Loader from '../../../../components/Loader';
 import KillChainPhasesField from '../form/KillChainPhasesField';
-import objectMarkingField from '../form/ObjectMarkingField';
+import ObjectMarkingField from '../form/ObjectMarkingField';
 import CreatedByField from '../form/CreatedByField';
 
 const styles = (theme) => ({
@@ -138,10 +138,10 @@ const stixCoreRelationshipMutationRelationDelete = graphql`
   mutation StixCoreRelationshipEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: String!
-    $relationType: String!
+    $relationship_type: String!
   ) {
     stixCoreRelationshipEdit(id: $id) {
-      relationDelete(toId: $toId, relationType: $relationType) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...StixCoreRelationshipEditionOverview_stixCoreRelationship
       }
     }
@@ -202,10 +202,8 @@ const StixCoreRelationshipEditionContainer = ({
         variables: {
           id: stixCoreRelationship.id,
           input: {
-            fromRole: 'phase_belonging',
             toId: head(added).value,
-            toRole: 'kill_chain_phase',
-            through: 'kill_chain_phases',
+            relationship_type: 'kill-chain-phase',
           },
         },
       });
@@ -273,10 +271,8 @@ const StixCoreRelationshipEditionContainer = ({
         variables: {
           id: stixCoreRelationship.id,
           input: {
-            fromRole: 'so',
             toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });
@@ -359,24 +355,23 @@ const StixCoreRelationshipEditionContainer = ({
     map((n) => ({
       label: n.node.definition,
       value: n.node.id,
-      relationId: n.relation.id,
     })),
   )(stixCoreRelationship);
   const initialValues = pipe(
-    assoc('first_seen', dateFormat(stixCoreRelationship.first_seen)),
-    assoc('last_seen', dateFormat(stixCoreRelationship.last_seen)),
+    assoc('start_time', dateFormat(stixCoreRelationship.first_seen)),
+    assoc('stop_time', dateFormat(stixCoreRelationship.last_seen)),
     assoc('createdBy', createdBy),
     assoc('killChainPhases', killChainPhases),
-    assoc('markingDefinitions', objectMarking),
+    assoc('objectMarking', objectMarking),
     pick([
-      'weight',
-      'first_seen',
-      'last_seen',
+      'confidence',
+      'start_time',
+      'stop_time',
       'description',
       'role_played',
       'createdBy',
       'killChainPhases',
-      'markingDefinitions',
+      'objectMarking',
     ]),
   )(stixCoreRelationship);
   const link = stixDomainObject
@@ -415,7 +410,7 @@ const StixCoreRelationshipEditionContainer = ({
                     <Form style={{ margin: '20px 0 20px 0' }}>
                       <Field
                         component={SelectField}
-                        name="weight"
+                        name="confidence"
                         onFocus={handleChangeFocus}
                         onChange={handleSubmitField}
                         label={t('Confidence level')}
@@ -424,7 +419,7 @@ const StixCoreRelationshipEditionContainer = ({
                         helpertext={
                           <SubscriptionFocus
                             context={editContext}
-                            fieldName="weight"
+                            fieldName="confidence"
                           />
                         }
                       >
@@ -433,39 +428,10 @@ const StixCoreRelationshipEditionContainer = ({
                         <MenuItem value="3">{t('Good')}</MenuItem>
                         <MenuItem value="4">{t('Strong')}</MenuItem>
                       </Field>
-                      {stixCoreRelationship.relationship_type
-                      === 'indicates' ? (
-                        <Field
-                          component={SelectField}
-                          name="role_played"
-                          onFocus={handleChangeFocus}
-                          onChange={handleSubmitField}
-                          label={t('Played role')}
-                          fullWidth={true}
-                          containerstyle={{ marginTop: 20, width: '100%' }}
-                          helpertext={
-                            <SubscriptionFocus
-                              context={editContext}
-                              fieldName="role_played"
-                            />
-                          }
-                        >
-                          {rolesPlayedEdges.map((rolePlayedEdge) => (
-                            <MenuItem
-                              key={rolePlayedEdge.node.value}
-                              value={rolePlayedEdge.node.value}
-                            >
-                              {t(rolePlayedEdge.node.value)}
-                            </MenuItem>
-                          ))}
-                        </Field>
-                        ) : (
-                          ''
-                        )}
                       <Field
                         component={DatePickerField}
-                        name="first_seen"
-                        label={t('First seen')}
+                        name="start_time"
+                        label={t('Start time')}
                         invalidDateMessage={t(
                           'The value must be a date (YYYY-MM-DD)',
                         )}
@@ -476,14 +442,14 @@ const StixCoreRelationshipEditionContainer = ({
                         helperText={
                           <SubscriptionFocus
                             context={editContext}
-                            fieldName="first_seen"
+                            fieldName="start_time"
                           />
                         }
                       />
                       <Field
                         component={DatePickerField}
-                        name="last_seen"
-                        label={t('Last seen')}
+                        name="end_time"
+                        label={t('End time')}
                         invalidDateMessage={t(
                           'The value must be a date (YYYY-MM-DD)',
                         )}
@@ -494,7 +460,7 @@ const StixCoreRelationshipEditionContainer = ({
                         helperText={
                           <SubscriptionFocus
                             context={editContext}
-                            fieldName="last_seen"
+                            fieldName="end_time"
                           />
                         }
                       />
@@ -539,7 +505,7 @@ const StixCoreRelationshipEditionContainer = ({
                         }
                         onChange={handleChangeCreatedBy}
                       />
-                      <objectMarkingField
+                      <ObjectMarkingField
                         name="objectMarking"
                         style={{ marginTop: 20, width: '100%' }}
                         helpertext={
@@ -604,8 +570,8 @@ const StixCoreRelationshipEditionFragment = createFragmentContainer(
       fragment StixCoreRelationshipEditionOverview_stixCoreRelationship on StixCoreRelationship {
         id
         confidence
-        first_seen
-        last_seen
+        start_time
+        stop_time
         description
         relationship_type
         createdBy {

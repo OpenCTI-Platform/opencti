@@ -30,7 +30,7 @@ class AttackPatternsDistribution extends Component {
             title={propOr('Widget', 'title', configuration)}
             entityId={pathOr(null, ['entity', 'id'], configuration)}
             entityType="Attack-Pattern"
-            relationType="uses"
+            relationship_type="uses"
             field="name"
             inferred={inferred}
             startDate={startDate}
@@ -46,7 +46,7 @@ class AttackPatternsDistribution extends Component {
             title={propOr('Widget', 'title', configuration)}
             entityId={pathOr(null, ['entity', 'id'], configuration)}
             entityType="Attack-Pattern"
-            relationType="uses"
+            relationship_type="uses"
             field="name"
             inferred={inferred}
             startDate={startDate}

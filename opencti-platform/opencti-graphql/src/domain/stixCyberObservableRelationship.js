@@ -18,7 +18,7 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from '../utils/idGenerato
 
 export const findAll = (args) =>
   stixCoreRelationshipFindAll(
-    args.relationType ? args : assoc('parent_type', ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, args)
+    args.relationship_type ? args : assoc('parent_type', ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, args)
   );
 
 export const findById = (stixCyberObservableRelationshipId) => {

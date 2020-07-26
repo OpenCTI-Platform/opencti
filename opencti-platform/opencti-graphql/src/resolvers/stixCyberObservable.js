@@ -71,8 +71,8 @@ const stixCyberObservableResolvers = {
       contextClean: () => stixCyberObservableCleanContext(user, id),
       relationAdd: ({ input }) => stixCyberObservableAddRelation(user, id, input),
       relationsAdd: ({ input }) => stixCyberObservableAddRelations(user, id, input),
-      relationDelete: ({ relationId, toId, relationType }) =>
-        stixCyberObservableDeleteRelation(user, id, relationId, toId, relationType),
+      relationDelete: ({ relationId, toId, relationship_type }) =>
+        stixCyberObservableDeleteRelation(user, id, relationId, toId, relationship_type),
       askEnrichment: ({ connectorId }) => stixCyberObservableAskEnrichment(id, connectorId),
     }),
     stixCyberObservableAdd: (_, { input }, { user }) => addStixCyberObservable(user, input),

@@ -66,10 +66,10 @@ const sectorMutationRelationDelete = graphql`
   mutation SectorEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: String!
-    $relationType: String!
+    $relationship_type: String!
   ) {
     sectorEdit(id: $id) {
-      relationDelete(toId: $toId, relationType: $relationType) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...SectorEditionOverview_sector
       }
     }
@@ -145,10 +145,8 @@ class SectorEditionOverviewComponent extends Component {
         variables: {
           id: this.props.sector.id,
           input: {
-            fromRole: 'so',
             toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });

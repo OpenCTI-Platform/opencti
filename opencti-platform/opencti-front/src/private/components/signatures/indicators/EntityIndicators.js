@@ -200,7 +200,7 @@ class EntityIndicators extends Component {
   }
 
   render() {
-    const { entityId, relationType } = this.props;
+    const { entityId, relationship_type } = this.props;
     const {
       view,
       targetEntityTypes,
@@ -245,7 +245,7 @@ class EntityIndicators extends Component {
       search: searchTerm,
       toTypes: targetEntityTypes,
       fromId: entityId,
-      relationType,
+      relationship_type,
       lastSeenStart: null,
       lastSeenStop: null,
       orderBy: sortBy,

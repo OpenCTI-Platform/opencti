@@ -64,7 +64,7 @@ export const entityStixCoreRelationshipsLinesQuery = graphql`
     $fromRole: String
     $toTypes: [String]
     $inferred: Boolean
-    $relationType: String
+    $relationship_type: String
     $search: String
     $count: Int!
     $cursor: ID
@@ -78,7 +78,7 @@ export const entityStixCoreRelationshipsLinesQuery = graphql`
         fromRole: $fromRole
         toTypes: $toTypes
         inferred: $inferred
-        relationType: $relationType
+        relationship_type: $relationship_type
         search: $search
         count: $count
         cursor: $cursor
@@ -99,7 +99,7 @@ export default createPaginationContainer(
           fromRole: { type: "String" }
           toTypes: { type: "[String]" }
           inferred: { type: "Boolean" }
-          relationType: { type: "String" }
+          relationship_type: { type: "String" }
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
@@ -115,7 +115,7 @@ export default createPaginationContainer(
           fromRole: $fromRole
           toTypes: $toTypes
           inferred: $inferred
-          relationType: $relationType
+          relationship_type: $relationship_type
           search: $search
           first: $count
           after: $cursor
@@ -154,7 +154,7 @@ export default createPaginationContainer(
         fromRole: fragmentVariables.fromRole,
         toTypes: fragmentVariables.toTypes,
         inferred: fragmentVariables.inferred,
-        relationType: fragmentVariables.relationType,
+        relationship_type: fragmentVariables.relationship_type,
         search: fragmentVariables.search,
         count,
         cursor,

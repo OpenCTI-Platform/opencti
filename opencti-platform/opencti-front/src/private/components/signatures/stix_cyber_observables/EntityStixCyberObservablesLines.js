@@ -63,7 +63,7 @@ export const entityStixCyberObservablesLinesQuery = graphql`
     $inferred: Boolean
     $fromId: String
     $toTypes: [String]
-    $relationType: String
+    $relationship_type: String
     $firstSeenStart: DateTime
     $firstSeenStop: DateTime
     $lastSeenStart: DateTime
@@ -79,7 +79,7 @@ export const entityStixCyberObservablesLinesQuery = graphql`
         inferred: $inferred
         fromId: $fromId
         toTypes: $toTypes
-        relationType: $relationType
+        relationship_type: $relationship_type
         firstSeenStart: $firstSeenStart
         firstSeenStop: $firstSeenStop
         lastSeenStart: $lastSeenStart
@@ -102,7 +102,7 @@ export default createPaginationContainer(
           inferred: { type: "Boolean" }
           fromId: { type: "String" }
           toTypes: { type: "[String]" }
-          relationType: { type: "String" }
+          relationship_type: { type: "String" }
           firstSeenStart: { type: "DateTime" }
           firstSeenStop: { type: "DateTime" }
           lastSeenStart: { type: "DateTime" }
@@ -120,7 +120,7 @@ export default createPaginationContainer(
           inferred: $inferred
           fromId: $fromId
           toTypes: $toTypes
-          relationType: $relationType
+          relationship_type: $relationship_type
           firstSeenStart: $firstSeenStart
           firstSeenStop: $firstSeenStop
           lastSeenStart: $lastSeenStart
@@ -161,7 +161,7 @@ export default createPaginationContainer(
         inferred: fragmentVariables.inferred,
         fromId: fragmentVariables.fromId,
         toTypes: fragmentVariables.toTypes,
-        relationType: fragmentVariables.relationType,
+        relationship_type: fragmentVariables.relationship_type,
         firstSeenStart: fragmentVariables.firstSeenStart,
         firstSeenStop: fragmentVariables.firstSeenStop,
         lastSeenStart: fragmentVariables.lastSeenStart,

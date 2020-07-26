@@ -45,13 +45,13 @@ export const reportRefPopoverDeletionMutation = graphql`
     $id: ID!
     $relationId: ID
     $toId: String
-    $relationType: String
+    $relationship_type: String
   ) {
     reportEdit(id: $id) {
       relationDelete(
         relationId: $relationId
         toId: $toId
-        relationType: $relationType
+        relationship_type: $relationship_type
       ) {
         id
       }
@@ -92,7 +92,7 @@ class ReportRefPopover extends Component {
       reportId,
       toId,
       relationId,
-      relationType,
+      relationship_type,
       paginationKey,
       paginationOptions,
     } = this.props;
@@ -103,7 +103,7 @@ class ReportRefPopover extends Component {
         id: reportId,
         toId,
         relationId,
-        relationType,
+        relationship_type,
       },
       updater: (store) => {
         if (toId) {
@@ -175,7 +175,7 @@ ReportRefPopover.propTypes = {
   reportId: PropTypes.string,
   toId: PropTypes.string,
   relationId: PropTypes.string,
-  relationType: PropTypes.string,
+  relationship_type: PropTypes.string,
   paginationKey: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,

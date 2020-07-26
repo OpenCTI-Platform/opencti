@@ -135,7 +135,7 @@ export const generateLogMessage = (eventType, eventUser, eventData, eventExtraDa
   let fromType;
   let toValue;
   let toType;
-  let toRelationType;
+  let torelationship_type;
   if (eventExtraData && eventExtraData.from) {
     fromValue = extractEntityMainValue(eventExtraData.from);
     fromType = eventExtraData.from.entity_type;
@@ -143,7 +143,7 @@ export const generateLogMessage = (eventType, eventUser, eventData, eventExtraDa
   if (eventExtraData && eventExtraData.to) {
     toValue = extractEntityMainValue(eventExtraData.to);
     toType = eventExtraData.to.entity_type;
-    toRelationType = eventExtraData.to.entity_type;
+    torelationship_type = eventExtraData.to.entity_type;
   }
   const name = extractEntityMainValue(eventData);
   let message = '';
@@ -164,7 +164,7 @@ export const generateLogMessage = (eventType, eventUser, eventData, eventExtraDa
     if (eventType === 'update') {
       message += `\`${eventData.entity_type}\` with the value \`${toValue}\`.`;
     } else if (toType === 'stix_relation') {
-      message += `relation \`${toRelationType}\`${toValue ? `with value \`${toValue}\`` : ''}.`;
+      message += `relation \`${torelationship_type}\`${toValue ? `with value \`${toValue}\`` : ''}.`;
     } else {
       message += `\`${toType}\` with value \`${toValue}\`.`;
     }

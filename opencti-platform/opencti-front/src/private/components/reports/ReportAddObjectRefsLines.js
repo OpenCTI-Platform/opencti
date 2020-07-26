@@ -105,7 +105,7 @@ class ReportAddObjectRefsLinesContainer extends Component {
           variables: {
             id: reportId,
             toId: stixDomain.id,
-            relationType: 'object_refs',
+            relationship_type: 'object_refs',
           },
           onCompleted: () => {
             this.setState({
@@ -122,7 +122,7 @@ class ReportAddObjectRefsLinesContainer extends Component {
           variables: {
             id: reportId,
             toId: stixDomain.id,
-            relationType: 'object_refs',
+            relationship_type: 'object_refs',
           },
           updater: (store) => {
             const conn = ConnectionHandler.getConnection(

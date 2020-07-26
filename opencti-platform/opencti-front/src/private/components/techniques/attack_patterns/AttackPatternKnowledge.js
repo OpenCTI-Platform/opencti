@@ -55,7 +55,7 @@ class AttackPatternKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={attackPattern.id}
-              relationType="uses"
+              relationship_type="uses"
               targetEntityTypes={['Intrusion-Set']}
               entityLink={link}
               creationIsFrom={false}
@@ -69,7 +69,7 @@ class AttackPatternKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={attackPattern.id}
-              relationType="uses"
+              relationship_type="uses"
               targetEntityTypes={['Campaign']}
               entityLink={link}
               creationIsFrom={false}
@@ -84,7 +84,7 @@ class AttackPatternKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={attackPattern.id}
-              relationType="uses"
+              relationship_type="uses"
               targetEntityTypes={['XOpenctiIncident']}
               entityLink={link}
               creationIsFrom={false}
@@ -98,7 +98,7 @@ class AttackPatternKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={attackPattern.id}
-              relationType="uses"
+              relationship_type="uses"
               targetEntityTypes={['Malware']}
               entityLink={link}
               creationIsFrom={false}
@@ -112,7 +112,7 @@ class AttackPatternKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={attackPattern.id}
-              relationType="uses"
+              relationship_type="uses"
               targetEntityTypes={['Tool']}
               entityLink={link}
               creationIsFrom={false}
@@ -126,7 +126,7 @@ class AttackPatternKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={attackPattern.id}
-              relationType="targets"
+              relationship_type="targets"
               targetEntityTypes={['Vulnerability']}
               entityLink={link}
               creationIsFrom={true}

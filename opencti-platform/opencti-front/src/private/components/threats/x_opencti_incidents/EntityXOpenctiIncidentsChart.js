@@ -54,7 +54,7 @@ const entityXOpenctiIncidentsChartXOpenctiIncidentsTimeSeriesQuery = graphql`
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
-    $relationType: String!
+    $relationship_type: String!
     $inferred: Boolean
   ) {
     xOpenctiIncidentsTimeSeries(
@@ -64,7 +64,7 @@ const entityXOpenctiIncidentsChartXOpenctiIncidentsTimeSeriesQuery = graphql`
       startDate: $startDate
       endDate: $endDate
       interval: $interval
-      relationType: $relationType
+      relationship_type: $relationship_type
       inferred: $inferred
     ) {
       date
@@ -99,7 +99,7 @@ class EntityXOpenctiXOpenctiIncidentsChart extends Component {
 
   renderContent() {
     const {
-      t, md, entityId, relationType, variant, inferred,
+      t, md, entityId, relationship_type, variant, inferred,
     } = this.props;
     const xOpenctiIncidentsTimeSeriesVariables = {
       objectId: entityId,
@@ -108,7 +108,7 @@ class EntityXOpenctiXOpenctiIncidentsChart extends Component {
       startDate: monthsAgo(this.state.period),
       endDate: now(),
       interval: 'month',
-      relationType: relationType || 'targets',
+      relationship_type: relationship_type || 'targets',
       inferred: inferred || false,
     };
     return (
@@ -272,7 +272,7 @@ EntityXOpenctiXOpenctiIncidentsChart.propTypes = {
   configuration: PropTypes.object,
   handleOpenConfig: PropTypes.func,
   inferred: PropTypes.bool,
-  relationType: PropTypes.string,
+  relationship_type: PropTypes.string,
 };
 
 export default compose(

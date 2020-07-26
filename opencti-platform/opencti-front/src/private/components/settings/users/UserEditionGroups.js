@@ -46,7 +46,7 @@ const userMutationRelationAdd = graphql`
 const userMutationRelationDelete = graphql`
   mutation UserEditionGroupsRelationDeleteMutation($id: ID!, $relationId: ID!) {
     userEdit(id: $id) {
-      relationDelete(toId: $toId, relationType: $relationType) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...UserEditionGroups_user
       }
     }

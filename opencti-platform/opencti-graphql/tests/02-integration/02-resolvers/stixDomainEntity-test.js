@@ -276,9 +276,9 @@ describe('StixDomainEntity resolver standard behavior', () => {
   });
   it('should delete relation with toId in stixDomainEntity', async () => {
     const RELATION_TOID_DELETE_QUERY = gql`
-      mutation StixDomainEntityEdit($id: ID!, $toId: String, $relationType: String) {
+      mutation StixDomainEntityEdit($id: ID!, $toId: String, $relationship_type: String) {
         stixDomainEntityEdit(id: $id) {
-          relationDelete(toId: $toId, relationType: $relationType) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             tags {
               edges {
@@ -296,7 +296,7 @@ describe('StixDomainEntity resolver standard behavior', () => {
       variables: {
         id: stixDomainEntityInternalId,
         toId: 'ebd3398f-2189-4597-b994-5d1ab310d4bc',
-        relationType: 'tagged',
+        relationship_type: 'tagged',
       },
     });
     expect(queryResult.data.stixDomainEntityEdit.relationDelete.tags.edges.length).toEqual(1);

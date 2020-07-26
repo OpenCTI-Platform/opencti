@@ -87,10 +87,10 @@ const toolMutationRelationDelete = graphql`
   mutation ToolEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: String!
-    $relationType: String!
+    $relationship_type: String!
   ) {
     toolEdit(id: $id) {
-      relationDelete(toId: $toId, relationType: $relationType) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...ToolEditionOverview_tool
       }
     }
@@ -144,10 +144,8 @@ class ToolEditionOverviewComponent extends Component {
         variables: {
           id: this.props.tool.id,
           input: {
-            fromRole: 'so',
             toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });

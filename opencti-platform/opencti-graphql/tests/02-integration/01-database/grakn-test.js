@@ -902,10 +902,10 @@ describe('Grakn attribute updated and indexed correctly', () => {
   });
   it.each(noCacheCases)('should relation report attribute updated (noCache = %s)', async (noCache) => {
     // Test with relation update
-    let relationTypes = await findAllAttributes({ type: 'role_played' });
-    expect(relationTypes).not.toBeNull();
-    expect(relationTypes.edges.length).toEqual(3);
-    let typeMap = new Map(relationTypes.edges.map((i) => [i.node.value, i]));
+    let relationship_types = await findAllAttributes({ type: 'role_played' });
+    expect(relationship_types).not.toBeNull();
+    expect(relationship_types.edges.length).toEqual(3);
+    let typeMap = new Map(relationship_types.edges.map((i) => [i.node.value, i]));
     const relationAttribute = typeMap.get('Unknown');
     expect(relationAttribute).not.toBeUndefined();
     const attributeGraknId = relationAttribute.node.id;
@@ -926,9 +926,9 @@ describe('Grakn attribute updated and indexed correctly', () => {
     expect(relation).not.toBeNull();
     expect(relation.role_played).toEqual('For test');
     // 04. Back to original configuration
-    relationTypes = await findAllAttributes({ type: 'role_played' });
-    expect(relationTypes.edges.length).toEqual(3);
-    typeMap = new Map(relationTypes.edges.map((i) => [i.node.value, i]));
+    relationship_types = await findAllAttributes({ type: 'role_played' });
+    expect(relationship_types.edges.length).toEqual(3);
+    typeMap = new Map(relationship_types.edges.map((i) => [i.node.value, i]));
     await attributeUpdate(typeMap.get('For test').node.id, {
       type: 'role_played',
       value: 'For test',
@@ -992,14 +992,14 @@ describe('Grakn entities time series', () => {
 });
 
 describe('Grakn relations time series', () => {
-  // const { startDate, endDate, operation, relationType, field, interval, fromId, inferred = false } = options;
+  // const { startDate, endDate, operation, relationship_type, field, interval, fromId, inferred = false } = options;
   const noCacheCases = [[true], [false]];
   it.each(noCacheCases)('should relations first seen time series (noCache = %s)', async (noCache) => {
     // relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02 > 2020-02-29T23:00:00.000Z
     // relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de > 2020-02-29T23:00:00.000Z
     // relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3 > 2020-02-28T23:00:00.000Z
     const options = {
-      relationType: 'uses',
+      relationship_type: 'uses',
       field: 'first_seen',
       operation: 'count',
       interval: 'month',
@@ -1016,7 +1016,7 @@ describe('Grakn relations time series', () => {
     // malware--faa5b705-cf44-4e50-8472-29e5fec43c3c / Paradise Ransomware
     const options = {
       fromId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330',
-      relationType: 'uses',
+      relationship_type: 'uses',
       field: 'first_seen',
       operation: 'count',
       interval: 'year',
@@ -1083,10 +1083,10 @@ describe('Grakn relations distribution', () => {
   const noCacheCases = [[true], [false]];
   it.each(noCacheCases)('should relation distribution (noCache = %s)', async (noCache) => {
     // const { limit = 50, order, noCache = false, inferred = false } = options;
-    // const { startDate, endDate, relationType, toTypes, fromId, field, operation } = options;
+    // const { startDate, endDate, relationship_type, toTypes, fromId, field, operation } = options;
     const options = {
       fromId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330',
-      relationType: 'uses',
+      relationship_type: 'uses',
       field: 'entity_type',
       operation: 'count',
       noCache,
@@ -1128,16 +1128,16 @@ describe('Grakn relations distribution', () => {
 
 describe('Grakn entities distribution through relation', () => {
   // const { limit = 10, order, inferred = false } = options;
-  // const { relationType, remoteRelationType, toType, fromId, field, operation } = options;
+  // const { relationship_type, remoterelationship_type, toType, fromId, field, operation } = options;
   // campaign--92d46985-17a6-4610-8be8-cc70c82ed214
   it('should relation distribution filtered by to (noCache = %s)', async () => {
     const options = {
       fromId: 'fab6fa99-b07f-4278-86b4-b674edf60877',
       field: 'name',
       operation: 'count',
-      relationType: 'object_refs',
+      relationship_type: 'object_refs',
       toType: 'Report',
-      remoteRelationType: 'created_by_ref',
+      remoterelationship_type: 'created_by_ref',
     };
     const distribution = await distributionEntitiesThroughRelations(options);
     expect(distribution.length).toEqual(1);

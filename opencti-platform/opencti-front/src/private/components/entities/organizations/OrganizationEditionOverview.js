@@ -94,10 +94,10 @@ const organizationMutationRelationDelete = graphql`
   mutation OrganizationEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: String!
-    $relationType: String!
+    $relationship_type: String!
   ) {
     organizationEdit(id: $id) {
-      relationDelete(toId: $toId, relationType: $relationType) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...OrganizationEditionOverview_organization
       }
     }
@@ -150,7 +150,6 @@ class OrganizationEditionOverviewComponent extends Component {
     const currentCreatedBy = {
       label: pathOr(null, ['createdBy', 'node', 'name'], organization),
       value: pathOr(null, ['createdBy', 'node', 'id'], organization),
-      relation: pathOr(null, ['createdBy', 'relation', 'id'], organization),
     };
 
     if (currentCreatedBy.value === null) {
@@ -159,10 +158,8 @@ class OrganizationEditionOverviewComponent extends Component {
         variables: {
           id: this.props.organization.id,
           input: {
-            fromRole: 'so',
             toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });
@@ -171,7 +168,8 @@ class OrganizationEditionOverviewComponent extends Component {
         mutation: organizationMutationRelationDelete,
         variables: {
           id: this.props.organization.id,
-          relationId: currentCreatedBy.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {
@@ -196,7 +194,6 @@ class OrganizationEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(organization);
 
@@ -221,7 +218,8 @@ class OrganizationEditionOverviewComponent extends Component {
         mutation: organizationMutationRelationDelete,
         variables: {
           id: this.props.organization.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'created-by',
         },
       });
     }
@@ -245,7 +243,6 @@ class OrganizationEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(organization);
     const initialValues = pipe(
@@ -256,9 +253,9 @@ class OrganizationEditionOverviewComponent extends Component {
         'description',
         'contact_information',
         'x_opencti_organization_type',
-        'reliability',
+        'x_opencti_reliability',
         'createdBy',
-        'markingDefinitions',
+        'objectMarking',
       ]),
     )(organization);
     return (
@@ -339,18 +336,18 @@ class OrganizationEditionOverviewComponent extends Component {
             </Field>
             <Field
               component={SelectField}
-              name="reliability"
+              name="x_opencti_reliability"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
               label={t('Reliability')}
               fullWidth={true}
               inputProps={{
-                name: 'reliability',
-                id: 'reliability',
+                name: 'x_opencti_reliability',
+                id: 'x_opencti_reliability',
               }}
               containerstyle={{ marginTop: 20, width: '100%' }}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="reliability" />
+                <SubscriptionFocus context={context} fieldName="x_opencti_reliability" />
               }
             >
               <MenuItem value="A">{t('reliability_A')}</MenuItem>
@@ -405,7 +402,7 @@ const OrganizationEditionOverview = createFragmentContainer(
         description
         contact_information
         x_opencti_organization_type
-        reliability
+        x_opencti_reliability
         createdBy {
           ... on Identity {
             id

@@ -100,10 +100,10 @@ export const notesDistributionByEntity = async (args) => {
   const { objectId, field } = args;
   if (field.includes('.')) {
     const options = pipe(
-      assoc('relationType', RELATION_OBJECT),
+      assoc('relationship_type', RELATION_OBJECT),
       assoc('toType', ENTITY_TYPE_CONTAINER_NOTE),
       assoc('field', field.split('.')[1]),
-      assoc('remoteRelationType', field.split('.')[0]),
+      assoc('remoterelationship_type', field.split('.')[0]),
       assoc('fromId', objectId)
     )(args);
     return distributionEntitiesThroughRelations(options);

@@ -886,7 +886,7 @@ interface StixCoreObject {
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -974,7 +974,7 @@ interface StixDomainObject {
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -1079,7 +1079,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -1197,7 +1197,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -1274,7 +1274,7 @@ interface Container {
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -1301,7 +1301,7 @@ interface Container {
     filterMode: FilterMode
     search: String
     types: [String]
-  ): StixObjectOrStixCoreRelationship
+  ): StixObjectOrStixRelationship
 }
 
 ################ Notes
@@ -1368,7 +1368,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -1395,7 +1395,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     filterMode: FilterMode
     search: String
     types: [String]
-  ): StixObjectOrStixCoreRelationship
+  ): StixObjectOrStixRelationship
   # Note
   attribute_abstract: String
   content: String!
@@ -1489,7 +1489,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -1516,7 +1516,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     filterMode: FilterMode
     search: String
     types: [String]
-  ): StixObjectOrStixCoreRelationship
+  ): StixObjectOrStixRelationship
   # ObservedData
   first_observed: DateTime!
   last_observed: DateTime!
@@ -1606,7 +1606,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -1633,7 +1633,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     filterMode: FilterMode
     search: String
     types: [String]
-  ): StixObjectOrStixCoreRelationship
+  ): StixObjectOrStixRelationship
   # Opinion
   explanation: String
   authors: [String]
@@ -1729,7 +1729,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -1756,7 +1756,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     filterMode: FilterMode
     search: String
     types: [String]
-  ): StixObjectOrStixCoreRelationship
+  ): StixObjectOrStixRelationship
   # Report
   name: String!
   description: String
@@ -1847,7 +1847,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -1959,7 +1959,7 @@ interface Identity {
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -2067,7 +2067,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -2188,7 +2188,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -2303,7 +2303,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -2429,7 +2429,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -2555,7 +2555,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -2664,7 +2664,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -2747,7 +2747,7 @@ interface Location {
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -2834,7 +2834,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -2951,7 +2951,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -3061,7 +3061,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -3169,7 +3169,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -3288,7 +3288,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -3405,7 +3405,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -3528,7 +3528,7 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -3642,7 +3642,7 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -3755,7 +3755,7 @@ type XOpenctiIncident implements BasicObject & StixObject & StixCoreObject & Sti
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -3869,7 +3869,7 @@ interface StixCyberObservable {
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -3917,7 +3917,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -3981,7 +3981,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -4049,7 +4049,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -4109,7 +4109,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -4171,7 +4171,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -4244,7 +4244,7 @@ interface HashedObservable {
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -4298,7 +4298,7 @@ type XOpenctiCryptographicKey implements BasicObject & StixObject & StixCoreObje
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -4358,7 +4358,7 @@ type XOpenctiCryptocurrencyWallet implements BasicObject & StixObject & StixCore
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -4418,7 +4418,7 @@ type XOpenctiText implements BasicObject & StixObject & StixCoreObject & StixCyb
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -4478,7 +4478,7 @@ type XOpenctiUserAgent implements BasicObject & StixObject & StixCoreObject & St
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -4541,7 +4541,7 @@ input InternalRelationshipAddInput {
 
 ######## STIX RELATIONSHIPS
 
-union StixObjectOrStixCoreRelationship =
+union StixObjectOrStixRelationship =
     #### Stix Core Objects
   ## Stix Meta Objects
   MarkingDefinition
@@ -4574,8 +4574,11 @@ union StixObjectOrStixCoreRelationship =
   | Directory
   | DomainName
   | EmailAddr
-  | EmailMessage ### Stix Core Relationships
+  | EmailMessage ### Stix Relationships
   | StixCoreRelationship
+  | StixMetaRelationship
+  | StixSightingRelationship
+  | StixCyberObservableRelationship
 
 interface StixRelationship {
   # BasicRelationship
@@ -4586,8 +4589,8 @@ interface StixRelationship {
   # StixRelationship
   standard_id: String!
   stix_ids: [String]
-  from: StixObjectOrStixCoreRelationship
-  to: StixObjectOrStixCoreRelationship
+  from: StixObjectOrStixRelationship
+  to: StixObjectOrStixRelationship
   inferred: Boolean
 }
 
@@ -4643,8 +4646,8 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   # StixRelationship
   standard_id: String!
   stix_ids: [String]
-  from: StixObjectOrStixCoreRelationship
-  to: StixObjectOrStixCoreRelationship
+  from: StixObjectOrStixRelationship
+  to: StixObjectOrStixRelationship
   inferred: Boolean
   # StixCoreRelationship
   relationship_type: String!
@@ -4673,7 +4676,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -4759,8 +4762,8 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   # StixRelationship
   standard_id: String!
   stix_ids: [String]
-  from: StixObjectOrStixCoreRelationship
-  to: StixObjectOrStixCoreRelationship
+  from: StixObjectOrStixRelationship
+  to: StixObjectOrStixRelationship
   inferred: Boolean
   # StixSightingRelationship
   description: String
@@ -4770,6 +4773,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   x_opencti_negative: Boolean!
   created: DateTime
   modified: DateTime
+  confidence: Int
   createdBy: OrganizationOrIndividual
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
@@ -4839,8 +4843,8 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
   # StixRelationship
   standard_id: String!
   stix_ids: [String]
-  from: StixObjectOrStixCoreRelationship
-  to: StixObjectOrStixCoreRelationship
+  from: StixObjectOrStixRelationship
+  to: StixObjectOrStixRelationship
   inferred: Boolean
   # StixCyberObservableRelationship
   relationship_type: String!
@@ -4871,8 +4875,8 @@ type StixMetaRelationship implements BasicRelationship & StixRelationship {
   # StixRelationship
   standard_id: String!
   stix_ids: [String]
-  from: StixObjectOrStixCoreRelationship
-  to: StixObjectOrStixCoreRelationship
+  from: StixObjectOrStixRelationship
+  to: StixObjectOrStixRelationship
   inferred: Boolean
 }
 input StixMetaRelationshipAddInput {
@@ -5066,7 +5070,7 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-    relationType: String
+    relationship_type: String
     inferred: Boolean
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
   # Containers
@@ -5382,7 +5386,7 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-    relationType: String
+    relationship_type: String
     inferred: Boolean
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
 
@@ -5420,7 +5424,7 @@ type Query {
     toRole: String
     fromTypes: [String]
     toTypes: [String]
-    relationType: String
+    relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -5434,7 +5438,7 @@ type Query {
   ): StixCoreRelationshipConnection @auth(for: [KNOWLEDGE])
   stixCoreRelationshipsTimeSeries(
     fromId: String
-    relationType: String
+    relationship_type: String
     inferred: Boolean
     field: String!
     operation: StatsOperation!
@@ -5446,7 +5450,7 @@ type Query {
     fromId: String!
     field: String!
     operation: StatsOperation!
-    relationType: String
+    relationship_type: String
     inferred: Boolean
     toTypes: [String]
     startDate: DateTime
@@ -5586,7 +5590,7 @@ type GroupEditMutations {
   contextPatch(input: EditContext): Group
   contextClean: Group
   relationAdd(input: InternalRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationType: String!): Group
+  relationDelete(toId: String!, relationship_type: String!): Group
 }
 type UserEditMutations {
   delete: ID
@@ -5595,7 +5599,7 @@ type UserEditMutations {
   contextClean: User
   tokenRenew: User
   relationAdd(input: InternalRelationshipAddInput): InternalRelationship
-  relationDelete(toId: String!, relationType: String!): User
+  relationDelete(toId: String!, relationship_type: String!): User
   removeRole(name: String!): User
 }
 type RoleEditMutations {
@@ -5612,7 +5616,7 @@ type WorkspaceEditMutations {
   contextPatch(input: EditContext): Workspace @auth(for: [EXPLORE_EXUPDATE])
   contextClean: Workspace @auth(for: [EXPLORE_EXUPDATE])
   relationAdd(input: InternalRelationshipAddInput): StixMetaRelationship @auth(for: [EXPLORE_EXUPDATE])
-  relationDelete(toId: String!, relationType: String!): Workspace @auth(for: [EXPLORE_EXUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): Workspace @auth(for: [EXPLORE_EXUPDATE])
 }
 
 ######## STIX OBJECT ENTITIES
@@ -5637,7 +5641,7 @@ type ExternalReferenceEditMutations {
   contextPatch(input: EditContext): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type KillChainPhaseEditMutations {
   delete: ID
@@ -5645,14 +5649,14 @@ type KillChainPhaseEditMutations {
   contextPatch(input: EditContext): KillChainPhase
   contextClean: KillChainPhase
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationType: String!): KillChainPhase
+  relationDelete(toId: String!, relationship_type: String!): KillChainPhase
 }
 
 ######## STIX CORE OBJECT ENTITIES
 
 type StixCoreObjectEditMutations {
   relationAdd(input: StixCoreRelationshipAddInput): StixCoreRelationship
-  relationDelete(toId: String!, relationType: String!): StixObject
+  relationDelete(toId: String!, relationship_type: String!): StixObject
 }
 
 ######## STIX DOMAIN OBJECT ENTITIES
@@ -5665,7 +5669,7 @@ type StixDomainObjectEditMutations {
   contextClean: StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationsAdd(input: StixMetaRelationshipsAddInput): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   importPush(file: Upload!): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
     @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
@@ -5678,7 +5682,7 @@ type AttackPatternEditMutations {
   contextPatch(input: EditContext): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type CampaignEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -5686,7 +5690,7 @@ type CampaignEditMutations {
   contextPatch(input: EditContext): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 ############### Containers
 type NoteEditMutations {
@@ -5695,7 +5699,7 @@ type NoteEditMutations {
   contextPatch(input: EditContext): Note @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Note @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): Note @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): Note @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type ObservedDataEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -5703,7 +5707,7 @@ type ObservedDataEditMutations {
   contextPatch(input: EditContext): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type OpinionEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -5711,7 +5715,7 @@ type OpinionEditMutations {
   contextPatch(input: EditContext): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type ReportEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -5719,7 +5723,7 @@ type ReportEditMutations {
   contextPatch(input: EditContext): Report @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Report @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): Report @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): Report @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type CourseOfActionEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -5727,7 +5731,7 @@ type CourseOfActionEditMutations {
   contextPatch(input: EditContext): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 ############### Identities
 type IdentityEditMutations {
@@ -5736,7 +5740,7 @@ type IdentityEditMutations {
   contextPatch(input: EditContext): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Identity @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type IndividualEditMutations {
   delete: ID
@@ -5744,7 +5748,7 @@ type IndividualEditMutations {
   contextPatch(input: EditContext): Individual
   contextClean: Individual
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationType: String!): Individual
+  relationDelete(toId: String!, relationship_type: String!): Individual
 }
 type OrganizationEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -5752,7 +5756,7 @@ type OrganizationEditMutations {
   contextPatch(input: EditContext): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Organization @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type SectorEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -5760,7 +5764,7 @@ type SectorEditMutations {
   contextPatch(input: EditContext): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Sector @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type IndicatorEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -5768,7 +5772,7 @@ type IndicatorEditMutations {
   contextPatch(input: EditContext): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type InfrastructureEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -5776,7 +5780,7 @@ type InfrastructureEditMutations {
   contextPatch(input: EditContext): Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type IntrusionSetEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -5784,7 +5788,7 @@ type IntrusionSetEditMutations {
   contextPatch(input: EditContext): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 ############### Locations
 type CityEditMutations {
@@ -5793,7 +5797,7 @@ type CityEditMutations {
   contextPatch(input: EditContext): City @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: City @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): City @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): City @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type CountryEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -5801,7 +5805,7 @@ type CountryEditMutations {
   contextPatch(input: EditContext): Country @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Country @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): Country @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): Country @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type RegionEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -5809,7 +5813,7 @@ type RegionEditMutations {
   contextPatch(input: EditContext): Region @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Region @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): Region @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): Region @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type PositionEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -5817,7 +5821,7 @@ type PositionEditMutations {
   contextPatch(input: EditContext): Position @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Position @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): Position @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): Position @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type MalwareEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -5825,7 +5829,7 @@ type MalwareEditMutations {
   contextPatch(input: EditContext): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Malware @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type ThreatActorEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -5833,7 +5837,7 @@ type ThreatActorEditMutations {
   contextPatch(input: EditContext): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type ToolEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -5841,7 +5845,7 @@ type ToolEditMutations {
   contextPatch(input: EditContext): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Tool @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type VulnerabilityEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -5849,7 +5853,7 @@ type VulnerabilityEditMutations {
   contextPatch(input: EditContext): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type XOpenctiIncidentEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -5857,7 +5861,7 @@ type XOpenctiIncidentEditMutations {
   contextPatch(input: EditContext): XOpenctiIncident @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: XOpenctiIncident @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): XOpenctiIncident @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): XOpenctiIncident @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 ######## STIX CYBER OBSERVABLE ENTITIES
@@ -5869,7 +5873,7 @@ type StixCyberObservableEditMutations {
   contextClean: StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationsAdd(input: StixMetaRelationshipsAddInput): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationType: String!): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
 }
 
@@ -5883,7 +5887,7 @@ type StixCoreRelationshipEditMutations {
   contextPatch(input: EditContext): StixCoreRelationship
   contextClean: StixCoreRelationship
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationType: String!): StixCoreRelationship
+  relationDelete(toId: String!, relationship_type: String!): StixCoreRelationship
 }
 
 ######## STIX SIGHTING RELATIONSHIPS
@@ -5894,7 +5898,7 @@ type StixSightingRelationshipEditMutations {
   contextPatch(input: EditContext): StixSightingRelationship
   contextClean: StixSightingRelationship
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationType: String!): StixSightingRelationship
+  relationDelete(toId: String!, relationship_type: String!): StixSightingRelationship
 }
 
 ######## STIX CYBER OBSERVABLE RELATIONSHIPS

@@ -69,10 +69,10 @@ export const indicatorMutationRelationDelete = graphql`
   mutation IndicatorAddObservableRefsLinesRelationDeleteMutation(
     $id: ID!
     $toId: String!
-    $relationType: String!
+    $relationship_type: String!
   ) {
     indicatorEdit(id: $id) {
-      relationDelete(toId: $toId, relationType: $relationType) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...IndicatorObservables_indicator
       }
     }

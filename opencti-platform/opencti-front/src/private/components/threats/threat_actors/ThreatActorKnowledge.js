@@ -61,7 +61,7 @@ class ThreatActorKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={threatActor.id}
-              relationType="attributed-to"
+              relationship_type="attributed-to"
               targetEntityTypes={['Intrusion-Set']}
               entityLink={link}
               creationIsFrom={false}
@@ -75,7 +75,7 @@ class ThreatActorKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={threatActor.id}
-              relationType="attributed-to"
+              relationship_type="attributed-to"
               targetEntityTypes={['Campaign']}
               entityLink={link}
               creationIsFrom={false}
@@ -89,7 +89,7 @@ class ThreatActorKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={threatActor.id}
-              relationType="attributed-to"
+              relationship_type="attributed-to"
               targetEntityTypes={['XOpenctiIncident']}
               entityLink={link}
               creationIsFrom={false}
@@ -114,7 +114,7 @@ class ThreatActorKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={threatActor.id}
-              relationType="uses"
+              relationship_type="uses"
               targetEntityTypes={['Malware']}
               entityLink={link}
               creationIsFrom={true}
@@ -139,7 +139,7 @@ class ThreatActorKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={threatActor.id}
-              relationType="uses"
+              relationship_type="uses"
               targetEntityTypes={['Tool']}
               entityLink={link}
               creationIsFrom={true}
@@ -153,7 +153,7 @@ class ThreatActorKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={threatActor.id}
-              relationType="targets"
+              relationship_type="targets"
               targetEntityTypes={['Vulnerability']}
               entityLink={link}
               creationIsFrom={true}

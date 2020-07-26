@@ -179,7 +179,7 @@ export const stixCyberObservableDeleteRelation = async (
   stixCyberObservableId,
   relationId = null,
   toId = null,
-  relationType = 'stix_relation_embedded'
+  relationship_type = 'stix_relation_embedded'
 ) => {
   const stixCyberObservable = await loadEntityById(stixCyberObservableId, 'Stix-Observable');
   if (!stixCyberObservable) {
@@ -192,7 +192,7 @@ export const stixCyberObservableDeleteRelation = async (
     }
     await deleteRelationById(user, relationId, 'relation');
   } else if (toId) {
-    await deleteRelationsByFromAndTo(user, stixCyberObservableId, toId, relationType, 'relation');
+    await deleteRelationsByFromAndTo(user, stixCyberObservableId, toId, relationship_type, 'relation');
   } else {
     throw FunctionalError('Cannot delete the relation, missing relationId or toId');
   }

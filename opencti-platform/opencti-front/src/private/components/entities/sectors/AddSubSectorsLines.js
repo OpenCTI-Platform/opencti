@@ -27,7 +27,7 @@ const styles = (theme) => ({
 
 const addSubSectorsLinesMutationRelationAdd = graphql`
   mutation AddSubSectorsLinesRelationAddMutation(
-    $input: StixMetaRelationshipAddInput
+    $input: StixCoreRelationshipAddInput
   ) {
     stixCoreRelationshipAdd(input: $input) {
       to {
@@ -72,11 +72,9 @@ class AddSubSectorsLinesContainer extends Component {
       });
     } else {
       const input = {
-        relationship_type: 'gathering',
+        relationship_type: 'part-of',
         fromId: subSector.id,
-        fromRole: 'part_of',
         toId: sectorId,
-        toRole: 'gather',
       };
       commitMutation({
         mutation: addSubSectorsLinesMutationRelationAdd,

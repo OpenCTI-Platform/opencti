@@ -109,11 +109,11 @@ class IndicatorEntities extends Component {
       view, sortBy, orderAsc, searchTerm,
     } = this.state;
     const {
-      classes, t, entityId, relationType,
+      classes, t, entityId, relationship_type,
     } = this.props;
     const paginationOptions = {
       fromId: entityId,
-      relationType,
+      relationship_type,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
@@ -150,7 +150,7 @@ class IndicatorEntities extends Component {
 
 IndicatorEntities.propTypes = {
   entityId: PropTypes.string,
-  relationType: PropTypes.string,
+  relationship_type: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,

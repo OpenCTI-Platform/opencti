@@ -117,7 +117,7 @@ class ReportEntityLineComponent extends Component {
           <ReportRefPopover
             reportId={reportId}
             toId={node.id}
-            relationType="object_refs"
+            relationship_type="object_refs"
             paginationKey="Pagination_objectRefs"
             paginationOptions={paginationOptions}
           />

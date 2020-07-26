@@ -82,13 +82,13 @@ const CountryOverview = createFragmentContainer(CountryOverviewComponent, {
       description
       created
       modified
-      createdBy {
-        node {
-          id
-          name
-          entity_type
+              createdBy {
+          ... on Identity {
+            id
+            name
+            entity_type
+          }
         }
-      }
     }
   `,
 });

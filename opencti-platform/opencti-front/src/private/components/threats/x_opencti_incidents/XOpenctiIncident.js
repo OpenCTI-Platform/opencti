@@ -61,7 +61,7 @@ class XOpenctiIncidentComponent extends Component {
             <EntityStixCoreRelationshipsDonut
               entityId={xOpenctiIncident.id}
               entityType="Stix-Observable"
-              relationType="related-to"
+              relationship_type="related-to"
               field="entity_type"
             />
           </Grid>

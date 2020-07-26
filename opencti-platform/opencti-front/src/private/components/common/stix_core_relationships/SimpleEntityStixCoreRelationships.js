@@ -44,7 +44,7 @@ class SimpleEntityStixCoreRelationships extends Component {
       t,
       classes,
       entityId,
-      relationType,
+      relationship_type,
       entityLink,
       targetEntityTypes,
     } = this.props;
@@ -52,7 +52,7 @@ class SimpleEntityStixCoreRelationships extends Component {
       inferred: true,
       toTypes: targetEntityTypes,
       fromId: entityId,
-      relationType,
+      relationship_type,
     };
 
     return (
@@ -113,7 +113,7 @@ SimpleEntityStixCoreRelationships.propTypes = {
   entityId: PropTypes.string,
   targetEntityTypes: PropTypes.array,
   entityLink: PropTypes.string,
-  relationType: PropTypes.string,
+  relationship_type: PropTypes.string,
   classes: PropTypes.object,
   reportClass: PropTypes.string,
   t: PropTypes.func,

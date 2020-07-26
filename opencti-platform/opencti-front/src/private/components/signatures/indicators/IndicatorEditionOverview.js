@@ -94,10 +94,10 @@ const indicatorMutationRelationDelete = graphql`
   mutation IndicatorEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: String!
-    $relationType: String!
+    $relationship_type: String!
   ) {
     indicatorEdit(id: $id) {
-      relationDelete(toId: $toId, relationType: $relationType) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...IndicatorEditionOverview_indicator
       }
     }
@@ -160,10 +160,8 @@ class IndicatorEditionOverviewComponent extends Component {
         variables: {
           id: this.props.indicator.id,
           input: {
-            fromRole: 'so',
             toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });
@@ -258,7 +256,7 @@ class IndicatorEditionOverviewComponent extends Component {
         'detection',
         'createdBy',
         'killChainPhases',
-        'markingDefinitions',
+        'objectMarking',
       ]),
     )(indicator);
     return (
@@ -370,12 +368,12 @@ class IndicatorEditionOverviewComponent extends Component {
             <Field
               component={SwitchField}
               type="checkbox"
-              name="detection"
+              name="x_opencti_detection"
               label={t('Detection')}
               containerstyle={{ marginTop: 20 }}
               onChange={this.handleSubmitField.bind(this)}
               helperText={
-                <SubscriptionFocus context={context} fieldName="negative" />
+                <SubscriptionFocus context={context} fieldName="x_opencti_detection" />
               }
             />
           </Form>

@@ -89,10 +89,10 @@ const regionMutationRelationDelete = graphql`
   mutation RegionEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: String!
-    $relationType: String!
+    $relationship_type: String!
   ) {
     regionEdit(id: $id) {
-      relationDelete(toId: $toId, relationType: $relationType) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...RegionEditionOverview_region
       }
     }
@@ -146,10 +146,8 @@ class RegionEditionOverviewComponent extends Component {
         variables: {
           id: this.props.region.id,
           input: {
-            fromRole: 'so',
             toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });

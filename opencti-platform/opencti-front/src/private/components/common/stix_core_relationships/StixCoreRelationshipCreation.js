@@ -194,12 +194,9 @@ class StixCoreRelationshipCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const roles = resolveRoles(values.relationship_type);
     const finalValues = pipe(
       assoc('fromId', this.props.from.id),
-      assoc('fromRole', roles.fromRole),
       assoc('toId', this.props.to.id),
-      assoc('toRole', roles.toRole),
       assoc('start_time', parse(values.start_time).format()),
       assoc('stop_time', parse(values.stop_time).format()),
       assoc('createdBy', values.createdBy.value),
@@ -264,9 +261,9 @@ class StixCoreRelationshipCreation extends Component {
       classes,
       from,
       to,
-      weight,
-      firstSeen,
-      lastSeen,
+      confidence,
+      startTime,
+      stopTime,
       defaultCreatedBy,
       defaultMarkingDefinition,
     } = this.props;
@@ -277,13 +274,12 @@ class StixCoreRelationshipCreation extends Component {
       : relationshipTypes.includes('related-to')
         ? 'related-to'
         : '';
-    const defaultWeight = weight || 3;
-    const defaultStartTime = firstSeen || null;
-    const defaultEndTime = lastSeen || null;
+    const defaultConfidence = confidence || 3;
+    const defaultStartTime = startTime || null;
+    const defaultEndTime = stopTime || null;
     const initialValues = {
       relationship_type: defaultRelationshipType,
-      weight: defaultWeight,
-      role_played: '',
+      confidence: defaultConfidence,
       start_time: defaultStartTime,
       stop_time: defaultEndTime,
       description: '',
@@ -709,9 +705,9 @@ StixCoreRelationshipCreation.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   nsd: PropTypes.func,
-  firstSeen: PropTypes.string,
-  lastSeen: PropTypes.string,
-  weight: PropTypes.number,
+  startTime: PropTypes.string,
+  stopTime: PropTypes.string,
+  confidence: PropTypes.number,
   defaultCreatedBy: PropTypes.object,
   defaultMarkingDefinition: PropTypes.object,
 };

@@ -115,14 +115,14 @@ export const reportKnowledgeGraphtMutationRelationDelete = graphql`
   mutation ReportKnowledgeGraphRelationDeleteMutation(
     $id: ID!
     $toId: String
-    $relationType: String
+    $relationship_type: String
     $relationId: ID
   ) {
     reportEdit(id: $id) {
       relationDelete(
         relationId: $relationId
         toId: $toId
-        relationType: $relationType
+        relationship_type: $relationship_type
       ) {
         ...ReportKnowledgeGraph_report
       }
@@ -465,7 +465,7 @@ class ReportKnowledgeGraphComponent extends Component {
             variables: {
               id: this.props.report.id,
               toId: node.extras.id,
-              relationType: 'object_refs',
+              relationship_type: 'object_refs',
             },
           });
         }
@@ -486,7 +486,7 @@ class ReportKnowledgeGraphComponent extends Component {
                 variables: {
                   id: this.props.report.id,
                   toId: node.extras.id,
-                  relationType: 'object_refs',
+                  relationship_type: 'object_refs',
                 },
               });
             }

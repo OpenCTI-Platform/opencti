@@ -31,7 +31,7 @@ import {
 } from '../utils/idGenerator';
 
 export const findAll = async (args) => {
-  return listRelations(propOr('stix_relation', 'relationType', args), args);
+  return listRelations(propOr('stix_relation', 'relationship_type', args), args);
 };
 export const findById = (stixCoreRelationshipId) => {
   if (!isStixId(stixCoreRelationshipId) && !isInternalId(stixCoreRelationshipId)) {

@@ -25,7 +25,7 @@ export const campaignsTimeSeries = (args) => {
 };
 
 export const campaignsTimeSeriesByEntity = (args) => {
-  const filters = [{ isRelation: true, type: args.relationType, value: args.objectId }];
+  const filters = [{ isRelation: true, type: args.relationship_type, value: args.objectId }];
   return timeSeriesEntities(ENTITY_TYPE_CAMPAIGN, filters, args);
 };
 // endregion

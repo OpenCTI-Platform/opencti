@@ -62,7 +62,7 @@ class OrganizationObservablesComponent extends Component {
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityStixCyberObservables
                 entityId={organization.id}
-                relationType="gathering"
+                relationship_type="gathering"
                 entityLink={link}
                 {...routeProps}
               />

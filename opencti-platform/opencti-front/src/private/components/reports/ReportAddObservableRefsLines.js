@@ -85,7 +85,7 @@ class ReportAddObservableRefsLinesContainer extends Component {
         variables: {
           id: reportId,
           toId: stixCyberObservable.id,
-          relationType: 'observable_refs',
+          relationship_type: 'observable_refs',
         },
         updater: (store) => {
           const conn = ConnectionHandler.getConnection(

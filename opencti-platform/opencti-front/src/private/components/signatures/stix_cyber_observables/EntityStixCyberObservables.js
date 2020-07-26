@@ -99,7 +99,7 @@ class EntityStixCyberObservables extends Component {
   }
 
   render() {
-    const { entityId, relationType } = this.props;
+    const { entityId, relationship_type } = this.props;
     const {
       view, targetEntityTypes, sortBy, orderAsc,
     } = this.state;
@@ -107,7 +107,7 @@ class EntityStixCyberObservables extends Component {
       inferred: false,
       toTypes: targetEntityTypes,
       fromId: entityId,
-      relationType,
+      relationship_type,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
@@ -117,7 +117,7 @@ class EntityStixCyberObservables extends Component {
         <StixCoreRelationshipCreationFromEntity
           entityId={entityId}
           targetEntityTypes={['Stix-Observable']}
-          allowedRelationshipTypes={[relationType]}
+          allowedRelationshipTypes={[relationship_type]}
           onlyObservables={true}
           isFrom={false}
           paddingRight={true}
@@ -134,7 +134,7 @@ class EntityStixCyberObservables extends Component {
 
 EntityStixCyberObservables.propTypes = {
   entityId: PropTypes.string,
-  relationType: PropTypes.string,
+  relationship_type: PropTypes.string,
   entityLink: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,

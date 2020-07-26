@@ -61,7 +61,7 @@ class CampaignKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={campaign.id}
-              relationType="attributed-to"
+              relationship_type="attributed-to"
               targetEntityTypes={['Identity', 'Intrusion-Set']}
               entityLink={link}
               creationIsFrom={true}
@@ -75,7 +75,7 @@ class CampaignKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={campaign.id}
-              relationType="attributed-to"
+              relationship_type="attributed-to"
               targetEntityTypes={['XOpenctiIncident']}
               entityLink={link}
               creationIsFrom={false}
@@ -89,7 +89,7 @@ class CampaignKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={campaign.id}
-              relationType="uses"
+              relationship_type="uses"
               targetEntityTypes={['Malware']}
               entityLink={link}
               creationIsFrom={true}
@@ -125,7 +125,7 @@ class CampaignKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={campaign.id}
-              relationType="uses"
+              relationship_type="uses"
               targetEntityTypes={['Tool']}
               entityLink={link}
               creationIsFrom={true}
@@ -139,7 +139,7 @@ class CampaignKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={campaign.id}
-              relationType="targets"
+              relationship_type="targets"
               targetEntityTypes={['Vulnerability']}
               entityLink={link}
               creationIsFrom={true}

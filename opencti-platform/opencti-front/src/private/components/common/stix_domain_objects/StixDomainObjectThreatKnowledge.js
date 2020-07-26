@@ -128,7 +128,7 @@ class StixDomainObjectThreatKnowledge extends Component {
     const killChainPaginationOptions = {
       fromId: stixDomainObjectId,
       toTypes: filter((n) => n.toLowerCase() !== stixDomainObjectType, toTypes),
-      relationType: 'stix_relation',
+      relationship_type: 'stix_relation',
       inferred,
     };
     return (
@@ -311,7 +311,7 @@ class StixDomainObjectThreatKnowledge extends Component {
           <Grid item={true} xs={4} style={{ marginBottom: 50 }}>
             <SimpleEntityStixCoreRelationships
               entityId={stixDomainObjectId}
-              relationType="related-to"
+              relationship_type="related-to"
               targetEntityTypes={['Stix-Domain-Entity']}
               entityLink={link}
             />

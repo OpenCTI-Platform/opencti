@@ -57,7 +57,7 @@ const styles = () => ({
 const entityStixCoreRelationshipsTableTimeStixCoreRelationshipTimeSeriesQuery = graphql`
   query EntityStixCoreRelationshipsTableTimeStixCoreRelationshipTimeSeriesQuery(
     $fromId: String
-    $relationType: String
+    $relationship_type: String
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime!
@@ -67,7 +67,7 @@ const entityStixCoreRelationshipsTableTimeStixCoreRelationshipTimeSeriesQuery = 
   ) {
     stixCoreRelationshipsTimeSeries(
       fromId: $fromId
-      relationType: $relationType
+      relationship_type: $relationship_type
       field: $field
       operation: $operation
       startDate: $startDate
@@ -102,13 +102,13 @@ class EntityStixCoreRelationshipsTableTime extends Component {
       startDate,
       endDate,
       inferred = true,
-      relationType,
+      relationship_type,
     } = this.props;
     const monthInterval = this.state.interval === 'month' ? monthsAgo(6) : monthsAgo(12 * 5);
     const finalStartDate = variant === 'explore' && startDate ? startDate : monthInterval;
     const stixCoreRelationshipsTimeSeriesVariables = {
       fromId: entityId || null,
-      relationType,
+      relationship_type,
       field: 'first_seen',
       operation: 'count',
       startDate: finalStartDate,
@@ -142,7 +142,7 @@ class EntityStixCoreRelationshipsTableTime extends Component {
                       )}
                     </TableCell>
                     <TableCell align="right">{`${t('Number of')} ${t(
-                      `relation_${relationType}`,
+                      `relation_${relationship_type}`,
                     )}s`}</TableCell>
                   </TableRow>
                 </TableHead>
@@ -219,7 +219,7 @@ class EntityStixCoreRelationshipsTableTime extends Component {
       variant,
       configuration,
       handleOpenConfig,
-      relationType,
+      relationship_type,
     } = this.props;
     if (variant === 'explore') {
       return (
@@ -272,7 +272,7 @@ class EntityStixCoreRelationshipsTableTime extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {title || t(`relation_${relationType}`)}
+          {title || t(`relation_${relationship_type}`)}
         </Typography>
         <div style={{ float: 'right', marginTop: -6 }}>
           <Chip
@@ -312,7 +312,7 @@ EntityStixCoreRelationshipsTableTime.propTypes = {
   startDate: PropTypes.string,
   endDate: PropTypes.string,
   inferred: PropTypes.bool,
-  relationType: PropTypes.string,
+  relationship_type: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   md: PropTypes.func,
