@@ -17,12 +17,14 @@ import stixSightingRelationshipResolvers from '../resolvers/stixSightingRelation
 import stixCyberObservableRelationResolvers from '../resolvers/stixCyberObservableRelationship';
 import workspaceResolvers from '../resolvers/workspace';
 import identityResolvers from '../resolvers/identity';
+import individualResolvers from '../resolvers/individual';
 import userResolvers from '../resolvers/user';
 import organizationResolvers from '../resolvers/organization';
 import sectorResolvers from '../resolvers/sector';
 import cityResolvers from '../resolvers/city';
 import countryResolvers from '../resolvers/country';
 import regionResolvers from '../resolvers/region';
+import positionResolvers from '../resolvers/position';
 import groupResolvers from '../resolvers/group';
 import markingDefinitionResolvers from '../resolvers/markingDefinition';
 import externalReferenceResolvers from '../resolvers/externalReference';
@@ -31,12 +33,14 @@ import attackPatternResolvers from '../resolvers/attackPattern';
 import courseOfActionResolvers from '../resolvers/courseOfAction';
 import threatActorResolvers from '../resolvers/threatActor';
 import intrusionSetResolvers from '../resolvers/intrusionSet';
+import infrastructureResolvers from '../resolvers/infrastructure';
 import campaignResolvers from '../resolvers/campaign';
 import malwareResolvers from '../resolvers/malware';
 import toolResolvers from '../resolvers/tool';
 import vulnerabilityResolvers from '../resolvers/vulnerability';
 import reportResolvers from '../resolvers/report';
 import noteResolvers from '../resolvers/note';
+import observedDataResolvers from '../resolvers/observedData';
 import opinionResolvers from '../resolvers/opinion';
 import indicatorResolvers from '../resolvers/indicator';
 import xOpenctiIncidentResolvers from '../resolvers/xOpenctiIncident';
@@ -51,47 +55,65 @@ const createSchema = () => {
   };
 
   const resolvers = mergeResolvers([
+    // INTERNAL
     globalResolvers,
-    settingsResolvers,
     logResolvers,
+    rabbitmqMetricsResolvers,
     inferenceResolvers,
     attributeResolvers,
     subTypeResolvers,
-    labelResolvers,
-    rabbitmqMetricsResolvers,
-    connectorResolvers,
     fileResolvers,
-    stixCoreObjectResolvers,
-    stixDomainObjectResolvers,
-    stixCyberObservableResolvers,
-    stixCoreRelationshipResolvers,
-    stixSightingRelationshipResolvers,
-    stixCyberObservableRelationResolvers,
-    workspaceResolvers,
-    identityResolvers,
+    // ENTITIES
+    // INTERNAL OBJECT ENTITIES
+    settingsResolvers,
+    groupResolvers,
     userResolvers,
+    connectorResolvers,
+    workspaceResolvers,
+    // STIX OBJECT ENTITIES
+    // STIX META OBJECT ENTITIES
+    markingDefinitionResolvers,
+    labelResolvers,
+    externalReferenceResolvers,
+    killChainPhaseResolvers,
+    // STIX CORE OBJECT ENTITIES
+    stixCoreObjectResolvers,
+    // STIX DOMAIN OBJECT ENTITIES
+    stixDomainObjectResolvers,
+    attackPatternResolvers,
+    campaignResolvers,
+    // Containers
+    noteResolvers,
+    observedDataResolvers,
+    opinionResolvers,
+    reportResolvers,
+    courseOfActionResolvers,
+    // Identities
+    identityResolvers,
+    individualResolvers,
     organizationResolvers,
     sectorResolvers,
+    indicatorResolvers,
+    infrastructureResolvers,
+    intrusionSetResolvers,
+    // Locations
     cityResolvers,
     countryResolvers,
     regionResolvers,
-    groupResolvers,
-    markingDefinitionResolvers,
-    externalReferenceResolvers,
-    killChainPhaseResolvers,
-    attackPatternResolvers,
-    courseOfActionResolvers,
-    threatActorResolvers,
-    intrusionSetResolvers,
-    campaignResolvers,
+    positionResolvers,
     malwareResolvers,
+    threatActorResolvers,
     toolResolvers,
     vulnerabilityResolvers,
-    reportResolvers,
-    noteResolvers,
-    opinionResolvers,
-    indicatorResolvers,
     xOpenctiIncidentResolvers,
+    // STIX CYBER OBSERVABLE ENTITIES
+    stixCyberObservableResolvers,
+    // STIX CORE RELATIONSHIPS
+    stixCoreRelationshipResolvers,
+    // STIX SIGHTING RELATIONSHIPS
+    stixSightingRelationshipResolvers,
+    // STIX CYBER OBSERVABLE RELATIONSHIPS
+    stixCyberObservableRelationResolvers,
   ]);
 
   return makeExecutableSchema({

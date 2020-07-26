@@ -2578,6 +2578,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   infrastructure_types: String
   first_seen: DateTime
   last_seen: DateTime
+  killChainPhases: KillChainPhaseConnection
   # Technical
   creator: User
   importFiles(first: Int): FileConnection
@@ -2860,6 +2861,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   # Position
   street_address: String
   postal_code: String
+  city: City
   # Technical
   creator: User
   importFiles(first: Int): FileConnection

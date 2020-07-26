@@ -1,4 +1,4 @@
-import { addIndividual, findAll, findById } from '../domain/individual';
+import { addPosition, findAll, findById, city } from '../domain/position';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -10,22 +10,21 @@ import {
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
 
-const individualResolvers = {
+const positionResolvers = {
   Query: {
-    individual: (_, { id }) => findById(id),
-    individuals: (_, args) => findAll(args),
+    position: (_, { id }) => findById(id),
+    positions: (_, args) => findAll(args),
   },
-  IndividualsOrdering: {
-    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
+  Position: {
+    city: (position) => city(position.id),
   },
-  IndividualsFilter: {
+  PositionsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
     markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
     labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
   },
   Mutation: {
-    individualEdit: (_, { id }, { user }) => ({
+    positionEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainObjectDelete(user, id),
       fieldPatch: ({ input }) => stixDomainObjectEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
@@ -33,8 +32,8 @@ const individualResolvers = {
       relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
       relationDelete: ({ relationId }) => stixDomainObjectDeleteRelation(user, id, relationId),
     }),
-    individualAdd: (_, { input }, { user }) => addIndividual(user, input),
+    positionAdd: (_, { input }, { user }) => addPosition(user, input),
   },
 };
 
-export default individualResolvers;
+export default positionResolvers;
