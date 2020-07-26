@@ -5347,12 +5347,12 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
   integrity sha512-WjKPNJF79dtJAVniUlGGWHYGz2jWxT6VhN/4m1NdkbZ2nOsEF+cI1Edgql5zCRhs/VsQYRvrXctxktVXZUkixw==
 
 grakn-client@^1.7.0:
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/grakn-client/-/grakn-client-1.8.0.tgz#9a230fa0c32957614388dd600182f4f4e4e45466"
-  integrity sha512-y0/WVJe1fElfOyGB2o2AvSRD8KYh5uVDu4ZFco8JNhlvCH2fOVdtmoGuMRjg263BqvAbhW/ZvA4qT/DfQ3t3CA==
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/grakn-client/-/grakn-client-1.7.0.tgz#7da5e4c27a075885ddae0eb4553ebc256c3ea601"
+  integrity sha512-ATtb8kj2Zn0ZxFl5TtLyf+XeckUqhUWBQ73CEhYid8VtA6CX/FfaSl2uQSVJW8h+x7kB18lYWPAtXUcacrkxAw==
   dependencies:
     google-protobuf "^3.6.0"
-    grpc "^1.24.3"
+    grpc "^1.24.1"
 
 graphql-constraint-directive@^2.0.3:
   version "2.0.3"
