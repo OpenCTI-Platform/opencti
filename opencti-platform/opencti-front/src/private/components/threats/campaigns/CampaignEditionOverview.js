@@ -180,7 +180,7 @@ class CampaignEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeMarkingDefinitions(name, values) {
+  handleChangeObjectMarking(name, values) {
     const { campaign } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['objectMarking', 'edges']),
@@ -307,7 +307,7 @@ class CampaignEditionOverviewComponent extends Component {
                   fieldname="objectMarking"
                 />
               }
-              onChange={this.handleChangeMarkingDefinitions.bind(this)}
+              onChange={this.handleChangeObjectMarking.bind(this)}
             />
           </Form>
         )}

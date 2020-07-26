@@ -674,7 +674,7 @@ const StixDomainObjectVictimologySectorsSectorLines = createRefetchContainer(
                   }
                 }
               }
-              markingDefinitions {
+              objectMarking {
                 edges {
                   node {
                     id

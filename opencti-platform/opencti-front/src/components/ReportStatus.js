@@ -47,7 +47,7 @@ const inlineStyles = {
   },
 };
 
-class ItemMarking extends Component {
+class ReportStatus extends Component {
   render() {
     const {
       classes, label, status, variant,
@@ -98,11 +98,11 @@ class ItemMarking extends Component {
   }
 }
 
-ItemMarking.propTypes = {
+ReportStatus.propTypes = {
   classes: PropTypes.object.isRequired,
   status: PropTypes.number,
   label: PropTypes.string,
   variant: PropTypes.string,
 };
 
-export default withStyles(styles)(ItemMarking);
+export default withStyles(styles)(ReportStatus);

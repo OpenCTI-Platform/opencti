@@ -248,7 +248,7 @@ class StixDomainObjectKillChainLinesComponent extends Component {
                               primary={
                                 <span>
                                   <strong>
-                                    {attackPattern.to.external_id}
+                                    {attackPattern.to.x_mitre_id}
                                   </strong>{' '}
                                   - {attackPattern.to.name}
                                 </span>
@@ -368,7 +368,7 @@ const StixDomainObjectKillChainLines = createRefetchContainer(
                 id
                 name
                 ... on AttackPattern {
-                  external_id
+                  x_mitre_id
                   killChainPhases {
                     edges {
                       node {
@@ -389,7 +389,7 @@ const StixDomainObjectKillChainLines = createRefetchContainer(
                   }
                 }
               }
-              markingDefinitions {
+              objectMarking {
                 edges {
                   node {
                     id

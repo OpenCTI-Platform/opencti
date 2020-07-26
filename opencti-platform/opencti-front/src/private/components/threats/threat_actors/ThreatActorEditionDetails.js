@@ -69,7 +69,7 @@ const threatActorValidation = (t) => Yup.object().shape({
   resource_level: Yup.string().required(t('This field is required')),
   primary_motivation: Yup.string().required(t('This field is required')),
   secondary_motivations: Yup.array().required(t('This field is required')),
-  goal: Yup.string(),
+  goals: Yup.array(),
 });
 
 class ThreatActorEditionDetailsComponent extends Component {
@@ -108,7 +108,7 @@ class ThreatActorEditionDetailsComponent extends Component {
         'resource_level',
         'primary_motivation',
         'secondary_motivations',
-        'goal',
+        'goals',
       ],
       threatActor,
     );
@@ -311,8 +311,8 @@ class ThreatActorEditionDetailsComponent extends Component {
                 </Field>
                 <Field
                   component={TextField}
-                  name="goal"
-                  label={t('Goal')}
+                  name="goals"
+                  label={t('Goals (1 / line)')}
                   fullWidth={true}
                   multiline={true}
                   rows="4"
@@ -320,7 +320,7 @@ class ThreatActorEditionDetailsComponent extends Component {
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
                   helperText={
-                    <SubscriptionFocus context={context} fieldName="goal" />
+                    <SubscriptionFocus context={context} fieldName="goals" />
                   }
                 />
               </Form>
@@ -350,7 +350,7 @@ const ThreatActorEditionDetails = createFragmentContainer(
         resource_level
         primary_motivation
         secondary_motivations
-        goal
+        goals
       }
     `,
   },

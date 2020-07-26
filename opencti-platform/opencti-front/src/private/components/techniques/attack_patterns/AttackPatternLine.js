@@ -64,9 +64,9 @@ class AttackPatternLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.external_id.width }}
+                style={{ width: dataColumns.x_mitre_id.width }}
               >
-                {node.external_id}
+                {node.x_mitre_id}
               </div>
               <div
                 className={classes.bodyItem}
@@ -122,7 +122,7 @@ const AttackPatternLineFragment = createFragmentContainer(
     node: graphql`
       fragment AttackPatternLine_node on AttackPattern {
         id
-        external_id
+        x_mitre_id
         name
         created
         modified
@@ -158,7 +158,7 @@ class AttackPatternLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.external_id.width }}
+                style={{ width: dataColumns.x_mitre_id.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>

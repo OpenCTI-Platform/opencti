@@ -14,7 +14,7 @@ import {
 import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
-import ItemStatus from '../../../components/ItemStatus';
+import ItemStatus from '../../../components/ReportStatus';
 import StixCoreObjectLabels from '../common/stix_core_objects/StixCoreObjectLabels';
 
 const styles = (theme) => ({

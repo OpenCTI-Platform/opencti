@@ -3193,7 +3193,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   precision: Float
   x_opencti_aliases: [String]
   # Region
-  parentRegions: Region
+  parentRegions: RegionConnection
   subRegions: RegionConnection
   isSubRegion: Boolean
   # Technical
@@ -5617,7 +5617,7 @@ type RoleEditMutations {
   fieldPatch(input: EditInput): Role
   contextPatch(input: EditContext): Role
   contextClean: Role
-  relationAdd(input: InternalRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: InternalRelationshipAddInput): InternalRelationship
   removeCapability(name: String!): Role
 }
 type WorkspaceEditMutations {

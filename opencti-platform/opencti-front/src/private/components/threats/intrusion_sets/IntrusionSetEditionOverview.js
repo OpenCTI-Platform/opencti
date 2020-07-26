@@ -180,7 +180,7 @@ class IntrusionSetEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeMarkingDefinitions(name, values) {
+  handleChangeObjectMarking(name, values) {
     const { intrusionSet } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['objectMarking', 'edges']),
@@ -310,7 +310,7 @@ class IntrusionSetEditionOverviewComponent extends Component {
                   fieldname="objectMarking"
                 />
               }
-              onChange={this.handleChangeMarkingDefinitions.bind(this)}
+              onChange={this.handleChangeObjectMarking.bind(this)}
             />
           </Form>
         )}

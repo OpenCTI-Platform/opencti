@@ -81,15 +81,15 @@ class EntityStixCyberObservableLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.first_seen.width }}
+                style={{ width: dataColumns.start_time.width }}
               >
-                {node.inferred ? '-' : nsd(node.first_seen)}
+                {node.inferred ? '-' : nsd(node.start_time)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.last_seen.width }}
+                style={{ width: dataColumns.stop_time.width }}
               >
-                {node.inferred ? '-' : nsd(node.last_seen)}
+                {node.inferred ? '-' : nsd(node.stop_time)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -131,9 +131,9 @@ const EntityStixCyberObservableLineFragment = createFragmentContainer(
     node: graphql`
       fragment EntityStixCyberObservableLine_node on StixCoreRelationship {
         id
-        weight
-        first_seen
-        last_seen
+        confidence
+        start_time
+        stop_time
         description
         inferred
         to {
@@ -141,7 +141,6 @@ const EntityStixCyberObservableLineFragment = createFragmentContainer(
             id
             entity_type
             observable_value
-            description
             created_at
             updated_at
           }
@@ -181,13 +180,13 @@ class EntityStixCyberObservableLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.first_seen.width }}
+                style={{ width: dataColumns.start_time.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.last_seen.width }}
+                style={{ width: dataColumns.stop_time.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>

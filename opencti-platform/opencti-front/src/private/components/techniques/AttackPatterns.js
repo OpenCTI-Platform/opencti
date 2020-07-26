@@ -86,7 +86,7 @@ class AttackPatterns extends Component {
       numberOfElements,
     } = this.state;
     const dataColumns = {
-      external_id: {
+      x_mitre_id: {
         label: 'External ID',
         width: '10%',
         isSortable: true,

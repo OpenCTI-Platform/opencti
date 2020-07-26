@@ -137,7 +137,6 @@ class CountryEditionOverviewComponent extends Component {
     const currentCreatedBy = {
       label: pathOr(null, ['createdBy', 'node', 'name'], country),
       value: pathOr(null, ['createdBy', 'node', 'id'], country),
-      relation: pathOr(null, ['createdBy', 'relation', 'id'], country),
     };
 
     if (currentCreatedBy.value === null) {
@@ -156,7 +155,8 @@ class CountryEditionOverviewComponent extends Component {
         mutation: countryMutationRelationDelete,
         variables: {
           id: this.props.country.id,
-          relationId: currentCreatedBy.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {
@@ -174,14 +174,13 @@ class CountryEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeMarkingDefinitions(name, values) {
+  handleChangeObjectMarking(name, values) {
     const { country } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(country);
 
@@ -206,7 +205,8 @@ class CountryEditionOverviewComponent extends Component {
         mutation: countryMutationRelationDelete,
         variables: {
           id: this.props.country.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -221,18 +221,17 @@ class CountryEditionOverviewComponent extends Component {
         value: pathOr(null, ['createdBy', 'node', 'id'], country),
         relation: pathOr(null, ['createdBy', 'relation', 'id'], country),
       };
-    const markingDefinitions = pipe(
+    const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(country);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
-      assoc('markingDefinitions', markingDefinitions),
-      pick(['name', 'description', 'createdBy', 'markingDefinitions']),
+      assoc('objectMarking', objectMarking),
+      pick(['name', 'description', 'createdBy', 'objectMarking']),
     )(country);
     return (
       <Formik
@@ -286,7 +285,7 @@ class CountryEditionOverviewComponent extends Component {
                   fieldname="objectMarking"
                 />
               }
-              onChange={this.handleChangeMarkingDefinitions.bind(this)}
+              onChange={this.handleChangeObjectMarking.bind(this)}
             />
           </Form>
         )}

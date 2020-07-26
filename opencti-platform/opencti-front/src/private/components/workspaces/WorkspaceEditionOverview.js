@@ -138,7 +138,7 @@ class WorkspaceEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeMarkingDefinitions(name, values) {
+  handleChangeObjectMarking(name, values) {
     const { workspace } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['objectMarking', 'edges']),
@@ -237,7 +237,7 @@ class WorkspaceEditionOverviewComponent extends Component {
                       fieldname="objectMarking"
                     />
                   }
-                  onChange={this.handleChangeMarkingDefinitions.bind(this)}
+                  onChange={this.handleChangeObjectMarking.bind(this)}
                 />
               </Form>
             </div>

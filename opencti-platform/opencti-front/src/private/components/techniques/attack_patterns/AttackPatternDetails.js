@@ -40,7 +40,7 @@ class AttackPatternDetailsComponent extends Component {
           </Typography>
           <Chip
             size="small"
-            label={attackPattern.external_id}
+            label={attackPattern.x_mitre_id}
             color="primary"
             style={{ marginBottom: 20 }}
           />

@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../components/i18n';
-import ItemStatus from '../../../components/ItemStatus';
+import ItemStatus from '../../../components/ReportStatus';
 import ItemConfidence from '../../../components/ItemConfidence';
 import StixDomainObjectLabels from '../common/stix_domain_objects/StixDomainObjectLabels';
 import ItemCreator from '../../../components/ItemCreator';
@@ -31,7 +31,7 @@ class ReportDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixDomainObjectLabels labels={report.labels} id={report.id} />
+          <StixDomainObjectLabels labels={report.objectLabel} id={report.id} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -50,12 +50,12 @@ class ReportDetailsComponent extends Component {
           <ItemStatus
             label={t(
               `${
-                report.object_status
-                  ? `report_status_${report.object_status}`
+                report.x_opencti_report_status
+                  ? `report_status_${report.x_opencti_report_status}`
                   : 'report_status_0'
               }`,
             )}
-            status={report.object_status}
+            status={report.x_opencti_report_status}
           />
           <Typography
             variant="h3"
@@ -82,21 +82,18 @@ const ReportDetails = createFragmentContainer(ReportDetailsComponent, {
   report: graphql`
     fragment ReportDetails_report on Report {
       id
-      object_status
       confidence
+      x_opencti_report_status
       creator {
         id
         name
       }
-      labels {
+      objectLabel {
         edges {
           node {
             id
             value
             color
-          }
-          relation {
-            id
           }
         }
       }

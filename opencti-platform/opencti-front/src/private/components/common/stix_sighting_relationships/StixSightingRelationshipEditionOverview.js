@@ -25,7 +25,6 @@ import { resolveLink } from '../../../../utils/Entity';
 import inject18n from '../../../../components/i18n';
 import {
   commitMutation,
-  QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -34,8 +33,6 @@ import {
   SubscriptionFocus,
 } from '../../../../components/Subscription';
 import DatePickerField from '../../../../components/DatePickerField';
-import { attributesQuery } from '../../settings/attributes/AttributesLines';
-import Loader from '../../../../components/Loader';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import CreatedByField from '../form/CreatedByField';
 import ConfidenceField from '../form/ConfidenceField';
@@ -186,7 +183,7 @@ const StixSightingRelationshipEditionContainer = ({
       sub.dispose();
     };
   });
-  const handleChangeMarkingDefinitions = (name, values) => {
+  const handleChangeObjectMarking = (name, values) => {
     const currentMarkingDefinitions = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
@@ -312,25 +309,19 @@ const StixSightingRelationshipEditionContainer = ({
         ['createdBy', 'node', 'id'],
         stixSightingRelationship,
       ),
-      relation: pathOr(
-        null,
-        ['createdBy', 'relation', 'id'],
-        stixSightingRelationship,
-      ),
     };
-  const markingDefinitions = pipe(
+  const objectMarking = pipe(
     pathOr([], ['objectMarking', 'edges']),
     map((n) => ({
       label: n.node.definition,
       value: n.node.id,
-      relationId: n.relation.id,
     })),
   )(stixSightingRelationship);
   const initialValues = pipe(
     assoc('first_seen', dateFormat(stixSightingRelationship.first_seen)),
     assoc('last_seen', dateFormat(stixSightingRelationship.last_seen)),
     assoc('createdBy', createdBy),
-    assoc('markingDefinitions', markingDefinitions),
+    assoc('objectMarking', objectMarking),
     pick([
       'number',
       'confidence',
@@ -362,142 +353,125 @@ const StixSightingRelationshipEditionContainer = ({
         <div className="clearfix" />
       </div>
       <div className={classes.container}>
-        <QueryRenderer
-          query={attributesQuery}
-          variables={{ type: 'role_played' }}
-          render={({ props }) => {
-            if (props && props.attributes) {
-              return (
-                <Formik
-                  enableReinitialize={true}
-                  initialValues={initialValues}
-                  validationSchema={stixSightingRelationshipValidation(t)}
-                >
-                  {(setFieldValue) => (
-                    <Form style={{ margin: '20px 0 20px 0' }}>
-                      <Field
-                        component={TextField}
-                        name="attribute_count"
-                        label={t('Count')}
-                        fullWidth={true}
-                        onFocus={handleChangeFocus}
-                        onSubmit={handleSubmitField}
-                        helperText={
-                          <SubscriptionFocus
-                            context={editContext}
-                            fieldName="attribute_count"
-                          />
-                        }
-                      />
-                      <ConfidenceField
-                        variant="edit"
-                        name="confidence"
-                        label={t('Confidence level')}
-                        onFocus={handleChangeFocus}
-                        onChange={handleSubmitField}
-                        editContext={editContext}
-                        containerstyle={{ marginTop: 20, width: '100%' }}
-                      />
-                      <Field
-                        component={DatePickerField}
-                        name="first_seen"
-                        label={t('First seen')}
-                        invalidDateMessage={t(
-                          'The value must be a date (YYYY-MM-DD)',
-                        )}
-                        fullWidth={true}
-                        style={{ marginTop: 20 }}
-                        onFocus={handleChangeFocus}
-                        onSubmit={handleSubmitField}
-                        helperText={
-                          <SubscriptionFocus
-                            context={editContext}
-                            fieldName="first_seen"
-                          />
-                        }
-                      />
-                      <Field
-                        component={DatePickerField}
-                        name="last_seen"
-                        label={t('Last seen')}
-                        invalidDateMessage={t(
-                          'The value must be a date (YYYY-MM-DD)',
-                        )}
-                        fullWidth={true}
-                        style={{ marginTop: 20 }}
-                        onFocus={handleChangeFocus}
-                        onSubmit={handleSubmitField}
-                        helperText={
-                          <SubscriptionFocus
-                            context={editContext}
-                            fieldName="last_seen"
-                          />
-                        }
-                      />
-                      <Field
-                        component={TextField}
-                        name="description"
-                        label={t('Description')}
-                        fullWidth={true}
-                        multiline={true}
-                        rows={4}
-                        style={{ marginTop: 20 }}
-                        onFocus={handleChangeFocus}
-                        onSubmit={handleSubmitField}
-                        helperText={
-                          <SubscriptionFocus
-                            context={editContext}
-                            fieldName="description"
-                          />
-                        }
-                      />
-                      <CreatedByField
-                        name="createdBy"
-                        style={{ marginTop: 20, width: '100%' }}
-                        setFieldValue={setFieldValue}
-                        helpertext={
-                          <SubscriptionFocus
-                            context={editContext}
-                            fieldName="createdBy"
-                          />
-                        }
-                        onChange={handleChangeCreatedBy}
-                      />
-                      <ObjectMarkingField
-                        name="objectMarking"
-                        style={{ marginTop: 20, width: '100%' }}
-                        helpertext={
-                          <SubscriptionFocus
-                            context={editContext}
-                            fieldname="objectMarking"
-                          />
-                        }
-                        onChange={handleChangeMarkingDefinitions}
-                      />
-                      <Field
-                        component={SwitchField}
-                        type="checkbox"
-                        name="x_opencti_negative"
-                        label={t(
-                          'Sighed a false positive (negative feedback)?',
-                        )}
-                        containerstyle={{ marginTop: 20 }}
-                        onChange={handleSubmitField}
-                        helperText={
-                          <SubscriptionFocus
-                            context={editContext}
-                            fieldName="x_opencti_negative"
-                          />
-                        }
-                      />
-                    </Form>
-                  )}
-                </Formik>
-              );
-            }
-            return <Loader variant="inElement" />;
-          }}
-        />
+        <Formik
+          enableReinitialize={true}
+          initialValues={initialValues}
+          validationSchema={stixSightingRelationshipValidation(t)}
+        >
+          {(setFieldValue) => (
+            <Form style={{ margin: '20px 0 20px 0' }}>
+              <Field
+                component={TextField}
+                name="attribute_count"
+                label={t('Count')}
+                fullWidth={true}
+                onFocus={handleChangeFocus}
+                onSubmit={handleSubmitField}
+                helperText={
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="attribute_count"
+                  />
+                }
+              />
+              <ConfidenceField
+                variant="edit"
+                name="confidence"
+                label={t('Confidence level')}
+                onFocus={handleChangeFocus}
+                onChange={handleSubmitField}
+                editContext={editContext}
+                containerstyle={{ marginTop: 20, width: '100%' }}
+              />
+              <Field
+                component={DatePickerField}
+                name="first_seen"
+                label={t('First seen')}
+                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
+                fullWidth={true}
+                style={{ marginTop: 20 }}
+                onFocus={handleChangeFocus}
+                onSubmit={handleSubmitField}
+                helperText={
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="first_seen"
+                  />
+                }
+              />
+              <Field
+                component={DatePickerField}
+                name="last_seen"
+                label={t('Last seen')}
+                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
+                fullWidth={true}
+                style={{ marginTop: 20 }}
+                onFocus={handleChangeFocus}
+                onSubmit={handleSubmitField}
+                helperText={
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="last_seen"
+                  />
+                }
+              />
+              <Field
+                component={TextField}
+                name="description"
+                label={t('Description')}
+                fullWidth={true}
+                multiline={true}
+                rows={4}
+                style={{ marginTop: 20 }}
+                onFocus={handleChangeFocus}
+                onSubmit={handleSubmitField}
+                helperText={
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="description"
+                  />
+                }
+              />
+              <CreatedByField
+                name="createdBy"
+                style={{ marginTop: 20, width: '100%' }}
+                setFieldValue={setFieldValue}
+                helpertext={
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="createdBy"
+                  />
+                }
+                onChange={handleChangeCreatedBy}
+              />
+              <ObjectMarkingField
+                name="objectMarking"
+                style={{ marginTop: 20, width: '100%' }}
+                helpertext={
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldname="objectMarking"
+                  />
+                }
+                onChange={handleChangeObjectMarking}
+              />
+              <Field
+                component={SwitchField}
+                type="checkbox"
+                name="x_opencti_negative"
+                label={t('Sighed a false positive (negative feedback)?')}
+                containerstyle={{ marginTop: 20 }}
+                onChange={handleSubmitField}
+                helperText={
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="x_opencti_negative"
+                  />
+                }
+              />
+            </Form>
+          )}
+        </Formik>
         {stixDomainObject ? (
           <Button
             variant="contained"

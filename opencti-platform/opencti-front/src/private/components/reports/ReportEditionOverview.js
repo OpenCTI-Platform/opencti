@@ -183,7 +183,7 @@ class ReportEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeMarkingDefinitions(name, values) {
+  handleChangeObjectMarking(name, values) {
     const { report } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['objectMarking', 'edges']),
@@ -420,7 +420,7 @@ class ReportEditionOverviewComponent extends Component {
                               fieldname="objectMarking"
                             />
                           }
-                          onChange={this.handleChangeMarkingDefinitions.bind(
+                          onChange={this.handleChangeObjectMarking.bind(
                             this,
                           )}
                         />

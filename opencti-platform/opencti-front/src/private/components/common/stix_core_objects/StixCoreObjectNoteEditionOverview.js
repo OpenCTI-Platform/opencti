@@ -134,7 +134,7 @@ class StixCoreObjectNoteEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeMarkingDefinitions(name, values) {
+  handleChangeObjectMarking(name, values) {
     const { note } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['objectMarking', 'edges']),

@@ -67,7 +67,7 @@ export const attackPatternEditionDetailsFocus = graphql`
 `;
 
 const attackPatternValidation = () => Yup.object().shape({
-  external_id: Yup.string(),
+  x_mitre_id: Yup.string(),
   platform: Yup.string(),
   required_permission: Yup.string(),
 });
@@ -108,7 +108,7 @@ class AttackPatternEditionDetailsComponent extends Component {
         'required_permission',
         propOr([], 'required_permission', attackPattern),
       ),
-      pick(['external_id', 'platform', 'required_permission']),
+      pick(['x_mitre_id', 'platform', 'required_permission']),
     )(attackPattern);
 
     return (
@@ -122,13 +122,13 @@ class AttackPatternEditionDetailsComponent extends Component {
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
-              name="external_id"
+              name="x_mitre_id"
               label={t('External ID')}
               fullWidth={true}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
               helperText={
-                <SubscriptionFocus context={context} fieldName="external_id" />
+                <SubscriptionFocus context={context} fieldName="x_mitre_id" />
               }
             />
             <Field

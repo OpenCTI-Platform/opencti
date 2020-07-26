@@ -177,7 +177,7 @@ const EntityStixSightingRelationshipLineFragment = createFragmentContainer(
             updated_at
           }
           ... on AttackPattern {
-            external_id
+            x_mitre_id
             killChainPhases {
               edges {
                 node {

@@ -199,14 +199,13 @@ class StixDomainObjectEditionContainer extends Component {
     }
   }
 
-  handleChangeMarkingDefinitions(name, values) {
+  handleChangeObjectMarking(name, values) {
     const { stixDomainObject } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(stixDomainObject);
 
@@ -231,7 +230,8 @@ class StixDomainObjectEditionContainer extends Component {
         mutation: stixDomainObjectMutationRelationDelete,
         variables: {
           id: stixDomainObject.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -281,31 +281,19 @@ class StixDomainObjectEditionContainer extends Component {
           stixDomainObject,
         ),
         value: pathOr(null, ['createdBy', 'node', 'id'], stixDomainObject),
-        relation: pathOr(
-          null,
-          ['createdBy', 'relation', 'id'],
-          stixDomainObject,
-        ),
       };
-    const markingDefinitions = pipe(
+    const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(stixDomainObject);
     const initialValues = pipe(
       assoc('aliases', join(',', stixDomainObject.aliases)),
       assoc('createdBy', createdBy),
-      assoc('markingDefinitions', markingDefinitions),
-      pick([
-        'name',
-        'aliases',
-        'description',
-        'createdBy',
-        'markingDefinitions',
-      ]),
+      assoc('objectMarking', objectMarking),
+      pick(['name', 'aliases', 'description', 'createdBy', 'objectMarking']),
     )(stixDomainObject);
     return (
       <div>
@@ -398,7 +386,7 @@ class StixDomainObjectEditionContainer extends Component {
                       fieldname="objectMarking"
                     />
                   }
-                  onChange={this.handleChangeMarkingDefinitions.bind(this)}
+                  onChange={this.handleChangeObjectMarking.bind(this)}
                 />
               </Form>
             )}

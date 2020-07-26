@@ -139,13 +139,13 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
     )(data.stixCoreRelationships.edges);
     const stixCoreRelationships = pipe(
       map((n) => n.node),
-      map((n) => assoc('firstSeenYear', yearFormat(n.first_seen), n)),
-      map((n) => assoc('lastSeenYear', yearFormat(n.last_seen), n)),
+      map((n) => assoc('startTimeYear', yearFormat(n.first_seen), n)),
+      map((n) => assoc('stopTimeYear', yearFormat(n.last_seen), n)),
       map((n) => assoc(
         'years',
-        n.firstSeenYear === n.lastSeenYear
-          ? n.firstSeenYear
-          : `${n.firstSeenYear} - ${n.lastSeenYear}`,
+        n.startTimeYear === n.stopTimeYear
+          ? n.startTimeYear
+          : `${n.startTimeYear} - ${n.stopTimeYear}`,
         n,
       )),
       map((n) => assoc(
@@ -243,7 +243,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                                 === 'attack-pattern' ? (
                                   <span>
                                     <strong>
-                                      {stixDomainObject.to.external_id}
+                                      {stixDomainObject.to.x_mitre_id}
                                     </strong>{' '}
                                     - {stixDomainObject.to.name}
                                   </span>
@@ -349,15 +349,15 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
             node {
               id
               description
-              first_seen
-              last_seen
+              start_time
+              stop_time
               inferred
               to {
                 id
                 name
                 entity_type
                 ... on AttackPattern {
-                  external_id
+                  x_mitre_id
                   killChainPhases {
                     edges {
                       node {
@@ -400,7 +400,7 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                   }
                 }
               }
-              markingDefinitions {
+              objectMarking {
                 edges {
                   node {
                     id

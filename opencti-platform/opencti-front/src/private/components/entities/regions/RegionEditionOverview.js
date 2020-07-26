@@ -174,7 +174,7 @@ class RegionEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeMarkingDefinitions(name, values) {
+  handleChangeObjectMarking(name, values) {
     const { region } = this.props;
     const currentMarkingDefinitions = pipe(
       pathOr([], ['objectMarking', 'edges']),
@@ -290,7 +290,7 @@ class RegionEditionOverviewComponent extends Component {
                     fieldname="objectMarking"
                   />
                 }
-                onChange={this.handleChangeMarkingDefinitions.bind(this)}
+                onChange={this.handleChangeObjectMarking.bind(this)}
               />
             </Form>
           )}

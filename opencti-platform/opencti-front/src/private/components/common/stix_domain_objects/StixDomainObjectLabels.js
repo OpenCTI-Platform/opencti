@@ -71,7 +71,7 @@ const stixDomainObjectMutationRelationsAdd = graphql`
   ) {
     stixDomainObjectEdit(id: $id) {
       relationsAdd(input: $input) {
-        labels {
+        objectLabel {
           edges {
             node {
               id
@@ -88,13 +88,13 @@ const stixDomainObjectMutationRelationsAdd = graphql`
 const stixDomainObjectMutationRelationDelete = graphql`
   mutation StixDomainObjectLabelsRelationDeleteMutation(
     $id: ID!
-    $toId: String
-    $relationship_type: String
+    $toId: String!
+    $relationship_type: String!
   ) {
     stixDomainObjectEdit(id: $id) {
       relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ... on StixEntity {
-          labels {
+          objectLabel {
             edges {
               node {
                 id
@@ -190,7 +190,7 @@ class StixDomainObjectLabels extends Component {
       variables: {
         id: this.props.id,
         toId: labelId,
-        relationship_type: 'labelged',
+        relationship_type: 'object-label',
       },
     });
   }

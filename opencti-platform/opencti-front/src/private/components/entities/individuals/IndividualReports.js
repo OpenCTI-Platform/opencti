@@ -73,7 +73,7 @@ IndividualReportsComponent.propTypes = {
 
 const IndividualReports = createFragmentContainer(IndividualReportsComponent, {
   individual: graphql`
-    fragment IndividualReports_individual on User {
+    fragment IndividualReports_individual on Individual {
       id
       name
       aliases
