@@ -26,7 +26,6 @@ import { resolveLink } from '../../../../utils/Entity';
 import inject18n from '../../../../components/i18n';
 import {
   commitMutation,
-  QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -36,8 +35,6 @@ import {
 } from '../../../../components/Subscription';
 import SelectField from '../../../../components/SelectField';
 import DatePickerField from '../../../../components/DatePickerField';
-import { attributesQuery } from '../../settings/attributes/AttributesLines';
-import Loader from '../../../../components/Loader';
 import KillChainPhasesField from '../form/KillChainPhasesField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import CreatedByField from '../form/CreatedByField';
@@ -149,18 +146,17 @@ const stixCoreRelationshipMutationRelationDelete = graphql`
 `;
 
 const stixCoreRelationshipValidation = (t) => Yup.object().shape({
-  weight: Yup.number()
+  confidence: Yup.number()
     .typeError(t('The value must be a number'))
     .integer(t('The value must be a number'))
     .required(t('This field is required')),
-  first_seen: Yup.date()
+  start_time: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  last_seen: Yup.date()
+  stop_time: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
   description: Yup.string(),
-  role_played: Yup.string(),
 });
 
 const StixCoreRelationshipEditionContainer = ({
@@ -189,7 +185,6 @@ const StixCoreRelationshipEditionContainer = ({
       map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(stixCoreRelationship);
 
@@ -214,7 +209,8 @@ const StixCoreRelationshipEditionContainer = ({
         mutation: stixCoreRelationshipMutationRelationDelete,
         variables: {
           id: stixCoreRelationship.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'kill-chain-phase',
         },
       });
     }
@@ -225,7 +221,6 @@ const StixCoreRelationshipEditionContainer = ({
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(stixCoreRelationship);
 
@@ -250,7 +245,8 @@ const StixCoreRelationshipEditionContainer = ({
         mutation: stixCoreRelationshipMutationRelationDelete,
         variables: {
           id: stixCoreRelationship.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -336,18 +332,12 @@ const StixCoreRelationshipEditionContainer = ({
         ['createdBy', 'node', 'id'],
         stixCoreRelationship,
       ),
-      relation: pathOr(
-        null,
-        ['createdBy', 'relation', 'id'],
-        stixCoreRelationship,
-      ),
     };
   const killChainPhases = pipe(
     pathOr([], ['killChainPhases', 'edges']),
     map((n) => ({
       label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
       value: n.node.id,
-      relationId: n.relation.id,
     })),
   )(stixCoreRelationship);
   const objectMarking = pipe(
@@ -368,9 +358,8 @@ const StixCoreRelationshipEditionContainer = ({
       'start_time',
       'stop_time',
       'description',
-      'role_played',
-      'createdBy',
       'killChainPhases',
+      'createdBy',
       'objectMarking',
     ]),
   )(stixCoreRelationship);
@@ -394,136 +383,120 @@ const StixCoreRelationshipEditionContainer = ({
         <div className="clearfix" />
       </div>
       <div className={classes.container}>
-        <QueryRenderer
-          query={attributesQuery}
-          variables={{ type: 'role_played' }}
-          render={({ props }) => {
-            if (props && props.attributes) {
-              const rolesPlayedEdges = props.attributes.edges;
-              return (
-                <Formik
-                  enableReinitialize={true}
-                  initialValues={initialValues}
-                  validationSchema={stixCoreRelationshipValidation(t)}
-                >
-                  {(setFieldValue) => (
-                    <Form style={{ margin: '20px 0 20px 0' }}>
-                      <Field
-                        component={SelectField}
-                        name="confidence"
-                        onFocus={handleChangeFocus}
-                        onChange={handleSubmitField}
-                        label={t('Confidence level')}
-                        fullWidth={true}
-                        containerstyle={{ width: '100%' }}
-                        helpertext={
-                          <SubscriptionFocus
-                            context={editContext}
-                            fieldName="confidence"
-                          />
-                        }
-                      >
-                        <MenuItem value="1">{t('Low')}</MenuItem>
-                        <MenuItem value="2">{t('Moderate')}</MenuItem>
-                        <MenuItem value="3">{t('Good')}</MenuItem>
-                        <MenuItem value="4">{t('Strong')}</MenuItem>
-                      </Field>
-                      <Field
-                        component={DatePickerField}
-                        name="start_time"
-                        label={t('Start time')}
-                        invalidDateMessage={t(
-                          'The value must be a date (YYYY-MM-DD)',
-                        )}
-                        fullWidth={true}
-                        style={{ marginTop: 20 }}
-                        onFocus={handleChangeFocus}
-                        onSubmit={handleSubmitField}
-                        helperText={
-                          <SubscriptionFocus
-                            context={editContext}
-                            fieldName="start_time"
-                          />
-                        }
-                      />
-                      <Field
-                        component={DatePickerField}
-                        name="end_time"
-                        label={t('End time')}
-                        invalidDateMessage={t(
-                          'The value must be a date (YYYY-MM-DD)',
-                        )}
-                        fullWidth={true}
-                        style={{ marginTop: 20 }}
-                        onFocus={handleChangeFocus}
-                        onSubmit={handleSubmitField}
-                        helperText={
-                          <SubscriptionFocus
-                            context={editContext}
-                            fieldName="end_time"
-                          />
-                        }
-                      />
-                      <Field
-                        component={TextField}
-                        name="description"
-                        label={t('Description')}
-                        fullWidth={true}
-                        multiline={true}
-                        rows={4}
-                        style={{ marginTop: 20 }}
-                        onFocus={handleChangeFocus}
-                        onSubmit={handleSubmitField}
-                        helperText={
-                          <SubscriptionFocus
-                            context={editContext}
-                            fieldName="description"
-                          />
-                        }
-                      />
-                      <KillChainPhasesField
-                        name="killChainPhases"
-                        style={{ marginTop: 20, width: '100%' }}
-                        setFieldValue={setFieldValue}
-                        helpertext={
-                          <SubscriptionFocus
-                            context={editContext}
-                            fieldName="killChainPhases"
-                          />
-                        }
-                        onChange={handleChangeKillChainPhases}
-                      />
-                      <CreatedByField
-                        name="createdBy"
-                        style={{ marginTop: 20, width: '100%' }}
-                        setFieldValue={setFieldValue}
-                        helpertext={
-                          <SubscriptionFocus
-                            context={editContext}
-                            fieldName="createdBy"
-                          />
-                        }
-                        onChange={handleChangeCreatedBy}
-                      />
-                      <ObjectMarkingField
-                        name="objectMarking"
-                        style={{ marginTop: 20, width: '100%' }}
-                        helpertext={
-                          <SubscriptionFocus
-                            context={editContext}
-                            fieldname="objectMarking"
-                          />
-                        }
-                        onChange={handleChangeobjectMarking}
-                      />
-                    </Form>
-                  )}
-                </Formik>
-              );
-            }
-            return <Loader variant="inElement" />;
-          }}
-        />
+        <Formik
+          enableReinitialize={true}
+          initialValues={initialValues}
+          validationSchema={stixCoreRelationshipValidation(t)}
+        >
+          {(setFieldValue) => (
+            <Form style={{ margin: '20px 0 20px 0' }}>
+              <Field
+                component={SelectField}
+                name="confidence"
+                onFocus={handleChangeFocus}
+                onChange={handleSubmitField}
+                label={t('Confidence level')}
+                fullWidth={true}
+                containerstyle={{ width: '100%' }}
+                helpertext={
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="confidence"
+                  />
+                }
+              >
+                <MenuItem value="1">{t('Low')}</MenuItem>
+                <MenuItem value="2">{t('Moderate')}</MenuItem>
+                <MenuItem value="3">{t('Good')}</MenuItem>
+                <MenuItem value="4">{t('Strong')}</MenuItem>
+              </Field>
+              <Field
+                component={DatePickerField}
+                name="start_time"
+                label={t('Start time')}
+                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
+                fullWidth={true}
+                style={{ marginTop: 20 }}
+                onFocus={handleChangeFocus}
+                onSubmit={handleSubmitField}
+                helperText={
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="start_time"
+                  />
+                }
+              />
+              <Field
+                component={DatePickerField}
+                name="end_time"
+                label={t('End time')}
+                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
+                fullWidth={true}
+                style={{ marginTop: 20 }}
+                onFocus={handleChangeFocus}
+                onSubmit={handleSubmitField}
+                helperText={
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="end_time"
+                  />
+                }
+              />
+              <Field
+                component={TextField}
+                name="description"
+                label={t('Description')}
+                fullWidth={true}
+                multiline={true}
+                rows={4}
+                style={{ marginTop: 20 }}
+                onFocus={handleChangeFocus}
+                onSubmit={handleSubmitField}
+                helperText={
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="description"
+                  />
+                }
+              />
+              <KillChainPhasesField
+                name="killChainPhases"
+                style={{ marginTop: 20, width: '100%' }}
+                setFieldValue={setFieldValue}
+                helpertext={
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="killChainPhases"
+                  />
+                }
+                onChange={handleChangeKillChainPhases}
+              />
+              <CreatedByField
+                name="createdBy"
+                style={{ marginTop: 20, width: '100%' }}
+                setFieldValue={setFieldValue}
+                helpertext={
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldName="createdBy"
+                  />
+                }
+                onChange={handleChangeCreatedBy}
+              />
+              <ObjectMarkingField
+                name="objectMarking"
+                style={{ marginTop: 20, width: '100%' }}
+                helpertext={
+                  <SubscriptionFocus
+                    context={editContext}
+                    fieldname="objectMarking"
+                  />
+                }
+                onChange={handleChangeobjectMarking}
+              />
+            </Form>
+          )}
+        </Formik>
         {stixDomainObject ? (
           <Button
             variant="contained"
@@ -587,7 +560,7 @@ const StixCoreRelationshipEditionFragment = createFragmentContainer(
               id
               kill_chain_name
               phase_name
-              phase_order
+              x_opencti_order
             }
           }
         }

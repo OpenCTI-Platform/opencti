@@ -232,20 +232,20 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
     for (const stixCoreRelationshipEdge of data.stixCoreRelationships.edges) {
       let stixCoreRelationship = stixCoreRelationshipEdge.node;
       stixCoreRelationship = assoc(
-        'firstSeenYear',
+        'startTimeYear',
         yearFormat(stixCoreRelationship.first_seen),
         stixCoreRelationship,
       );
       stixCoreRelationship = assoc(
-        'lastSeenYear',
+        'stopTimeYear',
         yearFormat(stixCoreRelationship.last_seen),
         stixCoreRelationship,
       );
       stixCoreRelationship = assoc(
         'years',
-        stixCoreRelationship.firstSeenYear === stixCoreRelationship.lastSeenYear
-          ? stixCoreRelationship.firstSeenYear
-          : `${stixCoreRelationship.firstSeenYear} - ${stixCoreRelationship.lastSeenYear}`,
+        stixCoreRelationship.startTimeYear === stixCoreRelationship.stopTimeYear
+          ? stixCoreRelationship.startTimeYear
+          : `${stixCoreRelationship.startTimeYear} - ${stixCoreRelationship.stopTimeYear}`,
         stixCoreRelationship,
       );
       if (stixCoreRelationship.to.entity_type === 'region') {
@@ -805,14 +805,16 @@ const StixDomainObjectVictimologyRegionsSectorLines = createRefetchContainer(
             node {
               id
               description
-              first_seen
-              last_seen
+              start_time
+              stop_time
               inferred
               to {
-                id
-                name
-                entity_type
+                ... on BasicObject {
+                  id
+                  entity_type
+                }
                 ... on City {
+                  name
                   country {
                     id
                     name
@@ -823,17 +825,17 @@ const StixDomainObjectVictimologyRegionsSectorLines = createRefetchContainer(
                   }
                 }
                 ... on Country {
+                  name
                   region {
                     id
                     name
                   }
                 }
                 ... on Region {
-                  id
                   name
                 }
               }
-              markingDefinitions {
+              objectMarking {
                 edges {
                   node {
                     id

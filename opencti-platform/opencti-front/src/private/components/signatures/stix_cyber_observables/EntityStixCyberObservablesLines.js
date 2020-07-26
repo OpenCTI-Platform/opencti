@@ -68,7 +68,7 @@ export const entityStixCyberObservablesLinesQuery = graphql`
     $firstSeenStop: DateTime
     $lastSeenStart: DateTime
     $lastSeenStop: DateTime
-    $weights: [Int]
+    $confidences: [Int]
     $count: Int!
     $cursor: ID
     $orderBy: StixCoreRelationshipsOrdering
@@ -84,7 +84,7 @@ export const entityStixCyberObservablesLinesQuery = graphql`
         firstSeenStop: $firstSeenStop
         lastSeenStart: $lastSeenStart
         lastSeenStop: $lastSeenStop
-        weights: $weights
+        confidences: $confidences
         count: $count
         cursor: $cursor
         orderBy: $orderBy
@@ -107,7 +107,7 @@ export default createPaginationContainer(
           firstSeenStop: { type: "DateTime" }
           lastSeenStart: { type: "DateTime" }
           lastSeenStop: { type: "DateTime" }
-          weights: { type: "[Int]" }
+          confidences: { type: "[Int]" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
           orderBy: {
@@ -125,7 +125,7 @@ export default createPaginationContainer(
           firstSeenStop: $firstSeenStop
           lastSeenStart: $lastSeenStart
           lastSeenStop: $lastSeenStop
-          weights: $weights
+          confidences: $confidences
           first: $count
           after: $cursor
           orderBy: $orderBy
@@ -166,7 +166,7 @@ export default createPaginationContainer(
         firstSeenStop: fragmentVariables.firstSeenStop,
         lastSeenStart: fragmentVariables.lastSeenStart,
         lastSeenStop: fragmentVariables.lastSeenStop,
-        weights: fragmentVariables.weights,
+        confidences: fragmentVariables.confidences,
         count,
         cursor,
         orderBy: fragmentVariables.orderBy,

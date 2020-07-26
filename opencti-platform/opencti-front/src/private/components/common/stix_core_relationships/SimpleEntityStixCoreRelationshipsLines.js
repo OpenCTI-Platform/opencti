@@ -139,7 +139,7 @@ export const simpleEntityStixCoreRelationshipsLinesQuery = graphql`
     $firstSeenStop: DateTime
     $lastSeenStart: DateTime
     $lastSeenStop: DateTime
-    $weights: [Int]
+    $confidences: [Int]
     $count: Int!
     $cursor: ID
   ) {
@@ -153,7 +153,7 @@ export const simpleEntityStixCoreRelationshipsLinesQuery = graphql`
         firstSeenStop: $firstSeenStop
         lastSeenStart: $lastSeenStart
         lastSeenStop: $lastSeenStop
-        weights: $weights
+        confidences: $confidences
         count: $count
         cursor: $cursor
       )
@@ -174,7 +174,7 @@ const SimpleEntityStixCoreRelationshipsLines = createPaginationContainer(
           firstSeenStop: { type: "DateTime" }
           lastSeenStart: { type: "DateTime" }
           lastSeenStop: { type: "DateTime" }
-          weights: { type: "[Int]" }
+          confidences: { type: "[Int]" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
         ) {
@@ -187,7 +187,7 @@ const SimpleEntityStixCoreRelationshipsLines = createPaginationContainer(
           firstSeenStop: $firstSeenStop
           lastSeenStart: $lastSeenStart
           lastSeenStop: $lastSeenStop
-          weights: $weights
+          confidences: $confidences
           first: $count
           after: $cursor
         ) @connection(key: "Pagination_stixCoreRelationships") {
@@ -232,7 +232,7 @@ const SimpleEntityStixCoreRelationshipsLines = createPaginationContainer(
         firstSeenStop: fragmentVariables.firstSeenStop,
         lastSeenStart: fragmentVariables.lastSeenStart,
         lastSeenStop: fragmentVariables.lastSeenStop,
-        weights: fragmentVariables.weights,
+        confidences: fragmentVariables.confidences,
         count,
         cursor,
       };

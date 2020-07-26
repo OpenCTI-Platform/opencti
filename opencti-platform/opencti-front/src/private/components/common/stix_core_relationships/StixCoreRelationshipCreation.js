@@ -171,7 +171,7 @@ const stixCoreRelationshipCreationMutation = graphql`
 
 const stixCoreRelationshipValidation = (t) => Yup.object().shape({
   relationship_type: Yup.string().required(t('This field is required')),
-  weight: Yup.number()
+  confidence: Yup.number()
     .typeError(t('The value must be a number'))
     .integer(t('The value must be a number'))
     .required(t('This field is required')),
@@ -404,7 +404,7 @@ class StixCoreRelationshipCreation extends Component {
               </Field>
               <Field
                 component={SelectField}
-                name="weight"
+                name="confidence"
                 label={t('Confidence level')}
                 fullWidth={true}
                 containerstyle={{ marginTop: 20, width: '100%' }}
@@ -416,16 +416,16 @@ class StixCoreRelationshipCreation extends Component {
               </Field>
               <Field
                 component={DatePickerField}
-                name="first_seen"
-                label={t('First seen')}
+                name="start_time"
+                label={t('Start time')}
                 invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
               />
               <Field
                 component={DatePickerField}
-                name="last_seen"
-                label={t('Last seen')}
+                name="stop_time"
+                label={t('Stop time')}
                 invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
                 fullWidth={true}
                 style={{ marginTop: 20 }}

@@ -88,11 +88,11 @@ export const indicatorEntitiesLinesQuery = graphql`
     $fromId: String
     $inferred: Boolean
     $relationship_type: String
-    $firstSeenStart: DateTime
-    $firstSeenStop: DateTime
-    $lastSeenStart: DateTime
-    $lastSeenStop: DateTime
-    $weights: [Int]
+    $startTimeStart: DateTime
+    $startTimeStop: DateTime
+    $stopTimeStart: DateTime
+    $stopTimeStop: DateTime
+    $confidences: [Int]
     $search: String
     $count: Int!
     $cursor: ID
@@ -104,11 +104,11 @@ export const indicatorEntitiesLinesQuery = graphql`
         fromId: $fromId
         inferred: $inferred
         relationship_type: $relationship_type
-        firstSeenStart: $firstSeenStart
-        firstSeenStop: $firstSeenStop
-        lastSeenStart: $lastSeenStart
-        lastSeenStop: $lastSeenStop
-        weights: $weights
+        startTimeStart: $startTimeStart
+        startTimeStop: $startTimeStop
+        stopTimeStart: $stopTimeStart
+        stopTimeStop: $stopTimeStop
+        confidences: $confidences
         search: $search
         count: $count
         cursor: $cursor
@@ -127,11 +127,11 @@ export default createPaginationContainer(
           fromId: { type: "String" }
           inferred: { type: "Boolean" }
           relationship_type: { type: "String" }
-          firstSeenStart: { type: "DateTime" }
-          firstSeenStop: { type: "DateTime" }
-          lastSeenStart: { type: "DateTime" }
-          lastSeenStop: { type: "DateTime" }
-          weights: { type: "[Int]" }
+          startTimeStart: { type: "DateTime" }
+          startTimeStop: { type: "DateTime" }
+          stopTimeStart: { type: "DateTime" }
+          stopTimeStop: { type: "DateTime" }
+          confidences: { type: "[Int]" }
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
@@ -145,11 +145,11 @@ export default createPaginationContainer(
           fromId: $fromId
           inferred: $inferred
           relationship_type: $relationship_type
-          firstSeenStart: $firstSeenStart
-          firstSeenStop: $firstSeenStop
-          lastSeenStart: $lastSeenStart
-          lastSeenStop: $lastSeenStop
-          weights: $weights
+          startTimeStart: $startTimeStart
+          startTimeStop: $startTimeStop
+          stopTimeStart: $stopTimeStart
+          stopTimeStop: $stopTimeStop
+          confidences: $confidences
           search: $search
           first: $count
           after: $cursor
@@ -187,11 +187,11 @@ export default createPaginationContainer(
         toTypes: fragmentVariables.toTypes,
         inferred: fragmentVariables.inferred,
         relationship_type: fragmentVariables.relationship_type,
-        firstSeenStart: fragmentVariables.firstSeenStart,
-        firstSeenStop: fragmentVariables.firstSeenStop,
-        lastSeenStart: fragmentVariables.lastSeenStart,
-        lastSeenStop: fragmentVariables.lastSeenStop,
-        weights: fragmentVariables.weights,
+        startTimeStart: fragmentVariables.startTimeStart,
+        startTimeStop: fragmentVariables.startTimeStop,
+        stopTimeStart: fragmentVariables.stopTimeStart,
+        stopTimeStop: fragmentVariables.stopTimeStop,
+        confidences: fragmentVariables.confidences,
         search: fragmentVariables.search,
         count,
         cursor,

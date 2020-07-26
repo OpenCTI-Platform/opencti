@@ -122,8 +122,8 @@ class StixCoreRelationshipEditionInferred extends Component {
                     component={SelectField}
                     label={t('Confidence level')}
                     inputProps={{
-                      name: 'weight',
-                      id: 'weight',
+                      name: 'confidence',
+                      id: 'confidence',
                     }}
                     containerstyle={{ marginTop: 20, width: '100%' }}
                   >
@@ -135,16 +135,16 @@ class StixCoreRelationshipEditionInferred extends Component {
                   </Field>
                   <Field
                     component={TextField}
-                    name="first_seen"
-                    label={t('First seen')}
+                    name="start_time"
+                    label={t('Start time')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                     disabled={true}
                   />
                   <Field
                     component={TextField}
-                    name="last_seen"
-                    label={t('Last seen')}
+                    name="stop_time"
+                    label={t('Stop time')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                     disabled={true}
