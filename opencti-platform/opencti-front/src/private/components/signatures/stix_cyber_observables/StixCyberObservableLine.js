@@ -12,7 +12,7 @@ import { HexagonOutline } from 'mdi-material-ui';
 import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
-import StixCoreObjectLabels from '../../common/stix_core_object/StixCoreObjectLabels';
+import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 
 const styles = (theme) => ({
   item: {
@@ -133,8 +133,6 @@ const StixCyberObservableLineFragment = createFragmentContainer(
         id
         entity_type
         observable_value
-        first_seen
-        last_seen
         created_at
         objectMarking {
           edges {
@@ -144,7 +142,7 @@ const StixCyberObservableLineFragment = createFragmentContainer(
             }
           }
         }
-        labels {
+        objectLabel {
           edges {
             node {
               id

@@ -13,7 +13,7 @@ import IndicatorEdition from './IndicatorEdition';
 import EntityLastReports from '../../reports/EntityLastReports';
 import IndicatorEntities from './IndicatorEntities';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectNotes from '../../common/stix_core_object/StixCoreObjectNotes';
+import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
 import EntityExternalReferences from '../../common/external_references/EntityExternalReferences';
 
 const styles = () => ({

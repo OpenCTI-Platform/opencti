@@ -13,7 +13,7 @@ import ReportEdition from './ReportEdition';
 import EntityExternalReferences from '../common/external_references/EntityExternalReferences';
 import EntityStixCoreRelationshipsDonut from '../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
-import StixCoreObjectNotes from '../common/stix_core_object/StixCoreObjectNotes';
+import StixCoreObjectNotes from '../common/stix_core_objects/StixCoreObjectNotes';
 
 const styles = () => ({
   container: {

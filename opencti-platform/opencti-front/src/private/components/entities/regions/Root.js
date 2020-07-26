@@ -15,7 +15,7 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import FileManager from '../../common/files/FileManager';
 import RegionPopover from './RegionPopover';
 import Loader from '../../../../components/Loader';
-import StixCoreObjectHistory from '../../common/stix_core_object/StixCoreObjectHistory';
+import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 
 const subscription = graphql`
   subscription RootRegionsSubscription($id: ID!) {
@@ -35,7 +35,7 @@ const regionQuery = graphql`
     region(id: $id) {
       id
       name
-      aliases
+      x_opencti_aliases
       ...Region_region
       ...RegionReports_region
       ...RegionKnowledge_region

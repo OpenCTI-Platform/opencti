@@ -183,7 +183,7 @@ const EntityStixSightingRelationshipLineFragment = createFragmentContainer(
                 node {
                   id
                   phase_name
-                  phase_order
+                  x_opencti_order
                 }
               }
             }

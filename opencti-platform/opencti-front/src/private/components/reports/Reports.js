@@ -105,7 +105,7 @@ class Reports extends Component {
         width: '15%',
         isSortable: false,
       },
-      labels: {
+      objectLabel: {
         label: 'Labels',
         width: '20%',
         isSortable: false,

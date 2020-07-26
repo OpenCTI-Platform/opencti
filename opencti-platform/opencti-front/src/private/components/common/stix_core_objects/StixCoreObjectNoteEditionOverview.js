@@ -102,7 +102,7 @@ const stixCoreObjectNoteMutationRelationDelete = graphql`
 `;
 
 const noteValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
+  attribute_abstract: Yup.string().required(t('This field is required')),
   content: Yup.string()
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
@@ -141,7 +141,6 @@ class StixCoreObjectNoteEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(note);
 
@@ -166,7 +165,8 @@ class StixCoreObjectNoteEditionOverviewComponent extends Component {
         mutation: stixCoreObjectNoteMutationRelationDelete,
         variables: {
           id: this.props.note.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -179,7 +179,6 @@ class StixCoreObjectNoteEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(note);
     const initialValues = pipe(
@@ -197,13 +196,16 @@ class StixCoreObjectNoteEditionOverviewComponent extends Component {
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
-              name="name"
-              label={t('Title')}
+              name="attribute_abstract"
+              label={t('Anstract')}
               fullWidth={true}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
               helperText={
-                <SubscriptionFocus context={context} fieldName="name" />
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="attribute_abstract"
+                />
               }
             />
             <Field
@@ -252,7 +254,7 @@ const StixCoreObjectNoteEditionOverview = createFragmentContainer(
     note: graphql`
       fragment StixCoreObjectNoteEditionOverview_note on Note {
         id
-        name
+        attribute_abstract
         content
         objectMarking {
           edges {

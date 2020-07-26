@@ -14,7 +14,7 @@ import { ShieldSearch } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 import ItemPatternType from '../../../../components/ItemPatternType';
-import StixCoreObjectLabels from '../../common/stix_core_object/StixCoreObjectLabels';
+import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarking from '../../../../components/ItemMarking';
 
 const styles = (theme) => ({

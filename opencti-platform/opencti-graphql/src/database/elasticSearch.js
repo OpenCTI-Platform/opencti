@@ -54,6 +54,12 @@ const dateFields = [
   'last_seen',
   'last_seen_day',
   'last_seen_month',
+  'start_time',
+  'start_time_day',
+  'start_time_month',
+  'stop_time',
+  'stop_time_day',
+  'stop_time_month',
   'published',
   'published_day',
   'published_month',
@@ -68,17 +74,16 @@ const dateFields = [
 ];
 const numericOrBooleanFields = [
   'object_status',
-  'phase_order',
   'level',
-  'weight',
-  'ordering',
+  'attribute_order',
   'base_score',
   'confidence',
   'is_family',
   'number',
   'negative',
-  'detection',
   'default_assignation',
+  'x_opencti_detection',
+  'x_opencti_order',
 ];
 export const virtualTypes = [
   'Identity',

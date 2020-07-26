@@ -15,7 +15,7 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import FileManager from '../../common/files/FileManager';
 import XOpenctiIncidentPopover from './XOpenctiXOpenctiIncidentPopover';
 import Loader from '../../../../components/Loader';
-import StixCoreObjectHistory from '../../common/stix_core_object/StixCoreObjectHistory';
+import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 
 const subscription = graphql`
   subscription RootXOpenctiIncidentSubscription($id: ID!) {

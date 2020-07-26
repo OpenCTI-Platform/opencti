@@ -12,7 +12,7 @@ import StixCyberObservable from './StixCyberObservable';
 import StixCyberObservableLinks from './StixCyberObservableLinks';
 import StixCyberObservableKnowledge from './StixCyberObservableKnowledge';
 import Loader from '../../../../components/Loader';
-import StixCoreObjectHistory from '../../common/stix_core_object/StixCoreObjectHistory';
+import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCyberObservableHeader from './StixCyberObservableHeader';
 import EntityStixSightingRelationships from '../../common/stix_sighting_relationships/EntityStixSightingRelationships';
 

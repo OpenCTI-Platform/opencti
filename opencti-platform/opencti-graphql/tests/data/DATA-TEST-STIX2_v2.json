@@ -189,7 +189,7 @@
           "kill_chain_name": "mitre-attack",
           "phase_name": "persistence",
           "x_opencti_id": "2a2202bd-1da6-4668-9fc5-ad1017e974bc",
-          "x_opencti_phase_order": 20,
+          "x_opencti_x_opencti_order": 20,
           "x_opencti_created": "2020-02-25T09:18:18.472Z",
           "x_opencti_modified": "2020-02-25T10:23:56.737Z"
         }
@@ -525,7 +525,7 @@
           "kill_chain_name": "mitre-pre-attack",
           "phase_name": "launch",
           "x_opencti_id": "e47282e7-af50-4eab-a9ec-036625fb78ec",
-          "x_opencti_phase_order": 0,
+          "x_opencti_x_opencti_order": 0,
           "x_opencti_created": "2020-02-26T05:25:45.340Z",
           "x_opencti_modified": "2020-02-26T05:25:45.340Z"
         }
@@ -689,7 +689,7 @@
           "kill_chain_name": "mitre-pre-attack",
           "phase_name": "launch",
           "x_opencti_id": "e47282e7-af50-4eab-a9ec-036625fb78ec",
-          "x_opencti_phase_order": 0,
+          "x_opencti_x_opencti_order": 0,
           "x_opencti_created": "2020-02-26T05:25:45.340Z",
           "x_opencti_modified": "2020-02-26T05:25:45.340Z"
         }

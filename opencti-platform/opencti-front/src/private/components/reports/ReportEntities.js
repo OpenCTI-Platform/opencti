@@ -135,7 +135,7 @@ class ReportEntitiesComponent extends Component {
         width: '15%',
         isSortable: true,
       },
-      markingDefinitions: {
+      objectMarking: {
         label: 'Marking',
         isSortable: false,
       },

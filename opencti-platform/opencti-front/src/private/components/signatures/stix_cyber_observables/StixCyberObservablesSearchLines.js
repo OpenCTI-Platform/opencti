@@ -20,7 +20,7 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
-import StixCoreObjectLabels from '../../common/stix_core_object/StixCoreObjectLabels';
+import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 
 const styles = (theme) => ({
   container: {

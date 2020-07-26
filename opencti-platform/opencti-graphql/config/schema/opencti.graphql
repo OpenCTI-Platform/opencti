@@ -393,7 +393,6 @@ enum UsersOrdering {
 enum UsersFilter {
   name
   confidence
-  alias
   entity_type
   created
   modified
@@ -800,7 +799,7 @@ input ExternalReferenceAddInput {
 
 ############## KillChainPhases
 enum KillChainPhasesOrdering {
-  phase_order
+  x_opencti_order
   kill_chain_name
   phase_name
   created
@@ -849,7 +848,7 @@ input KillChainPhaseAddInput {
   stix_id: String
   kill_chain_name: String!
   phase_name: String!
-  phase_order: Int!
+  x_opencti_order: Int!
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -1003,7 +1002,7 @@ input StixDomainObjectAddInput {
   stix_id: String
   description: String
   confidence: Int
-  alias: [String]
+  aliases: [String]
   type: String!
   createdBy: String
   objectMarking: [String]
@@ -1027,7 +1026,7 @@ enum AttackPatternsOrdering {
 }
 enum AttackPatternsFilter {
   name
-  alias
+  aliases
   created
   modified
   created_at
@@ -1147,7 +1146,7 @@ enum CampaignsOrdering {
 }
 enum CampaignsFilter {
   name
-  alias
+  aliases
   created
   modified
   created_at
@@ -1667,7 +1666,7 @@ enum ReportsOrdering {
   created
   modified
   published
-  object_status
+  x_opencti_report_status
   created_at
   updated_at
   createdBy
@@ -1680,8 +1679,8 @@ enum ReportsFilter {
   published_day
   created
   created_at
-  report_class
-  object_status
+  report_types
+  x_opencti_report_status
   objectLabel
   createdBy
   markedBy
@@ -1763,6 +1762,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   report_types: [String]
   published: DateTime
   graph_data: String
+  x_opencti_report_status: Int
   # Technical
   creator: User
   toStix: String
@@ -1776,7 +1776,7 @@ input ReportAddInput {
   description: String
   published: DateTime
   report_types: [String]
-  report_status: Int
+  x_opencti_report_status: Int
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -1797,7 +1797,7 @@ enum CoursesOfActionOrdering {
 }
 enum CoursesOfActionFilter {
   name
-  alias
+  aliases
   created
   modified
   created_at
@@ -1994,7 +1994,7 @@ input IdentityAddInput {
   description: String
   contact_information: String
   confidence: Int
-  alias: [String]
+  aliases: [String]
   type: IdentityType!
   createdBy: String
   objectMarking: [String]
@@ -2128,7 +2128,6 @@ enum OrganizationsOrdering {
 enum OrganizationsFilter {
   name
   aliases
-  alias
   x_opencti_organization_type
   x_opencti_reliability
   created
@@ -2614,7 +2613,7 @@ enum IntrusionSetsOrdering {
 }
 enum IntrusionSetsFilter {
   name
-  alias
+  aliases
   created
   modified
   created_at
@@ -3479,7 +3478,7 @@ enum ToolsOrdering {
 }
 enum ToolsFilter {
   name
-  alias
+  aliases
   created
   modified
   created_at
@@ -3593,7 +3592,7 @@ enum VulnerabilitiesFilter {
   base_score
   base_severity
   attack_vector
-  alias
+  aliases
   created
   modified
   created_at
@@ -3706,7 +3705,7 @@ enum XOpenctiIncidentsOrdering {
 }
 enum XOpenctiIncidentsFilter {
   name
-  alias
+  aliases
   created
   modified
   created_at
@@ -3882,6 +3881,7 @@ interface StixCyberObservable {
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   indicators: IndicatorConnection
+  observable_value: String!
   # Technical
   creator: User
   toStix: String
@@ -3930,6 +3930,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   indicators: IndicatorConnection
+  observable_value: String!
   # AutonomousSystem
   number: Int
   name: String
@@ -3993,6 +3994,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
     forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  observable_value: String!
   indicators: IndicatorConnection
   # Directory
   path: String
@@ -4061,6 +4063,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
     forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  observable_value: String!
   indicators: IndicatorConnection
   # DomainName
   value: String
@@ -4121,6 +4124,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
     forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  observable_value: String!
   indicators: IndicatorConnection
   # EmailAddr
   value: String
@@ -4183,6 +4187,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
     forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  observable_value: String!
   indicators: IndicatorConnection
   # EmailMessage
   is_multipart: Boolean
@@ -4256,6 +4261,7 @@ interface HashedObservable {
     forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  observable_value: String!
   indicators: IndicatorConnection
   # HashedObservables
   md5: String
@@ -4310,6 +4316,7 @@ type XOpenctiCryptographicKey implements BasicObject & StixObject & StixCoreObje
     forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  observable_value: String!
   indicators: IndicatorConnection
   # CryptographicKey
   value: String
@@ -4370,6 +4377,7 @@ type XOpenctiCryptocurrencyWallet implements BasicObject & StixObject & StixCore
     forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  observable_value: String!
   indicators: IndicatorConnection
   # CryptocyrrencyWallet
   value: String
@@ -4430,6 +4438,7 @@ type XOpenctiText implements BasicObject & StixObject & StixCoreObject & StixCyb
     forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  observable_value: String!
   indicators: IndicatorConnection
   # XOpenctiText
   value: String
@@ -4490,6 +4499,7 @@ type XOpenctiUserAgent implements BasicObject & StixObject & StixCoreObject & St
     forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  observable_value: String!
   indicators: IndicatorConnection
   # XOpenctiUserAgent
   value: String
@@ -5674,7 +5684,7 @@ type StixDomainObjectEditMutations {
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
     @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
-  mergeEntities(StixDomainObjectIds: [String]!, alias: [String]): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  mergeEntities(StixDomainObjectIds: [String]!, aliases: [String]): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type AttackPatternEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])

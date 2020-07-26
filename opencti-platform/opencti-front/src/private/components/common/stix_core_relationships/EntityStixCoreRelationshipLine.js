@@ -134,12 +134,11 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
         entity_type
         parent_types
         relationship_type
-        weight
-        first_seen
-        last_seen
+        confidence
+        start_time
+        end_time
         description
         inferred
-        role_played
         to {
           ... on StixDomainObject {
             id
@@ -160,13 +159,13 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
             }
           }
           ... on AttackPattern {
-            external_id
+            x_mitre_id
             killChainPhases {
               edges {
                 node {
                   id
                   phase_name
-                  phase_order
+                  x_opencti_order
                 }
               }
             }
@@ -178,7 +177,7 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
                 }
               }
             }
-            labels {
+            objectLabel {
               edges {
                 node {
                   id
@@ -214,12 +213,13 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
           ... on Indicator {
             id
             name
-            x_opencti_main_observable_type
             pattern_type
+            pattern_version
             description
             valid_from
             valid_until
-            score
+            x_opencti_score
+            x_opencti_main_observable_type
             created
             objectMarking {
               edges {
@@ -229,7 +229,7 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
                 }
               }
             }
-            labels {
+            objectLabel {
               edges {
                 node {
                   id
@@ -245,7 +245,7 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
             node {
               id
               phase_name
-              phase_order
+              x_opencti_order
             }
           }
         }

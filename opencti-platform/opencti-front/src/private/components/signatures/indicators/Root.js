@@ -11,7 +11,7 @@ import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreR
 import Indicator from './Indicator';
 import IndicatorObservables from './IndicatorObservables';
 import Loader from '../../../../components/Loader';
-import StixCoreObjectHistory from '../../common/stix_core_object/StixCoreObjectHistory';
+import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import IndicatorHeader from './IndicatorHeader';
 import IndicatorPopover from './IndicatorPopover';
 import EntityStixSightingRelationships from '../../common/stix_sighting_relationships/EntityStixSightingRelationships';

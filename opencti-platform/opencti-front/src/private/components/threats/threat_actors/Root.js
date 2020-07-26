@@ -15,7 +15,7 @@ import Loader from '../../../../components/Loader';
 import FileManager from '../../common/files/FileManager';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import ThreatActorPopover from './ThreatActorPopover';
-import StixCoreObjectHistory from '../../common/stix_core_object/StixCoreObjectHistory';
+import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 
 const subscription = graphql`
   subscription RootThreatActorSubscription($id: ID!) {

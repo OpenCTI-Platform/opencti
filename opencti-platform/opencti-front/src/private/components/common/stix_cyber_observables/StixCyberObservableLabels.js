@@ -71,7 +71,7 @@ const StixCyberObservableMutationRelationsAdd = graphql`
   ) {
     stixCyberObservableEdit(id: $id) {
       relationsAdd(input: $input) {
-        labels {
+        objectLabel {
           edges {
             node {
               id
@@ -94,7 +94,7 @@ const StixCyberObservableMutationRelationDelete = graphql`
     stixCyberObservableEdit(id: $id) {
       relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ... on StixEntity {
-          labels {
+          objectLabel {
             edges {
               node {
                 id

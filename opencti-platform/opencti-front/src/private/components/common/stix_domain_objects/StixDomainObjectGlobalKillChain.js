@@ -133,7 +133,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
         : n.node.to.killChainPhases
             && n.node.to.killChainPhases.edges.length > 0
           ? n.node.to.killChainPhases.edges[0].node
-          : { id: 'unknown', phase_name: t('Unknown'), phase_order: 99 })),
+          : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 })),
       uniq,
       indexBy(prop('id')),
     )(data.stixCoreRelationships.edges);
@@ -155,14 +155,14 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
           ? n.killChainPhases.edges[0].node
           : n.to.killChainPhases && n.to.killChainPhases.edges.length > 0
             ? n.to.killChainPhases.edges[0].node
-            : { id: 'unknown', phase_name: t('Unknown'), phase_order: 99 },
+            : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 },
         n,
       )),
       sortWith([ascend(prop('years'))]),
       groupBy(path(['killChainPhase', 'id'])),
       mapObjIndexed((value, key) => assoc('stixDomainObjects', value, killChainPhases[key])),
       values,
-      sortWith([ascend(prop('phase_order'))]),
+      sortWith([ascend(prop('x_opencti_order'))]),
     )(data.stixCoreRelationships.edges);
     return (
       <div>
@@ -363,7 +363,7 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                       node {
                         id
                         phase_name
-                        phase_order
+                        x_opencti_order
                       }
                     }
                   }
@@ -374,7 +374,7 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                       node {
                         id
                         phase_name
-                        phase_order
+                        x_opencti_order
                       }
                     }
                   }
@@ -385,7 +385,7 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                       node {
                         id
                         phase_name
-                        phase_order
+                        x_opencti_order
                       }
                     }
                   }
@@ -396,7 +396,7 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                   node {
                     id
                     phase_name
-                    phase_order
+                    x_opencti_order
                   }
                 }
               }

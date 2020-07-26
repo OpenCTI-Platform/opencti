@@ -404,7 +404,7 @@ const AttackPatternEditionOverview = createFragmentContainer(
               id
               kill_chain_name
               phase_name
-              phase_order
+              x_opencti_order
             }
           }
         }

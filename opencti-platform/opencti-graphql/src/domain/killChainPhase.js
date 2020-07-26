@@ -22,8 +22,8 @@ export const findAll = (args) => {
 };
 
 export const addKillChainPhase = async (user, killChainPhase) => {
-  const phaseOrder = killChainPhase.phase_order ? killChainPhase.phase_order : 0;
-  const killChainPhaseToCreate = assoc('phase_order', phaseOrder, killChainPhase);
+  const phaseOrder = killChainPhase.x_opencti_order ? killChainPhase.x_opencti_order : 0;
+  const killChainPhaseToCreate = assoc('x_opencti_order', phaseOrder, killChainPhase);
   const created = await createEntity(user, killChainPhaseToCreate, ENTITY_TYPE_KILL_CHAIN_PHASE, {
     noLog: true,
   });

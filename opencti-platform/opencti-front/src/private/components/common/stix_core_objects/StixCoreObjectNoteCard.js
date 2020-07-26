@@ -91,13 +91,13 @@ class StixCoreObjectNoteCardComponent extends Component {
             noWrap={true}
             style={{ margin: '10px 0 10px 0', fontWeight: 500 }}
           >
-            {node.name}
+            {node.attribute_abstract}
           </Typography>
           <Typography variant="body2" style={{ marginBottom: 20 }}>
             <Markdown className="markdown" source={node.content} />
           </Typography>
           <div>
-            {take(1, pathOr([], ['markingDefinitions', 'edges'], node)).map(
+            {take(1, pathOr([], ['objectMarking', 'edges'], node)).map(
               (markingDefinition) => (
                 <ItemMarking
                   key={markingDefinition.node.id}
@@ -127,32 +127,32 @@ const StixCoreObjectNoteCard = createFragmentContainer(
     node: graphql`
       fragment StixCoreObjectNoteCard_node on Note {
         id
-        name
-        description
+        attribute_abstract
         content
         created
         modified
         createdBy {
-          node {
+          ... on Identity {
             id
             name
+            entity_type
           }
         }
-        labels {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
-        }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
               definition
               x_opencti_color
+            }
+          }
+        }
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
             }
           }
         }

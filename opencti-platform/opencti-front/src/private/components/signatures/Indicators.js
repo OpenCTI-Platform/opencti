@@ -145,7 +145,7 @@ class Indicators extends Component {
         width: '25%',
         isSortable: true,
       },
-      labels: {
+      objectLabel: {
         label: 'Labels',
         width: '20%',
         isSortable: false,
@@ -160,7 +160,7 @@ class Indicators extends Component {
         width: '13%',
         isSortable: true,
       },
-      markingDefinitions: {
+      objectMarking: {
         label: 'Marking',
         isSortable: false,
       },

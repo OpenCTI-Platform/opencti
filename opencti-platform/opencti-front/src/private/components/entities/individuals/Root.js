@@ -14,7 +14,7 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import FileManager from '../../common/files/FileManager';
 import IndividualPopover from './IndividualPopover';
 import Loader from '../../../../components/Loader';
-import StixCoreObjectHistory from '../../common/stix_core_object/StixCoreObjectHistory';
+import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 
 const subscription = graphql`
   subscription RootIndividualsSubscription($id: ID!) {

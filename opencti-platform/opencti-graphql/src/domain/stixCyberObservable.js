@@ -88,6 +88,10 @@ export const indicators = (stixCyberObservableId) => {
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
 
+export const observableValue = (stixCyberObservable) => {
+  return stixCyberObservable.value;
+};
+
 export const addStixCyberObservable = async (user, stixCyberObservable) => {
   if (!isStixCyberObservable(stixCyberObservable.type)) {
     throw FunctionalError(`Observable type ${stixCyberObservable.type} is not supported.`);

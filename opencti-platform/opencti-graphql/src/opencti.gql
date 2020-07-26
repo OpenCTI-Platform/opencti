@@ -153,7 +153,7 @@ define
   explanation sub attribute, datatype string;
   opinion sub attribute, datatype string;
   report_types sub attribute, datatype string;
-  report_status sub attribute, datatype long;
+  x_opencti_report_status sub attribute, datatype long;
   published sub attribute, datatype date;
   published_day sub attribute, datatype string;
   published_month sub attribute, datatype string;
@@ -643,7 +643,13 @@ define
     abstract,
     has relationship_type,
     has start_time,
-    has stop_time;
+    has start_time_day,
+    has start_time_month,
+    has start_time_year,
+    has stop_time,
+    has stop_time_day,
+    has stop_time_month,
+    has stop_time_year;
 
   operating-system sub stix-cyber-observable-relationship,
     relates operating-system_from,
@@ -1010,7 +1016,7 @@ define
     has name,
     has description,
     has report_types,
-    has report_status,
+    has x_opencti_report_status,
     has published,
     has published_day,
     has published_year,

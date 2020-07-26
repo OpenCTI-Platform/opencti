@@ -5,6 +5,7 @@ import {
   findAll,
   findById,
   indicators,
+  observableValue,
   stixCyberObservableAddRelation,
   stixCyberObservableAddRelations,
   stixCyberObservableAskEnrichment,
@@ -55,6 +56,7 @@ const stixCyberObservableResolvers = {
     objectContained: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
   },
   StixCyberObservable: {
+    observable_value: (stixCyberObservable) => observableValue(stixCyberObservable),
     indicators: (stixCyberObservable) => indicators(stixCyberObservable.id),
     jobs: (stixCyberObservable, args) => workForEntity(stixCyberObservable.id, args),
     connectors: (stixCyberObservable, { onlyAlive = false }) =>

@@ -21,7 +21,7 @@ import { truncate } from '../../../../utils/String';
 import { resolveLink } from '../../../../utils/Entity';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
-import StixCoreObjectLabels from '../stix_core_object/StixCoreObjectLabels';
+import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 
 const styles = (theme) => ({
   container: {

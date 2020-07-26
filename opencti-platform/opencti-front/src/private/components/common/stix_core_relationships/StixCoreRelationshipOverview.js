@@ -34,7 +34,7 @@ import StixCoreRelationshipInferences from './StixCoreRelationshipInferences';
 import StixCoreRelationshipStixCoreRelationships from './StixCoreRelationshipStixCoreRelationships';
 import EntityLastReports from '../../reports/EntityLastReports';
 import ItemAuthor from '../../../../components/ItemAuthor';
-import StixCoreObjectNotes from '../stix_core_object/StixCoreObjectNotes';
+import StixCoreObjectNotes from '../stix_core_objects/StixCoreObjectNotes';
 
 const styles = () => ({
   container: {

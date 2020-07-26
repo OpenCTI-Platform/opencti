@@ -9,7 +9,7 @@ import ReportEntities from './ReportEntities';
 import ReportKnowledge from './ReportKnowledge';
 import ReportObservables from './ReportObservables';
 import FileManager from '../common/files/FileManager';
-import StixCoreObjectHistory from '../common/stix_core_object/StixCoreObjectHistory';
+import StixCoreObjectHistory from '../common/stix_core_objects/StixCoreObjectHistory';
 import ReportHeader from './ReportHeader';
 import Loader from '../../../components/Loader';
 

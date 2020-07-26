@@ -142,7 +142,7 @@ class StixDomainObjectKillChainLinesComponent extends Component {
         ? n.node.killChainPhases.edges[0].node
         : n.node.to.killChainPhases.edges.length > 0
           ? n.node.to.killChainPhases.edges[0].node
-          : { id: 'unknown', phase_name: t('Unknown'), phase_order: 99 })),
+          : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 })),
       uniq,
       indexBy(prop('id')),
     )(data.stixCoreRelationships.edges);
@@ -164,14 +164,14 @@ class StixDomainObjectKillChainLinesComponent extends Component {
           ? n.killChainPhases.edges[0].node
           : n.to.killChainPhases.edges.length > 0
             ? n.to.killChainPhases.edges[0].node
-            : { id: 'unknown', phase_name: t('Unknown'), phase_order: 99 },
+            : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 },
         n,
       )),
       sortWith([descend(prop('years'))]),
       groupBy(path(['killChainPhase', 'id'])),
       mapObjIndexed((value, key) => assoc('attackPatterns', value, killChainPhases[key])),
       values,
-      sortWith([ascend(prop('phase_order'))]),
+      sortWith([ascend(prop('x_opencti_order'))]),
     )(data.stixCoreRelationships.edges);
     return (
       <div>
@@ -374,7 +374,7 @@ const StixDomainObjectKillChainLines = createRefetchContainer(
                       node {
                         id
                         phase_name
-                        phase_order
+                        x_opencti_order
                       }
                     }
                   }
@@ -385,7 +385,7 @@ const StixDomainObjectKillChainLines = createRefetchContainer(
                   node {
                     id
                     phase_name
-                    phase_order
+                    x_opencti_order
                   }
                 }
               }
