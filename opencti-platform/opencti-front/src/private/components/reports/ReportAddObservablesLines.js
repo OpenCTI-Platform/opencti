@@ -60,7 +60,7 @@ export const reportMutationRelationAdd = graphql`
       relationAdd(input: $input) {
         id
         to {
-          ...ReportObservableLine_node
+          ...ReportStixCyberObservableLine_node
         }
       }
     }

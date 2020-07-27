@@ -43,10 +43,10 @@ const graknStateStorage = {
       const lastRunInit = `${parseInt(time, 10) + 1}-init`;
       await internalDirectWrite(
         `insert $x isa MigrationStatus, 
-        has entity_type "migration-status",
-         has lastRun "${lastRunInit}", 
-         has internal_id "${uuid()}", 
-         has standard_id "migration-status--${uuid()}";`
+        has entity_type "MigrationStatus",
+        has lastRun "${lastRunInit}", 
+        has internal_id "${uuid()}", 
+        has standard_id "migrationstatus--${uuid()}";`
       );
       return fn(null, { lastRun: lastRunInit, migrations: [] });
     }
@@ -81,6 +81,7 @@ const graknStateStorage = {
         await wTx.query(q2);
         // Insert the migration reference
         const q3 = `insert $x isa MigrationReference,
+          has entity_type "MigrationReference",
           has internal_id "${uuid()}",
           has title "${mig.title}",
           has timestamp ${mig.timestamp};`;

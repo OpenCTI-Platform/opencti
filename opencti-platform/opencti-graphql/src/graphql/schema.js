@@ -9,6 +9,7 @@ import attributeResolvers from '../resolvers/attribute';
 import subTypeResolvers from '../resolvers/subType';
 import labelResolvers from '../resolvers/label';
 import rabbitmqMetricsResolvers from '../resolvers/rabbitmqMetrics';
+import stixObjectOrStixRelationshipResolvers from '../resolvers/stixObjectOrStixRelationship';
 import stixCoreObjectResolvers from '../resolvers/stixCoreObject';
 import stixDomainObjectResolvers from '../resolvers/stixDomainObject';
 import stixCyberObservableResolvers from '../resolvers/stixCyberObservable';
@@ -114,6 +115,8 @@ const createSchema = () => {
     stixSightingRelationshipResolvers,
     // STIX CYBER OBSERVABLE RELATIONSHIPS
     stixCyberObservableRelationResolvers,
+    // ALL
+    stixObjectOrStixRelationshipResolvers,
   ]);
 
   return makeExecutableSchema({

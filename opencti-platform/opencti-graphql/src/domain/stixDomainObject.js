@@ -105,7 +105,7 @@ const askJobExports = async (
   // Create job for every connectors
   const haveMarking = maxMarkingDefinition && maxMarkingDefinition.length > 0;
   const maxMarkingDefinitionEntity = haveMarking ? await findMarkingDefinitionById(maxMarkingDefinition) : null;
-  const finalEntityType = entity ? entity.entity_type : type.toLowerCase();
+  const finalEntityType = entity ? entity.entity_type : type;
   const workList = await Promise.all(
     map((connector) => {
       const fileName = generateFileExportName(

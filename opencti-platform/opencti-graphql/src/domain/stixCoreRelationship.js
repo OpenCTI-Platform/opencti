@@ -33,6 +33,7 @@ import {
 export const findAll = async (args) => {
   return listRelations(propOr('stix_relation', 'relationship_type', args), args);
 };
+
 export const findById = (stixCoreRelationshipId) => {
   if (!isStixId(stixCoreRelationshipId) && !isInternalId(stixCoreRelationshipId)) {
     return getRelationInferredById(stixCoreRelationshipId);
@@ -70,6 +71,7 @@ export const reports = (stixCoreObjectId) => {
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
+
 export const notes = (stixCoreObjectId) => {
   return findWithConnectedRelations(
     `match $to isa Note; $rel(knowledge_aggregation:$to, so:$from) isa ${RELATION_OBJECT};
@@ -79,6 +81,7 @@ export const notes = (stixCoreObjectId) => {
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
+
 export const opinions = (stixCoreObjectId) => {
   return findWithConnectedRelations(
     `match $to isa Opinion; $rel(knowledge_aggregation:$to, so:$from) isa ${RELATION_OBJECT};
@@ -88,6 +91,7 @@ export const opinions = (stixCoreObjectId) => {
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
+
 export const labels = (stixCoreObjectId) => {
   return findWithConnectedRelations(
     `match $to isa ${ENTITY_TYPE_LABEL}; $rel(tagging:$to, so:$from) isa ${RELATION_OBJECT_LABEL};
@@ -97,6 +101,7 @@ export const labels = (stixCoreObjectId) => {
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
+
 export const markingDefinitions = (stixCoreObjectId) => {
   return findWithConnectedRelations(
     `match $to isa Marking-Definition; $rel(marking:$to, so:$from) isa ${RELATION_OBJECT_MARKING};
@@ -105,6 +110,7 @@ export const markingDefinitions = (stixCoreObjectId) => {
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
+
 export const killChainPhases = (stixDomainObjectId) => {
   return findWithConnectedRelations(
     `match $to isa Kill-Chain-Phase; $rel(kill_chain_phase:$to, phase_belonging:$from) isa ${RELATION_KILL_CHAIN_PHASE};
@@ -113,6 +119,7 @@ export const killChainPhases = (stixDomainObjectId) => {
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
+
 export const externalReferences = (stixDomainObjectId) => {
   return findWithConnectedRelations(
     `match $to isa External-Reference; $rel(external_reference:$to, so:$from) isa ${RELATION_EXTERNAL_REFERENCE};
@@ -137,9 +144,11 @@ export const addStixCoreRelationship = async (user, stixCoreRelationship, revers
   const created = await createRelation(user, input, { reversedReturn });
   return notify(BUS_TOPICS.StixCoreRelationship.ADDED_TOPIC, created, user);
 };
+
 export const stixCoreRelationshipDelete = async (user, stixCoreRelationshipId) => {
   return deleteRelationById(user, stixCoreRelationshipId, 'stix_relation');
 };
+
 export const stixCoreRelationshipEditField = (user, stixCoreRelationshipId, input) => {
   return executeWrite((wTx) => {
     return updateAttribute(user, stixCoreRelationshipId, 'stix_relation', input, wTx);
@@ -148,6 +157,7 @@ export const stixCoreRelationshipEditField = (user, stixCoreRelationshipId, inpu
     return notify(BUS_TOPICS.StixCoreRelationship.EDIT_TOPIC, stixCoreRelationship, user);
   });
 };
+
 export const stixCoreRelationshipAddRelation = async (user, stixCoreRelationshipId, input) => {
   const data = await internalLoadEntityById(stixCoreRelationshipId);
   if (!isStixCoreRelationship(data.type) || !input.relationship_type) {
@@ -159,6 +169,7 @@ export const stixCoreRelationshipAddRelation = async (user, stixCoreRelationship
     return relationData;
   });
 };
+
 export const stixCoreRelationshipDeleteRelation = async (user, stixCoreRelationshipId, relationId) => {
   await deleteRelationById(user, relationId, 'stix_relation_embedded');
   const data = await loadRelationById(stixCoreRelationshipId, 'stix_relation');

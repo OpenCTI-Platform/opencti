@@ -89,9 +89,6 @@ const stixDomainObjectMutation = graphql`
         ... on Sector {
           aliases
         }
-        ... on Indicator {
-          aliases
-        }
         ... on Infrastructure {
           aliases
         }
