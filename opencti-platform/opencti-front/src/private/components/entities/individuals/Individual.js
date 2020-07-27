@@ -15,7 +15,7 @@ import IndividualPopover from './IndividualPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityXOpenctiIncidentsChart from '../../threats/x_opencti_xOpenctiIncidents/EntityXOpenctiXOpenctiIncidentsChart';
+import EntityXOpenctiIncidentsChart from '../../threats/x_opencti_incidents/EntityXOpenctiIncidentsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
@@ -70,7 +70,6 @@ class IndividualComponent extends Component {
             PopoverComponent={<IndividualPopover />}
             onViewAs={this.handleChangeViewAs.bind(this)}
             viewAs={this.state.viewAs}
-            disablePopover={!isNil(individual.external)}
           />
           <Grid
             container={true}
@@ -98,13 +97,9 @@ class IndividualComponent extends Component {
               <EntityReportsChart authorId={individual.id} />
             </Grid>
           </Grid>
-          {isNil(individual.external) ? (
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <IndividualEdition individualId={individual.id} />
-            </Security>
-          ) : (
-            ''
-          )}
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <IndividualEdition individualId={individual.id} />
+          </Security>
         </div>
       );
     }
@@ -149,13 +144,9 @@ class IndividualComponent extends Component {
             <EntityReportsChart entityId={individual.id} />
           </Grid>
         </Grid>
-        {isNil(individual.external) ? (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <IndividualEdition individualId={individual.id} />
-          </Security>
-        ) : (
-          ''
-        )}
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IndividualEdition individualId={individual.id} />
+        </Security>
       </div>
     );
   }
@@ -169,11 +160,10 @@ IndividualComponent.propTypes = {
 
 const Individual = createFragmentContainer(IndividualComponent, {
   individual: graphql`
-    fragment Individual_individual on User {
+    fragment Individual_individual on Individual {
       id
       name
       aliases
-      external
       ...IndividualOverview_individual
       ...IndividualDetails_individual
     }

@@ -5406,7 +5406,7 @@ type Query {
   stixCyberObservables(
     first: Int
     after: ID
-    entity_types: [String]
+    types: [String]
     orderBy: StixCyberObservablesOrdering
     orderMode: OrderingMode
     filters: [StixCyberObservablesFiltering]
