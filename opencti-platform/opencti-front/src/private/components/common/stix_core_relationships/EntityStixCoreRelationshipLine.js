@@ -148,7 +148,7 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
             description
             created_at
             updated_at
-            labels {
+            objectLabel {
               edges {
                 node {
                   id
@@ -200,7 +200,7 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
                 }
               }
             }
-            labels {
+            objectLabel {
               edges {
                 node {
                   id

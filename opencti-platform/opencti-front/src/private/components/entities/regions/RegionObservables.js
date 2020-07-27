@@ -86,7 +86,7 @@ const RegionObservables = createFragmentContainer(RegionObservablesComponent, {
     fragment RegionObservables_region on Region {
       id
       name
-      aliases
+      x_opencti_aliases
     }
   `,
 });

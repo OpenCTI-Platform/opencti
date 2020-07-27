@@ -142,22 +142,22 @@ const AttackPatternDetails = createFragmentContainer(
           id
           name
         }
-        labels {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
-        }
-        killChainPhase {
+        killChainPhases {
           edges {
             node {
               id
               kill_chain_name
               phase_name
               x_opencti_order
+            }
+          }
+        }
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
             }
           }
         }

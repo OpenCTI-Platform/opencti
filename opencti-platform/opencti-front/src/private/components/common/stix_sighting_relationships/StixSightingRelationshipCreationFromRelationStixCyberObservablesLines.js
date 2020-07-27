@@ -15,22 +15,16 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { ExpandMore } from '@material-ui/icons';
-import { Link } from 'react-router-dom';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
-import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 
 const styles = (theme) => ({
   container: {
     padding: '0 0 20px 0',
   },
   expansionPanel: {
-    backgroundColor: theme.palette.background.paper,
-  },
-  itemIcon: {
-    color: theme.palette.primary.main,
+    backgroundColor: '#193E45',
   },
   heading: {
     fontSize: theme.typography.pxToRem(15),
@@ -55,7 +49,7 @@ const styles = (theme) => ({
   },
 });
 
-class StixCyberObservablesContainer extends Component {
+class StixSightingRelationshipCreationFromRelationStixCyberObservablesLinesContainer extends Component {
   constructor(props) {
     super(props);
     this.state = { expandedPanels: {} };
@@ -74,14 +68,13 @@ class StixCyberObservablesContainer extends Component {
     if (numberOfEntities === 1) {
       return true;
     }
-    if (numberOfTypes === 1) {
-      return true;
-    }
-    return false;
+    return numberOfTypes === 1;
   }
 
   render() {
-    const { t, classes, data } = this.props;
+    const {
+      t, classes, data, handleSelect,
+    } = this.props;
     const stixCyberObservablesNodes = map(
       (n) => n.node,
       data.stixCyberObservables.edges,
@@ -91,6 +84,7 @@ class StixCyberObservablesContainer extends Component {
     );
     const stixCyberObservables = byType(stixCyberObservablesNodes);
     const stixCyberObservablesTypes = keys(stixCyberObservables);
+
     return (
       <div className={classes.container}>
         {stixCyberObservablesTypes.map((type) => (
@@ -104,14 +98,11 @@ class StixCyberObservablesContainer extends Component {
             onChange={this.handleChangePanel.bind(this, type)}
             classes={{ root: classes.expansionPanel }}
           >
-            <ExpansionPanelSummary
-              expandIcon={<ExpandMore />}
-              className={classes.summary}
-            >
+            <ExpansionPanelSummary expandIcon={<ExpandMore />}>
               <Typography className={classes.heading}>
                 {t(`observable_${type}`)}
               </Typography>
-              <Typography classes={{ root: classes.secondaryHeading }}>
+              <Typography className={classes.secondaryHeading}>
                 {stixCyberObservables[type].length} {t('observable(s)')}
               </Typography>
             </ExpansionPanelSummary>
@@ -125,22 +116,15 @@ class StixCyberObservablesContainer extends Component {
                     classes={{ root: classes.menuItem }}
                     divider={true}
                     button={true}
-                    component={Link}
-                    to={`/dashboard/signatures/observables/${stixCyberObservable.id}`}
+                    onClick={handleSelect.bind(this, stixCyberObservable)}
                   >
-                    <ListItemIcon classes={{ root: classes.itemIcon }}>
+                    <ListItemIcon>
                       <ItemIcon type={type} />
                     </ListItemIcon>
                     <ListItemText
                       primary={stixCyberObservable.observable_value}
-                      secondary={truncate(stixCyberObservable.description, 200)}
+                      secondary={truncate(stixCyberObservable.description, 100)}
                     />
-                    <ListItemSecondaryAction>
-                      <StixCoreObjectLabels
-                        labels={stixCyberObservable.labels}
-                        variant="inSearch"
-                      />
-                    </ListItemSecondaryAction>
                   </ListItem>
                 ))}
               </List>
@@ -152,9 +136,8 @@ class StixCyberObservablesContainer extends Component {
   }
 }
 
-StixCyberObservablesContainer.propTypes = {
-  reportId: PropTypes.string,
-  reportObjectRefs: PropTypes.array,
+StixSightingRelationshipCreationFromRelationStixCyberObservablesLinesContainer.propTypes = {
+  handleSelect: PropTypes.func,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
@@ -162,17 +145,19 @@ StixCyberObservablesContainer.propTypes = {
   fld: PropTypes.func,
 };
 
-export const stixCyberObservablesSearchLinesQuery = graphql`
-  query StixCyberObservablesSearchLinesQuery(
+export const stixSightingRelationshipCreationFromRelationStixCyberObservablesLinesQuery = graphql`
+  query StixSightingRelationshipCreationFromRelationStixCyberObservablesLinesQuery(
     $search: String
+    $types: [String]
     $count: Int!
     $cursor: ID
     $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode
   ) {
-    ...StixCyberObservablesSearchLines_data
+    ...StixSightingRelationshipCreationFromRelationStixCyberObservablesLines_data
       @arguments(
         search: $search
+        types: $types
         count: $count
         cursor: $cursor
         orderBy: $orderBy
@@ -181,13 +166,14 @@ export const stixCyberObservablesSearchLinesQuery = graphql`
   }
 `;
 
-const StixCyberObservablesSearchLines = createPaginationContainer(
-  StixCyberObservablesContainer,
+const StixSightingRelationshipCreationFromRelationStixCyberObservablesLines = createPaginationContainer(
+  StixSightingRelationshipCreationFromRelationStixCyberObservablesLinesContainer,
   {
     data: graphql`
-      fragment StixCyberObservablesSearchLines_data on Query
+      fragment StixSightingRelationshipCreationFromRelationStixCyberObservablesLines_data on Query
         @argumentDefinitions(
           search: { type: "String" }
+          types: { type: "[String]" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
           orderBy: {
@@ -198,6 +184,7 @@ const StixCyberObservablesSearchLines = createPaginationContainer(
         ) {
         stixCyberObservables(
           search: $search
+          types: $types
           first: $count
           after: $cursor
           orderBy: $orderBy
@@ -207,16 +194,8 @@ const StixCyberObservablesSearchLines = createPaginationContainer(
             node {
               id
               entity_type
+              parent_types
               observable_value
-              objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
-        }
             }
           }
         }
@@ -236,17 +215,19 @@ const StixCyberObservablesSearchLines = createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
+        search: fragmentVariables.search,
+        types: fragmentVariables.types,
         count,
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: stixCyberObservablesSearchLinesQuery,
+    query: stixSightingRelationshipCreationFromRelationStixCyberObservablesLinesQuery,
   },
 );
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixCyberObservablesSearchLines);
+)(StixSightingRelationshipCreationFromRelationStixCyberObservablesLines);

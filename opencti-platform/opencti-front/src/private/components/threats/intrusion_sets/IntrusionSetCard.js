@@ -55,7 +55,7 @@ const styles = (theme) => ({
     height: 70,
     overflow: 'hidden',
   },
-  labels: {
+  objectLabel: {
     height: 45,
     paddingTop: 7,
   },
@@ -111,9 +111,9 @@ class IntrusionSetCardComponent extends Component {
                 unwrapDisallowed={true}
               />
             </div>
-            <div className={classes.labels}>
+            <div className={classes.objectLabel}>
               <StixCoreObjectLabels
-                labels={node.labels}
+                labels={node.objectLabel}
                 onClick={onLabelClick.bind(this)}
               />
             </div>
@@ -142,20 +142,20 @@ const IntrusionSetCardFragment = createFragmentContainer(
         description
         created
         modified
-        labels {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
-        }
         objectMarking {
           edges {
             node {
               id
               definition
+            }
+          }
+        }
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
             }
           }
         }

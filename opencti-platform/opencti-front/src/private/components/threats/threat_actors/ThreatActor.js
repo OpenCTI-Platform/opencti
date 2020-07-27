@@ -11,7 +11,7 @@ import ThreatActorDetails from './ThreatActorDetails';
 import ThreatActorEdition from './ThreatActorEdition';
 import ThreatActorPopover from './ThreatActorPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
-import EntityXOpenctiIncidentsChart from '../x_opencti_xOpenctiIncidents/EntityXOpenctiXOpenctiIncidentsChart';
+import EntityXOpenctiIncidentsChart from '../x_opencti_incidents/EntityXOpenctiIncidentsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityCampaignsChart from '../campaigns/EntityCampaignsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';

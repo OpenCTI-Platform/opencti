@@ -27,12 +27,12 @@ import { dayStartDate, parse } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
 import DatePickerField from '../../../../components/DatePickerField';
-import StixSightingRelationshipCreationFromEntityStixDomainObjectsLines, {
-  stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery,
-} from './StixSightingRelationshipCreationFromEntityStixDomainObjectsLines';
-import StixSightingRelationshipCreationFromEntityStixCyberObservablesLines, {
-  stixSightingRelationshipCreationFromEntityStixCyberObservablesLinesQuery,
-} from './StixSightingRelationshipCreationFromEntityStixCyberObservablesLines';
+import StixSightingRelationshipCreationFromRelationStixDomainObjectsLines, {
+  stixSightingRelationshipCreationFromRelationStixDomainObjectsLinesQuery,
+} from './StixSightingRelationshipCreationFromRelationStixDomainObjectsLines';
+import StixSightingRelationshipCreationFromRelationStixCyberObservablesLines, {
+  stixSightingRelationshipCreationFromRelationStixCyberObservablesLinesQuery,
+} from './StixSightingRelationshipCreationFromRelationStixCyberObservablesLines';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import SearchInput from '../../../../components/SearchInput';
 import { truncate } from '../../../../utils/String';
@@ -177,214 +177,154 @@ const styles = (theme) => ({
   },
 });
 
-const stixSightingRelationshipCreationFromEntityQuery = graphql`
-  query StixSightingRelationshipCreationFromEntityQuery($id: String) {
-    stixDomainObject(id: $id) {
+const stixSightingRelationshipCreationFromRelationQuery = graphql`
+  query StixSightingRelationshipCreationFromRelationQuery($id: String) {
+    stixCoreRelationship(id: $id) {
       id
       entity_type
       parent_types
-      id
-      entity_type
-      parent_types
-      ... on AttackPattern {
-        name
-      }
-      ... on Campaign {
-        name
-      }
-      ... on CourseOfAction {
-        name
-      }
-      ... on Individual {
-        name
-      }
-      ... on Organization {
-        name
-      }
-      ... on Sector {
-        name
-      }
-      ... on Indicator {
-        name
-      }
-      ... on Infrastructure {
-        name
-      }
-      ... on IntrusionSet {
-        name
-      }
-      ... on Position {
-        name
-      }
-      ... on City {
-        name
-      }
-      ... on Country {
-        name
-      }
-      ... on Region {
-        name
-      }
-      ... on Malware {
-        name
-      }
-      ... on ThreatActor {
-        name
-      }
-      ... on Tool {
-        name
-      }
-      ... on Vulnerability {
-        name
-      }
-      ... on XOpenctiIncident {
-        name
-      }
-      ... on StixCyberObservable {
-        observable_value
-      }
-      ... on StixSightingRelationship {
-        from {
-          ... on BasicObject {
-            id
-            entity_type
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-          }
-          ... on AttackPattern {
-            name
-          }
-          ... on Campaign {
-            name
-          }
-          ... on CourseOfAction {
-            name
-          }
-          ... on Individual {
-            name
-          }
-          ... on Organization {
-            name
-          }
-          ... on Sector {
-            name
-          }
-          ... on Indicator {
-            name
-          }
-          ... on Infrastructure {
-            name
-          }
-          ... on IntrusionSet {
-            name
-          }
-          ... on Position {
-            name
-          }
-          ... on City {
-            name
-          }
-          ... on Country {
-            name
-          }
-          ... on Region {
-            name
-          }
-          ... on Malware {
-            name
-          }
-          ... on ThreatActor {
-            name
-          }
-          ... on Tool {
-            name
-          }
-          ... on Vulnerability {
-            name
-          }
-          ... on XOpenctiIncident {
-            name
-          }
-          ... on StixCyberObservable {
-            observable_value
-          }
+      relationship_type
+      description
+      from {
+        ... on BasicObject {
+          id
+          entity_type
         }
-        to {
-          ... on BasicObject {
-            id
-            entity_type
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-          }
-          ... on AttackPattern {
-            name
-          }
-          ... on Campaign {
-            name
-          }
-          ... on CourseOfAction {
-            name
-          }
-          ... on Individual {
-            name
-          }
-          ... on Organization {
-            name
-          }
-          ... on Sector {
-            name
-          }
-          ... on Indicator {
-            name
-          }
-          ... on Infrastructure {
-            name
-          }
-          ... on IntrusionSet {
-            name
-          }
-          ... on Position {
-            name
-          }
-          ... on City {
-            name
-          }
-          ... on Country {
-            name
-          }
-          ... on Region {
-            name
-          }
-          ... on Malware {
-            name
-          }
-          ... on ThreatActor {
-            name
-          }
-          ... on Tool {
-            name
-          }
-          ... on Vulnerability {
-            name
-          }
-          ... on XOpenctiIncident {
-            name
-          }
-          ... on StixCyberObservable {
-            observable_value
-          }
+        ... on BasicRelationship {
+          id
+          entity_type
+        }
+        ... on AttackPattern {
+          name
+        }
+        ... on Campaign {
+          name
+        }
+        ... on CourseOfAction {
+          name
+        }
+        ... on Individual {
+          name
+        }
+        ... on Organization {
+          name
+        }
+        ... on Sector {
+          name
+        }
+        ... on Indicator {
+          name
+        }
+        ... on Infrastructure {
+          name
+        }
+        ... on IntrusionSet {
+          name
+        }
+        ... on Position {
+          name
+        }
+        ... on City {
+          name
+        }
+        ... on Country {
+          name
+        }
+        ... on Region {
+          name
+        }
+        ... on Malware {
+          name
+        }
+        ... on ThreatActor {
+          name
+        }
+        ... on Tool {
+          name
+        }
+        ... on Vulnerability {
+          name
+        }
+        ... on XOpenctiIncident {
+          name
+        }
+        ... on StixCyberObservable {
+          observable_value
+        }
+      }
+      to {
+        ... on BasicObject {
+          id
+          entity_type
+        }
+        ... on BasicRelationship {
+          id
+          entity_type
+        }
+        ... on AttackPattern {
+          name
+        }
+        ... on Campaign {
+          name
+        }
+        ... on CourseOfAction {
+          name
+        }
+        ... on Individual {
+          name
+        }
+        ... on Organization {
+          name
+        }
+        ... on Sector {
+          name
+        }
+        ... on Indicator {
+          name
+        }
+        ... on Infrastructure {
+          name
+        }
+        ... on IntrusionSet {
+          name
+        }
+        ... on Position {
+          name
+        }
+        ... on City {
+          name
+        }
+        ... on Country {
+          name
+        }
+        ... on Region {
+          name
+        }
+        ... on Malware {
+          name
+        }
+        ... on ThreatActor {
+          name
+        }
+        ... on Tool {
+          name
+        }
+        ... on Vulnerability {
+          name
+        }
+        ... on XOpenctiIncident {
+          name
+        }
+        ... on StixCyberObservable {
+          observable_value
         }
       }
     }
   }
 `;
 
-const stixSightingRelationshipCreationFromEntityMutation = graphql`
-  mutation StixSightingRelationshipCreationFromEntityMutation(
+const stixSightingRelationshipCreationFromRelationMutation = graphql`
+  mutation StixSightingRelationshipCreationFromRelationMutation(
     $input: StixSightingRelationshipAddInput!
     $reversedReturn: Boolean
   ) {
@@ -426,7 +366,7 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class StixSightingRelationshipCreationFromEntity extends Component {
+class StixSightingRelationshipCreationFromRelation extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -460,7 +400,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
       assoc('objectMarking', pluck('value', values.objectMarking)),
     )(values);
     commitMutation({
-      mutation: stixSightingRelationshipCreationFromEntityMutation,
+      mutation: stixSightingRelationshipCreationFromRelationMutation,
       variables: {
         input: finalValues,
         reversedReturn: !this.props.isFrom,
@@ -558,13 +498,13 @@ class StixSightingRelationshipCreationFromEntity extends Component {
           {!onlyObservables ? (
             <QueryRenderer
               query={
-                stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery
+                stixSightingRelationshipCreationFromRelationStixDomainObjectsLinesQuery
               }
               variables={{ count: 25, ...stixDomainObjectsPaginationOptions }}
               render={({ props }) => {
                 if (props) {
                   return (
-                    <StixSightingRelationshipCreationFromEntityStixDomainObjectsLines
+                    <StixSightingRelationshipCreationFromRelationStixDomainObjectsLines
                       handleSelect={this.handleSelectEntity.bind(this)}
                       data={props}
                     />
@@ -578,7 +518,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
           )}
           <QueryRenderer
             query={
-              stixSightingRelationshipCreationFromEntityStixCyberObservablesLinesQuery
+              stixSightingRelationshipCreationFromRelationStixCyberObservablesLinesQuery
             }
             variables={{
               search: this.state.search,
@@ -590,7 +530,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixSightingRelationshipCreationFromEntityStixCyberObservablesLines
+                  <StixSightingRelationshipCreationFromRelationStixCyberObservablesLines
                     handleSelect={this.handleSelectEntity.bind(this)}
                     data={props}
                   />
@@ -912,7 +852,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
           onClose={this.handleClose.bind(this)}
         >
           <QueryRenderer
-            query={stixSightingRelationshipCreationFromEntityQuery}
+            query={stixSightingRelationshipCreationFromRelationQuery}
             variables={{ id: entityId }}
             render={({ props }) => {
               if (props && props.stixEntity) {
@@ -932,7 +872,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
   }
 }
 
-StixSightingRelationshipCreationFromEntity.propTypes = {
+StixSightingRelationshipCreationFromRelation.propTypes = {
   entityId: PropTypes.string,
   isFrom: PropTypes.bool,
   targetEntityTypes: PropTypes.array,
@@ -948,4 +888,4 @@ StixSightingRelationshipCreationFromEntity.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixSightingRelationshipCreationFromEntity);
+)(StixSightingRelationshipCreationFromRelation);

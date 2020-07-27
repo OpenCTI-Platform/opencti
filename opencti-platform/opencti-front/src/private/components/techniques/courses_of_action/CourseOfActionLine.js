@@ -74,7 +74,7 @@ class CourseOfActionLineComponent extends Component {
               >
                 <StixCoreObjectLabels
                   variant="inList"
-                  labels={node.labels}
+                  labels={node.objectLabel}
                   onClick={onLabelClick.bind(this)}
                 />
               </div>

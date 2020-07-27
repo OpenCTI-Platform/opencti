@@ -73,7 +73,7 @@ const CourseOfActionDetails = createFragmentContainer(
           id
           name
         }
-        labels {
+        objectLabel {
           edges {
             node {
               id

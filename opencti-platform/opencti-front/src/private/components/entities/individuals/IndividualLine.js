@@ -76,7 +76,7 @@ class IndividualLineComponent extends Component {
               >
                 <StixCoreObjectLabels
                   variant="inList"
-                  labels={node.labels}
+                  labels={node.objectLabel}
                   onClick={onLabelClick.bind(this)}
                 />
               </div>
@@ -115,12 +115,12 @@ const IndividualLineFragment = createFragmentContainer(
   IndividualLineComponent,
   {
     node: graphql`
-      fragment IndividualLine_node on User {
+      fragment IndividualLine_node on Individual {
         id
         name
         created
         modified
-        labels {
+        objectLabel {
           edges {
             node {
               id

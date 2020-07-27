@@ -97,7 +97,7 @@ class CurationStixDomainObjectLineComponent extends Component {
               >
                 <StixDomainObjectLabels
                   variant="inList"
-                  labels={node.labels}
+                  labels={node.objectLabel}
                   onClick={onLabelClick.bind(this)}
                 />
               </div>

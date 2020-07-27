@@ -71,7 +71,57 @@ const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation($id: ID!, $input: EditInput!) {
     stixDomainObjectEdit(id: $id) {
       fieldPatch(input: $input) {
-        aliases
+        ... on AttackPattern {
+          aliases
+        }
+        ... on Campaign {
+          aliases
+        }
+        ... on CourseOfAction {
+          x_opencti_aliases
+        }
+        ... on Individual {
+          aliases
+        }
+        ... on Organization {
+          aliases
+        }
+        ... on Sector {
+          aliases
+        }
+        ... on Indicator {
+          aliases
+        }
+        ... on Infrastructure {
+          aliases
+        }
+        ... on IntrusionSet {
+          aliases
+        }
+        ... on Position {
+          x_opencti_aliases
+        }
+        ... on City {
+          x_opencti_aliases
+        }
+        ... on Country {
+          x_opencti_aliases
+        }
+        ... on Region {
+          x_opencti_aliases
+        }
+        ... on Malware {
+          aliases
+        }
+        ... on ThreatActor {
+          aliases
+        }
+        ... on Tool {
+          aliases
+        }
+        ... on XOpenctiIncident {
+          aliases
+        }
       }
     }
   }
@@ -81,6 +131,7 @@ class StixDomainObjectHeader extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      isOpenctiAlias: props.isOpenctiAlias,
       openAlias: false,
       openAliases: false,
       openAliasesCreate: false,
@@ -140,12 +191,17 @@ class StixDomainObjectHeader extends Component {
       classes,
       variant,
       stixDomainObject,
+      isOpenctiAlias,
       PopoverComponent,
       viewAs,
       onViewAs,
       disablePopover,
     } = this.props;
-    const aliases = propOr([], 'aliases', stixDomainObject);
+    const aliases = propOr(
+      [],
+      isOpenctiAlias ? 'x_opencti_aliases' : 'aliases',
+      stixDomainObject,
+    );
     return (
       <div>
         <Typography
@@ -187,7 +243,7 @@ class StixDomainObjectHeader extends Component {
           ''
         )}
         {variant !== 'noaliases' ? (
-          <div className={classes.aliaseses}>
+          <div className={classes.aliases}>
             {take(5, aliases).map((label) => (label.length > 0 ? (
                 <Chip
                   key={label}
@@ -277,7 +333,11 @@ class StixDomainObjectHeader extends Component {
           </DialogTitle>
           <DialogContent dividers={true}>
             <List>
-              {propOr([], 'aliases', stixDomainObject).map((label) => (label.length > 0 ? (
+              {propOr(
+                [],
+                isOpenctiAlias ? 'x_opencti_aliases' : 'aliases',
+                stixDomainObject,
+              ).map((label) => (label.length > 0 ? (
                   <ListItem key={label} disableGutters={true} dense={true}>
                     <ListItemText primary={label} />
                     <ListItemSecondaryAction>
@@ -334,6 +394,7 @@ class StixDomainObjectHeader extends Component {
 
 StixDomainObjectHeader.propTypes = {
   stixDomainObject: PropTypes.object,
+  isOpenctiAlias: PropTypes.bool,
   PopoverComponent: PropTypes.object,
   variant: PropTypes.string,
   classes: PropTypes.object,

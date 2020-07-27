@@ -73,8 +73,8 @@ const markingDefinitionMutation = graphql`
 const markingDefinitionValidation = (t) => Yup.object().shape({
   definition_type: Yup.string().required(t('This field is required')),
   definition: Yup.string().required(t('This field is required')),
-  color: Yup.string().required(t('This field is required')),
-  level: Yup.number()
+  x_opencti_color: Yup.string().required(t('This field is required')),
+  x_opencti_order: Yup.number()
     .typeError(t('The value must be a number'))
     .integer(t('The value must be a number'))
     .required(t('This field is required')),
@@ -196,15 +196,15 @@ class MarkingDefinitionCreation extends Component {
                   />
                   <Field
                     component={ColorPickerField}
-                    name="color"
+                    name="x_opencti_color"
                     label={t('Color')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
                   <Field
                     component={TextField}
-                    name="level"
-                    label={t('Level')}
+                    name="x_opencti_order"
+                    label={t('Order')}
                     fullWidth={true}
                     type="number"
                     style={{ marginTop: 20 }}

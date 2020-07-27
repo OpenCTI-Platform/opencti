@@ -64,7 +64,7 @@ class StixCoreObjectLabels extends Component {
       sortWith([ascend(prop('value'))]),
     )(labels.edges);
     return (
-      <div className={classes.labels}>
+      <div className={classes.objectLabel}>
         {labelsNodes.length > 0 ? (
           map(
             (label) => (

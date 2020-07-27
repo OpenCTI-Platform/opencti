@@ -337,12 +337,11 @@ const IndividualEditionOverview = createFragmentContainer(
   IndividualEditionOverviewComponent,
   {
     individual: graphql`
-      fragment IndividualEditionOverview_individual on User {
+      fragment IndividualEditionOverview_individual on Individual {
         id
         name
         description
         contact_information
-        external
         createdBy {
           ... on Identity {
             id

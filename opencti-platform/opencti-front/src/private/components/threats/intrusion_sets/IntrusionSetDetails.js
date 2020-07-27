@@ -144,7 +144,7 @@ const IntrusionSetDetails = createFragmentContainer(
           id
           name
         }
-        labels {
+        objectLabel {
           edges {
             node {
               id

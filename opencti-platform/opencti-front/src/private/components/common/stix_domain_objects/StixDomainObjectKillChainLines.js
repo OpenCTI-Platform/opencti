@@ -247,9 +247,7 @@ class StixDomainObjectKillChainLinesComponent extends Component {
                             <ListItemText
                               primary={
                                 <span>
-                                  <strong>
-                                    {attackPattern.to.x_mitre_id}
-                                  </strong>{' '}
+                                  <strong>{attackPattern.to.x_mitre_id}</strong>{' '}
                                   - {attackPattern.to.name}
                                 </span>
                               }
@@ -365,9 +363,16 @@ const StixDomainObjectKillChainLines = createRefetchContainer(
               last_seen
               inferred
               to {
-                id
-                name
+                ... on BasicObject {
+                  id
+                  entity_type
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                }
                 ... on AttackPattern {
+                  name
                   x_mitre_id
                   killChainPhases {
                     edges {
@@ -378,6 +383,57 @@ const StixDomainObjectKillChainLines = createRefetchContainer(
                       }
                     }
                   }
+                }
+                ... on Campaign {
+                  name
+                }
+                ... on CourseOfAction {
+                  name
+                }
+                ... on Individual {
+                  name
+                }
+                ... on Organization {
+                  name
+                }
+                ... on Sector {
+                  name
+                }
+                ... on Indicator {
+                  name
+                }
+                ... on Infrastructure {
+                  name
+                }
+                ... on IntrusionSet {
+                  name
+                }
+                ... on Position {
+                  name
+                }
+                ... on City {
+                  name
+                }
+                ... on Country {
+                  name
+                }
+                ... on Region {
+                  name
+                }
+                ... on Malware {
+                  name
+                }
+                ... on ThreatActor {
+                  name
+                }
+                ... on Tool {
+                  name
+                }
+                ... on Vulnerability {
+                  name
+                }
+                ... on XOpenctiIncident {
+                  name
                 }
               }
               killChainPhases {

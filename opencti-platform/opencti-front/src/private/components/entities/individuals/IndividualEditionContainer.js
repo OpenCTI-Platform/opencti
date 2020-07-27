@@ -86,7 +86,7 @@ const IndividualEditionFragment = createFragmentContainer(
   IndividualEditionContainer,
   {
     individual: graphql`
-      fragment IndividualEditionContainer_individual on User {
+      fragment IndividualEditionContainer_individual on Individual {
         id
         ...IndividualEditionOverview_individual
         editContext {

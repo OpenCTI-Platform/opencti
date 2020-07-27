@@ -237,20 +237,20 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
     for (const stixCoreRelationshipEdge of data.stixCoreRelationships.edges) {
       let stixCoreRelationship = stixCoreRelationshipEdge.node;
       stixCoreRelationship = assoc(
-        'firstSeenYear',
-        yearFormat(stixCoreRelationship.first_seen),
+        'startTimeYear',
+        yearFormat(stixCoreRelationship.start_time),
         stixCoreRelationship,
       );
       stixCoreRelationship = assoc(
-        'lastSeenYear',
-        yearFormat(stixCoreRelationship.last_seen),
+        'stopTimeYear',
+        yearFormat(stixCoreRelationship.stop_time),
         stixCoreRelationship,
       );
       stixCoreRelationship = assoc(
         'years',
-        stixCoreRelationship.firstSeenYear === stixCoreRelationship.lastSeenYear
-          ? stixCoreRelationship.firstSeenYear
-          : `${stixCoreRelationship.firstSeenYear} - ${stixCoreRelationship.lastSeenYear}`,
+        stixCoreRelationship.startTimeYear === stixCoreRelationship.stopTimeYear
+          ? stixCoreRelationship.startTimeYear
+          : `${stixCoreRelationship.startTimeYear} - ${stixCoreRelationship.stopTimeYear}`,
         stixCoreRelationship,
       );
       if (stixCoreRelationship.to.entity_type === 'sector') {
@@ -636,8 +636,8 @@ const StixDomainObjectVictimologySectorsSectorLines = createRefetchContainer(
             node {
               id
               description
-              first_seen
-              last_seen
+              start_time
+              stop_time
               inferred
               to {
                 id

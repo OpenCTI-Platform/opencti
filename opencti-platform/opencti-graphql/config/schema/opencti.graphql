@@ -2149,7 +2149,7 @@ type OrganizationConnection {
 }
 type OrganizationEdge {
   cursor: String!
-  node: User!
+  node: Organization!
 }
 enum OrganizationReliability {
   A
@@ -5225,7 +5225,7 @@ type Query {
     filterMode: FilterMode
     toStix: Boolean
   ): IdentityConnection @auth(for: [KNOWLEDGE])
-  individual(id: String!): User @auth(for: [KNOWLEDGE])
+  individual(id: String!): Individual @auth(for: [KNOWLEDGE])
   individuals(
     first: Int
     after: ID

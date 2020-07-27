@@ -99,25 +99,25 @@ const IndividualOverview = createFragmentContainer(
   IndividualOverviewComponent,
   {
     individual: graphql`
-      fragment IndividualOverview_individual on User {
+      fragment IndividualOverview_individual on Individual {
         id
         name
         description
         created
         modified
+        createdBy {
+          ... on Identity {
+            id
+            name
+            entity_type
+          }
+        }
         objectMarking {
           edges {
             node {
               id
               definition
             }
-          }
-        }
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
           }
         }
       }

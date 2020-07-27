@@ -353,10 +353,12 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
               stop_time
               inferred
               to {
-                id
-                name
-                entity_type
+                ... on BasicObject {
+                  id
+                  entity_type
+                }
                 ... on AttackPattern {
+                  name
                   x_mitre_id
                   killChainPhases {
                     edges {
@@ -368,7 +370,44 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                     }
                   }
                 }
+                ... on Campaign {
+                  name
+                }
+                ... on CourseOfAction {
+                  name
+                }
+                ... on Individual {
+                  name
+                }
+                ... on Organization {
+                  name
+                }
+                ... on Sector {
+                  name
+                }
+                ... on Indicator {
+                  name
+                }
+                ... on Infrastructure {
+                  name
+                }
+                ... on IntrusionSet {
+                  name
+                }
+                ... on Position {
+                  name
+                }
+                ... on City {
+                  name
+                }
+                ... on Country {
+                  name
+                }
+                ... on Region {
+                  name
+                }
                 ... on Malware {
+                  name
                   killChainPhases {
                     edges {
                       node {
@@ -379,7 +418,11 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                     }
                   }
                 }
+                ... on ThreatActor {
+                  name
+                }
                 ... on Tool {
+                  name
                   killChainPhases {
                     edges {
                       node {
@@ -389,6 +432,12 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                       }
                     }
                   }
+                }
+                ... on Vulnerability {
+                  name
+                }
+                ... on XOpenctiIncident {
+                  name
                 }
               }
               killChainPhases {

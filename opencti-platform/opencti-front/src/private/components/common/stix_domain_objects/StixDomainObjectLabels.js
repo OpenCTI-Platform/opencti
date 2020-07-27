@@ -228,7 +228,7 @@ class StixDomainObjectLabels extends Component {
           </IconButton>
         </Security>
         <div className="clearfix" />
-        <div className={classes.labels}>
+        <div className={classes.objectLabel}>
           {map(
             (label) => (
               <Chip
