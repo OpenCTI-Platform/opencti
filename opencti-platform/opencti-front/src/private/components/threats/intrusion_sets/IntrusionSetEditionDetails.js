@@ -48,10 +48,9 @@ const intrusionSetValidation = (t) => Yup.object().shape({
   last_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  sophistication: Yup.string(),
   resource_level: Yup.string(),
   primary_motivation: Yup.string(),
-  secondary_motivation: Yup.string(),
+  secondary_motivations: Yup.string(),
   goal: Yup.string(),
 });
 
@@ -91,10 +90,9 @@ class IntrusionSetEditionDetailsComponent extends Component {
       pick([
         'first_seen',
         'last_seen',
-        'sophistication',
         'resource_level',
         'primary_motivation',
-        'secondary_motivation',
+        'secondary_motivations',
       ]),
     )(intrusionSet);
 
@@ -132,43 +130,6 @@ class IntrusionSetEditionDetailsComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="last_seen" />
               }
             />
-            <Field
-              component={SelectField}
-              name="sophistication"
-              onFocus={this.handleChangeFocus.bind(this)}
-              onChange={this.handleSubmitField.bind(this)}
-              label={t('Sophistication')}
-              fullWidth={true}
-              containerstyle={{ width: '100%', marginTop: 20 }}
-              helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="sophistication"
-                />
-              }
-            >
-              <MenuItem key="none" value="none">
-                {t('sophistication_none')}
-              </MenuItem>
-              <MenuItem key="minimal" value="minimal">
-                {t('sophistication_minimal')}
-              </MenuItem>
-              <MenuItem key="intermediate" value="intermediate">
-                {t('sophistication_intermediate')}
-              </MenuItem>
-              <MenuItem key="advanced" value="advanced">
-                {t('sophistication_advanced')}
-              </MenuItem>
-              <MenuItem key="expert" value="expert">
-                {t('sophistication_expert')}
-              </MenuItem>
-              <MenuItem key="innovator" value="innovator">
-                {t('sophistication_innovator')}
-              </MenuItem>
-              <MenuItem key="strategic" value="strategic">
-                {t('sophistication_strategic')}
-              </MenuItem>
-            </Field>
             <Field
               component={SelectField}
               name="resource_level"
@@ -331,10 +292,9 @@ const IntrusionSetEditionDetails = createFragmentContainer(
         id
         first_seen
         last_seen
-        sophistication
         resource_level
         primary_motivation
-        secondary_motivation
+        secondary_motivations
       }
     `,
   },

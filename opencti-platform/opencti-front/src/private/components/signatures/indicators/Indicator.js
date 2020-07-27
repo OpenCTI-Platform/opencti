@@ -14,7 +14,7 @@ import EntityLastReports from '../../reports/EntityLastReports';
 import IndicatorEntities from './IndicatorEntities';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
-import EntityExternalReferences from '../../common/external_references/EntityExternalReferences';
+import EntityExternalReferences from '../../common/external_references/StixDomainObjectExternalReferences';
 
 const styles = () => ({
   container: {

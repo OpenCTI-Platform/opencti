@@ -78,7 +78,7 @@ class IndicatorLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.labels.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
                 <StixCoreObjectLabels
                   variant="inList"
@@ -137,11 +137,11 @@ const IndicatorLineFragment = createFragmentContainer(IndicatorLineComponent, {
     fragment IndicatorLine_node on Indicator {
       id
       name
-      x_opencti_main_observable_type
       pattern_type
       valid_from
       valid_until
-      score
+      x_opencti_score
+      x_opencti_main_observable_type
       created
       objectMarking {
         edges {
@@ -151,7 +151,7 @@ const IndicatorLineFragment = createFragmentContainer(IndicatorLineComponent, {
           }
         }
       }
-      labels {
+      objectLabel {
         edges {
           node {
             id
@@ -194,7 +194,7 @@ class IndicatorLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.labels.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
                 <div className="fakeItem" style={{ width: '90%' }} />
               </div>

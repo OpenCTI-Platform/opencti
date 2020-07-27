@@ -80,8 +80,8 @@ class OrganizationDetailsComponent extends Component {
             {t('Reliability')}
           </Typography>
           <ItemReliability
-            reliability={organization.reliability}
-            label={t(`reliability_${organization.reliability}`)}
+            reliability={organization.x_opencti_reliability}
+            label={t(`reliability_${organization.x_opencti_reliability}`)}
           />
           <Typography
             variant="h3"
@@ -113,9 +113,9 @@ const OrganizationDetails = createFragmentContainer(
     organization: graphql`
       fragment OrganizationDetails_organization on Organization {
         id
-        reliability
-        x_opencti_organization_type
         contact_information
+        x_opencti_reliability
+        x_opencti_organization_type
         creator {
           id
           name

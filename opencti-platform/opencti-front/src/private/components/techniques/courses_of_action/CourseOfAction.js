@@ -10,7 +10,7 @@ import CourseOfActionOverview from './CourseOfActionOverview';
 import CourseOfActionDetails from './CourseOfActionDetails';
 import CourseOfActionEdition from './CourseOfActionEdition';
 import CourseOfActionPopover from './CourseOfActionPopover';
-import EntityExternalReferences from '../../common/external_references/EntityExternalReferences';
+import EntityExternalReferences from '../../common/external_references/StixDomainObjectExternalReferences';
 import EntityStixCoreRelationshipsPie from '../../common/stix_core_relationships/EntityStixCoreRelationshipsPie';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityStixCoreRelationshipsChart from '../../common/stix_core_relationships/EntityStixCoreRelationshipsChart';
@@ -94,7 +94,7 @@ const CourseOfAction = createFragmentContainer(CourseOfActionComponent, {
     fragment CourseOfAction_courseOfAction on CourseOfAction {
       id
       name
-      aliases
+      x_opencti_aliases
       ...CourseOfActionOverview_courseOfAction
       ...CourseOfActionDetails_courseOfAction
     }

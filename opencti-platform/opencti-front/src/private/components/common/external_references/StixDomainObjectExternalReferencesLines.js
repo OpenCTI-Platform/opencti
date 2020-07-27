@@ -57,7 +57,7 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-class EntityExternalReferencesLinesContainer extends Component {
+class StixDomainObjectExternalReferencesLinesContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -122,7 +122,9 @@ class EntityExternalReferencesLinesContainer extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <AddExternalReferences
             entityId={entityId}
-            entityExternalReferences={data.stixEntity.externalReferences.edges}
+            stixDomainObjectExternalReferences={
+              data.stixEntity.externalReferences.edges
+            }
           />
         </Security>
         <div className="clearfix" />
@@ -239,8 +241,8 @@ class EntityExternalReferencesLinesContainer extends Component {
   }
 }
 
-EntityExternalReferencesLinesContainer.propTypes = {
-  entityId: PropTypes.string,
+StixDomainObjectExternalReferencesLinesContainer.propTypes = {
+  id: PropTypes.string,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
@@ -248,23 +250,26 @@ EntityExternalReferencesLinesContainer.propTypes = {
   fld: PropTypes.func,
 };
 
-export const entityExternalReferencesLinesQuery = graphql`
-  query EntityExternalReferencesLinesQuery($count: Int!, $entityId: String) {
-    ...EntityExternalReferencesLines_data
-      @arguments(count: $count, entityId: $entityId)
+export const stixDomainObjectExternalReferencesLinesQuery = graphql`
+  query StixDomainObjectExternalReferencesLinesQuery(
+    $count: Int!
+    $id: String
+  ) {
+    ...StixDomainObjectExternalReferencesLines_data
+      @arguments(count: $count, id: $id)
   }
 `;
 
-const EntityExternalReferencesLines = createPaginationContainer(
-  EntityExternalReferencesLinesContainer,
+const StixDomainObjectExternalReferencesLines = createPaginationContainer(
+  StixDomainObjectExternalReferencesLinesContainer,
   {
     data: graphql`
-      fragment EntityExternalReferencesLines_data on Query
+      fragment StixDomainObjectExternalReferencesLines_data on Query
         @argumentDefinitions(
           count: { type: "Int", defaultValue: 25 }
-          entityId: { type: "String" }
+          id: { type: "String" }
         ) {
-        stixEntity(id: $entityId) {
+        stixDomainObject(id: $id) {
           id
           externalReferences(first: $count)
             @connection(key: "Pagination_externalReferences") {
@@ -286,7 +291,7 @@ const EntityExternalReferencesLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.stixEntity.externalReferences;
+      return props.data && props.data.stixDomainObject.externalReferences;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -297,14 +302,14 @@ const EntityExternalReferencesLines = createPaginationContainer(
     getVariables(props, { count }, fragmentVariables) {
       return {
         count,
-        entityId: fragmentVariables.entityId,
+        id: fragmentVariables.id,
       };
     },
-    query: entityExternalReferencesLinesQuery,
+    query: stixDomainObjectExternalReferencesLinesQuery,
   },
 );
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(EntityExternalReferencesLines);
+)(StixDomainObjectExternalReferencesLines);

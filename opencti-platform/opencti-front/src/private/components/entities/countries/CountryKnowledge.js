@@ -118,7 +118,7 @@ const CountryKnowledge = createFragmentContainer(CountryKnowledgeComponent, {
     fragment CountryKnowledge_country on Country {
       id
       name
-      aliases
+      x_opencti_aliases
     }
   `,
 });

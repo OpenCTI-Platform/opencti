@@ -31,7 +31,7 @@ const styles = (theme) => ({
 const userMutationRelationAdd = graphql`
   mutation UserEditionGroupsRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput
+    $input: InternalRelationshipAddInput
   ) {
     userEdit(id: $id) {
       relationAdd(input: $input) {
@@ -44,7 +44,11 @@ const userMutationRelationAdd = graphql`
 `;
 
 const userMutationRelationDelete = graphql`
-  mutation UserEditionGroupsRelationDeleteMutation($id: ID!, $relationId: ID!) {
+  mutation UserEditionGroupsRelationDeleteMutation(
+    $id: ID!
+    $toId: String!
+    $relationship_type: String!
+  ) {
     userEdit(id: $id) {
       relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...UserEditionGroups_user
@@ -61,10 +65,8 @@ class UserEditionGroupsComponent extends Component {
         variables: {
           id: this.props.user.id,
           input: {
-            fromRole: 'member',
             toId: groupId,
-            toRole: 'grouping',
-            through: 'membership',
+            relationship_type: 'member-of',
           },
         },
       });
@@ -73,7 +75,8 @@ class UserEditionGroupsComponent extends Component {
         mutation: userMutationRelationDelete,
         variables: {
           id: this.props.user.id,
-          relationId: userGroup.relation,
+          toId: userGroup.value,
+          relationship_type: 'member-of',
         },
       });
     }
@@ -83,7 +86,7 @@ class UserEditionGroupsComponent extends Component {
     const { classes, user } = this.props;
     const userGroups = pipe(
       pathOr([], ['groups', 'edges']),
-      map((n) => ({ id: n.node.id, relation: n.relation.id })),
+      map((n) => ({ id: n.node.id })),
     )(user);
 
     return (
@@ -156,9 +159,6 @@ const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
           node {
             id
             name
-          }
-          relation {
-            id
           }
         }
       }

@@ -124,15 +124,15 @@ class IndicatorEntityLineComponent extends Component {
               )}
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.first_seen.width }}
+                style={{ width: dataColumns.start_time.width }}
               >
-                {node.inferred ? '-' : nsd(node.first_seen)}
+                {node.inferred ? '-' : nsd(node.start_time)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.last_seen.width }}
+                style={{ width: dataColumns.stop_time.width }}
               >
-                {node.inferred ? '-' : nsd(node.last_seen)}
+                {node.inferred ? '-' : nsd(node.stop_time)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -176,26 +176,212 @@ const IndicatorEntityLineFragment = createFragmentContainer(
       fragment IndicatorEntityLine_node on StixCoreRelationship {
         id
         relationship_type
-        weight
-        first_seen
-        last_seen
+        confidence
+        start_time
+        stop_time
         description
-        role_played
         inferred
         to {
-          id
-          name
-          description
-          parent_types
-          entity_type
-          created_at
-          updated_at
+          ... on BasicObject {
+            id
+            entity_type
+          }
+          ... on BasicRelationship {
+            id
+            entity_type
+          }
+          ... on StixCoreObject {
+            created_at
+            updated_at
+          }
+          ... on StixCoreRelationship {
+            created_at
+            updated_at
+          }
+          ... on AttackPattern {
+            name
+            description
+          }
+          ... on Campaign {
+            name
+            description
+          }
+          ... on CourseOfAction {
+            name
+            description
+          }
+          ... on Individual {
+            name
+            description
+          }
+          ... on Organization {
+            name
+            description
+          }
+          ... on Sector {
+            name
+            description
+          }
+          ... on Indicator {
+            name
+            description
+          }
+          ... on Infrastructure {
+            name
+            description
+          }
+          ... on IntrusionSet {
+            name
+            description
+          }
+          ... on Position {
+            name
+            description
+          }
+          ... on City {
+            name
+            description
+          }
+          ... on Country {
+            name
+            description
+          }
+          ... on Region {
+            name
+            description
+          }
+          ... on Malware {
+            name
+            description
+          }
+          ... on ThreatActor {
+            name
+            description
+          }
+          ... on Tool {
+            name
+            description
+          }
+          ... on Vulnerability {
+            name
+            description
+          }
+          ... on XOpenctiIncident {
+            name
+            description
+          }
           ... on StixCoreRelationship {
             from {
-              name
+              ... on AttackPattern {
+                name
+              }
+              ... on Campaign {
+                name
+              }
+              ... on CourseOfAction {
+                name
+              }
+              ... on Individual {
+                name
+              }
+              ... on Organization {
+                name
+              }
+              ... on Sector {
+                name
+              }
+              ... on Indicator {
+                name
+              }
+              ... on Infrastructure {
+                name
+              }
+              ... on IntrusionSet {
+                name
+              }
+              ... on Position {
+                name
+              }
+              ... on City {
+                name
+              }
+              ... on Country {
+                name
+              }
+              ... on Region {
+                name
+              }
+              ... on Malware {
+                name
+              }
+              ... on ThreatActor {
+                name
+              }
+              ... on Tool {
+                name
+              }
+              ... on Vulnerability {
+                name
+              }
+              ... on XOpenctiIncident {
+                name
+              }
             }
             to {
-              name
+              ... on AttackPattern {
+                name
+              }
+              ... on Campaign {
+                name
+              }
+              ... on CourseOfAction {
+                name
+              }
+              ... on Individual {
+                name
+              }
+              ... on Organization {
+                name
+              }
+              ... on Sector {
+                name
+              }
+              ... on Indicator {
+                name
+              }
+              ... on Infrastructure {
+                name
+              }
+              ... on IntrusionSet {
+                name
+              }
+              ... on Position {
+                name
+              }
+              ... on City {
+                name
+              }
+              ... on Country {
+                name
+              }
+              ... on Region {
+                name
+              }
+              ... on Malware {
+                name
+              }
+              ... on ThreatActor {
+                name
+              }
+              ... on Tool {
+                name
+              }
+              ... on Vulnerability {
+                name
+              }
+              ... on XOpenctiIncident {
+                name
+              }
             }
           }
         }
@@ -254,13 +440,13 @@ class IndicatorEntityLineDummyComponent extends Component {
               )}
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.first_seen.width }}
+                style={{ width: dataColumns.start_time.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.last_seen.width }}
+                style={{ width: dataColumns.stop_time.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>

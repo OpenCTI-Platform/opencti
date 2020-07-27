@@ -37,7 +37,7 @@ import distributeElements from '../../../utils/DagreHelper';
 import { serializeGraph } from '../../../utils/GraphHelper';
 import { dateFormat } from '../../../utils/Time';
 import { reportMutationFieldPatch } from './ReportEditionOverview';
-import ReportAddObjectRefs from './ReportAddObjects';
+import ReportAddObjects from './ReportAddObjects';
 import StixCoreRelationshipCreation from '../common/stix_core_relationships/StixCoreRelationshipCreation';
 import StixDomainObjectEdition from '../common/stix_domain_objects/StixDomainObjectEdition';
 import StixCoreRelationshipEdition, {
@@ -73,24 +73,94 @@ export const reportKnowledgeGraphQuery = graphql`
   }
 `;
 
-const reportKnowledgeGraphRelationQuery = graphql`
-  query ReportKnowledgeGraphRelationQuery($id: String!) {
-    stixCoreRelationship(id: $id) {
+const reportKnowledgeGraphStixCoreObjectQuery = graphql`
+  query ReportKnowledgeGraphStixCoreObjectQuery($id: String!) {
+    stixCoreObject(id: $id) {
       id
-      first_seen
-      last_seen
-      relationship_type
+      entity_type
+      ... on AttackPattern {
+        name
+        description
+      }
+      ... on Campaign {
+        name
+        description
+      }
+      ... on CourseOfAction {
+        name
+        description
+      }
+      ... on Individual {
+        name
+        description
+      }
+      ... on Organization {
+        name
+        description
+      }
+      ... on Sector {
+        name
+        description
+      }
+      ... on Indicator {
+        name
+        description
+      }
+      ... on Infrastructure {
+        name
+        description
+      }
+      ... on IntrusionSet {
+        name
+        description
+      }
+      ... on Position {
+        name
+        description
+      }
+      ... on City {
+        name
+        description
+      }
+      ... on Country {
+        name
+        description
+      }
+      ... on Region {
+        name
+        description
+      }
+      ... on Malware {
+        name
+        description
+      }
+      ... on ThreatActor {
+        name
+        description
+      }
+      ... on Tool {
+        name
+        description
+      }
+      ... on Vulnerability {
+        name
+        description
+      }
+      ... on XOpenctiIncident {
+        name
+        description
+      }
     }
   }
 `;
 
-const reportKnowledgeGraphStixEntityQuery = graphql`
+const reportKnowledgeGraphStixCoreRelationshipQuery = graphql`
   query ReportKnowledgeGraphStixCoreRelationshipQuery($id: String!) {
-    stixEntity(id: $id) {
+    stixCoreRelationship(id: $id) {
       id
-      name
-      description
-      entity_type
+      start_time
+      stop_time
+      relationship_type
     }
   }
 `;
@@ -317,8 +387,8 @@ class ReportKnowledgeGraphComponent extends Component {
         const newNode = new RelationNodeModel({
           id: l.node.id,
           type: l.node.relationship_type,
-          first_seen: l.node.first_seen,
-          last_seen: l.node.last_seen,
+          start_time: l.node.start_time,
+          stop_time: l.node.stop_time,
         });
         newNode.addListener({
           selectionChanged: this.handleSelection.bind(this),
@@ -578,8 +648,8 @@ class ReportKnowledgeGraphComponent extends Component {
     const model = this.props.engine.getDiagramModel();
     const linkObject = model.getLink(this.state.currentLink);
     this.setState({
-      lastLinkFirstSeen: result.first_seen,
-      lastLinkLastSeen: result.last_seen,
+      lastLinkFirstSeen: result.start_time,
+      lastLinkLastSeen: result.stop_time,
     });
     const input = {
       fromRole: 'knowledge_aggregation',
@@ -597,8 +667,8 @@ class ReportKnowledgeGraphComponent extends Component {
         const newNode = new RelationNodeModel({
           id: result.id,
           type: result.relationship_type,
-          first_seen: result.first_seen,
-          last_seen: result.last_seen,
+          start_time: result.start_time,
+          stop_time: result.stop_time,
         });
         newNode.addListener({
           selectionChanged: this.handleSelection.bind(this),
@@ -651,7 +721,7 @@ class ReportKnowledgeGraphComponent extends Component {
       currentNode: null,
     });
     setTimeout(() => {
-      fetchQuery(reportKnowledgeGraphStixEntityQuery, {
+      fetchQuery(reportKnowledgeGraphStixCoreObjectQuery, {
         id: editEntityId,
       }).then((data) => {
         const { stixEntity } = data;
@@ -675,7 +745,7 @@ class ReportKnowledgeGraphComponent extends Component {
       currentNode: null,
     });
     setTimeout(() => {
-      fetchQuery(reportKnowledgeGraphRelationQuery, {
+      fetchQuery(reportKnowledgeGraphStixCoreRelationshipQuery, {
         id: editRelationId,
       }).then((data) => {
         const { stixCoreRelationship } = data;
@@ -684,8 +754,8 @@ class ReportKnowledgeGraphComponent extends Component {
         nodeObject.setExtras({
           id: currentNode.extras.id,
           type: stixCoreRelationship.relationship_type,
-          first_seen: stixCoreRelationship.first_seen,
-          last_seen: stixCoreRelationship.last_seen,
+          start_time: stixCoreRelationship.start_time,
+          stop_time: stixCoreRelationship.stop_time,
         });
         this.props.engine.repaintCanvas();
       });
@@ -803,9 +873,9 @@ class ReportKnowledgeGraphComponent extends Component {
           maxNumberPointsPerLink={0}
           actionStoppedFiring={this.handleMovesChange.bind(this)}
         />
-        <ReportAddObjectRefs
+        <ReportAddObjects
           reportId={report.id}
-          reportObjectRefs={report.objectRefs.edges}
+          reportObjects={report.objects.edges}
           knowledgeGraph={true}
           defaultCreatedBy={pathOr(null, ['createdBy', 'node'], report)}
           defaultMarkingDefinition={
@@ -877,36 +947,94 @@ const ReportKnowledgeGraph = createFragmentContainer(
             }
           }
         }
-        objectRefs {
+        objects {
           edges {
             node {
-              id
-              entity_type
-              name
-              description
-              created_at
-              updated_at
-            }
-          }
-        }
-        relationRefs {
-          edges {
-            node {
-              id
-              relationship_type
-              first_seen
-              last_seen
-              fromRole
-              from {
+              ... on BasicObject {
                 id
                 entity_type
-                name
               }
-              toRole
-              to {
+              ... on BasicRelationship {
                 id
                 entity_type
+                created_at
+                updated_at
+              }
+              ... on StixObject {
+                created_at
+                updated_at
+              }
+              ... on AttackPattern {
                 name
+                description
+              }
+              ... on Campaign {
+                name
+                description
+              }
+              ... on CourseOfAction {
+                name
+                description
+              }
+              ... on Individual {
+                name
+                description
+              }
+              ... on Organization {
+                name
+                description
+              }
+              ... on Sector {
+                name
+                description
+              }
+              ... on Indicator {
+                name
+                description
+              }
+              ... on Infrastructure {
+                name
+                description
+              }
+              ... on IntrusionSet {
+                name
+                description
+              }
+              ... on Position {
+                name
+                description
+              }
+              ... on City {
+                name
+                description
+              }
+              ... on Country {
+                name
+                description
+              }
+              ... on Region {
+                name
+                description
+              }
+              ... on Malware {
+                name
+                description
+              }
+              ... on ThreatActor {
+                name
+                description
+              }
+              ... on Tool {
+                name
+                description
+              }
+              ... on Vulnerability {
+                name
+                description
+              }
+              ... on XOpenctiIncident {
+                name
+                description
               }
             }
           }

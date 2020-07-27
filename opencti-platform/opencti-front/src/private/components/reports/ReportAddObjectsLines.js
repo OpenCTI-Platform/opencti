@@ -22,7 +22,7 @@ import { commitMutation } from '../../../relay/environment';
 import { truncate } from '../../../utils/String';
 import ItemIcon from '../../../components/ItemIcon';
 import inject18n from '../../../components/i18n';
-import { reportRefPopoverDeletionMutation } from './ReportObjectPopover';
+import { reportPopoverDeletionMutation } from './ReportObjectPopover';
 import {
   reportKnowledgeGraphtMutationRelationAdd,
   reportKnowledgeGraphtMutationRelationDelete,

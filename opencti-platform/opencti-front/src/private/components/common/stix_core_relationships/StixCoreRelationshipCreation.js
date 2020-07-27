@@ -19,10 +19,7 @@ import { fetchQuery, commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { parse } from '../../../../utils/Time';
-import {
-  resolveRoles,
-  resolveRelationsTypes,
-} from '../../../../utils/Relation';
+import { resolveRelationsTypes } from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
@@ -145,10 +142,10 @@ export const stixCoreRelationshipCreationQuery = graphql`
         node {
           id
           relationship_type
-          weight
           description
-          first_seen
-          last_seen
+          confidence
+          start_time
+          stop_time
         }
       }
     }
@@ -162,9 +159,9 @@ const stixCoreRelationshipCreationMutation = graphql`
     stixCoreRelationshipAdd(input: $input) {
       id
       relationship_type
-      weight
-      first_seen
-      last_seen
+      confidence
+      start_time
+      stop_time
     }
   }
 `;

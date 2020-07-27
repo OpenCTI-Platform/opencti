@@ -5,19 +5,19 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr, propOr } from 'ramda';
 import ListLinesContent from '../../../components/list_lines/ListLinesContent';
 import {
-  ReportObservableLine,
-  ReportObservableLineDummy,
-} from './ReportObservableLine';
+  ReportStixCyberObservableLine,
+  ReportStixCyberObservableLineDummy,
+} from './ReportStixCyberObservableLine';
 import { setNumberOfElements } from '../../../utils/Number';
 
 const nbOfRowsToLoad = 50;
 
-class ReportObservablesLines extends Component {
+class ReportStixCyberObservablesLines extends Component {
   componentDidUpdate(prevProps) {
     setNumberOfElements(
       prevProps,
       this.props,
-      'observableRefs',
+      'objects',
       this.props.setNumberOfElements.bind(this),
       'report',
     );
@@ -37,17 +37,19 @@ class ReportObservablesLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['observableRefs', 'edges'], report)}
+        dataList={pathOr([], ['objects', 'edges'], report)}
         paginationOptions={paginationOptions}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['observableRefs', 'pageInfo', 'globalCount'],
+          ['objects', 'pageInfo', 'globalCount'],
           report,
         )}
         LineComponent={
-          <ReportObservableLine reportId={propOr(null, 'id', report)} />
+          <ReportStixCyberObservableLine
+            reportId={propOr(null, 'id', report)}
+          />
         }
-        DummyLineComponent={<ReportObservableLineDummy />}
+        DummyLineComponent={<ReportStixCyberObservableLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
       />
@@ -55,7 +57,7 @@ class ReportObservablesLines extends Component {
   }
 }
 
-ReportObservablesLines.propTypes = {
+ReportStixCyberObservablesLines.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object.isRequired,
@@ -66,8 +68,8 @@ ReportObservablesLines.propTypes = {
   setNumberOfElements: PropTypes.func,
 };
 
-export const reportObservablesLinesQuery = graphql`
-  query ReportObservablesLinesQuery(
+export const reportStixCyberObservablesLinesQuery = graphql`
+  query ReportStixCyberObservablesLinesQuery(
     $id: String!
     $types: [String]
     $search: String
@@ -78,7 +80,7 @@ export const reportObservablesLinesQuery = graphql`
     $filters: [StixCyberObservablesFiltering]
   ) {
     report(id: $id) {
-      ...ReportObservablesLines_report
+      ...ReportStixCyberObservablesLines_report
         @arguments(
           types: $types
           search: $search
@@ -93,24 +95,21 @@ export const reportObservablesLinesQuery = graphql`
 `;
 
 export default createPaginationContainer(
-  ReportObservablesLines,
+  ReportStixCyberObservablesLines,
   {
     report: graphql`
-      fragment ReportObservablesLines_report on Report
+      fragment ReportStixCyberObservablesLines_report on Report
         @argumentDefinitions(
           types: { type: "[String]" }
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: {
-            type: "StixCyberObservablesOrdering"
-            defaultValue: "name"
-          }
+          orderBy: { type: "StixCoreObjectsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[StixCyberObservablesFiltering]" }
+          filters: { type: "[StixCoreObjectsFiltering]" }
         ) {
         id
-        observableRefs(
+        objects(
           types: $types
           search: $search
           first: $count
@@ -118,10 +117,10 @@ export default createPaginationContainer(
           orderBy: $orderBy
           orderMode: $orderMode
           filters: $filters
-        ) @connection(key: "Pagination_observableRefs") {
+        ) @connection(key: "Pagination_objects") {
           edges {
             node {
-              ...ReportObservableLine_node
+              ...ReportStixCyberObservableLine_node
             }
           }
           pageInfo {
@@ -136,7 +135,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.report && props.report.observableRefs;
+      return props.report && props.report.objects;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -156,6 +155,6 @@ export default createPaginationContainer(
         filters: fragmentVariables.filters,
       };
     },
-    query: reportObservablesLinesQuery,
+    query: reportStixCyberObservablesLinesQuery,
   },
 );

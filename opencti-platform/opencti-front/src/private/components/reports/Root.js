@@ -5,9 +5,9 @@ import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer, requestSubscription } from '../../../relay/environment';
 import TopBar from '../nav/TopBar';
 import Report from './Report';
-import ReportEntities from './ReportEntities';
+import ReportEntities from './ReportStixDomainObjects';
 import ReportKnowledge from './ReportKnowledge';
-import ReportObservables from './ReportObservables';
+import ReportObservables from './ReportStixCyberObservables';
 import FileManager from '../common/files/FileManager';
 import StixCoreObjectHistory from '../common/stix_core_objects/StixCoreObjectHistory';
 import ReportHeader from './ReportHeader';
@@ -35,8 +35,8 @@ const reportQuery = graphql`
       ...ReportOverview_report
       ...ReportDetails_report
       ...ReportKnowledge_report
-      ...ReportEntities_report
-      ...ReportObservables_report
+      ...ReportStixDomainObjects_report
+      ...ReportStixCyberObservables_report
       ...FileImportViewer_entity
       ...FileExportViewer_entity
     }

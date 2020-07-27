@@ -46,7 +46,7 @@ const styles = (theme) => ({
   },
 });
 
-class ReportEntityLineComponent extends Component {
+class ReportStixDomainObjectLineComponent extends Component {
   render() {
     const {
       t,
@@ -127,7 +127,7 @@ class ReportEntityLineComponent extends Component {
   }
 }
 
-ReportEntityLineComponent.propTypes = {
+ReportStixDomainObjectLineComponent.propTypes = {
   reportId: PropTypes.string,
   dataColumns: PropTypes.object,
   node: PropTypes.object,
@@ -137,11 +137,11 @@ ReportEntityLineComponent.propTypes = {
   paginationOptions: PropTypes.object,
 };
 
-const ReportEntityLineFragment = createFragmentContainer(
-  ReportEntityLineComponent,
+const ReportStixDomainObjectLineFragment = createFragmentContainer(
+  ReportStixDomainObjectLineComponent,
   {
     node: graphql`
-      fragment ReportEntityLine_node on StixDomainObject {
+      fragment ReportStixDomainObjectLine_node on StixDomainObject {
         id
         entity_type
         created_at
@@ -220,12 +220,12 @@ const ReportEntityLineFragment = createFragmentContainer(
   },
 );
 
-export const ReportEntityLine = compose(
+export const ReportStixDomainObjectLine = compose(
   inject18n,
   withStyles(styles),
-)(ReportEntityLineFragment);
+)(ReportStixDomainObjectLineFragment);
 
-class ReportEntityLineDummyComponent extends Component {
+class ReportStixDomainObjectLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -277,12 +277,12 @@ class ReportEntityLineDummyComponent extends Component {
   }
 }
 
-ReportEntityLineDummyComponent.propTypes = {
+ReportStixDomainObjectLineDummyComponent.propTypes = {
   classes: PropTypes.object,
   dataColumns: PropTypes.object,
 };
 
-export const ReportEntityLineDummy = compose(
+export const ReportStixDomainObjectLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(ReportEntityLineDummyComponent);
+)(ReportStixDomainObjectLineDummyComponent);

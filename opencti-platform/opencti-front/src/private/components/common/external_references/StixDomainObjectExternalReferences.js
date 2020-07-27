@@ -11,9 +11,9 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Avatar from '@material-ui/core/Avatar';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import EntityExternalReferencesLines, {
-  entityExternalReferencesLinesQuery,
-} from './EntityExternalReferencesLines';
+import StixDomainObjectExternalReferencesLines, {
+  stixDomainObjectExternalReferencesLinesQuery,
+} from './StixDomainObjectExternalReferencesLines';
 
 const styles = (theme) => ({
   paper: {
@@ -39,17 +39,17 @@ const styles = (theme) => ({
   },
 });
 
-class EntityExternalReferences extends Component {
+class StixDomainObjectExternalReferences extends Component {
   render() {
     const { t, classes, entityId } = this.props;
     return (
       <QueryRenderer
-        query={entityExternalReferencesLinesQuery}
+        query={stixDomainObjectExternalReferencesLinesQuery}
         variables={{ entityId, count: 200 }}
         render={({ props }) => {
           if (props) {
             return (
-              <EntityExternalReferencesLines entityId={entityId} data={props} />
+              <StixDomainObjectExternalReferencesLines entityId={entityId} data={props} />
             );
           }
           return (
@@ -96,7 +96,7 @@ class EntityExternalReferences extends Component {
   }
 }
 
-EntityExternalReferences.propTypes = {
+StixDomainObjectExternalReferences.propTypes = {
   entityId: PropTypes.string,
   limit: PropTypes.number,
   classes: PropTypes.object,
@@ -104,4 +104,4 @@ EntityExternalReferences.propTypes = {
   fld: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(EntityExternalReferences);
+export default compose(inject18n, withStyles(styles))(StixDomainObjectExternalReferences);

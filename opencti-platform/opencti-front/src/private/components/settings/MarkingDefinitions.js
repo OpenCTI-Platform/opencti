@@ -60,13 +60,13 @@ class MarkingDefinitions extends Component {
         width: '25%',
         isSortable: true,
       },
-      color: {
+      x_opencti_color: {
         label: 'Color',
         width: '15%',
         isSortable: true,
       },
-      level: {
-        label: 'Level',
+      x_opencti_order: {
+        label: 'Order',
         width: '10%',
         isSortable: true,
       },

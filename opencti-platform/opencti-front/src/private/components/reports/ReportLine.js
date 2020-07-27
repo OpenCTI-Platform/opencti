@@ -80,7 +80,7 @@ class ReportLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.labels.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
                 <StixCoreObjectLabels
                   variant="inList"
@@ -211,7 +211,7 @@ class ReportLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.labels.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>

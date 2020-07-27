@@ -64,20 +64,6 @@ class IntrusionSetDetailsComponent extends Component {
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t('Sophistication')}
-          </Typography>
-          {t(
-            `${
-              intrusionSet.sophistication
-                ? `sophistication_${intrusionSet.sophistication}`
-                : 'sophistication_unkown'
-            }`,
-          )}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
             {t('Resource level')}
           </Typography>
           {t(
@@ -106,7 +92,7 @@ class IntrusionSetDetailsComponent extends Component {
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t('Secondary motivation')}
+            {t('Secondary motivations')}
           </Typography>
           {t(
             `${
@@ -136,10 +122,9 @@ const IntrusionSetDetails = createFragmentContainer(
         id
         first_seen
         last_seen
-        sophistication
         resource_level
         primary_motivation
-        secondary_motivation
+        secondary_motivations
         creator {
           id
           name

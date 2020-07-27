@@ -45,7 +45,7 @@ const styles = (theme) => ({
   },
 });
 
-class ReportObservableLineComponent extends Component {
+class ReportStixCyberObservableLineComponent extends Component {
   render() {
     const {
       t,
@@ -126,7 +126,7 @@ class ReportObservableLineComponent extends Component {
   }
 }
 
-ReportObservableLineComponent.propTypes = {
+ReportStixCyberObservableLineComponent.propTypes = {
   reportId: PropTypes.string,
   dataColumns: PropTypes.object,
   node: PropTypes.object,
@@ -136,11 +136,11 @@ ReportObservableLineComponent.propTypes = {
   paginationOptions: PropTypes.object,
 };
 
-const ReportObservableLineFragment = createFragmentContainer(
-  ReportObservableLineComponent,
+const ReportStixCyberObservableLineFragment = createFragmentContainer(
+  ReportStixCyberObservableLineComponent,
   {
     node: graphql`
-      fragment ReportObservableLine_node on StixCyberObservable {
+      fragment ReportStixCyberObservableLine_node on StixCyberObservable {
         id
         observable_value
         entity_type
@@ -166,12 +166,12 @@ const ReportObservableLineFragment = createFragmentContainer(
   },
 );
 
-export const ReportObservableLine = compose(
+export const ReportStixCyberObservableLine = compose(
   inject18n,
   withStyles(styles),
-)(ReportObservableLineFragment);
+)(ReportStixCyberObservableLineFragment);
 
-class ReportObservableLineDummyComponent extends Component {
+class ReportStixCyberObservableLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -223,12 +223,12 @@ class ReportObservableLineDummyComponent extends Component {
   }
 }
 
-ReportObservableLineDummyComponent.propTypes = {
+ReportStixCyberObservableLineDummyComponent.propTypes = {
   classes: PropTypes.object,
   dataColumns: PropTypes.object,
 };
 
-export const ReportObservableLineDummy = compose(
+export const ReportStixCyberObservableLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(ReportObservableLineDummyComponent);
+)(ReportStixCyberObservableLineDummyComponent);

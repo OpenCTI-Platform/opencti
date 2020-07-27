@@ -1339,9 +1339,9 @@ interface Container {
   objects(
     first: Int
     after: ID
-    orderBy: StixDomainObjectsOrdering
+    orderBy: StixCoreObjectsOrdering
     orderMode: OrderingMode
-    filters: [StixDomainObjectsFiltering]
+    filters: [StixCoreObjectsFiltering]
     filterMode: FilterMode
     search: String
     types: [String]
@@ -1433,9 +1433,9 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   objects(
     first: Int
     after: ID
-    orderBy: StixDomainObjectsOrdering
+    orderBy: StixCoreObjectsOrdering
     orderMode: OrderingMode
-    filters: [StixDomainObjectsFiltering]
+    filters: [StixCoreObjectsFiltering]
     filterMode: FilterMode
     search: String
     types: [String]
@@ -1554,9 +1554,9 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   objects(
     first: Int
     after: ID
-    orderBy: StixDomainObjectsOrdering
+    orderBy: StixCoreObjectsOrdering
     orderMode: OrderingMode
-    filters: [StixDomainObjectsFiltering]
+    filters: [StixCoreObjectsFiltering]
     filterMode: FilterMode
     search: String
     types: [String]
@@ -1671,9 +1671,9 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objects(
     first: Int
     after: ID
-    orderBy: StixDomainObjectsOrdering
+    orderBy: StixCoreObjectsOrdering
     orderMode: OrderingMode
-    filters: [StixDomainObjectsFiltering]
+    filters: [StixCoreObjectsFiltering]
     filterMode: FilterMode
     search: String
     types: [String]
@@ -1794,9 +1794,9 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   objects(
     first: Int
     after: ID
-    orderBy: StixDomainObjectsOrdering
+    orderBy: StixCoreObjectsOrdering
     orderMode: OrderingMode
-    filters: [StixDomainObjectsFiltering]
+    filters: [StixCoreObjectsFiltering]
     filterMode: FilterMode
     search: String
     types: [String]
@@ -4575,6 +4575,8 @@ interface BasicRelationship {
   parent_types: [String]!
   fromRole: String
   toRole: String
+  created_at: DateTime!
+  updated_at: DateTime!
 }
 
 ######## INTERNAL RELATIONSHIPS
@@ -4587,6 +4589,8 @@ type InternalRelationship implements BasicRelationship {
   parent_types: [String]!
   fromRole: String
   toRole: String
+  created_at: DateTime!
+  updated_at: DateTime!
   # InternalRelationship
   from: InternalObject
   to: InternalObject
@@ -4728,6 +4732,8 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   parent_types: [String]!
   fromRole: String
   toRole: String
+  created_at: DateTime!
+  updated_at: DateTime!
   # StixRelationship
   standard_id: String!
   stix_ids: [String]
@@ -4845,6 +4851,8 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   parent_types: [String]!
   fromRole: String
   toRole: String
+  created_at: DateTime!
+  updated_at: DateTime!
   # StixRelationship
   standard_id: String!
   stix_ids: [String]
@@ -4927,6 +4935,8 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
   parent_types: [String]!
   fromRole: String
   toRole: String
+  created_at: DateTime!
+  updated_at: DateTime!
   # StixRelationship
   standard_id: String!
   stix_ids: [String]
@@ -4962,6 +4972,8 @@ type StixMetaRelationship implements BasicRelationship & StixRelationship {
   parent_types: [String]!
   fromRole: String
   toRole: String
+  created_at: DateTime!
+  updated_at: DateTime!
   # StixRelationship
   standard_id: String!
   stix_ids: [String]
@@ -5775,7 +5787,7 @@ type StixDomainObjectEditMutations {
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
     @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
-  mergeEntities(StixDomainObjectIds: [String]!, aliases: [String]): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  mergeEntities(stixDomainObjectsIds: [String]!, aliases: [String]): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type AttackPatternEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])

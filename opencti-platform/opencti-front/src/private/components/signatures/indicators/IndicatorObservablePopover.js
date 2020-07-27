@@ -45,9 +45,11 @@ const indicatorObservablePopoverDeletionMutation = graphql`
     $toId: String!
     $relationship_type: String!
   ) {
-    stixCoreRelationship(id: $id) {
+    stixCoreRelationshipEdit(id: $id) {
       relationDelete(toId: $toId, relationship_type: $relationship_type) {
-        ...IndicatorObservables_indicator
+        from {
+          ...IndicatorObservables_indicator
+        }
       }
     }
   }

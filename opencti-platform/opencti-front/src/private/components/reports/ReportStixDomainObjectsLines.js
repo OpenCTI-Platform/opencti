@@ -4,19 +4,22 @@ import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { pathOr, propOr } from 'ramda';
 import ListLinesContent from '../../../components/list_lines/ListLinesContent';
-import { ReportEntityLine, ReportEntityLineDummy } from './ReportEntityLine';
+import {
+  ReportStixDomainObjectLine,
+  ReportStixDomainObjectLineDummy,
+} from './ReportStixDomainObjectLine';
 import { setNumberOfElements } from '../../../utils/Number';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import ReportAddObjects from './ReportAddObjects';
 
 const nbOfRowsToLoad = 50;
 
-class ReportEntitiesLines extends Component {
+class ReportStixDomainObjectsLines extends Component {
   componentDidUpdate(prevProps) {
     setNumberOfElements(
       prevProps,
       this.props,
-      'objectRefs',
+      'objects',
       this.props.setNumberOfElements.bind(this),
       'report',
     );
@@ -45,9 +48,9 @@ class ReportEntitiesLines extends Component {
             report,
           )}
           LineComponent={
-            <ReportEntityLine reportId={propOr(null, 'id', report)} />
+            <ReportStixDomainObjectLine reportId={propOr(null, 'id', report)} />
           }
-          DummyLineComponent={<ReportEntityLineDummy />}
+          DummyLineComponent={<ReportStixDomainObjectLineDummy />}
           dataColumns={dataColumns}
           nbOfRowsToLoad={nbOfRowsToLoad}
         />
@@ -64,7 +67,7 @@ class ReportEntitiesLines extends Component {
   }
 }
 
-ReportEntitiesLines.propTypes = {
+ReportStixDomainObjectsLines.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object.isRequired,
@@ -75,8 +78,8 @@ ReportEntitiesLines.propTypes = {
   setNumberOfElements: PropTypes.func,
 };
 
-export const ReportEntitiesLinesQuery = graphql`
-  query ReportEntitiesLinesQuery(
+export const ReportStixDomainObjectsLinesQuery = graphql`
+  query ReportStixDomainObjectsLinesQuery(
     $id: String!
     $search: String
     $count: Int!
@@ -86,7 +89,7 @@ export const ReportEntitiesLinesQuery = graphql`
     $filters: [StixDomainObjectsFiltering]
   ) {
     report(id: $id) {
-      ...ReportEntitiesLines_report
+      ...ReportStixDomainObjectsLines_report
         @arguments(
           search: $search
           count: $count
@@ -100,17 +103,17 @@ export const ReportEntitiesLinesQuery = graphql`
 `;
 
 export default createPaginationContainer(
-  ReportEntitiesLines,
+  ReportStixDomainObjectsLines,
   {
     report: graphql`
-      fragment ReportEntitiesLines_report on Report
+      fragment ReportStixDomainObjectsLines_report on Report
         @argumentDefinitions(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixDomainObjectsOrdering", defaultValue: "name" }
+          orderBy: { type: "StixCoreObjectsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[StixDomainObjectsFiltering]" }
+          filters: { type: "[StixCoreObjectsFiltering]" }
         ) {
         id
         objects(
@@ -126,7 +129,7 @@ export default createPaginationContainer(
               ... on BasicObject {
                 id
               }
-              ...ReportEntityLine_node
+              ...ReportStixDomainObjectLine_node
             }
           }
           pageInfo {
@@ -160,6 +163,6 @@ export default createPaginationContainer(
         filters: fragmentVariables.filters,
       };
     },
-    query: ReportEntitiesLinesQuery,
+    query: ReportStixDomainObjectsLinesQuery,
   },
 );

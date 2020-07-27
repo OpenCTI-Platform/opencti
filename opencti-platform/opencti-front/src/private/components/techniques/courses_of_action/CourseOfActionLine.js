@@ -70,7 +70,7 @@ class CourseOfActionLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.labels.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
                 <StixCoreObjectLabels
                   variant="inList"
@@ -156,7 +156,7 @@ class CourseOfActionLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.labels.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
                 <div className="fakeItem" style={{ width: '90%' }} />
               </div>

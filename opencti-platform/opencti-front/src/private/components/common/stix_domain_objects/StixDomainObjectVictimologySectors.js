@@ -640,9 +640,10 @@ const StixDomainObjectVictimologySectorsSectorLines = createRefetchContainer(
               stop_time
               inferred
               to {
-                id
-                name
-                entity_type
+                ... on BasicObject {
+                  id
+                  entity_type
+                }
                 ... on Organization {
                   sectors {
                     edges {
@@ -663,6 +664,7 @@ const StixDomainObjectVictimologySectorsSectorLines = createRefetchContainer(
                   }
                 }
                 ... on Sector {
+                  name
                   isSubSector
                   parentSectors {
                     edges {

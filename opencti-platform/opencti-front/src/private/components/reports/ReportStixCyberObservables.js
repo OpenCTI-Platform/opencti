@@ -9,36 +9,38 @@ import { withStyles } from '@material-ui/core';
 import { QueryRenderer } from '../../../relay/environment';
 import ReportHeader from './ReportHeader';
 import ListLines from '../../../components/list_lines/ListLines';
-import ReportEntitiesLines, {
-  ReportEntitiesLinesQuery,
-} from './ReportEntitiesLines';
+import ReportStixCyberObservablesLines, {
+  reportStixCyberObservablesLinesQuery,
+} from './ReportStixCyberObservablesLines';
 import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
-import StixDomainObjectsRightBar from '../common/stix_domain_objects/StixDomainObjectsRightBar';
+import ReportAddObservables from './ReportAddObservables';
+import StixCyberObservablesRightBar from '../signatures/stix_cyber_observables/StixCyberObservablesRightBar';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 const styles = () => ({
   container: {
     margin: 0,
-    padding: '0 260px 90px 0',
+    padding: '0 250px 0 0',
   },
 });
 
-class ReportEntitiesComponent extends Component {
+class ReportStixCyberObservablesComponent extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-report-${props.report.id}-stix-domain-entities`,
+      `view-report-${props.report.id}-stix-observables`,
     );
     this.state = {
-      sortBy: propOr('name', 'sortBy', params),
+      sortBy: propOr('created_at', 'sortBy', params),
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
-      stixDomainObjectsTypes: propOr([], 'stixDomainObjectsTypes', params),
+      types: [],
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
     };
@@ -48,7 +50,7 @@ class ReportEntitiesComponent extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      `view-report-${this.props.report.id}-stix-domain-entities`,
+      `view-report-${this.props.report.id}-stix-observables`,
       this.state,
     );
   }
@@ -63,30 +65,6 @@ class ReportEntitiesComponent extends Component {
 
   handleToggleExports() {
     this.setState({ openExports: !this.state.openExports });
-  }
-
-  handleToggleStixDomainObjectType(type) {
-    if (this.state.stixDomainObjectsTypes.includes(type)) {
-      this.setState(
-        {
-          stixDomainObjectsTypes: filter(
-            (t) => t !== type,
-            this.state.stixDomainObjectsTypes,
-          ),
-        },
-        () => this.saveView(),
-      );
-    } else {
-      this.setState(
-        {
-          stixDomainObjectsTypes: append(
-            type,
-            this.state.stixDomainObjectsTypes,
-          ),
-        },
-        () => this.saveView(),
-      );
-    }
   }
 
   handleToggle(type) {
@@ -110,7 +88,7 @@ class ReportEntitiesComponent extends Component {
       sortBy,
       orderAsc,
       searchTerm,
-      stixDomainObjectsTypes,
+      types,
       openExports,
       numberOfElements,
     } = this.state;
@@ -120,9 +98,9 @@ class ReportEntitiesComponent extends Component {
         width: '15%',
         isSortable: true,
       },
-      name: {
-        label: 'Name',
-        width: '30%',
+      observable_value: {
+        label: 'Value',
+        width: '35%',
         isSortable: true,
       },
       createdBy: {
@@ -140,11 +118,8 @@ class ReportEntitiesComponent extends Component {
         isSortable: false,
       },
     };
-    const filters = [
-      { key: 'entity_type', values: stixDomainObjectsTypes, operator: 'match' },
-    ];
     const paginationOptions = {
-      filters,
+      types,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
@@ -159,15 +134,14 @@ class ReportEntitiesComponent extends Component {
           dataColumns={dataColumns}
           handleSort={this.handleSort.bind(this)}
           handleSearch={this.handleSearch.bind(this)}
-          keyword={searchTerm}
           secondaryAction={true}
           numberOfElements={numberOfElements}
         >
           <QueryRenderer
-            query={ReportEntitiesLinesQuery}
+            query={reportStixCyberObservablesLinesQuery}
             variables={{ id: report.id, count: 25, ...paginationOptions }}
             render={({ props }) => (
-              <ReportEntitiesLines
+              <ReportStixCyberObservablesLines
                 report={props ? props.report : null}
                 paginationOptions={paginationOptions}
                 dataColumns={dataColumns}
@@ -177,11 +151,15 @@ class ReportEntitiesComponent extends Component {
             )}
           />
         </ListLines>
-        <StixDomainObjectsRightBar
-          stixDomainObjectsTypes={stixDomainObjectsTypes}
-          handleToggleStixDomainObjectType={this.handleToggleStixDomainObjectType.bind(
-            this,
-          )}
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ReportAddObservables
+            reportId={report.id}
+            paginationOptions={paginationOptions}
+          />
+        </Security>
+        <StixCyberObservablesRightBar
+          types={types}
+          handleToggle={this.handleToggle.bind(this)}
           openExports={openExports}
         />
       </div>
@@ -189,7 +167,7 @@ class ReportEntitiesComponent extends Component {
   }
 }
 
-ReportEntitiesComponent.propTypes = {
+ReportStixCyberObservablesComponent.propTypes = {
   report: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -197,13 +175,13 @@ ReportEntitiesComponent.propTypes = {
   history: PropTypes.object,
 };
 
-const ReportEntities = createFragmentContainer(ReportEntitiesComponent, {
+const ReportStixCyberObservables = createFragmentContainer(ReportStixCyberObservablesComponent, {
   report: graphql`
-    fragment ReportEntities_report on Report {
+    fragment ReportStixCyberObservables_report on Report {
       id
       ...ReportHeader_report
     }
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(ReportEntities);
+export default compose(inject18n, withStyles(styles))(ReportStixCyberObservables);

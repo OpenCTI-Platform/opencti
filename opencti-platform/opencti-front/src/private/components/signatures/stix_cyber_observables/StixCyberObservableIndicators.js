@@ -91,7 +91,7 @@ const inlineStylesHeaders = {
     fontSize: 12,
     fontWeight: '700',
   },
-  score: {
+  x_opencti_score: {
     float: 'left',
     fontSize: 12,
     fontWeight: '700',
@@ -131,7 +131,7 @@ const inlineStyles = {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  score: {
+  x_opencti_score: {
     float: 'left',
     height: 20,
     whiteSpace: 'nowrap',
@@ -217,7 +217,7 @@ class StixCyberObservableIndicatorsComponent extends Component {
                     {this.SortHeader('name', 'Name', true)}
                     {this.SortHeader('valid_from', 'Valid from', true)}
                     {this.SortHeader('valid_until', 'Valid until', true)}
-                    {this.SortHeader('score', 'Score', true)}
+                    {this.SortHeader('x_opencti_score', 'Score', true)}
                   </div>
                 }
               />
@@ -268,7 +268,10 @@ class StixCyberObservableIndicatorsComponent extends Component {
                         className={classes.bodyItem}
                         style={inlineStyles.score}
                       >
-                        <ItemScore variant="inList" score={indicator.score} />
+                        <ItemScore
+                          variant="inList"
+                          score={indicator.x_opencti_score}
+                        />
                       </div>
                     </div>
                   }
@@ -307,7 +310,7 @@ const StixCyberObservableIndicators = createFragmentContainer(
               pattern_type
               valid_from
               valid_until
-              score
+              x_opencti_score
               created
             }
           }

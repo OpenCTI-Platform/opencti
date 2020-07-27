@@ -73,13 +73,13 @@ class MarkingDefinitionLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.color.width }}
+                style={{ width: dataColumns.x_opencti_order.width }}
               >
                 {node.color}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.level.width }}
+                style={{ width: dataColumns.x_opencti_order.width }}
               >
                 {node.level}
               </div>
@@ -120,8 +120,8 @@ const MarkingDefinitionLineFragment = createFragmentContainer(
         id
         definition_type
         definition
-        level
-        color
+        x_opencti_order
+        x_opencti_color
         created
         modified
       }
@@ -159,13 +159,13 @@ class MarkingDefinitionLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.color.width }}
+                style={{ width: dataColumns.x_opencti_color.width }}
               >
                 <div className="fakeItem" style={{ width: '60%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.level.width }}
+                style={{ width: dataColumns.x_opencti_order.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
