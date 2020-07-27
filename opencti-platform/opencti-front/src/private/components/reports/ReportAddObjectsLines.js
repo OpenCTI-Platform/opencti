@@ -22,7 +22,7 @@ import { commitMutation } from '../../../relay/environment';
 import { truncate } from '../../../utils/String';
 import ItemIcon from '../../../components/ItemIcon';
 import inject18n from '../../../components/i18n';
-import { reportPopoverDeletionMutation } from './ReportObjectPopover';
+import { reportObjectPopoverDeletionMutation } from './ReportObjectPopover';
 import {
   reportKnowledgeGraphtMutationRelationAdd,
   reportKnowledgeGraphtMutationRelationDelete,
@@ -73,7 +73,7 @@ export const reportMutationRelationAdd = graphql`
       relationAdd(input: $input) {
         id
         to {
-          ...ReportEntityLine_node
+          ...ReportStixDomainObjectLine_node
         }
       }
     }
@@ -118,11 +118,11 @@ class ReportAddObjectsLinesContainer extends Component {
         });
       } else {
         commitMutation({
-          mutation: reportRefPopoverDeletionMutation,
+          mutation: reportObjectPopoverDeletionMutation,
           variables: {
             id: reportId,
             toId: stixCore.id,
-            relationship_type: 'object_refs',
+            relationship_type: 'object',
           },
           updater: (store) => {
             const conn = ConnectionHandler.getConnection(
@@ -144,10 +144,8 @@ class ReportAddObjectsLinesContainer extends Component {
       }
     } else {
       const input = {
-        fromRole: 'knowledge_aggregation',
         toId: stixCore.id,
-        toRole: 'so',
-        through: 'object_refs',
+        relationship_type: 'object',
       };
       if (knowledgeGraph) {
         commitMutation({

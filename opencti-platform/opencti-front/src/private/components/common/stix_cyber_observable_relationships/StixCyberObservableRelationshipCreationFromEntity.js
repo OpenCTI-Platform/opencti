@@ -172,14 +172,90 @@ const styles = (theme) => ({
 });
 
 const stixCyberObservableRelationshipCreationFromEntityQuery = graphql`
-  query StixCyberObservableRelationshipCreationFromEntityQuery($id: String) {
-    stixEntity(id: $id) {
-      id
-      entity_type
-      name
-      description
+  query StixCyberObservableRelationshipCreationFromEntityQuery($id: ID!) {
+    stixObjectOrStixRelationship(id: $id) {
+      ... on BasicObject {
+        id
+        entity_type
+      }
+      ... on BasicRelationship {
+        id
+        entity_type
+      }
+      ... on AttackPattern {
+        name
+        description
+      }
+      ... on Campaign {
+        name
+        description
+      }
+      ... on CourseOfAction {
+        name
+        description
+      }
+      ... on Individual {
+        name
+        description
+      }
+      ... on Organization {
+        name
+        description
+      }
+      ... on Sector {
+        name
+        description
+      }
+      ... on Indicator {
+        name
+        description
+      }
+      ... on Infrastructure {
+        name
+        description
+      }
+      ... on IntrusionSet {
+        name
+        description
+      }
+      ... on Position {
+        name
+        description
+      }
+      ... on City {
+        name
+        description
+      }
+      ... on Country {
+        name
+        description
+      }
+      ... on Region {
+        name
+        description
+      }
+      ... on Malware {
+        name
+        description
+      }
+      ... on ThreatActor {
+        name
+        description
+      }
+      ... on Tool {
+        name
+        description
+      }
+      ... on Vulnerability {
+        name
+        description
+      }
+      ... on XOpenctiIncident {
+        name
+        description
+      }
       ... on StixCyberObservable {
-        value
+        observable_value
       }
     }
   }
@@ -197,10 +273,10 @@ const stixCyberObservableRelationshipCreationFromEntityMutation = graphql`
 
 const stixCyberObservableRelationshipValidation = (t) => Yup.object().shape({
   relationship_type: Yup.string().required(t('This field is required')),
-  first_seen: Yup.date()
+  start_time: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  last_seen: Yup.date()
+  stop_time: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
 });
@@ -240,8 +316,8 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
     const finalValues = pipe(
       assoc('fromId', fromEntityId),
       assoc('toId', toEntityId),
-      assoc('first_seen', parse(values.first_seen).format()),
-      assoc('last_seen', parse(values.last_seen).format()),
+      assoc('start_time', parse(values.start_time).format()),
+      assoc('stop_time', parse(values.stop_time).format()),
     )(values);
     commitMutation({
       mutation: stixCyberObservableRelationshipCreationFromEntityMutation,
@@ -376,8 +452,8 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
     const initialValues = {
       relationship_type: defaultRelationshipType,
       role_played: 'Unknown',
-      first_seen: dayStartDate(),
-      last_seen: dayStartDate(),
+      start_time: dayStartDate(),
+      stop_time: dayStartDate(),
     };
     return (
       <QueryRenderer
@@ -524,8 +600,8 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
                       </Field>
                       <Field
                         component={DatePickerField}
-                        name="first_seen"
-                        label={t('First seen')}
+                        name="start_time"
+                        label={t('Start time')}
                         invalidDateMessage={t(
                           'The value must be a date (YYYY-MM-DD)',
                         )}
@@ -534,8 +610,8 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
                       />
                       <Field
                         component={DatePickerField}
-                        name="last_seen"
-                        label={t('Last seen')}
+                        name="stop_time"
+                        label={t('Stop time')}
                         invalidDateMessage={t(
                           'The value must be a date (YYYY-MM-DD)',
                         )}

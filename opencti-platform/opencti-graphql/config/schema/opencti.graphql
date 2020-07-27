@@ -2078,11 +2078,11 @@ input IndividualsFiltering {
 }
 type IndividualConnection {
   pageInfo: PageInfo!
-  edges: [UserEdge]
+  edges: [IndividualEdge]
 }
 type IndividualEdge {
   cursor: String!
-  node: User!
+  node: Individual!
 }
 type Individual implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {
   id: ID! # internal_id
@@ -3623,9 +3623,9 @@ input ToolAddInput {
 ############## Vulnerabilities
 enum VulnerabilitiesOrdering {
   name
-  base_score
-  base_severity
-  attack_vector
+  x_opencti_base_score
+  x_opencti_base_severity
+  x_opencti_attack_vector
   created
   modified
   created_at
@@ -3635,10 +3635,9 @@ enum VulnerabilitiesOrdering {
 }
 enum VulnerabilitiesFilter {
   name
-  base_score
-  base_severity
-  attack_vector
-  aliases
+  x_opencti_base_score
+  x_opencti_base_severity
+  x_opencti_attack_vector
   created
   modified
   created_at
@@ -4779,6 +4778,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixCoreRelationshipConnection
+  inferences: StixCoreRelationshipConnection
   killChainPhases: KillChainPhaseConnection
   # Technical
   creator: User

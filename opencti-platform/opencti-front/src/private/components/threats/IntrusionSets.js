@@ -97,7 +97,7 @@ class IntrusionSets extends Component {
       name: {
         label: 'Name',
       },
-      labels: {
+      objectLabel: {
         label: 'Labels',
       },
       created: {
@@ -164,7 +164,7 @@ class IntrusionSets extends Component {
         width: '35%',
         isSortable: true,
       },
-      labels: {
+      objectLabel: {
         label: 'Labels',
         width: '25%',
         isSortable: true,

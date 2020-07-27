@@ -159,13 +159,13 @@ const EntityIndicatorLineFragment = createFragmentContainer(
           ... on Indicator {
             id
             name
-            x_opencti_main_observable_type
             pattern_type
             description
             valid_from
             valid_until
-            score
             created
+            x_opencti_score
+            x_opencti_main_observable_type
             objectMarking {
               edges {
                 node {

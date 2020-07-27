@@ -19,7 +19,7 @@ export const markingDefinitionsLinesSearchQuery = graphql`
           id
           definition_type
           definition
-          color
+          x_opencti_color
         }
       }
     }

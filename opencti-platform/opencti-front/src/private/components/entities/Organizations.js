@@ -96,7 +96,7 @@ class Organizations extends Component {
         width: '15%',
         isSortable: true,
       },
-      labels: {
+      objectLabel: {
         label: 'Labels',
         width: '23%',
         isSortable: true,

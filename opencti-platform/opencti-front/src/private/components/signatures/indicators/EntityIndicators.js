@@ -132,7 +132,7 @@ class EntityIndicators extends Component {
         width: '30%',
         isSortable: true,
       },
-      labels: {
+      objectLabel: {
         label: 'Labels',
         width: '15%',
         isSortable: false,

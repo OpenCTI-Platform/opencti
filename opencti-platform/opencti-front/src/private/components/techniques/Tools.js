@@ -89,7 +89,7 @@ class Tools extends Component {
         width: '35%',
         isSortable: true,
       },
-      labels: {
+      objectLabel: {
         label: 'Labels',
         width: '25%',
         isSortable: true,

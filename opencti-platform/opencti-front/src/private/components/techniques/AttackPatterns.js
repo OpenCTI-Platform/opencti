@@ -96,7 +96,7 @@ class AttackPatterns extends Component {
         width: '30%',
         isSortable: true,
       },
-      labels: {
+      objectLabel: {
         label: 'Labels',
         width: '20%',
         isSortable: true,

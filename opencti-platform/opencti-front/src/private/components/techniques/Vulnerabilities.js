@@ -91,12 +91,12 @@ class Vulnerabilities extends Component {
         width: '20%',
         isSortable: true,
       },
-      base_severity: {
+      x_opencti_base_severity: {
         label: 'CVSS3 - Severity',
         width: '15%',
         isSortable: true,
       },
-      labels: {
+      objectLabel: {
         label: 'Labels',
         width: '25%',
         isSortable: true,
@@ -133,9 +133,9 @@ class Vulnerabilities extends Component {
           'markingDefinitions',
           'created_start_date',
           'created_end_date',
-          'base_score_gt',
-          'base_severity',
-          'attack_vector',
+          'x_opencti_base_score_gt',
+          'x_opencti_base_severity',
+          'x_opencti_attack_vector',
           'createdBy',
         ]}
       >
